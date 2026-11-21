@@ -1,7 +1,7 @@
 import { AssetAccountingWorkflowPanel } from "./accounting-screen.asset-workflow-panel";
 import { BookCheck, Copy, Landmark, Network, Paperclip, RefreshCcw, Search, ShieldCheck, UserCheck, WalletCards, X } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
 import { useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
@@ -1588,14 +1588,32 @@ export function AccountingScreen({ data, multiAssetCoverage, session = null }: A
   const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, session?.displayName.trim() ? JSON.stringify([session.displayName, session.role, session.environment]) : null);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
+  const selectSecurity = securityMaster.selectSecurity;
+  const linkedSecurityId = new URLSearchParams(search).get("securityId")?.trim() || null;
+  const linkedSecurityIdRef = useRef(linkedSecurityId);
+  const receivedInitialExplorerSelection = useRef(false);
+  useEffect(() => {
+    linkedSecurityIdRef.current = linkedSecurityId;
+    if (workstream === "security-master" && linkedSecurityId) {
+      void selectSecurity(linkedSecurityId);
+    }
+    // Consume the route identity only when it changes. Manual selection and tab/scope changes
+    // must not replay the original deep link over the operator's current selection.
+  }, [linkedSecurityId, workstream, selectSecurity]);
   const selectSecurityFromExplorer = useCallback((recordId: string) => {
+    if (!receivedInitialExplorerSelection.current) {
+      receivedInitialExplorerSelection.current = true;
+      // The explorer announces its default row on load. An explicit linked asset takes priority;
+      // later explorer row choices remain available to the operator.
+      if (linkedSecurityIdRef.current) return;
+    }
     const securityId = resolveExplorerSecurityId(recordId);
     // Explorer selection changes drive this callback. Depending on the detail selection would
     // replay the explorer's old row after every manual search selection and overwrite it.
     if (securityId) {
-      securityMaster.selectSecurity(securityId);
+      void selectSecurity(securityId);
     }
-  }, [securityMaster.selectSecurity]);
+  }, [selectSecurity]);
   const [accountingSystemProviders, setAccountingSystemProviders] = useState<AccountingSystemProvider[]>([]);
   const [accountingSystemImport, setAccountingSystemImport] = useState<AccountingSystemImportDetail | null>(null);
   const [accountingSystemMappingProfiles, setAccountingSystemMappingProfiles] = useState<ExternalGlMappingProfile[]>([]);

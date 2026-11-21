@@ -1,4 +1,4 @@
-import { render, screen, waitFor } from "@testing-library/react";
+import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import {
@@ -122,6 +122,16 @@ describe("LotsTrackerPanel", () => {
     );
   });
 
+  it("identifies browser-only lots and the manual valuation price", () => {
+    window.localStorage.setItem("meridian.security.overrides.AAPL", JSON.stringify({ marketPrice: "192" }));
+    render(<LotsTrackerPanel securityId="AAPL" currency="USD" />);
+
+    expect(screen.getByRole("heading", { name: "Local lot tracker" })).toBeInTheDocument();
+    expect(screen.getByText(/stored in this browser per security, without account or book scope/)).toBeInTheDocument();
+    expect(screen.getByText(/Manual valuation price: 192.00 USD per unit/)).toBeInTheDocument();
+    expect(screen.getByText("Estimated unrealised P/L")).toBeInTheDocument();
+  });
+
   it("requires confirmation before removing a cost-basis lot", async () => {
     const user = userEvent.setup();
     render(<LotsTrackerPanel securityId="AAPL" currency="USD" />);
@@ -209,5 +219,62 @@ describe("SecurityDetailsPanel", () => {
       "security-detail-sec-1-issuer-editor-help"
     );
     expect(screen.getByRole("button", { name: "Save Issuer" })).toBeEnabled();
+  });
+
+  it("compares the source, override and effective value and restores the source when cleared", async () => {
+    const overridesService: OperatorOverridesService = {
+      get: vi.fn<OperatorOverridesService["get"]>().mockResolvedValue({
+        ...operatorOverrides,
+        values: { ticker: "APPLE" }
+      }),
+      patch: vi.fn<OperatorOverridesService["patch"]>().mockResolvedValue({ ...operatorOverrides, values: {} })
+    };
+    const user = userEvent.setup();
+    render(
+      <SecurityDetailsPanel entry={securityEntry} identity={securityIdentity} tradingParameters={null} overridesService={overridesService} />
+    );
+    await screen.findByText("Synced");
+    const inspect = screen.getByRole("button", { name: "Inspect source and override for Ticker" });
+    inspect.focus();
+    await user.keyboard("{Enter}");
+
+    const inspection = screen.getByRole("region", { name: "Ticker value inspection" });
+    expect(inspect).toHaveAttribute("aria-expanded", "true");
+    expect(inspect).toHaveAttribute("aria-controls", inspection.id);
+    expect(within(inspection).getByText("Loaded source value").nextElementSibling).toHaveTextContent("AAPL");
+    expect(within(inspection).getByText("Operator override").nextElementSibling).toHaveTextContent("APPLE");
+    expect(within(inspection).getByText("Effective value in this panel").nextElementSibling).toHaveTextContent("APPLE");
+    expect(within(inspection).getByText(/Latest override-set edit/)).toHaveTextContent("ops @ 2026-05-19T09:00:00Z");
+    expect(within(inspection).getByText(/Governed Passport terms use the separate draft and approval workflow/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Clear override for Ticker" }));
+    await waitFor(() => expect(overridesService.patch).toHaveBeenCalledWith("sec-1", { removeKeys: ["ticker"] }));
+    expect(within(inspection).getByText("Operator override").nextElementSibling).toHaveTextContent("No override");
+    expect(within(inspection).getByText("Effective value in this panel").nextElementSibling).toHaveTextContent("AAPL");
+    await user.click(inspect);
+    expect(screen.queryByRole("region", { name: "Ticker value inspection" })).not.toBeInTheDocument();
+  });
+
+  it("clears inspection and prior edit attribution when switching to an offline security", async () => {
+    const overridesService: OperatorOverridesService = {
+      get: vi.fn<OperatorOverridesService["get"]>()
+        .mockResolvedValueOnce(operatorOverrides)
+        .mockRejectedValueOnce(new Error("Unavailable")),
+      patch: vi.fn<OperatorOverridesService["patch"]>()
+    };
+    const user = userEvent.setup();
+    const { rerender } = render(
+      <SecurityDetailsPanel entry={securityEntry} identity={securityIdentity} tradingParameters={null} overridesService={overridesService} />
+    );
+    await screen.findByText("Synced");
+    await user.click(screen.getByRole("button", { name: "Inspect source and override for Issuer" }));
+    expect(screen.getByRole("region", { name: "Issuer value inspection" })).toBeInTheDocument();
+
+    rerender(
+      <SecurityDetailsPanel entry={{ ...securityEntry, securityId: "sec-2" }} identity={null} tradingParameters={null} overridesService={overridesService} />
+    );
+    await screen.findByText("Offline (local only)");
+    expect(screen.queryByRole("region", { name: "Issuer value inspection" })).not.toBeInTheDocument();
+    expect(screen.queryByText(/last edit by ops/)).not.toBeInTheDocument();
   });
 });

@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { SecurityPassportEditorLauncher } from "@/components/meridian/security-passport-editor-launcher";
@@ -9,28 +9,79 @@ import { Input } from "@/components/ui/input";
 import { ScreenLayout } from "@/components/ui/screen-layout";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { getCorporateActions, getSecurityDetail, getSecurityIdentity, getTradingParameters, searchSecurities } from "@/lib/api";
+import {
+  getCorporateActions,
+  getSecurityDetail,
+  getSecurityIdentity,
+  getTradingParameters,
+  searchSecurities
+} from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { ContractualCashFlowWorkbench } from "@/components/meridian/contractual-cash-flow-workbench";
-import { buildAssetDetailOverviewViewState, selectExactSecuritySearchResult } from "@/screens/asset-detail-screen.view-model";
-import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
+import {
+  buildAssetDetailOverviewViewState,
+  selectExactSecuritySearchResult
+} from "@/screens/asset-detail-screen.view-model";
+import type { SecurityMasterEntry } from "@/types";
+import { ApiError } from "@/lib/api-errors";
+import { AssetSwitcher } from "@/components/meridian/asset-switcher";
+import { AssetFinancialSummary } from "@/components/meridian/asset-financial-summary";
+import { AssetPassportSummary } from "@/components/meridian/asset-passport-summary";
+import { useAssetDetailResource } from "./asset-detail-resource";
+import { AssetDetailEvents } from "./asset-detail-events";
 
 const assetSearchSuggestions = ["AAPL", "MSFT", "US91282CHT18"];
 const assetDetailReadinessCues = [
   { label: "Identity", value: "Identifiers, aliases, and current status" },
-  { label: "Passport", value: "Governed edits, approvals, and trust evidence" },
+  {
+    label: "Passport",
+    value: "Governed edits, approvals, and trust evidence"
+  },
   { label: "Lots", value: "Open lots, cost basis, and accounting impact" },
-  { label: "Trading", value: "Lot size, tick size, hours, and circuit breakers" }
+  {
+    label: "Trading",
+    value: "Lot size, tick size, hours, and circuit breakers"
+  }
 ];
-const assetSavedViews = [
-  { id: "equity-book", label: "Equity book", symbol: "AAPL", detail: "Identity, lots, trading parameters" },
-  { id: "treasury", label: "Treasury holdings", symbol: "US91282CHT18", detail: "Fixed income identity and term review" },
-  { id: "exceptions", label: "Review queue", symbol: "MSFT", detail: "Assets with missing identifiers or stale trust evidence" }
+const assetExampleSearches = [
+  {
+    id: "equity-book",
+    label: "Equity example",
+    symbol: "AAPL",
+    detail: "Identity, lots, trading parameters"
+  },
+  {
+    id: "treasury",
+    label: "Treasury example",
+    symbol: "US91282CHT18",
+    detail: "Fixed income identity and term review"
+  },
+  {
+    id: "exceptions",
+    label: "Microsoft example",
+    symbol: "MSFT",
+    detail: "Identity, terms, and available evidence"
+  }
 ];
 const assetDetailNextActions = [
-  { id: "security-master", label: "Open Security Master", href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster, detail: "Review governed identity, approvals, and passport posture." },
-  { id: "live-quotes", label: "Open live quotes", href: WORKSTATION_ROUTE_CATALOG.dataQuotes, detail: "Check current provider price and freshness before trading decisions." },
-  { id: "reconciliation", label: "Open reconciliation", href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation, detail: "Inspect accounting impact for lots, cash, and unmatched records." }
+  {
+    id: "security-master",
+    label: "Open Security Master",
+    href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
+    detail: "Review governed identity, approvals, and passport posture."
+  },
+  {
+    id: "live-quotes",
+    label: "Open live quotes",
+    href: WORKSTATION_ROUTE_CATALOG.dataQuotes,
+    detail: "Check current provider price and freshness before trading decisions."
+  },
+  {
+    id: "reconciliation",
+    label: "Open reconciliation",
+    href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation,
+    detail: "Inspect accounting impact for lots, cash, and unmatched records."
+  }
 ];
 
 export function AssetDetailScreen() {
@@ -38,26 +89,32 @@ export function AssetDetailScreen() {
   const securityId = searchParams.get("securityId");
   const initialQuery = searchParams.get("symbol") ?? searchParams.get("query") ?? "";
 
-  if (!securityId) {
-    return (
-      <AssetSearchPanel
-        initialQuery={initialQuery}
-        onSelect={(id) => setSearchParams((current) => {
-          const next = new URLSearchParams(current);
-          next.set("securityId", id);
-          return next;
-        }, { replace: true })}
-      />
-    );
-  }
+  const selectSecurity = useCallback(
+    (id: string) =>
+      setSearchParams((current) => {
+        const next = new URLSearchParams(current);
+        next.set("securityId", id);
+        return next;
+      }),
+    [setSearchParams]
+  );
 
-  return <AssetDetailPanel securityId={securityId} />;
+  if (!securityId) return <AssetSearchPanel initialQuery={initialQuery} onSelect={selectSecurity} />;
+  return <AssetDetailPanel key={securityId} securityId={securityId} />;
 }
 
-function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; onSelect: (securityId: string) => void }) {
+function AssetSearchPanel({
+  initialQuery,
+  onSelect
+}: {
+  initialQuery: string;
+  onSelect: (securityId: string) => void;
+}) {
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<SecurityMasterEntry[]>([]);
   const [searching, setSearching] = useState(false);
+  const [searchError, setSearchError] = useState(false);
+  const [searchAttempt, setSearchAttempt] = useState(0);
   const initialRouteQueryRef = useRef(initialQuery.trim());
   const autoOpenedRef = useRef(false);
 
@@ -70,11 +127,15 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
   useEffect(() => {
     if (query.trim().length < 2) {
       setResults([]);
+      setSearching(false);
+      setSearchError(false);
       return;
     }
 
     let cancelled = false;
     setSearching(true);
+    setResults([]);
+    setSearchError(false);
 
     searchSecurities(query.trim())
       .then((entries) => {
@@ -93,6 +154,7 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
       .catch(() => {
         if (!cancelled) {
           setResults([]);
+          setSearchError(true);
         }
       })
       .finally(() => {
@@ -104,13 +166,15 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
     return () => {
       cancelled = true;
     };
-  }, [onSelect, query]);
+  }, [onSelect, query, searchAttempt]);
 
   return (
     <Card className="panel-surface">
       <CardHeader>
         <CardTitle>Asset Detail</CardTitle>
-        <CardDescription>Search for a security to view its identity, passport, lots, and trading parameters in one place.</CardDescription>
+        <CardDescription>
+          Search for a security to view its identity, passport, lots, and trading parameters in one place.
+        </CardDescription>
       </CardHeader>
       <CardContent className="grid gap-4 xl:grid-cols-[minmax(0,1fr)_22rem]">
         <div className="space-y-3">
@@ -129,7 +193,8 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                     <div>
                       <div className="font-semibold text-foreground">Start from a known instrument</div>
                       <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                        Search pulls the selected Security Master record into identity, passport, lot, and trading-parameter review.
+                        Search pulls the selected Security Master record into identity, passport, lot, and
+                        trading-parameter review.
                       </p>
                     </div>
                     <Button asChild size="sm" variant="outline">
@@ -154,9 +219,27 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                 <>
                   <div className="font-semibold text-foreground">Search results</div>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Select a result to open governed identity, passport, lot, and trading parameters without leaving the operator workflow.
+                    Select a result to open governed identity, passport, lot, and trading parameters without leaving the
+                    operator workflow.
                   </p>
-                  {searching ? <p className="mt-3 text-sm text-muted-foreground">Searching...</p> : null}
+                  {searching ? (
+                    <p role="status" className="mt-3 text-sm text-muted-foreground">
+                      Searching...
+                    </p>
+                  ) : null}
+                  {searchError ? (
+                    <div role="alert" className="mt-3 text-sm">
+                      <p>Couldn’t search securities.</p>
+                      <Button size="sm" variant="outline" onClick={() => setSearchAttempt((value) => value + 1)}>
+                        Retry search
+                      </Button>
+                    </div>
+                  ) : null}
+                  {!searching && !searchError && results.length === 0 ? (
+                    <p role="status" className="mt-3 text-sm text-muted-foreground">
+                      No securities match this search.
+                    </p>
+                  ) : null}
                   {results.length > 0 ? (
                     <ul className="mt-3 space-y-2" aria-label="Security search results">
                       {results.map((entry) => (
@@ -168,7 +251,8 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
                           >
                             <span className="block font-semibold text-foreground">{entry.displayName}</span>
                             <span className="mt-1 block font-mono text-xs text-muted-foreground">
-                              {entry.classification.assetClass} - {entry.classification.primaryIdentifierValue ?? entry.securityId}
+                              {entry.classification.assetClass} -{" "}
+                              {entry.classification.primaryIdentifierValue ?? entry.securityId}
                             </span>
                           </button>
                         </li>
@@ -179,7 +263,9 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
               )}
             </div>
             <div className="rounded-md border border-border/70 bg-background/70 px-3 py-3">
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Review areas</div>
+              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+                Review areas
+              </div>
               <div className="mt-2 grid gap-2">
                 {assetDetailReadinessCues.map((cue) => (
                   <div key={cue.label} className="rounded border border-border/60 bg-secondary/20 px-2 py-1.5">
@@ -192,11 +278,11 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
           </div>
         </div>
 
-        <aside className="space-y-4" aria-label="Asset detail saved views and next actions">
-          <section className="space-y-2" aria-label="Asset detail saved views">
-            <h3 className="text-sm font-semibold text-foreground">Saved views</h3>
+        <aside className="space-y-4" aria-label="Asset detail example searches and next actions">
+          <section className="space-y-2" aria-label="Asset detail example searches">
+            <h3 className="text-sm font-semibold text-foreground">Example searches</h3>
             <ul className="grid gap-2">
-              {assetSavedViews.map((view) => (
+              {assetExampleSearches.map((view) => (
                 <li key={view.id} className="border border-border bg-background/60 px-3 py-2">
                   <div className="flex items-center justify-between gap-2">
                     <span className="text-xs font-semibold text-foreground">{view.label}</span>
@@ -214,7 +300,10 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
             <ul className="grid gap-2">
               {assetDetailNextActions.map((action) => (
                 <li key={action.id} className="border border-border bg-background/60 px-3 py-2">
-                  <Link className="text-xs font-semibold text-primary underline-offset-2 hover:underline" to={action.href}>
+                  <Link
+                    className="text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                    to={action.href}
+                  >
                     {action.label}
                   </Link>
                   <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{action.detail}</p>
@@ -228,208 +317,339 @@ function AssetSearchPanel({ initialQuery, onSelect }: { initialQuery: string; on
   );
 }
 
+const detailTabs = [
+  { id: "overview", label: "Overview" },
+  { id: "reference", label: "Reference data" },
+  { id: "holdings", label: "Holdings & Lots" },
+  { id: "events", label: "Events" },
+  { id: "trading-parameters", label: "Trading Parameters" },
+  { id: "passport", label: "Passport" },
+  { id: "cash-flow-scenarios", label: "Cash-flow scenarios" }
+];
+
 function AssetDetailPanel({ securityId }: { securityId: string }) {
-  const [entry, setEntry] = useState<SecurityMasterEntry | null>(null);
-  const [identity, setIdentity] = useState<SecurityIdentityDrillIn | null>(null);
-  const [corporateActions, setCorporateActions] = useState<CorporateAction[]>([]);
-  const [tradingParameters, setTradingParameters] = useState<TradingParameters | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [notFound, setNotFound] = useState(false);
-
+  const [params, setParams] = useSearchParams();
+  const entryResource = useAssetDetailResource(securityId, getSecurityDetail);
+  const identityResource = useAssetDetailResource(securityId, getSecurityIdentity);
+  const eventsResource = useAssetDetailResource(securityId, getCorporateActions);
+  const tradingResource = useAssetDetailResource(securityId, getTradingParameters);
+  const requestedTab = params.get("tab") === "details-lots" ? "holdings" : params.get("tab");
+  const activeTab = detailTabs.some((tab) => tab.id === requestedTab) ? requestedTab! : "overview";
+  const [visitedTabs, setVisitedTabs] = useState(() => new Set([activeTab]));
   useEffect(() => {
-    let cancelled = false;
-    // Abort in-flight requests on unmount or symbol change so rapid symbol
-    // switching does not leave four stale requests running per hop.
-    const controller = new AbortController();
-    const { signal } = controller;
-    setLoading(true);
-    setNotFound(false);
+    setVisitedTabs((current) => (current.has(activeTab) ? current : new Set([...current, activeTab])));
+  }, [activeTab]);
+  const keepTab = (tab: string) => activeTab === tab || visitedTabs.has(tab);
+  const openTab = (tab: string) =>
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      next.set("tab", tab);
+      return next;
+    });
+  const searchAgain = () =>
+    setParams((current) => {
+      const next = new URLSearchParams(current);
+      ["securityId", "symbol", "query"].forEach((key) => next.delete(key));
+      return next;
+    });
 
-    Promise.all([
-      getSecurityDetail(securityId, { signal }),
-      getSecurityIdentity(securityId, { signal }).catch(() => null),
-      getCorporateActions(securityId, { signal }).catch(() => []),
-      getTradingParameters(securityId, { signal }).catch(() => null)
-    ])
-      .then(([detail, identityResult, corporateActionsResult, tradingParametersResult]) => {
-        if (cancelled) {
-          return;
-        }
-
-        setEntry(detail);
-        setIdentity(identityResult);
-        setCorporateActions(corporateActionsResult);
-        setTradingParameters(tradingParametersResult);
-      })
-      .catch(() => {
-        if (!cancelled) {
-          setEntry(null);
-          setNotFound(true);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) {
-          setLoading(false);
-        }
-      });
-
-    return () => {
-      cancelled = true;
-      controller.abort();
-    };
-  }, [securityId]);
-
-  if (loading) {
+  if (entryResource.status === "loading")
     return (
-      <Card
-        className="panel-surface"
-        role="status"
-        aria-busy="true"
-        aria-live="polite"
-        aria-labelledby="asset-detail-loading-title"
-      >
+      <Card className="panel-surface" role="status" aria-busy="true">
         <CardHeader>
-          <CardTitle id="asset-detail-loading-title">Loading asset detail</CardTitle>
+          <CardTitle>Loading asset detail</CardTitle>
           <CardDescription>Looking up {securityId}.</CardDescription>
         </CardHeader>
       </Card>
     );
-  }
-
-  if (notFound || !entry) {
+  if (entryResource.status === "error" || !entryResource.data || entryResource.data.securityId !== securityId) {
+    const notFound = entryResource.error instanceof ApiError && entryResource.error.status === 404;
     return (
       <Card className="panel-surface">
         <CardHeader>
-          <CardTitle>Asset not found</CardTitle>
-          <CardDescription>No security matching "{securityId}" was found in the Security Master.</CardDescription>
+          <CardTitle>{notFound ? "Asset not found" : "Couldn’t load asset detail"}</CardTitle>
+          <CardDescription>
+            {notFound
+              ? `No security matching "${securityId}" was found in the Security Master.`
+              : "The asset could not be retrieved. Its existence and current state are unknown."}
+          </CardDescription>
         </CardHeader>
+        <CardContent className="flex gap-2">
+          <Button size="sm" variant="outline" onClick={entryResource.retry}>
+            Retry asset
+          </Button>
+          <Button size="sm" variant="ghost" onClick={searchAgain}>
+            Search assets
+          </Button>
+        </CardContent>
       </Card>
     );
   }
 
-  const overview = buildAssetDetailOverviewViewState({ entry, identity, corporateActions });
+  const entry = entryResource.data;
+  const identity =
+    identityResource.status === "ready" && identityResource.data?.securityId === securityId
+      ? identityResource.data
+      : null;
+  const tradingParameters =
+    tradingResource.status === "ready" && tradingResource.data?.securityId === securityId ? tradingResource.data : null;
+  const events =
+    eventsResource.status === "ready" ? eventsResource.data.filter((event) => event.securityId === securityId) : [];
+  const invalidEvents = eventsResource.status === "ready" && events.length !== eventsResource.data.length;
+  const safeEvents = invalidEvents
+    ? {
+        status: "error" as const,
+        data: null,
+        error: new Error("Event identity mismatch")
+      }
+    : eventsResource;
+  const overview = buildAssetDetailOverviewViewState({
+    entry,
+    identity,
+    corporateActions: events
+  });
+  const financialSummary = (
+    <AssetFinancialSummary
+      securityId={securityId}
+      symbol={overview.symbol}
+      currency={entry.economicDefinition.currency}
+      identifierKind={entry.classification.primaryIdentifierKind}
+      ledgerBookId={params.get("ledgerBookId")}
+      accountId={params.get("accountId")}
+      asOf={params.get("asOf")}
+      scopeUnavailableReason={
+        params.get("fundAccountId")
+          ? "This view cannot bind fund-account scope to retained book positions. Open the scoped portfolio for holdings."
+          : undefined
+      }
+    />
+  );
 
   return (
     <ScreenLayout
       title={overview.displayName}
-      scope={overview.symbol}
+      scope={`${overview.symbol} · ${entry.classification.assetClass} · ${entry.economicDefinition.currency}`}
       actions={
         <>
-          <Badge variant={overview.statusTone} dot>{overview.statusLabel}</Badge>
+          <Badge variant={overview.statusTone} dot>
+            {overview.statusLabel}
+          </Badge>
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("dataQuotes", { symbol: overview.symbol })}>Live quotes</Link>
+            <Link
+              to={workstationRouteWithQuery("dataQuotes", {
+                symbol: overview.symbol
+              })}
+            >
+              Live quotes
+            </Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link to={WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}>Open Security Master</Link>
+            <Link to={workstationRouteWithQuery("accountingSecurityMaster", { securityId })}>Open Security Master</Link>
           </Button>
         </>
       }
     >
-      <Tabs
-        tabs={[
-          { id: "overview", label: "Overview" },
-          { id: "passport", label: "Passport" },
-          { id: "details-lots", label: "Details & Lots" },
-          { id: "trading-parameters", label: "Trading Parameters" },
-          { id: "cash-flow-scenarios", label: "Cash-flow scenarios" }
-        ]}
-      >
+      <AssetSwitcher
+        securityId={securityId}
+        symbol={overview.symbol}
+        displayName={overview.displayName}
+        onSelect={(target) =>
+          setParams((current) => {
+            const next = new URLSearchParams(current);
+            next.set("securityId", target.securityId);
+            next.set("symbol", target.symbol);
+            next.delete("query");
+            return next;
+          })
+        }
+      />
+      <p className="text-xs text-muted-foreground">
+        Switching assets clears unsaved inputs. Switching tabs keeps inputs for the current asset.
+      </p>
+      <Tabs tabs={detailTabs} value={activeTab} onValueChange={openTab}>
         <TabPanel>
-          <Card className="panel-surface">
-            <CardContent className="space-y-4 pt-4">
-              <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                {overview.fields.map((field) => (
-                  <div key={field.label}>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-                    <dd className="mt-1 text-sm text-foreground">{field.value}</dd>
-                  </div>
-                ))}
-              </dl>
+          {activeTab === "overview" ? (
+            <div className="space-y-4">
+              <div className="grid items-start gap-4 xl:grid-cols-2">
+                <AssetPassportSummary securityId={securityId} onOpenPassport={() => openTab("passport")} />
+                {financialSummary}
+              </div>
+              <div className="grid gap-4 xl:grid-cols-2">
+                <Card className="panel-surface">
+                  <CardHeader>
+                    <CardTitle>Instrument identity</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <dl className="grid grid-cols-2 gap-3">
+                      {overview.fields.map((field) => (
+                        <div key={field.label}>
+                          <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                          <dd className="mt-1 text-sm">{field.value}</dd>
+                        </div>
+                      ))}
+                    </dl>
+                    <Button className="mt-3" size="sm" variant="ghost" onClick={() => openTab("reference")}>
+                      Inspect reference data and overrides
+                    </Button>
+                  </CardContent>
+                </Card>
+                <Card className="panel-surface">
+                  <CardHeader>
+                    <CardTitle>Corporate actions</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <AssetDetailEvents
+                      resource={safeEvents}
+                      retry={eventsResource.retry}
+                      compact
+                      onOpenEvents={() => openTab("events")}
+                    />
+                  </CardContent>
+                </Card>
+              </div>
+            </div>
+          ) : null}
+        </TabPanel>
+        <TabPanel>
+          {keepTab("reference") ? (
+            <div className="space-y-4">
+              {identityResource.status === "error" || (identityResource.status === "ready" && !identity) ? (
+                <SectionFailure label="identity evidence" retry={identityResource.retry} />
+              ) : null}
+              {identityResource.status === "loading" ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  Loading identity evidence…
+                </p>
+              ) : null}
+              {tradingResource.status === "error" ||
+              (tradingResource.status === "ready" && tradingResource.data && !tradingParameters) ? (
+                <SectionFailure label="trading parameters" retry={tradingResource.retry} />
+              ) : null}
+              {tradingResource.status === "loading" ? (
+                <p role="status" className="text-sm text-muted-foreground">
+                  Loading trading-parameter evidence…
+                </p>
+              ) : null}
+              <SecurityDetailsPanel entry={entry} identity={identity} tradingParameters={tradingParameters} />
               <TechnicalDetails label="Technical identity">
                 <dl className="grid gap-3 sm:grid-cols-2">
                   {overview.technicalFields.map((field) => (
                     <div key={field.label}>
-                      <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-                      <dd className="mt-1 break-words font-mono text-sm text-foreground">{field.value}</dd>
+                      <dt className="text-xs text-muted-foreground">{field.label}</dt>
+                      <dd className="mt-1 break-words font-mono text-sm">{field.value}</dd>
                     </div>
                   ))}
                 </dl>
               </TechnicalDetails>
-              <div>
-                <h3 className="text-sm font-semibold text-foreground">Corporate actions</h3>
-                {overview.hasCorporateActions ? (
-                  <ul className="mt-2 space-y-2" aria-label="Corporate actions">
-                    {overview.corporateActions.map((action) => (
-                      <li key={action.corpActId} className="rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-                        <span className="block text-sm font-semibold text-foreground">{action.label}</span>
-                        <span className="mt-1 block text-xs text-muted-foreground">{action.detail}</span>
-                      </li>
+            </div>
+          ) : null}
+        </TabPanel>
+        <TabPanel>
+          {keepTab("holdings") ? (
+            <div className="space-y-4">
+              {activeTab === "holdings" ? financialSummary : null}
+              <LotsTrackerPanel securityId={securityId} currency={entry.economicDefinition.currency} />
+            </div>
+          ) : null}
+        </TabPanel>
+        <TabPanel>
+          {activeTab === "events" ? (
+            <Card className="panel-surface">
+              <CardHeader>
+                <CardTitle>Corporate actions and evidence</CardTitle>
+                <CardDescription>
+                  Recorded events for {overview.symbol}; dates and source lifecycle state remain separate.
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <AssetDetailEvents resource={safeEvents} retry={eventsResource.retry} />
+              </CardContent>
+            </Card>
+          ) : null}
+        </TabPanel>
+        <TabPanel>
+          {activeTab === "trading-parameters" ? (
+            <Card className="panel-surface">
+              <CardHeader>
+                <CardTitle>Trading parameters</CardTitle>
+                <CardDescription>
+                  {tradingParameters
+                    ? `As of ${tradingParameters.asOf ?? "unknown"}`
+                    : "Security-specific execution conventions"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                {tradingResource.status === "loading" ? (
+                  <p role="status" className="text-sm text-muted-foreground">
+                    Loading trading parameters…
+                  </p>
+                ) : tradingResource.status === "error" || (tradingResource.data && !tradingParameters) ? (
+                  <SectionFailure label="trading parameters" retry={tradingResource.retry} />
+                ) : tradingParameters ? (
+                  <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                    {[
+                      ["Lot size", tradingParameters.lotSize],
+                      ["Tick size", tradingParameters.tickSize],
+                      ["Contract multiplier", tradingParameters.contractMultiplier],
+                      [
+                        "Margin requirement",
+                        tradingParameters.marginRequirementPct != null
+                          ? `${tradingParameters.marginRequirementPct}%`
+                          : null
+                      ],
+                      ["Trading hours (UTC)", tradingParameters.tradingHoursUtc],
+                      [
+                        "Circuit breaker threshold",
+                        tradingParameters.circuitBreakerThresholdPct != null
+                          ? `${tradingParameters.circuitBreakerThresholdPct}%`
+                          : null
+                      ]
+                    ].map(([label, value]) => (
+                      <div key={label}>
+                        <dt className="text-xs text-muted-foreground">{label}</dt>
+                        <dd className="mt-1 text-sm tabular-nums">{value ?? "Not set"}</dd>
+                      </div>
                     ))}
-                  </ul>
+                  </dl>
                 ) : (
-                  <p className="mt-2 text-sm text-muted-foreground">No corporate actions recorded for this security.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No trading parameters are configured for this security.
+                  </p>
                 )}
-              </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
+          ) : null}
         </TabPanel>
         <TabPanel>
-          <SecurityPassportEditorLauncher
-            securityId={entry.securityId}
-            symbol={overview.symbol}
-            assetClass={entry.classification.assetClass}
-          />
+          {keepTab("passport") ? (
+            <SecurityPassportEditorLauncher
+              securityId={securityId}
+              symbol={overview.symbol}
+              assetClass={entry.classification.assetClass}
+            />
+          ) : null}
         </TabPanel>
         <TabPanel>
-          <div className="space-y-4">
-            <SecurityDetailsPanel entry={entry} identity={identity} tradingParameters={tradingParameters} />
-            <LotsTrackerPanel securityId={entry.securityId} currency={entry.economicDefinition.currency} />
-          </div>
-        </TabPanel>
-        <TabPanel>
-          <Card className="panel-surface">
-            <CardHeader>
-              <CardTitle>Trading parameters</CardTitle>
-              <CardDescription>As of {tradingParameters?.asOf ?? "unknown"}</CardDescription>
-            </CardHeader>
-            <CardContent>
-              {tradingParameters ? (
-                <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-                  <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lot size</dt>
-                    <dd className="mt-1 text-sm text-foreground">{tradingParameters.lotSize ?? "Not set"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Tick size</dt>
-                    <dd className="mt-1 text-sm text-foreground">{tradingParameters.tickSize ?? "Not set"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Contract multiplier</dt>
-                    <dd className="mt-1 text-sm text-foreground">{tradingParameters.contractMultiplier ?? "Not set"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Margin requirement</dt>
-                    <dd className="mt-1 text-sm text-foreground">{tradingParameters.marginRequirementPct != null ? `${tradingParameters.marginRequirementPct}%` : "Not set"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Trading hours (UTC)</dt>
-                    <dd className="mt-1 text-sm text-foreground">{tradingParameters.tradingHoursUtc ?? "Not set"}</dd>
-                  </div>
-                  <div>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">Circuit breaker threshold</dt>
-                    <dd className="mt-1 text-sm text-foreground">{tradingParameters.circuitBreakerThresholdPct != null ? `${tradingParameters.circuitBreakerThresholdPct}%` : "Not set"}</dd>
-                  </div>
-                </dl>
-              ) : (
-                <p className="text-sm text-muted-foreground">No trading parameters are configured for this security.</p>
-              )}
-            </CardContent>
-          </Card>
-        </TabPanel>
-        <TabPanel>
-          <ContractualCashFlowWorkbench subjectKind="Security" subjectId={entry.securityId} subjectLabel={overview.displayName} />
+          {keepTab("cash-flow-scenarios") ? (
+            <ContractualCashFlowWorkbench
+              subjectKind="Security"
+              subjectId={securityId}
+              subjectLabel={overview.displayName}
+            />
+          ) : null}
         </TabPanel>
       </Tabs>
     </ScreenLayout>
+  );
+}
+
+function SectionFailure({ label, retry }: { label: string; retry: () => void }) {
+  return (
+    <div role="alert" className="flex flex-wrap items-center gap-3 border border-warning/40 px-3 py-2 text-sm">
+      <p>Couldn’t load {label}. This section is unavailable.</p>
+      <Button size="sm" variant="outline" onClick={retry}>
+        Retry {label}
+      </Button>
+    </div>
   );
 }

@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Briefcase, ClipboardList, Pencil, Plus, Save, Trash2, X } from "lucide-react";
+import { Briefcase, ClipboardList, Info, Pencil, Plus, Save, Trash2, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -121,6 +121,7 @@ export function SecurityDetailsPanel({
   const securityId = identity?.securityId ?? entry?.securityId ?? null;
   const [overrides, setOverrides] = useState<Record<string, string>>({});
   const [editingKey, setEditingKey] = useState<string | null>(null);
+  const [inspectedKey, setInspectedKey] = useState<string | null>(null);
   const [draftValue, setDraftValue] = useState<string>("");
   const [serverStatus, setServerStatus] = useState<SecurityDetailsServerStatus>("idle");
   const [serverErrorText, setServerErrorText] = useState<string | null>(null);
@@ -136,6 +137,7 @@ export function SecurityDetailsPanel({
     if (!securityId) {
       setOverrides({});
       setEditingKey(null);
+      setInspectedKey(null);
       setServerStatus("idle");
       setServerErrorText(null);
       setUpdatedBy(null);
@@ -144,7 +146,10 @@ export function SecurityDetailsPanel({
     }
 
     setEditingKey(null);
+    setInspectedKey(null);
     setServerErrorText(null);
+    setUpdatedBy(null);
+    setUpdatedAt(null);
     setOverrides(loadOverrides(securityId));
     setServerStatus("loading");
 
@@ -271,8 +276,8 @@ export function SecurityDetailsPanel({
           )}
         </CardTitle>
         <CardDescription>
-          Extended reference data for <span className="font-mono">{securityId}</span>. Operator overrides sync to the
-          server when available and fall back to local storage when offline.
+          Reference values and operator overrides for <span className="font-mono">{securityId}</span>.
+          Inspect a value to compare its layers. Governed terms are edited through Passport.
         </CardDescription>
         <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
           {vm.syncStatus ? (
@@ -314,6 +319,7 @@ export function SecurityDetailsPanel({
                     key={field.key}
                     className={cn(
                       "grid grid-cols-[minmax(0,0.7fr)_minmax(0,1fr)_auto] items-start gap-3 rounded-md border px-3 py-2",
+                      inspectedKey === field.key ? "sm:col-span-2" : "",
                       field.isOverridden ? "border-primary/40 bg-primary/5" : "border-border/60 bg-secondary/25"
                     )}
                   >
@@ -336,7 +342,19 @@ export function SecurityDetailsPanel({
                         <span className={cn(field.value === "" ? "text-muted-foreground" : "")}>{field.displayValue}</span>
                       )}
                     </dd>
-                    <div className="flex shrink-0 items-center gap-1">
+                    <dd className="flex shrink-0 items-center gap-1">
+                      <Button
+                        type="button"
+                        size="sm"
+                        variant={inspectedKey === field.key ? "secondary" : "ghost"}
+                        aria-label={`Inspect source and override for ${field.label}`}
+                        title={`Inspect source and override for ${field.label}`}
+                        aria-expanded={inspectedKey === field.key}
+                        aria-controls={inspectedKey === field.key ? field.inspectionId : undefined}
+                        onClick={() => setInspectedKey((current) => current === field.key ? null : field.key)}
+                      >
+                        <Info className="h-3.5 w-3.5" aria-hidden />
+                      </Button>
                       {field.isEditing ? (
                         <>
                           <Button
@@ -390,7 +408,16 @@ export function SecurityDetailsPanel({
                           )}
                         </>
                       )}
-                    </div>
+                    </dd>
+                    {inspectedKey === field.key ? (
+                      <dd className="col-span-3">
+                        <SecurityDetailValueInspector
+                          field={field}
+                          syncLabel={vm.syncStatus?.label ?? "Sync status unavailable"}
+                          updatedLabel={vm.updatedLabel}
+                        />
+                      </dd>
+                    ) : null}
                   </div>
                 );
               })}
@@ -399,6 +426,43 @@ export function SecurityDetailsPanel({
         ))}
       </CardContent>
     </Card>
+  );
+}
+
+function SecurityDetailValueInspector({
+  field,
+  syncLabel,
+  updatedLabel
+}: {
+  field: SecurityDetailFieldViewModel;
+  syncLabel: string;
+  updatedLabel: string | null;
+}) {
+  return (
+    <section
+      id={field.inspectionId}
+      aria-label={`${field.label} value inspection`}
+      className="space-y-3 border-t border-border/70 pt-3 text-xs"
+    >
+      <dl className="grid gap-3 sm:grid-cols-3">
+        {[
+          { label: "Loaded source value", value: field.sourceDisplayValue },
+          { label: "Operator override", value: field.overrideDisplayValue },
+          { label: "Effective value in this panel", value: field.displayValue }
+        ].map((item) => (
+          <div key={item.label} className="min-w-0">
+            <dt className="text-muted-foreground">{item.label}</dt>
+            <dd className="mt-1 break-words font-mono text-foreground">{item.value}</dd>
+          </div>
+        ))}
+      </dl>
+      <p className="leading-5 text-muted-foreground">{field.impactDescription}</p>
+      <div className="space-y-1 text-muted-foreground">
+        <p>Override sync: {syncLabel}.</p>
+        {updatedLabel ? <p>Latest override-set edit: {updatedLabel}.</p> : null}
+        <p>Per-field edit history and reasons are not available in this view.</p>
+      </div>
+    </section>
   );
 }
 
@@ -708,6 +772,7 @@ export function LotsTrackerPanel({ securityId, currency }: LotsTrackerPanelProps
         <CardDescription>
           {vm.description}
         </CardDescription>
+        <p className="text-xs leading-5 text-muted-foreground">{vm.valuationDescription}</p>
       </CardHeader>
       <CardContent className="space-y-4">
         <div role="group" aria-label={vm.formLabel} className="grid gap-2 sm:grid-cols-6">

@@ -56,6 +56,25 @@ returns to its originating row. Keep the selected item's primary action before i
 facts. Bind shareable selection to immutable item identity and current financial scope; show
 unavailable selection explicitly after removal rather than substituting another item's proof.
 
+### Asset records and source comparisons
+
+In the browser workstation, compose `ScreenLayout`, `AssetSwitcher`, `AssetPassportSummary`,
+and `AssetFinancialSummary` for record orientation, readiness, and exact-scope amounts. Keep
+instrument status separate from data trust. Use URL-controlled `Tabs` for shareable investigation;
+retain visited editors while hidden so tab changes do not discard inputs. Clear prior-asset data
+immediately on navigation and disclose input-reset behavior.
+
+Each data section owns loading, empty, error, and retry states. Unavailable evidence must not
+become a zero count or “not configured.” Amount rows show currency, basis, account/book, and
+as-of evidence; ambiguous positions require selection rather than cross-book totals. Quote
+snapshots and local estimates must remain distinguishable from retained financial amounts.
+
+Use the `SecurityDetailsPanel` field inspector to compare source, override, and effective panel
+value. The inspector is a labelled button with `aria-expanded`/`aria-controls`, opens inline with
+room for all three layers, and resets on asset changes. Attribute shared override-set metadata as
+such; never imply per-field history or governed economic approval from operator annotations.
+Browser-local lot tracking must declare storage/scope and manual-price calculation limits.
+
 ### Reconciliation queue–inspector pilot
 
 The browser adapter combines `WorkspaceWorkbenchShell`, `DenseDataTable` and

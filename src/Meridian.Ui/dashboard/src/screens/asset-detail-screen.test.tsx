@@ -1,4 +1,6 @@
-import { screen, waitFor } from "@testing-library/react";
+import { act, screen, waitFor } from "@testing-library/react";
+import { useLocation, useNavigate } from "react-router-dom";
+import { ApiError } from "@/lib/api-errors";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import * as api from "@/lib/api";
@@ -19,6 +21,29 @@ vi.mock("@/lib/api", async () => {
     getOperatorOverrides: vi.fn()
   };
 });
+
+vi.mock("@/components/meridian/asset-financial-summary", () => ({
+  AssetFinancialSummary: () => <section aria-label="Financial context">Retained financial context</section>
+}));
+vi.mock("@/components/meridian/asset-passport-summary", () => ({
+  AssetPassportSummary: ({ onOpenPassport }: { onOpenPassport: () => void }) => (
+    <button onClick={onOpenPassport}>Open governed passport</button>
+  )
+}));
+
+function RouteProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return (
+    <>
+      <output aria-label="Current route">{location.search}</output>
+      <button onClick={() => navigate(-1)}>Back in history</button>
+      <button onClick={() => navigate("?securityId=sec-msft&symbol=MSFT&tab=events&accountId=account-1")}>
+        Select Microsoft route
+      </button>
+    </>
+  );
+}
 
 const entry: SecurityMasterEntry = {
   securityId: "sec-aapl",
@@ -67,19 +92,30 @@ const tradingParameters: TradingParameters = {
 };
 
 async function renderScreen(initialEntry: string) {
-  const result = renderWithRouter(<AssetDetailScreen />, { initialEntries: [initialEntry] });
+  const result = renderWithRouter(<AssetDetailScreen />, {
+    initialEntries: [initialEntry]
+  });
   await waitForAsyncEffects();
   return result;
 }
 
 describe("AssetDetailScreen", () => {
   beforeEach(() => {
-    vi.clearAllMocks();
+    vi.resetAllMocks();
+    window.localStorage.clear();
     vi.mocked(api.getSecurityIdentity).mockResolvedValue(identity);
     vi.mocked(api.getCorporateActions).mockResolvedValue(corporateActions);
     vi.mocked(api.getTradingParameters).mockResolvedValue(tradingParameters);
-    vi.mocked(api.getOperatorOverrides).mockResolvedValue({ securityId: "sec-aapl", values: {}, updatedBy: "", updatedAt: "" });
-    vi.mocked(api.getSecurityTrustSnapshot).mockResolvedValue({ securityId: "sec-aapl", retrievedAtUtc: "2026-06-30T00:00:00Z" });
+    vi.mocked(api.getOperatorOverrides).mockResolvedValue({
+      securityId: "sec-aapl",
+      values: {},
+      updatedBy: "",
+      updatedAt: ""
+    });
+    vi.mocked(api.getSecurityTrustSnapshot).mockResolvedValue({
+      securityId: "sec-aapl",
+      retrievedAtUtc: "2026-06-30T00:00:00Z"
+    });
   });
 
   it("shows a search box when no securityId is provided", async () => {
@@ -90,10 +126,22 @@ describe("AssetDetailScreen", () => {
     expect(screen.getByLabelText("Asset detail search readiness")).toHaveTextContent("Start from a known instrument");
     expect(screen.getByLabelText("Suggested asset detail searches")).toHaveTextContent("AAPL");
     expect(screen.getByText("Review areas")).toBeInTheDocument();
-    expect(screen.getByRole("complementary", { name: "Asset detail saved views and next actions" })).toHaveTextContent("Saved views");
-    expect(screen.getByRole("region", { name: "Asset detail saved views" })).toHaveTextContent("Equity book");
+    expect(
+      screen.getByRole("complementary", {
+        name: "Asset detail example searches and next actions"
+      })
+    ).toHaveTextContent("Example searches");
+    expect(
+      screen.getByRole("region", {
+        name: "Asset detail example searches"
+      })
+    ).toHaveTextContent("Equity example");
     expect(screen.getByRole("region", { name: "Asset detail next actions" })).toHaveTextContent("Open live quotes");
-    expect(screen.getAllByRole("link", { name: "Open Security Master" }).some((link) => link.getAttribute("href") === "/accounting/security-master")).toBe(true);
+    expect(
+      screen
+        .getAllByRole("link", { name: "Open Security Master" })
+        .some((link) => link.getAttribute("href") === "/accounting/security-master")
+    ).toBe(true);
   });
 
   it("has no basic accessibility violations in the search-ready state", async () => {
@@ -120,7 +168,9 @@ describe("AssetDetailScreen", () => {
     const user = userEvent.setup();
 
     await renderScreen("/portfolio/asset-detail?query=apple");
-    const result = await screen.findByRole("button", { name: /Apple Inc\./ });
+    const result = await screen.findByRole("button", {
+      name: /Apple Inc\./
+    });
 
     await user.tab();
     expect(screen.getByLabelText("Search securities")).toHaveFocus();
@@ -150,7 +200,9 @@ describe("AssetDetailScreen", () => {
 
     await user.type(screen.getByLabelText("Search securities"), "apple");
 
-    const result = await screen.findByRole("button", { name: /Apple Inc\./ });
+    const result = await screen.findByRole("button", {
+      name: /Apple Inc\./
+    });
     await user.click(result);
 
     expect(await screen.findByRole("heading", { name: "Apple Inc." })).toBeInTheDocument();
@@ -176,11 +228,126 @@ describe("AssetDetailScreen", () => {
   });
 
   it("renders a not-found state when the security lookup fails", async () => {
-    vi.mocked(api.getSecurityDetail).mockRejectedValueOnce(new Error("not found"));
+    vi.mocked(api.getSecurityDetail).mockRejectedValueOnce(new ApiError({ path: "/security/missing-id", status: 404 }));
 
     await renderScreen("/accounting/security-master/detail?securityId=missing-id");
 
     expect(await screen.findByText("Asset not found")).toBeInTheDocument();
     expect(screen.getByText(/No security matching "missing-id" was found/)).toBeInTheDocument();
+  });
+  it("distinguishes a service failure from a missing asset and allows retry", async () => {
+    vi.mocked(api.getSecurityDetail)
+      .mockRejectedValueOnce(new Error("network unavailable"))
+      .mockResolvedValueOnce(entry);
+    await renderScreen("/portfolio/asset-detail?securityId=sec-aapl");
+    expect(await screen.findByText("Couldn’t load asset detail")).toBeInTheDocument();
+    expect(screen.queryByText("Asset not found")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Retry asset" }));
+    expect(await screen.findByRole("heading", { name: "Apple Inc." })).toBeInTheDocument();
+  });
+
+  it("keeps useful asset content while a failed events section retries independently", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    vi.mocked(api.getCorporateActions).mockRejectedValueOnce(new Error("events offline")).mockResolvedValueOnce([]);
+    await renderScreen("/portfolio/asset-detail?securityId=sec-aapl");
+    expect(await screen.findByRole("heading", { name: "Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByText(/Event availability is unknown/)).toBeInTheDocument();
+    expect(screen.queryByText("No corporate actions recorded for this security.")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Retry corporate actions" }));
+    expect(await screen.findByText("No corporate actions recorded for this security.")).toBeInTheDocument();
+    expect(api.getSecurityDetail).toHaveBeenCalledTimes(1);
+  });
+
+  it("restores deep-linked tabs, preserves scope, and supports browser history", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    renderWithRouter(
+      <>
+        <AssetDetailScreen />
+        <RouteProbe />
+      </>,
+      {
+        initialEntries: ["/portfolio/asset-detail?securityId=sec-aapl&tab=events&accountId=account-1"]
+      }
+    );
+    expect(await screen.findByRole("tab", { name: "Events" })).toHaveAttribute("aria-selected", "true");
+    await userEvent.click(screen.getByRole("tab", { name: "Trading Parameters" }));
+    expect(screen.getByLabelText("Current route")).toHaveTextContent("tab=trading-parameters");
+    expect(screen.getByLabelText("Current route")).toHaveTextContent("accountId=account-1");
+    await userEvent.click(screen.getByRole("button", { name: "Back in history" }));
+    expect(await screen.findByRole("tab", { name: "Events" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("link", { name: "Open Security Master" })).toHaveAttribute(
+      "href",
+      "/accounting/security-master?securityId=sec-aapl"
+    );
+  });
+
+  it("does not let a delayed prior asset response overwrite the next asset", async () => {
+    let resolveFirst!: (value: SecurityMasterEntry) => void;
+    vi.mocked(api.getSecurityDetail).mockImplementation((id) =>
+      id === "sec-aapl"
+        ? new Promise((resolve) => {
+            resolveFirst = resolve;
+          })
+        : Promise.resolve({
+            ...entry,
+            securityId: "sec-msft",
+            displayName: "Microsoft Corp.",
+            classification: {
+              ...entry.classification,
+              primaryIdentifierValue: "MSFT"
+            }
+          })
+    );
+    renderWithRouter(
+      <>
+        <AssetDetailScreen />
+        <RouteProbe />
+      </>,
+      { initialEntries: ["/portfolio/asset-detail?securityId=sec-aapl"] }
+    );
+    await userEvent.click(screen.getByRole("button", { name: "Select Microsoft route" }));
+    expect(await screen.findByRole("heading", { name: "Microsoft Corp." })).toBeInTheDocument();
+    await act(async () => resolveFirst(entry));
+    expect(screen.queryByRole("heading", { name: "Apple Inc." })).not.toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Events" })).toHaveAttribute("aria-selected", "true");
+  });
+
+  it("reports a trading-parameters failure without claiming no parameters are configured", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    vi.mocked(api.getTradingParameters)
+      .mockRejectedValueOnce(new Error("offline"))
+      .mockResolvedValueOnce(tradingParameters);
+    await renderScreen("/portfolio/asset-detail?securityId=sec-aapl&tab=trading-parameters");
+    expect(await screen.findByText(/Couldn’t load trading parameters/)).toBeInTheDocument();
+    expect(screen.queryByText("No trading parameters are configured for this security.")).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Retry trading parameters" }));
+    expect(await screen.findByText("25%")).toBeInTheDocument();
+  });
+
+  it("has no basic accessibility violations in the resolved overview", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    const { container } = await renderScreen("/portfolio/asset-detail?securityId=sec-aapl");
+    expect(await screen.findByRole("heading", { name: "Apple Inc." })).toBeInTheDocument();
+    expect((await axe(container)).violations).toHaveLength(0);
+  });
+  it("keeps unsaved local-lot inputs across tab changes", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    await renderScreen("/portfolio/asset-detail?securityId=sec-aapl&tab=holdings");
+    const quantity = await screen.findByLabelText("Quantity");
+    await userEvent.type(quantity, "25");
+    await userEvent.click(screen.getByRole("tab", { name: "Overview" }));
+    await userEvent.click(screen.getByRole("tab", { name: "Holdings & Lots" }));
+    expect(screen.getByLabelText("Quantity")).toBeVisible();
+    expect(screen.getByLabelText("Quantity")).toHaveValue(25);
+  });
+
+  it("reports failed security search and recovers without claiming no matches", async () => {
+    vi.mocked(api.searchSecurities).mockRejectedValue(new Error("search offline"));
+    await renderScreen("/portfolio/asset-detail?query=apple");
+    expect(await screen.findByText("Couldn’t search securities.")).toBeInTheDocument();
+    expect(screen.queryByText("No securities match this search.")).not.toBeInTheDocument();
+    vi.mocked(api.searchSecurities).mockResolvedValue([entry]);
+    await userEvent.click(screen.getByRole("button", { name: "Retry search" }));
+    expect(await screen.findByRole("button", { name: /Apple Inc\./ })).toBeInTheDocument();
   });
 });

@@ -6878,6 +6878,188 @@
           }
         ]
       }
+    },
+    "/api/workstation/security-master/securities/sec-dev-001/passport": {
+      "securityId": "sec-dev-001",
+      "identity": {
+        "securityId": "sec-dev-001",
+        "displayName": "Apple Inc.",
+        "assetClass": "Equity",
+        "status": "Active",
+        "version": 3,
+        "effectiveFrom": "2020-01-01",
+        "effectiveTo": null,
+        "identifiers": [
+          {
+            "kind": "Ticker",
+            "value": "AAPL",
+            "isPrimary": true,
+            "validFrom": "2020-01-01",
+            "validTo": null,
+            "provider": "Synthetic QA"
+          }
+        ],
+        "aliases": []
+      },
+      "economicDefinition": {
+        "assetClass": "Equity",
+        "currency": "USD",
+        "riskCountry": "US",
+        "issuerType": "Corporate",
+        "winningSourceSystem": "Synthetic QA vendor",
+        "winningSourceAsOf": "2026-11-21T10:00:00Z"
+      },
+      "identifierSummary": {
+        "summary": "Identifiers retained"
+      },
+      "providerMappings": [],
+      "lifecycleEvents": [],
+      "corporateActions": [],
+      "pricing": {
+        "status": "Ready",
+        "summary": "Trading parameters available",
+        "tradingParameters": null,
+        "lotSize": 100,
+        "tickSize": 0.01,
+        "contractMultiplier": null,
+        "tradingHoursUtc": "13:30-20:00",
+        "circuitBreakerThresholdPct": 10
+      },
+      "usage": {
+        "summary": "Synthetic QA context"
+      },
+      "trustPosture": {
+        "tone": "Review",
+        "summary": "One identifier conflict requires review."
+      },
+      "providerConfidence": [
+        {
+          "provider": "Synthetic QA",
+          "providerSource": "qa-feed",
+          "mappingKind": "Ticker",
+          "symbol": "AAPL",
+          "normalizedSymbol": "AAPL",
+          "isPrimary": true,
+          "isActive": true,
+          "freshnessAsOf": "2026-11-21T10:00:00Z",
+          "freshnessMinutes": 1,
+          "confidenceScore": 0.8,
+          "confidenceReason": "Review",
+          "identifierConflictIds": [
+            "conflict-1"
+          ],
+          "identifierConflictSummaries": [
+            "CUSIP differs between retained sources."
+          ],
+          "overrideHistory": []
+        }
+      ],
+      "operationsWorkbench": {
+        "status": "Review",
+        "summary": "One check requires review",
+        "panels": [],
+        "handoffs": [],
+        "readiness": [
+          {
+            "readinessId": "price-evidence",
+            "label": "Price readiness",
+            "status": "Blocked",
+            "isReady": false,
+            "summary": "Price evidence requires review.",
+            "evidenceCount": 1,
+            "blockingIssueCount": 1,
+            "nextAction": "Inspect retained price evidence."
+          }
+        ]
+      },
+      "retrievedAtUtc": "2026-11-21T10:01:00Z"
+    },
+    "/api/workstation/assets/sec-dev-001/operations": {
+      "subject": {
+        "securityId": "sec-dev-001",
+        "displayName": "Apple Inc.",
+        "assetClass": "Equity",
+        "primaryIdentifier": "AAPL",
+        "operationalProfile": []
+      },
+      "termsHistory": [],
+      "lifecycleEvents": [],
+      "cashFlowProjectionRuns": [],
+      "projectedCashFlows": [],
+      "actualActivity": [],
+      "reconciliationRuns": [],
+      "reconciliationResults": [],
+      "ledgerProjections": [],
+      "workflowAudit": [],
+      "readiness": {
+        "securityId": "sec-dev-001",
+        "status": "Ready",
+        "capabilities": [],
+        "readyCapabilities": [],
+        "missingCapabilities": [],
+        "blockers": [],
+        "evaluatedAt": "2026-11-21T10:00:00Z",
+        "sourceDomain": "Synthetic QA",
+        "sourceEntityId": "sec-dev-001"
+      },
+      "bookPositions": [
+        {
+          "positionId": "position-sec-dev-001",
+          "securityId": "sec-dev-001",
+          "roleId": "holder",
+          "positionSide": "Long",
+          "status": "Open",
+          "effectiveFrom": "2026-01-01",
+          "version": 1,
+          "primaryAccountId": "account-qa",
+          "evidenceLinks": [],
+          "bookContext": {
+            "ledgerBookId": "book-qa",
+            "fundProfileId": "fund-qa",
+            "fundStructureNodeId": "node-qa",
+            "fundStructureNodeKind": "Fund",
+            "displayName": "Primary GAAP book",
+            "baseCurrency": "USD",
+            "accountingBasis": "Gaap",
+            "accountingPolicyId": "policy-qa",
+            "accountingPolicyVersion": "1"
+          },
+          "currentEconomicState": {
+            "economicStateId": "state-sec-dev-001",
+            "positionId": "position-sec-dev-001",
+            "asOfDate": "2026-11-21",
+            "currency": "USD",
+            "version": 2,
+            "quantity": 100,
+            "unitCost": 180.25,
+            "carryingAmount": 18025,
+            "evidenceLinks": []
+          }
+        }
+      ]
+    },
+    "/api/data/quotes-snapshot": {
+      "timestamp": "2026-11-21T10:00:00Z",
+      "count": 1,
+      "quotes": [
+        {
+          "symbol": "AAPL",
+          "timestamp": "2026-11-21T10:00:00Z",
+          "bidPrice": 210.2,
+          "askPrice": 210.3,
+          "bidSize": 100,
+          "askSize": 100,
+          "midPrice": 210.25,
+          "spread": 0.1,
+          "lastPrice": 210.25,
+          "lastSize": 50,
+          "lastTradeTimestamp": "2026-11-21T09:59:00Z",
+          "sequenceNumber": 1,
+          "streamId": "synthetic-qa-stream",
+          "venue": "NASDAQ",
+          "session": null
+        }
+      ]
     }
   }
 }

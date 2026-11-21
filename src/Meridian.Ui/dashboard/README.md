@@ -11,6 +11,33 @@ last_reviewed: 2026-10-28
 
 # src/Meridian.Ui/dashboard
 
+## Asset Detail
+
+Asset Detail separates reference data, holdings/local lots, event evidence, trading parameters,
+governed Passport editing, and cash-flow scenarios. The selected tab is URL-backed; the legacy
+`tab=details-lots` selects Holdings & Lots. Same-asset form inputs remain mounted across visited
+tabs; switching assets resets inputs, aborts supported reads, and rejects stale responses. Search and bounded, clearable recent
+history keep the tab and route scope. Security Master links carry the exact security ID.
+
+The overview exposes retained Passport trust/readiness and source timestamps, and exact-security
+Asset Operations book positions. Multiple positions require a choice; quantities and amounts are
+not aggregated across accounts/books. Currency, position/source-event identity, and explicit
+book/account/date filters must match. Fund-account scope cannot be mapped by this contract and
+withholds holdings. Quote snapshots remain symbol-level observations with missing currency
+explicit; they do not establish book valuations. Market value and unrealized P/L are not inferred.
+Canonical coupon, maturity, expiry, and strike terms are not supplied by the summary DTO; the
+screen shows only supplied instrument context and preserves the governed editing path.
+
+Sections load and retry independently, distinguishing empty, unavailable, and HTTP-404 states.
+Corporate actions group remaining dates separately from retained lifecycle state; past payment
+dates never imply payment/posting. Reference field inspectors compare loaded source, operator
+override, and effective panel value with override-set attribution. Local lots remain browser-only;
+manual-price P/L is an estimate, separate from retained positions and ledger amounts.
+
+Focused tests: `asset-detail-screen`, `asset-detail-events`, `asset-financial-summary`,
+`asset-passport-summary`, `asset-switcher`, `security-details-tracker`, and Security Master
+route-identity regressions in `accounting-screen.test.tsx`.
+
 Bond records in Security Master expose calculated analytics and a convention-migration preview
 under the existing Evidence detail tab. Operators supply dates and a clean price or annual yield;
 the browser displays server-calculated per-100 values, annual-fraction yields, projected payments,
