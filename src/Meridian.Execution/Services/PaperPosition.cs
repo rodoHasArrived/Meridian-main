@@ -25,6 +25,8 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
     public decimal MarketPrice { get; set; } = marketPrice;
     public DateTimeOffset? MarkObservedAtUtc { get; set; }
     public string? MarkSource { get; set; }
+    /// <summary>Conservative source history for acquisitions still represented by this position.</summary>
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? OpeningMarketDataEvidence { get; set; }
     public decimal OpenCostBasis { get; private set; }
     public long LotVersion { get; private set; }
 

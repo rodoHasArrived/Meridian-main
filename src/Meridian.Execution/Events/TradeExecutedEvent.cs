@@ -64,6 +64,9 @@ public sealed record TradeExecutedEvent(
     string? RunId = null)
 {
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? MarketDataEvidence { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? SettlementCurrency { get; init; }
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
@@ -78,16 +81,19 @@ public sealed record TradeExecutedEvent(
 
     internal TradeExecutedEvent FreezeFees() => this with
     {
+        MarketDataEvidence = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(MarketDataEvidence),
         Fees = Fees is { Count: > 0 }
             ? Array.AsReadOnly(Fees.OrderBy(fee => fee.FeeId, StringComparer.Ordinal).ToArray()) : null
     };
 
     internal bool HasSameEconomics(TradeExecutedEvent other)
-        => this with { Fees = null, BrokerActivityId = null } == other with { Fees = null, BrokerActivityId = null }
+        => this with { Fees = null, BrokerActivityId = null, MarketDataEvidence = null } == other with { Fees = null, BrokerActivityId = null, MarketDataEvidence = null }
             && (BrokerActivityId is null || other.BrokerActivityId is null
                 || string.Equals(BrokerActivityId, other.BrokerActivityId, StringComparison.Ordinal))
             && (Fees ?? []).OrderBy(fee => fee.FeeId, StringComparer.Ordinal)
-                .SequenceEqual((other.Fees ?? []).OrderBy(fee => fee.FeeId, StringComparer.Ordinal));
+                .SequenceEqual((other.Fees ?? []).OrderBy(fee => fee.FeeId, StringComparer.Ordinal))
+            && (Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(MarketDataEvidence) ?? [])
+                .SequenceEqual(Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(other.MarketDataEvidence) ?? []);
 
     /// <summary>
     /// Accounting-evidence contract used by the producer. Zero identifies historical events;

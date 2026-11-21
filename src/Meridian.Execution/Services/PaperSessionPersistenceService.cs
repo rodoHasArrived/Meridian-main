@@ -1535,7 +1535,8 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         {
             OptionContract = leg.OptionContract is null ? null : leg.OptionContract with { }
         }).ToArray(),
-        Diagnostics = fill.Diagnostics is null ? null : fill.Diagnostics with { }
+        Diagnostics = fill.Diagnostics is null ? null : fill.Diagnostics with { },
+        MarketDataEvidence = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(fill.MarketDataEvidence)
     };
 
     private static OrderState CloneOrderState(OrderState order) => order with

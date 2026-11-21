@@ -758,6 +758,10 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
             throw new InvalidDataException($"Fill '{evt.FillId:D}' accounting evidence has a negative charge or collateral amount.");
         if (evidence.SettlesVariationMargin != evt.SettlesVariationMargin)
             throw new InvalidDataException($"Fill '{evt.FillId:D}' accounting evidence disagrees with its settlement model.");
+        if (evidence.QuantityUnit.HasValue != evidence.LotMultiplier.HasValue
+            || evidence.QuantityUnit is { } unit && !Enum.IsDefined(unit)
+            || evidence.LotMultiplier is <= 0m)
+            throw new InvalidDataException($"Fill '{evt.FillId:D}' has inconsistent native quantity evidence.");
 
         var journals = new List<JournalEntry>(2);
         if (evidence.SettlesVariationMargin)
@@ -1065,6 +1069,13 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
                 description))
             .ToArray();
         var metadata = BuildPostingMetadata(evt, securityGate, activityType, lines);
+        if (activityType == TradeFillActivityType && evt.AccountingEvidence is
+            { QuantityUnit: { } unit, LotMultiplier: { } multiplier } evidence)
+        {
+            var postings = new[] { evidence.Closing, evidence.Opening }
+                .Where(static posting => posting is not null).Select(static posting => posting!).ToArray();
+            metadata = SecurityTradePositionEvidence.WithPostings(metadata, postings, unit, multiplier);
+        }
         var entry = new JournalEntry(journalId, evt.OccurredAt, description, lines, metadata);
         return activityType == TradeFillActivityType
             ? LedgerCashFlowAttribution.WithClassifiedActivity(entry, LedgerCashFlowCategory.Investing, "Security trade")
@@ -1218,6 +1229,10 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
         {
             tags[TradeFillCashFlowReplayCompatibility.StrategyRunIdTag] = runId;
         }
+        foreach (var pair in Meridian.Contracts.Operations.MarketDataInputEvidenceTags.ToTags(evt.MarketDataEvidence))
+            tags[pair.Key] = pair.Value;
+        if (evt.MarketDataEvidence is { Count: > 0 } && evt.AccountingEvidence?.Closing is not null)
+            tags["marketData.coverage"] = "position-history-conservative";
 
         return new JournalEntryMetadata(
             ActivityType: activityType,
@@ -1429,6 +1444,7 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
             ShortCollateralHeld = Number(evidence.ShortCollateralHeld),
             ShortCollateralReleased = Number(evidence.ShortCollateralReleased),
             VariationMarginPnl = Number(evidence.VariationMarginPnl),
+            LotMultiplier = evidence.LotMultiplier is { } multiplier ? Number(multiplier) : null,
             FinancialAccountId = NormalizeOptional(evidence.FinancialAccountId)?.ToUpperInvariant()
         };
         return JsonSerializer.Serialize(canonical, ExecutionJsonContext.Default.TradeFillAccountingEvidence);
@@ -1460,6 +1476,12 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
         AppendCanonical(canonical, evidence.SettlesVariationMargin ? "variation-margin" : "notional");
         AppendCanonical(canonical, FormatDecimal(evidence.VariationMarginPnl));
         AppendCanonical(canonical, NormalizeOptional(evidence.FinancialAccountId)?.ToUpperInvariant());
+        if (evidence.QuantityUnit.HasValue || evidence.LotMultiplier.HasValue)
+        {
+            AppendCanonical(canonical, "native-quantity-v1");
+            AppendCanonical(canonical, evidence.QuantityUnit?.ToString());
+            AppendCanonical(canonical, evidence.LotMultiplier is { } multiplier ? FormatDecimal(multiplier) : "absent");
+        }
         return Convert.ToHexString(Sha256Digest.ComputeBytesUtf8(canonical.ToString()));
     }
 

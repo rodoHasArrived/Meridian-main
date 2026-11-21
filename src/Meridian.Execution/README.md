@@ -24,6 +24,20 @@ trade and cost journals and in its existing prepared intent. Exact recovery retu
 snapshots; it never looks up newer quality data or rewrites posted journals. This does not expand the
 synthetic long USD cash-equity canonical posting whitelist.
 
+Captured fill accounting evidence optionally retains the native quantity unit and lot multiplier.
+Current trade journals expose those exact opening/closing position and monetary-basis effects for
+reconciliation. Fee, financing and collateral journals carry no invented position movement; older
+evidence without a declared unit remains unavailable for quantity proof. The existing canonical
+cash-equity grant and atomic-lot restrictions remain authoritative.
+
+Market-data input evidence is captured with the pricing observation and follows the retained
+execution report, accepted-fill WAL and journal metadata. Source snapshots retain provider/event,
+backfill receipt and quality assessment identity without treating an unassessed input as clean.
+Closing fills conservatively retain acquisition and exit observations; a residual opened across
+zero starts its own acquisition history. Missing acquisition evidence stays explicitly unknown.
+Native session journal batches retain the fill's source evidence as well as its content hash;
+absent historical evidence does not add tags or change retained journal receipts.
+
 `PaperSessionPersistenceService.GetSessionFillHistory` exposes cloned retained execution reports for order investigation without rebuilding portfolio/ledger views. Consumers initialize retained sessions before reading and keep canonical report identity, source event time, cumulative-versus-last quantity and price basis explicit; completed-order workspace summaries are not individual fills.
 
 Failed execution probes use bounded, single-line diagnostic fields, including provider error text.

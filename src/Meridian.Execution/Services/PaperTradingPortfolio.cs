@@ -601,6 +601,14 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                 && CanCertifyAccountingOwner(account, previousPosition, ownerAccountId);
             var capture = new FillAccountingCapture();
             var quantityBefore = previousPosition?.Quantity ?? 0m;
+            var currentInputs = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(report.MarketDataEvidence);
+            var closesExisting = quantityBefore != 0m && Math.Sign(quantityBefore) != Math.Sign(signedQty);
+            var openingInputs = previousPosition?.OpeningMarketDataEvidence;
+            var resultInputs = closesExisting
+                ? Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(
+                    (openingInputs is { Count: > 0 } ? openingInputs : new Meridian.Contracts.Operations.MarketDataInputEvidence[] { new() })
+                    .Concat(currentInputs is { Count: > 0 } ? currentInputs : new Meridian.Contracts.Operations.MarketDataInputEvidence[] { new() }).ToArray())
+                : currentInputs;
             var purchasedAccruedBefore = previousPosition?.PurchasedAccruedInterest ?? 0m;
             ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
@@ -611,6 +619,17 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
 
             if (account.Positions.TryGetValue(report.Symbol, out var remainingPosition))
             {
+                if (!closesExisting || remainingPosition.Quantity != 0m
+                    && Math.Sign(quantityBefore) != Math.Sign(remainingPosition.Quantity))
+                {
+                    var priorInputs = quantityBefore != 0m && !closesExisting
+                        && openingInputs is not { Count: > 0 }
+                        ? new Meridian.Contracts.Operations.MarketDataInputEvidence[] { new() }
+                        : openingInputs ?? new Meridian.Contracts.Operations.MarketDataInputEvidence[0];
+                    remainingPosition.OpeningMarketDataEvidence = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Freeze(
+                        (closesExisting ? [] : priorInputs)
+                        .Concat(currentInputs is { Count: > 0 } ? currentInputs : new Meridian.Contracts.Operations.MarketDataInputEvidence[] { new() }).ToArray());
+                }
                 // Version-zero fills carry no verified authoritative accounting receipt.
                 // Historical durable shorts also credited Securities instead of a liability.
                 // If a blocked fill flips into a residual, that opening was withheld too,
@@ -632,13 +651,15 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                 VariationMarginPnl: capture.VariationMarginPnl,
                 FinancialAccountId: _scopeLedgerAccounts ? account.AccountId : NormalizeOptional(ownerAccountId))
             {
+                QuantityUnit = lotUnit,
+                LotMultiplier = multiplier,
                 AccruedInterest = accruedInterest,
                 AccruedInterestRelieved = accruedRelieved
             };
             return new PaperFillAccountingResult(
                 canCertifyOwnership ? evidence : null,
                 evidence.RealizedPnl,
-                _accounts.Values.Sum(static entry => entry.Cash));
+                _accounts.Values.Sum(static entry => entry.Cash)) { MarketDataEvidence = resultInputs };
         }
     }
 
@@ -1391,7 +1412,10 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
 internal sealed record PaperFillAccountingResult(
     TradeFillAccountingEvidence? Evidence,
     decimal RealizedPnl,
-    decimal NewCash);
+    decimal NewCash)
+{
+    public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? MarketDataEvidence { get; init; }
+}
 
 // ─── Supporting types ───────────────────────────────────────────────────────
 

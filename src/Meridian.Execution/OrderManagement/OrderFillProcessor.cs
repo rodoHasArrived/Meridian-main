@@ -274,6 +274,7 @@ internal sealed class OrderFillProcessor(
                         contractMultiplier: _context.GetContractMultiplier(fillOrderId),
                         usesFaceValuePercentageOfPar: usesFaceValuePercentageOfPar);
                     progress.AccountingEvidence = result.Evidence;
+                    progress.MarketDataEvidence = result.MarketDataEvidence;
                     progress.RealizedPnl = result.RealizedPnl;
                     progress.NewCash = result.NewCash;
                 }
@@ -316,7 +317,8 @@ internal sealed class OrderFillProcessor(
                                     ?? _context.GetContractMultiplier(fillIncrement.ClientOrderId ?? fillIncrement.OrderId)))) with
                     {
                         AccountingEvidenceVersion = 1,
-                        AccountingEvidence = progress.AccountingEvidence
+                        AccountingEvidence = progress.AccountingEvidence,
+                        MarketDataEvidence = progress.MarketDataEvidence ?? fillIncrement.MarketDataEvidence
                     };
                     if (_context.CaptureAccountingSource)
                     {
@@ -466,6 +468,7 @@ internal sealed class OrderFillProcessor(
         public decimal CumulativeFilledQuantity { get; } = cumulativeFilledQuantity;
         public bool IsTrackedOrder { get; } = isTrackedOrder;
         public TradeExecutedEvent? TradeEvent { get; set; }
+        public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? MarketDataEvidence { get; set; }
         public TradeFillAccountingEvidence? AccountingEvidence { get; set; }
         public decimal RealizedPnl { get; set; }
         public decimal NewCash { get; set; }
