@@ -330,8 +330,8 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         services.AddSingleton<DatabaseMigrationReadinessReceipt>();
         services.AddSingleton(ledgerOptions);
         services.AddSingleton<LedgerMigrationRunner>();
-        services.AddSingleton<ILedgerJournalStore>(
-            new PostgresLedgerJournalStore(ledgerOptions));
+        services.AddSingleton(new PostgresLedgerJournalStore(ledgerOptions));
+        services.AddSingleton<ILedgerJournalStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IFundProfileTenancyRegistry>(
             new PostgresFundProfileTenancyRegistry(ledgerOptions));
 

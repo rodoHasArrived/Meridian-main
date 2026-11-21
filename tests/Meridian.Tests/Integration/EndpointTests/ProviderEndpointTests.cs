@@ -4,6 +4,7 @@ using System.Text.Json;
 using FluentAssertions;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage.Archival;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -20,6 +21,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     private readonly HttpClient _providerMutationClient;
     private readonly HttpClient _credentialMutationClient;
     private readonly HttpClient _actorlessCredentialMutationClient;
+    private readonly ProviderRateLimitHistory _rateLimitHistory;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
@@ -37,6 +39,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         _actorlessCredentialMutationClient = fixture.CreatePermittedClient(
             UserPermission.ManageProviders,
             UserPermission.ManageCredentials);
+        _rateLimitHistory = ProviderRateLimitHistory.ForDataRoot(fixture.DataRoot, new AtomicFileWriterAdapter());
     }
 
     public void Dispose()
@@ -114,10 +117,9 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public async Task GetRateLimitHistory_ReportsBoundedProcessLifetimeRetention()
+    public async Task GetRateLimitHistory_SeparatesRecentEventsFromRetainedDailyTotals()
     {
-        // The ring is process-wide. Use an isolated provider key so parallel provider tests
-        // cannot make this empty-history assertion depend on their quota observations.
+        // Use an isolated provider key within the fixture's shared quota history.
         var provider = $"history-empty-{Guid.NewGuid():N}";
         var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
 
@@ -130,10 +132,10 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         json["history"].ValueKind.Should().Be(JsonValueKind.Array);
         json["history"].GetArrayLength().Should().Be(0);
         json["timestamp"].GetDateTimeOffset().Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
-        json["message"].GetString().Should().Contain("Process-lifetime")
-            .And.Contain("bounded to the latest 1024 observations across providers")
-            .And.Contain("Cleared on host restart")
-            .And.Contain("older observations may be evicted");
+        json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
+        json["dailyRollups"].GetArrayLength().Should().Be(0);
+        json["message"].GetString().Should().Contain("held in memory")
+            .And.Contain("last seven UTC dates across host restarts");
     }
 
     [Fact]
@@ -141,7 +143,7 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     {
         var provider = $"history-observed-{Guid.NewGuid():N}";
         var resetAt = DateTimeOffset.UtcNow.AddMinutes(1);
-        ProviderRateLimitHistory.Shared.Record(provider,
+        _rateLimitHistory.Record(provider,
             new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
                 TimeSpan.FromMinutes(1), 1, DateTimeOffset.UtcNow, resetAt),
             nextProvider: "stooq", httpStatus: 429);
@@ -160,6 +162,13 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         retained.GetProperty("eventType").GetString().Should().Be("rotated");
         retained.GetProperty("nextProvider").GetString().Should().Be("stooq");
         retained.GetProperty("httpStatus").GetInt32().Should().Be(429);
+        json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
+        json["dailyRollups"].GetArrayLength().Should().Be(1);
+        var daily = json["dailyRollups"][0];
+        var observationDate = DateOnly.FromDateTime(retained.GetProperty("timestamp").GetDateTimeOffset().UtcDateTime);
+        daily.GetProperty("dateUtc").Deserialize<DateOnly>().Should().Be(observationDate);
+        daily.GetProperty("throttleCount").GetInt64().Should().Be(0);
+        daily.GetProperty("rotationCount").GetInt64().Should().Be(1);
     }
 
     #endregion
