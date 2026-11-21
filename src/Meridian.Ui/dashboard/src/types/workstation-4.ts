@@ -22,7 +22,38 @@ export interface StatementProfileSuggestion {
   score: number;
 }
 
+export interface StatementImportReviewRow {
+  rowId: string;
+  normalizedIndex: number;
+  sourceRowNumber: number | null;
+  record: StatementRecordPreview & { quantityExact?: string; priceExact?: string; cashAmountExact?: string };
+  issues: StatementImportIssue[];
+  canExclude: boolean;
+  exclusionDisabledReason?: string | null;
+  canAcceptAsBreak: boolean;
+}
+export interface StatementImportRowDisposition {
+  rowId: string;
+  disposition: "Exclude" | "AcceptAsBreak";
+  reason: string;
+}
+export interface StatementImportRowOutcome {
+  rowId: string;
+  normalizedIndex: number;
+  disposition: string;
+  reason?: string | null;
+  status: string;
+  runId?: string | null;
+  caseIds?: string[];
+}
+export interface StatementImportRowPage { rows: StatementImportReviewRow[]; totalRows: number; offset: number; limit: number }
+export interface StatementImportOutcomePage { rowOutcomes: StatementImportRowOutcome[]; totalRows: number; offset: number; limit: number }
+
 export interface StatementImportPreview {
+  reviewId?: string | null;
+  rows?: StatementImportReviewRow[];
+  totalRows?: number;
+  rowsRoute?: string | null;
   connectorId: string;
   connectorDisplayName: string;
   profileId: string | null;
@@ -82,6 +113,10 @@ export interface StatementActivityCompleteness {
 }
 
 export interface StatementImportCommitResult {
+  reviewId?: string | null;
+  rowOutcomes?: StatementImportRowOutcome[];
+  outcomesRoute?: string | null;
+  totalRows?: number;
   runId: string;
   duplicate: boolean;
   recordCount: number;
@@ -240,6 +275,7 @@ export type StatementImportSourceKind = "broker" | "custodian";
 export type StatementFetchDatasets = "activity" | "positions" | "all";
 
 export interface StatementImportPreviewRequest {
+  toleranceProfileId?: string | null;
   file: File;
   connectorId?: string | null;
   mappingProfileId?: string | null;
@@ -1863,6 +1899,10 @@ export interface ReconciliationBreakMeasure {
   actual: number | null;
   variance: number | null;
   tolerance: number | null;
+  expectedExact?: string | null;
+  actualExact?: string | null;
+  varianceExact?: string | null;
+  toleranceExact?: string | null;
   unit: string;
   unavailableReason?: string | null;
 }

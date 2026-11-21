@@ -31,6 +31,7 @@ import { AssetDetailEvents } from "./asset-detail-events";
 import { SecurityInstrumentTerms } from "@/components/meridian/security-instrument-terms";
 import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
 import { StatusBanner } from "@/components/ui/status-banner";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
 import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
 import { appendRecordWorkspaceContext, readRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { bondWorkflowRoute, isBondAssetClass, resolveBondWorkflowAction } from "@/lib/fixed-income-navigation";
@@ -333,7 +334,7 @@ const detailTabs = [
   { id: "cash-flow-scenarios", label: "Cash-flow scenarios" }
 ];
 
-function AssetDetailPanel({ securityId }: { securityId: string }) {
+export function AssetDetailPanel({ securityId, embedded = false }: { securityId: string; embedded?: boolean }) {
   const [params, setParams] = useSearchParams();
   const requestedBondAction = resolveBondWorkflowAction(params.get("bondAction"));
   const entryResource = useAssetDetailResource(securityId, getSecurityDetail);
@@ -344,7 +345,8 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
   const record = instrumentRecordIdentity(recordEntry, identityResource.status === "ready" ? identityResource.data : null);
   const recordContext = useRecordWorkspaceContext(record, { securityId, bondAction: requestedBondAction ? "" : null });
   const inheritedContext = readRecordWorkspaceContext(params.toString());
-  const requestedTab = params.get("tab") === "details-lots" ? "holdings" : params.get("tab");
+  const tabParameter = embedded ? "assetTab" : "tab";
+  const requestedTab = params.get(tabParameter) === "details-lots" ? "holdings" : params.get(tabParameter);
   const activeTab = detailTabs.some((tab) => tab.id === requestedTab) ? requestedTab! : "overview";
   const [visitedTabs, setVisitedTabs] = useState(() => new Set([activeTab]));
   useEffect(() => {
@@ -354,7 +356,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
   const openTab = (tab: string) =>
     setParams((current) => {
       const next = new URLSearchParams(current);
-      next.set("tab", tab);
+      next.set(tabParameter, tab);
       return next;
     });
   const searchAgain = () =>
@@ -389,9 +391,9 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           <Button size="sm" variant="outline" onClick={entryResource.retry}>
             Retry asset
           </Button>
-          <Button size="sm" variant="ghost" onClick={searchAgain}>
+          {!embedded ? <Button size="sm" variant="ghost" onClick={searchAgain}>
             Search assets
-          </Button>
+          </Button> : null}
         </CardContent>
       </Card>
     );
@@ -464,6 +466,9 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           >
             Reload asset
           </Button>
+          {!embedded ? <Button asChild size="sm" variant="outline">
+            <Link to={relatedHref(instrumentDossierRoute(entry.securityId, params.toString()))}>Open instrument dossier</Link>
+          </Button> : null}
           <Button asChild size="sm" variant="outline">
             <Link
               to={relatedHref(quotes)}
@@ -483,7 +488,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
     >
       {requestedBondAction && !isBond ? <StatusBanner tone="warning" title="Bond workflow unavailable for this instrument" detail={`The selected Security Master record is ${entry.classification.assetClass}. Select a bond to use analytics or convention migration.`} /> : null}
       {record ? <RecordIdentitySpine record={record} context={recordContext} /> : null}
-      <AssetSwitcher
+      {!embedded ? <AssetSwitcher
         securityId={securityId}
         symbol={overview.symbol}
         displayName={overview.displayName}
@@ -497,9 +502,9 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
             return next;
           })
         }
-      />
+      /> : null}
       <p className="text-xs text-muted-foreground">
-        Switching assets or reloading clears unsaved inputs. Switching tabs keeps inputs for the current asset.
+        {embedded ? "Reloading clears unsaved inputs." : "Switching assets or reloading clears unsaved inputs."} Switching tabs keeps inputs for the current asset.
       </p>
       <Tabs tabs={detailTabs} value={activeTab} onValueChange={openTab}>
         <TabPanel>

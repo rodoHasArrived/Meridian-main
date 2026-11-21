@@ -162,7 +162,7 @@ public static partial class WorkstationEndpoints
                 var id = item.SecurityId.ToString("D");
                 Add(hits, MatchGuid(item.SecurityId, item.PrimaryIdentifier, item.DisplayName), "Instrument", id, item.DisplayName,
                     "Security Master catalog", "Current reference", item.Status.ToString(),
-                    Route("/accounting/security-master/detail", ("securityId", id)));
+                    Route($"/records/instrument/{id}", ("tab", "positions")));
             }
         }
 

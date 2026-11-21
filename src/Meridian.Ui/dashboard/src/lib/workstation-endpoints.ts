@@ -140,8 +140,12 @@ export function ledgerPeriodPnlSummaryEndpoint(periodId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodPnlSummary, "periodId", periodId);
 }
 
-export function ledgerPeriodJournalEntriesEndpoint(periodId: string): string {
-  return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
+export function ledgerPeriodJournalEntriesEndpoint(periodId: string, query: { instrumentId?: string | null; accountId?: string | null } = {}): string {
+  const route = routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
+  const params = new URLSearchParams();
+  if (query.instrumentId) params.set("instrumentId", query.instrumentId);
+  if (query.accountId) params.set("dimensionAccountId", query.accountId);
+  return params.size ? `${route}?${params}` : route;
 }
 
 export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {

@@ -138,8 +138,8 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         id: "close",
         label: "Close",
         description: "Review period-close blockers, approvals, and close-support tasks.",
-        href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
-        matchPath: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
+        href: WORKSTATION_ROUTE_CATALOG.accountingClose,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingClose
       },
       {
         id: "reconciliation",
@@ -313,8 +313,8 @@ export const workflowContinuityTrails: WorkflowContinuityTrailDefinition[] = [
         id: "close-support",
         label: "Close Support",
         description: "Review close checklists, period locks, reopen evidence, and retained close packages.",
-        href: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
-        matchPath: WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity
+        href: WORKSTATION_ROUTE_CATALOG.accountingClose,
+        matchPath: WORKSTATION_ROUTE_CATALOG.accountingClose
       }
     ]
   }
@@ -328,7 +328,7 @@ export function resolvePrimaryOperatorWorkflowStepId(pathname: string): PrimaryO
   }
 
   if (route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingApprovals)
-    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity)) {
+    || route.startsWith(WORKSTATION_ROUTE_CATALOG.accountingClose)) {
     return "approve";
   }
 
@@ -441,6 +441,8 @@ function scoreWorkflowStepRouteMatch(
   }
 
   const matchPath = candidate.pathname;
+  if (pathname === "/today") pathname = "/";
+  if (pathname === "/accounting/operations-continuity") pathname = "/accounting/close";
   if (pathname === matchPath) {
     return 1000 + matchPath.length + (candidateHash ? 2000 : 0);
   }

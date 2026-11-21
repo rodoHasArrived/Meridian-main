@@ -2,10 +2,11 @@ import { act, screen, waitFor, within } from "@testing-library/react";
 import { ApiError } from "@/lib/api-errors";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
-import { Route, Routes, useLocation, useNavigate } from "react-router-dom";
+import { Link, Route, Routes, useLocation, useNavigate } from "react-router-dom";
 import * as api from "@/lib/api";
 import { readRecordWorkspaceContext, withoutRecordWorkspaceContext } from "@/lib/record-workspace-context";
-import { AssetDetailScreen } from "@/screens/asset-detail-screen";
+import { AssetDetailPanel, AssetDetailScreen } from "@/screens/asset-detail-screen";
+import { InstrumentDossierScreen } from "@/screens/instrument-dossier-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
 
@@ -33,8 +34,10 @@ vi.mock("@/components/meridian/asset-passport-summary", () => ({
 }));
 
 vi.mock("@/components/meridian/security-instrument-terms", () => ({
-  SecurityInstrumentTerms: ({ expectedVersion }: { expectedVersion: number }) => (
-    <section aria-label="Instrument terms">Retained terms version {expectedVersion}</section>
+  SecurityInstrumentTerms: ({ expectedVersion, onOpenFull }: { expectedVersion: number; onOpenFull?: () => void }) => (
+    <section aria-label="Instrument terms">Retained terms version {expectedVersion}
+      {onOpenFull ? <button onClick={onOpenFull}>View all terms</button> : null}
+    </section>
   )
 }));
 
@@ -134,6 +137,90 @@ describe("AssetDetailScreen", () => {
       securityId: "sec-aapl",
       retrievedAtUtc: "2026-06-30T00:00:00Z"
     });
+  });
+
+  it("keeps embedded asset workflows inside the dossier reference tab and preserves operating scope", async () => {
+    vi.mocked(api.getSecurityDetail).mockResolvedValue(entry);
+    renderWithRouter(<>
+      <Routes><Route path="/records/instrument/:id" element={<InstrumentDossierScreen />} /></Routes>
+      <RouteProbe />
+    </>, { initialEntries: ["/records/instrument/sec-aapl?tab=reference&ledgerBookId=book-1&accountId=account-1&asOf=2026-11-21&securityId=foreign-query"] });
+    await screen.findByRole("heading", { name: "Apple Inc.", level: 1 });
+    await screen.findByRole("heading", { name: "Apple Inc.", level: 2 });
+    expect(screen.getByRole("tab", { name: "Reference", exact: true })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Overview", exact: true })).toHaveAttribute("aria-selected", "true");
+    expect(screen.queryByRole("combobox", { name: "Switch asset" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Open instrument dossier" })).not.toBeInTheDocument();
+
+    await userEvent.click(screen.getByRole("tab", { name: "Events", exact: true }));
+    expect(screen.getByRole("tab", { name: "Reference", exact: true })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Events", exact: true })).toHaveAttribute("aria-selected", "true");
+    let query = new URLSearchParams(screen.getByLabelText("Current route").textContent ?? "");
+    expect(query.get("tab")).toBe("reference");
+    expect(query.get("assetTab")).toBe("events");
+    expect(query.get("ledgerBookId")).toBe("book-1");
+    expect(query.get("accountId")).toBe("account-1");
+    expect(query.get("asOf")).toBe("2026-11-21");
+    expect(api.getSecurityDetail).not.toHaveBeenCalledWith("foreign-query", expect.anything());
+
+    await userEvent.click(screen.getByRole("tab", { name: "Overview", exact: true }));
+    await userEvent.click(screen.getByRole("button", { name: "View all terms", exact: true }));
+    expect(screen.getByRole("tab", { name: "Reference", exact: true })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Reference data", exact: true })).toHaveAttribute("aria-selected", "true");
+    query = new URLSearchParams(screen.getByLabelText("Current route").textContent ?? "");
+    expect(query.get("tab")).toBe("reference");
+    expect(query.get("assetTab")).toBe("reference");
+    expect(query.get("ledgerBookId")).toBe("book-1");
+  });
+
+  it("follows a changed dossier path identity and ignores the previous embedded asset response", async () => {
+    const microsoft = { ...entry, securityId: "sec-msft", displayName: "Microsoft Corp.", classification: { ...entry.classification, primaryIdentifierValue: "MSFT" } };
+    let resolvePrevious!: (value: SecurityMasterEntry) => void;
+    let appleReads = 0;
+    vi.mocked(api.getSecurityDetail).mockImplementation(async (securityId) => {
+      if (securityId === "sec-aapl") {
+        if (++appleReads === 1) return entry;
+        return new Promise((resolve) => { resolvePrevious = resolve; });
+      }
+      return microsoft;
+    });
+    vi.mocked(api.getSecurityIdentity).mockImplementation(async (securityId) => ({ ...identity, securityId, displayName: securityId === "sec-msft" ? microsoft.displayName : entry.displayName }));
+    vi.mocked(api.getTradingParameters).mockImplementation(async (securityId) => ({ ...tradingParameters, securityId }));
+    const scope = "?tab=reference&assetTab=events&ledgerBookId=book-1&accountId=account-1&asOf=2026-11-21";
+    renderWithRouter(<>
+      <Routes><Route path="/records/instrument/:id" element={<InstrumentDossierScreen />} /></Routes>
+      <Link to={"/records/instrument/sec-msft" + scope}>Open Microsoft dossier</Link>
+      <WorkflowDestination />
+    </>, { initialEntries: ["/records/instrument/sec-aapl" + scope] });
+    await screen.findByRole("heading", { name: "Apple Inc.", level: 1 });
+    await waitFor(() => expect(appleReads).toBe(2));
+    const previousSignal = vi.mocked(api.getSecurityDetail).mock.calls.filter(([id]) => id === "sec-aapl").at(-1)?.[1]?.signal;
+    await userEvent.click(screen.getByRole("link", { name: "Open Microsoft dossier" }));
+    await screen.findByRole("heading", { name: "Microsoft Corp.", level: 1 });
+    await screen.findByRole("heading", { name: "Microsoft Corp.", level: 2 });
+    expect(previousSignal?.aborted).toBe(true);
+    await act(async () => { resolvePrevious(entry); await Promise.resolve(); });
+    expect(screen.queryByRole("heading", { name: "Apple Inc." })).not.toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Events", exact: true })).toHaveAttribute("aria-selected", "true");
+    const destination = new URL(screen.getByLabelText("Workflow destination").textContent ?? "", "https://meridian.local");
+    expect(destination.pathname).toBe("/records/instrument/sec-msft");
+    expect(destination.searchParams.get("tab")).toBe("reference");
+    expect(destination.searchParams.get("assetTab")).toBe("events");
+    expect(destination.searchParams.get("ledgerBookId")).toBe("book-1");
+    expect(destination.searchParams.get("accountId")).toBe("account-1");
+    expect(destination.searchParams.get("asOf")).toBe("2026-11-21");
+  });
+
+  it("retries an unavailable embedded asset without offering a search that cannot change its parent identity", async () => {
+    vi.mocked(api.getSecurityDetail).mockRejectedValueOnce(new Error("Unavailable")).mockResolvedValueOnce(entry);
+    renderWithRouter(<AssetDetailPanel securityId="sec-aapl" embedded />, {
+      initialEntries: ["/records/instrument/sec-aapl?tab=reference&ledgerBookId=book-1"]
+    });
+    await screen.findByRole("heading", { name: "Couldn’t load asset detail" });
+    expect(screen.queryByRole("button", { name: "Search assets" })).not.toBeInTheDocument();
+    await userEvent.click(screen.getByRole("button", { name: "Retry asset" }));
+    expect(await screen.findByRole("heading", { name: "Apple Inc." })).toBeInTheDocument();
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
   });
 
   it("shows a search box when no securityId is provided", async () => {

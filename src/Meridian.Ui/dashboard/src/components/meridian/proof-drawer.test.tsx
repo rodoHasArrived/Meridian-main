@@ -18,7 +18,7 @@ describe("scoped ledger amount proof drawer", () => {
     const { container } = render(<LedgerAmountProofDrawer selection={selection} onClose={onClose} />);
     expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toHaveAttribute("href", packet().ledgerAmount!.evidence[0]!.route);
     expect(getLedgerAmountProof).toHaveBeenCalledWith(selection, { signal: expect.any(AbortSignal) });
-    expect(screen.getByRole("region", { name: `${selection.label} Number Passport` })).toHaveTextContent("tenant-1");
+    expect(screen.getByRole("region", { name: `${selection.label} Amount passport` })).toHaveTextContent("tenant-1");
     expect(screen.getByRole("region", { name: "Retained supporting evidence" })).toHaveTextContent("a".repeat(64));
     expect((await axe(container)).violations).toEqual([]);
     await user.keyboard("{Escape}");
@@ -38,6 +38,32 @@ describe("scoped ledger amount proof drawer", () => {
     tenantId: "tenant-1", companyId: "company-1",
     journalEntryIds: ["22222222-2222-2222-2222-222222222222"], ledgerEntryIds: ["33333333-3333-3333-3333-333333333333"] };
 
+  it("verifies exact decimal trial-balance checkpoints through the same scoped passport", async () => {
+    const selected = { ...reportSelection, subjectId: `trial-balance:1:${"a".repeat(64)}:${"b".repeat(64)}`,
+      label: "Cash net balance", amount: "9007199254740993.125" };
+    const response = createReportAmountProofPacket(selected);
+    const sourceScope = response.ledgerAmount!.evidence[0]!.sourceScope!;
+    const originalPeriod = sourceScope.periodId;
+    sourceScope.periodId = selected.periodId;
+    response.nodes[0]!.artifactRefs[0]!.canonicalSubjectId = response.nodes[0]!.artifactRefs[0]!.canonicalSubjectId!.replace(originalPeriod, selected.periodId);
+    response.ledgerAmount!.amount = 9007199254740994;
+    response.ledgerAmount!.amountExact = selected.amount;
+    vi.mocked(getLedgerAmountProof).mockResolvedValue(response);
+    render(<LedgerAmountProofDrawer selection={selected} onClose={vi.fn()} />);
+    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: `${selected.label} Amount passport` })).toHaveTextContent(selected.amount);
+  });
+
+  it("withholds a checkpoint passport if its exact contributing line identities changed", async () => {
+    const selected = { ...reportSelection, subjectId: `trial-balance:1:${"a".repeat(64)}:${"b".repeat(64)}` };
+    const response = createReportAmountProofPacket(selected);
+    response.ledgerAmount!.evidence[0]!.sourceSubjectId = "ffffffff-ffff-ffff-ffff-ffffffffffff:eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee:debit";
+    vi.mocked(getLedgerAmountProof).mockResolvedValue(response);
+    render(<LedgerAmountProofDrawer selection={selected} onClose={vi.fn()} />);
+    expect(await screen.findByRole("alert")).toHaveTextContent("Blocked:");
+    expect(screen.queryByRole("link")).not.toBeInTheDocument();
+  });
+
   it("verifies an opening balance against its original retained posting period and exact contributor IDs", async () => {
     const response = createReportAmountProofPacket(reportSelection);
     response.ledgerAmount!.evidence[0]!.sourceScope!.periodId = "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa";
@@ -46,7 +72,7 @@ describe("scoped ledger amount proof drawer", () => {
     vi.mocked(getLedgerAmountProof).mockResolvedValue(response);
     render(<LedgerAmountProofDrawer selection={reportSelection} onClose={vi.fn()} />);
     expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Cash report balance Number Passport" }))
+    expect(screen.getByRole("region", { name: "Cash report balance Amount passport" }))
       .toHaveTextContent("Generated report amount bound to its retained ledger population.");
   });
 
@@ -181,6 +207,6 @@ describe("scoped ledger amount proof drawer", () => {
     expect(await screen.findByRole("link", { name: "Open Fund two retained proof" })).toBeInTheDocument();
     await act(async () => resolveOld(packet()));
     expect(screen.queryByText("Retained journal line")).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: `${selection.label} Number Passport` })).toHaveTextContent("fund-2");
+    expect(screen.getByRole("region", { name: `${selection.label} Amount passport` })).toHaveTextContent("fund-2");
   });
 });

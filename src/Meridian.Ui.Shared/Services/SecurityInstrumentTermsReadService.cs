@@ -1,7 +1,6 @@
 using System.Globalization;
-using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.ReferenceData.SecurityMaster;
 
@@ -105,7 +104,7 @@ public sealed class SecurityInstrumentTermsReadService(
             detail.SecurityId, detail.AssetClass, detail.Currency, detail.Version,
             detail.EffectiveFrom, detail.EffectiveTo, CommonTerms = common, AssetSpecificTerms = terms
         });
-        var fingerprint = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fingerprintInput))).ToLowerInvariant();
+        var fingerprint = Sha256Digest.ComputeUtf8(fingerprintInput);
         return new(detail.SecurityId, detail.AssetClass, detail.Currency, detail.Version,
             detail.EffectiveFrom, detail.EffectiveTo, retrievedAtUtc, status, fingerprint, format, termsVersion,
             new(assetClass, descriptor?.TermsVersion ?? 0, descriptor?.ReadsTermsThrough ?? 0,
