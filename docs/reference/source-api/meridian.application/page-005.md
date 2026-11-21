@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyRateFixingRules
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:11](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L11).
+
+Pure transitions of one index fixing. A value sets accrual rates only once a second person approves it, and a correction never replaces the approved value until it is itself approved. Nothing here reads a market feed.
+
+```csharp
+public static class IntercompanyRateFixingRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumTextLength = 500;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:13](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L13) |  |
+| <code>public static string IndexKey(string? indexReference);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:16](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L16) | Index references match ignoring case and surrounding space, as agreement terms are typed. |
+| <code>public static Guid FixingId(string tenantId, string indexReference, DateOnly fixingDate) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:25](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L25) | One record per tenant, index and observation date. |
+| <code>public static string ValueDigest(string indexKey, DateOnly fixingDate, decimal rate, string source, string justification) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:29](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L29) |  |
+| <code>public static IntercompanyRateFixingDto Propose(IntercompanyRateFixingDto? current, string tenantId, string actor, ProposeIntercompanyRateFixingRequest request, DateTimeOffset at);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:33](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L33) |  |
+| <code>public static IntercompanyRateFixingDto Decide(IntercompanyRateFixingDto current, string actor, DecideIntercompanyRateFixingRequest request, DateTimeOffset at);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:59](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L59) |  |
+| <code>public static bool IsReplay(IntercompanyRateFixingDto? current, Guid requestId, IntercompanyRateFixingActionDto action);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:83](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L83) | True when this request already produced the current record; a reused identity for a different step conflicts. |
+| <code>public static IntercompanyApprovedRateFixingDto? Approved(IntercompanyRateFixingDto fixing) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs:92](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingRules.cs#L92) |  |
+
+## IntercompanyRateFixingService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L9).
+
+Tenant-scoped authority for reviewed index fixings. It records what an operator observed and a second person approved; it never fetches, interpolates or carries a rate forward.
+
+```csharp
+public sealed class IntercompanyRateFixingService(IIntercompanyRateFixingStore store, TimeProvider? clock = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaximumRangeDays = 3_700;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:12](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L12) | A fixing range read never spans more than this many days. |
+| <code>public Task&lt;IntercompanyRateFixingDto?&gt; GetAsync(string tenantId, Guid fixingId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:15](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L15) |  |
+| <code>public Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:18](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L18) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyApprovedRateFixingDto&gt;&gt; ApprovedAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:27](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L27) | Approved values only, as the accrual calculator receives them. |
+| <code>public async Task&lt;IntercompanyRateFixingDto&gt; ProposeAsync(string tenantId, string actor, ProposeIntercompanyRateFixingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:33](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L33) |  |
+| <code>public async Task&lt;IntercompanyRateFixingDto&gt; DecideAsync(string tenantId, string actor, Guid fixingId, DecideIntercompanyRateFixingRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs:46](../../../../src/Meridian.Application/FundStructure/IntercompanyRateFixingService.cs#L46) |  |
+
+## IntercompanyStructuredTermsPreviewService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyStructuredTermsPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs:9](../../../../src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs#L9).
+
+Pure shared date preview. Declared terms never fetch fixings, calculate charges or authorize journals.
+
+```csharp
+public sealed class IntercompanyStructuredTermsPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyStructuredTermsPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyStructuredTermsPreviewDto Preview(IntercompanyAgreementDraftDto draft, string subjectHash);</code> | [src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs:12](../../../../src/Meridian.Application/FundStructure/IntercompanyStructuredTermsPreviewService.cs#L12) |  |
+
 ## LifecycleLedgerPostingAuthority
 
 Qualified name: <code>Meridian.Application.FundStructure.LifecycleLedgerPostingAuthority</code>. Kind: `class`.
@@ -939,65 +1005,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public bool IsReserved =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:88](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L88) | The caller holds the reservation and must commit or release it. |
 | <code>public bool IsSuppressed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:91](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L91) | The event must be suppressed (committed duplicate or pending elsewhere). |
-
-## DedupReservationStatus
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupReservationStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:36](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L36).
-
-Outcome classification for IDedupStore.TryReserveAsync.
-
-```csharp
-public enum DedupReservationStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Reserved = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:43](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L43) | The identity was unclaimed. The caller now holds a pending, memory-only reservation and must either commit it with IDedupStore.CommitDurableAsync after the primary sink flushed, or release it with IDedupStore.Release on failure. |
-| <code>Duplicate = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:48](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L48) | A committed ledger entry suppresses this identity in the requested scope. |
-| <code>PendingElsewhere = 2</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:54](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L54) | Another in-flight reservation already holds this identity. The event must be suppressed, but the identity is not yet durably committed. |
-
-## DroppedEventAuditTrail
-
-Qualified name: <code>Meridian.Application.Pipeline.DroppedEventAuditTrail</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:23](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L23).
-
-Audit trail for events dropped by the pipeline due to backpressure. Logs dropped events to a separate audit file for gap-aware consumers.
-
-```csharp
-public sealed class DroppedEventAuditTrail : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DroppedEventAuditTrail(string auditDirectory, ILogger&lt;DroppedEventAuditTrail&gt;? logger = null) : this(auditDirectory, logger, appendLinesAsync : null);</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:35](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L35) |  |
-| <code>public long TotalDropped =&gt; …;</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:63](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L63) | Gets the total number of dropped events recorded. |
-| <code>public long AuditRecordsNotWritten =&gt; …;</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:69](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L69) | Gets the number of dropped events with no line in the audit file, because the write failed or too many records were already waiting for the disk. |
-| <code>public IReadOnlyDictionary&lt;string, long&gt; DropCountsBySymbol =&gt; …;</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:72](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L72) | Gets drop counts keyed by symbol. |
-| <code>public async ValueTask RecordDroppedEventAsync(MarketEvent evt, string reason, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:78](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L78) | Records a dropped event to the audit trail. |
-| <code>public DroppedEventStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:119](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L119) | Gets a snapshot of drop statistics for the /api/quality/drops endpoint. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:136](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L136) |  |
-
-## DroppedEventStatistics
-
-Qualified name: <code>Meridian.Application.Pipeline.DroppedEventStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:150](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L150).
-
-Statistics about dropped events for API exposure.
-
-```csharp
-public sealed record DroppedEventStatistics(long TotalDropped, IReadOnlyDictionary<string, long> DropsBySymbol, string AuditFilePath, DateTimeOffset Timestamp)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long AuditRecordsNotWritten { get; init; }</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:157](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L157) | Dropped events counted above that have no line in the audit file. |

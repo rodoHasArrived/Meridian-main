@@ -19,6 +19,12 @@ version-checked reversal reopening that respects close freezes. Scoped GETs only
 No queue action creates a payment or journal. See
 [book receipt operations](../../docs/operators/book-receipt-queue.md) for authority and recovery.
 
+The Provider Accounting quota editor uses `GET /api/providers/{providerId}/quota` and
+`PUT /api/providers/{providerId}/quota`. Reads show saved values and observe running limits on
+initialized historical adapters. Edits require provider-management and configuration permissions
+and take effect at host restart. `GET /api/providers/{providerName}/rate-limit-history` includes
+seven UTC dates of recorded daily throttles and rotations alongside recent events.
+
 Receipt-backed Long bond acquisitions built through the asset-accounting candidate endpoint now
 enter the immutable journal review queue. Intake requires face-value per-100 terms, an explicit
 amortization method, matching acquisition/functional currency and reconciled settlement; the
@@ -92,6 +98,17 @@ Changes use the configuration lock and atomic writer and do not activate a runni
 responses explicitly report `RestartHost`. Unacknowledged or stale promotions leave config intact.
 Focused coverage: `SymbolMappingRolloutEndpointTests` and `CanonicalRegistrySymbolResolverTests`.
 
+Browser and WPF mapping edits use the host registry. Add or remove an operator override at
+`/api/symbols/mappings/{symbol}/providers/{provider}` and use the host's CSV import and export
+for bulk changes. An accepted mapping edit refreshes the running registry and retains other
+provider mappings and canonical identity. The provider's existing rollout mode governs its
+outbound symbol choice. Canonical mode uses the saved mapping on the next resolution.
+
+`GET /api/providers/activation` reports observed streaming clients, active backfill adapters,
+registered modules, and saved paths awaiting activation. A confirmed lifecycle supervisor can
+relaunch the host after an authorized restart request. The confirmation lists pending paths and
+the impact on connected workstations.
+
 Streaming failover compatibility trigger/reset controls await the live runtime hand-off and refuse
 unavailable or rejected transitions. Config reads with `configurationOnly=true` remain available
 while streaming is stopped and report unknown active providers explicitly. Rule quality, latency,
@@ -120,6 +137,16 @@ status.
 
 Provider edits that require credential ownership validate a frozen snapshot before ordinary
 settings validation. Both data-source aliases return safe HTTP 400 errors for invalid settings.
+
+The credential setup controls use `POST /api/providers/{providerId}/verify-draft` for Alpaca,
+Polygon, Tiingo and Finnhub. Draft tests use fixed read-only requests and return a bounded result.
+Save and saved re-verification remain separate credential operations. Credential status includes
+the vault's rotation date when available.
+
+`PUT /api/config/alpaca/feed` changes the equity feed for the host at the next restart. SIP
+requires a successful market-data probe using the selected owned Alpaca runtime credential.
+The save checks the binding and credential generation again under the configuration write lock.
+Ordinary settings writes direct new SIP selections to the feed editor.
 
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only

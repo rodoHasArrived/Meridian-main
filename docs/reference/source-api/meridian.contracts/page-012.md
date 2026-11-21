@@ -6,6 +6,101 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JournalPostingStatusDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.JournalPostingStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:142](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L142).
+
+```csharp
+public enum JournalPostingStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:144](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L144) |  |
+| <code>Posted = 1</code> | [src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs:145](../../../../src/Meridian.Contracts/AssetOperations/AssetAccountingEventDtos.cs#L145) |  |
+
+## PortfolioCapitalActivityDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCapitalActivityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:22](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L22).
+
+Dated investor or fund-level capital activity joined into the ladder (contributions, redemptions, distributions, expense accruals). The engine derives cash direction from ActivityKind; Amount is an unsigned magnitude.
+
+```csharp
+public sealed record PortfolioCapitalActivityDto(Guid ActivityId, string ActivityKind, DateOnly DueDate, decimal Amount, string Currency, string SourceDomain, string? SourceEntityId, string Summary);
+```
+
+## PortfolioCashBalanceDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashBalanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:8](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L8).
+
+Opening cash balance row joined into the portfolio cash ladder. Amounts are stated in Currency; the ladder engine reports non-base-currency balances as an explicit assumption.
+
+```csharp
+public sealed record PortfolioCashBalanceDto(string AccountId, string DisplayName, decimal Amount, string Currency, string SourceDomain, string? SourceEntityId);
+```
+
+## PortfolioCashLadderBucketDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderBucketDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:70](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L70).
+
+One dated bucket of the portfolio cash ladder.
+
+```csharp
+public sealed record PortfolioCashLadderBucketDto(DateOnly BucketStart, DateOnly BucketEnd, string Label, decimal Inflows, decimal Outflows, decimal NetFlow, decimal CumulativeCash, bool BreachesMinimumBalance, IReadOnlyList<PortfolioCashLadderSourceSliceDto> Sources);
+```
+
+## PortfolioCashLadderContributionDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderContributionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:45](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L45).
+
+A single projected flow contributing to the ladder, traceable back to the instrument projection run and Security Master terms version that produced it.
+
+```csharp
+public sealed record PortfolioCashLadderContributionDto(Guid SecurityId, string DisplayName, string AssetClass, Guid? ProjectionRunId, string? ProjectionEngineVersion, Guid? TermsVersionId, string? TermsHash, string SourceDomain, string? SourceEntityId, string FlowType, string SourceLane, DateOnly DueDate, decimal Amount, string Currency, decimal BaseAmount, string? ScenarioAdjustment);
+```
+
+## PortfolioCashLadderDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:98](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L98).
+
+Portfolio-wide dated cash ladder: instrument obligations aggregated across held positions, joined with opening cash and capital activity, bucketed over the horizon with a cumulative balance line and minimum-balance breaches.
+
+```csharp
+public sealed record PortfolioCashLadderDto(string EngineVersion, DateOnly AsOfDate, int HorizonDays, string BaseCurrency, string ScenarioId, decimal OpeningCash, decimal MinimumCashThreshold, IReadOnlyList<PortfolioCashLadderBucketDto> Buckets, IReadOnlyList<PortfolioCashLadderContributionDto> Contributions, IReadOnlyList<PortfolioCashScenarioDto> AvailableScenarios, IReadOnlyList<string> Assumptions, IReadOnlyList<string> Warnings, DateTimeOffset GeneratedAt, int SecuritiesEvaluated, int SecuritiesWithFlows, bool IsDecisionReady, IReadOnlyList<string> BlockingReasons)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.SecurityMaster.SecurityCashFlowBlockerDto? Blocker { get; init; }</code> | [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:118](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L118) |  |
+
+## PortfolioCashLadderPositionDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderPositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs:37](../../../../src/Meridian.Contracts/AssetOperations/PortfolioCashLadderDtos.cs#L37).
+
+One held position fed into the portfolio cash ladder: the instrument&#x27;s asset-operations projection plus the held quantity multiplier applied to its projected flows (1.0 means one unit of the retained terms basis).
+
+```csharp
+public sealed record PortfolioCashLadderPositionDto(AssetOperationsDetailDto Operations, decimal Quantity = 1m);
+```
+
 ## PortfolioCashLadderQuery
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.PortfolioCashLadderQuery</code>. Kind: `record`.
@@ -362,6 +457,18 @@ One provider attempt in the live fallback chain for a requested symbol/range.
 public sealed record BackfillProviderAttemptProgressDto(string Symbol, string Provider, DateOnly? RangeStart, DateOnly? RangeEnd, int ProviderAttempt, int RetryRound, string? Operation, string? Status, int BarsDownloaded, DateTimeOffset StartedAt, DateTimeOffset ObservedAt, string? Error);
 ```
 
+## BackfillProviderContribution
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderContribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs:7](../../../../src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs#L7).
+
+Bars retained by a backfill request from one serving provider.
+
+```csharp
+public sealed record BackfillProviderContribution(string ProviderId, long Bars);
+```
+
 ## BackfillProviderProgressSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Backfill.BackfillProviderProgressSnapshotDto</code>. Kind: `record`.
@@ -439,11 +546,24 @@ Declared public members:
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:25](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L25) |  |
 | <code>[JsonIgnore] public ProviderProvenanceAccess? ProvenanceAccess { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:28](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L28) |  |
 | <code>public BackfillResult ForTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:30](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L30) |  |
-| <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:38](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L38) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
-| <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:44](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L44) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
-| <code>public BackfillQuotaReceipt? QuotaReceipt { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:46](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L46) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillBatchReceipt&gt;? BatchReceipts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:50](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L50) | Immutable response revisions that were retained after storage confirmed this run&#x27;s data. |
-| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:52](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L52) |  |
+| <code>public string[] SkippedSymbols { get; init; } = SkippedSymbols??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:39](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L39) | Symbols skipped because their checkpoint already covered the requested date range. Only populated when resume-from-checkpoint mode is enabled on the backfill request. |
+| <code>public SymbolValidationSignal[] SymbolValidationSignals { get; init; } = SymbolValidationSignals??[];</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:45](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L45) | Per-symbol completeness signals (pass / warn / fail) produced at the end of the run. Provides operator-visible trust data for each symbol in Symbols. |
+| <code>public BackfillQuotaReceipt? QuotaReceipt { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:47](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L47) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillBatchReceipt&gt;? BatchReceipts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:51](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L51) | Immutable response revisions that were retained after storage confirmed this run&#x27;s data. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BackfillRoutingAttempt&gt;? RoutingAttempts { get; init; }</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:55](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L55) | Provider selection outcomes. Reasons are fixed codes without vendor response details. |
+| <code>public static BackfillResult Failed(string provider, IReadOnlyList&lt;string&gt; symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillResult.cs:57](../../../../src/Meridian.Contracts/Backfill/BackfillResult.cs#L57) |  |
+
+## BackfillRoutingAttempt
+
+Qualified name: <code>Meridian.Contracts.Backfill.BackfillRoutingAttempt</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs:4](../../../../src/Meridian.Contracts/Backfill/BackfillRoutingEvidence.cs#L4).
+
+Sanitized outcome for one candidate in a historical backfill request.
+
+```csharp
+public sealed record BackfillRoutingAttempt(string Symbol, string ProviderId, string Reason, int Bars, bool Attempted);
+```
 
 ## BackfillRunProgressResponse
 
@@ -654,127 +774,4 @@ A single bank-side transaction record. This is distinct from a loan-level CashTr
 
 ```csharp
 public sealed record BankTransactionDto(Guid BankTransactionId, Guid EntityId, string TransactionType, DateOnly EffectiveDate, DateOnly TransactionDate, DateOnly SettlementDate, decimal Amount, string Currency, string? ExternalRef, DateTimeOffset RecordedAt, bool IsVoided, string? RecordedBy = null, Guid? PendingPaymentId = null, string? EvidenceId = null, string? CanonicalInputHash = null);
-```
-
-## BankTransactionSeedRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:133](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L133).
-
-Request to seed representative bank transactions for one or more entities. When EntityIds is null or empty, all known entities are seeded.
-
-```csharp
-public sealed record BankTransactionSeedRequest(IReadOnlyList<Guid>? EntityIds, int CountPerEntity, DateOnly? FromDate, DateOnly? ToDate);
-```
-
-## BankTransactionSeedResultDto
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:140](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L140).
-
-Result returned after seeding bank transactions.
-
-```csharp
-public sealed record BankTransactionSeedResultDto(int EntitiesProcessed, int TransactionsSeeded, IReadOnlyList<Guid> ProcessedEntityIds);
-```
-
-## IBankTransactionSource
-
-Qualified name: <code>Meridian.Contracts.Banking.IBankTransactionSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:154](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L154).
-
-Read-only banking data source for cross-domain integrations such as reconciliation. Services outside the Banking module can depend on this narrow interface instead of the full IBankingService.
-
-```csharp
-public interface IBankTransactionSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;BankTransactionDto&gt;&gt; GetBankTransactionsAsync(Guid? entityId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:160](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L160) | Return bank transactions. When entityId is provided the result is scoped to that entity; otherwise all transactions are returned. |
-
-## InitiatePaymentRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.InitiatePaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:19](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L19).
-
-Request body to submit a payment for approval before it is applied.
-
-```csharp
-public sealed record InitiatePaymentRequest(decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, string? Currency = null);
-```
-
-## PaymentApprovalStatus
-
-Qualified name: <code>Meridian.Contracts.Banking.PaymentApprovalStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:10](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L10).
-
-Lifecycle status of a payment that is routed through the approval workflow.
-
-```csharp
-public enum PaymentApprovalStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending = 0</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:12](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L12) |  |
-| <code>Approved = 1</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:13](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L13) |  |
-| <code>Rejected = 2</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:14](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L14) |  |
-| <code>Cancelled = 3</code> | [src/Meridian.Contracts/Banking/BankingModels.cs:15](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L15) |  |
-
-## PendingPaymentDto
-
-Qualified name: <code>Meridian.Contracts.Banking.PendingPaymentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:31](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L31).
-
-A payment that is awaiting an approval decision.
-
-```csharp
-public sealed record PendingPaymentDto(Guid PendingPaymentId, Guid EntityId, decimal Amount, DateOnly EffectiveDate, string? ExternalRef, string? Notes, PaymentApprovalStatus Status, string? ReviewedBy, string? ReviewNotes, DateTimeOffset InitiatedAt, DateTimeOffset? ReviewedAt, string? Currency = null, string? CurrencyRemediatedBy = null, string? CurrencyRemediationReason = null, DateTimeOffset? CurrencyRemediatedAt = null);
-```
-
-## RecordPaymentBankEvidenceRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.RecordPaymentBankEvidenceRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:80](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L80).
-
-Record retained bank-side evidence for an approved Meridian payment intent.
-
-```csharp
-public sealed record RecordPaymentBankEvidenceRequest(string EvidenceType, DateOnly? TransactionDate = null, DateOnly? SettlementDate = null, decimal? Amount = null, string? Currency = null, string? ExternalRef = null, string? RecordedBy = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? EvidenceId = null);
-```
-
-## RejectPaymentRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.RejectPaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:74](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L74).
-
-Reject a pending payment request.
-
-```csharp
-public sealed record RejectPaymentRequest(string Reason, string? ReviewedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## RemediatePaymentCurrencyRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.RemediatePaymentCurrencyRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:61](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L61).
-
-Governed repair request for a legacy Pending payment whose currency was never retained. The command is compare-and-set: it cannot alter economics, replace an existing currency, or repair a payment after a review decision.
-
-```csharp
-public sealed record RemediatePaymentCurrencyRequest(string Currency, string Reason, string? RemediatedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
 ```

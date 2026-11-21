@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { ProviderQuotaEditor } from "@/screens/data-screen.provider-quota-editor";
 import {
   useProviderAccountingPanel,
   type ProviderAccountingServices
@@ -97,6 +98,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
                   { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone}>{row.status}</Badge>, exportValue: (row) => row.source.status },
                   { id: "connection", label: "Connection / reachability", render: (row) => row.connectionPosture, exportValue: (row) => row.connectionPosture },
                   { id: "requests", label: "Quota usage", render: (row) => row.requestUsage, exportValue: (row) => row.requestUsage },
+                  { id: "backfill-attempts", label: "Backfill attempts", render: (row) => row.backfillAttempts, exportValue: (row) => row.source.backfillAttemptsInWindow },
                   { id: "remaining", label: "Remaining", render: (row) => row.remaining, exportValue: (row) => row.source.remainingRequests },
                   { id: "daily", label: "Daily quota", render: (row) => row.dailyUsage, exportValue: (row) => row.dailyUsage },
                   { id: "reset", label: "Reset countdown", render: (row) => row.resetCountdown, exportValue: (row) => row.source.resetAt },
@@ -113,6 +115,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
             History: {panel.historyPosture}
           </p>
         </div>
+        <ProviderQuotaEditor />
       </CardContent>
     </section>
   );

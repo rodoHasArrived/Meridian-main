@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditLogViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.AuditLogViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:152](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L152).
+
+View model for audit trail log items.
+
+```csharp
+public sealed class AuditLogViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Timestamp { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:154](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L154) |  |
+| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:155](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L155) |  |
+| <code>public string Action { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:156](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L156) |  |
+| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:157](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L157) |  |
+
 ## BackfillStatsPresentation
 
 Qualified name: <code>Meridian.Wpf.ViewModels.BackfillStatsPresentation</code>. Kind: `record struct`.
@@ -1839,15 +1860,3 @@ Declared public members:
 | <code>public void GenerateSample();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L249) |  |
 | <code>public bool CanSavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L277) |  |
 | <code>public void SavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L283) |  |
-
-## DataSheetRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DataSheetRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs:16](../../../../src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs#L16).
-
-One row in the data-sheet tab.
-
-```csharp
-public sealed record DataSheetRow(string Date, string XValue, string YValue);
-```

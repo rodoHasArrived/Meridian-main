@@ -194,6 +194,11 @@ parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
 
+Completed native backtests expose replayed bar counts, verified backfill revisions, and a source-bound
+completion fingerprint in Strategy run detail. Research completion records bind the mix in their input
+hash. Runs admitted before replay keep their lifecycle input hash and derive the completion fingerprint
+from retained results. Run comparison discloses different mixes and unavailable evidence.
+
 Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
 `DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal
 count; an exact run-detail read verifies the archive and replays the ledger invariants before

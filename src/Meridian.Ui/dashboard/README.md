@@ -33,7 +33,18 @@ Numeric priority and Move up provide keyboard alternatives to dragging. Preview 
 daily date range and proposed priority/availability without saving or fetching prices; unavailable
 vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
 requires a reason and exposes retained change history. Quota history distinguishes an observed
-throttle from the next provider attempted and discloses process-lifetime retention.
+throttle from the next provider attempted. Recent events remain process-lifetime evidence, and
+daily throttle and rotation totals are retained for seven UTC days.
+
+The provider editor reads the host's effective order for new jobs. Save feedback explains when a
+routing change is active and when pacing or tier changes require a restart. The Backfills route
+uses the same runtime provider list for ordered schedule preferences, and shows serving-provider
+counts and attempt outcomes in the backfill result and schedule history.
+
+Provider Accounting shows saved and running account quotas and request pacing. Paid presets
+require a finite Meridian daily cap. Provider activation is read from the host and includes
+pending changes, start failures, and restart confirmation on a supervised host. The Alpaca feed
+editor verifies the selected account's SIP access before saving a change to SIP.
 
 Settings and Providers share the setting-activation banner. Save receipts distinguish `Live`,
 `ReconnectProvider` and `RestartHost`; pending field names remain inspectable until host activation.

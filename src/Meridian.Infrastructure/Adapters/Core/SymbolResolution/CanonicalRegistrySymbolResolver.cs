@@ -37,7 +37,14 @@ public sealed class CanonicalRegistrySymbolResolver : ISymbolResolver, IDisposab
     }
 
     public SymbolResolutionMode GetProviderMode(string provider)
-        => _providerModes.TryGetValue(NormalizeModeProvider(provider), out var mode) ? mode : _mode;
+    {
+        var key = NormalizeModeProvider(provider);
+        if (_providerModes.TryGetValue(key, out var mode))
+            return mode;
+
+        // The operator mapping and rollout APIs retain their existing "ib" key.
+        return key == "ibkr" && _providerModes.TryGetValue("ib", out mode) ? mode : _mode;
+    }
 
     public string Name => _inner is null ? "canonical-registry" : $"canonical-registry+{_inner.Name}";
 
@@ -117,6 +124,7 @@ public sealed class CanonicalRegistrySymbolResolver : ISymbolResolver, IDisposab
         if (canonical is not null)
         {
             return _registry.GetProviderSymbol(canonical, toProvider)
+                ?? (NormalizeProvider(toProvider) == "ibkr" ? _registry.GetProviderSymbol(canonical, "ib") : null)
                 ?? SymbolNormalization.NormalizeForProvider(canonical, toProvider);
         }
 

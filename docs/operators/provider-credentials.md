@@ -241,9 +241,21 @@ Use canonical provider-scoped routes for new tooling and operator automation:
 | `/api/providers/{providerId}/credentials?connectionId={connectionId}` | `PUT` | Save credentials for the selected owned connection. |
 | `/api/providers/{providerId}/credentials?connectionId={connectionId}` | `DELETE` | Remove credentials only from the selected owned connection. |
 | `/api/providers/{providerId}/verify?connectionId={connectionId}` | `POST` | Verify the selected connection's current credential generation. |
+| `/api/providers/{providerId}/verify-draft?connectionId={connectionId}` | `POST` | Test the proposed credentials for the selected connection before saving. |
 
 Omit `connectionId` only for an entirely legacy provider family. Compatibility routes under
 `/api/credentials/*` do not bypass ownership requirements and should not be used for new automation.
+
+In provider setup, **Test** checks the draft for Alpaca, Polygon, Tiingo, or Finnhub. It leaves the
+saved credential and its verification history intact. Choose **Save anyway** when setting up an
+offline connection. The saved-credential panel shows the vault's rotation date beginning 14 days
+before it is due. Re-verify the saved connection to retain verification evidence.
+
+The legacy `/api/providers/{providerId}/test-connection` route saves any credentials supplied in
+its request. Use `verify-draft` to check unsaved fields.
+
+The Alpaca equity feed selector verifies recent SIP trades with the selected owned runtime
+connection before saving SIP. Feed changes take effect when the host restarts.
 
 ## Quick credential validation checklist
 

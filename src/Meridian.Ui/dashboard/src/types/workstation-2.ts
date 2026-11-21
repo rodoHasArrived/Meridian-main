@@ -1272,6 +1272,7 @@ export interface ProviderConnectionRow {
   actionHref: string;
   credentialFields?: ProviderCredentialFieldMetadata[] | null;
   environmentOptions?: ProviderEnvironmentOption[] | null;
+  rotationDueAt?: string | null;
 }
 
 export interface ProviderCredentialUpsertRequest {
@@ -1300,6 +1301,12 @@ export interface ProviderCredentialVerificationResult {
   lastError: string | null;
   externalAccountId: string | null;
   warnings: string[];
+}
+
+export interface ProviderCredentialDraftResult {
+  providerId: string;
+  status: "Verified" | "Rejected" | "Unavailable";
+  message: string;
 }
 
 export interface ProviderReadinessSummary {
