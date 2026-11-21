@@ -183,7 +183,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationCashMovementInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:32](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L32).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:34](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L34).
 
 ```csharp
 public sealed record ReconciliationCashMovementInput(string MovementId, decimal Amount, DateTimeOffset? AsOf, bool IsVoided, string Source, BankTransactionDto? BankTransaction = null);
@@ -243,7 +243,7 @@ public sealed record ReconciliationCloseScopeReopenReceipt(ReconciliationCloseSc
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationExternalStatementInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:40](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L40).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:42](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L42).
 
 ```csharp
 public sealed record ReconciliationExternalStatementInput(string StatementRowId, decimal Amount, DateTimeOffset? AsOf, string Source, string? Reference = null);
@@ -304,7 +304,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationLedgerInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:17](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L17).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:18](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L18).
 
 ```csharp
 public sealed record ReconciliationLedgerInput(DateTimeOffset AsOf, decimal AssetBalance, decimal LiabilityBalance, IReadOnlyList<ReconciliationLedgerLineInput> TrialBalance)
@@ -314,15 +314,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool HasUnresolvedValuation { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:23](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L23) |  |
-| <code>public decimal? HistoricalCostNetAssets { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:24](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L24) |  |
-| <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:25](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L25) |  |
+| <code>public bool HasUnresolvedValuation { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:24](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L24) |  |
+| <code>public string? BalanceComparisonUnavailableReason { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:25](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L25) |  |
+| <code>public decimal? HistoricalCostNetAssets { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:26](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L26) |  |
+| <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:27](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L27) |  |
 
 ## ReconciliationLedgerLineInput
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationLedgerLineInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:30](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L30).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:32](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L32).
 
 ```csharp
 public sealed record ReconciliationLedgerLineInput(string AccountName, string? Symbol, decimal Balance);
@@ -332,7 +333,7 @@ public sealed record ReconciliationLedgerLineInput(string AccountName, string? S
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationNormalizedInputs</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:47](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L47).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:49](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L49).
 
 ```csharp
 public sealed record ReconciliationNormalizedInputs(ReconciliationPortfolioInput? Portfolio, ReconciliationLedgerInput? Ledger, IReadOnlyList<ReconciliationCashMovementInput> InternalCashMovements, IReadOnlyList<ReconciliationExternalStatementInput> ExternalStatementRows);
@@ -363,13 +364,14 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal UnrealizedPnl { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:13](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L13) |  |
-| <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:14](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L14) |  |
+| <code>public bool HasRetainedAccountingPositionPopulation { get; init; }</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:14](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L14) |  |
+| <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:15](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L15) |  |
 
 ## ReconciliationPositionInput
 
 Qualified name: <code>Meridian.Strategies.Services.ReconciliationPositionInput</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:28](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L28).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:30](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L30).
 
 ```csharp
 public sealed record ReconciliationPositionInput(string Symbol, bool IsShort);
@@ -423,10 +425,14 @@ Declared public members:
 | --- | --- | --- |
 | <code>public ReconciliationRunService(StrategyRunReadService runReadService, ReconciliationProjectionService projectionService, IReconciliationRunRepository repository, IBankTransactionSource? bankTransactionSource = null, IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter = null, IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter = null, IInternalCashReconciliationSourceAdapter? internalCashAdapter = null, IExternalStatementReconciliationSourceAdapter? externalStatementAdapter = null, ISecurityValidationGateService? securityValidationGate = null, ISecurityMasterAccountingEventService? securityMasterAccountingEventService = null, ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter = null) : this(runReadService, projectionService, repository, bankTransactionSource, ledgerAdapter, portfolioAdapter, internalCashAdapter, externalStatementAdapter, securityValidationGate, securityMasterAccountingEventService, securityMasterAccountingEventSourceAdapter, TimeProvider.System);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:26](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L26) |  |
 | <code>public ReconciliationRunService(StrategyRunReadService runReadService, ReconciliationProjectionService projectionService, IReconciliationRunRepository repository, IBankTransactionSource? bankTransactionSource, IStrategyLedgerReconciliationSourceAdapter? ledgerAdapter, IStrategyPortfolioReconciliationSourceAdapter? portfolioAdapter, IInternalCashReconciliationSourceAdapter? internalCashAdapter, IExternalStatementReconciliationSourceAdapter? externalStatementAdapter, ISecurityValidationGateService? securityValidationGate, ISecurityMasterAccountingEventService? securityMasterAccountingEventService, ISecurityMasterAccountingEventSourceAdapter? securityMasterAccountingEventSourceAdapter, TimeProvider timeProvider);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:54](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L54) |  |
-| <code>public async Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:81](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L81) |  |
-| <code>public Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:238](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L238) |  |
-| <code>public Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:241](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L241) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:244](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L244) |  |
+| <code>public Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:81](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L81) |  |
+| <code>public Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L84) |  |
+| <code>public Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:257](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L257) |  |
+| <code>public async Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:260](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L260) |  |
+| <code>public Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:268](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L268) |  |
+| <code>public async Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:271](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L271) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:278](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L278) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationRunService.cs:281](../../../../src/Meridian.Strategies/Services/ReconciliationRunService.cs#L281) |  |
 
 ## ReconciliationSlaCalculator
 
@@ -475,7 +481,7 @@ public sealed record RunPositionContribution(string RunId, string AccountId, dec
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityAccountingRule</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:71](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L71).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:75](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L75).
 
 ```csharp
 public sealed record SecurityAccountingRule(string AccountingClassification, string ReportingBasis, string AccruedInterestReceivableAccount = "Accrued Interest Receivable", string CouponIncomeAccount = "Coupon Income", string CashAccount = "Cash", string PrincipalAccount = "Securities");
@@ -485,7 +491,7 @@ public sealed record SecurityAccountingRule(string AccountingClassification, str
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityActualCashActivity</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:134](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L134).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:142](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L142).
 
 ```csharp
 public sealed record SecurityActualCashActivity(string SourceName, string? ExternalTransactionId, string AccountId, Guid? SecurityId, string? Symbol, decimal CashAmount, decimal PrincipalAmount, decimal IncomeAmount, DateOnly PayDate, string Classification, string? EvidenceLink = null);
@@ -495,7 +501,7 @@ public sealed record SecurityActualCashActivity(string SourceName, string? Exter
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityFactorObservation</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:114](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L114).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:122](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L122).
 
 One reconciliation-period factor OBSERVATION for a factor-based security: the prior→current factor pair with its source and evidence lineage, as expected paydown generation consumes it. This is deliberately NOT a factor-schedule term shape — the canonical dated factor schedule is Meridian.FSharp.Domain.FactorScheduleEntry on StructuredCreditTerms (declared as factorScheduleEntries and read by StructuredCashFlowTermsResolver); the source adapter derives these observations FROM that canonical schedule, pairing each factor with its ordered predecessor and attaching provenance/evidence. Formerly named SecurityFactorScheduleEntry, which misread as a third, incompatible schedule shape.
 
@@ -507,7 +513,7 @@ public sealed record SecurityFactorObservation(Guid SecurityId, DateOnly AsOfDat
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityFixedIncomeTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:42](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L42).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:46](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L46).
 
 ```csharp
 public sealed record SecurityFixedIncomeTerms(decimal? CouponRate, string? CouponType, string? DayCountConvention, int? PaymentFrequencyPerYear, DateOnly? IssueDate = null, DateOnly? DatedDate = null, DateOnly? FirstCouponDate = null, DateOnly? NextCouponDate = null, DateOnly? MaturityDate = null, DateOnly? AccrualStartDate = null, decimal? CurrentFactor = null, decimal? OriginalFace = null, decimal? CurrentFace = null, bool RequiresFactorSchedule = false)
@@ -517,8 +523,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public RateUnit? CouponRateUnit { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:62](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L62) | The unit the record itself declares for CouponRate (its scheduleConventions.couponRateUnit), or null when it declares none. |
-| <code>public string? TermsAssetClass { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:68](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L68) | The catalog asset class whose rate-field defaults (SecurityRateFieldUnits) apply to CouponRate; null reads the security&#x27;s accounting asset class. |
+| <code>public RateUnit? CouponRateUnit { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:66](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L66) | The unit the record itself declares for CouponRate (its scheduleConventions.couponRateUnit), or null when it declares none. |
+| <code>public string? TermsAssetClass { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:72](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L72) | The catalog asset class whose rate-field defaults (SecurityRateFieldUnits) apply to CouponRate; null reads the security&#x27;s accounting asset class. |
 
 ## SecurityMasterAccountingEventRequest
 
@@ -527,14 +533,20 @@ Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingEvent
 Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:24](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L24).
 
 ```csharp
-public sealed record SecurityMasterAccountingEventRequest(string RunId, DateOnly PeriodStart, DateOnly PeriodEnd, IReadOnlyList<SecurityMasterAccountingSecurity> Securities, IReadOnlyList<SecurityMasterAccountingPosition> Positions, IReadOnlyList<SecurityFactorObservation>? FactorSchedule = null, IReadOnlyList<SecurityActualCashActivity>? ActualActivity = null, decimal AmountTolerance = 0.01m);
+public sealed record SecurityMasterAccountingEventRequest(string RunId, DateOnly PeriodStart, DateOnly PeriodEnd, IReadOnlyList<SecurityMasterAccountingSecurity> Securities, IReadOnlyList<SecurityMasterAccountingPosition> Positions, IReadOnlyList<SecurityFactorObservation>? FactorSchedule = null, IReadOnlyList<SecurityActualCashActivity>? ActualActivity = null, decimal AmountTolerance = 0.01m)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;SecurityMasterAccountingIssueDto&gt; SourceCoverageIssues { get; init; } = [];</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:35](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L35) | Retained input coverage failures, even when no safe position can be calculated. |
 
 ## SecurityMasterAccountingEventResult
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingEventResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:147](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L147).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:155](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L155).
 
 ```csharp
 public sealed record SecurityMasterAccountingEventResult(IReadOnlyList<ExpectedAccountingEventDto> ExpectedEvents, IReadOnlyList<AccrualCalculationResultDto> AccrualCalculations, IReadOnlyList<ExpectedJournalPreviewDto> JournalPreviews, IReadOnlyList<SecurityMasterAccountingIssueDto> Issues);
@@ -544,7 +556,7 @@ public sealed record SecurityMasterAccountingEventResult(IReadOnlyList<ExpectedA
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingEventService</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:187](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L187).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:195](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L195).
 
 Generates Security Master accounting projections and related validation issues for a reporting period.
 
@@ -556,8 +568,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterAccountingEventService(IFactorPaydownProjectionService? factorPaydownProjector = null);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:191](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L191) |  |
-| <code>public SecurityMasterAccountingEventResult Generate(SecurityMasterAccountingEventRequest request);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:196](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L196) |  |
+| <code>public SecurityMasterAccountingEventService(IFactorPaydownProjectionService? factorPaydownProjector = null);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:199](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L199) |  |
+| <code>public SecurityMasterAccountingEventResult Generate(SecurityMasterAccountingEventRequest request);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:204](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L204) |  |
 
 ## SecurityMasterAccountingEventSourceAdapter
 
@@ -582,7 +594,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingPosition</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:79](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L79).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:83](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L83).
 
 ```csharp
 public sealed record SecurityMasterAccountingPosition(string Symbol, Guid? SecurityId, string AccountId, decimal ParAmount, decimal? CarryingPrice = null, Guid? PositionId = null, long PositionVersion = 1)
@@ -592,14 +604,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? OriginalFaceAmount { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:94](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L94) | The durable book position&#x27;s ORIGINAL face, when it differs from the current outstanding balance. Factor paydowns are computed against original face (factors are relative to it), while coupon accruals bill the current balance in ParAmount — folding the original face into ParAmount would overstate expected interest by the paid-down portion. |
-| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:101](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L101) | True when the source position is a SHORT exposure. ParAmount always carries the absolute magnitude, so without this flag a short would be indistinguishable from a long holding and would generate long-side income and receivable events for a liability. |
+| <code>public SecurityLotUnitKind? SourceQuantityUnit { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:93](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L93) | Source-native conventions when the adapter supplied quantity rather than explicit par. |
+| <code>public decimal? SourceQuantityMultiplier { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:94](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L94) |  |
+| <code>public string? SourceQuantityCurrency { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:95](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L95) |  |
+| <code>public decimal? OriginalFaceAmount { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:102](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L102) | The durable book position&#x27;s ORIGINAL face, when it differs from the current outstanding balance. Factor paydowns are computed against original face (factors are relative to it), while coupon accruals bill the current balance in ParAmount — folding the original face into ParAmount would overstate expected interest by the paid-down portion. |
+| <code>public bool IsShort { get; init; }</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:109](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L109) | True when the source position is a SHORT exposure. ParAmount always carries the absolute magnitude, so without this flag a short would be indistinguishable from a long holding and would generate long-side income and receivable events for a liability. |
 
 ## SecurityMasterAccountingSecurity
 
 Qualified name: <code>Meridian.Strategies.Services.SecurityMasterAccountingSecurity</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:34](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L34).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:38](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L38).
 
 ```csharp
 public sealed record SecurityMasterAccountingSecurity(Guid SecurityId, string Symbol, string AssetClass, string Currency, SecurityFixedIncomeTerms? FixedIncomeTerms = null, SecurityAccountingRule? AccountingRule = null);
@@ -782,7 +797,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyLedgerReconciliationSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:90](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L90).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:92](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L92).
 
 Maps retained strategy ledger snapshots into reconciliation ledger inputs.
 
@@ -794,4 +809,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:92](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L92) |  |
+| <code>public ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:94](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L94) |  |

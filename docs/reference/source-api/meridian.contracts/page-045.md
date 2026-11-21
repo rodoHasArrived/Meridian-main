@@ -295,7 +295,7 @@ public sealed record StatementRunEvidenceLinkDto(string EvidenceId, string Evide
 
 Qualified name: <code>Meridian.Contracts.Reporting.GovernedReportingRunDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:144](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L144).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:145](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L145).
 
 Immutable governed reporting run projection returned by canonical lifecycle routes.
 
@@ -307,13 +307,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:166](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L166) |  |
+| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:167](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L167) |  |
 
 ## ReportingGovernanceAccessPrincipalDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessPrincipalDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:48](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L48).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:49](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L49).
 
 ```csharp
 public sealed record ReportingGovernanceAccessPrincipalDto(string Kind, string PrincipalId);
@@ -323,7 +323,7 @@ public sealed record ReportingGovernanceAccessPrincipalDto(string Kind, string P
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAccessScopeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:39](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L39).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:40](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L40).
 
 ```csharp
 public sealed record ReportingGovernanceAccessScopeDto(string PolicyId, string PolicyVersion, string Mode, string? OwnerPrincipalId, bool AllowOwnerAccess, IReadOnlyList<ReportingGovernanceAccessPrincipalDto> Principals, string PolicyHash);
@@ -333,7 +333,7 @@ public sealed record ReportingGovernanceAccessScopeDto(string PolicyId, string P
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceActionAvailabilityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:63](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L63).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:64](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L64).
 
 ```csharp
 public sealed record ReportingGovernanceActionAvailabilityDto(string Action, bool IsAllowed, string? BlockedReason, long ExpectedVersion);
@@ -343,7 +343,7 @@ public sealed record ReportingGovernanceActionAvailabilityDto(string Action, boo
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:92](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L92).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:93](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L93).
 
 ```csharp
 public sealed record ReportingGovernanceApprovalDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ApprovedAtUtc, string DecisionNote);
@@ -358,14 +358,14 @@ Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:13](../.
 Human approval rationale plus the required optimistic concurrency token.
 
 ```csharp
-public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote);
+public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote, string? ReviewEvidenceId = null);
 ```
 
 ## ReportingGovernanceArtifactDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceArtifactDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:97](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L97).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:98](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L98).
 
 ```csharp
 public sealed record ReportingGovernanceArtifactDto(string ArtifactId, string ArtifactHash, long ByteLength);
@@ -375,7 +375,7 @@ public sealed record ReportingGovernanceArtifactDto(string ArtifactId, string Ar
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuditEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:124](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L124).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:125](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L125).
 
 ```csharp
 public sealed record ReportingGovernanceAuditEntryDto(string EventId, string AggregateKind, string AggregateId, long AggregateVersion, DateTimeOffset OccurredAtUtc, string Action, ReportingGovernanceAuthorityDto Authority, string PermissionUsed, string? FromExecutionState, string? ToExecutionState, string? FromGovernanceState, string? ToGovernanceState, string? FromRestatementState, string? ToRestatementState, string? Note, string? PreviousHash, string Hash);
@@ -385,7 +385,7 @@ public sealed record ReportingGovernanceAuditEntryDto(string EventId, string Agg
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceAuthorityDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:69](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L69).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:70](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L70).
 
 ```csharp
 public sealed record ReportingGovernanceAuthorityDto(string ActorId, string TenantId, string OrganizationId, string? CompanyId, IReadOnlyList<string> Permissions, string Origin, string CorrelationId, IReadOnlyList<string> PrincipalIds);
@@ -395,7 +395,7 @@ public sealed record ReportingGovernanceAuthorityDto(string ActorId, string Tena
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceCertifiedSnapshotDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:52](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L52).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:53](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L53).
 
 ```csharp
 public sealed record ReportingGovernanceCertifiedSnapshotDto(string SnapshotId, string SnapshotHash, string ReconciliationCheckpointId, DateTimeOffset CapturedAtUtc, string? SourceCheckpointId = null, string? SourceCheckpointHash = null, string? ReconciliationCheckpointHash = null, string? ParametersCanonicalJson = null, string? ParametersHash = null);
@@ -405,7 +405,7 @@ public sealed record ReportingGovernanceCertifiedSnapshotDto(string SnapshotId, 
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceChangedLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:170](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L170).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:171](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L171).
 
 ```csharp
 public sealed record ReportingGovernanceChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<string> EvidenceIds);
@@ -415,7 +415,7 @@ public sealed record ReportingGovernanceChangedLineDto(string LineKey, string Pr
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceOperationalScopeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:31](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L31).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:32](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L32).
 
 ```csharp
 public sealed record ReportingGovernanceOperationalScopeDto(string TenantId, string OrganizationId, string? CompanyId, string? FundId, string BookId, string PeriodId);
@@ -425,7 +425,7 @@ public sealed record ReportingGovernanceOperationalScopeDto(string TenantId, str
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReadinessCheckDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:79](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L79).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:80](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L80).
 
 ```csharp
 public sealed record ReportingGovernanceReadinessCheckDto(string CheckId, bool Passed, IReadOnlyList<string> EvidenceIds, string? FailureReason);
@@ -435,7 +435,7 @@ public sealed record ReportingGovernanceReadinessCheckDto(string CheckId, bool P
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReadinessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:85](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L85).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:86](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L86).
 
 ```csharp
 public sealed record ReportingGovernanceReadinessDto(string ReceiptId, string ReceiptHash, DateTimeOffset EvaluatedAtUtc, bool IsReady, IReadOnlyList<ReportingGovernanceReadinessCheckDto> Checks);
@@ -445,7 +445,7 @@ public sealed record ReportingGovernanceReadinessDto(string ReceiptId, string Re
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceReleaseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:116](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L116).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:117](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L117).
 
 ```csharp
 public sealed record ReportingGovernanceReleaseDto(ReportingGovernanceAuthorityDto Authority, DateTimeOffset ReleasedAtUtc, string ManifestId, string ManifestHash, IReadOnlyList<ReportingGovernanceArtifactDto> Artifacts, IReadOnlyList<string> EvidenceIds);
@@ -455,7 +455,7 @@ public sealed record ReportingGovernanceReleaseDto(ReportingGovernanceAuthorityD
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:198](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L198).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:199](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L199).
 
 ```csharp
 public sealed record ReportingGovernanceRestatementApprovalDto(ReportingGovernanceRestatementDto Request, GovernedReportingRunDto DraftRun);
@@ -465,7 +465,7 @@ public sealed record ReportingGovernanceRestatementApprovalDto(ReportingGovernan
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementApprovalRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:29](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L29).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:30](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L30).
 
 Optimistic concurrency token for approval of a retained restatement request. The replacement certified snapshot is resolved and verified by the server.
 
@@ -477,7 +477,7 @@ public sealed record ReportingGovernanceRestatementApprovalRequestDto(long Expec
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:176](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L176).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:177](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L177).
 
 ```csharp
 public sealed record ReportingGovernanceRestatementDto(string RequestId, string PredecessorRunId, string SeriesId, int PredecessorRevision, long PredecessorVersion, string Reason, IReadOnlyList<ReportingGovernanceChangedLineDto> ChangedLines, ReportingGovernanceAuthorityDto RequestedBy, DateTimeOffset RequestedAtUtc, string State, long Version, ReportingGovernanceAuthorityDto? ApprovedBy, DateTimeOffset? ApprovedAtUtc, string? DraftRunId, IReadOnlyList<ReportingGovernanceAuditEntryDto> AuditTrail, IReadOnlyList<ReportingGovernanceActionAvailabilityDto>? ActionAvailability = null)
@@ -487,13 +487,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:194](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L194) |  |
+| <code>public IReadOnlyList&lt;ReportingGovernanceActionAvailabilityDto&gt; ActionAvailability { get; init; } = ActionAvailability??[];</code> | [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:195](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L195) |  |
 
 ## ReportingGovernanceRestatementRequestDto
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRestatementRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:21](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L21).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:22](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L22).
 
 Human rationale for opening a governed restatement. Changed-line evidence and replacement certification are computed from server-owned records rather than accepted from the caller.
 
@@ -505,7 +505,7 @@ public sealed record ReportingGovernanceRestatementRequestDto(long ExpectedVersi
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:106](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L106).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:107](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L107).
 
 Discoverable immutable artifact retained for a successfully executed governed run. Preview access is available before release; final distribution remains release-gated.
 
@@ -517,7 +517,7 @@ public sealed record ReportingGovernanceRetainedArtifactDto(string ArtifactId, s
 
 Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceSeriesHistoryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:202](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L202).
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:203](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L203).
 
 ```csharp
 public sealed record ReportingGovernanceSeriesHistoryDto(string SeriesId, IReadOnlyList<GovernedReportingRunDto> Runs, IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);

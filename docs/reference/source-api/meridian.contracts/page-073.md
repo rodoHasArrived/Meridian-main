@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryPackageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryPackageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:943](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L943).
+
+```csharp
+public sealed record ReportPackDeliveryPackageDto(string PackageId, Guid ReportId, string DistributionId, ReportPackDeliveryModeDto DeliveryMode, string SecureLink, string PortalRoute, IReadOnlyList<GovernanceReportArtifactFormatDto> Formats, IReadOnlyList<ReportPackDeliveryArtifactDto> Artifacts, DateTimeOffset CreatedAtUtc, string RetainedManifestPath, string? PublicationEvidenceHash = null, string? IntegritySummary = null, string? ReportingRunId = null, string? ReportingTemplateId = null, string? ReportingScheduleId = null, IReadOnlyList<string>? SourceArtifacts = null, string? PublicationManifestId = null, string? PublicationRetainedManifestPath = null, string? PublicationSignedOffBy = null, string? PublicationSignedOffRole = null, string? PublicationSignOffReason = null, string? PublicationSignOffContext = null, DateTimeOffset? PublicationSignedOffAtUtc = null, IReadOnlyList<ReportPackEvidenceLinkDto>? PublicationEvidenceLinks = null, IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null, string? RestatementReasonCode = null, Guid? RestatementPriorVersionReportId = null, string? RestatementApprover = null, IReadOnlyList<ReportPackChangedLineDto>? RestatementChangedLines = null, IReadOnlyList<ReportPackEvidenceLinkDto>? RestatementEvidenceLinks = null, ReportPackDeliveryEvidencePacketDto? DeliveryEvidencePacket = null, ReportBrandingThemeDto? BrandingTheme = null, string? ReportingRunAsOfDate = null, string? ReportingRunStatus = null, string? ReportingRunTrigger = null, int? ReportingRunAttemptCount = null, int? ReportingRunSectionCount = null, int? ReportingRunLineageLinkedSections = null, string? DeliveryAccessSummary = null, string? DeliveryChannelSummary = null, string? DownloadSummary = null, DateTimeOffset? AccessExpiresAtUtc = null, IReadOnlyList<ReportPackDeliveryAccessLinkDto>? AccessLinks = null, IReadOnlyList<WorkstationGeneratedReportWriterGridPayload>? GeneratedReportWriterGrids = null, IReadOnlyList<ReportWriterGridRenderDto>? RenderedReportWriterGrids = null, IReadOnlyList<ReportPackDeliveryNotificationDto>? Notifications = null, string? ReportWriterDatasetSourceId = null, string? ReportWriterDatasetSourceLabel = null, int? ReportWriterDatasetRowCount = null);
+```
+
 ## ReportPackDeliveryRecipientDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryRecipientDto</code>. Kind: `record`.
@@ -614,16 +624,4 @@ Actionable alert shown on the research briefing surface.
 
 ```csharp
 public sealed record ResearchBriefingAlert(string AlertId, string Title, string Summary, string Tone, string? RunId = null, string? ActionLabel = null);
-```
-
-## ResearchBriefingDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:132](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L132).
-
-Typed retained research briefing payload shared by Strategy workstation surfaces.
-
-```csharp
-public sealed record ResearchBriefingDto(ResearchBriefingWorkspaceSummary Workspace, InsightFeed InsightFeed, IReadOnlyList<WorkstationWatchlist> Watchlists, IReadOnlyList<ResearchBriefingRun> RecentRuns, IReadOnlyList<ResearchSavedComparison> SavedComparisons, IReadOnlyList<ResearchBriefingAlert> Alerts, IReadOnlyList<ResearchWhatChangedItem> WhatChanged);
 ```

@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementFetchSchedulerService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:15](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L15).
+
+Minimal scheduled-fetch loop for statement connectors: every minute, runs any enabled fetch schedule that is due (fetch → commit → reconciliation queue). Failures are recorded on the schedule and never crash the loop, and downstream duplicate-key idempotency makes repeated or overlapping runs safe.
+
+```csharp
+public sealed class StatementFetchSchedulerService(IServiceProvider serviceProvider, ILogger<StatementFetchSchedulerService> logger) : BackgroundService
+```
+
+## StatementFetchSchedulerServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:83](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L83).
+
+Registers the statement fetch scheduler as a shared singleton and hosted service.
+
+```csharp
+public static class StatementFetchSchedulerServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:85](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L85) |  |
+
 ## StatementReconciliationCaseworkHandoffException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationCaseworkHandoffException</code>. Kind: `class`.
@@ -510,6 +540,26 @@ Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strateg
 public sealed partial class TradingOperatorReadinessService
 ```
 
+## TrialBalanceAmountProvenanceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TrialBalanceAmountProvenanceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:15](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L15).
+
+Binds a trial-balance row to a content-addressed prefix of immutable posted journals. Reopening or appending does not replace the population the operator actually inspected.
+
+```csharp
+public sealed class TrialBalanceAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, PostedLedgerAmountProvenanceService postedAmounts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsSubject(string subjectId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:21](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L21) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt; BindAsync(LedgerPeriodSummaryDto summary, string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:23](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L23) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:52](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L52) |  |
+
 ## UiConfigurationSaveGuard
 
 Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationSaveGuard</code>. Kind: `class`.
@@ -640,7 +690,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1660](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1660) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1662](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1662) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -825,72 +875,3 @@ Declared public members:
 | <code>public void Release(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:61](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L61) | Releases a previously reserved slot for the session. |
 | <code>public int ActiveCount(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:93](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L93) | Current number of active streams for the session. |
 | <code>public void CloseSession(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:97](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L97) | Drops all accounting for a session (e.g. on logout / session expiry). |
-
-## StreamSubscription (generic arity 1)
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamSubscription</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L12).
-
-A live subscription to a stream topic produced by StreamBroadcaster{TPayload}. Read coalesced payloads from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
-
-```csharp
-public sealed class StreamSubscription<TPayload>: IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChannelReader&lt;TPayload&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L23) | Coalesced payload feed for this subscription&#x27;s topic. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L25) |  |
-
-## StreamTopic
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamTopic</code>. Kind: `struct`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:14](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L14).
-
-Identifies a stream fan-out topic — the unit of subscription and one-build-per-tick sharing. The Key encodes the topic kind and its argument: quotes:&lt;symbols&gt; for a canonical, order- and case-independent symbol set (or the &quot;all tracked symbols&quot; sentinel), and a length-prefixed tenant/company/run identity for a scoped reporting run. Topic equality is by Key, so equivalent requests share one topic (and therefore one snapshot build per fan-out tick).
-
-```csharp
-public readonly struct StreamTopic : IEquatable<StreamTopic>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AllQuotesKey = &quot;quotes:*&quot;;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:17](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L17) | Topic key for &quot;all tracked symbols&quot;. |
-| <code>public string Key =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:32](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L32) | Canonical, stable identifier for this topic. default(StreamTopic) resolves to AllQuotesKey so the default value behaves as AllQuotes. |
-| <code>public string Argument =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:38](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L38) | The argument passed to this topic&#x27;s snapshot builder: the comma-joined symbol filter for quote topics (empty string = &quot;all tracked symbols&quot;), or the run id for report-run topics. |
-| <code>public string SymbolFilter =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:41](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L41) | Back-compat alias for quote consumers: the symbol filter for a quotes topic. |
-| <code>public static StreamTopic AllQuotes { get; } = new (AllQuotesKey, string.Empty);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:44](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L44) | Topic covering every tracked symbol. |
-| <code>public static StreamTopic Quotes(string? symbolFilter);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:52](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L52) | Build a quotes topic from a raw or normalized symbol filter (comma-separated). Symbols are trimmed, upper-cased, de-duplicated, and sorted so equivalent requests collapse to the same topic. An empty/whitespace filter yields AllQuotes. |
-| <code>public static StreamTopic ReportRun(string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:79](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L79) | Build a legacy report-run topic keyed by the exact run id (trimmed). New tenant-bound subscriptions use the scoped overload below. |
-| <code>public static StreamTopic ReportRun(string tenantId, string companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L85) |  |
-| <code>public static bool TryParseScopedReportRun(string argument, out string tenantId, out string companyId, out string runId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:101](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L101) |  |
-| <code>public bool Equals(StreamTopic other) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:145](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L145) |  |
-| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:147](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L147) |  |
-| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:149](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L149) |  |
-| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:151](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L151) |  |
-| <code>public static bool operator == (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:153](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L153) |  |
-| <code>public static bool operator != (StreamTopic left, StreamTopic right) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamTopic.cs:155](../../../../src/Meridian.Ui.Shared/Streaming/StreamTopic.cs#L155) |  |
-
-## BuiltInWorkflowDefinitionProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.BuiltInWorkflowDefinitionProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L9).
-
-Built-in workflow library entries based on the current workstation surfaces.
-
-```csharp
-public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |

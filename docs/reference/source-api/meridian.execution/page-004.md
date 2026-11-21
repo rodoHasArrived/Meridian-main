@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JournalOrder
+
+Qualified name: <code>Meridian.Execution.Services.JournalOrder</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:26](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L26).
+
+```csharp
+public sealed record JournalOrder(string OrderId, string Scope, Guid AccountId, string Symbol, string Side, string Status, decimal Quantity, decimal FilledQuantity, decimal? AverageFillPrice, string? StrategyId, string? RunId, string? Tag, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, IReadOnlyList<ExecutionJournalEntry> Events, string? AttemptId = null);
+```
+
+## JournalSummary
+
+Qualified name: <code>Meridian.Execution.Services.JournalSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:32](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L32).
+
+```csharp
+public sealed record JournalSummary(int Orders, int Fills, decimal? RealizedPnl, decimal? Commissions, decimal? Fees, decimal? Slippage, string Coverage, string Method = "FIFO operational attribution", decimal? NetRealizedPnl = null, IReadOnlyList<JournalAttribution>? Attributions = null);
+```
+
 ## JsonlFilePaperSessionStore
 
 Qualified name: <code>Meridian.Execution.Services.JsonlFilePaperSessionStore</code>. Kind: `class`.
@@ -173,7 +193,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.PaperSessionCutoffEvidence</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:298](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L298).
+Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:300](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L300).
 
 Read-only paper accounting proof for one session and cutoff.
 
@@ -185,7 +205,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceHashSha256 { get; init; }</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:303](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L303) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceHashSha256 { get; init; }</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:305](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L305) |  |
 
 ## PaperSessionDetailDto
 
@@ -387,7 +407,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;PaperSessionCutoffEvidence?&gt; GetCutoffEvidenceAsync(string sessionId, DateTimeOffset cutoff, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:260](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L260) | Compares the independently replayed portfolio to the verified journal at a single cutoff. |
+| <code>public async Task&lt;PaperSessionCutoffEvidence?&gt; GetCutoffEvidenceAsync(string sessionId, DateTimeOffset cutoff, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs:262](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.DurableJournal.cs#L262) | Compares the independently replayed portfolio to the verified journal at a single cutoff. |
 
 Source: [src/Meridian.Execution/Services/PaperSessionPersistenceService.HistoricalAccounting.cs:8](../../../../src/Meridian.Execution/Services/PaperSessionPersistenceService.HistoricalAccounting.cs#L8).
 
@@ -498,7 +518,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;PaperLedgerIntegrityBreak&gt; CheckLedgerIntegrity(decimal tolerance = LedgerToleranceConstants.Balance);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.Accounting.cs:13](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Accounting.cs#L13) | Compares the current journal against cash, exact lot basis and financing balances. |
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs:12](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs#L12).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs:20](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs#L20).
 
 ```csharp
 public sealed partial class PaperTradingPortfolio
@@ -509,7 +529,7 @@ Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:20](../../../.
 Tracks cash, positions, and realised P&amp;L for a paper trading session. Supports both single-account (backward-compatible) and multi-account modes. Optionally posts double-entry journal entries to a Ledger after each fill.
 
 ```csharp
-public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
+public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState, IPositionAccountingEvidenceSource
 ```
 
 Declared public members:
@@ -522,35 +542,35 @@ Declared public members:
 | <code>public PositionLotSelectionMethod LotSelectionMethod =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:41](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L41) | The relief method every closing fill in this portfolio applies. It is fixed at construction; an order carries no lot instruction that could override it. |
 | <code>public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger = null, Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(initialCash, ledger, (ILivePositionCorporateActionAdjuster?) corporateActionAdjuster, lotSelectionMethod);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:55](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L55) |  |
 | <code>public PaperTradingPortfolio(decimal initialCash, Meridian.Ledger.Ledger? ledger, ILivePositionCorporateActionAdjuster? corporateActionAdjuster, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(initialCash, ledger, corporateActionAdjuster, lotSelectionMethod, DateTimeOffset.UtcNow);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:66](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L66) | Composes the portfolio through the Contracts-owned adjuster. |
-| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger = null, Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(accounts, ledger, (ILivePositionCorporateActionAdjuster?) corporateActionAdjuster, lotSelectionMethod);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:121](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L121) |  |
-| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger, ILivePositionCorporateActionAdjuster? corporateActionAdjuster, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:132](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L132) | Composes the portfolio through the Contracts-owned adjuster. |
-| <code>public decimal Cash { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:182](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L182) |  |
-| <code>public decimal MarginBalance { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:188](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L188) | Total margin borrowed (long positions) across all accounts (0 for all-cash portfolios). |
-| <code>public decimal ShortMarginCollateral { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:194](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L194) | Total short margin collateral held across all accounts. |
-| <code>public decimal PortfolioValue { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:205](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L205) |  |
-| <code>public decimal UnrealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:221](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L221) |  |
-| <code>public decimal RealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:227](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L227) |  |
-| <code>public IReadOnlyDictionary&lt;string, IPosition&gt; Positions { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:234](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L234) |  |
-| <code>public IReadOnlyList&lt;IAccountPortfolio&gt; Accounts { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:295](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L295) |  |
-| <code>public IAccountPortfolio? GetAccount(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:301](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L301) |  |
-| <code>public IReadOnlyList&lt;IPosition&gt; GetPositions() =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:312](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L312) | Returns aggregate open positions across all accounts for legacy single-account callers. |
-| <code>public MultiAccountPortfolioSnapshot GetAggregateSnapshot();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:315](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L315) |  |
-| <code>public IReadOnlyList&lt;PositionLotEntry&gt; GetPositionLots(string symbol);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:330](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L330) | Returns the current open lots for a symbol in the default account. |
-| <code>public ExecutionAccountDetailSnapshot? GetAccountSnapshot(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:350](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L350) | Returns a detailed snapshot for a single account. Returns null when the account does not exist. |
-| <code>public IReadOnlyList&lt;ExecutionAccountDetailSnapshot&gt; GetAllAccountSnapshots();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:361](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L361) | Returns detailed snapshots for all tracked accounts. |
-| <code>public MarginCallStatus CheckMarginStatus(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:390](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L390) | Evaluates the current maintenance-margin health of one account given a set of current market prices, and returns a MarginCallStatus indicating whether a margin call is in effect. |
-| <code>public MarginRequirement GetMarginRequirement(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:454](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L454) | Returns the portfolio-level MarginRequirement for the specified account. Returns a zeroed requirement for cash accounts or accounts with no margin model. |
-| <code>public void ApplyFill(ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:464](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L464) | Applies a fill to the DefaultAccountId account (single-account path). |
-| <code>public void ApplyFill(ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:476](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L476) | Applies a fill to the default account while recording the fund account that owns it and the contract multiplier it carries. The attribution lets a shared execution book be read per fund and keeps a derivative position&#x27;s exposure from being measured as if each contract were one share. For options the multiplier also scales the money: cash, ledger, lot basis, market value and P&amp;L move at quote × quantity × multiplier, while the stored cost basis stays a per-unit quote. Futures settle daily variation margin instead: no notional moves, only price changes scaled by the multiplier (see ApplyVariationMarginFill and ApplyVariationMarginSettlement). |
-| <code>public void ApplyFill(string accountId, ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:487](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L487) | Applies a fill to a specific accountId. When the account does not exist it is ignored (no-op). |
-| <code>public void ApplyFill(string accountId, ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:498](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L498) |  |
-| <code>public void UpdateMarketPrice(string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:826](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L826) | Updates the last-known market price for symbol across all accounts. A position opened by face-value fills stores its cost basis and market price in dollars per unit of face, so a quote still arriving as a percentage of par is normalized the same way the fill price was — otherwise a 100,000-face position marked at 102.25 would report ~$10.2M of market value instead of ~$102K. |
-| <code>public void UpdateMarketPrice(string accountId, string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:841](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L841) | Updates the last-known market price for symbol in a specific account. |
-| <code>public IReadOnlyLedger? Ledger =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:859](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L859) | Read-only view of the double-entry ledger for this session. Returns null when no ledger was supplied at construction time. |
-| <code>public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:867](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L867) | Applies any corporate-action adjustments (splits, dividends) to an existing open position in the default account. No-op when no adjuster was supplied. |
-| <code>public async Task ApplyCorporateActionsAsync(string accountId, string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:876](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L876) | Applies corporate-action adjustments to a position in a specific accountId. |
-| <code>public decimal ApplyVariationMarginSettlement(string accountId, string symbol, decimal settlementPrice, DateTimeOffset asOf);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1162](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1162) | Settles the daily variation margin of an open futures position in accountId at settlementPrice: cash and realized P&amp;L move by (settlement − last settlement) × quantity × multiplier, and the settlement becomes the new reference price, so the position&#x27;s unrealized P&amp;L returns to zero at that price. Mirrors FuturePosition.SettleDaily. Returns the cash moved; zero, and nothing changes, for a flat position, a notional-model position, or an account or symbol that is not held. |
-| <code>public IReadOnlyList&lt;VariationMarginPositionSnapshot&gt; GetOpenVariationMarginPositions();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1199](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1199) | The open positions, in every account, that settle daily variation margin, with the price they were last settled at. An end-of-day job settles each of these once per trading day. |
+| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger = null, Meridian.Application.SecurityMaster.CorporateActions.ILivePositionCorporateActionAdjuster? corporateActionAdjuster = null, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo) : this(accounts, ledger, (ILivePositionCorporateActionAdjuster?) corporateActionAdjuster, lotSelectionMethod);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:122](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L122) |  |
+| <code>public PaperTradingPortfolio(IReadOnlyList&lt;AccountDefinition&gt; accounts, Meridian.Ledger.Ledger? ledger, ILivePositionCorporateActionAdjuster? corporateActionAdjuster, PositionLotSelectionMethod lotSelectionMethod = PositionLotSelectionMethod.Fifo);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:133](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L133) | Composes the portfolio through the Contracts-owned adjuster. |
+| <code>public decimal Cash { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:183](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L183) |  |
+| <code>public decimal MarginBalance { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:189](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L189) | Total margin borrowed (long positions) across all accounts (0 for all-cash portfolios). |
+| <code>public decimal ShortMarginCollateral { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:195](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L195) | Total short margin collateral held across all accounts. |
+| <code>public decimal PortfolioValue { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:206](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L206) |  |
+| <code>public decimal UnrealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:222](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L222) |  |
+| <code>public decimal RealisedPnl { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:228](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L228) |  |
+| <code>public IReadOnlyDictionary&lt;string, IPosition&gt; Positions { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:235](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L235) |  |
+| <code>public IReadOnlyList&lt;IAccountPortfolio&gt; Accounts { get; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:296](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L296) |  |
+| <code>public IAccountPortfolio? GetAccount(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:302](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L302) |  |
+| <code>public IReadOnlyList&lt;IPosition&gt; GetPositions() =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:313](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L313) | Returns aggregate open positions across all accounts for legacy single-account callers. |
+| <code>public MultiAccountPortfolioSnapshot GetAggregateSnapshot();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:316](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L316) |  |
+| <code>public IReadOnlyList&lt;PositionLotEntry&gt; GetPositionLots(string symbol);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:331](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L331) | Returns the current open lots for a symbol in the default account. |
+| <code>public ExecutionAccountDetailSnapshot? GetAccountSnapshot(string accountId);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:351](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L351) | Returns a detailed snapshot for a single account. Returns null when the account does not exist. |
+| <code>public IReadOnlyList&lt;ExecutionAccountDetailSnapshot&gt; GetAllAccountSnapshots();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:362](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L362) | Returns detailed snapshots for all tracked accounts. |
+| <code>public MarginCallStatus CheckMarginStatus(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:391](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L391) | Evaluates the current maintenance-margin health of one account given a set of current market prices, and returns a MarginCallStatus indicating whether a margin call is in effect. |
+| <code>public MarginRequirement GetMarginRequirement(string accountId, IReadOnlyDictionary&lt;string, decimal&gt; prices) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:455](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L455) | Returns the portfolio-level MarginRequirement for the specified account. Returns a zeroed requirement for cash accounts or accounts with no margin model. |
+| <code>public void ApplyFill(ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:465](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L465) | Applies a fill to the DefaultAccountId account (single-account path). |
+| <code>public void ApplyFill(ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:477](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L477) | Applies a fill to the default account while recording the fund account that owns it and the contract multiplier it carries. The attribution lets a shared execution book be read per fund and keeps a derivative position&#x27;s exposure from being measured as if each contract were one share. For options the multiplier also scales the money: cash, ledger, lot basis, market value and P&amp;L move at quote × quantity × multiplier, while the stored cost basis stays a per-unit quote. Futures settle daily variation margin instead: no notional moves, only price changes scaled by the multiplier (see ApplyVariationMarginFill and ApplyVariationMarginSettlement). |
+| <code>public void ApplyFill(string accountId, ExecutionReport report) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:488](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L488) | Applies a fill to a specific accountId. When the account does not exist it is ignored (no-op). |
+| <code>public void ApplyFill(string accountId, ExecutionReport report, string? ownerAccountId, decimal contractMultiplier = 1m, bool usesFaceValuePercentageOfPar = false) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:499](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L499) |  |
+| <code>public void UpdateMarketPrice(string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:836](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L836) | Updates the last-known market price for symbol across all accounts. A position opened by face-value fills stores its cost basis and market price in dollars per unit of face, so a quote still arriving as a percentage of par is normalized the same way the fill price was — otherwise a 100,000-face position marked at 102.25 would report ~$10.2M of market value instead of ~$102K. |
+| <code>public void UpdateMarketPrice(string accountId, string symbol, decimal price);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:851](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L851) | Updates the last-known market price for symbol in a specific account. |
+| <code>public IReadOnlyLedger? Ledger =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:869](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L869) | Read-only view of the double-entry ledger for this session. Returns null when no ledger was supplied at construction time. |
+| <code>public Task ApplyCorporateActionsAsync(string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:877](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L877) | Applies any corporate-action adjustments (splits, dividends) to an existing open position in the default account. No-op when no adjuster was supplied. |
+| <code>public async Task ApplyCorporateActionsAsync(string accountId, string symbol, DateTimeOffset positionOpenedAt, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:886](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L886) | Applies corporate-action adjustments to a position in a specific accountId. |
+| <code>public decimal ApplyVariationMarginSettlement(string accountId, string symbol, decimal settlementPrice, DateTimeOffset asOf);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1172](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1172) | Settles the daily variation margin of an open futures position in accountId at settlementPrice: cash and realized P&amp;L move by (settlement − last settlement) × quantity × multiplier, and the settlement becomes the new reference price, so the position&#x27;s unrealized P&amp;L returns to zero at that price. Mirrors FuturePosition.SettleDaily. Returns the cash moved; zero, and nothing changes, for a flat position, a notional-model position, or an account or symbol that is not held. |
+| <code>public IReadOnlyList&lt;VariationMarginPositionSnapshot&gt; GetOpenVariationMarginPositions();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1210](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1210) | The open positions, in every account, that settle daily variation margin, with the price they were last settled at. An end-of-day job settles each of these once per trading day. |
 
 Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs:7](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs#L7).
 
@@ -563,7 +583,19 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void AccrueMarginInterest(decimal annualRate, int days = 1, DateTimeOffset? asOf = null);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs:26](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs#L26) | Accrues interest on any outstanding margin loans in all margin accounts. |
-| <code>public bool ApplyFinancingCharge(PaperFinancingCharge charge);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs:76](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs#L76) | Applies a retained cash-paid assessment once. The durable session owner persists and posts the source before calling this rebuildable projection. |
+| <code>public bool ApplyFinancingCharge(PaperFinancingCharge charge);</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs:77](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.Financing.cs#L77) | Applies a retained cash-paid assessment once. The durable session owner persists and posts the source before calling this rebuildable projection. |
+
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.PositionEvidence.cs:8](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.PositionEvidence.cs#L8).
+
+```csharp
+public sealed partial class PaperTradingPortfolio
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PositionAccountingEvidenceSnapshot CapturePositionAccountingEvidence();</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.PositionEvidence.cs:39](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.PositionEvidence.cs#L39) | Copies exact book facts under the fill lock; displayed average prices are never a basis source. |
 
 ## PendingExecutionWebhook
 
@@ -1004,49 +1036,10 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1431](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1431).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1442](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1442).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 
 ```csharp
 public sealed record VariationMarginPositionSnapshot(string AccountId, string Symbol, decimal Quantity, decimal LastSettlementPrice, decimal ContractMultiplier, DateTimeOffset? OpenedAt);
 ```
-
-## ITaxLotSelector
-
-Qualified name: <code>Meridian.Execution.TaxLotAccounting.ITaxLotSelector</code>. Kind: `interface`.
-
-Source: [src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs:9](../../../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs#L9).
-
-Selects which open lots to relieve when a closing trade occurs. Implementations encode cost-basis identification methods (FIFO, LIFO, HIFO, SpecificId).
-
-```csharp
-public interface ITaxLotSelector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>TaxLotAccountingMethod Method { get; }</code> | [src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs:12](../../../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs#L12) | The accounting method this selector encodes. |
-| <code>TaxLotReliefResult Relieve(IReadOnlyList&lt;TaxLot&gt; openLots, long quantityToClose, decimal closePrice);</code> | [src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs:28](../../../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs#L28) | Selects lots from openLots to satisfy a closing trade of quantityToClose shares/contracts at closePrice. |
-
-## RelievedLot
-
-Qualified name: <code>Meridian.Execution.TaxLotAccounting.RelievedLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:13](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L13).
-
-Represents one lot that was partially or fully relieved during a closing trade, together with the realized gain or loss produced by that relief.
-
-```csharp
-public sealed record RelievedLot(TaxLot Lot, long RelievedQuantity, decimal ClosePrice)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:19](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L19) | Realized gain/(loss) for this specific lot parcel. |
-| <code>public decimal Proceeds =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:23](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L23) | Proceeds received for the relieved quantity. |
-| <code>public decimal CostRelieved =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:26](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L26) | Cost basis of the relieved quantity. |

@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterEntitlementApplicabilityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEntitlementApplicabilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:541](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L541).
+
+```csharp
+public sealed record SecurityMasterEntitlementApplicabilityDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string Scope, string? ClientId, string? AccountId, string? FundProfileId, Guid? SecurityId, bool IsApplicable, bool IsMostSpecific, DataVendorEntitlementStatus Status, bool RequiresDirectClientContract, string? ContractReference, string Summary);
+```
+
 ## SecurityMasterFactorPointDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterFactorPointDto</code>. Kind: `record`.
@@ -530,7 +540,7 @@ public sealed record StartWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L94).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L116).
 
 Provider-reported margin and restriction evidence shown before import.
 
@@ -542,7 +552,7 @@ public sealed record StatementAccountSnapshotPreviewDto(string ProviderId = defa
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementActivityCompletenessDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:122](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L122).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:144](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L144).
 
 ```csharp
 public sealed record StatementActivityCompletenessDto(string? LastEventId = null, DateTimeOffset? HighWatermark = null, int PageCount = default, int SourceRecordCount = default, bool IsComplete = default);
@@ -552,7 +562,7 @@ public sealed record StatementActivityCompletenessDto(string? LastEventId = null
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementActivitySubtypeSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:117](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L117).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L139).
 
 ```csharp
 public sealed record StatementActivitySubtypeSummaryDto(string Category = default !, string Subtype = default !, int RecordCount = default);
@@ -632,16 +642,4 @@ Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:58](../../
 
 ```csharp
 public sealed record StatementColumnMappingDto(string SourceColumn, string? CanonicalField, StatementColumnConfidenceDto Confidence, decimal Score, string Rationale);
-```
-
-## StatementConnectorDescriptorDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementConnectorDescriptorDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L9).
-
-Describes an available custodian/broker statement connector so workstation clients can offer file import and remote fetch entry points.
-
-```csharp
-public sealed record StatementConnectorDescriptorDto(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
 ```

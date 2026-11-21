@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationProfileSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1005](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1005).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1029](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1029).
 
 Per-profile rollup for reconciliation tolerance calibration and exception routing.
 
@@ -22,7 +22,7 @@ public sealed record ReconciliationCalibrationProfileSummaryDto(string Tolerance
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:477](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L477).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:485](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L485).
 
 Aggregate readiness state for reconciliation tolerance calibration and governance sign-off.
 
@@ -34,15 +34,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:479](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L479) |  |
-| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:480](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L480) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:481](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L481) |  |
+| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:487](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L487) |  |
+| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:488](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L488) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:489](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L489) |  |
 
 ## ReconciliationCalibrationSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1022](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1022).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1046](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1046).
 
 Operator-facing calibration summary for the reconciliation break queue.
 
@@ -54,21 +54,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int BreakCountTrend { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1038](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1038) |  |
-| <code>public decimal AutoMatchRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1039](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1039) |  |
-| <code>public decimal T0ClosureRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1040](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1040) |  |
-| <code>public int BreakCountAlertThreshold { get; init; } = 25;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1041](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1041) |  |
-| <code>public decimal AutoMatchRateAlertThreshold { get; init; } = 0.85m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1042](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1042) |  |
-| <code>public decimal T0ClosureRateAlertThreshold { get; init; } = 0.90m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1043](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1043) |  |
-| <code>public bool BreakCountAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1044](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1044) |  |
-| <code>public bool AutoMatchRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1045](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1045) |  |
-| <code>public bool T0ClosureRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1046](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1046) |  |
+| <code>public int BreakCountTrend { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1062](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1062) |  |
+| <code>public decimal AutoMatchRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1063](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1063) |  |
+| <code>public decimal T0ClosureRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1064](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1064) |  |
+| <code>public int BreakCountAlertThreshold { get; init; } = 25;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1065](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1065) |  |
+| <code>public decimal AutoMatchRateAlertThreshold { get; init; } = 0.85m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1066](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1066) |  |
+| <code>public decimal T0ClosureRateAlertThreshold { get; init; } = 0.90m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1067](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1067) |  |
+| <code>public bool BreakCountAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1068](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1068) |  |
+| <code>public bool AutoMatchRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1069](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1069) |  |
+| <code>public bool T0ClosureRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1070](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1070) |  |
 
 ## ReconciliationCaseComment
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseComment</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:633](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L633).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:654](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L654).
 
 ```csharp
 public sealed record ReconciliationCaseComment(string CommentId, string? ParentCommentId, string AuthorId, string AuthorDisplayName, ReconciliationCaseCommentVisibility Visibility, string Body, IReadOnlyList<string> EvidenceLinks, DateTimeOffset CreatedAt, DateTimeOffset? EditedAt = null, DateTimeOffset? DeletedAt = null, string? DeletedBy = null, IReadOnlyList<string>? Mentions = null, IReadOnlyList<string>? LinkedEvidenceIds = null, string? PreviousTextHash = null, string? EditReason = null, string? DeleteReason = null, ReconciliationCaseLifecycleState? StatusTransition = null);
@@ -78,7 +78,7 @@ public sealed record ReconciliationCaseComment(string CommentId, string? ParentC
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseCommentVisibility</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:418](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L418).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:419](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L419).
 
 ```csharp
 public enum ReconciliationCaseCommentVisibility : byte
@@ -88,15 +88,15 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Internal = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:420](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L420) |  |
-| <code>CloseEvidence = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:421](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L421) |  |
-| <code>ExternalSummary = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L422) |  |
+| <code>Internal = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:421](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L421) |  |
+| <code>CloseEvidence = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L422) |  |
+| <code>ExternalSummary = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:423](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L423) |  |
 
 ## ReconciliationCaseLifecycleState
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseLifecycleState</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:382](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L382).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:383](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L383).
 
 ```csharp
 public enum ReconciliationCaseLifecycleState : byte
@@ -106,23 +106,23 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Open = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:384](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L384) |  |
-| <code>InReview = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:385](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L385) |  |
-| <code>AwaitingApproval = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:386](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L386) |  |
-| <code>Approved = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:387](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L387) |  |
-| <code>Posted = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:388](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L388) |  |
-| <code>Reopened = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:389](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L389) |  |
-| <code>Superseded = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:390](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L390) |  |
-| <code>Investigating = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:391](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L391) |  |
-| <code>AwaitingEvidence = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:392](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L392) |  |
-| <code>Resolved = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:393](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L393) |  |
-| <code>SignedOff = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:394](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L394) |  |
+| <code>Open = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:385](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L385) |  |
+| <code>InReview = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:386](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L386) |  |
+| <code>AwaitingApproval = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:387](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L387) |  |
+| <code>Approved = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:388](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L388) |  |
+| <code>Posted = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:389](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L389) |  |
+| <code>Reopened = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:390](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L390) |  |
+| <code>Superseded = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:391](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L391) |  |
+| <code>Investigating = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:392](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L392) |  |
+| <code>AwaitingEvidence = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:393](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L393) |  |
+| <code>Resolved = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:394](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L394) |  |
+| <code>SignedOff = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:395](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L395) |  |
 
 ## ReconciliationCasePriority
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCasePriority</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:398](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L398).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:399](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L399).
 
 ```csharp
 public enum ReconciliationCasePriority : byte
@@ -132,16 +132,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Low = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:400](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L400) |  |
-| <code>Normal = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:401](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L401) |  |
-| <code>High = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:402](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L402) |  |
-| <code>Critical = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:403](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L403) |  |
+| <code>Low = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:401](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L401) |  |
+| <code>Normal = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:402](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L402) |  |
+| <code>High = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:403](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L403) |  |
+| <code>Critical = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:404](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L404) |  |
 
 ## ReconciliationCaseSignoffRecord
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseSignoffRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:950](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L950).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:974](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L974).
 
 ```csharp
 public sealed record ReconciliationCaseSignoffRecord(string Actor, string Role, string Decision, string? Note, DateTimeOffset SignedAt, string? InvalidatedBySyncCursor = null, DateTimeOffset? InvalidatedAt = null);
@@ -151,7 +151,7 @@ public sealed record ReconciliationCaseSignoffRecord(string Actor, string Role, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseSlaState</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:407](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L407).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:408](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L408).
 
 ```csharp
 public enum ReconciliationCaseSlaState : byte
@@ -161,18 +161,18 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>NotStarted = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:409](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L409) |  |
-| <code>OnTrack = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:410](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L410) |  |
-| <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:411](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L411) |  |
-| <code>Breached = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:412](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L412) |  |
-| <code>Paused = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:413](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L413) |  |
-| <code>Stopped = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:414](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L414) |  |
+| <code>NotStarted = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:410](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L410) |  |
+| <code>OnTrack = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:411](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L411) |  |
+| <code>Warning = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:412](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L412) |  |
+| <code>Breached = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:413](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L413) |  |
+| <code>Paused = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:414](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L414) |  |
+| <code>Stopped = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:415](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L415) |  |
 
 ## ReconciliationCaseStateTransition
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseStateTransition</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:972](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L972).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:996](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L996).
 
 ```csharp
 public sealed record ReconciliationCaseStateTransition(string TransitionId, ReconciliationCaseLifecycleState From, ReconciliationCaseLifecycleState To, string Actor, string? Rationale, DateTimeOffset OccurredAt, IReadOnlyList<string>? EvidenceReferences = null, string? PreviousHash = null, string? EntryHash = null);
@@ -182,7 +182,7 @@ public sealed record ReconciliationCaseStateTransition(string TransitionId, Reco
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseTransitionAction</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:983](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L983).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1007](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1007).
 
 ```csharp
 public enum ReconciliationCaseTransitionAction : byte
@@ -192,18 +192,18 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>StartReview = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:985](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L985) |  |
-| <code>RequestApproval = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:986](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L986) |  |
-| <code>Approve = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:987](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L987) |  |
-| <code>Post = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:988](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L988) |  |
-| <code>Reopen = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:989](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L989) |  |
-| <code>Supersede = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:990](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L990) |  |
+| <code>StartReview = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1009](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1009) |  |
+| <code>RequestApproval = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1010](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1010) |  |
+| <code>Approve = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1011](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1011) |  |
+| <code>Post = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1012](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1012) |  |
+| <code>Reopen = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1013](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1013) |  |
+| <code>Supersede = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1014](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1014) |  |
 
 ## ReconciliationCaseTransitionCommand
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseTransitionCommand</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:993](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L993).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1017](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1017).
 
 ```csharp
 public sealed record ReconciliationCaseTransitionCommand(string BreakId, ReconciliationCaseTransitionAction Action, string Actor, string Reason, IReadOnlyList<string> EvidenceReferences, string? Role = null, string? SupersedingBreakId = null);
@@ -213,7 +213,7 @@ public sealed record ReconciliationCaseTransitionCommand(string BreakId, Reconci
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkAction</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:426](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L426).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:427](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L427).
 
 ```csharp
 public enum ReconciliationCaseworkAction : byte
@@ -223,26 +223,26 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Assign = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:428](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L428) |  |
-| <code>ChangePriority = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:429](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L429) |  |
-| <code>TransitionStatus = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:430](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L430) |  |
-| <code>AddComment = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:431](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L431) |  |
-| <code>EditComment = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:432](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L432) |  |
-| <code>DeleteComment = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:433](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L433) |  |
-| <code>SetRootCause = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:434](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L434) |  |
-| <code>SetResolution = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:435](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L435) |  |
-| <code>LinkEvidence = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:436](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L436) |  |
-| <code>SignOff = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:437](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L437) |  |
-| <code>Reopen = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L438) |  |
-| <code>Resolve = 11</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:439](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L439) |  |
-| <code>Waive = 12</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:440](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L440) |  |
-| <code>Supersede = 13</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:441](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L441) |  |
+| <code>Assign = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:429](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L429) |  |
+| <code>ChangePriority = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:430](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L430) |  |
+| <code>TransitionStatus = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:431](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L431) |  |
+| <code>AddComment = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:432](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L432) |  |
+| <code>EditComment = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:433](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L433) |  |
+| <code>DeleteComment = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:434](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L434) |  |
+| <code>SetRootCause = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:435](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L435) |  |
+| <code>SetResolution = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:436](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L436) |  |
+| <code>LinkEvidence = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:437](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L437) |  |
+| <code>SignOff = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:438](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L438) |  |
+| <code>Reopen = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:439](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L439) |  |
+| <code>Resolve = 11</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:440](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L440) |  |
+| <code>Waive = 12</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:441](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L441) |  |
+| <code>Supersede = 13</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:442](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L442) |  |
 
 ## ReconciliationCaseworkCloseScopeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkCloseScopeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:735](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L735).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:756](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L756).
 
 Exact accounting-close scope retained when statement casework has been handed to the matching Operations Continuity workflow. This scope is queue-owned evidence; callers cannot use it to post, approve, or close a ledger period.
 
@@ -254,7 +254,7 @@ public sealed record ReconciliationCaseworkCloseScopeDto(string FundProfileId, G
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkCommand</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:695](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L695).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:716](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L716).
 
 ```csharp
 public sealed record ReconciliationCaseworkCommand(string BreakId, ReconciliationCaseworkAction Action, string Actor, string CommandId, string CorrelationId, string Source, long ExpectedVersion, string? Reason = null, string? Assignee = null, ReconciliationCasePriority? Priority = null, ReconciliationCaseLifecycleState? Status = null, string? Note = null, string? RootCauseCode = null, string? ResolutionCode = null, string? CausationId = null, string? CommentId = null, string? ParentCommentId = null, ReconciliationCaseCommentVisibility Visibility = ReconciliationCaseCommentVisibility.Internal, IReadOnlyList<string>? EvidenceLinks = null, bool Privileged = false, ReconciliationCaseLifecycleState? StatusTransition = null, IReadOnlyList<string>? Mentions = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, string? ApprovalActor = null, string? ApprovalReference = null, string? SupersedingBreakId = null)
@@ -264,13 +264,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReconciliationCaseworkCloseScopeDto? CloseScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:727](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L727) | Server-resolved close scope bound by the statement/Operations evidence handoff. Init-only preserves the established command constructor and deconstruction ABI. |
+| <code>public ReconciliationCaseworkCloseScopeDto? CloseScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:748](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L748) | Server-resolved close scope bound by the statement/Operations evidence handoff. Init-only preserves the established command constructor and deconstruction ABI. |
 
 ## ReconciliationCaseworkOperationResult
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseworkOperationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:942](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L942).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:966](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L966).
 
 API-safe terminal receipt for a single reconciliation casework attempt. HTTP success only means the command was evaluated; callers must use Outcome to determine whether its postconditions were satisfied, blocked, or failed.
 
@@ -298,7 +298,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCorrelationContext</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1083](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1083).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1123](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1123).
 
 Cross-workflow correlation metadata stamped on every reconciliation payload.
 
@@ -310,7 +310,7 @@ public sealed record ReconciliationCorrelationContext(string TraceId, string Spa
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationJobControl</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1106](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1106).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1146](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1146).
 
 Queue orchestration controls and replay metadata for resilient reconciliation jobs.
 
@@ -322,7 +322,7 @@ public sealed record ReconciliationJobControl(string JobId, string IdempotencyKe
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationLogicalBreakIdentity</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L187).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L188).
 
 Builds a stable, case-normalized identity for one logical reconciliation check and its source scope. The hash keeps caller-provided identifiers from becoming ambiguous delimiter-separated keys while retaining a versioned contract prefix.
 
@@ -334,13 +334,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static string Create(string checkId, Guid? bankEntityId = null, string? sourceScope = null, OperationsContinuityCorrelationKeysDto? correlationKeys = null);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L189) |  |
+| <code>public static string Create(string checkId, Guid? bankEntityId = null, string? sourceScope = null, OperationsContinuityCorrelationKeysDto? correlationKeys = null);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L190) |  |
 
 ## ReconciliationMatchDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationMatchDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:122](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L122).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L123).
 
 Successful comparison row emitted by the reconciliation engine.
 
@@ -352,11 +352,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;ReconciliationBreakMeasureDto&gt; Measures { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L133) |  |
-| <code>public string? LogicalBreakIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:136](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L136) | Canonical identity of the logical check resolved by this match. |
-| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L138) |  |
-| <code>public string? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L140) |  |
-| <code>public OperationsContinuityCorrelationKeysDto? CorrelationKeys { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:142](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L142) |  |
+| <code>public IReadOnlyList&lt;ReconciliationBreakMeasureDto&gt; Measures { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:134](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L134) |  |
+| <code>public string? LogicalBreakIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:137](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L137) | Canonical identity of the logical check resolved by this match. |
+| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L139) |  |
+| <code>public string? SourceScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:141](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L141) |  |
+| <code>public OperationsContinuityCorrelationKeysDto? CorrelationKeys { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:143](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L143) |  |
 
 ## ReconciliationMonetaryTotal
 
@@ -402,7 +402,7 @@ public sealed record ReconciliationObservedMatchSubject(string EvidenceReference
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationPayloadEnvelope</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1093](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1093).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1133](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1133).
 
 Canonical envelope for inbound/outbound reconciliation payloads.
 
@@ -410,11 +410,21 @@ Canonical envelope for inbound/outbound reconciliation payloads.
 public sealed record ReconciliationPayloadEnvelope<TPayload>(string PayloadId, ReconciliationSchemaVersion Schema, ReconciliationCorrelationContext Correlation, DateTimeOffset CreatedAt, string Producer, string Direction, string? IdempotencyKey, TPayload Payload);
 ```
 
+## ReconciliationPermittedCommandDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationPermittedCommandDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:616](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L616).
+
+```csharp
+public sealed record ReconciliationPermittedCommandDto(string Action, bool Enabled, string? DisabledReason);
+```
+
 ## ReconciliationProcessingTelemetry
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationProcessingTelemetry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1121](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1121).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1161](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1161).
 
 Processing telemetry summary for SLA and throughput observability.
 
@@ -426,7 +436,7 @@ public sealed record ReconciliationProcessingTelemetry(double MatchRate, double 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRolloutFlags</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1132](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1132).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1172](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1172).
 
 Scoped rollout flags for phased reconciliation releases.
 
@@ -438,7 +448,7 @@ public sealed record ReconciliationRolloutFlags(bool Enabled, IReadOnlyList<stri
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunDetail</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:352](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L352).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:353](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L353).
 
 Full detail payload for a single reconciliation run.
 
@@ -468,7 +478,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:72](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L72).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L73).
 
 Request to create a reconciliation run for a recorded strategy run.
 
@@ -480,14 +490,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal QuantityTolerance { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L84) | Absolute native units; the original AmountTolerance retains relative-fraction semantics. |
-| <code>public decimal BasisAmountTolerance { get; init; } = 0.01m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L85) |  |
+| <code>public decimal QuantityTolerance { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:85](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L85) | Absolute native units; the original AmountTolerance retains relative-fraction semantics. |
+| <code>public decimal BasisAmountTolerance { get; init; } = 0.01m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L86) |  |
 
 ## ReconciliationRunSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationRunSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L91).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:92](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L92).
 
 Summary of a completed reconciliation run.
 
@@ -499,13 +509,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L116) | Optional banking entity scope used when this reconciliation run included bank inputs. Kept outside the positional constructor so persisted legacy payloads remain readable. |
+| <code>public Guid? BankEntityId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:117](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L117) | Optional banking entity scope used when this reconciliation run included bank inputs. Kept outside the positional constructor so persisted legacy payloads remain readable. |
 
 ## ReconciliationSchemaVersion
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSchemaVersion</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1073](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1073).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1113](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1113).
 
 Canonical schema version metadata for reconciliation ingress/egress payloads.
 
@@ -517,7 +527,7 @@ public sealed record ReconciliationSchemaVersion(string ContractName, int Major,
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSecurityCoverageIssueDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:222](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L222).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:223](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L223).
 
 Security Master coverage issue attached to a reconciliation run.
 
@@ -529,7 +539,7 @@ public sealed record ReconciliationSecurityCoverageIssueDto(string Source, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSlaComputationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:673](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L673).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:694](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L694).
 
 ```csharp
 public sealed record ReconciliationSlaComputationResult(string PolicyId, DateTimeOffset DueAt, DateTimeOffset WarningAt, DateTimeOffset? BreachedAt, ReconciliationCaseSlaState State, string AgeBand, double BusinessAgeHours);
@@ -539,7 +549,7 @@ public sealed record ReconciliationSlaComputationResult(string PolicyId, DateTim
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSlaPolicy</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:652](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L652).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:673](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L673).
 
 ```csharp
 public sealed record ReconciliationSlaPolicy(string PolicyId, string? FundId, string? AccountId, string? BreakType, ReconciliationBreakSeverity Severity, ReconciliationCasePriority Priority, string TimeZoneId, TimeOnly BusinessDayStart, TimeOnly BusinessDayEnd, int DueBusinessHours, int WarningBusinessHours, bool StopOnResolved = true, bool StopOnSignedOff = false, bool PauseAwaitingEvidence = true, string? BusinessCalendarId = null, IReadOnlyList<string>? HolidayCalendarIds = null, IReadOnlyList<string>? PauseRules = null, IReadOnlyList<string>? StopRules = null, IReadOnlyList<string>? EscalationRules = null);
@@ -549,7 +559,7 @@ public sealed record ReconciliationSlaPolicy(string PolicyId, string? FundId, st
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSourceKind</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L14).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L15).
 
 Source type participating in a reconciliation comparison.
 
@@ -561,12 +571,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L16) |  |
-| <code>Portfolio = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L17) |  |
-| <code>Ledger = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L18) |  |
-| <code>Bank = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L19) |  |
-| <code>ExternalStatement = Bank</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L20) |  |
-| <code>Cash = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L21) |  |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L17) |  |
+| <code>Portfolio = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L18) |  |
+| <code>Ledger = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L19) |  |
+| <code>Bank = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L20) |  |
+| <code>ExternalStatement = Bank</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L21) |  |
+| <code>Cash = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L22) |  |
 
 ## ReconciliationSourceRegrouping
 
@@ -621,7 +631,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomySnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:690](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L690).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:711](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L711).
 
 ```csharp
 public sealed record ReconciliationTaxonomySnapshot(int Version, IReadOnlyList<ReconciliationTaxonomyValue> RootCauses, IReadOnlyList<ReconciliationTaxonomyValue> ResolutionCodes);
@@ -631,7 +641,7 @@ public sealed record ReconciliationTaxonomySnapshot(int Version, IReadOnlyList<R
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomyValue</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:683](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L683).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:704](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L704).
 
 ```csharp
 public sealed record ReconciliationTaxonomyValue(string Code, string DisplayName, int Version, bool IsActive, IReadOnlyList<string>? RequiredEvidencePrefixes = null);
@@ -720,21 +730,3 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1675]
 ```csharp
 public sealed record ReportAccessEvaluationDto(bool IsAccessible, string Reason, IReadOnlyList<ReportAccessPrincipalDto> MatchedPrincipals);
 ```
-
-## ReportAccessModeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessModeDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1648](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1648).
-
-```csharp
-public enum ReportAccessModeDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Private = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1650](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1650) |  |
-| <code>Restricted = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1651](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1651) |  |
-| <code>CompanyWide = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1652](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1652) |  |

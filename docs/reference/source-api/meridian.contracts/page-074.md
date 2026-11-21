@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResearchBriefingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:132](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L132).
+
+Typed retained research briefing payload shared by Strategy workstation surfaces.
+
+```csharp
+public sealed record ResearchBriefingDto(ResearchBriefingWorkspaceSummary Workspace, InsightFeed InsightFeed, IReadOnlyList<WorkstationWatchlist> Watchlists, IReadOnlyList<ResearchBriefingRun> RecentRuns, IReadOnlyList<ResearchSavedComparison> SavedComparisons, IReadOnlyList<ResearchBriefingAlert> Alerts, IReadOnlyList<ResearchWhatChangedItem> WhatChanged);
+```
+
 ## ResearchBriefingRun
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingRun</code>. Kind: `record`.
@@ -92,13 +104,21 @@ public sealed record ResolveBreakCase(Guid WorkflowId, FundWorkflowCommandMetada
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1062](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1062).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1091](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1091).
 
 Request to resolve or dismiss a break with audit metadata.
 
 ```csharp
-public sealed record ResolveReconciliationBreakRequest(string BreakId, ReconciliationBreakQueueStatus Status, string ResolvedBy, string ResolutionNote, string OperatorRationale, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
+public sealed record ResolveReconciliationBreakRequest(string BreakId, ReconciliationBreakQueueStatus Status, string ResolvedBy, string ResolutionNote, string OperatorRationale, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public long? ExpectedVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1101](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1101) | Version inspected by the operator for a guarded decision. Legacy adapters may omit it. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? RootCauseCode { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1104](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1104) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ResolutionCode { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1107](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1107) |  |
 
 ## ResolveSecurityMasterMappings
 
@@ -158,13 +178,19 @@ public sealed record ReviewOnboardingWorkspaceRequestDto(int ExpectedVersion, in
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1052](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1052).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1076](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1076).
 
 Request to move a break into active review and assign an operator.
 
 ```csharp
-public sealed record ReviewReconciliationBreakRequest(string BreakId, string AssignedTo, string ReviewedBy, string? ReviewNote = null, string? Team = null);
+public sealed record ReviewReconciliationBreakRequest(string BreakId, string AssignedTo, string ReviewedBy, string? ReviewNote = null, string? Team = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public long? ExpectedVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1085](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1085) | Optional compatibility extension. Browser casework supplies the version it reviewed. |
 
 ## RevokePreparerAttestationRequestDto
 
@@ -180,7 +206,7 @@ public sealed record RevokePreparerAttestationRequestDto(Guid CommandId, Guid Re
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunAttributionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:984](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L984).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:993](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L993).
 
 Complete attribution breakdown for one run.
 
@@ -192,7 +218,7 @@ public sealed record RunAttributionSummary(string RunId, StrategyRunMode Mode, d
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashFlowSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1031](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1031).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1040](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1040).
 
 Cash-flow projection summary for a strategy run. Includes both the raw historical entries and a time-bucketed cash ladder computed by the F# CashLadder.build module.
 
@@ -204,7 +230,7 @@ public sealed record RunCashFlowSummary(string RunId, DateTimeOffset AsOf, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashLadder</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1017](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1017).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1026](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1026).
 
 Time-bucketed forward view of projected cash flows for one run.
 
@@ -216,7 +242,7 @@ public sealed record RunCashLadder(DateTimeOffset AsOf, string Currency, int Buc
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:810](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L810).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:819](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L819).
 
 Normalized cross-mode run comparison DTO that includes the full set of BacktestMetrics fields plus equity curve data and parentage chain info. Returned by GET /api/strategies/runs/compare?ids=a,b. Defined nonfinite outcomes retain the SDK&#x27;s named JSON values: positive infinity for loss-free profit factor or downside-free Sortino, and NaN for unavailable XIRR.
 
@@ -228,15 +254,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMixHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:854](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L854) |  |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:856](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L856) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:858](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L858) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMixHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:863](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L863) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:865](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L865) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:867](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L867) |  |
 
 ## RunComparisonRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:862](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L862).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:871](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L871).
 
 Request to compare multiple strategy runs side by side.
 
@@ -248,7 +274,7 @@ public sealed record RunComparisonRequest(IReadOnlyList<string> RunIds, IReadOnl
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunDiffRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:867](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L867).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:876](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L876).
 
 Request to diff two strategy runs.
 
@@ -260,7 +286,7 @@ public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:955](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L955).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:964](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L964).
 
 A single executed fill from a strategy run.
 
@@ -272,7 +298,7 @@ public sealed record RunFillEntry(Guid FillId, Guid OrderId, string Symbol, long
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:966](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L966).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:975](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L975).
 
 Trade-level fill list for one run.
 
@@ -284,7 +310,7 @@ public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int Tota
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1204](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1204).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1213](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1213).
 
 Lot history for a single strategy run, optionally filtered to one symbol.
 
@@ -296,7 +322,7 @@ public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClo
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1046](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1046).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1055](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1055).
 
 Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
 
@@ -416,7 +442,7 @@ public sealed record SecurityIdentityDrillInDto(Guid SecurityId, string DisplayN
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterAccountingIssueDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:338](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L338).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L339).
 
 Structured posture or reconciliation issue from Security Master-driven accounting.
 
@@ -600,14 +626,4 @@ Result of a field edit / submit transition.
 
 ```csharp
 public sealed record SecurityMasterEditResultDto(Guid SecurityId, Guid RevisionId, long NewVersion, SecurityMasterRevisionStateDto State, SecurityMasterChangeHistoryItemDto ChangeEntry);
-```
-
-## SecurityMasterEntitlementApplicabilityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEntitlementApplicabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:541](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L541).
-
-```csharp
-public sealed record SecurityMasterEntitlementApplicabilityDto(Guid EntitlementId, string VendorName, DataVendorDataType DataType, string Scope, string? ClientId, string? AccountId, string? FundProfileId, Guid? SecurityId, bool IsApplicable, bool IsMostSpecific, DataVendorEntitlementStatus Status, bool RequiresDirectClientContract, string? ContractReference, string Summary);
 ```

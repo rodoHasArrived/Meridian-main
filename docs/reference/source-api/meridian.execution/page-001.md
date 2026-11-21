@@ -732,20 +732,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? MarketDataEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:67](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L67) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementCurrency { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:70](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L70) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMode { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:73](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L73) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;TradeExecutionFee&gt;? Fees { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:76](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L76) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? BrokerActivityId { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:80](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L80) | Exact broker statement activity identity when the source supplied one. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:104](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L104) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:112](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L112) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
-| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:122](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L122) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AccountingRunId { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:68](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L68) | Typed, admitted strategy-run ownership. Historical and untyped labels provide no ownership proof. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? MarketDataEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:71](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L71) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SettlementCurrency { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:74](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L74) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMode { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:77](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L77) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;TradeExecutionFee&gt;? Fees { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:80](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L80) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? BrokerActivityId { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:84](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L84) | Exact broker statement activity identity when the source supplied one. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public int AccountingEvidenceVersion { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:118](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L118) | Accounting-evidence contract used by the producer. Zero identifies historical events; current OMS fills use version one even when their accounting context is unavailable. An absent version-one payload must block posting rather than imply a position direction. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public TradeFillAccountingEvidence? AccountingEvidence { get; init; }</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:126](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L126) | Exact opening and closing economics captured while the portfolio applies this fill. A null value does not authorize reconstructing basis or short direction from realized P&amp;L. Historical event JSON and the positional constructor remain unchanged when absent. |
+| <code>public decimal GrossValue =&gt; …;</code> | [src/Meridian.Execution/Events/TradeExecutedEvent.cs:136](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L136) | Gross trade value, always positive. For a face-value fill the clean price is a percentage of par, so the price is scaled to a fraction of par before multiplying — the same convention pre-trade risk uses to measure the order — keeping the booked cash movement equal to the notional the risk gate approved. Otherwise the quoted price is scaled by ContractMultiplier, matching the paper portfolio&#x27;s cash and realized P&amp;L. |
 
 ## TradeExecutionFee
 
 Qualified name: <code>Meridian.Execution.Events.TradeExecutionFee</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:129](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L129).
+Source: [src/Meridian.Execution/Events/TradeExecutedEvent.cs:143](../../../../src/Meridian.Execution/Events/TradeExecutedEvent.cs#L143).
 
 A separately identified source fee; commission is not repeated here.
 
@@ -912,8 +913,17 @@ Source: [src/Meridian.Execution/Interfaces/IAccountPortfolio.cs:106](../../../..
 Detailed, per-account snapshot including full position list. Returned by IAccountPortfolio.TakeSnapshot and the per-account REST endpoint.
 
 ```csharp
-public sealed record ExecutionAccountDetailSnapshot(string AccountId, string DisplayName, AccountKind Kind, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal UnrealisedPnl, decimal RealisedPnl, IReadOnlyList<ExecutionPosition> Positions, DateTimeOffset AsOf, MarginAccountType MarginType = MarginAccountType.Cash, decimal BuyingPower = 0m, decimal ShortMarginCollateral = 0m);
+public sealed record ExecutionAccountDetailSnapshot(string AccountId, string DisplayName, AccountKind Kind, decimal Cash, decimal MarginBalance, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal UnrealisedPnl, decimal RealisedPnl, IReadOnlyList<ExecutionPosition> Positions, DateTimeOffset AsOf, MarginAccountType MarginType = MarginAccountType.Cash, decimal BuyingPower = 0m, decimal ShortMarginCollateral = 0m)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? FunctionalCurrency { get; init; }</code> | [src/Meridian.Execution/Interfaces/IAccountPortfolio.cs:126](../../../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs#L126) | Explicit native-book functional currency; absent on older snapshots. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccountingEquity { get; init; }</code> | [src/Meridian.Execution/Interfaces/IAccountPortfolio.cs:129](../../../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs#L129) | Exact native NAV including loans, collateral and unsettled variation margin. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccountingLongMarketValue { get; init; }</code> | [src/Meridian.Execution/Interfaces/IAccountPortfolio.cs:132](../../../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs#L132) | Positive position-value contributions to native NAV, rather than gross exposure. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccountingShortMarketValue { get; init; }</code> | [src/Meridian.Execution/Interfaces/IAccountPortfolio.cs:135](../../../../src/Meridian.Execution/Interfaces/IAccountPortfolio.cs#L135) | Signed negative position-value contributions to native NAV, rather than gross exposure. |
 
 ## IAccountPortfolio
 
@@ -1034,22 +1044,20 @@ Declared public members:
 | --- | --- | --- |
 | <code>void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs:12](../../../../src/Meridian.Execution/Interfaces/IPaperFillEvaluationTrigger.cs#L12) | Schedules re-evaluation of resting paper orders for symbol. |
 
-## MarketDataSnapshot
+## IPositionAccountingEvidenceSource
 
-Qualified name: <code>Meridian.Execution.Interfaces.MarketDataSnapshot</code>. Kind: `record struct`.
+Qualified name: <code>Meridian.Execution.Interfaces.IPositionAccountingEvidenceSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:62](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L62).
+Source: [src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs:6](../../../../src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs#L6).
 
-A single coherent observation of the last-known market data for one symbol: the fields were read together, so a consumer never sees a quote from before an update paired with a trade from after it.
+Optional native-book source of exact position and account facts, captured atomically.
 
 ```csharp
-public readonly record struct MarketDataSnapshot(BboQuotePayload? Quote, Trade? Trade, HistoricalBar? Bar)
+public interface IPositionAccountingEvidenceSource
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? QuoteEvidence { get; init; }</code> | [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:67](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L67) |  |
-| <code>public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? TradeEvidence { get; init; }</code> | [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:68](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L68) |  |
-| <code>public IReadOnlyList&lt;Meridian.Contracts.Operations.MarketDataInputEvidence&gt;? BarEvidence { get; init; }</code> | [src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs:69](../../../../src/Meridian.Execution/Interfaces/ILiveFeedAdapter.cs#L69) |  |
+| <code>PositionAccountingEvidenceSnapshot CapturePositionAccountingEvidence();</code> | [src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs:8](../../../../src/Meridian.Execution/Interfaces/IPositionAccountingEvidenceSource.cs#L8) |  |

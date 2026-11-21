@@ -63,7 +63,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.BankInternalCashReconciliationSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:149](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L149).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:153](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L153).
 
 Maps available bank transactions into internal cash movements for reconciliation.
 
@@ -75,8 +75,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BankInternalCashReconciliationSourceAdapter(IBankTransactionSource? bankTransactionSource = null);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:153](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L153) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:158](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L158) |  |
+| <code>public BankInternalCashReconciliationSourceAdapter(IBankTransactionSource? bankTransactionSource = null);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:157](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L157) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:162](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L162) |  |
 
 ## BookReceiptReversalCommand
 
@@ -125,7 +125,7 @@ public sealed record CrossStrategyExposureReport(decimal GrossExposure, decimal 
 
 Qualified name: <code>Meridian.Strategies.Services.ExternalStatementReconciliationSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:186](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L186).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:190](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L190).
 
 Delegates reconciliation statement retrieval to the configured external statement source.
 
@@ -137,8 +137,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ExternalStatementReconciliationSourceAdapter(IExternalStatementSource externalStatementSource);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:190](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L190) |  |
-| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:195](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L195) |  |
+| <code>public ExternalStatementReconciliationSourceAdapter(IExternalStatementSource externalStatementSource);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:194](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L194) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:199](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L199) |  |
 
 ## FileReconciliationBreakQueueRepository
 
@@ -160,7 +160,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ReconciliationTaxonomySnapshot Taxonomy { get; } = new (Version : 1, RootCauses : RootCauseCodes.Select(code =&gt; new ReconciliationTaxonomyValue(code, code, 1, true)).ToArray(), ResolutionCodes : ResolutionCodes.Select(code =&gt; new ReconciliationTaxonomyValue(code, code, 1, true, ResolutionEvidencePrefixes.TryGetValue(code, out var prefixes)? prefixes : null)).ToArray());</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:1339](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L1339) |  |
+| <code>public static IReadOnlyList&lt;ReconciliationPermittedCommandDto&gt; GetPermittedCommands(ReconciliationBreakQueueItem item, string actor, bool canMutate, bool humanOperator, bool privileged);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:168](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L168) | Availability to open a decision form. Required form inputs are validated on submission; lifecycle, human-origin and immutable-state restrictions use the mutation validator. |
+| <code>public static ReconciliationTaxonomySnapshot Taxonomy { get; } = new (Version : 1, RootCauses : RootCauseCodes.Select(code =&gt; new ReconciliationTaxonomyValue(code, code, 1, true)).ToArray(), ResolutionCodes : ResolutionCodes.Select(code =&gt; new ReconciliationTaxonomyValue(code, code, 1, true, ResolutionEvidencePrefixes.TryGetValue(code, out var prefixes)? prefixes : null)).ToArray());</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:1411](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L1411) |  |
 
 Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:8](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L8).
 
@@ -177,7 +178,7 @@ Declared public members:
 | <code>public async Task&lt;ReconciliationCloseScopeReopenReceipt&gt; ReopenCloseScopeAsync(ReconciliationCloseScope scope, ReconciliationCloseScopeReopenCommand command, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:179](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L179) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;ReconciliationCloseScopeHistoryEntry&gt;&gt; ListCloseScopeHistoryAsync(ReconciliationCloseScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs:280](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.CloseScope.cs#L280) |  |
 
-Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:14](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L14).
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:15](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L15).
 
 Persists reconciliation break casework, source lineage, and close-scope coordination in integrity-checked files.
 
@@ -189,31 +190,31 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public FileReconciliationBreakQueueRepository(string dataDirectory, ILogger&lt;FileReconciliationBreakQueueRepository&gt; logger, IReconciliationSlaPolicyProvider? slaPolicyProvider = null, Func&lt;string, string, CancellationToken, Task&gt;? stateWriter = null, IReconciliationSlaCalendarResolver? slaCalendarResolver = null, IPreparerAttestationReferenceClassifier? preparerAttestationReferences = null);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:43](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L43) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:103](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L103) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAllAsync(ReconciliationBreakQueueScope scope, ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:125](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L125) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingByTeamAsync(string team, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:152](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L152) |  |
-| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; GetByIdAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:175](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L175) |  |
-| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; GetByIdAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:191](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L191) |  |
-| <code>public Task&lt;bool&gt; CreateIfMissingAsync(ReconciliationBreakQueueScope scope, ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:212](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L212) |  |
-| <code>public async Task&lt;bool&gt; CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:228](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L228) |  |
-| <code>public async Task&lt;bool&gt; CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:390](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L390) |  |
-| <code>public async Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:545](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L545) |  |
-| <code>public async Task&lt;bool&gt; DeleteAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:616](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L616) |  |
-| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:671](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L671) |  |
-| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; StartReviewAsync(ReconciliationBreakQueueScope scope, ReviewReconciliationBreakRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:676](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L676) |  |
-| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:861](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L861) |  |
-| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ResolveAsync(ReconciliationBreakQueueScope scope, ResolveReconciliationBreakRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:866](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L866) |  |
-| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyCaseworkCommandAsync(ReconciliationCaseworkCommand command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1081](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1081) |  |
-| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyCaseworkCommandAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1086](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1086) |  |
-| <code>public Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkCaseworkAsync(ReconciliationBulkCaseworkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1293](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1293) |  |
-| <code>public Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkCaseworkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1298](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1298) |  |
-| <code>public async Task&lt;ReconciliationBulkCaseworkResult?&gt; GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1636](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1636) |  |
-| <code>public async Task&lt;ReconciliationBulkCaseworkResult?&gt; GetBulkCaseworkResultAsync(ReconciliationBreakQueueScope scope, string bulkActionIdOrIdempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1660](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1660) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueAuditEvent&gt;&gt; GetAuditHistoryAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1690](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1690) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueAuditEvent&gt;&gt; GetAuditHistoryAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1708](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1708) |  |
-| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; RebuildSnapshotFromAuditAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1787](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1787) |  |
-| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; RebuildSnapshotFromAuditAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1811](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1811) |  |
+| <code>public FileReconciliationBreakQueueRepository(string dataDirectory, ILogger&lt;FileReconciliationBreakQueueRepository&gt; logger, IReconciliationSlaPolicyProvider? slaPolicyProvider = null, Func&lt;string, string, CancellationToken, Task&gt;? stateWriter = null, IReconciliationSlaCalendarResolver? slaCalendarResolver = null, IPreparerAttestationReferenceClassifier? preparerAttestationReferences = null);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:44](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L44) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:121](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L121) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAllAsync(ReconciliationBreakQueueScope scope, ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:143](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L143) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueItem&gt;&gt; GetAgingByTeamAsync(string team, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:170](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L170) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; GetByIdAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:193](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L193) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; GetByIdAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:209](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L209) |  |
+| <code>public Task&lt;bool&gt; CreateIfMissingAsync(ReconciliationBreakQueueScope scope, ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:230](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L230) |  |
+| <code>public async Task&lt;bool&gt; CreateIfMissingAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:246](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L246) |  |
+| <code>public async Task&lt;bool&gt; CreateOrMigrateAsync(ReconciliationBreakQueueItem item, string? previousBreakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:408](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L408) |  |
+| <code>public async Task SaveAsync(ReconciliationBreakQueueItem item, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:563](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L563) |  |
+| <code>public async Task&lt;bool&gt; DeleteAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:634](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L634) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; StartReviewAsync(ReviewReconciliationBreakRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:689](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L689) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; StartReviewAsync(ReconciliationBreakQueueScope scope, ReviewReconciliationBreakRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:694](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L694) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ResolveAsync(ResolveReconciliationBreakRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:890](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L890) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ResolveAsync(ReconciliationBreakQueueScope scope, ResolveReconciliationBreakRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:895](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L895) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyCaseworkCommandAsync(ReconciliationCaseworkCommand command, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1133](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1133) |  |
+| <code>public Task&lt;ReconciliationBreakQueueTransitionResult&gt; ApplyCaseworkCommandAsync(ReconciliationBreakQueueScope scope, ReconciliationCaseworkCommand command, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1138](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1138) |  |
+| <code>public Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkCaseworkAsync(ReconciliationBulkCaseworkRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1345](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1345) |  |
+| <code>public Task&lt;ReconciliationBulkCaseworkResult&gt; ApplyBulkCaseworkAsync(ReconciliationBreakQueueScope scope, ReconciliationBulkCaseworkRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1350](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1350) |  |
+| <code>public async Task&lt;ReconciliationBulkCaseworkResult?&gt; GetBulkCaseworkResultAsync(string bulkActionIdOrIdempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1690](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1690) |  |
+| <code>public async Task&lt;ReconciliationBulkCaseworkResult?&gt; GetBulkCaseworkResultAsync(ReconciliationBreakQueueScope scope, string bulkActionIdOrIdempotencyKey, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1714](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1714) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueAuditEvent&gt;&gt; GetAuditHistoryAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1744](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1744) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakQueueAuditEvent&gt;&gt; GetAuditHistoryAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1762](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1762) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; RebuildSnapshotFromAuditAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1841](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1841) |  |
+| <code>public async Task&lt;ReconciliationBreakQueueItem?&gt; RebuildSnapshotFromAuditAsync(ReconciliationBreakQueueScope scope, string breakId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs:1865](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.cs#L1865) |  |
 
 Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Lineage.cs:13](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Lineage.cs#L13).
 
@@ -400,7 +401,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.IExternalStatementReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:82](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L82).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L84).
 
 Provides normalized external statement rows to a reconciliation run.
 
@@ -412,13 +413,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:84](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L84) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:86](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L86) |  |
 
 ## IExternalStatementSource
 
 Qualified name: <code>Meridian.Strategies.Services.IExternalStatementSource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:74](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L74).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:76](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L76).
 
 Retrieves external statement rows for a requested reconciliation scope.
 
@@ -430,13 +431,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:76](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L76) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:78](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L78) |  |
 
 ## IInternalCashReconciliationSourceAdapter
 
 Qualified name: <code>Meridian.Strategies.Services.IInternalCashReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:66](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L66).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:68](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L68).
 
 Retrieves internal cash movements for a requested reconciliation scope.
 
@@ -448,7 +449,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:68](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L68) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationCashMovementInput&gt;&gt; GetCashMovementsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:70](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L70) |  |
 
 ## InMemoryReconciliationRunRepository
 
@@ -654,9 +655,13 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:8](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L8) |  |
-| <code>Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:10](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L10) |  |
-| <code>Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:12](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L12) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:14](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L14) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; RunAsync(ReconciliationRunRequest request, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:11](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L11) | Runs within trusted request scope. Legacy implementations without scoped reads fail closed. |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:14](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L14) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetByIdAsync(string reconciliationRunId, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:16](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L16) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:19](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L19) |  |
+| <code>Task&lt;ReconciliationRunDetail?&gt; GetLatestForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:21](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L21) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:24](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L24) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationRunSummary&gt;&gt; GetHistoryForRunAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/IReconciliationRunService.cs:26](../../../../src/Meridian.Strategies/Services/IReconciliationRunService.cs#L26) |  |
 
 ## IReconciliationSlaCalendar
 
@@ -712,7 +717,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.ISecurityActualCashActivitySource</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:159](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L159).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:167](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L167).
 
 Indicates that no Security Master accounting-event request is available from the configured source.
 
@@ -724,7 +729,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:166](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L166) | Returns income and principal cash reported for positions with a pay date inside periodStart..periodEnd (inclusive). Rows the source cannot attribute to a held security and account are omitted, never guessed. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityActualCashActivity&gt;&gt; GetActualActivityAsync(IReadOnlyList&lt;SecurityMasterAccountingPosition&gt; positions, DateOnly periodStart, DateOnly periodEnd, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:174](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L174) | Returns income and principal cash reported for positions with a pay date inside periodStart..periodEnd (inclusive). Rows the source cannot attribute to a held security and account are omitted, never guessed. |
 
 ## ISecurityMasterAccountingEventService
 
@@ -803,7 +808,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.IStrategyLedgerReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:54](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L54).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:56](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L56).
 
 Projects a strategy run&#x27;s ledger snapshot into normalized reconciliation input.
 
@@ -815,13 +820,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:56](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L56) |  |
+| <code>ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:58](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L58) |  |
 
 ## IStrategyPortfolioReconciliationSourceAdapter
 
 Qualified name: <code>Meridian.Strategies.Services.IStrategyPortfolioReconciliationSourceAdapter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:60](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L60).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:62](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L62).
 
 Projects a strategy run&#x27;s portfolio snapshot into normalized reconciliation input.
 
@@ -833,7 +838,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:62](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L62) |  |
+| <code>ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:64](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L64) |  |
 
 ## IStrategyRunLedgerSource
 
@@ -852,6 +857,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:10](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L10) |  |
+| <code>IChartOfAccounts? GetPostingChart(IReadOnlyLedger ledger, DateTimeOffset? asOf = null) =&gt; …;</code> | [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:14](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L14) | Explicit retained posting-role registrations for this selected ledger population. |
+| <code>string? GetBalanceComparisonUnavailableReason(IReadOnlyLedger ledger) =&gt; …;</code> | [src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs:17](../../../../src/Meridian.Strategies/Services/IStrategyRunLedgerSource.cs#L17) | Override with null only when this source proves a complete whole-account population. |
 
 ## JsonlReconciliationGovernanceAuditStore
 
@@ -894,9 +901,9 @@ Declared public members:
 | <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:26](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L26) |  |
 | <code>public LedgerSummary? BuildSummary(StrategyRunEntry entry, DateTimeOffset asOf) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:29](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L29) |  |
 | <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:32](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L32) |  |
-| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:35](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L35) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:35](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L35) |  |
 | <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:39](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L39) |  |
-| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct, IReadOnlyLedger? postedLedger) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:42](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L42) |  |
+| <code>public Task&lt;LedgerSummary?&gt; BuildSummaryAsync(StrategyRunEntry entry, DateTimeOffset asOf, CancellationToken ct, IReadOnlyLedger? postedLedger, IChartOfAccounts? postingChart = null) =&gt; …;</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:42](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L42) |  |
 | <code>public IReadOnlyList&lt;StrategyRunContinuityWarning&gt; BuildContinuityWarnings(string runId, LedgerSummary? summary);</code> | [src/Meridian.Strategies/Services/LedgerReadService.cs:78](../../../../src/Meridian.Strategies/Services/LedgerReadService.cs#L78) |  |
 
 ## NetSymbolPosition
@@ -915,7 +922,7 @@ public sealed record NetSymbolPosition(string Symbol, decimal NetQuantity, decim
 
 Qualified name: <code>Meridian.Strategies.Services.NullExternalStatementSource</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:210](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L210).
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:214](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L214).
 
 Supplies an empty external statement population when no statement provider is configured.
 
@@ -927,13 +934,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:212](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L212) |  |
+| <code>public Task&lt;IReadOnlyList&lt;ReconciliationExternalStatementInput&gt;&gt; GetStatementRowsAsync(ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:216](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L216) |  |
 
 ## NullSecurityMasterAccountingEventSourceAdapter
 
 Qualified name: <code>Meridian.Strategies.Services.NullSecurityMasterAccountingEventSourceAdapter</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:173](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L173).
+Source: [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:181](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L181).
 
 ```csharp
 public sealed class NullSecurityMasterAccountingEventSourceAdapter : ISecurityMasterAccountingEventSourceAdapter
@@ -943,7 +950,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:175](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L175) |  |
+| <code>public Task&lt;SecurityMasterAccountingEventRequest?&gt; BuildRequestAsync(StrategyRunDetail detail, ReconciliationRunRequest request, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs:183](../../../../src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs#L183) |  |
 
 ## PortfolioReadService
 

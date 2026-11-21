@@ -6,11 +6,23 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementConnectorDescriptorDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementConnectorDescriptorDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L9).
+
+Describes an available custodian/broker statement connector so workstation clients can offer file import and remote fetch entry points.
+
+```csharp
+public sealed record StatementConnectorDescriptorDto(string ConnectorId, string DisplayName, IReadOnlyList<string> FileExtensions, bool SupportsFileImport, bool SupportsRemoteFetch, bool RequiresMappingProfile, string? DefaultProfileId);
+```
+
 ## StatementFetchScheduleDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementFetchScheduleDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:369](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L369).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:399](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L399).
 
 A persisted scheduled-fetch configuration for a fetch-capable connector.
 
@@ -22,7 +34,7 @@ public sealed record StatementFetchScheduleDto(string ScheduleId, string Connect
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementFetchScheduleUpsertRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:387](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L387).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:417](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L417).
 
 ```csharp
 public sealed record StatementFetchScheduleUpsertRequestDto(string? ScheduleId, string ConnectorId, string ExternalAccountId, string FundAccountId, string SourceInstitution, string? MappingProfileId, string? ToleranceProfileId, int CadenceHours, bool Enabled, string? SourceKind = null, DateOnly? PeriodStart = null, DateOnly? PeriodEnd = null);
@@ -32,7 +44,7 @@ public sealed record StatementFetchScheduleUpsertRequestDto(string? ScheduleId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementImportCommitResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L166).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:192](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L192).
 
 ```csharp
 public sealed record StatementImportCommitResultDto(string RunId, bool Duplicate, int RecordCount, IReadOnlyList<StatementKindSummaryDto> KindSummaries, int BreakCount, int CaseCount, string RetainedSourcePath, string RetainedCanonicalPath, string Status, string NextAction)
@@ -42,19 +54,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EvidenceVaultIdentityDto? EvidenceVaultIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:178](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L178) |  |
-| <code>public string? EvidenceWorkbenchRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:179](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L179) |  |
-| <code>public string? ReconciliationRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:180](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L180) |  |
-| <code>public IReadOnlyList&lt;string&gt; BreakIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L181) |  |
-| <code>public IReadOnlyList&lt;string&gt; CaseIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:182](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L182) |  |
-| <code>public IReadOnlyList&lt;string&gt; ReconciliationCaseRoutes { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:183](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L183) |  |
-| <code>public IReadOnlyList&lt;StatementImportReconciliationCaseLinkDto&gt; ReconciliationCaseLinks { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L184) |  |
-| <code>public IReadOnlyList&lt;string&gt; NextActions { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:185](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L185) |  |
-| <code>public string? RetainedCanonicalEvidencePath { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:186](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L186) |  |
-| <code>public string? StatementReconciliationReportWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L187) |  |
-| <code>public string? StatementReconciliationReportStatusRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L188) |  |
-| <code>public Guid? OperationsWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L189) |  |
-| <code>public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L190) |  |
+| <code>public EvidenceVaultIdentityDto? EvidenceVaultIdentity { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:204](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L204) |  |
+| <code>public string? EvidenceWorkbenchRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:205](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L205) |  |
+| <code>public string? ReconciliationRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L206) |  |
+| <code>public IReadOnlyList&lt;string&gt; BreakIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:207](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L207) |  |
+| <code>public IReadOnlyList&lt;string&gt; CaseIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:208](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L208) |  |
+| <code>public IReadOnlyList&lt;string&gt; ReconciliationCaseRoutes { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L209) |  |
+| <code>public IReadOnlyList&lt;StatementImportReconciliationCaseLinkDto&gt; ReconciliationCaseLinks { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:210](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L210) |  |
+| <code>public IReadOnlyList&lt;string&gt; NextActions { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:211](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L211) |  |
+| <code>public string? RetainedCanonicalEvidencePath { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:212](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L212) |  |
+| <code>public string? StatementReconciliationReportWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:213](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L213) |  |
+| <code>public string? StatementReconciliationReportStatusRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:214](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L214) |  |
+| <code>public Guid? OperationsWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:215](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L215) |  |
+| <code>public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:216](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L216) |  |
+| <code>public string? ReviewId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:217](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L217) |  |
+| <code>public IReadOnlyList&lt;StatementImportRowOutcomeDto&gt; RowOutcomes { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:218](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L218) |  |
+| <code>public string? OutcomesRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:219](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L219) |  |
+| <code>public int TotalRows { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:220](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L220) |  |
 
 ## StatementImportIssueDto
 
@@ -70,7 +86,7 @@ public sealed record StatementImportIssueDto(string Code, string Severity, int? 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementImportPreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:144](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L144).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L166).
 
 ```csharp
 public sealed record StatementImportPreviewDto(string ConnectorId, string ConnectorDisplayName, string? ProfileId, string FileName, long FileSizeBytes, IReadOnlyList<string> DetectedColumns, IReadOnlyList<StatementColumnMappingDto> ColumnMappings, int RecordCount, IReadOnlyList<StatementKindSummaryDto> KindSummaries, IReadOnlyList<StatementImportIssueDto> Issues, IReadOnlyList<StatementProfileSuggestionDto> ProfileSuggestions, string Status, string NextAction = default !)
@@ -80,17 +96,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;StatementAccountSnapshotPreviewDto&gt;? AccountSnapshots { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:159](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L159) |  |
-| <code>public IReadOnlyList&lt;StatementActivitySubtypeSummaryDto&gt;? ActivitySubtypeSummaries { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L160) |  |
-| <code>public IReadOnlyList&lt;StatementActivityCompletenessDto&gt;? ActivityCompleteness { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L161) |  |
-| <code>public int? TaxLotCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L162) |  |
-| <code>public int? BorrowPositionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:163](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L163) |  |
+| <code>public IReadOnlyList&lt;StatementAccountSnapshotPreviewDto&gt;? AccountSnapshots { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L181) |  |
+| <code>public IReadOnlyList&lt;StatementActivitySubtypeSummaryDto&gt;? ActivitySubtypeSummaries { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:182](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L182) |  |
+| <code>public IReadOnlyList&lt;StatementActivityCompletenessDto&gt;? ActivityCompleteness { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:183](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L183) |  |
+| <code>public int? TaxLotCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L184) |  |
+| <code>public int? BorrowPositionCount { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:185](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L185) |  |
+| <code>public string? ReviewId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:186](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L186) |  |
+| <code>public IReadOnlyList&lt;StatementImportReviewRowDto&gt; Rows { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L187) |  |
+| <code>public int TotalRows { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:188](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L188) |  |
+| <code>public string? RowsRoute { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L189) |  |
 
 ## StatementImportReconciliationCaseLinkDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L197).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:227](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L227).
 
 Direct reconciliation case handoff returned after statement import so workstation clients can render case actions without relying on parallel route arrays or rebuilding case routes.
 
@@ -98,11 +118,61 @@ Direct reconciliation case handoff returned after statement import so workstatio
 public sealed record StatementImportReconciliationCaseLinkDto(string CaseId, string? BreakId, string Route, string Label, string Status, string Priority, string Reason, string SuggestedNextAction);
 ```
 
+## StatementImportReviewRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReviewRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L98).
+
+```csharp
+public sealed record StatementImportReviewRowDto(string RowId, int NormalizedIndex, int? SourceRowNumber, StatementRecordPreviewDto Record, IReadOnlyList<StatementImportIssueDto> Issues, bool CanExclude, string? ExclusionDisabledReason, bool CanAcceptAsBreak = false);
+```
+
+## StatementImportReviewRowsPageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReviewRowsPageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:109](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L109).
+
+```csharp
+public sealed record StatementImportReviewRowsPageDto(IReadOnlyList<StatementImportReviewRowDto> Rows, int TotalRows, int Offset, int Limit);
+```
+
+## StatementImportRowDispositionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowDispositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L103).
+
+```csharp
+public sealed record StatementImportRowDispositionDto(string RowId, string Disposition, string Reason);
+```
+
+## StatementImportRowOutcomeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:105](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L105).
+
+```csharp
+public sealed record StatementImportRowOutcomeDto(string RowId, int NormalizedIndex, string Disposition, string? Reason, string Status, string? RunId, IReadOnlyList<string> CaseIds);
+```
+
+## StatementImportRowOutcomesPageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportRowOutcomesPageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L112).
+
+```csharp
+public sealed record StatementImportRowOutcomesPageDto(IReadOnlyList<StatementImportRowOutcomeDto> RowOutcomes, int TotalRows, int Offset, int Limit);
+```
+
 ## StatementKindSummaryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementKindSummaryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L133).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:155](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L155).
 
 Per-kind record breakdown so operators importing a mixed statement see exactly what lands in each lane (positions, transactions, cash balances, fees, dividends).
 
@@ -227,7 +297,7 @@ public sealed record StatementNormalizedTransactionDto(string? RowId, string? Ac
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementProfileSuggestionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L139).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:161](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L161).
 
 A catalog profile ranked against the detected columns of an uploaded statement.
 
@@ -239,7 +309,7 @@ public sealed record StatementProfileSuggestionDto(string ProfileId, string Disp
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:249](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L249).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:279](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L279).
 
 Exact accounting authority bound to a statement import before it can enter close casework.
 
@@ -313,7 +383,7 @@ public sealed record StatementReconciliationCaseDto(string? CaseId, string? RunI
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportArtifactDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:220](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L220).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:250](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L250).
 
 One immutable, hash-verified artifact produced by the statement reconciliation report workflow.
 
@@ -325,7 +395,7 @@ public sealed record StatementReconciliationReportArtifactDto(string ArtifactId 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportArtifactGenerationDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L235).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:265](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L265).
 
 One superseded artifact generation retained for immutable workflow and audit history. Artifact descriptors preserve the exact metadata that was current for the generation; their original download routes are audit metadata and do not authorize historical download.
 
@@ -337,7 +407,7 @@ public sealed record StatementReconciliationReportArtifactGenerationDto(int Gene
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:259](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L259).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:289](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L289).
 
 Durable workflow projection shared by browser and WPF clients. It exposes retained evidence and recovery routes without exposing server file-system paths.
 
@@ -349,16 +419,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:288](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L288) | Server-verified fund, ledger-book, period, and as-of scope. Null denotes a legacy reconciliation-only workflow that cannot be used as close or certified-reporting evidence. |
-| <code>public Guid? OperationsWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:294](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L294) | Existing Operations Continuity workflow that owns posting, casework, approval, and close. The statement operation does not duplicate that lifecycle. |
-| <code>public int ArtifactGeneration { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:301](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L301) | Monotonic number of the latest artifact generation produced by this workflow. When the workflow is awaiting reconciliation after a reopen, the latest generation is historical and RetainedArtifacts remains empty until a new current generation completes. |
-| <code>public IReadOnlyList&lt;StatementReconciliationReportArtifactGenerationDto&gt; ArtifactHistory { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:307](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L307) | Immutable metadata, manifest hashes, descriptors, and audit evidence for superseded artifact generations. Current artifact authority remains exclusively in RetainedArtifacts. |
+| <code>public StatementReconciliationAccountingScopeDto? AccountingScope { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:318](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L318) | Server-verified fund, ledger-book, period, and as-of scope. Null denotes a legacy reconciliation-only workflow that cannot be used as close or certified-reporting evidence. |
+| <code>public Guid? OperationsWorkflowId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:324](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L324) | Existing Operations Continuity workflow that owns posting, casework, approval, and close. The statement operation does not duplicate that lifecycle. |
+| <code>public int ArtifactGeneration { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:331](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L331) | Monotonic number of the latest artifact generation produced by this workflow. When the workflow is awaiting reconciliation after a reopen, the latest generation is historical and RetainedArtifacts remains empty until a new current generation completes. |
+| <code>public IReadOnlyList&lt;StatementReconciliationReportArtifactGenerationDto&gt; ArtifactHistory { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:337](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L337) | Immutable metadata, manifest hashes, descriptors, and audit evidence for superseded artifact generations. Current artifact authority remains exclusively in RetainedArtifacts. |
 
 ## StatementReconciliationReportWorkflowStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationReportWorkflowStatusDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L209).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:239](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L239).
 
 Status of the durable statement reconciliation report workflow.
 
@@ -370,12 +440,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>InputRetained = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:211](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L211) |  |
-| <code>Importing = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:212](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L212) |  |
-| <code>AwaitingReconciliation = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:213](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L213) |  |
-| <code>RenderingReconciliationReport = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:214](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L214) |  |
-| <code>Completed = 4</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:215](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L215) |  |
-| <code>Failed = 5</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:216](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L216) |  |
+| <code>InputRetained = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:241](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L241) |  |
+| <code>Importing = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L242) |  |
+| <code>AwaitingReconciliation = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:243](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L243) |  |
+| <code>RenderingReconciliationReport = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:244](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L244) |  |
+| <code>Completed = 4</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:245](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L245) |  |
+| <code>Failed = 5</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:246](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L246) |  |
 
 ## StatementRecordPreviewDto
 
@@ -386,8 +456,16 @@ Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:73](../../
 One canonical record sample shown in the import preview, grouped by kind.
 
 ```csharp
-public sealed record StatementRecordPreviewDto(string Kind, string Account, string Symbol, decimal Quantity, decimal Price, decimal CashAmount, string ActivityType, string TradeDate, string? SettlementDate, string? Currency, decimal? FeesCommission, string? ExternalTransactionId, string? ActivityCategory = null, string? ActivitySubtype = null, string? ProviderActivityCode = null, string? RelatedTransactionId = null, string? OrderId = null, string? Description = null);
+public sealed record StatementRecordPreviewDto(string Kind, string Account, string Symbol, decimal Quantity, decimal Price, decimal CashAmount, string ActivityType, string TradeDate, string? SettlementDate, string? Currency, decimal? FeesCommission, string? ExternalTransactionId, string? ActivityCategory = null, string? ActivitySubtype = null, string? ProviderActivityCode = null, string? RelatedTransactionId = null, string? OrderId = null, string? Description = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? QuantityExact { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L93) |  |
+| <code>public string? PriceExact { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L94) |  |
+| <code>public string? CashAmountExact { get; init; }</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L95) |  |
 
 ## StatementRunBreakDto
 
@@ -516,7 +594,7 @@ public sealed record StatementSourceDto(string? SourceId, string? SourceKind, st
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportArtifactDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:328](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L328).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:358](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L358).
 
 Source-compatibility artifact contract for pre-rename clients.
 
@@ -528,7 +606,7 @@ public sealed record StatementToReportArtifactDto(string ArtifactId, string Arti
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportWorkflowDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:343](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L343).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:373](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L373).
 
 Source-compatibility workflow contract for pre-rename clients. Legacy HTTP routes project this wire shape directly over the canonical statement reconciliation report operation.
 
@@ -540,7 +618,7 @@ public sealed record StatementToReportWorkflowDto(string WorkflowId, StatementTo
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L316).
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:346](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L346).
 
 Source-compatibility status contract for clients compiled before the operation was renamed. Newly persisted and returned workflows use StatementReconciliationReportWorkflowStatusDto.
 
@@ -552,12 +630,12 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>InputRetained = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:318](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L318) |  |
-| <code>Importing = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:319](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L319) |  |
-| <code>AwaitingReconciliation = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:320](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L320) |  |
-| <code>RenderingReport = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:321](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L321) |  |
-| <code>Completed = 4</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:322](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L322) |  |
-| <code>Failed = 5</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:323](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L323) |  |
+| <code>InputRetained = 0</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:348](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L348) |  |
+| <code>Importing = 1</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:349](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L349) |  |
+| <code>AwaitingReconciliation = 2</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:350](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L350) |  |
+| <code>RenderingReport = 3</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:351](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L351) |  |
+| <code>Completed = 4</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:352](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L352) |  |
+| <code>Failed = 5</code> | [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:353](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L353) |  |
 
 ## StatementValidationIssueDto
 
@@ -600,72 +678,4 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:147](
 
 ```csharp
 public sealed record StorageAssurancePermissionsDto(bool CanView, bool CanRunQualityCheck, bool CanMigrate, bool CanDelete);
-```
-
-## StorageAssuranceSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageAssuranceSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:81](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L81).
-
-```csharp
-public sealed record StorageAssuranceSnapshotDto(DateTimeOffset GeneratedAt, StorageHealthSummaryDto Health, StorageQualitySummaryDto Quality, CanonicalizationAssuranceDto Canonicalization, StorageCapacitySummaryDto Capacity, IReadOnlyList<StorageTierSummaryDto> Tiers, IReadOnlyList<StorageQualityAlertDto> Alerts, StorageAssurancePermissionsDto Permissions);
-```
-
-## StorageCapacitySummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageCapacitySummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:128](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L128).
-
-```csharp
-public sealed record StorageCapacitySummaryDto(long UsedBytes, long AvailableBytes, double UsedPercent, int? EstimatedDaysRemaining, string Status);
-```
-
-## StorageHealthSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageHealthSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L91).
-
-```csharp
-public sealed record StorageHealthSummaryDto(string Status, string RootLabel, long TotalBytes, int FileCount, bool Readable, bool Writable, int OrphanCount, int TemporaryFileCount, string? Message);
-```
-
-## StorageMaintenanceActionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceActionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L154).
-
-```csharp
-public enum StorageMaintenanceActionDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>QualityCheck</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L156) |  |
-| <code>Cleanup</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:157](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L157) |  |
-| <code>TierMigration</code> | [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:158](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L158) |  |
-
-## StorageMaintenanceCandidateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L166).
-
-```csharp
-public sealed record StorageMaintenanceCandidateDto(string CandidateId, string RelativePath, string Kind, long SizeBytes, DateTimeOffset LastModifiedAt, string Fingerprint);
-```
-
-## StorageMaintenanceCommandRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageMaintenanceCommandRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L187).
-
-```csharp
-public sealed record StorageMaintenanceCommandRequestDto(string PreviewId, string IdempotencyKey, string Rationale, string ConfirmationText);
 ```

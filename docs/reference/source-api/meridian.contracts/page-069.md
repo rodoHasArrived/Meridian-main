@@ -169,7 +169,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ParameterDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:904](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L904).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:913](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L913).
 
 A single parameter change between two runs.
 
@@ -477,7 +477,7 @@ public sealed record PortfolioLedgerWorkflowStatusSnapshotDto(PortfolioLedgerWor
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioPositionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:603](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L603).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:606](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L606).
 
 Shared position row for workstation portfolio views.
 
@@ -654,14 +654,15 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;StrategyPositionAccountingEvidence&gt; AccountingPositions { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:593](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L593) |  |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:595](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L595) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:597](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L597) |  |
+| <code>public bool HasRetainedAccountingPositionPopulation { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:596](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L596) | An explicitly retained empty population is authoritative; legacy absence is not. |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:598](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L598) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:600](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L600) |  |
 
 ## PositionDiffEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.PositionDiffEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:895](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L895).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:904](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L904).
 
 A single position change between two runs.
 

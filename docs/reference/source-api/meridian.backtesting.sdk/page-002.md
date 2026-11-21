@@ -219,8 +219,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? FunctionalCurrency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:21](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L21) | Accounting currency declared by the bound simulation ledger; legacy absence stays unknown. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal DividendReceivable { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:25](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L25) | Earned dividends included in equity but not yet available as cash. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Meridian.Contracts.Workstation.StrategyPositionAccountingEvidence&gt;? AccountingPositions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:25](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L25) | Atomically captured native account facts retained by a paper source. Null denotes legacy or unavailable source coverage; an empty list is a captured, authorized empty partition. These receipts do not fabricate simulation lots from quoted average prices. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? FunctionalCurrency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:29](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L29) | Accounting currency declared by the bound simulation ledger; legacy absence stays unknown. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public decimal DividendReceivable { get; init; }</code> | [src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs:33](../../../../src/Meridian.Backtesting.Sdk/PortfolioSnapshot.cs#L33) | Earned dividends included in equity but not yet available as cash. |
 
 ## Position
 
