@@ -5,25 +5,54 @@
 
 ## Overall Coverage
 
-**11777 / 11777** items documented (**100.0%**) &mdash; Grade: **A**
+**11772 / 11794** items documented (**99.8%**) &mdash; Grade: **A**
 
 ```text
-[====================] 100.0%
+[====================] 99.8%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 11164 | 11164 | 100.0% | A |
+| Public Classes / Interfaces | 11159 | 11181 | 99.8% | A |
 | API Endpoints | 455 | 455 | 100.0% | A |
 | Configuration Options | 147 | 147 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
+## Undocumented Items
+
+### Public Classes / Interfaces (22 undocumented)
+
+| Item | Location |
+| ------ | ---------- |
+| `SymbolUniverseRequest` | `src/Meridian.Contracts/Api/DataIngestionContracts.cs:56` |
+| `SymbolUniverseResponse` | `src/Meridian.Contracts/Api/DataIngestionContracts.cs:70` |
+| `StorageSymbolBreakdown` | `src/Meridian.Contracts/Api/StatusModels.cs:435` |
+| `StorageSettingsRequest` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:15` |
+| `SymbolMappingRequest` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:88` |
+| `SymbolMappingResponse` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:221` |
+| `StorageProfileResponse` | `src/Meridian.Contracts/Api/UiDashboardModels.cs:298` |
+| `AccountBalanceHistoryPointDto` | `src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:4` |
+| `AccountBalanceHistoryDto` | `src/Meridian.Contracts/Workstation/AccountBalanceHistoryDtos.cs:7` |
+| `ReportWriterFilterOperatorDto` | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1460` |
+| `ReportWriterChartTypeDto` | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1514` |
+| `ReportWriterChartSeriesDto` | `src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1530` |
+| `OperationsWorkflowContractMatrix` | `src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:114` |
+| `StatementReconciliationReportArtifactGenerationDto` | `src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:235` |
+| `StatementReconciliationCaseDto` | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:206` |
+| `StatementReconciliationCaseCommentThreadDto` | `src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:229` |
+| `WorkstationModeComparisonRun` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:115` |
+| `WorkstationPlotToolMomentPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:280` |
+| `WorkstationPlotToolRegressionPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:286` |
+| `WorkstationPlotToolSampleRowPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:290` |
+| `WorkstationPlotToolStatisticsPayload` | `src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:299` |
+| `ProviderConnectionTemplateEndpoints` | `src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:11` |
+
 ## Recommendations
 
-1. All categories are fully documented. Great job!
+1. **Public Classes / Interfaces**: 22 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
 
 ---
 

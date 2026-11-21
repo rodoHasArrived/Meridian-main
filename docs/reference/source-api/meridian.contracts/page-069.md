@@ -172,7 +172,7 @@ public sealed record PortfolioLedgerWorkflowStatusSnapshotDto(PortfolioLedgerWor
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioPositionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:580](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L580).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:582](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L582).
 
 Shared position row for workstation portfolio views.
 

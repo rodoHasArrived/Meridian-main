@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:932](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L932).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:934](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L934).
 
 Trade-level fill list for one run.
 
@@ -22,7 +22,7 @@ public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int Tota
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1170](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1170).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1172](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1172).
 
 Lot history for a single strategy run, optionally filtered to one symbol.
 
@@ -34,7 +34,7 @@ public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClo
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1012](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1012).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1014](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1014).
 
 Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
 
