@@ -1229,6 +1229,8 @@ public sealed class LedgerPostingConsumer : IScopedTradeEventPublisher, IRetaine
         {
             tags[TradeFillCashFlowReplayCompatibility.StrategyRunIdTag] = runId;
         }
+        if (evt.GetValidatedAccountingRunId() is { } accountingRunId)
+            tags[LedgerQuery.AccountingRunIdTag] = accountingRunId;
         foreach (var pair in Meridian.Contracts.Operations.MarketDataInputEvidenceTags.ToTags(evt.MarketDataEvidence))
             tags[pair.Key] = pair.Value;
         if (evt.MarketDataEvidence is { Count: > 0 } && evt.AccountingEvidence?.Closing is not null)

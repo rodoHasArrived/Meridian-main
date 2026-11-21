@@ -63,6 +63,10 @@ public sealed record TradeExecutedEvent(
     string? StrategyId = null,
     string? RunId = null)
 {
+    /// <summary>Typed, admitted strategy-run ownership. Historical and untyped labels provide no ownership proof.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingRunId { get; init; }
+
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<Meridian.Contracts.Operations.MarketDataInputEvidence>? MarketDataEvidence { get; init; }
 
@@ -85,6 +89,16 @@ public sealed record TradeExecutedEvent(
         Fees = Fees is { Count: > 0 }
             ? Array.AsReadOnly(Fees.OrderBy(fee => fee.FeeId, StringComparer.Ordinal).ToArray()) : null
     };
+
+    internal string? GetValidatedAccountingRunId()
+    {
+        if (AccountingRunId is null) return null;
+        if (string.IsNullOrWhiteSpace(AccountingRunId)
+            || !string.Equals(AccountingRunId, AccountingRunId.Trim(), StringComparison.Ordinal)
+            || !string.Equals(AccountingRunId, RunId?.Trim(), StringComparison.Ordinal))
+            throw new InvalidDataException("Trusted accounting run identity must exactly match the strategy-run label.");
+        return AccountingRunId;
+    }
 
     internal bool HasSameEconomics(TradeExecutedEvent other)
         => this with { Fees = null, BrokerActivityId = null, MarketDataEvidence = null } == other with { Fees = null, BrokerActivityId = null, MarketDataEvidence = null }

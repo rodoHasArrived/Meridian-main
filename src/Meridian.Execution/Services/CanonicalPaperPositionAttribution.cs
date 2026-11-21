@@ -1,4 +1,3 @@
-using Meridian.Execution.Events;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 
@@ -52,8 +51,7 @@ internal static class CanonicalPaperPositionAttribution
                 quantities[mutation.TaxLotRecordId] = mutation.QuantityAfter;
             }
             var after = quantities.Values.Sum();
-            var observedRun = record.Entry.Metadata.Tags?.GetValueOrDefault(TradeFillCashFlowReplayCompatibility.StrategyRunIdTag);
-            observedRun = string.IsNullOrWhiteSpace(observedRun) ? null : observedRun.Trim();
+            LedgerRunAttribution.TryGetTrustedRunId(record.Entry.Metadata, out var observedRun);
             if (after == 0m)
             {
                 runId = null;

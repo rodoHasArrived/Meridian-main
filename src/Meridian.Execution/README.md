@@ -37,14 +37,18 @@ quotes. Variation-margin positions report their actual zero carrying basis separ
 unsettled value. Currency comes from an explicit ledger policy or authorized book/session binding.
 Observed position ownership alone cannot assign pooled cash to a fund.
 
-The admission gate retains a resolved canonical security ID in OMS state. The fill processor stamps
-that ID and the server-owned run ID before durable retention and portfolio application, replacing
-gateway assertions. Missing or mixed acquisition/relief identity stays unavailable until a genuine
+The admission gate retains a resolved canonical security ID in OMS state. A new successful typed
+strategy-run admission also retains `AccountingRunId` from its authorized root authority. Legacy
+`RunId`/`Origin` labels and untyped metadata cannot mint this ownership proof. The fill processor
+stamps only those retained accounting identities before durable retention and portfolio application,
+replacing gateway assertions. Missing or mixed acquisition/relief identity stays unavailable until a genuine
 flat boundary or independent residual opening. Native replay retains those original observations.
 Canonical startup traces retained quantity mutations through the complete current holding cycle;
 partial relief and closed lots cannot erase mixed run ownership. Incomplete history remains unknown.
-Only newly prepared canonical trade journals gain native position-effect tags; retained prepared
-intents and receipts replay unchanged.
+Only newly prepared canonical trade journals gain native position-effect tags. New attributed
+journals also retain `execution.accountingRunId.v1`, which must match the `strategy.runId` label
+for trusted ownership; historical labels alone remain unavailable. Retained prepared intents and
+receipts replay unchanged.
 
 Market-data input evidence is captured with the pricing observation and follows the retained
 execution report, accepted-fill WAL and journal metadata. Source snapshots retain provider/event,

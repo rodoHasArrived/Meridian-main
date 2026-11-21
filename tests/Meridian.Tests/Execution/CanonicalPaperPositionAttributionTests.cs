@@ -9,6 +9,22 @@ namespace Meridian.Tests.Execution;
 
 public sealed class CanonicalPaperPositionAttributionTests
 {
+    [Theory]
+    [InlineData(null)]
+    [InlineData("different-run")]
+    public void LegacyOrConflictingRunLabelsCannotGainTrustedOwnershipOnRestart(string? trustedRun)
+    {
+        var history = new History { RetainedTrustedRun = trustedRun, UseExplicitTrustedRun = true };
+        history.Acquire("claimed-run", 5m);
+        var result = history.Recover();
+        result.RunId.Should().BeNull();
+        var position = history.RestorePortfolio(result).CapturePositionAccountingEvidence().Positions.Single();
+        position.StrategyRunId.Should().BeNull();
+        position.Quantity.Should().BeNull();
+        position.MonetaryBasis.Should().BeNull();
+        position.CoverageFailure.Should().Contain("run ownership");
+    }
+
     [Fact]
     public void SameRunPartialReliefRetainsExactCurrentCycleAttribution()
     {
@@ -89,6 +105,8 @@ public sealed class CanonicalPaperPositionAttributionTests
         private readonly Dictionary<Guid, LedgerTaxLotRecord> _lots = [];
         public List<LedgerJournalEntryRecord> Journals { get; } = [];
         public Dictionary<Guid, AtomicTaxLotJournalResult> Receipts { get; } = [];
+        public bool UseExplicitTrustedRun { get; init; }
+        public string? RetainedTrustedRun { get; init; }
 
         public Guid Acquire(string runId, decimal quantity)
         {
@@ -118,10 +136,13 @@ public sealed class CanonicalPaperPositionAttributionTests
             var lines = delta > 0m
                 ? new[] { new LedgerEntry(Guid.NewGuid(), journalId, time, _account, amount, 0m, description), new LedgerEntry(Guid.NewGuid(), journalId, time, cash, 0m, amount, description) }
                 : [new LedgerEntry(Guid.NewGuid(), journalId, time, _account, 0m, amount, description), new LedgerEntry(Guid.NewGuid(), journalId, time, cash, amount, 0m, description)];
+            var tags = new Dictionary<string, string>
+            { ["sourceEventType"] = "execution.trade-fill", [LedgerQuery.StrategyRunIdTag] = runId };
+            var trustedRun = UseExplicitTrustedRun ? RetainedTrustedRun : runId;
+            if (trustedRun is not null) tags[LedgerQuery.AccountingRunIdTag] = trustedRun;
             var journal = new JournalEntry(journalId, time, description, lines,
                 new JournalEntryMetadata(ActivityType: "execution.trade-fill", Symbol: "TEST", SecurityId: _securityId,
-                    FillId: fillId, FinancialAccountId: AccountId, Tags: new Dictionary<string, string>
-                    { ["sourceEventType"] = "execution.trade-fill", [LedgerQuery.StrategyRunIdTag] = runId }));
+                    FillId: fillId, FinancialAccountId: AccountId, Tags: tags));
             var record = new LedgerJournalEntryRecord(journal, Guid.NewGuid(), _periodId, null, fillId, Journals.Count + 1, time);
             var kind = delta > 0m ? AtomicTaxLotMutationKind.Acquisition : AtomicTaxLotMutationKind.Disposal;
             var mutation = new LedgerTaxLotMutationRecord(Guid.NewGuid(), batchId, kind, lotId, after.LotId, 0,

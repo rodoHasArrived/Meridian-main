@@ -376,6 +376,10 @@ public sealed record OrderState
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public Guid? AccountingSecurityId { get; init; }
 
+    /// <summary>Run captured only from new, successfully authorized typed strategy-run admission.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? AccountingRunId { get; init; }
+
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? StrategyArtifactId { get; init; }
 

@@ -70,21 +70,36 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         using var fixture = new Fixture();
         var fill = fixture.Fill() with
         {
-            StrategyId = "strategy-source", RunId = "run-source", Commission = 1m,
+            StrategyId = "strategy-source", RunId = "run-source", AccountingRunId = "run-source", Commission = 1m,
             Fees = [new("source-fee", "Regulatory", 0.25m, "USD")]
         };
         var entries = await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
         entries.Should().OnlyContain(entry => entry.Metadata.StrategyId == "strategy-source"
-            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source");
+            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source"
+            && entry.Metadata.Tags![LedgerQuery.AccountingRunIdTag] == "run-source");
 
         var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill, fixture.Context);
         recovered.Should().NotBeNull();
         recovered!.Select(entry => entry.JournalEntryId).Should().Equal(entries.Select(entry => entry.JournalEntryId));
         recovered.Should().OnlyContain(entry => entry.Metadata.StrategyId == "strategy-source"
-            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source");
-        var conflictingRun = () => fixture.CreateService().PostAsync(fill with { RunId = "different-run" },
+            && entry.Metadata.Tags![LedgerQuery.StrategyRunIdTag] == "run-source"
+            && entry.Metadata.Tags![LedgerQuery.AccountingRunIdTag] == "run-source");
+        var conflictingRun = () => fixture.CreateService().PostAsync(fill with { RunId = "different-run", AccountingRunId = "different-run" },
             fixture.Context, fixture.SecurityId);
         await conflictingRun.Should().ThrowAsync<InvalidDataException>().WithMessage("*conflicts*");
+    }
+
+    [Theory]
+    [InlineData("")]
+    [InlineData(" claimed-run ")]
+    [InlineData("another-run")]
+    public async Task ContradictoryTrustedRunCannotMintJournalOwnership(string trustedRun)
+    {
+        using var fixture = new Fixture();
+        var fill = fixture.Fill() with { RunId = "claimed-run", AccountingRunId = trustedRun };
+        var attempt = () => fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
+        await attempt.Should().ThrowAsync<InvalidDataException>().WithMessage("*run identity*");
+        fixture.Commands.Should().BeEmpty();
     }
 
     [Fact]
@@ -178,13 +193,16 @@ public sealed class AutomatedTradeFillAccountingServiceTests
     public async Task RetainedPrePositionEvidenceIntentRecoversWithoutChangingItsJournalOrSealedPlan()
     {
         using var fixture = new Fixture();
-        var fill = fixture.Fill();
+        var fill = fixture.Fill() with { RunId = "old-label-only" };
         await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
         var (path, originalBytes) = fixture.RetainPrePositionEvidenceIntent(fill);
         var posted = await fixture.CreateService().PostAsync(fill, fixture.Context, fixture.SecurityId);
         var recovered = await fixture.CreateService().TryRecoverCompletedAsync(fill, fixture.Context);
         posted.Should().ContainSingle().Which.Metadata.Tags.Should().NotContainKey(SecurityTradePositionEvidence.VersionTag);
         recovered.Should().ContainSingle().Which.Metadata.Tags.Should().NotContainKey(SecurityTradePositionEvidence.VersionTag);
+        posted.Single().Metadata.Tags.Should().NotContainKey(LedgerQuery.AccountingRunIdTag);
+        recovered!.Single().Metadata.Tags.Should().NotContainKey(LedgerQuery.AccountingRunIdTag);
+        LedgerRunAttribution.TryGetTrustedRunId(recovered.Single().Metadata, out _).Should().BeFalse();
         (await File.ReadAllBytesAsync(path)).Should().Equal(originalBytes);
         fixture.Commands.Should().ContainSingle("an existing pinned acquisition cannot be prepared or appended again");
     }
@@ -407,7 +425,8 @@ public sealed class AutomatedTradeFillAccountingServiceTests
             var intent = JsonSerializer.Deserialize(File.ReadAllText(path), FillAccountingJsonContext.Default.PreparedFillAccountingIntent)!;
             var entry = intent.Trade.Journal.Entry;
             var metadata = entry.Metadata with { Tags = entry.Metadata.Tags!
-                .Where(static item => !item.Key.StartsWith("positionEvidence.", StringComparison.OrdinalIgnoreCase))
+                .Where(static item => !item.Key.StartsWith("positionEvidence.", StringComparison.OrdinalIgnoreCase)
+                    && item.Key != LedgerQuery.AccountingRunIdTag)
                 .ToDictionary(static item => item.Key, static item => item.Value, StringComparer.OrdinalIgnoreCase) };
             var priorWrite = intent.Trade.Journal with { Entry = new JournalEntry(entry.JournalEntryId,
                 entry.Timestamp, entry.Description, entry.Lines, metadata) };

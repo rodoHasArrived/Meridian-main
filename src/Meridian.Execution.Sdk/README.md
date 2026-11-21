@@ -18,8 +18,10 @@ assessment. The nullable member is omitted when absent, preserving historical re
 Missing evidence remains unassessed and does not establish clean data or live execution provenance.
 
 `OrderState.AccountingSecurityId` and `ExecutionReport.AccountingSecurityId` retain the accepted
-admission's canonical identity. The OMS stamps the report's `AccountingRunId` from server-owned
-order state before persistence and paper-book mutation; a gateway cannot supply either assertion.
+admission's canonical identity. `OrderState.AccountingRunId` is minted only by new successful typed
+strategy-run admission from its authorized root. The OMS copies this field to the report before
+persistence and paper-book mutation; a gateway, legacy metadata or older `RunId`/`Origin` labels
+cannot supply either assertion or upgrade historical ownership.
 These nullable fields are omitted when absent, preserving historical payload hashes and fill IDs.
 They describe retained lineage and do not grant execution or posting authority.
 

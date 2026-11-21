@@ -29,6 +29,7 @@ from authority to approve or post journals.
 - `LedgerAccounts.cs` and `ChartOfAccounts.cs` define shared posting accounts and report hierarchies.
 - `LedgerFinancialStatementBuilder.cs` and `LedgerReportPackBuilder.cs` derive accounting reports and retained evidence.
 - `LedgerInventoryAccountRoleClassifier.cs` distinguishes source-backed non-lot assets from instrument inventory.
+- `LedgerRunAttribution.cs` requires retained typed execution ownership and its exact matching run label; historical strategy labels alone provide no ownership proof.
 
 ## Important workflows
 

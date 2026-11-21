@@ -376,6 +376,8 @@ public sealed class AutomatedTradeFillAccountingService(
         };
         if (!string.IsNullOrWhiteSpace(fill.RunId))
             tags[TradeFillCashFlowReplayCompatibility.StrategyRunIdTag] = fill.RunId.Trim();
+        if (fill.GetValidatedAccountingRunId() is { } accountingRunId)
+            tags[LedgerQuery.AccountingRunIdTag] = accountingRunId;
         if (fill.MarketDataEvidence is not null)
             foreach (var pair in MarketDataInputEvidenceTags.Create(fill.MarketDataEvidence)) tags[pair.Key] = pair.Value;
         if (source == "execution.trade-fill")
@@ -428,6 +430,7 @@ public sealed class AutomatedTradeFillAccountingService(
 
     private static void ValidateFill(TradeExecutedEvent fill, TradeFillLedgerPostingContext context)
     {
+        _ = fill.GetValidatedAccountingRunId();
         if (context.AccountingProtocolVersion != 2 || !context.ExpectedPeriodVersion.HasValue || fill.FillId == Guid.Empty
             || fill.SourceMode != "Synthetic" || string.IsNullOrWhiteSpace(fill.FinancialAccountId)
             || fill.UsesFaceValuePercentageOfPar || fill.ContractMultiplier != 1m || fill.SettlesVariationMargin
