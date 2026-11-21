@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingOpeningStateSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingOpeningStateSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs#L15).
+
+Reads Meridian&#x27;s own retained account records for the workspace start date: the latest balance snapshot (cash and NAV components) and the retained position lines. It never imports, posts, or substitutes zero for an absent component.
+
+```csharp
+public sealed class OnboardingOpeningStateSource(IAccountQueryService? accounts = null, ICloseReadinessSubjectSource? subjects = null, IFundProfileTenancyRegistry? tenancy = null) : IOnboardingOpeningStateProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureOpeningAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs:22](../../../../src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs#L22) |  |
+
+## OpenBreakHistory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OpenBreakHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:16](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L16).
+
+Rebuilds the open-break count for recent days from the retained break queue, with no stored snapshots. A break counts as open at a moment when it had been detected and was not yet closed, using CrossScreenCountDefinitions.IsOpenBreak for &quot;closed&quot;. The queue keeps every status, so closed breaks still contribute to the days they were open.
+
+```csharp
+public static class OpenBreakHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Basis = &quot;Open breaks at each UTC day end, rebuilt from break detection, resolution and reopen times; today is the live count. Days the retained times cannot establish are left blank.&quot;;</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:18](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L18) |  |
+| <code>public static IReadOnlyList&lt;WorkstationMetricHistoryPointDto&gt; Build(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; items, DateTimeOffset now, int days = 14);</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:25](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L25) | days points, oldest first. The last point is now&#x27;s live count, so it always equals the headline figure; earlier points are each UTC day&#x27;s end. |
+| <code>public static decimal? CountOpenAt(IReadOnlyList&lt;ReconciliationBreakQueueItem&gt; items, DateTimeOffset moment);</code> | [src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:43](../../../../src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs#L43) | Open breaks just before moment, or null when any break&#x27;s state then is unknown. |
+
 ## OperationsContinuityReconciliationBridge
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OperationsContinuityReconciliationBridge</code>. Kind: `class`.
@@ -915,31 +953,3 @@ Declared public members:
 | <code>public int UtcHour { get; set; } = 23;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:13](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L13) |  |
 | <code>public int RetryMinutes { get; set; } = 15;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:14](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L14) |  |
 | <code>public List&lt;ProviderLedgerDailyReconciliationTarget&gt; Targets { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:15](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L15) |  |
-
-## ProviderLedgerDailyReconciliationTarget
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationTarget</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L18).
-
-```csharp
-public sealed record ProviderLedgerDailyReconciliationTarget(string TenantId, string CompanyId, string FundProfileId, Guid AccountId, decimal AmountTolerance = 0.01m, int ProviderStaleAfterMinutes = 30);
-```
-
-## ProviderLedgerDailyReconciliationWorker
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationWorker</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:26](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L26).
-
-Daily comparison only. The comparison service durably owns the deterministic operation ID, so restart repeats its receipt lookup rather than creating another run or resolving cases.
-
-```csharp
-public sealed class ProviderLedgerDailyReconciliationWorker : BackgroundService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ProviderLedgerDailyReconciliationWorker(IServiceScopeFactory scopes, ProviderLedgerDailyReconciliationOptions options, TimeProvider clock, ILogger&lt;ProviderLedgerDailyReconciliationWorker&gt; logger) : this(options, clock, logger, async(target, operationId, ct) =&gt;{ using var scope = scopes.CreateScope(); return await RunTargetAsync(scope.ServiceProvider, target, operationId, ct); }, async(now, ct) =&gt;{ using var scope = scopes.CreateScope(); return await PaperSessionDailyReconciliation.RunAsync(scope.ServiceProvider, now, logger, ct); });</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:36](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L36) |  |

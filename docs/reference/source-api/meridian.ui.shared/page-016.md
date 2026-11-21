@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderLedgerDailyReconciliationTarget
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationTarget</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L18).
+
+```csharp
+public sealed record ProviderLedgerDailyReconciliationTarget(string TenantId, string CompanyId, string FundProfileId, Guid AccountId, decimal AmountTolerance = 0.01m, int ProviderStaleAfterMinutes = 30);
+```
+
+## ProviderLedgerDailyReconciliationWorker
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationWorker</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:26](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L26).
+
+Daily comparison only. The comparison service durably owns the deterministic operation ID, so restart repeats its receipt lookup rather than creating another run or resolving cases.
+
+```csharp
+public sealed class ProviderLedgerDailyReconciliationWorker : BackgroundService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderLedgerDailyReconciliationWorker(IServiceScopeFactory scopes, ProviderLedgerDailyReconciliationOptions options, TimeProvider clock, ILogger&lt;ProviderLedgerDailyReconciliationWorker&gt; logger) : this(options, clock, logger, async(target, operationId, ct) =&gt;{ using var scope = scopes.CreateScope(); return await RunTargetAsync(scope.ServiceProvider, target, operationId, ct); }, async(now, ct) =&gt;{ using var scope = scopes.CreateScope(); return await PaperSessionDailyReconciliation.RunAsync(scope.ServiceProvider, now, logger, ct); });</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:36](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L36) |  |
+
 ## ProviderLedgerReconciliationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerReconciliationService</code>. Kind: `class`.
@@ -840,24 +868,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.c
 
 ```csharp
 public sealed record ReportingGovernanceSeriesHistory(string SeriesId, IReadOnlyList<GovernedReportingRun> Runs, IReadOnlyList<ReportingRestatementRequest> RestatementRequests);
-```
-
-## ReportingGovernedArtifactDescriptor
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L64).
-
-```csharp
-public sealed record ReportingGovernedArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, ReportingDeclaredArtifactKind Kind, bool IsPreview, string DownloadRoute);
-```
-
-## ReportingGovernedArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:74](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L74).
-
-```csharp
-public sealed record ReportingGovernedArtifactDownload(ReportingGovernedArtifactDescriptor Descriptor, byte[] Content, string AccessAuditEventId);
 ```

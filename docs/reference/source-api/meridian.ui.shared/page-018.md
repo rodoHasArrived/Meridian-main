@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDistributionPolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService.ReportPackDistributionPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L55).
+
+```csharp
+public sealed record ReportPackDistributionPolicy(string DistributionId, string Recipient, string RecipientRole, string Channel, string Owner, string Route, TimeSpan ApprovalSla, TimeSpan PublicationSla, TimeSpan DeliverySla, TimeSpan CorrectionSla);
+```
+
+## ReportPackSecurityLineIndexEntry
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineIndexEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L10).
+
+One report pack&#x27;s contribution to a security in the security→report-line index: which report (and the fund/state it is in) references SecurityId, and on which report lines.
+
+```csharp
+public sealed record ReportPackSecurityLineIndexEntry(Guid SecurityId, Guid ReportId, string FundProfileId, ReportPackWorkflowStateDto State, IReadOnlyList<string> LineKeys);
+```
+
 ## ReportPackSecurityLineMatcher
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineMatcher</code>. Kind: `class`.
@@ -856,39 +878,3 @@ Minimal scheduled-fetch loop for statement connectors: every minute, runs any en
 ```csharp
 public sealed class StatementFetchSchedulerService(IServiceProvider serviceProvider, ILogger<StatementFetchSchedulerService> logger) : BackgroundService
 ```
-
-## StatementFetchSchedulerServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:83](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L83).
-
-Registers the statement fetch scheduler as a shared singleton and hosted service.
-
-```csharp
-public static class StatementFetchSchedulerServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:85](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L85) |  |
-
-## StatementReconciliationCaseworkHandoffException
-
-Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationCaseworkHandoffException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:32](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L32).
-
-Carries a coded failure from statement reconciliation casework handoff.
-
-```csharp
-public sealed class StatementReconciliationCaseworkHandoffException(string code, string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:37](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L37) |  |

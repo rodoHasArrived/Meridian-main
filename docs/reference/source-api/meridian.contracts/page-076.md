@@ -594,7 +594,7 @@ public sealed record StrategyBriefingWorkspaceSummary(int TotalRuns, int ActiveR
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignCell</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L24).
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L26).
 
 A visual, formula, code, governance, or template cell inside a strategy design.
 
@@ -606,7 +606,7 @@ public sealed record StrategyDesignCell(string CellId, string Label, string Kind
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignCompiledScript</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L104).
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L106).
 
 Generated QuantScript source and metadata.
 
@@ -618,22 +618,22 @@ public sealed record StrategyDesignCompiledScript(string Source, string DatasetF
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDocument</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L8).
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:9](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L9).
 
-Workstation-facing strategy design document persisted by the Strategy Builder.
+Workstation-facing strategy design document persisted by the Strategy Builder. The opaque server revision is required when updating or running a scoped draft.
 
 ```csharp
-public sealed record StrategyDesignDocument(string DocumentId, string Name, string Description, string Version, string DatasetReference, IReadOnlyList<string> Universe, IReadOnlyList<StrategyDesignCell> Cells, IReadOnlyList<StrategyDesignTransition> Transitions, IReadOnlyDictionary<string, string>? Metadata, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
+public sealed record StrategyDesignDocument(string DocumentId, string Name, string Description, string Version, string DatasetReference, IReadOnlyList<string> Universe, IReadOnlyList<StrategyDesignCell> Cells, IReadOnlyList<StrategyDesignTransition> Transitions, IReadOnlyDictionary<string, string>? Metadata, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, string? Revision = null);
 ```
 
 ## StrategyDesignDraftSaveRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:146](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L146).
+Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:149](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L149).
 
 Request body for saving a strategy design draft.
 
 ```csharp
-public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document);
+public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document, string? ExpectedRevision = null);
 ```
