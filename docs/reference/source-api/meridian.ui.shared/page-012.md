@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FileReconciliationSlaCalendarResolver
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileReconciliationSlaCalendarResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:10](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L10).
+
+One host-lifetime snapshot of operator-declared calendars; named calendars never fall back.
+
+```csharp
+public sealed class FileReconciliationSlaCalendarResolver : IReconciliationSlaCalendarResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string RelativePath = &quot;reconciliation/sla-calendars.json&quot;;</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L12) |  |
+| <code>public FileReconciliationSlaCalendarResolver(string dataDirectory);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:16](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L16) |  |
+| <code>public IReconciliationSlaCalendar Resolve(ReconciliationSlaPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs:49](../../../../src/Meridian.Ui.Shared/Services/FileReconciliationSlaCalendarResolver.cs#L49) |  |
+
 ## FileReportingReconciliationEvidenceStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileReportingReconciliationEvidenceStore</code>. Kind: `class`.
@@ -1135,22 +1155,3 @@ Declared public members:
 | <code>ValueTask&lt;IAsyncDisposable&gt; AcquireAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:12](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L12) |  |
 | <code>Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; ReadAsync(BookReceiptScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:13](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L13) |  |
 | <code>Task SaveAsync(BookReceiptRunDto run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs:14](../../../../src/Meridian.Ui.Shared/Services/FileBookReceiptRunStore.cs#L14) |  |
-
-## IBResultQueryService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IBResultQueryService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:6](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L6).
-
-Shared, tenant-scoped query service for typed, durable IB callback results.
-
-```csharp
-public sealed class IBResultQueryService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IBResultQueryService(IBDurableResultStore store) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:9](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L9) |  |
-| <code>public IReadOnlyList&lt;IBDurableResult&gt; Get(string tenantId, string companyId, string? family, string? accountId, string? modelAccountId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/IBResultQueryService.cs:10](../../../../src/Meridian.Ui.Shared/Services/IBResultQueryService.cs#L10) |  |

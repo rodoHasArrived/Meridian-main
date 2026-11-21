@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolPreset
+
+Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979).
+
+Preset symbol lists.
+
+```csharp
+public enum SymbolPreset : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
+| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
+| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
+| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:984](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L984) |  |
+| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:985](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L985) |  |
+
 ## UseCase
 
 Qualified name: <code>Meridian.Application.Services.UseCase</code>. Kind: `enum`.
@@ -1044,31 +1066,3 @@ Declared public members:
 | <code>public WizardCoordinator AddStep(IWizardStep step);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L19) | Registers a step implementation. |
 | <code>public WizardCoordinator AddTransition(WizardStepId from, WizardStepId to, Func&lt;WizardContext, bool&gt;? condition = null);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:26](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L26) | Adds a directed transition between two steps. |
 | <code>public async Task&lt;WizardContext&gt; RunAsync(WizardContext context, WizardStepId entryStep, CancellationToken ct = default);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:37](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L37) | Runs the step graph starting at entryStep and returns the final WizardContext after all steps have been executed. |
-
-## WizardStepId
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepId</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepId.cs:7](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L7).
-
-Identifies each discrete step in the configuration wizard workflow. Steps form a directed graph; transitions are declared in WizardTransition.
-
-```csharp
-public enum WizardStepId : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DetectProviders</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L9) |  |
-| <code>CredentialGuidance</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:10](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L10) |  |
-| <code>SelectUseCase</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L11) |  |
-| <code>ConfigureDataSource</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L12) |  |
-| <code>ValidateCredentials</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L13) |  |
-| <code>ConfigureSymbols</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:14](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L14) |  |
-| <code>ConfigureStorage</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L15) |  |
-| <code>ConfigureBackfill</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L16) |  |
-| <code>ReviewConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:17](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L17) |  |
-| <code>SaveConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L18) |  |
-| <code>Summary</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L19) |  |

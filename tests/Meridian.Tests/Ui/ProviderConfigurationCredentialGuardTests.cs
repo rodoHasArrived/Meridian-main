@@ -69,8 +69,8 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         await using var app = await CreateAppAsync("production", config);
         using var response = await app.GetTestClient().PostAsJsonAsync(route, Request(route, null));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK, "the server returned {0}",
-            await response.Content.ReadAsStringAsync());
+        var responseBody = await response.Content.ReadAsStringAsync();
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the secret-free settings request should be accepted: {0}", responseBody);
         var retained = new CoreConfigStore(ConfigPath).LoadRequired();
         retained.ProviderModules!.Modules!["alpaca"].Credentials!["keyId"].Should().Be("ALPACA_KEY_ID");
         if (route.EndsWith("/alpaca", StringComparison.Ordinal))

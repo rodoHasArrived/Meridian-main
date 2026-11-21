@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WizardStepId
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepId</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardStepId.cs:7](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L7).
+
+Identifies each discrete step in the configuration wizard workflow. Steps form a directed graph; transitions are declared in WizardTransition.
+
+```csharp
+public enum WizardStepId : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DetectProviders</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L9) |  |
+| <code>CredentialGuidance</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:10](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L10) |  |
+| <code>SelectUseCase</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L11) |  |
+| <code>ConfigureDataSource</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L12) |  |
+| <code>ValidateCredentials</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L13) |  |
+| <code>ConfigureSymbols</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:14](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L14) |  |
+| <code>ConfigureStorage</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L15) |  |
+| <code>ConfigureBackfill</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L16) |  |
+| <code>ReviewConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:17](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L17) |  |
+| <code>SaveConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L18) |  |
+| <code>Summary</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L19) |  |
+
 ## WizardStepResult
 
 Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepResult</code>. Kind: `record`.

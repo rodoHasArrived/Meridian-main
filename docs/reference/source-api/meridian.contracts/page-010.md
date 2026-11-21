@@ -560,6 +560,42 @@ Source: [src/Meridian.Contracts/AssetOperations/AssetOperationsDtos.cs:292](../.
 public sealed record AssetOperationsWriteApprovalDto(string Actor, string ApprovalReference, string Rationale, DateTimeOffset ApprovedAt);
 ```
 
+## AssetPositionMarketValuationBlockerDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetPositionMarketValuationBlockerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetPositionMarketValuationDtos.cs:12](../../../../src/Meridian.Contracts/AssetOperations/AssetPositionMarketValuationDtos.cs#L12).
+
+A metric-specific refusal. A market-value-only result may still refuse its carrying comparison.
+
+```csharp
+public sealed record AssetPositionMarketValuationBlockerDto(string Code, string Reason, string Metric = "All");
+```
+
+## AssetPositionMarketValuationDto
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetPositionMarketValuationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetPositionMarketValuationDtos.cs:19](../../../../src/Meridian.Contracts/AssetOperations/AssetPositionMarketValuationDtos.cs#L19).
+
+A calculation over a retained instrument-position projection, not a posted ledger balance or journal. UnrealizedPnl is explicitly a mark-to-carrying comparison, not realized, total-return or tax-cost P/L. Decimal operands and results serialize as exact strings for browser consumers.
+
+```csharp
+public sealed record AssetPositionMarketValuationDto(Guid SecurityId, Guid PositionId, Guid LedgerBookId, string AccountId, DateOnly ValuationDate, Guid EconomicStateId, long EconomicStateVersion, string Status, string? FundProfileId, long? PositionVersion, string Currency, string? AccountingBasis, string? PositionSide, string ModelKey, string ModelVersion, string CalculationBasis, string UnrealizedPnlBasis, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString)] decimal? Quantity, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString)] decimal? CarryingAmount, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString)] decimal? Price, SecurityPriceUnit PriceUnit, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString)] decimal? MarketValue, [property : JsonNumberHandling(JsonNumberHandling.WriteAsString)] decimal? UnrealizedPnl, DateTimeOffset? ObservedAsOf, DateTimeOffset? KnowledgeAsOf, string FreshnessStatus, bool? IsStaleFallback, int? DaysStale, string? SelectedSource, Guid? SelectionReceiptId, IReadOnlyList<SecurityValuationInputDto> Inputs, IReadOnlyList<string> Diagnostics, IReadOnlyList<AssetPositionMarketValuationBlockerDto> Blockers);
+```
+
+## AssetPositionMarketValuationRequest
+
+Qualified name: <code>Meridian.Contracts.AssetOperations.AssetPositionMarketValuationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/AssetOperations/AssetPositionMarketValuationDtos.cs:7](../../../../src/Meridian.Contracts/AssetOperations/AssetPositionMarketValuationDtos.cs#L7).
+
+Identifies retained operands; the caller never supplies quantities, prices or carrying amounts.
+
+```csharp
+public sealed record AssetPositionMarketValuationRequest(Guid SecurityId, Guid PositionId, Guid LedgerBookId, string AccountId, DateOnly ValuationDate, Guid EconomicStateId, long EconomicStateVersion, DateTimeOffset? KnownAt = null);
+```
+
 ## AssetProjectedCashFlowDto
 
 Qualified name: <code>Meridian.Contracts.AssetOperations.AssetProjectedCashFlowDto</code>. Kind: `record`.
@@ -779,36 +815,4 @@ Posted journal evidence linked to a receipt allocation. Drafts are never posting
 
 ```csharp
 public sealed record BookReceiptPostingDto(string PostingId, string ReceiptId, string ObligationKey, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string Currency, string JournalEntryId, DateOnly EffectiveDate, bool IsReversed, IReadOnlyList<string> EvidenceLinks, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? JournalCashAmount = null, bool IsInferredAllocation = false);
-```
-
-## BookReceiptQueryDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptQueryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:8](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L8).
-
-```csharp
-public sealed record BookReceiptQueryDto(BookReceiptScopeDto Scope, DateOnly AsOfDate);
-```
-
-## BookReceiptQueueItemDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptQueueItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:87](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L87).
-
-```csharp
-public sealed record BookReceiptQueueItemDto(string ObligationKey, Guid PositionId, Guid SecurityId, string DisplayName, string FlowType, DateOnly DueDate, string Currency, string Status, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal ExpectedAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal ReceivedAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal PostedAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal RemainingAmount, int AgingDays, string? Owner, string? ExceptionId, bool EvidenceComplete, IReadOnlyList<string> EvidenceIssues, IReadOnlyList<string> EvidenceLinks, IReadOnlyList<BookReceiptExpectationVersionDto> ExpectationHistory, IReadOnlyList<BookReceiptDto> Receipts, IReadOnlyList<BookReceiptPostingDto> Postings);
-```
-
-## BookReceiptRunDto
-
-Qualified name: <code>Meridian.Contracts.AssetOperations.BookReceiptRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs:115](../../../../src/Meridian.Contracts/AssetOperations/BookReceiptDtos.cs#L115).
-
-Immutable daily observation. Currency amounts never imply an FX conversion.
-
-```csharp
-public sealed record BookReceiptRunDto(string RunId, string EngineVersion, BookReceiptScopeDto Scope, DateOnly AsOfDate, string InputHash, IReadOnlyList<BookReceiptQueueItemDto> Items, IReadOnlyList<BookReceiptCoverageDto> Coverage, BookReceiptSourceSnapshotDto SourceSnapshot, long Sequence = 0);
 ```
