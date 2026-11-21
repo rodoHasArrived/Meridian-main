@@ -6,6 +6,116 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportCertificationDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReportCertificationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:689](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L689).
+
+```csharp
+public sealed record ReportCertificationDto(string CertificationId, AccountingCertificationStateDto State, string Actor, DateTimeOffset RecordedAtUtc, string Summary, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:697](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L697) |  |
+
+## ReportDimensionScopeDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReportDimensionScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:777](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L777).
+
+```csharp
+public sealed record ReportDimensionScopeDto(Guid? LedgerBookId, LedgerDimensionSetDto Dimensions, bool HasExplicitScope, string ScopeHash, string CertificationEvidenceToken, IReadOnlyList<string>? ScopedDimensionKeys = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; ScopedDimensionKeys { get; init; } = ScopedDimensionKeys??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:785](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L785) |  |
+
+## ReportExportArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReportExportArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:728](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L728).
+
+```csharp
+public sealed record ReportExportArtifactDto(string ArtifactId, string ArtifactKind, string DisplayName, string Format, string Route, AccountingCertificationStateDto CertificationState, DateTimeOffset GeneratedAtUtc, string ContentHash, IReadOnlyList<string>? EvidenceLinks = null, string? SourceStatementId = null, Guid? LedgerBookId = null, LedgerDimensionSetDto? Dimensions = null, ReportDimensionScopeDto? DimensionScope = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:743](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L743) |  |
+| <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:746](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L746) |  |
+
+## ReportExportArtifactManifestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReportExportArtifactManifestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:750](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L750).
+
+```csharp
+public sealed record ReportExportArtifactManifestDto(string PackageId, string ArtifactId, string ArtifactKind, string DisplayName, string Format, string Route, AccountingCertificationStateDto CertificationState, DateTimeOffset GeneratedAtUtc, string ContentHash, string ContentType, string FileName, bool ExternalPostingAllowed, string Payload, IReadOnlyList<string>? EvidenceLinks = null, string? SourceStatementId = null, Guid? LedgerBookId = null, LedgerDimensionSetDto? Dimensions = null, ReportDimensionScopeDto? DimensionScope = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:770](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L770) |  |
+| <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:773](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L773) |  |
+
+## ReportLineProvenanceDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.ReportLineProvenanceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:714](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L714).
+
+```csharp
+public sealed record ReportLineProvenanceDto(string StatementId, string LineId, string LineLabel, string SourceKind, decimal Amount, string Currency, LedgerDimensionSetDto Dimensions, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:724](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L724) |  |
+
+## RestatementWorkflowDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RestatementWorkflowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:701](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L701).
+
+```csharp
+public sealed record RestatementWorkflowDto(string RestatementId, string PriorPackageId, string ReasonCode, ManualJournalEntryStatusDto ApprovalState, string RequestedBy, DateTimeOffset RequestedAtUtc, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:710](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L710) |  |
+
+## RetainBookFxSettlementSetRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.RetainBookFxSettlementSetRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/BookFxSettlementDtos.cs#L18).
+
+Economic facts of one settled tranche of a foreign-currency securities sale.
+
+```csharp
+public sealed record RetainBookFxSettlementSetRequestDto(Guid SetId, Guid GaapBookId, Guid CashBookId, Guid TradeEventId, Guid SettlementEventId, Guid SecurityId, string Symbol, string FinancialAccountId, string ReceivableAccountName, string TransactionCurrency, DateOnly TradeDate, DateOnly SettlementDate, decimal TradeQuantity, decimal SettledQuantity, decimal GrossProceeds, decimal SettledProceeds, decimal GaapCostBasis, decimal CashRelievedBasis, Guid RateSetId, int RateSetRevision, string EvidenceReference, BookFxSettlementJournalDto GaapTrade, BookFxSettlementJournalDto GaapSettlement, BookFxSettlementJournalDto CashSettlement);
+```
+
 ## RetainPrivateCapitalCallRequest
 
 Qualified name: <code>Meridian.Contracts.Ledger.RetainPrivateCapitalCallRequest</code>. Kind: `record`.
@@ -767,181 +877,3 @@ Enum declarations:
 | <code>NotReady</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:29](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L29) |  |
 | <code>Stopping</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:30](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L30) |  |
 | <code>Failed</code> | [src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs:31](../../../../src/Meridian.Contracts/Lifecycle/LifecycleEnums.cs#L31) |  |
-
-## DataManifest
-
-Qualified name: <code>Meridian.Contracts.Manifest.DataManifest</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:8](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L8).
-
-Comprehensive manifest for a collection session or archive package.
-
-```csharp
-public sealed class DataManifest
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;manifestVersion&quot;)] public string ManifestVersion { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:14](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L14) | Gets or sets the manifest format version. |
-| <code>[JsonPropertyName(&quot;generatedAt&quot;)] public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:20](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L20) | Gets or sets the timestamp when the manifest was generated. |
-| <code>[JsonPropertyName(&quot;sessionId&quot;)] public string? SessionId { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:26](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L26) | Gets or sets the unique session identifier. |
-| <code>[JsonPropertyName(&quot;sessionName&quot;)] public string? SessionName { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:32](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L32) | Gets or sets the human-readable session name. |
-| <code>[JsonPropertyName(&quot;dateRange&quot;)] public DateRangeInfo? DateRange { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:38](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L38) | Gets or sets the date range information for the data. |
-| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:44](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L44) | Gets or sets the array of symbols included in this manifest. |
-| <code>[JsonPropertyName(&quot;totalFiles&quot;)] public int TotalFiles { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:50](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L50) | Gets or sets the total number of files in the manifest. |
-| <code>[JsonPropertyName(&quot;totalEvents&quot;)] public long TotalEvents { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:56](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L56) | Gets or sets the total number of events across all files. |
-| <code>[JsonPropertyName(&quot;totalBytesRaw&quot;)] public long TotalBytesRaw { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:62](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L62) | Gets or sets the total uncompressed size in bytes. |
-| <code>[JsonPropertyName(&quot;totalBytesCompressed&quot;)] public long TotalBytesCompressed { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:68](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L68) | Gets or sets the total compressed size in bytes. |
-| <code>[JsonPropertyName(&quot;files&quot;)] public ManifestFileEntry[] Files { get; set; } = Array.Empty&lt;ManifestFileEntry&gt;();</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:74](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L74) | Gets or sets the array of file entries in the manifest. |
-| <code>[JsonPropertyName(&quot;schemas&quot;)] public Dictionary&lt;string, string&gt;? Schemas { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:80](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L80) | Gets or sets the schema definitions keyed by event type. |
-| <code>[JsonPropertyName(&quot;qualityMetrics&quot;)] public DataQualityMetrics? QualityMetrics { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:86](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L86) | Gets or sets the data quality metrics for this manifest. |
-| <code>[JsonPropertyName(&quot;verificationStatus&quot;)] public string VerificationStatus { get; set; } = VerificationStatusValues.Pending;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:92](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L92) | Gets or sets the verification status of the manifest. |
-| <code>[JsonPropertyName(&quot;lastVerifiedAt&quot;)] public DateTime? LastVerifiedAt { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:98](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L98) | Gets or sets the timestamp of the last verification. |
-
-## DataQualityMetrics
-
-Qualified name: <code>Meridian.Contracts.Manifest.DataQualityMetrics</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:251](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L251).
-
-Data quality metrics for manifests and sessions.
-
-```csharp
-public sealed class DataQualityMetrics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;completenessScore&quot;)] public float CompletenessScore { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:257](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L257) | Gets or sets the completeness score (0.0 to 1.0). |
-| <code>[JsonPropertyName(&quot;integrityScore&quot;)] public float IntegrityScore { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:263](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L263) | Gets or sets the data integrity score (0.0 to 1.0). |
-| <code>[JsonPropertyName(&quot;overallScore&quot;)] public float OverallScore { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:269](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L269) | Gets or sets the overall quality score (0.0 to 1.0). |
-| <code>[JsonPropertyName(&quot;gapsDetected&quot;)] public int GapsDetected { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:275](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L275) | Gets or sets the number of data gaps detected. |
-| <code>[JsonPropertyName(&quot;sequenceErrors&quot;)] public int SequenceErrors { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:281](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L281) | Gets or sets the number of sequence errors found. |
-| <code>[JsonPropertyName(&quot;duplicatesFound&quot;)] public int DuplicatesFound { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:287](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L287) | Gets or sets the number of duplicate records found. |
-| <code>[JsonPropertyName(&quot;expectedEvents&quot;)] public long ExpectedEvents { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:293](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L293) | Gets or sets the expected number of events. |
-| <code>[JsonPropertyName(&quot;actualEvents&quot;)] public long ActualEvents { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:299](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L299) | Gets or sets the actual number of events recorded. |
-| <code>[JsonPropertyName(&quot;missingTradingDays&quot;)] public string[]? MissingTradingDays { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:305](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L305) | Gets or sets the array of missing trading day dates. |
-| <code>[JsonPropertyName(&quot;outliersDetected&quot;)] public int OutliersDetected { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:311](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L311) | Gets or sets the number of outliers detected. |
-
-## DateRangeInfo
-
-Qualified name: <code>Meridian.Contracts.Manifest.DateRangeInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:125](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L125).
-
-Date range information.
-
-```csharp
-public sealed class DateRangeInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;start&quot;)] public DateTime Start { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:131](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L131) | Gets or sets the start date of the range. |
-| <code>[JsonPropertyName(&quot;end&quot;)] public DateTime End { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:137](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L137) | Gets or sets the end date of the range. |
-| <code>[JsonPropertyName(&quot;tradingDays&quot;)] public int TradingDays { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:143](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L143) | Gets or sets the number of trading days in the range. |
-
-## ManifestFileEntry
-
-Qualified name: <code>Meridian.Contracts.Manifest.ManifestFileEntry</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:149](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L149).
-
-Individual file entry in a manifest.
-
-```csharp
-public sealed class ManifestFileEntry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;path&quot;)] public string Path { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:155](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L155) | Gets or sets the absolute file path. |
-| <code>[JsonPropertyName(&quot;relativePath&quot;)] public string RelativePath { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:161](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L161) | Gets or sets the relative file path within the archive. |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string? Symbol { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:167](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L167) | Gets or sets the ticker symbol for this file. |
-| <code>[JsonPropertyName(&quot;eventType&quot;)] public string? EventType { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:173](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L173) | Gets or sets the event type contained in this file. |
-| <code>[JsonPropertyName(&quot;date&quot;)] public DateTime? Date { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:179](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L179) | Gets or sets the date of the data in this file. |
-| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public string ChecksumSha256 { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:185](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L185) | Gets or sets the SHA-256 checksum for file integrity. |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:191](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L191) | Gets or sets the uncompressed file size in bytes. |
-| <code>[JsonPropertyName(&quot;compressedSizeBytes&quot;)] public long? CompressedSizeBytes { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:197](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L197) | Gets or sets the compressed file size in bytes. |
-| <code>[JsonPropertyName(&quot;eventCount&quot;)] public long EventCount { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:203](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L203) | Gets or sets the number of events in the file. |
-| <code>[JsonPropertyName(&quot;firstTimestamp&quot;)] public DateTime? FirstTimestamp { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:209](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L209) | Gets or sets the timestamp of the first event in the file. |
-| <code>[JsonPropertyName(&quot;lastTimestamp&quot;)] public DateTime? LastTimestamp { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:215](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L215) | Gets or sets the timestamp of the last event in the file. |
-| <code>[JsonPropertyName(&quot;schemaVersion&quot;)] public string? SchemaVersion { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:221](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L221) | Gets or sets the schema version used for the data. |
-| <code>[JsonPropertyName(&quot;isCompressed&quot;)] public bool IsCompressed { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:227](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L227) | Gets or sets a value indicating whether the file is compressed. |
-| <code>[JsonPropertyName(&quot;compressionType&quot;)] public string? CompressionType { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:233](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L233) | Gets or sets the compression algorithm used (e.g., &quot;gzip&quot;, &quot;lz4&quot;). |
-| <code>[JsonPropertyName(&quot;verificationStatus&quot;)] public string VerificationStatus { get; set; } = VerificationStatusValues.Pending;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:239](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L239) | Gets or sets the verification status of the file. |
-| <code>[JsonPropertyName(&quot;lastVerifiedAt&quot;)] public DateTime? LastVerifiedAt { get; set; }</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:245](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L245) | Gets or sets the timestamp of the last verification. |
-
-## VerificationStatusValues
-
-Qualified name: <code>Meridian.Contracts.Manifest.VerificationStatusValues</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:104](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L104).
-
-Verification status constants.
-
-```csharp
-public static class VerificationStatusValues
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:109](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L109) | Indicates verification has not yet been performed. |
-| <code>public const string Verified = &quot;Verified&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:114](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L114) | Indicates verification completed successfully. |
-| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:119](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L119) | Indicates verification failed. |
-
-## MoneyMarketFundReferenceDto
-
-Qualified name: <code>Meridian.Contracts.MoneyMarketFunds.MoneyMarketFundReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs:3](../../../../src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs#L3).
-
-```csharp
-public sealed record MoneyMarketFundReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifier, long Version);
-```
-
-## IEventMetrics
-
-Qualified name: <code>Meridian.Contracts.Monitoring.IEventMetrics</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:8](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L8).
-
-Abstraction over event pipeline counters so that hot-path metrics can be injected rather than accessed through a static class. Default implementations should preserve zero-allocation / thread-safe behavior on the hot path.
-
-```csharp
-public interface IEventMetrics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>long Published { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:10](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L10) |  |
-| <code>long Dropped { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:11](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L11) |  |
-| <code>long Integrity { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:12](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L12) |  |
-| <code>long Trades { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:13](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L13) |  |
-| <code>long DepthUpdates { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:14](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L14) |  |
-| <code>long Quotes { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:15](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L15) |  |
-| <code>long HistoricalBars { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:16](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L16) |  |
-| <code>double EventsPerSecond { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:17](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L17) |  |
-| <code>double DropRate { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:18](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L18) |  |
-| <code>void IncPublished();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:20](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L20) |  |
-| <code>void IncDropped();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:21](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L21) |  |
-| <code>void IncIntegrity();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:22](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L22) |  |
-| <code>void IncTrades();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:23](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L23) |  |
-| <code>void IncDepthUpdates();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:24](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L24) |  |
-| <code>void IncQuotes();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:25](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L25) |  |
-| <code>void IncHistoricalBars();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:26](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L26) |  |
-| <code>void RecordLatency(long startTimestamp);</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:27](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L27) |  |
-| <code>void Reset();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:29](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L29) |  |
-| <code>MetricsSnapshot GetSnapshot();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:30](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L30) |  |

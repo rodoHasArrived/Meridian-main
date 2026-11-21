@@ -541,7 +541,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.HistoricalEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L14).
+Source: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L17).
 
 Extension methods for registering historical data query API endpoints. Shared between web dashboard and desktop application hosts.
 
@@ -553,8 +553,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapHistoricalEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L19) | Maps all historical data query API endpoints. |
-| <code>public static void MapAlignmentEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:172](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L172) | Maps the /api/alignment endpoints for time series alignment operations. |
+| <code>public static void MapHistoricalEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L22) | Maps all historical data query API endpoints. |
+| <code>public static void MapAlignmentEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs:175](../../../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L175) | Maps the /api/alignment endpoints for time series alignment operations. |
 
 ## HttpContextWorkstationTenantContextAccessor
 

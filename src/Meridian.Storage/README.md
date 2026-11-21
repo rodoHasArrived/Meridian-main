@@ -1460,6 +1460,12 @@ marked running is retained as an interrupted/ambiguous failure instead of being 
 
 ### Market data and evidence
 
+The alignment archive read opens closed JSONL captures, including compressed partitions. It
+refuses corrupt data and limits file count, decoded text, candidate events and read time. Its
+record IDs identify the logical relative archive path, line number and SHA-256 digest of the
+line text so equivalent plain and gzip copies carry the same lineage.
+
+
 Market data and evidence records enter through storage sinks. File-backed writes use the
 write-ahead log or atomic file helpers so a crash is less likely to leave a half-written record.
 Storage sink flush behavior uses the Core-owned `Meridian.Core.Services.IFlushable` contract rather
