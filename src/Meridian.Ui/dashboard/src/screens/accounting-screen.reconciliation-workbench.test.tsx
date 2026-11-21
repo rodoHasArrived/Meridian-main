@@ -199,11 +199,14 @@ describe("Reconciliation workbench", () => {
     const user = userEvent.setup();
     const services = fakeBulkServices();
     services.execute.mockRejectedValueOnce(new Error("Statement handoff interrupted"));
-    const readResult = vi.fn(async () => {
+    const readResult = vi.fn(async (): Promise<ReconciliationBulkCaseworkResult> => {
       const result = bulkResult(services.execute.mock.calls[0][0], () => true);
-      return { ...result, results: result.results.map((entry) => ({ ...entry,
-        item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] }
-      })) };
+      return { ...result, results: result.results.map((entry) => {
+        if (!entry.item) throw new Error(`The bulk fixture has no retained queue item for ${entry.breakId}.`);
+        return { ...entry,
+          item: { ...entry.item, sourceType: "statement", evidenceLinks: ["urn:meridian:statement-casework-handoff:pending:fixture"] }
+        };
+      }) };
     });
     renderWorkbench(undefined, { ...services, readResult });
     await user.click(within(queueRows()[0]).getByRole("checkbox"));
