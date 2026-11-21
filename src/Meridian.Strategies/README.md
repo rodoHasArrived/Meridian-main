@@ -466,7 +466,11 @@ its original dimensions. Missing coverage cannot appear as a successful native c
 
 Paper metrics capture the optional native accounting source once per observation, retain its
 economic cutoff and exact quantities/basis, and limit the receipt to the run's authorized financial
-account. Only retained same-run acquisition/relief history supplies strategy quantities and basis;
+account. The same capture supplies account cash, accounting equity, signed carrying market values
+and display positions. Scoped strategy callbacks also receive this account instead of the aggregate
+portfolio; a missing requested partition never falls back to another account. Existing broker-live
+contexts continue through their established account-validation path.
+Only retained same-run acquisition/relief history supplies strategy quantities and basis;
 mixed or missing run history stays unavailable. Clearly attributed sibling-run holdings are not
 relabeled as this run. Legacy snapshots keep their missing receipt, and no ticker lookup repairs
 missing accounting identity. A variation-margin future without a journal position footprint keeps
