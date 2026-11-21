@@ -1000,6 +1000,10 @@ public sealed partial class LiveTradingEngineTests
         {
             var store = new StrategyRunStore(new FileOperationalCaseHistoryStore(dataRoot));
             var fundAccountId = Guid.NewGuid();
+            PaperTradingPortfolio CreateOwnedPaperBook() => new([
+                new AccountDefinition(fundAccountId.ToString("D"), "Lifecycle paper account",
+                    Meridian.Execution.Models.AccountKind.Brokerage, 100_000m)
+            ]);
             var run = StrategyRunEntry.StartForFundAccount(
                 BuyAndHoldLiveStrategy.CatalogId, "Configured paper", RunType.Paper, fundAccountId, "durable-paused-run",
                 parameterSet: new Dictionary<string, string> { ["symbols"] = "MSFT", ["quantity"] = "9" }) with
@@ -1011,7 +1015,8 @@ public sealed partial class LiveTradingEngineTests
             var manager = new StrategyLifecycleManager(store, NullLogger<StrategyLifecycleManager>.Instance);
             var hub = new LiveMarketEventHub();
             var cache = new LiveMarketDataCache();
-            await using (var engine = CreateEngine(store, hub, cache, new RecordingOrderManager(100m), lifecycleManager: manager))
+            await using (var engine = CreateEngine(store, hub, cache, new RecordingOrderManager(100m),
+                lifecycleManager: manager, portfolio: CreateOwnedPaperBook()))
             {
                 (await engine.TryLaunchAsync(run)).Launched.Should().BeTrue();
                 await WaitForLifecycleAsync(store, run.RunId, StrategyRunLifecycleEventType.Activated);
@@ -1030,7 +1035,7 @@ public sealed partial class LiveTradingEngineTests
             var catalog = new LiveStrategyCatalog().Register(run.StrategyId, _ => restoredStrategy);
             var orders = new RecordingOrderManager(100m);
             await using (var engine = CreateEngine(restarted, new LiveMarketEventHub(), new LiveMarketDataCache(), orders,
-                catalog, lifecycleManager: controls))
+                catalog, lifecycleManager: controls, portfolio: CreateOwnedPaperBook()))
             {
                 (await engine.ResumePendingRunsAsync()).Should().Be(0, "restoration must not execute a paused run");
                 engine.PausedRunIds.Should().Contain(run.RunId);
