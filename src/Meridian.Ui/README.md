@@ -11,6 +11,11 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Ui
 
+The existing Posted Ledger view downloads complete-period journal CSV files from the authorized
+shared snapshot route. Strategy run detail shows retained source-quality warnings, and reconciliation
+views retain quantity and monetary units separately. Missing comparison evidence remains unavailable.
+The dashboard and shared-service READMEs document the source and validation boundaries.
+
 The workstation bundle under `wwwroot/workstation/` is an ignored build product. Build `dashboard/`
 before starting the host from a fresh source checkout, or restore the CI artifact for the same
 revision. npm commands regenerate contract mirrors first. CI supplies the built bundle to .NET

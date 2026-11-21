@@ -876,7 +876,7 @@ public sealed record FundProfileSummary(string FundProfileId, string DisplayName
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationAuditTrailRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:220](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L220).
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:223](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L223).
 
 ```csharp
 public sealed record FundReconciliationAuditTrailRow(DateTimeOffset Timestamp, string TimestampText, string Title, string Description, string ActorLabel);
@@ -933,7 +933,7 @@ public sealed record FundReconciliationCalibrationProfileRow(string TolerancePro
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationCheckDetailRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:198](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L198).
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:201](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L201).
 
 ```csharp
 public sealed record FundReconciliationCheckDetailRow(string RowKey, string CheckLabel, string CategoryLabel, string StatusLabel, string StatusIcon, string SourceLabel, string ExpectedAmountText, string ActualAmountText, string VarianceText, string Reason, string ExpectedAsOfText, string ActualAsOfText, bool IsHighlighted = false, string ToleranceText = "Not retained");

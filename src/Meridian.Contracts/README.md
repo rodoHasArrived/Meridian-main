@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-21
 ---
 
 # src/Meridian.Contracts

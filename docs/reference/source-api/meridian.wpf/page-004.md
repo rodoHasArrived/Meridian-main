@@ -13,8 +13,14 @@ Qualified name: <code>Meridian.Wpf.Models.FundReconciliationDetailModel</code>. 
 Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:173](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L173).
 
 ```csharp
-public sealed record FundReconciliationDetailModel(FundReconciliationSourceType SourceType, string DetailKey, string Title, string Subtitle, string StatusLabel, string CoverageSummary, string LastUpdatedText, Guid? AccountId, Guid ReconciliationRunId, string? RunId, string? FocusBreakId, bool SupportsBreakActions, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, int SecurityIssueCount, string EmptyExceptionsText, string EmptySecurityCoverageText, IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows, IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows, IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows, IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows);
+public sealed record FundReconciliationDetailModel(FundReconciliationSourceType SourceType, string DetailKey, string Title, string Subtitle, string StatusLabel, string CoverageSummary, string LastUpdatedText, Guid? AccountId, Guid ReconciliationRunId, string? RunId, string? FocusBreakId, bool SupportsBreakActions, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, int SecurityIssueCount, string EmptyExceptionsText, string EmptySecurityCoverageText, IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows, IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows, IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows, IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? BreakAmountDisplayOverride { get; init; }</code> | [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:198](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L198) |  |
 
 ## FundReconciliationQueueView
 
@@ -105,7 +111,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Wpf.Models.FundReconciliationSecurityCoverageRow</code>. Kind: `record`.
 
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:214](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L214).
+Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:217](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L217).
 
 ```csharp
 public sealed record FundReconciliationSecurityCoverageRow(string Source, string Symbol, string AccountName, string Reason);
