@@ -171,7 +171,17 @@ run's retained fund account. A run without a fund account (paper only) keeps the
 promotion, so a live order routes only for an active run that an approved live promotion targets.
 The OMS asks at preflight and again at dispatch, inside its pre-trade gate. The run record is read
 every time; an approved live promotion found for a run is remembered, because promotion history is
-append-only, so the promotion file is not re-read for every order.
+append-only, so the promotion file is not re-read for every order. The active live grant also
+binds the exact executable artifact, account, expiry, and exposure limits. Dispatch checks the
+grant and its withdrawal state. Scoped Designer paper review retains the saved version and
+backtest input hashes with a dedicated paper session.
+
+Reviewed Designer paper runs observe that prepared session's defensive native portfolio, not
+the host's aggregate paper book. Each metrics observation retains one atomic account receipt;
+accepted trade or quote marks apply only to its local replay copy. Missing or closed sessions
+fail observation rather than falling back to another book. Final metrics are captured after
+fill draining and before session closure, and successful completion still requires durable
+replay verification. Retained simulated fill handoffs remain distinct from canonical postings.
 
 ### Shared SMA reference and retained comparison
 

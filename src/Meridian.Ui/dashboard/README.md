@@ -20,6 +20,11 @@ Financial value groups show missing condition evidence once while keeping each v
 reason and matching Amount passport accessible. Known conditions keep their own labels. Instrument
 positions identify their source, and raw case, report-run and mark-policy IDs remain in technical details.
 
+Designer run proof follows the account and complete document, date and evidence request submitted
+by the browser. Context changes withhold earlier proof and late responses while retaining unsaved
+drafts. This local receipt records the request; retained account ownership and posting permissions
+come from server evidence and governance.
+
 Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
 The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
 Workstation backfill receipts show the submission estimate, waiting states, observed providers,

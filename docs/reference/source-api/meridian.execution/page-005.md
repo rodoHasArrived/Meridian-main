@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SimulatedFillHandoff
+
+Qualified name: <code>Meridian.Execution.Services.SimulatedFillHandoff</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PaperOrderEvidenceReader.cs:51](../../../../src/Meridian.Execution/Services/PaperOrderEvidenceReader.cs#L51).
+
+```csharp
+public sealed record SimulatedFillHandoff(TradeExecutedEvent Fill, string ReceiptSha256);
+```
+
+## VariationMarginPositionSnapshot
+
+Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1407](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1407).
+
+An open position that settles daily variation margin, as an end-of-day settlement job sees it.
+
+```csharp
+public sealed record VariationMarginPositionSnapshot(string AccountId, string Symbol, decimal Quantity, decimal LastSettlementPrice, decimal ContractMultiplier, DateTimeOffset? OpenedAt);
+```
+
 ## ITaxLotSelector
 
 Qualified name: <code>Meridian.Execution.TaxLotAccounting.ITaxLotSelector</code>. Kind: `interface`.

@@ -27,6 +27,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
+import { closeCalendarColumns } from "@/screens/operations-continuity-screen.close-calendar-columns";
+import { CloseRecordIdentifiers } from "@/screens/operations-continuity-screen.record-identifiers";
 import {
   buildReopenWorkflowFormDisabledReason,
   formatApprovalDecisionCommandError,
@@ -42,7 +44,6 @@ import {
   type FinancialOperationsCommandSpineRow,
   type FinancialOperationsOperatorQueueRow,
   type OperationsAccountingRecordEvidenceRow,
-  type OperationsContinuityCloseCalendarRow,
   type OperationsContinuityCloseCockpitApprovalRow,
   type OperationsContinuityCloseCockpitLaneRow,
   type OperationsContinuityCloseCockpitWorkflowRow,
@@ -195,71 +196,6 @@ const operationalDashboardColumns: DenseDataTableColumn<OperationsContinuityDash
     label: "Route",
     render: (row) => row.routeHref ? (
       <Link className="text-xs" to={row.routeHref} aria-label={`Open operational dashboard metric ${row.label}`}>
-        {row.routeLabel}
-      </Link>
-    ) : (
-      <span className="text-xs text-muted-foreground">{row.routeLabel}</span>
-    )
-  }
-];
-
-function CloseRecordIdentifiers({ recordId, fundAccountId }: { recordId: string; fundAccountId?: string }) {
-  return <TechnicalDetails label="Record identifiers" className="mt-2" contentClassName="py-2">
-    <dl className="grid gap-1 text-xs">
-      <div><dt>Record ID</dt><dd className="break-all font-mono">{recordId}</dd></div>
-      {fundAccountId ? <div><dt>Fund account</dt><dd className="break-all font-mono">{fundAccountId}</dd></div> : null}
-    </dl>
-  </TechnicalDetails>;
-}
-
-const closeCalendarColumns: DenseDataTableColumn<OperationsContinuityCloseCalendarRow>[] = [
-  {
-    id: "scope",
-    label: "Scope",
-    render: (row) => (
-      <div className="min-w-0">
-        <span className="block font-semibold text-foreground">{row.periodLabel}</span>
-        <span className="mt-1 block text-xs leading-5 text-muted-foreground">{row.taskLabel}</span>
-        <CloseRecordIdentifiers recordId={row.id} fundAccountId={row.fundAccountId} />
-      </div>
-    )
-  },
-  {
-    id: "status",
-    label: "Status",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.statusTone)}>{row.statusLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.dueLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "readiness",
-    label: "Readiness",
-    render: (row) => (
-      <span className="block text-xs leading-5">
-        <Badge variant={statusBadgeVariant(row.readinessTone)}>{row.readinessLabel}</Badge>
-        <span className="mt-1 block text-muted-foreground">{row.ownerLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "controls",
-    label: "Controls",
-    render: (row) => (
-      <span className="block text-xs leading-5 text-muted-foreground">
-        <span className="block text-foreground">{row.blockerLabel}</span>
-        <span className="block">{row.checklistLabel}</span>
-        <span className="block">{row.approvalLabel}</span>
-      </span>
-    )
-  },
-  {
-    id: "route",
-    label: "Route",
-    render: (row) => row.routeHref ? (
-      <Link className="text-xs" to={row.routeHref} aria-label={`Open close calendar workflow ${row.periodLabel}`}>
         {row.routeLabel}
       </Link>
     ) : (

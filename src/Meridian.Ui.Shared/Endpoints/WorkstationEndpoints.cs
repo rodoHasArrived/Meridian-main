@@ -1499,7 +1499,11 @@ public static partial class WorkstationEndpoints
         {
             var legacyId = "BF-" + Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(JsonSerializer.Serialize(new
             {
-                legacy.Provider, legacy.CompletedUtc, legacy.From, legacy.To, legacy.Symbols
+                legacy.Provider,
+                legacy.CompletedUtc,
+                legacy.From,
+                legacy.To,
+                legacy.Symbols
             }))[..16];
             backfills.Add(BuildBackfillRow(legacyId, legacy.Symbols,
                 legacy.From, legacy.To, legacy.Provider, legacy.Success, legacy.CompletedUtc));
@@ -1553,7 +1557,8 @@ public static partial class WorkstationEndpoints
             .Select(provider => provider.ProviderId).ToArray();
         var providerLabel = providers.Length > 0 ? string.Join(", ", providers) : receipt.RoutingDecision;
         return BuildBackfillRow($"BF-{receipt.ReceiptId:N}", receipt.Request.Symbols, receipt.Request.From,
-            receipt.Request.To, providerLabel, result.Success, receipt.CompletedUtc) with { ProviderProvenance = receipt };
+            receipt.Request.To, providerLabel, result.Success, receipt.CompletedUtc) with
+        { ProviderProvenance = receipt };
     }
 
     /// <summary>
@@ -1684,6 +1689,12 @@ public static partial class WorkstationEndpoints
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
+        if (oms is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper } &&
+            !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paper, UserPermission.ViewTrades).ConfigureAwait(false))
+        {
+            portfolio = null;
+            oms = null;
+        }
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
         var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
         var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();

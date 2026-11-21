@@ -239,7 +239,12 @@ public sealed record StrategyRunSummary(
     // PR-02: paper/live-compatible status shapes
     StrategyRunLiveStatus? LiveStatus = null,
     StrategyRunPaperStatus? PaperStatus = null,
-    IReadOnlyDictionary<string, string>? Parameters = null);
+    IReadOnlyDictionary<string, string>? Parameters = null)
+{
+    public string? StrategyVersionSha256 { get; init; }
+    public string? DataProvenanceToken { get; init; }
+    public Guid? FundAccountId { get; init; }
+}
 
 public sealed record StrategySweepObjectiveRanking(
     string RunId,

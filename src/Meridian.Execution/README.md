@@ -373,6 +373,10 @@ identity the caller put in metadata (`actor`, `runId`, `correlationId`, `session
   consumed approvals, the same way an operator-control refusal does. Untyped orders have no dispatch
   recheck.
 
+The live authorization lease binds the active run, retained artifact, and account through the
+broker send. Scoped Designer paper intents retain the exact strategy version, review, and
+session with their own durable intent evidence.
+
 Retention and reporting:
 
 - A parked order keeps its typed authority in the escalation entry's own durable write. The OMS

@@ -66,6 +66,13 @@ and process-host concerns isolated from domain and application logic.
 
 The browser host passes the shared equity session policy, operational journal, quote source and instrument coverage source into its OMS. This is the same admission/retention path used by the execution service registrations. `UiServer` composes the OMS through `OrderManagementSystemFactory` (`HostedWorkstation`), which requires the risk validator, portfolio state and OMS options and wires paper-session persistence and the strategy-run authority source. Read-only shared-host compositions leave execution workers dormant when no gateway is registered. See [execution workflows](../../docs/engineering/execution-workflows.md).
 
+Versioned Designer paper composition resolves the retained scoped design and exact promotion
+review through `DesignerPaperExecution`, then routes typed OMS intents into that run's prepared
+durable session. Strategy observations read only that session's native account receipt and
+defensive marked portfolio; final metrics are captured after fill draining and before verified
+session closure. The host's aggregate paper book does not supply the run's cash or holdings.
+Retained simulated handoffs do not become canonical postings through this bounded execution path.
+
 `UiServer` invokes Application's shared `DatabaseStartupPlan` before its existing optional reporting
 migration gate and before starting hosted services. It retains its successful-readiness cache,
 serialized lifecycle operations, and retry after a pre-host migration failure. Desktop child

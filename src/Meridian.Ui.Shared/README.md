@@ -21,6 +21,11 @@ remain independently comparable. Account/book stock reconciliation uses the exis
 Run selection requires trusted execution attribution, not a caller-supplied strategy label. Retained
 legacy metrics can support audit display while their scoped reconciliation measurements stay unavailable.
 
+Guarded strategy-run evidence and vault reads require a resolvable retained run identity before
+selecting their account policy. A missing repository or unknown run fails closed. Versioned
+Designer runs retain the tenant/company and account `ViewTrades` checks; known unversioned run
+records keep their existing evidence policy, as do other evidence subject kinds.
+
 Reconciliation queues expose a monetary total only when every break supplies one comparable typed
 money measure in the same retained currency. Quantity-only, legacy, mixed-currency and unverified
 account rows retain counts and an unavailable explanation instead of a dollar total. The nullable
@@ -2380,7 +2385,7 @@ migration kind before the execution service can retain certified status.
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers
 read-only `xero-fixture` and `netsuite-fixture` import mappings, exposes planned live Xero and
-NetSuite rows with posting disabled, retains the latest import in process by tenant/company/fund/book,
+NetSuite rows with posting disabled, persists the latest import by tenant/company/fund/book in the configured external-GL state directory,
 and compares external trial-balance evidence against Meridian-owned ledger truth when the ledger
 store is available. The reconciliation response carries provider-side refs, Meridian ledger refs,
 and package posture for external import, Meridian ledger support, and the GL tie-out. Import,

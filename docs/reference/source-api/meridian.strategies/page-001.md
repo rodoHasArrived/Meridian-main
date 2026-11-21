@@ -339,7 +339,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Live.Designer.DesignerDocumentLiveSource</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:34](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L34).
+Source: [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:35](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L35).
 
 Resolves promoted runs whose strategy is a Strategy Designer document, closing the designer-strategy activation gap tracked by PRD-020.
 
@@ -351,10 +351,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string DesignerDocumentParameterKey = &quot;designerDocumentId&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:39](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L39) | Run parameter naming the designer document to activate. |
-| <code>public DesignerDocumentLiveSource(IStrategyDesignRepository? repository, StrategyDesignService designService, ILogger&lt;DesignerDocumentLiveSource&gt;? logger = null, TimeSpan? loadTimeout = null, Meridian.Strategies.Artifacts.StrategyArtifactRegistry? artifacts = null);</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:62](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L62) |  |
-| <code>public string? SelectorParameterKey =&gt; …;</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:78](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L78) |  |
-| <code>public bool TryCreate(LiveStrategyCreationContext context, out IBacktestStrategy? strategy, out string? failureReason);</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:80](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L80) |  |
+| <code>public const string DesignerDocumentParameterKey = &quot;designerDocumentId&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:40](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L40) | Run parameter naming the designer document to activate. |
+| <code>public DesignerDocumentLiveSource(IStrategyDesignRepository? repository, StrategyDesignService designService, ILogger&lt;DesignerDocumentLiveSource&gt;? logger = null, TimeSpan? loadTimeout = null, Meridian.Strategies.Artifacts.StrategyArtifactRegistry? artifacts = null, ScopedStrategyDesignStore? scopedDesigns = null);</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:64](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L64) |  |
+| <code>public string? SelectorParameterKey =&gt; …;</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:82](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L82) |  |
+| <code>public bool TryCreate(LiveStrategyCreationContext context, out IBacktestStrategy? strategy, out string? failureReason);</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:84](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L84) |  |
+| <code>public static bool TryCreatePaperStrategy(StrategyDesignDocument document, StrategyDesignValidationResult validation, out IBacktestStrategy? strategy, out string? reason);</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs:198](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs#L198) | Compiles the same bounded closed-expression strategy for native replay and paper activation. |
 
 ## DesignerDocumentRevision
 
@@ -375,6 +376,81 @@ Declared public members:
 | <code>public const string ParameterKey = &quot;designerDocumentHash&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentRevision.cs:20](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentRevision.cs#L20) | Run parameter carrying the approved document&#x27;s content hash. |
 | <code>public static bool IsReservedDocumentId(string? documentId) =&gt; …;</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentRevision.cs:40](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentRevision.cs#L40) | True when a document id collides with a built-in live strategy factory. |
 | <code>public static string ComputeHash(StrategyDesignDocument document);</code> | [src/Meridian.Strategies/Live/Designer/DesignerDocumentRevision.cs:51](../../../../src/Meridian.Strategies/Live/Designer/DesignerDocumentRevision.cs#L51) | Canonical hash of everything in a document that changes what it trades. |
+
+## DesignerPaperExecution
+
+Qualified name: <code>Meridian.Strategies.Live.Designer.DesignerPaperExecution</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs:29](../../../../src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs#L29).
+
+```csharp
+public sealed class DesignerPaperExecution(IStrategyRepository runs, IDesignerPaperReviewAuthority reviews, PaperSessionPersistenceService sessions)
+```
+
+## DesignerStrategyVersion
+
+Qualified name: <code>Meridian.Strategies.Live.Designer.DesignerStrategyVersion</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:10](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L10).
+
+Defines the executable identity shared by a Designer backtest and its paper run.
+
+```csharp
+public static class DesignerStrategyVersion
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string VersionKey = &quot;strategyVersionSha256&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:12](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L12) |  |
+| <code>public const string DraftRevisionKey = &quot;designerDraftRevision&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:13](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L13) |  |
+| <code>public const string RealismKey = &quot;designerRealismSha256&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:14](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L14) |  |
+| <code>public const string DataSnapshotKey = &quot;dataSnapshotSha256&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:15](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L15) |  |
+| <code>public const string DataProvenanceKey = &quot;designerReplayProvenance&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:16](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L16) |  |
+| <code>public const string TenantKey = &quot;workstationTenantId&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:17](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L17) |  |
+| <code>public const string CompanyKey = &quot;workstationCompanyId&quot;;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:18](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L18) |  |
+| <code>public static string? Read(StrategyRunEntry run) =&gt; …;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:20](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L20) |  |
+| <code>public static bool HasRetainedProvenance(StrategyRunEntry run) =&gt; …;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:23](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L23) |  |
+| <code>public static string ComputeRealismHash(ExecutionRealismDescriptor realism) =&gt; …;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:27](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L27) |  |
+| <code>public static string Compute(StrategyDesignDocument document, string realismHash);</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:30](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L30) |  |
+| <code>public static bool Matches(StrategyDesignDocument document, IReadOnlyDictionary&lt;string, string&gt; parameters) =&gt; …;</code> | [src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs:63](../../../../src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs#L63) |  |
+
+## IDesignerPaperReviewAuthority
+
+Qualified name: <code>Meridian.Strategies.Live.Designer.IDesignerPaperReviewAuthority</code>. Kind: `interface`.
+
+Source: [src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs:9](../../../../src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs#L9).
+
+The review authority for a bounded Designer paper launch.
+
+```csharp
+public interface IDesignerPaperReviewAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;StrategyPromotionRecord?&gt; FindAsync(StrategyRunEntry source, string targetRunId, CancellationToken ct);</code> | [src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs:11](../../../../src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs#L11) |  |
+
+## RetainedDesignerPaperReviewAuthority
+
+Qualified name: <code>Meridian.Strategies.Live.Designer.RetainedDesignerPaperReviewAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs:15](../../../../src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs#L15).
+
+Resolves an ordinary promotion decision from the configured durable review store.
+
+```csharp
+public sealed class RetainedDesignerPaperReviewAuthority(IPromotionRecordStore records) : IDesignerPaperReviewAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StrategyPromotionRecord?&gt; FindAsync(StrategyRunEntry source, string targetRunId, CancellationToken ct);</code> | [src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs:17](../../../../src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs#L17) |  |
 
 ## IBacktestStrategyLiveSource
 
@@ -524,7 +600,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Live.LiveStrategyExecutionContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:17](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L17).
+Source: [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:16](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L16).
 
 Live-session context handed to strategy code. Implements IBacktestContext so the same strategy callbacks that run under BacktestEngine can place orders against a live session, and IExecutionContext so lifecycle-aware strategies see the gateway, feed, and portfolio surfaces. Orders are queued and drained by the live engine each event, mirroring the backtest engine&#x27;s collect-then-route loop; they are then routed through the governed order management system rather than filled locally.
 
@@ -536,37 +612,37 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public LiveStrategyExecutionContext(IOrderGateway gateway, ILiveFeedAdapter feed, IPortfolioState portfolio, IReadOnlySet&lt;string&gt; universe, string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId, string? accountingFinancialAccountId = null, string? accountingStrategyRunId = null);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:31](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L31) |  |
-| <code>public IOrderGateway Gateway { get; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:55](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L55) |  |
-| <code>public ILiveFeedAdapter Feed =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:58](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L58) |  |
-| <code>public IPortfolioState Portfolio =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:61](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L61) |  |
-| <code>public IReadOnlySet&lt;string&gt; Universe { get; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:64](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L64) |  |
-| <code>public DateTimeOffset CurrentTime { get; private set; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:67](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L67) |  |
-| <code>public DateOnly CurrentDate { get; private set; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:75](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L75) |  |
-| <code>public decimal Cash =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:78](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L78) |  |
-| <code>public decimal PortfolioValue =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:81](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L81) |  |
-| <code>public IReadOnlyDictionary&lt;string, Position&gt; Positions =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:85](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L85) |  |
-| <code>public IReadOnlyDictionary&lt;string, FinancialAccountSnapshot&gt; Accounts { get; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:113](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L113) |  |
-| <code>public IReadOnlyLedger Ledger =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:164](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L164) |  |
-| <code>public decimal? GetLastPrice(string symbol);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:167](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L167) |  |
-| <code>public Guid PlaceOrder(OrderRequest request);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:187](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L187) |  |
-| <code>public Guid PlaceBracketOrder(BracketOrderRequest request) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:213](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L213) |  |
-| <code>public Guid PlaceMarketOrder(string symbol, long quantity) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:219](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L219) |  |
-| <code>public Guid PlaceMarketOrder(string symbol, long quantity, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:223](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L223) |  |
-| <code>public Guid PlaceLimitOrder(string symbol, long quantity, decimal limitPrice) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:227](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L227) |  |
-| <code>public Guid PlaceLimitOrder(string symbol, long quantity, decimal limitPrice, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:231](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L231) |  |
-| <code>public Guid PlaceStopMarketOrder(string symbol, long quantity, decimal stopPrice) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:235](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L235) |  |
-| <code>public Guid PlaceStopMarketOrder(string symbol, long quantity, decimal stopPrice, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:239](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L239) |  |
-| <code>public Guid PlaceStopLimitOrder(string symbol, long quantity, decimal stopPrice, decimal limitPrice) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:243](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L243) |  |
-| <code>public Guid PlaceStopLimitOrder(string symbol, long quantity, decimal stopPrice, decimal limitPrice, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:247](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L247) |  |
-| <code>public void CancelOrder(Guid orderId);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:252](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L252) |  |
-| <code>public void CancelContingentOrders(Guid parentOrderId);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:275](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L275) |  |
+| <code>public LiveStrategyExecutionContext(IOrderGateway gateway, ILiveFeedAdapter feed, IPortfolioState portfolio, IReadOnlySet&lt;string&gt; universe, string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:27](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L27) |  |
+| <code>public IOrderGateway Gateway { get; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:46](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L46) |  |
+| <code>public ILiveFeedAdapter Feed =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:49](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L49) |  |
+| <code>public IPortfolioState Portfolio =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:52](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L52) |  |
+| <code>public IReadOnlySet&lt;string&gt; Universe { get; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:55](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L55) |  |
+| <code>public DateTimeOffset CurrentTime { get; private set; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:58](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L58) |  |
+| <code>public DateOnly CurrentDate { get; private set; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:66](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L66) |  |
+| <code>public decimal Cash =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:69](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L69) |  |
+| <code>public decimal PortfolioValue =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:72](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L72) |  |
+| <code>public IReadOnlyDictionary&lt;string, Position&gt; Positions =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:75](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L75) |  |
+| <code>public IReadOnlyDictionary&lt;string, FinancialAccountSnapshot&gt; Accounts { get; }</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:105](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L105) |  |
+| <code>public IReadOnlyLedger Ledger =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:154](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L154) |  |
+| <code>public decimal? GetLastPrice(string symbol);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:157](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L157) |  |
+| <code>public Guid PlaceOrder(OrderRequest request);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:177](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L177) |  |
+| <code>public Guid PlaceBracketOrder(BracketOrderRequest request) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:203](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L203) |  |
+| <code>public Guid PlaceMarketOrder(string symbol, long quantity) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:209](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L209) |  |
+| <code>public Guid PlaceMarketOrder(string symbol, long quantity, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:213](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L213) |  |
+| <code>public Guid PlaceLimitOrder(string symbol, long quantity, decimal limitPrice) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:217](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L217) |  |
+| <code>public Guid PlaceLimitOrder(string symbol, long quantity, decimal limitPrice, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:221](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L221) |  |
+| <code>public Guid PlaceStopMarketOrder(string symbol, long quantity, decimal stopPrice) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:225](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L225) |  |
+| <code>public Guid PlaceStopMarketOrder(string symbol, long quantity, decimal stopPrice, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:229](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L229) |  |
+| <code>public Guid PlaceStopLimitOrder(string symbol, long quantity, decimal stopPrice, decimal limitPrice) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:233](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L233) |  |
+| <code>public Guid PlaceStopLimitOrder(string symbol, long quantity, decimal stopPrice, decimal limitPrice, string accountId) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:237](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L237) |  |
+| <code>public void CancelOrder(Guid orderId);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:242](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L242) |  |
+| <code>public void CancelContingentOrders(Guid parentOrderId);</code> | [src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs:265](../../../../src/Meridian.Strategies/Live/LiveStrategyExecutionContext.cs#L265) |  |
 
 ## LiveTradingEngine
 
 Qualified name: <code>Meridian.Strategies.Live.LiveTradingEngine</code>. Kind: `class`.
 
-Source: [src/Meridian.Strategies/Live/LiveTradingEngine.cs:26](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L26).
+Source: [src/Meridian.Strategies/Live/LiveTradingEngine.cs:27](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L27).
 
 Runs promoted paper/live strategy runs against the live market data feed. This is the live counterpart of BacktestEngine: promotion approval (or the startup resume sweep) hands a recorded StrategyRunEntry to TryLaunchAsync, which resolves the concrete strategy from the catalog, subscribes the run&#x27;s universe on the feed, drives the strategy callbacks per event, and routes resulting orders through the governed IOrderManager (OMS pre-trade gates included). Fills stream back from an OMS delivery-or-accounted execution-report subscription into OnOrderFill, closing the trading loop without allowing one slow run to block every other run.
 
@@ -578,16 +654,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public LiveTradingEngine(ILiveStrategyCatalog catalog, ILiveMarketEventFeed feed, ILiveFeedAdapter feedAdapter, IOrderGateway orderGateway, IOrderManager orderManager, Meridian.Execution.Models.IPortfolioState portfolioState, IStrategyRepository repository, LiveTradingEngineOptions? options = null, ILoggerFactory? loggerFactory = null, StrategyLifecycleManager? lifecycleManager = null, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null, Meridian.Execution.Services.PortfolioRegistry? portfolioRegistry = null, StrategyArtifactRegistry? artifacts = null, StrategyLiveAuthorizationService? liveAuthorizations = null);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:60](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L60) |  |
-| <code>public IReadOnlyCollection&lt;string&gt; ActiveRunIds =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:97](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L97) | Run ids owned by this engine, including restored paused runs. |
-| <code>public IReadOnlyCollection&lt;string&gt; PausedRunIds =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:100](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L100) | Owned runs awaiting explicit operator resume. |
-| <code>public async Task&lt;RunLaunchResult&gt; TryLaunchAsync(StrategyRunEntry run, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:105](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L105) |  |
-| <code>public async Task&lt;bool&gt; StopRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:387](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L387) | Stops an active run, records its terminal state and metrics, and returns whether the run was active on this engine. |
-| <code>public async Task&lt;VerifiedOperationOutcome?&gt; StopRunWithOutcomeAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:395](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L395) | Stops a specific run through its session and returns verified retained completion evidence. A null result means the run was not active. Cancellation stops waiting, while shutdown continues to drain admitted reports and retain its final outcome. |
-| <code>public async Task&lt;bool&gt; ResumeRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:468](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L468) | Explicitly resumes an owned paused run using its retained execution context. |
-| <code>public async Task&lt;Meridian.Contracts.Operations.VerifiedOperationOutcome?&gt; ResumeRunWithOutcomeAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:475](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L475) | Resumes a paused run and returns its retained lifecycle receipt. |
-| <code>public async Task&lt;int&gt; ResumePendingRunsAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:544](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L544) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:587](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L587) |  |
+| <code>public LiveTradingEngine(ILiveStrategyCatalog catalog, ILiveMarketEventFeed feed, ILiveFeedAdapter feedAdapter, IOrderGateway orderGateway, IOrderManager orderManager, Meridian.Execution.Models.IPortfolioState portfolioState, IStrategyRepository repository, LiveTradingEngineOptions? options = null, ILoggerFactory? loggerFactory = null, StrategyLifecycleManager? lifecycleManager = null, ExecutionAuditTrailService? auditTrail = null, BrokerageConfiguration? brokerageConfiguration = null, Meridian.Execution.Services.PortfolioRegistry? portfolioRegistry = null, StrategyArtifactRegistry? artifacts = null, StrategyLiveAuthorizationService? liveAuthorizations = null, DesignerPaperExecution? designerPaper = null);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:62](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L62) |  |
+| <code>public IReadOnlyCollection&lt;string&gt; ActiveRunIds =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:101](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L101) | Run ids owned by this engine, including restored paused runs. |
+| <code>public IReadOnlyCollection&lt;string&gt; PausedRunIds =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:104](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L104) | Owned runs awaiting explicit operator resume. |
+| <code>public async Task&lt;RunLaunchResult&gt; TryLaunchAsync(StrategyRunEntry run, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:109](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L109) |  |
+| <code>public async Task&lt;bool&gt; StopRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:404](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L404) | Stops an active run, records its terminal state and metrics, and returns whether the run was active on this engine. |
+| <code>public async Task&lt;VerifiedOperationOutcome?&gt; StopRunWithOutcomeAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:412](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L412) | Stops a specific run through its session and returns verified retained completion evidence. A null result means the run was not active. Cancellation stops waiting, while shutdown continues to drain admitted reports and retain its final outcome. |
+| <code>public async Task&lt;bool&gt; ResumeRunAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:485](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L485) | Explicitly resumes an owned paused run using its retained execution context. |
+| <code>public async Task&lt;Meridian.Contracts.Operations.VerifiedOperationOutcome?&gt; ResumeRunWithOutcomeAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:492](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L492) | Resumes a paused run and returns its retained lifecycle receipt. |
+| <code>public async Task&lt;int&gt; ResumePendingRunsAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:561](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L561) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Strategies/Live/LiveTradingEngine.cs:604](../../../../src/Meridian.Strategies/Live/LiveTradingEngine.cs#L604) |  |
 
 ## LiveTradingEngineOptions
 
@@ -1022,43 +1098,3 @@ Declared public members:
 | <code>public Task&lt;PromotionRecord&gt; RejectPromotionAsync(Guid runId, string operatorId, string reason, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Promotions/PromotionRecordService.cs:110](../../../../src/Meridian.Strategies/Promotions/PromotionRecordService.cs#L110) | Records a rejection decision for runId and returns the persisted record. |
 | <code>public Task&lt;IReadOnlyList&lt;PromotionRecord&gt;&gt; GetPromotionHistoryAsync(Guid runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Promotions/PromotionRecordService.cs:145](../../../../src/Meridian.Strategies/Promotions/PromotionRecordService.cs#L145) | Returns all promotion records for runId in decision order. |
 | <code>public Task&lt;IReadOnlyList&lt;PromotionRecord&gt;&gt; GetAllHistoryAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Promotions/PromotionRecordService.cs:166](../../../../src/Meridian.Strategies/Promotions/PromotionRecordService.cs#L166) | Returns all promotion records across all runs, ordered by decision timestamp. |
-
-## StrategyLiveAuthorization
-
-Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorization</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:12](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L12).
-
-```csharp
-public sealed record StrategyLiveAuthorization(Guid FundAccountId, string GatewayId, string BrokerScope, IReadOnlyList<string> AllowedSymbols, decimal MaxOrderNotional, string Currency, DateTimeOffset ExpiresAt);
-```
-
-## StrategyLiveAuthorizationRequest
-
-Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorizationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:5](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L5).
-
-```csharp
-public sealed record StrategyLiveAuthorizationRequest(string ExpectedStrategyArtifactId, IReadOnlyList<string> AllowedSymbols, decimal MaxOrderNotional, string Currency, DateTimeOffset ExpiresAt);
-```
-
-## StrategyLiveAuthorizationRevocation
-
-Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorizationRevocation</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:21](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L21).
-
-```csharp
-public sealed record StrategyLiveAuthorizationRevocation(string AuthorizationId, string Actor, string Reason, DateTimeOffset RevokedAt);
-```
-
-## StrategyLiveAuthorizationStatus
-
-Qualified name: <code>Meridian.Strategies.Promotions.StrategyLiveAuthorizationStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs:24](../../../../src/Meridian.Strategies/Promotions/StrategyLiveAuthorization.cs#L24).
-
-```csharp
-public sealed record StrategyLiveAuthorizationStatus(string State, string? Reason);
-```

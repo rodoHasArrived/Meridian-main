@@ -6,84 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## EvidenceManifestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceManifestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L235).
-
-```csharp
-public sealed record EvidenceManifestDto(string ManifestId, DateTimeOffset FrozenAt, string PackageKind, string PackageId, string ContentHashSha256, IReadOnlyList<EvidenceDocumentDto> Documents, IReadOnlyList<EvidenceRequestDto> Requests, IReadOnlyList<EvidenceDocumentLinkDto> ObjectLinks)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceManifestPackageKindDto PackageKindCode { get; init; } = EvidenceManifestPackageKindDto.Unknown;</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:245](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L245) |  |
-
-## EvidenceManifestPackageKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceManifestPackageKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:224](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L224).
-
-```csharp
-public enum EvidenceManifestPackageKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:226](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L226) |  |
-| <code>EvidencePacket = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:227](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L227) |  |
-| <code>CloseBinder = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:228](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L228) |  |
-| <code>AuditPacket = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:229](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L229) |  |
-| <code>ReportSupportPackage = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:230](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L230) |  |
-| <code>TaxSupportPackage = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:231](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L231) |  |
-| <code>OperationalEventSupportPackage = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:232](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L232) |  |
-
-## EvidenceNodeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceNodeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:287](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L287).
-
-```csharp
-public sealed partial record EvidenceNodeDto(string EvidenceId, EvidenceSubjectDto Subject, string Kind, EvidenceStatusDto Status, EvidenceFreshnessDto Freshness, string SourceSystem, string Summary, IReadOnlyList<EvidenceArtifactRefDto> ArtifactRefs, IReadOnlyList<string> RelatedWorkItemIds);
-```
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:298](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L298).
-
-```csharp
-public sealed partial record EvidenceNodeDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyDictionary&lt;string, string&gt; Metadata { get; init; } = new Dictionary&lt;string, string&gt;();</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:300](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L300) |  |
-
-## EvidencePacketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidencePacketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:660](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L660).
-
-```csharp
-public sealed record EvidencePacketDto(EvidenceSubjectDto Subject, DateTimeOffset GeneratedAt, IReadOnlyList<EvidenceNodeDto> Nodes, IReadOnlyList<EvidenceEdgeDto> Edges, EvidenceCompletenessDto Completeness, IReadOnlyList<WorkflowActionDto> Actions, IReadOnlyList<string> Warnings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:669](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L669) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public LedgerAmountProofDto? LedgerAmount { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:671](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L671) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:673](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L673) |  |
-
 ## EvidencePacketExportRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidencePacketExportRequest</code>. Kind: `record`.
@@ -543,7 +465,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExpectedAccountingEventDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:291](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L291).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:284](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L284).
 
 Expected accounting event generated from Security Master accounting rules.
 
@@ -555,15 +477,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EconomicEventReferenceDto? EconomicEvent { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:306](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L306) |  |
-| <code>public ProjectionLineageDto? ProjectionLineage { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:308](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L308) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:310](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L310) |  |
+| <code>public EconomicEventReferenceDto? EconomicEvent { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:299](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L299) |  |
+| <code>public ProjectionLineageDto? ProjectionLineage { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:301](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L301) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:303](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L303) |  |
 
 ## ExpectedAccountingEventKindDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExpectedAccountingEventKindDto</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:236](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L236).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:229](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L229).
 
 Security Master accounting event type generated from instrument terms and schedules.
 
@@ -575,26 +497,26 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>AccrueInterestIncome = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:238](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L238) |  |
-| <code>ReversePriorAccrual = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:239](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L239) |  |
-| <code>RecognizeCouponIncome = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:240](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L240) |  |
-| <code>ReceiveCashInterest = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:241](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L241) |  |
-| <code>AmortizePremium = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L242) |  |
-| <code>AccreteDiscount = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:243](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L243) |  |
-| <code>RecognizePrincipalPaydown = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:244](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L244) |  |
-| <code>ReduceCostBasisForFactorPaydown = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:245](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L245) |  |
-| <code>RecognizeRealizedGainLoss = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:246](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L246) |  |
-| <code>RecordMaturityProceeds = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:247](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L247) |  |
-| <code>RecordCallProceeds = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:248](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L248) |  |
-| <code>RecordDividendReceivable = 11</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:249](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L249) |  |
-| <code>RecordDividendIncome = 12</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:250](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L250) |  |
-| <code>RecordFxRemeasurement = 13</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:251](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L251) |  |
+| <code>AccrueInterestIncome = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:231](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L231) |  |
+| <code>ReversePriorAccrual = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:232](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L232) |  |
+| <code>RecognizeCouponIncome = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:233](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L233) |  |
+| <code>ReceiveCashInterest = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:234](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L234) |  |
+| <code>AmortizePremium = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:235](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L235) |  |
+| <code>AccreteDiscount = 5</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:236](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L236) |  |
+| <code>RecognizePrincipalPaydown = 6</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:237](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L237) |  |
+| <code>ReduceCostBasisForFactorPaydown = 7</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:238](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L238) |  |
+| <code>RecognizeRealizedGainLoss = 8</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:239](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L239) |  |
+| <code>RecordMaturityProceeds = 9</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:240](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L240) |  |
+| <code>RecordCallProceeds = 10</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:241](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L241) |  |
+| <code>RecordDividendReceivable = 11</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L242) |  |
+| <code>RecordDividendIncome = 12</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:243](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L243) |  |
+| <code>RecordFxRemeasurement = 13</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:244](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L244) |  |
 
 ## ExpectedJournalPreviewDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExpectedJournalPreviewDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:326](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L326).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:319](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L319).
 
 Balanced journal preview candidate. Posting remains a separate approval-gated workflow.
 
@@ -606,7 +528,7 @@ public sealed record ExpectedJournalPreviewDto(string JournalPreviewId, string E
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L316).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:309](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L309).
 
 Preview line for a balanced journal candidate generated from an expected event.
 
@@ -744,4 +666,44 @@ Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:74](.
 
 ```csharp
 public sealed record FinancialRecordExplorerCellDto(string ColumnId, string DisplayValue, string RawValue = "", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default, string LinkHref = "");
+```
+
+## FinancialRecordExplorerColumnDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerColumnDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:67](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L67).
+
+```csharp
+public sealed record FinancialRecordExplorerColumnDto(string ColumnId, string Header, string CellKind = "text", double Width = 140, bool IsRightAligned = false);
+```
+
+## FinancialRecordExplorerDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L15).
+
+```csharp
+public sealed record FinancialRecordExplorerDto(string ExplorerId, string Title, string Description, string SourceState, bool IsBlocked, string BlockedReason, IReadOnlyList<FinancialRecordExplorerScopeItemDto> ScopeItems, IReadOnlyList<FinancialRecordExplorerSavedViewDto> SavedViews, IReadOnlyList<FinancialRecordExplorerSummaryItemDto> SummaryItems, IReadOnlyList<FinancialRecordExplorerFilterDto> Filters, IReadOnlyList<FinancialRecordExplorerColumnDto> Columns, IReadOnlyList<FinancialRecordExplorerRowDto> Rows, FinancialRecordExplorerSelectedRecordDto? SelectedRecord, IReadOnlyList<FinancialRecordExplorerProofActionDto> ProofActions, FinancialRecordExplorerRecordGraphDto RecordGraph);
+```
+
+## FinancialRecordExplorerFilterDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerFilterDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L60).
+
+```csharp
+public sealed record FinancialRecordExplorerFilterDto(string FilterId, string Label, string Value, string Operator = "equals", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
+## FinancialRecordExplorerGraphEdgeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerGraphEdgeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L133).
+
+```csharp
+public sealed record FinancialRecordExplorerGraphEdgeDto(string SourceNodeId, string TargetNodeId, string Label, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
 ```

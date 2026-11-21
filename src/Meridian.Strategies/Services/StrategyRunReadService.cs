@@ -1124,7 +1124,12 @@ public sealed partial class StrategyRunReadService
             SweepId: run.SweepId,
             SweepDefinitionHash: run.SweepDefinitionHash,
             SweepObjective: run.SweepObjective,
-            Parameters: run.ParameterSet);
+            Parameters: run.ParameterSet)
+        {
+            StrategyVersionSha256 = Live.Designer.DesignerStrategyVersion.Read(run),
+            DataProvenanceToken = run.DataProvenanceToken,
+            FundAccountId = run.FundAccountId
+        };
     }
 
 

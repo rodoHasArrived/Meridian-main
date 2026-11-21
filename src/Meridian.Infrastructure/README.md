@@ -110,6 +110,7 @@ Alpha Vantage history/search/corporate actions share five requests per minute an
 25-request rolling 24-hour cap by default; its published daily limit names no reset boundary.
 `ProviderQuotas:AlphaVantage` can declare the actual account limits and `NoDailyLimit`.
 Short and daily admission charge the full cost atomically; cancelled waits charge neither.
+A backfill using reserved headroom releases its admission slot while waiting for capacity so other calls can use the reserve.
 Pacing rounds positive waits up to milliseconds, including nonintegral paid-plan intervals.
 Effective account profiles cannot differ across capabilities sharing a credential and quota group.
 Registry state survives provider recreation/disposal within the process. It is not persisted across

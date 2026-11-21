@@ -144,6 +144,12 @@ public sealed record StrategyPromotionRecord(
     string? ApprovedBy = null,
     string? ManualOverrideId = null)
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyVersionSha256 { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceInputHashSha256 { get; init; }
+
     public string? StrategyArtifactId { get; init; }
     public StrategyLiveAuthorization? LiveAuthorization { get; init; }
     public StrategyLiveAuthorizationStatus? LiveAuthorizationStatus { get; init; }
