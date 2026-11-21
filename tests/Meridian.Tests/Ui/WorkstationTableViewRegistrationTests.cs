@@ -1,5 +1,6 @@
 using System.Text.RegularExpressions;
 using FluentAssertions;
+using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 
@@ -60,6 +61,21 @@ public sealed class WorkstationTableViewRegistrationTests
     [InlineData("accounting-period-closing-balance-comparison")]
     public void PreviouslyMissingTables_AreRegistered(string tableId)
         => WorkstationEndpoints.WorkstationTablePermissions.Should().ContainKey(tableId);
+
+    [Fact]
+    public void IncomeAndInstrumentSavedViews_UseThePermissionsOfTheirDataEndpoints()
+    {
+        var permissions = WorkstationEndpoints.WorkstationTablePermissions;
+        permissions["book-income-receipts"].Should().BeEquivalentTo(new[]
+        {
+            UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance
+        });
+        permissions["instrument-dossier-ledger"].Should().BeEquivalentTo(new[]
+        {
+            UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports
+        });
+        permissions["instrument-dossier-positions"].Should().Equal(UserPermission.ViewTrades);
+    }
 
     private static string FindRepositoryRoot()
     {

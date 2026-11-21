@@ -800,6 +800,10 @@ Provider enablement and priority apply to jobs that start after the operator sav
 job keeps its chosen route through retries. Scheduled jobs read their ordered provider preferences when
 they begin. Set `Backfill.Jobs.Scheduling.Enabled` to enable the schedule worker on a collector or workstation host.
 
+Workstation backfills and gap repair load the saved daily staleness tolerance when the job starts.
+`HistoricalBackfillService` uses the shared provider profile resolver for both validation and
+per-candidate daily fallback. Deployment-scheduled backfills use the profiles loaded at host startup.
+
 ## Purpose
 
 Provider-integration REST composition uses `ProviderIntegrationHttpClientTransport.CreateHttpClient`

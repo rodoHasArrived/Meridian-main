@@ -467,6 +467,7 @@ export interface DataOperationsBackfillDetailState {
 export interface DataOperationsProviderDetailState {
   id: string;
   providerId: string;
+  qualityProfileProviderId: string;
   title: string;
   subtitle: string;
   description: string;
@@ -487,7 +488,14 @@ export interface DataOperationsProviderDetailState {
   gateImpactText: string;
 }
 
-export type DataOperationsProviderTabId = "overview" | "credentials" | "diagnostics";
+const providerDetailTabLabels = {
+  overview: "Overview",
+  credentials: "Credentials",
+  diagnostics: "Diagnostics",
+  "quality-rules": "Data quality rules"
+} as const;
+
+export type DataOperationsProviderTabId = keyof typeof providerDetailTabLabels;
 
 export interface DataOperationsProviderTabState {
   id: DataOperationsProviderTabId;
@@ -2528,6 +2536,10 @@ export function buildSelectedProviderDetail(
   return {
     id: DATA_PROVIDER_DETAIL_PANEL_ID,
     providerId: selected.providerId,
+    qualityProfileProviderId: selected.workspaceProvider?.routingSummary?.providerFamilyId ??
+      (selected.routingConnection?.connectionId === selected.providerId
+        ? selected.routingConnection.providerFamilyId
+        : selected.providerId),
     title: selected.displayName,
     subtitle: row.capability,
     description: joinProviderDetailSentences(row.note, row.gateImpactText),
@@ -2540,9 +2552,9 @@ export function buildSelectedProviderDetail(
     diagnostics,
     diagnosticsEmptyState: buildProviderDiagnosticsEmptyState(selected),
     activeTab: selectedTab,
-    tabs: (["overview", "credentials", "diagnostics"] satisfies DataOperationsProviderTabId[]).map((tab) => ({
+    tabs: (Object.keys(providerDetailTabLabels) as DataOperationsProviderTabId[]).map((tab) => ({
       id: tab,
-      label: tab === "overview" ? "Overview" : tab === "credentials" ? "Credentials" : "Diagnostics",
+      label: providerDetailTabLabels[tab],
       selected: selectedTab === tab,
       ariaControls: `${DATA_PROVIDER_DETAIL_PANEL_ID}-${tab}`
     })),
