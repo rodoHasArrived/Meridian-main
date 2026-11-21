@@ -368,6 +368,8 @@ public sealed class ReconciliationRunServiceTests
         // No economic definition is registered: every lookup for the held security misses.
         var securityMasterQuery = new StubSecurityMasterQueryService();
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-sm-missing-definition", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -412,6 +414,8 @@ public sealed class ReconciliationRunServiceTests
             "AAPL",
             accountingClassification: "AvailableForSale",
             currentFactor: 0.97m));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-accounting", securityId);
 
         var service = CreateService(
             store,
@@ -469,6 +473,8 @@ public sealed class ReconciliationRunServiceTests
                     Source: "custodian-factor-file",
                     EvidenceLink: "factor-evidence-2026-03")
             ]));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-factor-schedule", securityId);
 
         var service = CreateService(
             store,
@@ -537,6 +543,8 @@ public sealed class ReconciliationRunServiceTests
                     EvidenceLink: "factor-evidence-2026-03")
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-legacy-factor-provenance", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -595,6 +603,8 @@ public sealed class ReconciliationRunServiceTests
                     Source: "custodian-factor-file",
                     EvidenceLink: "factor-evidence-2026-03")
             ]));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-sm-closed-owner", securityId);
 
         var service = CreateService(
             store,
@@ -669,6 +679,8 @@ public sealed class ReconciliationRunServiceTests
                     EvidenceLink: "factor-evidence-2026-02")
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-sm-stale-factor", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -729,6 +741,8 @@ public sealed class ReconciliationRunServiceTests
                 (new DateOnly(2026, 2, 21), 1.00m),
                 (new DateOnly(2026, 3, 21), 0.97m)
             ]));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-typed-factor-entries", securityId);
 
         var service = CreateService(
             store,
@@ -792,6 +806,8 @@ public sealed class ReconciliationRunServiceTests
                     EvidenceLink: "factor-evidence-2026-03")
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-period-final-day", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -854,6 +870,8 @@ public sealed class ReconciliationRunServiceTests
                     Source: "custodian-factor-file",
                     EvidenceLink: "factor-evidence-2026-03")
             ]));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-observation-ownership", securityId);
 
         var service = CreateService(
             store,
@@ -928,6 +946,8 @@ public sealed class ReconciliationRunServiceTests
                     EvidenceLink: "factor-evidence-2026-03b")
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-split-ownership", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -997,6 +1017,8 @@ public sealed class ReconciliationRunServiceTests
             subType: "StructuredCredit",
             typeName: "StructuredCredit"));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-canonical-structured-credit", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -1053,6 +1075,8 @@ public sealed class ReconciliationRunServiceTests
                 (new DateOnly(2026, 3, 21), 0.97m)
             ],
             nestedFactorScheduleEvidence: "governed-trustee-report-2026-03"));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-governed-evidence", securityId);
 
         var service = CreateService(
             store,
@@ -1114,6 +1138,8 @@ public sealed class ReconciliationRunServiceTests
                     EvidenceLink: "factor-evidence-2026-03")
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-ownership-outage", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -1173,6 +1199,8 @@ public sealed class ReconciliationRunServiceTests
                     Source: "custodian-factor-file",
                     EvidenceLink: "factor-evidence-2026-03")
             ]));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-original-face", securityId);
 
         var service = CreateService(
             store,
@@ -1239,6 +1267,8 @@ public sealed class ReconciliationRunServiceTests
                 (new DateOnly(2026, 3, 21), 1.00m)
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-unchanged-opening", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -1295,6 +1325,8 @@ public sealed class ReconciliationRunServiceTests
             [
                 (new DateOnly(2026, 3, 21), 0.97m)
             ]));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-first-typed-factor", securityId);
 
         var service = CreateService(
             store,
@@ -1356,6 +1388,8 @@ public sealed class ReconciliationRunServiceTests
                 (new DateOnly(2026, 1, 15), 0.97m)
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-typed-presence-coverage", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -1416,6 +1450,8 @@ public sealed class ReconciliationRunServiceTests
                 (new DateOnly(2026, 4, 1), 0.97m)
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-boundary-exclusive", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -1473,6 +1509,8 @@ public sealed class ReconciliationRunServiceTests
                 (new DateOnly(2026, 2, 21), 1.00m),
                 (new DateOnly(2026, 3, 21), 0.97m)
             ]));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-governed-factor-entries", securityId);
 
         var service = CreateService(
             store,
@@ -1535,6 +1573,8 @@ public sealed class ReconciliationRunServiceTests
                 (new DateOnly(2026, 3, 21), 0.97m)
             ]));
 
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-outer-rows-ignored", securityId);
+
         var service = CreateService(
             store,
             new InMemoryReconciliationRunRepository(),
@@ -1595,6 +1635,8 @@ public sealed class ReconciliationRunServiceTests
             assetFamily: "SecuritizedProduct",
             subType: "Mbs",
             typeName: "AgencyMortgageBackedSecurity"));
+
+        await DeclareNativeFixedIncomePositionAsync(store, "run-real-sm-mbs-factor", securityId);
 
         var service = CreateService(
             store,
@@ -2352,6 +2394,8 @@ public sealed class ReconciliationRunServiceTests
                 factorScheduleEntries = new[] { new { asOfDate = "2026-03-21", factor = 0.1m } }
             })
         });
+        await DeclareNativeFixedIncomePositionAsync(store, "run-typed-factor-authority", securityId);
+
         var service = CreateService(store, new InMemoryReconciliationRunRepository(), lookup,
             bankTransactionSource: null, securityValidationGate: null,
             securityMasterAccountingEventService: new SecurityMasterAccountingEventService(),
@@ -2968,6 +3012,22 @@ public sealed class ReconciliationRunServiceTests
                 .ToArray();
             ledger.Post(new JournalEntry(journalId, timestamp, description, ledgerLines));
         }
+    }
+
+    // These rate/factor fixtures explicitly declare retained native face and identity. A
+    // legacy display match alone cannot establish par; monetary basis remains unassessed.
+    private static async Task DeclareNativeFixedIncomePositionAsync(StrategyRunStore store, string runId, Guid securityId)
+    {
+        var run = (await store.GetRunByIdAsync(runId))!;
+        var metrics = run.Metrics!;
+        var snapshot = metrics.Snapshots.Single();
+        var position = snapshot.Positions["AAPL"];
+        var native = new StrategyPositionAccountingEvidence("AAPL", "unscoped-account", securityId, false,
+            position.ExactQuantity, null, "FaceValue", 1m, "USD") { StrategyRunId = runId };
+        await store.RecordRunAsync(run with
+        {
+            Metrics = metrics with { Snapshots = [snapshot with { AccountingPositions = [native] }] }
+        });
     }
 
     private sealed class StubSecurityReferenceLookup : ISecurityReferenceLookup

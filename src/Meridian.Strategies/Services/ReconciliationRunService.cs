@@ -164,19 +164,25 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 continue;
             }
 
+            var balancePopulationReason = result.CheckId is "cash-balance" or "net-equity" or "bank-net-vs-ledger-cash"
+                ? normalizedInputs.Ledger?.BalanceComparisonUnavailableReason : null;
             breaks.Add(new ReconciliationBreakDto(
                 result.CheckId,
                 result.Label,
-                MapCategory(result.Category, result.MissingSource, result.CheckId, result.ExpectedSource, result.ActualSource),
+                balancePopulationReason is null
+                    ? MapCategory(result.Category, result.MissingSource, result.CheckId, result.ExpectedSource, result.ActualSource)
+                    : ReconciliationBreakCategory.ClassificationGap,
                 MapStatus(result.Status, result.Category),
-                result.MissingSource,
+                balancePopulationReason is null ? result.MissingSource : "account-stock-population",
                 result.HasExpectedAmount ? result.ExpectedAmount : null,
                 result.HasActualAmount ? result.ActualAmount : null,
                 result.Variance,
                 MapSeverity(result.Severity),
-                result.Reason,
+                balancePopulationReason ?? result.Reason,
                 result.HasExpectedAsOf ? result.ExpectedAsOf : null,
-                result.HasActualAsOf ? result.ActualAsOf : null)
+                result.HasActualAsOf ? result.ActualAsOf : null,
+                Measures: balancePopulationReason is null ? null :
+                    [new(ReconciliationBreakMeasureKindDto.Value, null, null, null, null, "unknown", balancePopulationReason)])
             {
                 FirstObservedAt = observedAt,
                 LogicalBreakIdentity = logicalBreakIdentity,
@@ -404,7 +410,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
         if (detail.Portfolio is not null)
         {
             issues.AddRange(
-                detail.Portfolio.Positions
+                EnumeratePortfolioSecurityPositions(detail.Portfolio)
                     .Where(static position =>
                         !string.IsNullOrWhiteSpace(position.Symbol) &&
                         position.Security is null)
@@ -440,8 +446,13 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             foreach (var scope in EnumerateSecurityScopes(detail))
             {
                 ct.ThrowIfCancellationRequested();
-                var validation = await _securityValidationGate
-                    .ValidateSymbolAsync(
+                if (scope.HasRetainedIdentityAuthority && (scope.SecurityId is null || scope.SecurityId == Guid.Empty))
+                    continue;
+                var validation = scope.HasRetainedIdentityAuthority
+                    ? await _securityValidationGate.ValidateSecurityAsync(scope.SecurityId!.Value,
+                        SecurityValidationWorkflowDto.ReconciliationBreakIntake, workflowReference: runId,
+                        actor: "reconciliation-run-service", persistSnapshot: false, symbol: scope.Symbol, ct: ct).ConfigureAwait(false)
+                    : await _securityValidationGate.ValidateSymbolAsync(
                         scope.Symbol,
                         SecurityValidationWorkflowDto.ReconciliationBreakIntake,
                         workflowReference: runId,
@@ -469,15 +480,27 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             .ToArray();
     }
 
-    private static IEnumerable<(string Source, string Symbol, string? AccountName)> EnumerateSecurityScopes(StrategyRunDetail detail)
+    private static IEnumerable<PortfolioPositionSummary> EnumeratePortfolioSecurityPositions(PortfolioSummary portfolio)
+        => portfolio.HasRetainedAccountingPositionPopulation
+            ? portfolio.Positions.Where(position => portfolio.AccountingPositions.Any(row =>
+                string.Equals(row.Symbol, position.Symbol, StringComparison.OrdinalIgnoreCase)))
+            : portfolio.Positions;
+
+    private static IEnumerable<(string Source, string Symbol, string? AccountName, Guid? SecurityId, bool HasRetainedIdentityAuthority)> EnumerateSecurityScopes(StrategyRunDetail detail)
     {
         if (detail.Portfolio is not null)
         {
-            foreach (var position in detail.Portfolio.Positions)
+            if (detail.Portfolio.HasRetainedAccountingPositionPopulation)
             {
-                if (!string.IsNullOrWhiteSpace(position.Symbol))
+                foreach (var position in detail.Portfolio.AccountingPositions.Where(static position => !string.IsNullOrWhiteSpace(position.Symbol)))
+                    yield return ("portfolio", position.Symbol.Trim().ToUpperInvariant(), null, position.SecurityId, true);
+            }
+            else
+            {
+                foreach (var position in detail.Portfolio.Positions)
                 {
-                    yield return ("portfolio", position.Symbol.Trim().ToUpperInvariant(), null);
+                    if (!string.IsNullOrWhiteSpace(position.Symbol))
+                        yield return ("portfolio", position.Symbol.Trim().ToUpperInvariant(), null, null, false);
                 }
             }
         }
@@ -488,7 +511,13 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             {
                 if (!string.IsNullOrWhiteSpace(line.Symbol))
                 {
-                    yield return ("ledger", line.Symbol!.Trim().ToUpperInvariant(), line.AccountName);
+                    var native = detail.Ledger.AccountingPositions.Where(position =>
+                        (position.QuantityUnit is not null || position.Multiplier is not null)
+                        && string.Equals(position.Symbol, line.Symbol, StringComparison.OrdinalIgnoreCase)
+                        && string.Equals(position.FinancialAccountId, line.FinancialAccountId, StringComparison.OrdinalIgnoreCase)).ToArray();
+                    var ids = native.Select(static position => position.SecurityId).Distinct().ToArray();
+                    yield return ("ledger", line.Symbol!.Trim().ToUpperInvariant(), line.AccountName,
+                        ids.Length == 1 ? ids[0] : null, native.Length > 0);
                 }
             }
         }
@@ -538,7 +567,7 @@ public sealed class ReconciliationRunService : IReconciliationRunService
 
         if (detail.Portfolio is not null)
         {
-            foreach (var position in detail.Portfolio.Positions)
+            foreach (var position in EnumeratePortfolioSecurityPositions(detail.Portfolio))
             {
                 if (position.Security is not null &&
                     !string.IsNullOrWhiteSpace(position.Symbol) &&

@@ -592,6 +592,9 @@ public sealed record PortfolioSummary(
 {
     public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
 
+    /// <summary>An explicitly retained empty population is authoritative; legacy absence is not.</summary>
+    public bool HasRetainedAccountingPositionPopulation { get; init; }
+
     public string? FinancingCoverageStatus { get; init; }
     [JsonIgnore(Condition = JsonIgnoreCondition.Never)]
     public decimal? RunAttributedMarginInterest { get; init; }
@@ -649,6 +652,9 @@ public sealed record LedgerSummary(
     public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
     public bool HasUnresolvedValuation { get; init; }
     public decimal? HistoricalCostNetAssets { get; init; }
+    /// <summary>Why a run activity population cannot prove complete financial-account cash or NAV.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? BalanceComparisonUnavailableReason { get; init; }
 }
 
 /// <summary>

@@ -12,4 +12,8 @@ public interface IStrategyRunLedgerSource
 
     /// <summary>Explicit retained posting-role registrations for this selected ledger population.</summary>
     IChartOfAccounts? GetPostingChart(IReadOnlyLedger ledger, DateTimeOffset? asOf = null) => null;
+
+    /// <summary>Override with null only when this source proves a complete whole-account population.</summary>
+    string? GetBalanceComparisonUnavailableReason(IReadOnlyLedger ledger)
+        => "The selected journal source has not established complete account opening balances and all cash-flow population coverage.";
 }

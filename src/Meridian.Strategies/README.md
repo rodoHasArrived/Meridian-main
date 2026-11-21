@@ -26,6 +26,18 @@ including the portfolio's economic cutoff. Unsupported legacy scoped implementat
 An empty private paper/live context ledger does not establish an empty accounting book. Retained
 canonical trade-role and chart-reference evidence can register a custom carrying account for native
 comparisons without renaming posted lines or inferring roles from account codes.
+The attributed journal source establishes run-owned position activity, not complete account opening
+balances and every sibling cash flow. Cash and NAV comparisons therefore retain an explicit
+population-unavailable reason while exact run quantity and basis can match. Full account stock
+reconciliation stays with the existing three-way lane. A retained empty run-position receipt is
+distinct from legacy absence, so sibling account holdings never replace a proven empty population.
+Security validation, classification and expected corporate-action inputs use the same retained
+population and known identity. Unknown native identities cannot borrow the current ticker's identity;
+native event quantities never come from monetary ledger balances.
+Run ownership requires the server-retained execution attribution marker as well as the matching
+legacy run label. Old labels and private metrics journals remain inspectable audit history, but
+cannot certify scoped paper balances or native position measurements. Missing native event inputs
+produce explicit accounting coverage issues without querying or calculating from money as units.
 
 Run ledger read models support inclusive economic-time cuts without mutating retained journals.
 Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting

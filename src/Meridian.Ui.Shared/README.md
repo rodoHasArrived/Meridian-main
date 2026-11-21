@@ -15,6 +15,11 @@ Strategy reconciliation endpoints pass trusted tenant/company scope through crea
 latest-result and history reads. Foreign or malformed scoped runs return not found before posted
 accounting sources are queried. Canonical run journals retain their explicit securities-role and
 chart-reference evidence for native comparisons; missing source coverage remains unavailable.
+Run-attributed postings cannot prove complete account cash or NAV: those comparisons carry scope
+coverage reasons rather than amount variances, while their supported position quantities and basis
+remain independently comparable. Account/book stock reconciliation uses the existing three-way lane.
+Run selection requires trusted execution attribution, not a caller-supplied strategy label. Retained
+legacy metrics can support audit display while their scoped reconciliation measurements stay unavailable.
 
 Reconciliation queues expose a monetary total only when every break supplies one comparable typed
 money measure in the same retained currency. Quantity-only, legacy, mixed-currency and unverified

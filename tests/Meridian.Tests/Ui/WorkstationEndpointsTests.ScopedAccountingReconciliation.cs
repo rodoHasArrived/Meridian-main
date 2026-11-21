@@ -63,7 +63,12 @@ public sealed partial class WorkstationEndpointsTests
         var result = (await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions))!;
         if (bookOwnedByCaller)
         {
-            result.Breaks.Should().BeEmpty();
+            result.Breaks.Should().HaveCount(2);
+            result.Breaks.Should().OnlyContain(item => item.Category == ReconciliationBreakCategory.ClassificationGap
+                && item.MissingSource == "account-stock-population"
+                && item.Measures != null && item.Measures.All(measure => measure.Expected == null && measure.Actual == null
+                    && measure.Variance == null && measure.UnavailableReason != null));
+            result.Matches.Should().NotContain(item => item.CheckId == "cash-balance" || item.CheckId == "net-equity");
             result.Summary.LedgerAsOf.Should().Be(at.AddMinutes(1));
             result.Matches.SelectMany(static item => item.Measures).Should().ContainSingle(item =>
                 item.Kind == ReconciliationBreakMeasureKindDto.Quantity && item.Expected == 10m && item.Actual == 10m);
@@ -98,11 +103,30 @@ public sealed partial class WorkstationEndpointsTests
         await store.DidNotReceive().QueryAsync(Arg.Any<LedgerJournalEntryQuery>(), Arg.Any<CancellationToken>());
     }
 
-    [Fact]
-    public async Task ScopedPaperReconciliation_EmptyPrivateContextLedgerRemainsMissingAccountingEvidence()
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ScopedPaperReconciliation_PrivateContextLedgerCannotEstablishAccountingAuthority(bool containsNativePrivateFacts)
     {
         var at = new DateTimeOffset(2026, 11, 21, 12, 0, 0, TimeSpan.Zero);
         var run = ScopedAccountingRun("paper-without-posted-source", Guid.NewGuid(), Guid.NewGuid(), at);
+        if (containsNativePrivateFacts)
+        {
+            var account = run.FundAccountId!.Value.ToString("D");
+            var native = run.Metrics!.Snapshots.Single().AccountingPositions!.Single();
+            var privateLedger = new Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+            SecurityTradePosting[] legs = [new(SecurityTradePostingKind.OpenLong, 10m, 1000m)];
+            var metadata = SecurityTradePositionEvidence.WithPostings(new JournalEntryMetadata(Symbol: "SPY",
+                SecurityId: native.SecurityId, FinancialAccountId: account, StrategyId: run.StrategyId,
+                Tags: new Dictionary<string, string>
+                {
+                    [LedgerQuery.StrategyRunIdTag] = run.RunId,
+                    [LedgerQuery.AccountingRunIdTag] = run.RunId
+                }), legs, SecurityLotUnitKind.Shares, 1m);
+            privateLedger.PostLines(at, "Private strategy claim", legs.SelectMany(leg =>
+                SecurityTradePostingProjector.Project(leg, "SPY", account)).ToArray(), metadata);
+            run = run with { Metrics = run.Metrics with { Ledger = privateLedger } };
+        }
         await using var app = await CreateAppAsync(services =>
         {
             RegisterRunReadServices(services);
@@ -116,8 +140,22 @@ public sealed partial class WorkstationEndpointsTests
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = (await response.Content.ReadFromJsonAsync<ReconciliationRunDetail>(ServerJsonOptions))!;
-        result.Summary.LedgerAsOf.Should().BeNull();
-        result.Breaks.Should().Contain(item => item.CheckId == "ledger-summary-missing");
+        if (containsNativePrivateFacts)
+        {
+            result.Breaks.Should().Contain(item => item.CheckId == "cash-balance"
+                && item.Category == ReconciliationBreakCategory.ClassificationGap && item.Reason.Contains("audit-only"));
+            var summary = (await app.Services.GetRequiredService<StrategyRunReadService>().GetLedgerSummaryAsync(run.RunId,
+                new StrategyRunReadScope("tenant-native", "company-native")))!;
+            var position = summary.AccountingPositions.Should().ContainSingle().Which;
+            position.Quantity.Should().BeNull();
+            position.MonetaryBasis.Should().BeNull();
+            position.CoverageFailure.Should().NotBeNull();
+        }
+        else
+        {
+            result.Summary.LedgerAsOf.Should().BeNull();
+            result.Breaks.Should().Contain(item => item.CheckId == "ledger-summary-missing");
+        }
         result.Matches.Should().NotContain(item => item.Measures.Any(measure =>
             measure.Kind is ReconciliationBreakMeasureKindDto.Quantity or ReconciliationBreakMeasureKindDto.CostBasis));
     }
@@ -126,11 +164,13 @@ public sealed partial class WorkstationEndpointsTests
     {
         var account = accountId.ToString("D");
         var positions = new Dictionary<string, Position> { ["SPY"] = new("SPY", 10, 100m, 0m, 0m) };
-        var snapshot = new PortfolioSnapshot(cut, DateOnly.FromDateTime(cut.UtcDateTime), 9000m, 0m, 1000m, 0m, 10000m, 0m,
+        // Account stock includes untagged opening capital and a sibling-run contribution;
+        // the current run's selected journals contain only its trade activity.
+        var snapshot = new PortfolioSnapshot(cut, DateOnly.FromDateTime(cut.UtcDateTime), 108999m, 0m, 1000m, 0m, 109999m, 0m,
             positions, new Dictionary<string, FinancialAccountSnapshot>
             {
-                [account] = new(account, "Synthetic account", FinancialAccountKind.Brokerage, "Synthetic", 9000m, 0m,
-                    1000m, 0m, 10000m, positions, new())
+                [account] = new(account, "Synthetic account", FinancialAccountKind.Brokerage, "Synthetic", 108999m, 0m,
+                    1000m, 0m, 109999m, positions, new())
             }, [])
         {
             AccountingPositions = [new("SPY", account, securityId, false, 10m, 1000m, "Shares", 1m, "USD")]
@@ -159,7 +199,12 @@ public sealed partial class WorkstationEndpointsTests
             var id = Guid.NewGuid();
             var metadata = new JournalEntryMetadata(ActivityType: capital ? "opening-capital" : "execution.trade-fill",
                 Symbol: capital ? null : "SPY", SecurityId: capital ? null : securityId, StrategyId: run.StrategyId, FinancialAccountId: account,
-                Tags: new Dictionary<string, string> { ["strategy.runId"] = sourceRun, ["execution.securities-account"] = carryingName });
+                Tags: new Dictionary<string, string>
+                {
+                    [LedgerQuery.StrategyRunIdTag] = sourceRun,
+                    [LedgerQuery.AccountingRunIdTag] = sourceRun,
+                    ["execution.securities-account"] = carryingName
+                });
             if (!capital)
                 metadata = SecurityTradePositionEvidence.WithPostings(metadata,
                     [new(SecurityTradePostingKind.OpenLong, amount / 100m, amount)], SecurityLotUnitKind.Shares, 1m);
@@ -172,7 +217,7 @@ public sealed partial class WorkstationEndpointsTests
                 new LedgerEntry(Guid.NewGuid(), id, time, credit, 0m, amount, "Synthetic native facts", currency: new("USD", "USD", 0m, amount, 1m))
             ], metadata));
         }
-        Add(at.AddMinutes(-1), run.RunId, true, 10000m);
+        Add(at.AddMinutes(-1), "opening-capital", true, 10000m);
         Add(at, run.RunId, false, 1000m);
         Add(at.AddMinutes(2), run.RunId, false, 2000m);
         Add(at, "another-run", true, 99999m);

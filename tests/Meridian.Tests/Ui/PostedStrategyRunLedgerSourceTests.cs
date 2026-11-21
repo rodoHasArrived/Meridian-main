@@ -28,6 +28,38 @@ public sealed class PostedStrategyRunLedgerSourceTests
             ["workstationCompanyId"] = "company-a"
         });
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyOrContradictoryRunLabelsCannotRestoreNativeReadinessThroughMetricsFallback(bool contradictsLabel)
+    {
+        var account = AccountId.ToString("D");
+        var retained = new Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+        SecurityTradePosting[] legs = [new(SecurityTradePostingKind.OpenLong, 1m, 10m)];
+        var tags = new Dictionary<string, string> { [LedgerQuery.StrategyRunIdTag] = Run.RunId };
+        if (contradictsLabel)
+            tags[LedgerQuery.AccountingRunIdTag] = "another-run";
+        var metadata = SecurityTradePositionEvidence.WithPostings(new JournalEntryMetadata(Symbol: "SPY", SecurityId: Guid.NewGuid(),
+            FinancialAccountId: account, StrategyId: Run.StrategyId, Tags: tags), legs,
+            Meridian.Contracts.SecurityMaster.SecurityLotUnitKind.Shares, 1m);
+        retained.PostLines(At, "Legacy run label", legs.SelectMany(leg => SecurityTradePostingProjector.Project(leg, "SPY", account)).ToArray(), metadata);
+        var records = retained.Journal.Select(entry => new LedgerJournalEntryRecord(entry, Guid.NewGuid(), PeriodId, null, null, 1, At)).ToArray();
+        var (store, registry) = Stores(records);
+        var source = new PostedStrategyRunLedgerSource(store, registry);
+        var run = Run with { Metrics = Result(retained) };
+        (await source.ReadAsync(run, Scope)).Should().BeNull();
+        var (reads, _) = await ReadersAsync(run, source);
+
+        var summary = (await reads.GetLedgerSummaryAsync(run.RunId, Scope))!;
+
+        summary.JournalEntryCount.Should().Be(1, "retained audit history remains inspectable");
+        summary.BalanceComparisonUnavailableReason.Should().Contain("audit-only");
+        var position = summary.AccountingPositions.Should().ContainSingle().Which;
+        position.Quantity.Should().BeNull();
+        position.MonetaryBasis.Should().BeNull();
+        position.CoverageFailure.Should().Contain("trusted run ownership");
+    }
+
     [Fact]
     public async Task PostedRunRead_SelectsExactRun_WithoutDependingOnTerminalMetrics()
     {
@@ -81,7 +113,11 @@ public sealed class PostedStrategyRunLedgerSourceTests
                 [(LedgerAccounts.Securities("SPY", accountId), amount, 0m),
                  (LedgerAccounts.CashFor(accountId), 0m, amount)],
                 new JournalEntryMetadata(StrategyId: "strategy-a", FinancialAccountId: accountId,
-                    Tags: attributed ? new Dictionary<string, string> { ["strategy.runId"] = Run.RunId } : null));
+                    Tags: attributed ? new Dictionary<string, string>
+                    {
+                        [LedgerQuery.StrategyRunIdTag] = Run.RunId,
+                        [LedgerQuery.AccountingRunIdTag] = Run.RunId
+                    } : null));
         Add(retained, At, 37m, false);
         Add(retained, At.AddHours(1), 71m, false);
         Add(posted, At, 10m, hasPostedAttribution);
@@ -465,7 +501,11 @@ public sealed class PostedStrategyRunLedgerSourceTests
         ledger.PostLines(At, "Fill", [(LedgerAccounts.Securities("SPY", accountId), 10m, 0m),
             (LedgerAccounts.CashFor(accountId), 0m, 10m)], new JournalEntryMetadata(
                 StrategyId: "strategy-a", FinancialAccountId: accountId,
-                Tags: runId is null ? null : new Dictionary<string, string> { ["strategy.runId"] = runId }));
+                Tags: runId is null ? null : new Dictionary<string, string>
+                {
+                    [LedgerQuery.StrategyRunIdTag] = runId,
+                    [LedgerQuery.AccountingRunIdTag] = runId
+                }));
         return new(ledger.Journal.Single(), Guid.NewGuid(), PeriodId, null, null, 1, At);
     }
 }

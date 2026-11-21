@@ -71,7 +71,7 @@ public sealed class PostedStrategyRunLedgerSource(
             {
                 ct.ThrowIfCancellationRequested();
                 var entry = record.Entry;
-                if (entry.Metadata.Tags?.TryGetValue(LedgerQuery.StrategyRunIdTag, out var sourceRunId) != true
+                if (!LedgerRunAttribution.TryGetTrustedRunId(entry.Metadata, out var sourceRunId)
                     || !string.Equals(sourceRunId, run.RunId, StringComparison.Ordinal))
                     continue;
                 if (!periods.TryGetValue(record.PeriodId, out var period))
@@ -141,6 +141,9 @@ public sealed class PostedStrategyRunLedgerSource(
         }
         return registrations.Count == 0 ? null : new RetainedPostingChart(registrations);
     }
+
+    public string? GetBalanceComparisonUnavailableReason(IReadOnlyLedger ledger)
+        => "Run-attributed journal activity does not establish complete financial-account opening balances and all account cash flows; account cash and NAV require a complete account/book population.";
 
     private sealed class RetainedPostingChart(IReadOnlyDictionary<LedgerAccount, LedgerAccountChartReference> registrations) : IChartOfAccounts
     {

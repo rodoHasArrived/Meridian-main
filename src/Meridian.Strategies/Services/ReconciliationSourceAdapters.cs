@@ -11,6 +11,7 @@ public sealed record ReconciliationPortfolioInput(
     IReadOnlyList<ReconciliationPositionInput> Positions)
 {
     public decimal UnrealizedPnl { get; init; }
+    public bool HasRetainedAccountingPositionPopulation { get; init; }
     public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
 }
 
@@ -21,6 +22,7 @@ public sealed record ReconciliationLedgerInput(
     IReadOnlyList<ReconciliationLedgerLineInput> TrialBalance)
 {
     public bool HasUnresolvedValuation { get; init; }
+    public string? BalanceComparisonUnavailableReason { get; init; }
     public decimal? HistoricalCostNetAssets { get; init; }
     public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
 }
@@ -108,6 +110,7 @@ public sealed class StrategyLedgerReconciliationSourceAdapter : IStrategyLedgerR
                 .ToArray())
         {
             HasUnresolvedValuation = ledger.HasUnresolvedValuation,
+            BalanceComparisonUnavailableReason = ledger.BalanceComparisonUnavailableReason,
             HistoricalCostNetAssets = ledger.HistoricalCostNetAssets,
             AccountingPositions = ledger.AccountingPositions
         };
@@ -137,7 +140,8 @@ public sealed class StrategyPortfolioReconciliationSourceAdapter : IStrategyPort
                 .ToArray())
         {
             UnrealizedPnl = portfolio.UnrealizedPnl,
-            AccountingPositions = portfolio.AccountingPositions.Count > 0 ? portfolio.AccountingPositions
+            HasRetainedAccountingPositionPopulation = portfolio.HasRetainedAccountingPositionPopulation,
+            AccountingPositions = portfolio.HasRetainedAccountingPositionPopulation || portfolio.AccountingPositions.Count > 0 ? portfolio.AccountingPositions
                 : portfolio.Positions.Select(static position => new StrategyPositionAccountingEvidence(position.Symbol,
                     position.AccountScopeId, position.Security?.SecurityId, position.IsShort, position.Quantity,
                     null, null, null, null, "Legacy positions have no retained unitized monetary basis or functional currency.")).ToArray()
