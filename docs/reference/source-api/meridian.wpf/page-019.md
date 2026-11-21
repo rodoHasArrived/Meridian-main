@@ -6,6 +6,61 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:428](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L428).
+
+Binds derived pages to the portfolio workspace shell definition.
+
+```csharp
+public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioWorkspaceShellStateProvider, PortfolioWorkspaceShellViewModel>
+```
+
+## PositionBlotterPage
+
+Qualified name: <code>Meridian.Wpf.Views.PositionBlotterPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:76](../../../../src/Meridian.Wpf/Views/Pages.cs#L76).
+
+```csharp
+public partial class PositionBlotterPage : Page
+```
+
+Source: [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L12).
+
+Hosts position review and position-related drilldowns.
+
+```csharp
+public partial class PositionBlotterPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PositionBlotterPage() : this(TryResolveOperatingContextService());</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L16) |  |
+| <code>public PositionBlotterPage(WorkstationOperatingContextService? operatingContextService);</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L21) |  |
+
+## PostedLedgerPage
+
+Qualified name: <code>Meridian.Wpf.Views.PostedLedgerPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs#L11).
+
+Hosts trial-balance and profit-and-loss reporting derived from the posted journal.
+
+```csharp
+public partial class PostedLedgerPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PostedLedgerPage(PostedLedgerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs#L15) |  |
+
 ## ProviderHealthPage
 
 Qualified name: <code>Meridian.Wpf.Views.ProviderHealthPage</code>. Kind: `class`.
@@ -52,7 +107,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderPage(ProviderViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ProviderPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/ProviderPage.xaml.cs#L15) |  |
+| <code>public ProviderPage(ProviderViewModel viewModel);</code> | [src/Meridian.Wpf/Views/ProviderPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/ProviderPage.xaml.cs#L16) |  |
 
 ## QualityArchivePage
 
@@ -809,8 +864,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SymbolMappingPage() : this(new SymbolMappingViewModel());</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:19](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L19) |  |
-| <code>public SymbolMappingPage(SymbolMappingViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:24](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L24) |  |
+| <code>public SymbolMappingPage() : this(new SymbolMappingViewModel());</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L20) |  |
+| <code>public SymbolMappingPage(SymbolMappingViewModel viewModel);</code> | [src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/SymbolMappingPage.xaml.cs#L25) |  |
 
 ## SymbolsPage
 
@@ -1027,68 +1082,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public WelcomePage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, WpfServices.StatusService statusService, WpfServices.ConnectionService connectionService, WpfServices.ConfigService configService, ILogger&lt;WelcomePageViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/WelcomePage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/WelcomePage.xaml.cs#L18) |  |
-
-## WorkflowLibraryPage
-
-Qualified name: <code>Meridian.Wpf.Views.WorkflowLibraryPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs:9](../../../../src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs#L9).
-
-Hosts discoverable workflows and their navigation actions.
-
-```csharp
-public partial class WorkflowLibraryPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkflowLibraryPage(WorkflowLibraryViewModel viewModel);</code> | [src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/WorkflowLibraryPage.xaml.cs#L11) |  |
-
-## WorkspaceCapabilityHomePage
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceCapabilityHomePage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:21](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L21).
-
-Displays the capability overview for the workspace selected by its shell page tag.
-
-```csharp
-public sealed class WorkspaceCapabilityHomePage : Page, IWorkspaceShellPageContextAware
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WorkspaceCapabilityHomePage() : this(null);</code> | [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:26](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L26) |  |
-| <code>public WorkspaceCapabilityHomePage(Meridian.Wpf.Services.NavigationService? navigationService);</code> | [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:31](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L31) |  |
-| <code>public void ApplyWorkspaceShellPageTag(string pageTag);</code> | [src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs:38](../../../../src/Meridian.Wpf/Views/WorkspaceCapabilityHomePage.cs#L38) |  |
-
-## WorkspaceCommandBarControl
-
-Qualified name: <code>Meridian.Wpf.Views.WorkspaceCommandBarControl</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:25](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L25).
-
-Displays primary and secondary workspace commands and raises command invocation events.
-
-```csharp
-public partial class WorkspaceCommandBarControl : UserControl
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static readonly DependencyProperty CommandGroupProperty = DependencyProperty.Register(nameof(CommandGroup), typeof(WorkspaceCommandGroup), typeof(WorkspaceCommandBarControl), new PropertyMetadata(new WorkspaceCommandGroup(), OnCommandGroupChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:27](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L27) |  |
-| <code>public static readonly DependencyProperty IsCompactSurfaceProperty = DependencyProperty.Register(nameof(IsCompactSurface), typeof(bool), typeof(WorkspaceCommandBarControl), new PropertyMetadata(false));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:34](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L34) |  |
-| <code>public static readonly DependencyProperty CommandInvokedCommandProperty = DependencyProperty.Register(nameof(CommandInvokedCommand), typeof(ICommand), typeof(WorkspaceCommandBarControl));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:41](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L41) |  |
-| <code>public static readonly DependencyProperty ResetLayoutCommandProperty = DependencyProperty.Register(nameof(ResetLayoutCommand), typeof(ICommand), typeof(WorkspaceCommandBarControl), new PropertyMetadata(null, OnResetLayoutCommandChanged));</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:51](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L51) | When set, the More menu ends with &quot;Reset layout&quot;, which runs this command. Workspace shells bind it to their pane-layout reset so every shell offers the same recovery path. |
-| <code>public WorkspaceCommandBarControl();</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:61](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L61) |  |
-| <code>public event EventHandler&lt;WorkspaceCommandInvokedEventArgs&gt;? CommandInvoked;</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:67](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L67) |  |
-| <code>public WorkspaceCommandGroup CommandGroup { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:69](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L69) |  |
-| <code>public bool IsCompactSurface { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:75](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L75) |  |
-| <code>public ICommand? CommandInvokedCommand { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:81](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L81) |  |
-| <code>public ICommand? ResetLayoutCommand { get; set; }</code> | [src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs:87](../../../../src/Meridian.Wpf/Views/WorkspaceCommandBarControl.xaml.cs#L87) |  |

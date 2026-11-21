@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQueryOwner
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryOwner</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:11](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L11).
+
+```csharp
+public sealed record DataQueryOwner(string TenantId, string CompanyId, string OperatorId);
+```
+
 ## DataQueryRequest
 
 Qualified name: <code>Meridian.Storage.Query.DataQueryRequest</code>. Kind: `record`.
@@ -923,13 +933,3 @@ Declared public members:
 | <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
 | <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
 | <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
-
-## CorporateActionCalendarReadSet
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCalendarReadSet</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs#L8).
-
-```csharp
-public sealed record CorporateActionCalendarReadSet(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases, IReadOnlyList<CorporateActionEvidenceDto> Evidence);
-```

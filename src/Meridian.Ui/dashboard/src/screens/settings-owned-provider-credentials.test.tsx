@@ -12,7 +12,7 @@ function HeaderRefresh({ children }: { children: ReactNode }) {
   return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
 }
 
-const api = vi.hoisted(() => ({ getProviderRoutingConnections: vi.fn(), getProviderConnections: vi.fn(), putProviderCredentials: vi.fn(), verifyProviderConnection: vi.fn(), deleteProviderCredentials: vi.fn() }));
+const api = vi.hoisted(() => ({ getProviderRoutingConnections: vi.fn(), getProviderConnections: vi.fn(), putProviderCredentials: vi.fn(), verifyProviderConnection: vi.fn(), verifyDraftProviderConnection: vi.fn(), deleteProviderCredentials: vi.fn() }));
 vi.mock("@/lib/api", () => api);
 const ownership = vi.hoisted(() => ({
   createOwnedProviderConnection: vi.fn(), bindProviderRuntimeCredential: vi.fn(), previewProviderCredentialMigration: vi.fn(), migrateProviderCredential: vi.fn(),
@@ -78,6 +78,26 @@ describe("owned provider credential editor", () => {
       credentials: { KeyId: "key", SecretKey: "secret" }, environment: "paper"
     }, expect.objectContaining({ connectionId: "paper-a", allowDevelopmentFallback: false }));
     expect(api.getProviderConnections.mock.calls.every(([options]) => options.connectionId === "paper-a")).toBe(true);
+  });
+
+  it("tests only the unsaved draft and offers explicit offline save after rejection", async () => {
+    api.verifyDraftProviderConnection.mockResolvedValue({ providerId: "alpaca", status: "Rejected", message: "The provider refused these credentials." });
+    const rotationDueAt = new Date(Date.now() + 10 * 24 * 60 * 60 * 1000).toISOString();
+    api.getProviderConnections.mockResolvedValue([{ ...status("paper-a"), rotationDueAt }]);
+    render(<OwnedProviderCredentialPanel row={row} session={session} />);
+    await select(); await fill();
+    await screen.findByText(`Credential rotation due ${rotationDueAt.slice(0, 10)} UTC.`);
+
+    await userEvent.click(screen.getByRole("button", { name: "Test draft credentials" }));
+
+    await screen.findByText(/Rejected. The provider refused/);
+    expect(api.verifyDraftProviderConnection).toHaveBeenCalledWith("alpaca", { KeyId: "key", SecretKey: "secret" }, "paper",
+      expect.objectContaining({ connectionId: "paper-a", allowDevelopmentFallback: false }));
+    expect(api.putProviderCredentials).not.toHaveBeenCalled();
+    expect(api.verifyProviderConnection).not.toHaveBeenCalled();
+    expect(screen.getByLabelText("Alpaca Secret key")).toHaveValue("secret");
+    await userEvent.click(screen.getByRole("button", { name: "Save anyway" }));
+    await screen.findByText("Credentials saved (Configured).");
   });
 
   it.each([

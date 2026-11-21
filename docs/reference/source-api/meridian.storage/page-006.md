@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IGovernedLedgerPostingTarget
+
+Qualified name: <code>Meridian.Storage.Ledger.IGovernedLedgerPostingTarget</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:13](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L13).
+
+Durable posting seam used after a governed workflow has approved a journal write. The workflow remains responsible for validation and approval; this target owns the idempotent handoff to the authoritative journal store.
+
+```csharp
+public interface IGovernedLedgerPostingTarget
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |
+
 ## IIntercompanyAgreementBatchPostingAuthority
 
 Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementBatchPostingAuthority</code>. Kind: `interface`.
@@ -900,22 +918,3 @@ Declared public members:
 | <code>public ILedgerJournalLog Log =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:55](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L55) | The journal log entries are written to. |
 | <code>public async Task CompleteAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:88](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L88) | Waits until every posted entry is durable, then stops accepting entries. |
 | <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:99](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L99) | Stops the writer. Entries already written stay durable; entries still queued are not written, which matches a crash at the same point. Call CompleteAsync first for a clean finish. |
-
-## LedgerMigrationRunner
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:8](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L8).
-
-Applies the PostgreSQL migrations used by the ledger journal store.
-
-```csharp
-public sealed class LedgerMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerMigrationRunner(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L12) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:36](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L36) |  |

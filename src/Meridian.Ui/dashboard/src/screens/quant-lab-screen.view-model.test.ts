@@ -560,6 +560,7 @@ describe("Quant Lab view model helpers", () => {
   });
 
   it("preserves last usable values but fails closed when current-source extraction fails", async () => {
+    vi.useFakeTimers();
     const services: QuantLabServices = {
       getTemplates: vi.fn().mockResolvedValue({ templates: [] }),
       extractParameters: vi.fn()
@@ -569,7 +570,8 @@ describe("Quant Lab view model helpers", () => {
     };
 
     const { result } = renderHook(() => useQuantLabScreenViewModel(services));
-    await waitFor(() => expect(result.current.parameterPhase).toBe("ready"));
+    await act(async () => { await vi.runOnlyPendingTimersAsync(); });
+    expect(result.current.parameterPhase).toBe("ready");
 
     act(() => {
       result.current.updateParameter("lookback", "63");
@@ -584,7 +586,8 @@ describe("Quant Lab view model helpers", () => {
     expect(result.current.parameterRows[0]?.value).toBe("63");
     expect(result.current.runCommand.disabled).toBe(true);
 
-    await waitFor(() => expect(result.current.parameterPhase).toBe("unavailable"));
+    await act(async () => { await vi.runOnlyPendingTimersAsync(); });
+    expect(result.current.parameterPhase).toBe("unavailable");
     expect(result.current.parameterRows[0]?.value).toBe("63");
     expect(result.current.parameterPanel.statusMessage).toMatch(/will not be submitted/i);
     expect(result.current.runCommand).toMatchObject({

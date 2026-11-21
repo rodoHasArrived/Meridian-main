@@ -175,6 +175,32 @@ public sealed class PaperSessionDurableJournalTests : IDisposable
         Assert.Empty(service.GetSessions());
     }
 
+    [Fact]
+    public async Task StrategySessionRetryReusesOpeningJournalAfterInterruptedMetadataWrite()
+    {
+        var store = OpenStore();
+        const string runId = "reviewed-paper-run";
+        var startedAt = new DateTimeOffset(2026, 1, 15, 14, 30, 0, TimeSpan.Zero);
+        var accountId = Guid.NewGuid();
+        var request = new CreatePaperSessionDto("reviewed-strategy", null, 1_000m, ["AAPL"])
+        {
+            FinancialAccountId = accountId.ToString("D")
+        };
+        var sessionId = PaperSessionPersistenceService.GetStrategyRunSessionId(runId);
+        await using (var first = OpenService(store))
+            await first.EnsureStrategyRunSessionAsync(runId, startedAt, request);
+
+        var original = Assert.Single(await store.LoadJournalBatchesAsync(sessionId));
+        File.Delete(Path.Combine(_root, sessionId, "session.json"));
+
+        await using var restarted = OpenService(OpenStore());
+        var recovered = await restarted.EnsureStrategyRunSessionAsync(runId, startedAt, request);
+        Assert.Equal(sessionId, recovered.SessionId);
+        Assert.Equal(accountId, recovered.FundAccountId);
+        Assert.Equal(startedAt, recovered.CreatedAt);
+        Assert.Equal(original.ContentHash, Assert.Single(await store.LoadJournalBatchesAsync(sessionId)).ContentHash);
+    }
+
     private JsonlFilePaperSessionStore OpenStore() => new(_root, NullLogger<JsonlFilePaperSessionStore>.Instance);
 
     private static PaperSessionPersistenceService OpenService(IPaperSessionStore store) =>

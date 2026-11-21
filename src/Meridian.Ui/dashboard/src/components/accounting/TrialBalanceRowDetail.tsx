@@ -5,6 +5,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import { FinancialValue } from "@/components/meridian/financial-value";
+import { trialBalanceAmountPassport } from "@/lib/trial-balance-amount-passport";
 import type {
   AccountingTrialBalanceRowViewModel,
   AccountingTrialBalanceDetailViewState
@@ -43,7 +45,10 @@ export const trialBalanceColumns: DenseDataTableColumn<AccountingTrialBalanceRow
           row.balanceTone === "success" ? "text-success" : row.balanceTone === "danger" ? "text-danger" : "text-foreground"
         )}
       >
-        {row.balanceLabel}
+        <FinancialValue value={row.balanceExact ?? row.balance} currency={row.currency ?? undefined}
+          passport={trialBalanceAmountPassport(row)}
+          condition="unavailable" basis={row.basisLabel}
+          reason="The posted source has not supplied a reconciled data condition." />
       </span>
     )
   },

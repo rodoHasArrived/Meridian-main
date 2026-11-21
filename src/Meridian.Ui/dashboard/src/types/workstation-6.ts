@@ -976,6 +976,13 @@ export interface LedgerTrialBalanceLine {
   symbol: string | null;
   financialAccountId: string | null;
   balance: number;
+  /** Additive exact decimal supplied by current hosts; legacy numeric reads remain supported. */
+  balanceExact?: string;
+  balanceProofSubjectId?: string | null;
+  balanceProofScope?: import("./ledger-amount-proof").LedgerAmountScope | null;
+  balanceProofCurrency?: string | null;
+  journalEntryIds?: string[];
+  ledgerEntryIds?: string[];
   entryCount: number;
   security: WorkstationSecurityReference | null;
   accountScopeId?: string | null;
@@ -1045,6 +1052,14 @@ export interface LedgerPeriod {
  * spine and carry debit/credit totals but no resolved security reference.
  */
 export interface LedgerPeriodTrialBalanceLine {
+  balanceExact?: string;
+  debitTotalExact?: string;
+  creditTotalExact?: string;
+  balanceProofSubjectId?: string | null;
+  balanceProofScope?: import("./ledger-amount-proof").LedgerAmountScope | null;
+  balanceProofCurrency?: string | null;
+  journalEntryIds?: string[];
+  ledgerEntryIds?: string[];
   accountName: string;
   accountType: string;
   symbol: string | null;
@@ -1499,9 +1514,31 @@ export interface StrategyRunDetail {
   governance?: unknown | null;
   governanceHooks?: unknown[] | null;
   biasDisclosure?: BiasDisclosure | null;
+  replayProvenance?: StrategyRunReplayProvenance | null;
   providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   evidenceLoop?: StrategyRunEvidenceLoop | null;
   acceptanceChecklist?: StrategyRunAcceptanceChecklistItem[] | null;
+}
+
+export interface StrategyRunReplayProvenance {
+  sourceMix: StrategyRunReplaySourceCount[];
+  revisions: StrategyRunReplayRevision[];
+  sourceMixHash?: string | null;
+  completedInputHashSha256?: string | null;
+}
+
+export interface StrategyRunReplaySourceCount {
+  symbol: string;
+  source: string;
+  bars: number;
+}
+
+export interface StrategyRunReplayRevision {
+  revisionId: string;
+  contentHash: string;
+  servingProvider: string;
+  instrument: string;
+  granularity: string;
 }
 
 export interface StrategyRunContinuityLink {

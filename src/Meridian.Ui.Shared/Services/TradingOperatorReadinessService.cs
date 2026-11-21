@@ -6,9 +6,12 @@ using Meridian.Contracts.Workstation;
 using Meridian.Execution.Services;
 using Meridian.Execution.Sdk;
 using Meridian.FSharp.Operations;
+using Meridian.Identity.Auth;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
+using Meridian.Ui.Shared.Endpoints;
+using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Services;
@@ -79,6 +82,13 @@ public sealed partial class TradingOperatorReadinessService : ITradingOperatorRe
     {
         ct.ThrowIfCancellationRequested();
         var asOf = DateTimeOffset.UtcNow;
+        if (Resolve<IOrderManager>() is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper })
+        {
+            var context = Resolve<IHttpContextAccessor>()?.HttpContext;
+            if (fundAccountId != paper.FundAccountId || context is null ||
+                !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paper, UserPermission.ViewTrades).ConfigureAwait(false))
+                return BuildScopedPaperUnavailable(asOf);
+        }
         var workItems = new List<OperatorWorkItemDto>();
 
         var paperService = Resolve<PaperSessionPersistenceService>();

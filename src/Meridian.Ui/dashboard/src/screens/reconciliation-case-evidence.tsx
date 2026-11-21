@@ -15,6 +15,7 @@ import { lifecycleStateLabel } from "./reconciliation-break-lifecycle";
 import { isStatementHandoffMarker } from "./reconciliation-casework-command";
 import { originalComparisonScope, sourceObservationAge, sourceRunChangeLabel } from "./reconciliation-source-observation";
 import "@/styles/reconciliation-workbench.css";
+import { caseMeasureAmount } from "./reconciliation-case-values";
 
 const MEASURE_LABELS: Record<ReconciliationBreakMeasure["kind"], string> = {
   Value: "Value",
@@ -29,9 +30,10 @@ function displayAmount(value: string | number | null, signed = false): string {
   return `${sign}${formatExactMagnitude(decimal, decimal.scale).text}`;
 }
 
-function retainedResidual(measure: ReconciliationBreakMeasure): number | null {
-  if (measure.unavailableReason || !Number.isFinite(measure.actual) || !Number.isFinite(measure.expected)) return null;
-  return Number.isFinite(measure.variance) ? measure.variance : null;
+function retainedResidual(measure: ReconciliationBreakMeasure): string | number | null {
+  if (measure.unavailableReason || !parseExactDecimal(caseMeasureAmount(measure, "actual")) || !parseExactDecimal(caseMeasureAmount(measure, "expected"))) return null;
+  const residual = caseMeasureAmount(measure, "variance");
+  return parseExactDecimal(residual) ? residual : null;
 }
 
 function measureUnit(unit: string): string {
@@ -48,10 +50,10 @@ export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount:
   const measures = item.measures ?? [];
   const reported = measures.filter((measure) => retainedResidual(measure) != null);
   if (reported.length > 1) return { amount: "Multiple", unit: null };
-  if (reported.length === 1) return { amount: displayAmount(reported[0].variance, true), unit: measureUnit(reported[0].unit) };
+  if (reported.length === 1) return { amount: displayAmount(caseMeasureAmount(reported[0], "variance"), true), unit: measureUnit(reported[0].unit) };
   return measures.length > 0
     ? { amount: "Unavailable", unit: null }
-    : { amount: displayAmount(item.variance, true), unit: "Unit unavailable" };
+    : { amount: displayAmount(item.varianceExact ?? item.variance, true), unit: "Unit unavailable" };
 }
 
 function CaseFact({ label, children }: { label: string; children?: ReactNode }) {
@@ -153,12 +155,12 @@ function StatementMatchComparison({ evidence, prior, grouped = false }: {
 function compareColumns(statement: boolean, prior: ReconciliationBreakQueueItem | null, asOf?: string | null): DenseDataTableColumn<ReconciliationBreakMeasure>[] {
   const columns: DenseDataTableColumn<ReconciliationBreakMeasure>[] = [
     { id: "measure", label: "Measure", rowHeader: true, render: (measure) => <>{MEASURE_LABELS[measure.kind]}<span className="block text-xs font-normal text-muted-foreground">{measureUnit(measure.unit)}</span></> },
-    { id: "observed", label: statement ? "Statement" : "Observed", numeric: true, render: (measure) => displayAmount(measure.actual) },
-    { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(measure.expected) },
+    { id: "observed", label: statement ? "Statement" : "Observed", numeric: true, render: (measure) => displayAmount(caseMeasureAmount(measure, "actual")) },
+    { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(caseMeasureAmount(measure, "expected")) },
     { id: "residual", label: "Residual", numeric: true, render: (measure) => <>
       <ResidualAmount label={`${MEASURE_LABELS[measure.kind]} residual`} unit={measureUnit(measure.unit)} value={retainedResidual(measure)}
         asOf={asOf} basis={statement ? "Statement minus ledger" : "Observed minus expected"} />
-      {measure.tolerance != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(measure.tolerance)}</span> : null}
+      {caseMeasureAmount(measure, "tolerance") != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(caseMeasureAmount(measure, "tolerance"))}</span> : null}
     </> }
   ];
   if (prior) {
@@ -198,7 +200,7 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
   const earlier = related.filter((row) => (row.sourceImportId ?? row.runId) !== sourceRun
     && Date.parse(row.detectedAt) < Date.parse(item.detectedAt));
   const requestedBaseline = comparisonBreakId === undefined ? priorId : comparisonBreakId;
-  const baseline = earlier.find((row) => row.breakId === requestedBaseline);
+  const baseline = earlier.find((row) => row.breakId === requestedBaseline) ?? null;
   const [comparisonProof, setComparisonProof] = useState<{
     item: ReconciliationBreakQueueItem;
     baseline: ReconciliationBreakQueueItem;
@@ -230,13 +232,19 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
   const statementEvidence = item.statementEvidence;
   const policy = statementEvidence?.tolerancePolicy;
   const regrouping = lineage?.regrouping;
+  const missingContext = [
+    !item.fundAccountId && "fund account",
+    !item.ledgerBookId && "ledger book",
+    !item.accountingPeriodId && "accounting period",
+    !item.asOfDate && "as-of date",
+    !item.sourceSystem && "source"
+  ].filter(Boolean);
 
   return (
     <div className="reconciliation-case-evidence">
       <p className="text-sm text-foreground">{item.reason}</p>
       {lineage ? <p className="text-sm text-muted-foreground"><strong className="text-foreground">{sourceRunChangeLabel(lineage)}</strong> · Occurrence {lineage.occurrenceNumber} · {sourceObservationAge(lineage)}</p> : null}
       <dl className="reconciliation-case-facts">
-        <CaseFact label="Case ID">{item.breakId}</CaseFact>
         <CaseFact label="Case version">{item.version}</CaseFact>
         <CaseFact label="Case status">{status}</CaseFact>
         <CaseFact label="Owner">{item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"}</CaseFact>
@@ -250,7 +258,7 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           {(statementEvidence?.match.residuals.length ?? measures.length) > 0 ? <p className="text-xs text-muted-foreground">Residual = {statement ? "statement − ledger" : "observed − expected"}</p> : null}
         </div>
         {statementEvidence ? <StatementMatchComparison evidence={statementEvidence} prior={comparable ? baseline?.statementEvidence : null} /> : measures.length > 0 ? <>
-          <DenseDataTable columns={compareColumns(statement, comparable ? baseline : null, item.asOfDate)} rows={measures}
+          <DenseDataTable columns={compareColumns(statement, comparable ? baseline ?? null : null, item.asOfDate)} rows={measures}
             getRowId={(measure) => `${measure.kind}:${measure.unit}:${measures.indexOf(measure)}`} ariaLabel="Retained residual components"
             emptyText="No retained residual components."
             caption="The retained residual is the observed amount minus the expected amount in the supplied unit." />
@@ -264,18 +272,14 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           </CaseFact></dl>
         </>}
         <dl className="reconciliation-case-facts">
-          <CaseFact label="Fund account">{item.fundAccountId}</CaseFact>
-          <CaseFact label="Ledger book">{item.ledgerBookId}</CaseFact>
-          <CaseFact label="Accounting period">{item.accountingPeriodId}</CaseFact>
-          <CaseFact label="As of">{formatAccountingDate(item.asOfDate)}</CaseFact>
-          <CaseFact label="Source">{item.sourceSystem}</CaseFact>
-          <CaseFact label="Source record">{item.sourceReference}</CaseFact>
-          {ledgerEvidence.length > 0 ? <CaseFact label="Ledger evidence">{ledgerEvidence.join(", ")}</CaseFact> : null}
-          <CaseFact label={item.sourceImportId ? "Source import" : "Source run"}>{sourceRun}</CaseFact>
-          <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
-            : item.toleranceProfileId ? `${item.toleranceProfileId} · Version unavailable` : null}</CaseFact>
+          {item.asOfDate ? <CaseFact label="As of">{formatAccountingDate(item.asOfDate)}</CaseFact> : null}
+          {item.sourceSystem ? <CaseFact label="Source">{item.sourceSystem}</CaseFact> : null}
+          {ledgerEvidence.length > 0 ? <CaseFact label="Ledger evidence">{ledgerEvidence.length} linked {ledgerEvidence.length === 1 ? "record" : "records"}</CaseFact> : null}
+          {policy ? <CaseFact label="Tolerance policy">Version {policy.version}</CaseFact>
+            : item.toleranceProfileId ? <CaseFact label="Tolerance policy">Version unavailable</CaseFact> : null}
           {policy ? <CaseFact label="Policy applied as of">{formatAccountingDate(policy.effectiveDate)}</CaseFact> : null}
         </dl>
+        {missingContext.length > 0 ? <p className="text-sm text-muted-foreground">Comparison context unavailable: {missingContext.join(", ")}.</p> : null}
         {earlier.length > 0 ? <label className="grid gap-1 text-sm">
           Compare with an earlier retained case
           <Select value={baseline?.breakId ?? ""} onChange={(event) => {
@@ -325,6 +329,14 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
         </div> : null}
         <TechnicalDetails label="Evidence identifiers">
           <dl className="reconciliation-case-facts">
+            <CaseFact label="Case ID">{item.breakId}</CaseFact>
+            <CaseFact label="Fund account">{item.fundAccountId}</CaseFact>
+            <CaseFact label="Ledger book">{item.ledgerBookId}</CaseFact>
+            <CaseFact label="Accounting period">{item.accountingPeriodId}</CaseFact>
+            <CaseFact label="Source record">{item.sourceReference}</CaseFact>
+            <CaseFact label={item.sourceImportId ? "Source import" : "Source run"}>{sourceRun}</CaseFact>
+            <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
+              : item.toleranceProfileId ? `${item.toleranceProfileId} · Version unavailable` : null}</CaseFact>
             <CaseFact label="Lineage ID">{lineage?.lineageId}</CaseFact>
             <CaseFact label="Occurrence ID">{lineage?.occurrenceId}</CaseFact>
             <CaseFact label="Latest lineage scope">{lineage?.comparisonScopeId}</CaseFact>

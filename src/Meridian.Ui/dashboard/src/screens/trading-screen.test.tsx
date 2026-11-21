@@ -167,6 +167,7 @@ vi.mock("@/lib/api", async () => {
     evaluatePromotion: vi.fn().mockResolvedValue({ runId: "run-1", strategyId: "strat-1", strategyName: "S1", sourceMode: "backtest", targetMode: "paper", isEligible: true, sharpeRatio: 1.2, maxDrawdownPercent: 5, totalReturn: 10, reason: "Eligible", found: true, ready: true }),
     approvePromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-1", newRunId: "paper-1", reason: "approved", auditReference: "audit-promo-1", approvedBy: "operator-7" }),
     rejectPromotion: vi.fn().mockResolvedValue({ success: true, promotionId: "promo-reject-1", newRunId: null, reason: "Promotion rejected: Run breached risk gate.", auditReference: "audit-reject-1", approvedBy: "operator-7" }),
+    revokeLiveAuthorization: vi.fn(),
     getPromotionHistory: vi.fn().mockResolvedValue([{
       promotionId: "promo-1",
       strategyId: "strat-1",
@@ -988,6 +989,42 @@ describe("TradingScreen", () => {
     await waitFor(() => expect(api.getExecutionControls).toHaveBeenCalledTimes(2));
   });
 
+  it("requires a reason to revoke a live grant and displays its retained outcome", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.getPromotionHistory).mockResolvedValueOnce([{
+      promotionId: "live-grant-1",
+      strategyId: "buy-and-hold",
+      strategyName: "Buy and Hold",
+      sourceRunType: "Paper",
+      targetRunType: "Live",
+      qualifyingSharpe: 1.2,
+      qualifyingMaxDrawdownPercent: 5,
+      qualifyingTotalReturn: 10,
+      promotedAt: "2026-01-01",
+      liveAuthorizationStatus: { state: "Active" },
+      liveAuthorization: {
+        fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749", allowedSymbols: ["AAPL"],
+        maxOrderNotional: 1200, currency: "USD", expiresAt: "2026-01-02T00:00:00Z"
+      }
+    }]);
+    vi.mocked(api.revokeLiveAuthorization).mockResolvedValueOnce({
+      authorizationId: "live-grant-1", actor: "operator-7",
+      reason: "Account mandate ended", revokedAt: "2026-01-01T12:00:00Z"
+    });
+
+    await renderTradingScreen();
+    const promotion = within(await openPromotionGate(user));
+    await user.click(await promotion.findByText("Revoke live authorization"));
+    const confirm = promotion.getByRole("button", { name: "Confirm revocation" });
+    expect(confirm).toBeDisabled();
+    await user.type(promotion.getByLabelText("Revocation reason"), "Account mandate ended");
+    await user.click(confirm);
+
+    expect(api.revokeLiveAuthorization).toHaveBeenCalledWith("live-grant-1", "Account mandate ended");
+    expect(await promotion.findByText(/Live authorization Revoked.*Account mandate ended/)).toBeVisible();
+    expect(promotion.queryByText("Revoke live authorization")).not.toBeInTheDocument();
+  });
+
   it("passes valid operating fund account scope when submitting an order", async () => {
     const user = userEvent.setup();
     const fundAccountId = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
@@ -1022,7 +1059,7 @@ describe("TradingScreen", () => {
 
   it("rejects direct order-ticket submits until the preview is acknowledged", async () => {
     const user = userEvent.setup();
-    await renderTradingScreen(data, "/trading/orders");
+    await renderTradingScreen(data, "/trading/orders", "53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
 
     await user.click(screen.getByRole("button", { name: /new order/i }));
     await user.type(screen.getByPlaceholderText("AAPL"), "AAPL");

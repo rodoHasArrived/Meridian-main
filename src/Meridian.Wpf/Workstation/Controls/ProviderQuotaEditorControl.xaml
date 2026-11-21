@@ -1,0 +1,73 @@
+<UserControl x:Class="Meridian.Wpf.Workstation.Controls.ProviderQuotaEditorControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             Unloaded="OnUnloaded">
+    <UserControl.Resources>
+        <BooleanToVisibilityConverter x:Key="QuotaVisibility" />
+    </UserControl.Resources>
+    <Border Style="{StaticResource CardStyle}" Padding="14" AutomationProperties.Name="Quota settings">
+        <StackPanel>
+            <TextBlock Text="Quota Settings" Style="{StaticResource CardHeaderStyle}" />
+            <WrapPanel Margin="0,8,0,0">
+                <ComboBox ItemsSource="{Binding Providers}"
+                          DisplayMemberPath="Label"
+                          SelectedValuePath="Id"
+                          SelectedValue="{Binding ProviderId, Mode=TwoWay}"
+                          IsEnabled="{Binding CanSelectProvider}"
+                          MinWidth="150"
+                          AutomationProperties.Name="Quota provider" />
+                <Button Content="Load Limits"
+                        Command="{Binding LoadCommand}"
+                        Style="{StaticResource SecondaryButtonStyle}"
+                        Margin="8,0,0,0" />
+            </WrapPanel>
+            <TextBlock Text="{Binding Notice}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap"
+                       Margin="0,6,0,0" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding Error}" Foreground="{StaticResource ErrorColorBrush}" TextWrapping="Wrap"
+                       AutomationProperties.LiveSetting="Assertive" />
+            <StackPanel Visibility="{Binding HasSnapshot, Converter={StaticResource QuotaVisibility}}" Margin="0,8,0,0">
+                <TextBlock Text="Saved limits" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding SavedLimits}" TextWrapping="Wrap" Margin="0,2,0,6" />
+                <TextBlock Text="Running limits" FontWeight="SemiBold" />
+                <TextBlock Text="{Binding RunningLimits}" TextWrapping="Wrap" Margin="0,2,0,6" />
+                <TextBlock Text="{Binding ResetPolicy}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                <StackPanel Visibility="{Binding ShowEditor, Converter={StaticResource QuotaVisibility}}"
+                            IsEnabled="{Binding CanEdit}" Margin="0,8,0,0">
+                    <WrapPanel>
+                        <StackPanel Margin="0,0,10,6">
+                            <Label Content="Vendor tier" Target="{Binding ElementName=QuotaTier}" Padding="0,0,0,3" />
+                            <ComboBox x:Name="QuotaTier" ItemsSource="{Binding Tiers}" DisplayMemberPath="Label"
+                                      SelectedItem="{Binding Tier, Mode=TwoWay}" MinWidth="115" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,10,6">
+                            <Label Content="{Binding MinuteAllowanceLabel}" Target="{Binding ElementName=MinuteAllowance}" Padding="0,0,0,3" />
+                            <TextBox x:Name="MinuteAllowance" Text="{Binding Minute, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,10,6">
+                            <Label Content="{Binding DailyLimitLabel}" Target="{Binding ElementName=DailyLimit}" Padding="0,0,0,3" />
+                            <TextBox x:Name="DailyLimit" Text="{Binding Daily, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                        <StackPanel Margin="0,0,10,6">
+                            <Label Content="Request pacing (requests/minute)" Target="{Binding ElementName=RequestPacing}" Padding="0,0,0,3" />
+                            <TextBox x:Name="RequestPacing" Text="{Binding Pacing, UpdateSourceTrigger=PropertyChanged}" />
+                        </StackPanel>
+                    </WrapPanel>
+                    <TextBlock Text="{Binding TierGuidance}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap" />
+                    <Button Content="Save Limits" Command="{Binding SaveCommand}"
+                            Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Margin="0,6,0,0" />
+                </StackPanel>
+                <TextBlock Text="{Binding HistoryNotice}" Style="{StaticResource CardDescriptionStyle}" TextWrapping="Wrap"
+                           Margin="0,10,0,0" />
+                <ListView ItemsSource="{Binding DailyRollups}" Margin="0,6,0,0" AutomationProperties.Name="Daily quota observations">
+                    <ListView.View>
+                        <GridView>
+                            <GridViewColumn Header="Date (UTC)" DisplayMemberBinding="{Binding DateUtc, StringFormat='{}{0:yyyy-MM-dd}'}" />
+                            <GridViewColumn Header="Throttles" DisplayMemberBinding="{Binding ThrottleCount}" />
+                            <GridViewColumn Header="Fallback rotations" DisplayMemberBinding="{Binding RotationCount}" />
+                        </GridView>
+                    </ListView.View>
+                </ListView>
+            </StackPanel>
+        </StackPanel>
+    </Border>
+</UserControl>

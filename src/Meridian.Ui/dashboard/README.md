@@ -11,6 +11,12 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui/dashboard
 
+Record identity panels retain internal record IDs in the expandable Technical identity details;
+operator identifiers remain visible. Cash Ladder keeps its engine version in Projection details.
+Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
+and groups missing comparison context into one explicit notice. Screenshot readiness checks
+exercise the current Match Workbench's retained case evidence.
+
 Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
 The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
 Workstation backfill receipts show the submission estimate, waiting states, observed providers,
@@ -27,7 +33,18 @@ Numeric priority and Move up provide keyboard alternatives to dragging. Preview 
 daily date range and proposed priority/availability without saving or fetching prices; unavailable
 vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
 requires a reason and exposes retained change history. Quota history distinguishes an observed
-throttle from the next provider attempted and discloses process-lifetime retention.
+throttle from the next provider attempted. Recent events remain process-lifetime evidence, and
+daily throttle and rotation totals are retained for seven UTC days.
+
+The provider editor reads the host's effective order for new jobs. Save feedback explains when a
+routing change is active and when pacing or tier changes require a restart. The Backfills route
+uses the same runtime provider list for ordered schedule preferences, and shows serving-provider
+counts and attempt outcomes in the backfill result and schedule history.
+
+Provider Accounting shows saved and running account quotas and request pacing. Paid presets
+require a finite Meridian daily cap. Provider activation is read from the host and includes
+pending changes, start failures, and restart confirmation on a supervised host. The Alpaca feed
+editor verifies the selected account's SIP access before saving a change to SIP.
 
 Settings and Providers share the setting-activation banner. Save receipts distinguish `Live`,
 `ReconnectProvider` and `RestartHost`; pending field names remain inspectable until host activation.
@@ -528,7 +545,12 @@ Yield is not discount margin. Model changes clear pending/results state; incompa
 inputs remain typed refusals with no metrics, payments or model fallback. See the
 [synthetic SOFR walkthrough](../../../docs/engineering/plans/bond-capability-expansion.md#workstation-floating-analytics).
 
-Provider credential editors require explicit selection of an existing owned connection. Status,
+**Data > Providers > Add provider** opens the connection template catalog. The review shows the settings,
+required capabilities, and verification checklist before opening the credential vault. **Manage connection
+templates** imports and exports versioned JSON and saves portable settings from an owned connection.
+See [provider connection templates](../../Meridian.Ui.Shared/README.md#provider-connection-templates).
+
+Existing provider credential editors require explicit selection of an owned connection. Status,
 save, verification and deletion use the same retained connection; account and environment come
 from authenticated ownership. Missing or changed ownership blocks changes without provider-wide
 fallback. Refresh or session changes clear secret drafts and invalidate delayed responses. This
@@ -3360,6 +3382,11 @@ approval workflow panel while presenting as Delivery Evidence, `/reporting/expor
 export artifacts, and `/reporting/governance` owns access, approval, lifecycle, and audit controls.
 Each queued daily item exposes blocked status, owner, affected output, next action, and proof or
 evidence posture so browser Reporting matches the WPF cockpit decision model.
+Report Builder populates the field palette and filter choices from the selected preview dataset.
+Choose retained rows, paste JSON or CSV, or select a sample. Drop fields into the grid or add them
+with the field selectors. A source change preserves placed fields and flags those missing from the
+new dataset. Drafts can be saved independently of preview, and governed runs validate their fields
+against the certified ledger snapshot.
 The Reporting task-mode resolver, report-pack route detector, and launcher links live in
 `reporting-screen.task-mode-view-model.ts`, keeping the daily-cockpit IA out of the broader
 reporting view model.
@@ -3543,7 +3570,8 @@ critical axe findings fail unless `scripts/smoke-workstation-axe-baseline.json` 
 in a removal and refuses any addition). `--skip-a11y` skips both checks. Set
 `CHROMIUM_EXECUTABLE_PATH` or `MERIDIAN_CHROMIUM_PATH` to use a system Chromium. The helpers are
 covered by `scripts/smoke-workstation-a11y.test.mjs` (`npm run test:tooling`). The smoke is not
-part of `scripts/ci.sh`.
+part of `scripts/ci.sh`. API responses use the same typed Accounting scenario and exact fixture
+composition as screenshot capture, without a separate Accounting JSON copy.
 
 Linting is a correctness-only ESLint flat-config baseline (`eslint.config.mjs`): typescript-eslint
 recommended, react-hooks rules, and a local kebab-case filename rule with grandfathered
@@ -3750,3 +3778,54 @@ The Accounting External GL workspace reviews exact journal export packages, mapp
 scoped amounts, and provider receipts. The book policy defaults to optional confirmation.
 Operators certify and approve the reviewed payload, download its audit snapshot, and prepare
 corrective or reversal packages from retained outcomes.
+
+## Today and Close destinations
+
+`/today` and the compatible `/` home render the same ranked queue. Source filtering and the
+Queue/Operational readiness view are URL state, preserving the operating scope and anchor.
+Readiness is available from Today; the old `/trading/readiness` bookmark redirects to Settings
+diagnostics, where the retained readiness evidence console is available in a disclosure.
+
+`/accounting/close` groups the shared Operations Continuity read model into Board, Blockers,
+Checklist, Approvals and Evidence. The selected workflow and tab round-trip through the URL.
+The previous continuity route redirects with its complete query and hash. Close publication
+requires a reviewed reason and confirmation; period reopening confirms the entered incident
+metadata. Both retain server version guards. Break cases open the shared case inspector.
+
+The Accounting case landing links to Close instead of repeating its summary panels. Specialized
+valuation schedules, retained batch posting and period commands remain available at
+`/accounting/workflow`; the Close hub links to this workbench with the active context preserved.
+
+## Financial values and guarded decisions
+
+The [Financial value and Amount passport pattern](../../../docs/engineering/financial-value-pattern.md)
+defines the shared presentation and provenance contract.
+
+`FinancialValue` accepts exact decimal text (or null), currency/unit, a source-backed condition,
+reason, optional basis/freshness, and an exact scoped amount selection. Missing is distinct from
+zero. Currency minor units follow the shared ledger policy, including JPY and KWD. A value's
+presence never establishes a confirmed condition. Record-level navigation remains an explicitly
+unverified Record passport; eligible immutable amounts open the shared Amount passport drawer.
+Trial-balance rows bind exact contributor identities and a content-addressed immutable journal
+checkpoint. Mutable live Holdings cells have no owner-scoped position/mark checkpoint and do not
+claim amount provenance. They retain exact fractional quantities and derivative multipliers.
+
+`CaseInspector` owns one selected case's read, server-permitted commands, in-place rationale,
+root cause/resolution, timeline, receipt and conflict review. Scope changes discard pending reads
+and decisions; stale outcomes cannot enter another scope. Bulk work binds selected versions to
+preview and confirmation, with expanded per-record results. Legacy unversioned adapters remain
+compatible; the browser supplies guards. Do not add peer one-click mutation buttons elsewhere.
+
+`JournalLifecycleControls` confirms the exact draft with scope and balance impact. Reverse and
+close-lock require entered reasons; cancelling/Escape sends no command and restores focus. An
+edited/refreshed draft requires a fresh review. Existing asset approval/posting restrictions remain.
+
+Statement row decisions bind a retained source/mapping/scope preview. Saving an active mapping
+under the same id refreshes that preview. Pending commits lock source, scope, mapping and row
+choices; exclusions require reasons, and unsupported supplementary projections cannot be excluded.
+Accept-as-break requires the shared case coordinator and creates a retained blocking case. All
+normalized row outcomes are paged and visible, including exclusions and case references. A missing
+physical source line is labelled unavailable rather than inferred from normalized order.
+
+For the coordinated implementation and validation record, see
+[Browser workstation UX implementation](../../../docs/engineering/plans/browser-workstation-ux-roadmap-2026-11.md).

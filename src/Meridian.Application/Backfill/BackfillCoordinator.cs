@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using System.Threading;
 using System.Threading.Channels;
 using Meridian.Core.Pipeline;
@@ -25,6 +26,7 @@ using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Api;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Storage.Backfill;
+using Meridian.Storage.Archival;
 
 namespace Meridian.Application.Backfill;
 
@@ -40,6 +42,7 @@ public sealed partial class BackfillCoordinator : IDisposable
     private readonly ConfigStore _store;
     private readonly ProviderRegistry? _registry;
     private readonly ProviderFactory? _factory;
+    private readonly BackfillRoutingRuntime? _routingRuntime;
     private readonly IProviderCatalog _providerCatalog;
     private readonly IEventMetrics _metrics;
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
@@ -80,11 +83,14 @@ public sealed partial class BackfillCoordinator : IDisposable
         ISymbolResolver? symbolResolver = null,
         Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null,
         IProviderCatalog? providerCatalog = null,
-        IScopedProviderCredentialStore? cloneCredentials = null)
+        IScopedProviderCredentialStore? cloneCredentials = null,
+        BackfillRoutingRuntime? routingRuntime = null)
+
     {
         _store = store;
         _registry = registry;
         _factory = factory;
+        _routingRuntime = routingRuntime;
         _providerCatalog = providerCatalog ?? new RuntimeProviderCatalog();
         _metrics = metrics ?? new DefaultEventMetrics();
         _symbolTimelineResolver = symbolTimelineResolver;
@@ -112,27 +118,28 @@ public sealed partial class BackfillCoordinator : IDisposable
 
     public IEnumerable<object> DescribeProviders(string? tenantId)
     {
-        var providers = CreateProviders();
+        var providers = _routingRuntime?.Current?.Providers ?? CreateProviders()
+            .Select(provider => new BackfillRoutingProvider(provider, provider.Priority)).ToArray();
         return providers
-            .Where(provider => BackfillProvenanceCapture.CanUseProviderForTenant(provider, tenantId))
-            .Select(p => new
+            .Where(entry => BackfillProvenanceCapture.CanUseProviderForTenant(entry.Provider, tenantId))
+            .Select(entry => new
             {
-                p.Name,
-                p.DisplayName,
-                p.Description,
-                p.Priority,
-                p.SupportsAdjustedPrices,
-                p.SupportsDividends,
-                p.SupportsIntraday,
-                SupportedGranularities = GetSupportedGranularityValues(p)
-            });
+                entry.Provider.Name,
+                entry.Provider.DisplayName,
+                entry.Provider.Description,
+                entry.Priority,
+                entry.Provider.SupportsAdjustedPrices,
+                entry.Provider.SupportsDividends,
+                entry.Provider.SupportsIntraday,
+                SupportedGranularities = GetSupportedGranularityValues(entry.Provider)
+            }).ToArray();
     }
 
     public void ValidateRequest(BackfillRequest request) => ValidateRequest(request, null);
 
     public void ValidateRequest(BackfillRequest request, string? tenantId)
     {
-        using var service = CreateService(tenantId: tenantId);
+        using var service = CreateService(tenantId: tenantId, routing: _routingRuntime?.Current?.ForTenant(tenantId));
         service.ValidateRequest(request);
     }
 
@@ -186,7 +193,9 @@ public sealed partial class BackfillCoordinator : IDisposable
     /// </summary>
     public async Task<IReadOnlyDictionary<string, ProviderHealthStatus>> CheckProviderHealthAsync(CancellationToken ct = default)
     {
-        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
+        var providers = _routingRuntime?.Current is { } routing
+            ? routing.Providers.Select(entry => entry.Provider).ToList()
+            : await CreateProvidersAsync(ct).ConfigureAwait(false);
         var results = new Dictionary<string, ProviderHealthStatus>();
 
         foreach (var provider in providers)
@@ -264,8 +273,9 @@ public sealed partial class BackfillCoordinator : IDisposable
                 throw new BackfillCloneConflictException(MissingCloneConfiguration(source.Receipt));
 
             ArgumentNullException.ThrowIfNull(cfg);
-            var createdProviders = await CreateProvidersAsync(ct).ConfigureAwait(false);
-            using var service = CreateService(statusStore, cfg, tenantId, createdProviders, tracker, publishCheckpointStatus: !queued);
+            var attempts = new ConcurrentQueue<BackfillRoutingAttempt>();
+            using var service = await CreateOperationServiceAsync(cfg, tenantId, ct, statusStore, tracker,
+                publishCheckpointStatus: !queued, captureAttempt: attempts.Enqueue).ConfigureAwait(false);
             if (source is not null)
             {
                 var (plan, cloneRequest) = await AssessCloneAsync(source, cfg, service, ct).ConfigureAwait(false);
@@ -279,7 +289,7 @@ public sealed partial class BackfillCoordinator : IDisposable
             ValidateAlternative(request, alternativeFor, cfg.Backfill, service.Providers);
             var estimate = submissionEstimate ?? BackfillQuotaPlanner.Estimate(request, requestedProvider,
                 cfg.Backfill, statusStore, DateTimeOffset.UtcNow);
-            var concurrency = BackfillQuotaPlanner.ResolveConcurrency(request, cfg.Backfill, requestedProvider, service.Providers);
+            var concurrency = BackfillQuotaPlanner.ResolveConcurrency(request, cfg.Backfill, requestedProvider);
             request = request with { MaxConcurrentSymbols = concurrency };
 
             onStarted?.Invoke();
@@ -312,6 +322,7 @@ public sealed partial class BackfillCoordinator : IDisposable
             var result = await service.RunAsync(request, pipeline, ct).ConfigureAwait(false);
             result = result with
             {
+                RoutingAttempts = attempts.IsEmpty ? null : attempts.ToArray(),
                 QuotaReceipt = activity.BuildReceipt(estimate, result.CompletedUtc - result.StartedUtc),
                 ProvenanceAccess = result.ProvenanceAccess?.ForRequestTenant(tenantId)
             };
@@ -361,8 +372,7 @@ public sealed partial class BackfillCoordinator : IDisposable
         ct.ThrowIfCancellationRequested();
         var cfg = LoadOperationConfig();
         var dataRoot = _store.GetDataRoot(cfg);
-        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
-        using var service = CreateService(cfg: cfg, tenantId: tenantId, createdProviders: providers);
+        using var service = await CreateOperationServiceAsync(cfg, tenantId, ct).ConfigureAwait(false);
         var plan = PlanSubmission(request, null, cfg.Backfill, service, new BackfillStatusStore(dataRoot), DateTimeOffset.UtcNow);
         var provider = plan.Provider;
         var alternatives = BackfillQuotaPlanner.GetApprovedAlternatives(cfg.Backfill, provider.Name, request.Granularity, service.Providers)
@@ -375,9 +385,8 @@ public sealed partial class BackfillCoordinator : IDisposable
         BackfillRequest request, string tenantId, string? alternativeFor, TimeProvider clock, CancellationToken ct)
     {
         var cfg = LoadOperationConfig();
-        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
+        using var service = await CreateOperationServiceAsync(cfg, tenantId, ct).ConfigureAwait(false);
         var now = clock.GetUtcNow();
-        using var service = CreateService(cfg: cfg, tenantId: tenantId, createdProviders: providers);
         var plan = PlanSubmission(request, alternativeFor, cfg.Backfill, service,
             new BackfillStatusStore(_store.GetDataRoot(cfg)), now);
         return (plan.Request, plan.Quota, now);
@@ -539,16 +548,24 @@ public sealed partial class BackfillCoordinator : IDisposable
     private HistoricalBackfillService CreateService(
         BackfillStatusStore? checkpointStore = null, AppConfig? cfg = null,
         string? tenantId = null, List<IHistoricalDataProvider>? createdProviders = null,
-        BackfillProgressTracker? tracker = null, bool publishCheckpointStatus = true)
+        BackfillProgressTracker? tracker = null, bool publishCheckpointStatus = true,
+        BackfillRoutingSnapshot? routing = null, Action<BackfillRoutingAttempt>? captureAttempt = null)
     {
         cfg ??= _store.Load();
         var backfillCfg = cfg.Backfill;
 
-        var providers = (createdProviders ?? CreateProviders())
-            .Where(provider => BackfillProvenanceCapture.CanUseProviderForTenant(provider, tenantId)).ToList();
+        var providers = routing is not null
+            ? routing.Providers.Select(entry => entry.Provider).ToList()
+            : (createdProviders ?? CreateProviders())
+                .Where(provider => BackfillProvenanceCapture.CanUseProviderForTenant(provider, tenantId)).ToList();
 
-        CompositeHistoricalDataProvider? composite = null;
-        if (providers.Count > 0 && !providers.Any(provider => provider.Name.Equals("composite", StringComparison.OrdinalIgnoreCase)) &&
+        var composite = routing?.CreateComposite([], _symbolResolver, _log, tracker ?? _progressTracker,
+            captureAttempt, () => CrossProviderTolerancePolicy.FromConfig(cfg));
+        if (composite is not null)
+        {
+            providers.Insert(0, composite);
+        }
+        else if (providers.Count > 0 && !providers.Any(provider => provider.Name.Equals("composite", StringComparison.OrdinalIgnoreCase)) &&
             (string.Equals(backfillCfg?.Provider, "composite", StringComparison.OrdinalIgnoreCase) || (backfillCfg?.EnableFallback ?? true)))
         {
             composite = new CompositeHistoricalDataProvider(
@@ -560,6 +577,7 @@ public sealed partial class BackfillCoordinator : IDisposable
                 log: _log,
                 progressTracker: tracker ?? _progressTracker,
                 validationProfiles: backfillCfg?.ValidationProfiles,
+                rateLimitHistory: ProviderRateLimitHistory.ForDataRoot(_store.GetDataRoot(cfg), new AtomicFileWriterAdapter()),
                 crossValidationPolicy: () => CrossProviderTolerancePolicy.FromConfig(cfg),
                 ownsProviders: false
             );
@@ -580,8 +598,22 @@ public sealed partial class BackfillCoordinator : IDisposable
             ownedProvider: composite)
         {
             ResolveSessionsAsync = ResolveSessionsAsync,
+            DirectRoutingAdmission = routing is null ? null : _routingRuntime?.Admission,
+            ResolveRoutingPriority = routing is null ? null : routing.GetPriority,
+            CaptureRoutingAttempt = captureAttempt,
             PublishCheckpointStatus = publishCheckpointStatus
         };
+    }
+
+    private async Task<HistoricalBackfillService> CreateOperationServiceAsync(
+        AppConfig cfg, string? tenantId, CancellationToken ct, BackfillStatusStore? checkpointStore = null,
+        BackfillProgressTracker? tracker = null, bool publishCheckpointStatus = true,
+        Action<BackfillRoutingAttempt>? captureAttempt = null)
+    {
+        ct.ThrowIfCancellationRequested();
+        var routing = _routingRuntime?.Current?.ForTenant(tenantId);
+        var providers = routing is null ? await CreateProvidersAsync(ct).ConfigureAwait(false) : null;
+        return CreateService(checkpointStore, cfg, tenantId, providers, tracker, publishCheckpointStatus, routing, captureAttempt);
     }
 
     private static string[] GetSupportedGranularityValues(IHistoricalDataProvider provider)

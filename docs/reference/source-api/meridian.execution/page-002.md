@@ -614,6 +614,24 @@ Declared public members:
 | <code>public decimal ToBaseCurrency(IReadOnlyDictionary&lt;string, decimal&gt; fxRates, string baseCurrency);</code> | [src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs:64](../../../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs#L64) | Converts all currency balances to a single baseCurrency total using the provided fxRates dictionary (keyed by currency, valued as rate to base). The base currency itself converts at 1:1 when no rate is supplied for it. |
 | <code>public IReadOnlyDictionary&lt;string, decimal&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs:113](../../../../src/Meridian.Execution/MultiCurrency/MultiCurrencyCashBalance.cs#L113) | Returns a snapshot copy of the current balances. |
 
+## ILiveStrategyOrderAuthorization
+
+Qualified name: <code>Meridian.Execution.OrderManagement.ILiveStrategyOrderAuthorization</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs:4](../../../../src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs#L4).
+
+Leases live authority until the gateway call starts. The lease never spans broker acknowledgement.
+
+```csharp
+public interface ILiveStrategyOrderAuthorization
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;LiveStrategyOrderAuthorizationLease&gt; AcquireAsync(string runId, string? strategyArtifactId, Guid? fundAccountId, string symbol, Func&lt;decimal?&gt; measureUsdNotional, CancellationToken ct);</code> | [src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs:6](../../../../src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs#L6) |  |
+
 ## IStrategyRunAuthoritySource
 
 Qualified name: <code>Meridian.Execution.OrderManagement.IStrategyRunAuthoritySource</code>. Kind: `interface`.
@@ -631,6 +649,23 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;StrategyRunAuthoritySnapshot?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagement/OrderAuthority.cs:48](../../../../src/Meridian.Execution/OrderManagement/OrderAuthority.cs#L48) | Returns the run&#x27;s retained authority state, or null when no such run is retained. |
+
+## LiveStrategyOrderAuthorizationLease
+
+Qualified name: <code>Meridian.Execution.OrderManagement.LiveStrategyOrderAuthorizationLease</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs:11](../../../../src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs#L11).
+
+```csharp
+public sealed class LiveStrategyOrderAuthorizationLease(string? refusal, IAsyncDisposable? authorityLock = null) : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? Refusal { get; } = refusal;</code> | [src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs:15](../../../../src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs#L15) |  |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs:17](../../../../src/Meridian.Execution/OrderManagement/ILiveStrategyOrderAuthorization.cs#L17) |  |
 
 ## OrderAuthorityOptions
 
@@ -740,31 +775,31 @@ Source: [src/Meridian.Execution/OrderManagementSystem.ChildOrders.cs:11](../../.
 public sealed partial class OrderManagementSystem
 ```
 
-Source: [src/Meridian.Execution/OrderManagementSystem.cs:22](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L22).
+Source: [src/Meridian.Execution/OrderManagementSystem.cs:23](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L23).
 
 Central Order Management System (OMS). Coordinates order lifecycle between strategies, risk checks, and execution gateways. Uses bounded channels for backpressure-aware execution event processing.
 
 ```csharp
-public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
+public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentSubmitter, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator, ISecurityMasterGate? securityMasterGate, ExecutionOperatorControlService? operatorControls, ExecutionAuditTrailService? auditTrail, Meridian.Execution.Models.IPortfolioState? portfolioState, PaperSessionPersistenceService? sessionPersistence, BrokerageConfiguration? brokerageConfiguration, ILiveOrderReadinessGate? liveOrderReadinessGate, OrderManagementSystemOptions? options, ITradeEventPublisher? tradeEventPublisher, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore, RiskEscalationQueueService? escalationQueue, FileBrokerageOrderRecoveryStore? recoveryStore) : this(gateway, logger, riskValidator, securityMasterGate, operatorControls, auditTrail, portfolioState, sessionPersistence, brokerageConfiguration, liveOrderReadinessGate, options, tradeEventPublisher, tradeFillHandoffFailureStore, escalationQueue, recoveryStore, null, null, null, null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:70](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L70) | Retains the original CLR constructor for already-compiled execution hosts. |
-| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator = null, ISecurityMasterGate? securityMasterGate = null, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, Meridian.Execution.Models.IPortfolioState? portfolioState = null, PaperSessionPersistenceService? sessionPersistence = null, BrokerageConfiguration? brokerageConfiguration = null, ILiveOrderReadinessGate? liveOrderReadinessGate = null, OrderManagementSystemOptions? options = null, ITradeEventPublisher? tradeEventPublisher = null, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null, RiskEscalationQueueService? escalationQueue = null, FileBrokerageOrderRecoveryStore? recoveryStore = null, IOrderSessionPolicy? sessionPolicy = null, ExecutionJournal? journal = null, IOrderMarketReferenceSource? marketReferences = null, IOrderInstrumentCoverageSource? instrumentCoverage = null, IStrategyRunAuthoritySource? strategyRunAuthority = null, OrderAuthorityOptions? authorityOptions = null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:83](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L83) |  |
-| <code>public Task&lt;OrderResult&gt; PlaceOrderAsync(OrderRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:168](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L168) |  |
-| <code>public Task&lt;OrderResult&gt; SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:172](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L172) |  |
-| <code>public const string AmbiguousSubmissionReason = &quot;AmbiguousSubmission&quot;;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:903](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L903) | Audit reason marking the one OrderRejected entry whose rate slot was not released: a gateway submission that threw after dispatch was attempted. The order may still execute, so the throttle over-counts rather than under-counts, and the status projection has to count this entry when it falls back to reconstructing usage from audit history. |
-| <code>public IReadOnlyList&lt;OrderState&gt; GetOpenOrders();</code> | [src/Meridian.Execution/OrderManagementSystem.cs:906](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L906) |  |
-| <code>public IReadOnlyList&lt;OrderState&gt; GetCompletedOrders(int take = 20);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:915](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L915) |  |
-| <code>public OrderState? GetOrder(string orderId);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:931](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L931) |  |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:942](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L942) | Compatibility bridge for callers that cannot yet use await using. Shutdown is executed on the thread pool so a single-threaded synchronization context cannot prevent asynchronous pump continuations from completing. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:954](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L954) | Stops report intake and awaits both the broker-report and retained-handoff pumps before returning. Dependency injection can therefore dispose the accounting publisher and failure store only after no OMS task can use them. |
-| <code>public ChannelReader&lt;ExecutionReport&gt; ExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:969](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L969) | Provides a read-only view of fill and partial-fill execution reports for consumption by diagnostics and compatibility observers. Reports are published as each order transitions to OrderStatus.Filled or OrderStatus.PartiallyFilled, with ExecutionReport.FilledQuantity normalised to the fill increment (gateways report cumulative quantities). This is a lossy observer stream: when a subscriber lags behind OrderManagementSystemOptions.ExecutionChannelCapacity, the oldest unread report is dropped (logged and counted via DroppedExecutionReports) rather than blocking the fill path. Order state, session fill history, and the durable accounting handoff remain authoritative and lossless. Consumers that drive strategy state must use SubscribeLosslessExecutionReports() instead of sharing this reader. |
-| <code>public long DroppedExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:976](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L976) | Total execution reports dropped from the ExecutionReports observer channel because no subscriber drained it in time. Fills themselves are never lost — order state and the accounting handoff do not flow through this channel. |
-| <code>public Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; GetAccountingHandoffFailuresAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:982](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L982) | Returns OMS-level accounting handoff failures that could not enter the primary publisher. These records survive process restart when a failure store is composed. |
+| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator, ISecurityMasterGate? securityMasterGate, ExecutionOperatorControlService? operatorControls, ExecutionAuditTrailService? auditTrail, Meridian.Execution.Models.IPortfolioState? portfolioState, PaperSessionPersistenceService? sessionPersistence, BrokerageConfiguration? brokerageConfiguration, ILiveOrderReadinessGate? liveOrderReadinessGate, OrderManagementSystemOptions? options, ITradeEventPublisher? tradeEventPublisher, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore, RiskEscalationQueueService? escalationQueue, FileBrokerageOrderRecoveryStore? recoveryStore) : this(gateway, logger, riskValidator, securityMasterGate, operatorControls, auditTrail, portfolioState, sessionPersistence, brokerageConfiguration, liveOrderReadinessGate, options, tradeEventPublisher, tradeFillHandoffFailureStore, escalationQueue, recoveryStore, null, null, null, null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:72](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L72) | Retains the original CLR constructor for already-compiled execution hosts. |
+| <code>public OrderManagementSystem(IExecutionGateway gateway, ILogger&lt;OrderManagementSystem&gt; logger, IRiskValidator? riskValidator = null, ISecurityMasterGate? securityMasterGate = null, ExecutionOperatorControlService? operatorControls = null, ExecutionAuditTrailService? auditTrail = null, Meridian.Execution.Models.IPortfolioState? portfolioState = null, PaperSessionPersistenceService? sessionPersistence = null, BrokerageConfiguration? brokerageConfiguration = null, ILiveOrderReadinessGate? liveOrderReadinessGate = null, OrderManagementSystemOptions? options = null, ITradeEventPublisher? tradeEventPublisher = null, ITradeFillHandoffFailureStore? tradeFillHandoffFailureStore = null, RiskEscalationQueueService? escalationQueue = null, FileBrokerageOrderRecoveryStore? recoveryStore = null, IOrderSessionPolicy? sessionPolicy = null, ExecutionJournal? journal = null, IOrderMarketReferenceSource? marketReferences = null, IOrderInstrumentCoverageSource? instrumentCoverage = null, IStrategyRunAuthoritySource? strategyRunAuthority = null, OrderAuthorityOptions? authorityOptions = null, IOperationalCaseHistoryStore? orderIntentHistory = null, ILiveStrategyOrderAuthorization? liveStrategyAuthorization = null);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:85](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L85) |  |
+| <code>public Task&lt;OrderResult&gt; PlaceOrderAsync(OrderRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:175](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L175) |  |
+| <code>public Task&lt;OrderResult&gt; SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:179](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L179) |  |
+| <code>public const string AmbiguousSubmissionReason = &quot;AmbiguousSubmission&quot;;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:935](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L935) | Audit reason marking the one OrderRejected entry whose rate slot was not released: a gateway submission that threw after dispatch was attempted. The order may still execute, so the throttle over-counts rather than under-counts, and the status projection has to count this entry when it falls back to reconstructing usage from audit history. |
+| <code>public IReadOnlyList&lt;OrderState&gt; GetOpenOrders();</code> | [src/Meridian.Execution/OrderManagementSystem.cs:938](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L938) |  |
+| <code>public IReadOnlyList&lt;OrderState&gt; GetCompletedOrders(int take = 20);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:947](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L947) |  |
+| <code>public OrderState? GetOrder(string orderId);</code> | [src/Meridian.Execution/OrderManagementSystem.cs:963](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L963) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:974](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L974) | Compatibility bridge for callers that cannot yet use await using. Shutdown is executed on the thread pool so a single-threaded synchronization context cannot prevent asynchronous pump continuations from completing. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:986](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L986) | Stops report intake and awaits both the broker-report and retained-handoff pumps before returning. Dependency injection can therefore dispose the accounting publisher and failure store only after no OMS task can use them. |
+| <code>public ChannelReader&lt;ExecutionReport&gt; ExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:1001](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L1001) | Provides a read-only view of fill and partial-fill execution reports for consumption by diagnostics and compatibility observers. Reports are published as each order transitions to OrderStatus.Filled or OrderStatus.PartiallyFilled, with ExecutionReport.FilledQuantity normalised to the fill increment (gateways report cumulative quantities). This is a lossy observer stream: when a subscriber lags behind OrderManagementSystemOptions.ExecutionChannelCapacity, the oldest unread report is dropped (logged and counted via DroppedExecutionReports) rather than blocking the fill path. Order state, session fill history, and the durable accounting handoff remain authoritative and lossless. Consumers that drive strategy state must use SubscribeLosslessExecutionReports() instead of sharing this reader. |
+| <code>public long DroppedExecutionReports =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:1008](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L1008) | Total execution reports dropped from the ExecutionReports observer channel because no subscriber drained it in time. Fills themselves are never lost — order state and the accounting handoff do not flow through this channel. |
+| <code>public Task&lt;IReadOnlyList&lt;RetainedTradeFillHandoffFailure&gt;&gt; GetAccountingHandoffFailuresAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.cs:1014](../../../../src/Meridian.Execution/OrderManagementSystem.cs#L1014) | Returns OMS-level accounting handoff failures that could not enter the primary publisher. These records survive process restart when a failure store is composed. |
 
 Source: [src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs:12](../../../../src/Meridian.Execution/OrderManagementSystem.ExecutionReportSubscriptions.cs#L12).
 
@@ -836,6 +871,22 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;OrderResult&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.Modifications.cs:15](../../../../src/Meridian.Execution/OrderManagementSystem.Modifications.cs#L15) |  |
+
+Source: [src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs:8](../../../../src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs#L8).
+
+```csharp
+public sealed partial class OrderManagementSystem
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ManualIntentOrderPrefix = &quot;paper-intent-&quot;;</code> | [src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs:10](../../../../src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs#L10) |  |
+| <code>public PaperOrderIntentScope? ScopedPaperBook =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs:12](../../../../src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs#L12) |  |
+| <code>public bool SupportsScopedPaperIntents =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs:15](../../../../src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs#L15) |  |
+| <code>public Task&lt;bool&gt; HasRetainedPaperIntentForRunAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs:17](../../../../src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs#L17) |  |
+| <code>public async Task&lt;OrderResult&gt; SubmitIntentAsync(OrderIntent intent, CancellationToken ct = default);</code> | [src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs:50](../../../../src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs#L50) |  |
 
 Source: [src/Meridian.Execution/OrderManagementSystem.PendingAmendments.cs:8](../../../../src/Meridian.Execution/OrderManagementSystem.PendingAmendments.cs#L8).
 
@@ -934,7 +985,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.OrderManagementSystemComposition</code>. Kind: `enum`.
 
-Source: [src/Meridian.Execution/OrderManagementSystemFactory.cs:15](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L15).
+Source: [src/Meridian.Execution/OrderManagementSystemFactory.cs:16](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L16).
 
 Which host is composing the OMS. The two hosts historically built it separately; their differences are kept exactly and named here so they cannot drift further.
 
@@ -946,14 +997,14 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>BrokerageExecution</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:22](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L22) | BrokerageServiceRegistration.AddBrokerageExecution: library composition. Risk validator, portfolio state, and options are optional; paper-session persistence is not wired. |
-| <code>HostedWorkstation</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:28](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L28) | The workstation host (UiServer): order routing is fail-closed, so the pre-trade risk validator, portfolio state, and options are required, and paper-session persistence is wired. |
+| <code>BrokerageExecution</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:23](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L23) | BrokerageServiceRegistration.AddBrokerageExecution: library composition. Risk validator, portfolio state, and options are optional; paper-session persistence is not wired. |
+| <code>HostedWorkstation</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:29](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L29) | The workstation host (UiServer): order routing is fail-closed, so the pre-trade risk validator, portfolio state, and options are required, and paper-session persistence is wired. |
 
 ## OrderManagementSystemFactory
 
 Qualified name: <code>Meridian.Execution.OrderManagementSystemFactory</code>. Kind: `class`.
 
-Source: [src/Meridian.Execution/OrderManagementSystemFactory.cs:36](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L36).
+Source: [src/Meridian.Execution/OrderManagementSystemFactory.cs:37](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L37).
 
 The single place that constructs OrderManagementSystem from a service provider. Every OMS dependency added later (for example the order authority resolver) is wired here once, so both hosts receive it.
 
@@ -965,7 +1016,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static OrderManagementSystem Create(IServiceProvider services, OrderManagementSystemComposition composition);</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:38](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L38) |  |
+| <code>public static OrderManagementSystem Create(IServiceProvider services, OrderManagementSystemComposition composition);</code> | [src/Meridian.Execution/OrderManagementSystemFactory.cs:39](../../../../src/Meridian.Execution/OrderManagementSystemFactory.cs#L39) |  |
 
 ## OrderManagementSystemOptions
 
@@ -995,11 +1046,12 @@ Declared public members:
 | <code>public TimeSpan ExecutionSubscriberDrainTimeout { get; init; } = DefaultExecutionSubscriberDrainTimeout;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:36](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L36) | Maximum normal-shutdown window in which an authoritative execution-report subscriber may drain reports already accepted by the OMS. Any reports still buffered at the deadline are routed through that subscription&#x27;s explicit recovery/failure handler. |
 | <code>public TimeSpan CancelAllInFlightSettleTimeout { get; init; } = DefaultCancelAllInFlightSettleTimeout;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:44](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L44) | Maximum time IOrderManager.CancelAllAsync waits for submissions already past the operator-control gate to be acknowledged by the gateway before it snapshots the book. A submission still unacknowledged at the deadline is reported as working rather than ignored, so the window bounds the sweep&#x27;s latency, not its honesty. |
 | <code>public bool RequireProductionSafetyDependencies { get; init; }</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:50](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L50) | Requires risk, portfolio-state, and operator-control dependencies during construction. Supported production composition enables this so order routing cannot silently degrade. |
-| <code>public int ValidatedMaxRetainedOrders =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:52](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L52) |  |
-| <code>public int ValidatedExecutionChannelCapacity =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:56](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L56) |  |
-| <code>public int ValidatedCancelAllMaxConcurrency =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:60](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L60) |  |
-| <code>public TimeSpan ValidatedCancelAllInFlightSettleTimeout =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:64](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L64) |  |
-| <code>public TimeSpan ValidatedExecutionSubscriberDrainTimeout =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:70](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L70) |  |
+| <code>public PaperOrderIntentScope? PaperIntentScope { get; init; }</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:53](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L53) | Identifies the single account and workspace that own this simulator&#x27;s shared book. |
+| <code>public int ValidatedMaxRetainedOrders =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:55](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L55) |  |
+| <code>public int ValidatedExecutionChannelCapacity =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:59](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L59) |  |
+| <code>public int ValidatedCancelAllMaxConcurrency =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:63](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L63) |  |
+| <code>public TimeSpan ValidatedCancelAllInFlightSettleTimeout =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:67](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L67) |  |
+| <code>public TimeSpan ValidatedExecutionSubscriberDrainTimeout =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:73](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L73) |  |
 
 ## PaperBondSettlement
 
@@ -1118,35 +1170,3 @@ Declared public members:
 | <code>public decimal? ResolveStopTriggerPrice(OrderSide side) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:90](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L90) |  |
 | <code>public static PaperMarketObservation Capture(ILiveFeedAdapter? feed, string symbol);</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:98](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L98) | Captures the current observation for symbol from a live feed adapter. Non-positive prices are treated as absent. Returns an empty observation when no feed is wired or nothing has been observed yet. |
 | <code>public static PaperMarketObservation FromCallerPrice(decimal price) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs:151](../../../../src/Meridian.Execution/PaperMatching/PaperMarketObservation.cs#L151) | Builds a degenerate observation from a caller-supplied simulated price (the documented Market-order seam where the caller provides its own mark). The envelope collapses to that single price. |
-
-## PaperMatchOutcome
-
-Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchOutcome</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:6](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L6).
-
-Outcome kind of one paper-matching evaluation.
-
-```csharp
-public enum PaperMatchOutcome
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Filled</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:9](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L9) | The order fills now at PaperMatchResult.FillPrice. |
-| <code>Resting</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:12](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L12) | The order does not fill against the current observation and rests. |
-| <code>NoMarketData</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:15](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L15) | No usable market data has been observed for the symbol. |
-
-## PaperMatchResult
-
-Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:28](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L28).
-
-Result of one paper-matching evaluation.
-
-```csharp
-public readonly record struct PaperMatchResult(PaperMatchOutcome Outcome, decimal? FillPrice, bool StopTriggered);
-```

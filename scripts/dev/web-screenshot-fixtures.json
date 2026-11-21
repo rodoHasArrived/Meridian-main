@@ -3115,7 +3115,7 @@
       "warnings": [],
       "accounts": [
         {
-          "fundAccountId": "fixture-roth",
+          "fundAccountId": "rh-fund-roth",
           "providerId": "alpaca",
           "externalAccountId": "alpaca-roth",
           "displayName": "Alpaca Roth IRA",
@@ -3129,11 +3129,45 @@
           "positionCount": 2,
           "cashTransactionCount": 4,
           "warnings": []
+        },
+        {
+          "fundAccountId": "rh-fund-traditional",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-traditional",
+          "displayName": "Alpaca Traditional IRA",
+          "accountKind": "TraditionalIra",
+          "health": "Healthy",
+          "cash": 24000,
+          "equity": 98200,
+          "buyingPower": 24000,
+          "currency": "USD",
+          "syncedAt": "2026-05-07T12:00:00Z",
+          "positionCount": 1,
+          "cashTransactionCount": 2,
+          "warnings": []
+        },
+        {
+          "fundAccountId": "rh-fund-taxable",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-taxable",
+          "displayName": "Alpaca Brokerage",
+          "accountKind": "TaxableBrokerage",
+          "health": "Stale",
+          "cash": 45000,
+          "equity": 110000,
+          "buyingPower": 45000,
+          "currency": "USD",
+          "syncedAt": "2026-05-07T10:30:00Z",
+          "positionCount": 2,
+          "cashTransactionCount": 5,
+          "warnings": [
+            "Brokerage sync is stale."
+          ]
         }
       ],
       "positions": [
         {
-          "fundAccountId": "fixture-roth",
+          "fundAccountId": "rh-fund-roth",
           "providerId": "alpaca",
           "externalAccountId": "alpaca-roth",
           "accountKind": "RothIra",
@@ -3144,9 +3178,62 @@
           "marketValue": 7159.2,
           "unrealizedPnl": 1755.6,
           "assetClass": "equity",
-          "security": null,
+          "security": {
+            "securityId": "sec-dev-001",
+            "displayName": "Apple Inc.",
+            "assetClass": "Equity",
+            "currency": "USD",
+            "status": "Active",
+            "primaryIdentifier": "AAPL",
+            "subType": "Common Stock"
+          },
           "description": "Apple Inc.",
-          "positionId": "fixture-roth-aapl",
+          "positionId": "rh-roth-aapl",
+          "currency": "USD",
+          "markFreshness": {
+            "symbol": "AAPL",
+            "securityId": "sec-dev-001",
+            "financialAccountId": "rh-fund-roth",
+            "valuationDate": "2026-05-07",
+            "observedOn": "2026-05-07",
+            "ageDays": 0,
+            "policyVersion": "screenshot-retained-mark-policy-v1",
+            "status": "Current",
+            "blockReason": null
+          }
+        },
+        {
+          "fundAccountId": "rh-fund-traditional",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-traditional",
+          "accountKind": "TraditionalIra",
+          "symbol": "VTI",
+          "quantity": 120,
+          "averageEntryPrice": 205,
+          "marketPrice": 254.5,
+          "marketValue": 30540,
+          "unrealizedPnl": 5940,
+          "assetClass": "etf",
+          "security": null,
+          "description": "Vanguard Total Stock Market ETF",
+          "positionId": "rh-traditional-vti",
+          "currency": "USD"
+        },
+        {
+          "fundAccountId": "rh-fund-taxable",
+          "providerId": "alpaca",
+          "externalAccountId": "alpaca-taxable",
+          "accountKind": "TaxableBrokerage",
+          "symbol": "MSFT",
+          "quantity": 16,
+          "averageEntryPrice": 312,
+          "marketPrice": 421.7,
+          "marketValue": 6747.2,
+          "unrealizedPnl": 1755.2,
+          "assetClass": "equity",
+          "security": null,
+          "description": "Microsoft Corporation",
+          "positionId": "rh-taxable-msft",
           "currency": "USD"
         }
       ]
@@ -7129,6 +7216,72 @@
         "Exposure is the ledger's securities held long and the short securities payable, at the last posted mark on or before each date."
       ],
       "generatedAt": "2026-07-13T18:55:00Z"
-    }
+    },
+    "/api/fund-structure/reporting/runs/report-run-investor-202605/review": {
+      "reviewId": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+      "runId": "report-run-investor-202605",
+      "version": 6,
+      "snapshotHash": "sha256:595c41b11cc11b6a0f6e478b02a8fd945b619bc2160ffcb722da1bc578c35d8f",
+      "periodId": "2026-05",
+      "currency": "USD",
+      "accountingBasis": "Gaap",
+      "baselineRunId": null,
+      "baselineVersion": null,
+      "parameters": [],
+      "sourceChanges": [],
+      "lines": [],
+      "materialityOutcome": "NotAssessed",
+      "materialChangeCount": null,
+      "unavailableReasons": [
+        "Materiality not assessed: no authoritative report/template policy is configured.",
+        "No prior approved comparable run is retained in this series."
+      ]
+    },
+    "/api/workstation/reconciliation/break-queue/run-42%3Acash": {
+      "breakId": "run-42:cash",
+      "version": 1,
+      "permittedCommands": [
+        {
+          "action": "Resolve",
+          "enabled": true,
+          "disabledReason": null
+        },
+        {
+          "action": "Assign",
+          "enabled": true,
+          "disabledReason": null
+        },
+        {
+          "action": "Waive",
+          "enabled": true,
+          "disabledReason": null
+        }
+      ],
+      "measures": [
+        {
+          "kind": "Value",
+          "expected": 120000,
+          "actual": 120500,
+          "variance": 500,
+          "tolerance": 1,
+          "unit": "USD"
+        }
+      ],
+      "runId": "run-42",
+      "strategyName": "Paper Index Mean Reversion",
+      "category": "AmountMismatch",
+      "status": "Open",
+      "variance": 500,
+      "reason": "Cash variance over tolerance.",
+      "assignedTo": null,
+      "detectedAt": "2026-01-01T00:00:00Z",
+      "lastUpdatedAt": "2026-01-01T00:00:00Z",
+      "reviewedBy": null,
+      "reviewedAt": null,
+      "resolvedBy": null,
+      "resolvedAt": null,
+      "resolutionNote": null
+    },
+    "/api/workstation/reconciliation/break-queue/run-42%3Acash/audit": []
   }
 }

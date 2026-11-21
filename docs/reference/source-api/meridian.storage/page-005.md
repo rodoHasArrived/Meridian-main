@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SourceType
+
+Qualified name: <code>Meridian.Storage.Interfaces.SourceType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:68](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L68).
+
+Type of data source.
+
+```csharp
+public enum SourceType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Live</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:71](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L71) | Live real-time data source. |
+| <code>Historical</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:73](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L73) | Historical backfill data source. |
+| <code>Consolidated</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:75](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L75) | Consolidated/derived data source. |
+
 ## SymbolInfo
 
 Qualified name: <code>Meridian.Storage.Interfaces.SymbolInfo</code>. Kind: `record`.
@@ -921,21 +941,3 @@ Declared public members:
 | <code>Task&lt;FiscalYearClosePlanDto&gt; GetFiscalYearClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:8](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L8) |  |
 | <code>Task&lt;FiscalYearCloseReceiptDto?&gt; GetFiscalYearCloseReceiptAsync(Guid ledgerBookId, int fiscalYear, Guid? receiptId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:11](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L11) |  |
 | <code>Task&lt;FiscalYearCloseReceiptDto&gt; FinalizeFiscalYearCloseAsync(Guid ledgerBookId, int fiscalYear, FinalizeFiscalYearCloseRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:14](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L14) |  |
-
-## IGovernedLedgerPostingTarget
-
-Qualified name: <code>Meridian.Storage.Ledger.IGovernedLedgerPostingTarget</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:13](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L13).
-
-Durable posting seam used after a governed workflow has approved a journal write. The workflow remains responsible for validation and approval; this target owns the idempotent handoff to the authoritative journal store.
-
-```csharp
-public interface IGovernedLedgerPostingTarget
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |

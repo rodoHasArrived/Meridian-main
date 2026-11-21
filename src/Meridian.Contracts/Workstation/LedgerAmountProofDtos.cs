@@ -37,6 +37,7 @@ public sealed record LedgerAmountProofDto(
     IReadOnlyList<LedgerAmountProofEvidenceDto> Evidence,
     IReadOnlyList<string> Warnings)
 {
+    public string AmountExact => Amount.ToString(System.Globalization.CultureInfo.InvariantCulture);
     /// <summary>
     /// Accounting decisions retained with contributing journals, independent of source readiness.
     /// An absent legacy value establishes no approval or coverage classification.

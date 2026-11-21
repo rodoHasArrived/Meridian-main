@@ -309,7 +309,19 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
     public Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, CancellationToken ct = default)
         => CreateSessionAsync(request, isAccountDefault: false, ct);
 
-    private async Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, bool isAccountDefault, CancellationToken ct)
+    /// <summary>Resolves the stable paper session used by a retained strategy run.</summary>
+    public static string GetStrategyRunSessionId(string runId) =>
+        $"PAPER-RUN-{Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(runId)}";
+
+    public static bool IsStrategyRunSessionId(string? sessionId) =>
+        sessionId?.StartsWith("PAPER-RUN-", StringComparison.OrdinalIgnoreCase) == true;
+
+    public Task<PaperSessionSummaryDto> EnsureStrategyRunSessionAsync(
+        string runId, DateTimeOffset runStartedAt, CreatePaperSessionDto request, CancellationToken ct = default) =>
+        CreateSessionAsync(request, isAccountDefault: false, ct, GetStrategyRunSessionId(runId), runStartedAt.ToUniversalTime());
+
+    private async Task<PaperSessionSummaryDto> CreateSessionAsync(CreatePaperSessionDto request, bool isAccountDefault,
+        CancellationToken ct, string? runSessionId = null, DateTimeOffset? runStartedAt = null)
     {
         ArgumentNullException.ThrowIfNull(request);
         using var operation = EnterOperation(ct);
@@ -323,6 +335,16 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         try
         {
             var sessions = CurrentSessions;
+            if (runSessionId is not null && sessions.TryGetValue(runSessionId, out var retained))
+            {
+                if (!string.Equals(retained.StrategyId, request.StrategyId, StringComparison.Ordinal) ||
+                    !string.Equals(retained.FinancialAccountId, request.FinancialAccountId, StringComparison.OrdinalIgnoreCase) ||
+                    retained.InitialCash != request.InitialCash ||
+                    !retained.Symbols.SequenceEqual(request.Symbols ?? [], StringComparer.OrdinalIgnoreCase))
+                    throw new InvalidOperationException("The retained paper session belongs to different run inputs.");
+
+                return ToSummarySnapshot(retained);
+            }
             if (isAccountDefault && sessions.Values.SingleOrDefault(session => session.IsAccountDefault && session.IsActive
                 && session.FinancialAccountId == request.FinancialAccountId) is { } existing)
                 return ToSummarySnapshot(existing);
@@ -332,8 +354,9 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 throw new InvalidOperationException($"Paper session limit reached ({MaxRetainedSessions}). Close existing sessions and retry.");
             }
 
-            var createdAt = DateTimeOffset.UtcNow;
-            var sessionId = $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
+            // Reusing the retained run timestamp keeps the opening journal identical on retry.
+            var createdAt = runStartedAt ?? DateTimeOffset.UtcNow;
+            var sessionId = runSessionId ?? $"PAPER-{createdAt:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..8]}";
             // Retain an empty source checkpoint before publishing a bound session, so a
             // future historical read can prove that no financing was accepted.
             if (_financing is not null)
@@ -563,11 +586,12 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
         }
     }
 
-    /// <summary>Returns summaries of all tracked sessions.</summary>
+    /// <summary>Returns sessions owned by the legacy paper-session workbench.</summary>
     public IReadOnlyList<PaperSessionSummaryDto> GetSessions()
     {
         ThrowIfDisposed();
         return CurrentSessions.Values
+            .Where(static session => !IsStrategyRunSessionId(session.SessionId))
             .Select(ToSummarySnapshot)
             .OrderByDescending(static s => s.CreatedAt)
             .ToArray();
@@ -1915,21 +1939,12 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 : CreatePortfolioSnapshot(session.Portfolio);
             var orderHistory = session.OrderHistory.Select(CloneOrderState).ToArray();
             var fillHistory = session.FillHistory.Select(CloneExecutionReport).ToArray();
-            var ledger = session.IsActive
+            var ledger = session.DurableLedger ?? (session.IsActive
                 ? session.Portfolio?.Ledger ?? session.ReconstructedLedger
-                : session.ReconstructedLedger ?? session.Portfolio?.Ledger;
+                : session.ReconstructedLedger ?? session.Portfolio?.Ledger);
 
             return new PaperSessionDetailDto(
-                Summary: new PaperSessionSummaryDto(
-                    session.SessionId,
-                    session.StrategyId,
-                    session.StrategyName,
-                    session.InitialCash,
-                    session.CreatedAt,
-                    session.ClosedAt,
-                    session.IsActive,
-                    session.MatchingModelVersion,
-                    session.CostModelVersion),
+                Summary: ToSummarySnapshot(session),
                 Symbols: session.Symbols.ToArray(),
                 Portfolio: portfolioSnapshot,
                 OrderHistory: orderHistory,

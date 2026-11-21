@@ -156,6 +156,9 @@ public static class WorkstationServiceCollectionExtensions
         }
 
         services.AddHttpClient();
+        services.AddHttpClient(ProviderCredentialProbe.ClientName)
+            .RemoveAllLoggers()
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
         services.AddHttpContextAccessor();
         services.AddMemoryCache();
 
@@ -269,6 +272,8 @@ public static class WorkstationServiceCollectionExtensions
             new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>(),
                 sp.GetRequiredService<IStrategyRunLedgerArchive>()));
         services.TryAddSingleton<IStrategyRepository>(sp => sp.GetRequiredService<StrategyRunStore>());
+        services.TryAddSingleton(sp =>
+            new Meridian.Strategies.Artifacts.StrategyArtifactRegistry(ResolveConfigDataRoot(sp)));
         services.TryAddSingleton<IResearchRunRecorder, StrategyRunResearchRecorder>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
             new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
@@ -278,6 +283,25 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
         // Read-only run/promotion authority for typed strategy-run orders in the OMS.
         services.TryAddSingleton<IStrategyRunAuthoritySource, StrategyRunAuthoritySource>();
+        services.TryAddSingleton(sp => new StrategyLiveAuthorizationService(
+            ResolveConfigDataRoot(sp), sp.GetRequiredService<IStrategyRepository>(),
+            sp.GetRequiredService<IPromotionRecordStore>(),
+            sp.GetRequiredService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>(),
+            sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>(),
+            sp.GetService<TimeProvider>() ?? TimeProvider.System,
+            async (account, ct) =>
+            {
+                var gateway = sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>();
+                var links = sp.GetService<BrokeragePortfolioSyncService>();
+                if (gateway is not Meridian.Execution.Sdk.IBrokerageAccountIdentity identity || links is null)
+                    return false;
+                var link = await links.GetStatusAsync(account, ct).ConfigureAwait(false);
+                return link is { IsLinked: true, ExternalAccountId: { } externalId } &&
+                    string.Equals(gateway.GatewayId, link.ProviderId, StringComparison.OrdinalIgnoreCase) &&
+                    identity.IdentifiesConnectedAccount(externalId);
+            }));
+        services.TryAddSingleton<ILiveStrategyOrderAuthorization>(sp =>
+            sp.GetRequiredService<StrategyLiveAuthorizationService>());
         services.TryAddSingleton<StrategyDesignStoreOptions>(sp =>
             new StrategyDesignStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "designer")));
         services.TryAddSingleton<IStrategyDesignRepository>(sp =>
@@ -285,6 +309,17 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<StrategyDesignStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
         services.TryAddSingleton<StrategyDesignService>();
+        services.TryAddSingleton<ScopedStrategyDesignStore>();
+        services.TryAddSingleton(sp => new DesignerBacktestService(
+            ResolveConfigDataRoot(sp),
+            sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
+            sp.GetRequiredService<IStrategyRepository>(),
+            sp.GetRequiredService<IEvidenceArtifactStore>(),
+            sp.GetRequiredService<StrategyDesignService>(),
+            sp.GetService<Meridian.Contracts.Services.IOperationalTradingCalendar>() ??
+                new Meridian.Platform.Scheduling.TradingCalendar(),
+            sp.GetService<ISecurityIdentityQueryService>() ?? sp.GetService<ISecurityMasterQueryService>(),
+            sp.GetService<ISecurityCorporateActionsQueryService>() ?? sp.GetService<ISecurityMasterQueryService>()));
         services.TryAddSingleton<StrategyEngineRegistry>();
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
@@ -346,6 +381,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<ProviderCredentialOwnershipPolicy>(),
             sp.GetService<IProviderRuntimeCredentialApplier>(), sp.GetService<ProviderRuntimeCredentialApplicationTracker>()));
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddSingleton<ProviderConnectionTemplateService>();
+        services.AddHttpClient(ProviderConnectionLifecycleService.TemplateProbeClientName)
+            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
         services.TryAddSingleton<ProviderReadinessService>();
         // These runtimes do not carry a trusted tenant/connection per import, statement or Plaid item.
         // Keep them legacy-only until that ownership is propagated through their full workflows.
@@ -850,6 +888,8 @@ public static class WorkstationServiceCollectionExtensions
             // Retained comparisons require both the durable artifact store and governance graph.
             // Local hosts still start without Reporting authority; readiness-gated routes stay unavailable.
             services.TryAddSingleton<ReportingIncomeComparisonService>();
+            services.TryAddSingleton<IReportingReviewMaterialityPolicyProvider, ConfiguredReportingReviewMaterialityPolicyProvider>();
+            services.TryAddSingleton<ReportingRunReviewService>();
             services.TryAddSingleton<PostgresReportingReleaseConsistencyGate>(sp =>
                 new PostgresReportingReleaseConsistencyGate(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));
@@ -1657,7 +1697,8 @@ public static class WorkstationServiceCollectionExtensions
             options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
             resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
             loggerFactory: sp.GetRequiredService<ILoggerFactory>(),
-            evidenceArtifactStore: sp.GetRequiredService<IEvidenceArtifactStore>()));
+            evidenceArtifactStore: sp.GetRequiredService<IEvidenceArtifactStore>(),
+            strategyArtifacts: sp.GetRequiredService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>()));
         services.TryAddSingleton<ICoveredCallBacktestService>(sp => sp.GetRequiredService<CoveredCallBacktestService>());
         services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
     }

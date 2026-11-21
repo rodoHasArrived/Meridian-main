@@ -1,0 +1,4813 @@
+{
+  "version": 1,
+  "status": "passed",
+  "generatedAtUtc": "2026-11-21T00:24:26.347Z",
+  "repoRoot": "/workspace/Meridian-main",
+  "dashboardDir": "/workspace/Meridian-main/src/Meridian.Ui/dashboard",
+  "configPath": "/workspace/Meridian-main/scripts/dev/web-screenshot-routes.json",
+  "baseUrl": "http://127.0.0.1:5173/workstation",
+  "outputDir": "/workspace/Meridian-main/artifacts/web-screenshots/captures",
+  "selectedCaptureCount": 86,
+  "totalCaptureCount": 86,
+  "maxAttemptsPerCapture": 2,
+  "workers": 2,
+  "scenario": null,
+  "accountingScenario": "accounting.normal",
+  "previewUrl": null,
+  "strictApiRequests": false,
+  "captures": [
+    {
+      "id": "W00A",
+      "name": "web-daily-control-tower",
+      "docLabel": "Daily Control Tower",
+      "route": "/",
+      "url": "http://127.0.0.1:5173/workstation/",
+      "actualUrl": "http://127.0.0.1:5173/workstation/",
+      "requestedPath": "/workstation/",
+      "expectedPath": "/workstation/",
+      "actualPath": "/workstation/",
+      "file": "web-daily-control-tower.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-daily-control-tower.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 142172,
+      "textLength": 3912,
+      "kpis": [
+        {
+          "id": "portfolio.total-exposure",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":\"37699\",\"currency\":\"USD\"}",
+          "display": "$37,699",
+          "renderedDisplay": "$37,699",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "portfolio.open-positions",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":2,\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "system.active-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"overview\"}",
+          "value": "{\"status\":\"available\",\"value\":2,\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "All strategy runs · system"
+        },
+        {
+          "id": "system.providers-online",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "Blocked",
+          "severity": "blocked"
+        },
+        {
+          "label": "Action",
+          "severity": "action"
+        },
+        {
+          "label": "Action",
+          "severity": "action"
+        },
+        {
+          "label": "Action",
+          "severity": "action"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "primaryTaskTop": 420.171875,
+      "durationSeconds": 5.88,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W01",
+      "name": "web-trading-workspace",
+      "docLabel": "Trading — Orders blotter",
+      "route": "/trading",
+      "url": "http://127.0.0.1:5173/workstation/trading",
+      "actualUrl": "http://127.0.0.1:5173/workstation/trading",
+      "requestedPath": "/workstation/trading",
+      "expectedPath": "/workstation/trading",
+      "actualPath": "/workstation/trading",
+      "file": "web-trading-workspace.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-trading-workspace.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 147930,
+      "textLength": 5394,
+      "kpis": [
+        {
+          "id": "trading.net-pnl",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3100\",\"currency\":\"USD\"}",
+          "display": "+$3,100",
+          "renderedDisplay": "+$3,100",
+          "revision": null,
+          "population": "Brokerage session · selected account"
+        },
+        {
+          "id": "trading.open-orders",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":1,\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Open orders · selected account"
+        },
+        {
+          "id": "trading.fills",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":\"13\",\"currency\":null}",
+          "display": "13",
+          "renderedDisplay": "13",
+          "revision": null,
+          "population": "Brokerage session · selected account"
+        },
+        {
+          "id": "trading.risk",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":\"Observe\",\"currency\":null}",
+          "display": "Observe",
+          "renderedDisplay": "Observe",
+          "revision": null,
+          "population": "Brokerage session · selected account"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "Review required",
+          "severity": "review"
+        },
+        {
+          "label": "Working",
+          "severity": "ready"
+        },
+        {
+          "label": "2/4 ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "primaryTaskTop": 358.5,
+      "durationSeconds": 6.13,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W01A",
+      "name": "web-trading-orders",
+      "docLabel": "Trading — Orders",
+      "route": "/trading/orders",
+      "url": "http://127.0.0.1:5173/workstation/trading/orders",
+      "actualUrl": "http://127.0.0.1:5173/workstation/trading/orders",
+      "requestedPath": "/workstation/trading/orders",
+      "expectedPath": "/workstation/trading/orders",
+      "actualPath": "/workstation/trading/orders",
+      "file": "web-trading-orders.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-trading-orders.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 111474,
+      "textLength": 3487,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Working",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.57,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W01B",
+      "name": "web-trading-positions",
+      "docLabel": "Trading — Position book",
+      "route": "/trading/positions",
+      "url": "http://127.0.0.1:5173/workstation/trading/positions",
+      "actualUrl": "http://127.0.0.1:5173/workstation/trading/positions",
+      "requestedPath": "/workstation/trading/positions",
+      "expectedPath": "/workstation/trading/positions",
+      "actualPath": "/workstation/trading/positions",
+      "file": "web-trading-positions.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-trading-positions.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 100188,
+      "textLength": 3043,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Review required",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.39,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W01C",
+      "name": "web-trading-risk",
+      "docLabel": "Trading — Risk guardrails",
+      "route": "/trading/risk",
+      "url": "http://127.0.0.1:5173/workstation/trading/risk",
+      "actualUrl": "http://127.0.0.1:5173/workstation/trading/risk",
+      "requestedPath": "/workstation/trading/risk",
+      "expectedPath": "/workstation/trading/risk",
+      "actualPath": "/workstation/trading/risk",
+      "file": "web-trading-risk.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-trading-risk.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 116896,
+      "textLength": 5088,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Trading allowed · breaker closed",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 5.64,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W01D",
+      "name": "web-operator-readiness-console",
+      "docLabel": "Operator Readiness Console",
+      "route": "/trading/readiness",
+      "url": "http://127.0.0.1:5173/workstation/trading/readiness",
+      "actualUrl": "http://127.0.0.1:5173/workstation/trading/readiness",
+      "requestedPath": "/workstation/trading/readiness",
+      "expectedPath": "/workstation/trading/readiness",
+      "actualPath": "/workstation/trading/readiness",
+      "file": "web-operator-readiness-console.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-operator-readiness-console.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 132482,
+      "textLength": 9037,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Blocked",
+          "severity": "blocked"
+        },
+        {
+          "label": "Blocked",
+          "severity": "blocked"
+        },
+        {
+          "label": "Review required",
+          "severity": "review"
+        },
+        {
+          "label": "3 review items",
+          "severity": "review"
+        },
+        {
+          "label": "2 runs",
+          "severity": "ready"
+        },
+        {
+          "label": "2 providers",
+          "severity": "ready"
+        },
+        {
+          "label": "1 breaks",
+          "severity": "ready"
+        },
+        {
+          "label": "3 report profiles",
+          "severity": "review"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Review required",
+          "severity": "review"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Review required",
+          "severity": "review"
+        },
+        {
+          "label": "Review required",
+          "severity": "review"
+        },
+        {
+          "label": "Unavailable",
+          "severity": "review"
+        },
+        {
+          "label": "1 open",
+          "severity": "action"
+        },
+        {
+          "label": "1 review",
+          "severity": "review"
+        },
+        {
+          "label": "1 warning",
+          "severity": "action"
+        },
+        {
+          "label": "Running",
+          "severity": "review"
+        },
+        {
+          "label": "Completed",
+          "severity": "ready"
+        },
+        {
+          "label": "Running",
+          "severity": "review"
+        },
+        {
+          "label": "paper-dev-42",
+          "severity": "ready"
+        },
+        {
+          "label": "$101,240.00",
+          "severity": "ready"
+        },
+        {
+          "label": "Verify",
+          "severity": "review"
+        },
+        {
+          "label": "paper-dev-42",
+          "severity": "ready"
+        },
+        {
+          "label": "signed",
+          "severity": "ready"
+        },
+        {
+          "label": "Healthy",
+          "severity": "ready"
+        },
+        {
+          "label": "Warning",
+          "severity": "action"
+        },
+        {
+          "label": "signed",
+          "severity": "ready"
+        },
+        {
+          "label": "Open",
+          "severity": "action"
+        },
+        {
+          "label": "Open",
+          "severity": "action"
+        },
+        {
+          "label": "ReviewRequired",
+          "severity": "review"
+        },
+        {
+          "label": "Warning",
+          "severity": "action"
+        },
+        {
+          "label": "ReviewRequired",
+          "severity": "review"
+        },
+        {
+          "label": "Recipients present",
+          "severity": "review"
+        },
+        {
+          "label": "excel, investor-pdf",
+          "severity": "ready"
+        },
+        {
+          "label": "Recipients present",
+          "severity": "review"
+        },
+        {
+          "label": "Warning",
+          "severity": "action"
+        },
+        {
+          "label": "Warning",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "paper-dev-42"
+        }
+      ],
+      "durationSeconds": 5.39,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02",
+      "name": "web-portfolio-workspace",
+      "docLabel": "Portfolio",
+      "route": "/portfolio",
+      "url": "http://127.0.0.1:5173/workstation/portfolio",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio",
+      "requestedPath": "/workstation/portfolio",
+      "expectedPath": "/workstation/portfolio",
+      "actualPath": "/workstation/portfolio",
+      "file": "web-portfolio-workspace.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-workspace.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 159820,
+      "textLength": 5354,
+      "kpis": [
+        {
+          "id": "portfolio.total-exposure",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":\"37699\",\"currency\":\"USD\"}",
+          "display": "$37,699",
+          "renderedDisplay": "$37,699",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "portfolio.unrealized-pnl",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":\"7696\",\"currency\":\"USD\"}",
+          "display": "+$7,696",
+          "renderedDisplay": "+$7,696",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "portfolio.cash",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":\"87500\",\"currency\":\"USD\"}",
+          "display": "$87,500",
+          "renderedDisplay": "$87,500",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "portfolio.open-positions",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":2,\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "Review required",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [
+        {
+          "loadedCount": 2,
+          "total": "37699",
+          "totalCurrency": "USD",
+          "rowAmounts": [
+            "7159",
+            "30540"
+          ],
+          "rowCurrencies": [
+            "USD",
+            "USD"
+          ]
+        }
+      ],
+      "durationSeconds": 4.35,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02A",
+      "name": "web-portfolio-attribution",
+      "docLabel": "Portfolio — Attribution",
+      "route": "/portfolio/attribution",
+      "url": "http://127.0.0.1:5173/workstation/portfolio/attribution",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio/attribution",
+      "requestedPath": "/workstation/portfolio/attribution",
+      "expectedPath": "/workstation/portfolio/attribution",
+      "actualPath": "/workstation/portfolio/attribution",
+      "file": "web-portfolio-attribution.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-attribution.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 131734,
+      "textLength": 4755,
+      "kpis": [
+        {
+          "id": "portfolio.retained-market-value",
+          "scope": "{\"account\":null,\"asOf\":\"2026-04-28T18:14:30Z\",\"recordSource\":\"Development fixture portfolio\",\"run\":\"portfolio-run-dev-1\",\"source\":\"retained-records\"}",
+          "value": "{\"status\":\"available\",\"value\":\"25587\",\"currency\":\"USD\"}",
+          "display": "$25,587",
+          "renderedDisplay": "$25,587",
+          "revision": null,
+          "population": "Retained run records"
+        },
+        {
+          "id": "portfolio.retained-records",
+          "scope": "{\"account\":null,\"asOf\":\"2026-04-28T18:14:30Z\",\"recordSource\":\"Development fixture portfolio\",\"run\":\"portfolio-run-dev-1\",\"source\":\"retained-records\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Retained run records"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "Running",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.41,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02D",
+      "name": "web-portfolio-asset-detail",
+      "docLabel": "Portfolio — Asset Detail",
+      "route": "/portfolio/asset-detail?symbol=AAPL",
+      "url": "http://127.0.0.1:5173/workstation/portfolio/asset-detail?symbol=AAPL",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio/asset-detail?symbol=AAPL&securityId=sec-dev-001",
+      "requestedPath": "/workstation/portfolio/asset-detail",
+      "expectedPath": "/workstation/portfolio/asset-detail",
+      "actualPath": "/workstation/portfolio/asset-detail",
+      "file": "web-portfolio-asset-detail.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-asset-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 80386,
+      "textLength": 1925,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.38,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02B",
+      "name": "web-portfolio-brokerage-sync",
+      "docLabel": "Portfolio — Brokerage Sync",
+      "route": "/portfolio/brokerage-sync",
+      "url": "http://127.0.0.1:5173/workstation/portfolio/brokerage-sync",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio/brokerage-sync",
+      "requestedPath": "/workstation/portfolio/brokerage-sync",
+      "expectedPath": "/workstation/portfolio/brokerage-sync",
+      "actualPath": "/workstation/portfolio/brokerage-sync",
+      "file": "web-portfolio-brokerage-sync.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-brokerage-sync.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 127544,
+      "textLength": 6358,
+      "kpis": [
+        {
+          "id": "portfolio.total-exposure",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":\"37699\",\"currency\":\"USD\"}",
+          "display": "$37,699",
+          "renderedDisplay": "$37,699",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "portfolio.unrealized-pnl",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":\"7696\",\"currency\":\"USD\"}",
+          "display": "+$7,696",
+          "renderedDisplay": "+$7,696",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "portfolio.cash",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":\"87500\",\"currency\":\"USD\"}",
+          "display": "$87,500",
+          "renderedDisplay": "$87,500",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        },
+        {
+          "id": "portfolio.open-positions",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":2,\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "Household synced",
+          "severity": "ready"
+        },
+        {
+          "label": "Synced",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.88,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02E",
+      "name": "web-portfolio-cash-ladder",
+      "docLabel": "Portfolio — Cash Ladder",
+      "route": "/portfolio/cash-ladder",
+      "url": "http://127.0.0.1:5173/workstation/portfolio/cash-ladder",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio/cash-ladder",
+      "requestedPath": "/workstation/portfolio/cash-ladder",
+      "expectedPath": "/workstation/portfolio/cash-ladder",
+      "actualPath": "/workstation/portfolio/cash-ladder",
+      "file": "web-portfolio-cash-ladder.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-cash-ladder.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 116383,
+      "textLength": 4031,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.23,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02N",
+      "name": "web-portfolio-nav",
+      "docLabel": "Portfolio — NAV vs prior period",
+      "route": "/portfolio/nav?fundProfileId=alpha-income",
+      "url": "http://127.0.0.1:5173/workstation/portfolio/nav?fundProfileId=alpha-income",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio/nav?fundProfileId=alpha-income",
+      "requestedPath": "/workstation/portfolio/nav",
+      "expectedPath": "/workstation/portfolio/nav",
+      "actualPath": "/workstation/portfolio/nav",
+      "file": "web-portfolio-nav.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-nav.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 108945,
+      "textLength": 4048,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Material",
+          "severity": "action"
+        },
+        {
+          "label": "Material",
+          "severity": "action"
+        },
+        {
+          "label": "Material",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 2.43,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02C",
+      "name": "web-portfolio-family-office",
+      "docLabel": "Portfolio — Family Office",
+      "route": "/portfolio/family-office",
+      "url": "http://127.0.0.1:5173/workstation/portfolio/family-office",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio/family-office",
+      "requestedPath": "/workstation/portfolio/family-office",
+      "expectedPath": "/workstation/portfolio/family-office",
+      "actualPath": "/workstation/portfolio/family-office",
+      "file": "web-portfolio-family-office.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-family-office.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 130496,
+      "textLength": 4380,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.3,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W02F",
+      "name": "web-portfolio-loan-book",
+      "docLabel": "Portfolio — Loan Book",
+      "route": "/portfolio/loan-book",
+      "url": "http://127.0.0.1:5173/workstation/portfolio/loan-book",
+      "actualUrl": "http://127.0.0.1:5173/workstation/portfolio/loan-book",
+      "requestedPath": "/workstation/portfolio/loan-book",
+      "expectedPath": "/workstation/portfolio/loan-book",
+      "actualPath": "/workstation/portfolio/loan-book",
+      "file": "web-portfolio-loan-book.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-portfolio-loan-book.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 108439,
+      "textLength": 3253,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 2.99,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03",
+      "name": "web-accounting-workspace",
+      "docLabel": "Accounting — Ledger",
+      "route": "/accounting",
+      "url": "http://127.0.0.1:5173/workstation/accounting",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting",
+      "requestedPath": "/workstation/accounting",
+      "expectedPath": "/workstation/accounting",
+      "actualPath": "/workstation/accounting",
+      "file": "web-accounting-workspace.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-workspace.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 131879,
+      "textLength": 3263,
+      "kpis": [
+        {
+          "id": "accounting.open-breaks",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":1,\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Unresolved reconciliation breaks"
+        },
+        {
+          "id": "accounting.timing-drift",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Accounting workspace"
+        },
+        {
+          "id": "accounting.security-gaps",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Accounting workspace"
+        },
+        {
+          "id": "accounting.audit-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":\"4\",\"currency\":null}",
+          "display": "4",
+          "renderedDisplay": "4",
+          "revision": null,
+          "population": "Accounting workspace"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4.83,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03A",
+      "name": "web-accounting-reconciliation",
+      "docLabel": "Accounting — Reconciliation",
+      "route": "/accounting/reconciliation",
+      "url": "http://127.0.0.1:5173/workstation/accounting/reconciliation",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/reconciliation?reconciliationRun=run-42&reconciliationBreak=run-42%3Acash",
+      "requestedPath": "/workstation/accounting/reconciliation",
+      "expectedPath": "/workstation/accounting/reconciliation",
+      "actualPath": "/workstation/accounting/reconciliation",
+      "file": "web-accounting-reconciliation.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-reconciliation.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 158946,
+      "textLength": 4677,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Open",
+          "severity": "action"
+        },
+        {
+          "label": "1 needs review",
+          "severity": "action"
+        },
+        {
+          "label": "1 needs review",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.84,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03B",
+      "name": "web-accounting-security-master",
+      "docLabel": "Accounting — Security Master",
+      "route": "/accounting/security-master",
+      "url": "http://127.0.0.1:5173/workstation/accounting/security-master",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/security-master?securityId=sec-dev-001",
+      "requestedPath": "/workstation/accounting/security-master",
+      "expectedPath": "/workstation/accounting/security-master",
+      "actualPath": "/workstation/accounting/security-master",
+      "file": "web-accounting-security-master.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-security-master.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 125716,
+      "textLength": 3641,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "1 open",
+          "severity": "action"
+        },
+        {
+          "label": "Open",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.99,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03B1",
+      "name": "web-accounting-asset-detail",
+      "docLabel": "Accounting — Asset Detail",
+      "route": "/accounting/security-master/detail?symbol=AAPL",
+      "url": "http://127.0.0.1:5173/workstation/accounting/security-master/detail?symbol=AAPL",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/security-master/detail?symbol=AAPL&securityId=sec-dev-001",
+      "requestedPath": "/workstation/accounting/security-master/detail",
+      "expectedPath": "/workstation/accounting/security-master/detail",
+      "actualPath": "/workstation/accounting/security-master/detail",
+      "file": "web-accounting-asset-detail.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-asset-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 85203,
+      "textLength": 2026,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.02,
+      "status": "passed",
+      "attempts": 2
+    },
+    {
+      "id": "W03C",
+      "name": "web-accounting-approvals",
+      "docLabel": "Accounting — Approvals",
+      "route": "/accounting/approvals",
+      "url": "http://127.0.0.1:5173/workstation/accounting/approvals",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/approvals",
+      "requestedPath": "/workstation/accounting/approvals",
+      "expectedPath": "/workstation/accounting/approvals",
+      "actualPath": "/workstation/accounting/approvals",
+      "file": "web-accounting-approvals.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-approvals.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 116390,
+      "textLength": 3547,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Blocked",
+          "severity": "blocked"
+        },
+        {
+          "label": "Blocked",
+          "severity": "blocked"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.04,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03D",
+      "name": "web-accounting-external-gl-reconciliation",
+      "docLabel": "Accounting — External GL Reconciliation",
+      "route": "/accounting/reconciliation/external-gl",
+      "url": "http://127.0.0.1:5173/workstation/accounting/reconciliation/external-gl",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/reconciliation/external-gl",
+      "requestedPath": "/workstation/accounting/reconciliation/external-gl",
+      "expectedPath": "/workstation/accounting/reconciliation/external-gl",
+      "actualPath": "/workstation/accounting/reconciliation/external-gl",
+      "file": "web-accounting-external-gl-reconciliation.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-external-gl-reconciliation.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 113691,
+      "textLength": 4810,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Available",
+          "severity": "ready"
+        },
+        {
+          "label": "Planned",
+          "severity": "info"
+        },
+        {
+          "label": "Certified",
+          "severity": "ready"
+        },
+        {
+          "label": "Missing from Meridian",
+          "severity": "blocked"
+        },
+        {
+          "label": "Missing from Meridian",
+          "severity": "blocked"
+        },
+        {
+          "label": "Missing from Meridian",
+          "severity": "blocked"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.47,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03D1",
+      "name": "web-accounting-trial-balance-detail",
+      "docLabel": "Accounting — Trial Balance Detail",
+      "route": "/accounting/ledger?view=trial-balance&runId=run-42",
+      "url": "http://127.0.0.1:5173/workstation/accounting/ledger?view=trial-balance&runId=run-42",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/ledger?view=trial-balance&runId=run-42&ledgerBookId=00000000-0000-0000-0000-0000000000aa&periodId=11111111-1111-1111-1111-111111111111",
+      "requestedPath": "/workstation/accounting/ledger",
+      "expectedPath": "/workstation/accounting/ledger",
+      "actualPath": "/workstation/accounting/ledger",
+      "file": "web-accounting-trial-balance-detail.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-trial-balance-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 143923,
+      "textLength": 4591,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "entity-fund-alpha"
+        }
+      ],
+      "durationSeconds": 3.76,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03E",
+      "name": "web-accounting-exceptions",
+      "docLabel": "Accounting — Exceptions",
+      "route": "/accounting/exceptions",
+      "url": "http://127.0.0.1:5173/workstation/accounting/exceptions",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/exceptions",
+      "requestedPath": "/workstation/accounting/exceptions",
+      "expectedPath": "/workstation/accounting/exceptions",
+      "actualPath": "/workstation/accounting/exceptions",
+      "file": "web-accounting-exceptions.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-exceptions.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 156163,
+      "textLength": 3826,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Open",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.56,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03F",
+      "name": "web-accounting-configure",
+      "docLabel": "Accounting — Configure",
+      "route": "/accounting/configure",
+      "url": "http://127.0.0.1:5173/workstation/accounting/configure",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/configure",
+      "requestedPath": "/workstation/accounting/configure",
+      "expectedPath": "/workstation/accounting/configure",
+      "actualPath": "/workstation/accounting/configure",
+      "file": "web-accounting-configure.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-configure.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 125006,
+      "textLength": 9893,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "default-fund"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "fund-entity-main"
+        }
+      ],
+      "durationSeconds": 3.81,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03G",
+      "name": "web-accounting-operations-continuity",
+      "docLabel": "Accounting — Operations Continuity",
+      "route": "/accounting/operations-continuity",
+      "url": "http://127.0.0.1:5173/workstation/accounting/operations-continuity",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/operations-continuity",
+      "requestedPath": "/workstation/accounting/operations-continuity",
+      "expectedPath": "/workstation/accounting/operations-continuity",
+      "actualPath": "/workstation/accounting/operations-continuity",
+      "file": "web-accounting-operations-continuity.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-operations-continuity.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 154709,
+      "textLength": 29857,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "opaque-identifier",
+          "excerpt": "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+        },
+        {
+          "kind": "opaque-identifier",
+          "excerpt": "79f1f386-0bb1-4aef-9a85-fb9d6de8e1f6"
+        },
+        {
+          "kind": "internal-term",
+          "excerpt": "lane"
+        },
+        {
+          "kind": "internal-term",
+          "excerpt": "lanes"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "recon-break-factor-1"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "approval-close-fixture-2026-05"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "default-fund"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "accounting-record-2026-05"
+        }
+      ],
+      "durationSeconds": 4.27,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03H",
+      "name": "web-accounting-entity-setup",
+      "docLabel": "Accounting — Entity Setup",
+      "route": "/accounting/entity-setup",
+      "url": "http://127.0.0.1:5173/workstation/accounting/entity-setup",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/entity-setup",
+      "requestedPath": "/workstation/accounting/entity-setup",
+      "expectedPath": "/workstation/accounting/entity-setup",
+      "actualPath": "/workstation/accounting/entity-setup",
+      "file": "web-accounting-entity-setup.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-entity-setup.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 106747,
+      "textLength": 2518,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 2.41,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03I",
+      "name": "web-accounting-ledger",
+      "docLabel": "Accounting — Ledger Explorer",
+      "route": "/accounting/ledger",
+      "url": "http://127.0.0.1:5173/workstation/accounting/ledger",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/ledger?ledgerBookId=00000000-0000-0000-0000-0000000000aa&periodId=11111111-1111-1111-1111-111111111111",
+      "requestedPath": "/workstation/accounting/ledger",
+      "expectedPath": "/workstation/accounting/ledger",
+      "actualPath": "/workstation/accounting/ledger",
+      "file": "web-accounting-ledger.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-ledger.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 108321,
+      "textLength": 2824,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Posted",
+          "severity": "ready"
+        },
+        {
+          "label": "Posted",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "je-cash-1"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "je-capital-1"
+        }
+      ],
+      "durationSeconds": 4.13,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03FP",
+      "name": "web-accounting-factor-paydown",
+      "docLabel": "Accounting — Factor paydown",
+      "route": "/accounting/factor-paydown",
+      "url": "http://127.0.0.1:5173/workstation/accounting/factor-paydown",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/factor-paydown?ledgerBookId=00000000-0000-0000-0000-0000000000aa&periodId=11111111-1111-1111-1111-111111111111",
+      "requestedPath": "/workstation/accounting/factor-paydown",
+      "expectedPath": "/workstation/accounting/factor-paydown",
+      "actualPath": "/workstation/accounting/factor-paydown",
+      "file": "web-accounting-factor-paydown.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-factor-paydown.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 96505,
+      "textLength": 2548,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.36,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03CO",
+      "name": "web-accounting-consolidation",
+      "docLabel": "Accounting — Consolidation",
+      "route": "/accounting/consolidation",
+      "url": "http://127.0.0.1:5173/workstation/accounting/consolidation",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/consolidation?ledgerBookId=00000000-0000-0000-0000-0000000000aa&periodId=11111111-1111-1111-1111-111111111111",
+      "requestedPath": "/workstation/accounting/consolidation",
+      "expectedPath": "/workstation/accounting/consolidation",
+      "actualPath": "/workstation/accounting/consolidation",
+      "file": "web-accounting-consolidation.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-consolidation.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 111720,
+      "textLength": 2947,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.44,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03I1",
+      "name": "web-accounting-account-detail",
+      "docLabel": "Accounting — Account Detail",
+      "route": "/accounting/accounts/detail?accountId=acct-cash",
+      "url": "http://127.0.0.1:5173/workstation/accounting/accounts/detail?accountId=acct-cash",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/accounts/detail?accountId=acct-cash",
+      "requestedPath": "/workstation/accounting/accounts/detail",
+      "expectedPath": "/workstation/accounting/accounts/detail",
+      "actualPath": "/workstation/accounting/accounts/detail",
+      "file": "web-accounting-account-detail.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-account-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 84485,
+      "textLength": 1992,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.1,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03I2",
+      "name": "web-accounting-reconciliation-match",
+      "docLabel": "Accounting — Reconciliation Match",
+      "route": "/accounting/reconciliation/match",
+      "url": "http://127.0.0.1:5173/workstation/accounting/reconciliation/match",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/reconciliation/match",
+      "requestedPath": "/workstation/accounting/reconciliation/match",
+      "expectedPath": "/workstation/accounting/reconciliation/match",
+      "actualPath": "/workstation/accounting/reconciliation/match",
+      "file": "web-accounting-reconciliation-match.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-reconciliation-match.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 88778,
+      "textLength": 2117,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.31,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03I3",
+      "name": "web-accounting-close-calendar",
+      "docLabel": "Accounting — Close Calendar",
+      "route": "/accounting/close-calendar",
+      "url": "http://127.0.0.1:5173/workstation/accounting/close-calendar",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/close-calendar",
+      "requestedPath": "/workstation/accounting/close-calendar",
+      "expectedPath": "/workstation/accounting/close-calendar",
+      "actualPath": "/workstation/accounting/close-calendar",
+      "file": "web-accounting-close-calendar.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-close-calendar.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 93030,
+      "textLength": 2138,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Overdue",
+          "severity": "blocked"
+        },
+        {
+          "label": "Overdue 141 days",
+          "severity": "blocked"
+        }
+      ],
+      "holdingsTables": [],
+      "primaryTaskTop": 325,
+      "durationSeconds": 3.23,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03I4",
+      "name": "web-accounting-approval-inbox",
+      "docLabel": "Accounting — Approval Inbox",
+      "route": "/accounting/approvals/inbox",
+      "url": "http://127.0.0.1:5173/workstation/accounting/approvals/inbox",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/approvals/inbox",
+      "requestedPath": "/workstation/accounting/approvals/inbox",
+      "expectedPath": "/workstation/accounting/approvals/inbox",
+      "actualPath": "/workstation/accounting/approvals/inbox",
+      "file": "web-accounting-approval-inbox.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-approval-inbox.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 89944,
+      "textLength": 2037,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "close-2026-06-controller-review"
+        }
+      ],
+      "durationSeconds": 3.49,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03I5",
+      "name": "web-accounting-evidence-detail",
+      "docLabel": "Accounting — Evidence Detail (redirects to Reporting Evidence)",
+      "route": "/accounting/evidence/detail?evidenceId=bank-statement",
+      "url": "http://127.0.0.1:5173/workstation/accounting/evidence/detail?evidenceId=bank-statement",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/evidence?subjectKind=evidence&subjectId=bank-statement",
+      "requestedPath": "/workstation/accounting/evidence/detail",
+      "expectedPath": "/workstation/reporting/evidence",
+      "actualPath": "/workstation/reporting/evidence",
+      "file": "web-accounting-evidence-detail.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-evidence-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 124368,
+      "textLength": 4878,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.05,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03J",
+      "name": "web-accounting-journal-entries",
+      "docLabel": "Accounting — Journal Entries",
+      "route": "/accounting/journal-entries",
+      "url": "http://127.0.0.1:5173/workstation/accounting/journal-entries",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/journal-entries",
+      "requestedPath": "/workstation/accounting/journal-entries",
+      "expectedPath": "/workstation/accounting/journal-entries",
+      "actualPath": "/workstation/accounting/journal-entries",
+      "file": "web-accounting-journal-entries.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-journal-entries.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 144433,
+      "textLength": 6026,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "primaryTaskTop": 397.5,
+      "durationSeconds": 3.46,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03J1",
+      "name": "web-accounting-journal-entry-detail",
+      "docLabel": "Accounting — Journal Entry Detail",
+      "route": "/accounting/journal-entries/detail?journalEntryId=manual-je-fixture",
+      "url": "http://127.0.0.1:5173/workstation/accounting/journal-entries/detail?journalEntryId=manual-je-fixture",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/journal-entries/detail?journalEntryId=manual-je-fixture",
+      "requestedPath": "/workstation/accounting/journal-entries/detail",
+      "expectedPath": "/workstation/accounting/journal-entries/detail",
+      "actualPath": "/workstation/accounting/journal-entries/detail",
+      "file": "web-accounting-journal-entry-detail.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-journal-entry-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 94716,
+      "textLength": 2697,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.24,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03K",
+      "name": "web-accounting-capital-accounts",
+      "docLabel": "Accounting — Capital Accounts",
+      "route": "/accounting/capital-accounts",
+      "url": "http://127.0.0.1:5173/workstation/accounting/capital-accounts",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/capital-accounts",
+      "requestedPath": "/workstation/accounting/capital-accounts",
+      "expectedPath": "/workstation/accounting/capital-accounts",
+      "actualPath": "/workstation/accounting/capital-accounts",
+      "file": "web-accounting-capital-accounts.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-capital-accounts.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 118789,
+      "textLength": 4330,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Not itemised",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.87,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03L",
+      "name": "web-accounting-evidence-workbench",
+      "docLabel": "Accounting — Evidence Workbench (redirects to Reporting Evidence)",
+      "route": "/accounting/evidence",
+      "url": "http://127.0.0.1:5173/workstation/accounting/evidence",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/evidence",
+      "requestedPath": "/workstation/accounting/evidence",
+      "expectedPath": "/workstation/reporting/evidence",
+      "actualPath": "/workstation/reporting/evidence",
+      "file": "web-accounting-evidence-workbench.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-evidence-workbench.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 123688,
+      "textLength": 8641,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "3 ready",
+          "severity": "ready"
+        },
+        {
+          "label": "5 review",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.2,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03M",
+      "name": "web-accounting-statement-import",
+      "docLabel": "Accounting — Statement Import",
+      "route": "/accounting/statement-import",
+      "url": "http://127.0.0.1:5173/workstation/accounting/statement-import",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/statement-import",
+      "requestedPath": "/workstation/accounting/statement-import",
+      "expectedPath": "/workstation/accounting/statement-import",
+      "actualPath": "/workstation/accounting/statement-import",
+      "file": "web-accounting-statement-import.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-statement-import.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 94561,
+      "textLength": 2516,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.95,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03N",
+      "name": "web-accounting-margin-control",
+      "docLabel": "Accounting — Margin Control Center",
+      "route": "/accounting/margin-control",
+      "url": "http://127.0.0.1:5173/workstation/accounting/margin-control",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/margin-control",
+      "requestedPath": "/workstation/accounting/margin-control",
+      "expectedPath": "/workstation/accounting/margin-control",
+      "actualPath": "/workstation/accounting/margin-control",
+      "file": "web-accounting-margin-control.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-margin-control.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 115847,
+      "textLength": 5192,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "sec-dev-001"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "sec-dev-002"
+        }
+      ],
+      "durationSeconds": 3.89,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03O",
+      "name": "web-accounting-capital-calls",
+      "docLabel": "Accounting — Commitments and capital calls",
+      "route": "/accounting/capital-calls?ledgerBookId=3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+      "url": "http://127.0.0.1:5173/workstation/accounting/capital-calls?ledgerBookId=3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/capital-calls?ledgerBookId=3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+      "requestedPath": "/workstation/accounting/capital-calls",
+      "expectedPath": "/workstation/accounting/capital-calls",
+      "actualPath": "/workstation/accounting/capital-calls",
+      "file": "web-accounting-capital-calls.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-capital-calls.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 103930,
+      "textLength": 3795,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4.66,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04",
+      "name": "web-reporting-workspace",
+      "docLabel": "Reporting",
+      "route": "/reporting",
+      "url": "http://127.0.0.1:5173/workstation/reporting",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting",
+      "requestedPath": "/workstation/reporting",
+      "expectedPath": "/workstation/reporting",
+      "actualPath": "/workstation/reporting",
+      "file": "web-reporting-workspace.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-workspace.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 133478,
+      "textLength": 3149,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Awaiting approval",
+          "severity": "review"
+        },
+        {
+          "label": "Awaiting approval",
+          "severity": "review"
+        },
+        {
+          "label": "Period confirmation required",
+          "severity": "action"
+        },
+        {
+          "label": "Awaiting approval",
+          "severity": "review"
+        },
+        {
+          "label": "Period confirmation required",
+          "severity": "action"
+        },
+        {
+          "label": "Ready for approval",
+          "severity": "review"
+        },
+        {
+          "label": "1 approval due",
+          "severity": "review"
+        },
+        {
+          "label": "1 evidence gap",
+          "severity": "action"
+        },
+        {
+          "label": "1 work item past due",
+          "severity": "blocked"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.85,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04A",
+      "name": "web-reporting-report-packs",
+      "docLabel": "Reporting — Report Packs",
+      "route": "/reporting/report-packs",
+      "url": "http://127.0.0.1:5173/workstation/reporting/report-packs",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/report-packs",
+      "requestedPath": "/workstation/reporting/report-packs",
+      "expectedPath": "/workstation/reporting/report-packs",
+      "actualPath": "/workstation/reporting/report-packs",
+      "file": "web-reporting-report-packs.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-report-packs.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 123535,
+      "textLength": 4714,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Restated",
+          "severity": "review"
+        },
+        {
+          "label": "Restated",
+          "severity": "review"
+        },
+        {
+          "label": "Restated",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 5.64,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04B",
+      "name": "web-reporting-evidence-workbench",
+      "docLabel": "Reporting — Evidence Workbench",
+      "route": "/reporting/evidence",
+      "url": "http://127.0.0.1:5173/workstation/reporting/evidence",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/evidence",
+      "requestedPath": "/workstation/reporting/evidence",
+      "expectedPath": "/workstation/reporting/evidence",
+      "actualPath": "/workstation/reporting/evidence",
+      "file": "web-reporting-evidence-workbench.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-evidence-workbench.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 119598,
+      "textLength": 8562,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "3 ready",
+          "severity": "ready"
+        },
+        {
+          "label": "5 review",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.66,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04C",
+      "name": "web-reporting-exports",
+      "docLabel": "Reporting — Exports",
+      "route": "/reporting/exports",
+      "url": "http://127.0.0.1:5173/workstation/reporting/exports",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/exports",
+      "requestedPath": "/workstation/reporting/exports",
+      "expectedPath": "/workstation/reporting/exports",
+      "actualPath": "/workstation/reporting/exports",
+      "file": "web-reporting-exports.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-exports.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 118509,
+      "textLength": 3023,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4.54,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04D",
+      "name": "web-reporting-report-builder",
+      "docLabel": "Reporting — Report Builder",
+      "route": "/reporting/report-builder",
+      "url": "http://127.0.0.1:5173/workstation/reporting/report-builder",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/report-builder",
+      "requestedPath": "/workstation/reporting/report-builder",
+      "expectedPath": "/workstation/reporting/report-builder",
+      "actualPath": "/workstation/reporting/report-builder",
+      "file": "web-reporting-report-builder.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-report-builder.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 108916,
+      "textLength": 2528,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Approved",
+          "severity": "ready"
+        },
+        {
+          "label": "In review",
+          "severity": "review"
+        },
+        {
+          "label": "Not loaded",
+          "severity": "info"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.6,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04E",
+      "name": "web-reporting-run-status",
+      "docLabel": "Reporting — Run Status",
+      "route": "/reporting/run-status",
+      "url": "http://127.0.0.1:5173/workstation/reporting/run-status",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/run-status",
+      "requestedPath": "/workstation/reporting/run-status",
+      "expectedPath": "/workstation/reporting/run-status",
+      "actualPath": "/workstation/reporting/run-status",
+      "file": "web-reporting-run-status.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-run-status.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 117688,
+      "textLength": 3172,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Awaiting approval",
+          "severity": "review"
+        },
+        {
+          "label": "Period confirmation required",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.96,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04F",
+      "name": "web-reporting-operations-record",
+      "docLabel": "Reporting — Operations Record",
+      "route": "/reporting/operations-record",
+      "url": "http://127.0.0.1:5173/workstation/reporting/operations-record",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/operations-record",
+      "requestedPath": "/workstation/reporting/operations-record",
+      "expectedPath": "/workstation/reporting/operations-record",
+      "actualPath": "/workstation/reporting/operations-record",
+      "file": "web-reporting-operations-record.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-operations-record.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 182065,
+      "textLength": 5196,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Release blocked",
+          "severity": "blocked"
+        },
+        {
+          "label": "Provider review",
+          "severity": "review"
+        },
+        {
+          "label": "Passed",
+          "severity": "ready"
+        },
+        {
+          "label": "Review required",
+          "severity": "review"
+        },
+        {
+          "label": "Not Started",
+          "severity": "info"
+        },
+        {
+          "label": "Not Started",
+          "severity": "info"
+        },
+        {
+          "label": "Publication ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Provider review",
+          "severity": "review"
+        },
+        {
+          "label": "Provider review",
+          "severity": "review"
+        },
+        {
+          "label": "1 warning",
+          "severity": "action"
+        },
+        {
+          "label": "2 jobs",
+          "severity": "review"
+        },
+        {
+          "label": "1/1 ready",
+          "severity": "ready"
+        },
+        {
+          "label": "1 pending",
+          "severity": "info"
+        },
+        {
+          "label": "0 pending",
+          "severity": "info"
+        },
+        {
+          "label": "Approved",
+          "severity": "ready"
+        },
+        {
+          "label": "In review",
+          "severity": "review"
+        },
+        {
+          "label": "Awaiting approval",
+          "severity": "review"
+        },
+        {
+          "label": "Published",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.98,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04G",
+      "name": "web-reporting-governance",
+      "docLabel": "Reporting — Governance",
+      "route": "/reporting/governance",
+      "url": "http://127.0.0.1:5173/workstation/reporting/governance",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/governance",
+      "requestedPath": "/workstation/reporting/governance",
+      "expectedPath": "/workstation/reporting/governance",
+      "actualPath": "/workstation/reporting/governance",
+      "file": "web-reporting-governance.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-governance.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 113060,
+      "textLength": 2812,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Approved",
+          "severity": "ready"
+        },
+        {
+          "label": "In review",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.15,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04H",
+      "name": "web-reporting-library",
+      "docLabel": "Reporting — Report Library",
+      "route": "/reporting/library",
+      "url": "http://127.0.0.1:5173/workstation/reporting/library",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/library",
+      "requestedPath": "/workstation/reporting/library",
+      "expectedPath": "/workstation/reporting/library",
+      "actualPath": "/workstation/reporting/library",
+      "file": "web-reporting-library.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-library.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 81806,
+      "textLength": 1969,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.12,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04I",
+      "name": "web-reporting-run-parameters",
+      "docLabel": "Reporting — Run Parameters",
+      "route": "/reporting/run",
+      "url": "http://127.0.0.1:5173/workstation/reporting/run",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/run",
+      "requestedPath": "/workstation/reporting/run",
+      "expectedPath": "/workstation/reporting/run",
+      "actualPath": "/workstation/reporting/run",
+      "file": "web-reporting-run-parameters.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-run-parameters.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 118971,
+      "textLength": 2710,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04I1",
+      "name": "web-reporting-preview-validation",
+      "docLabel": "Reporting — Preview Validation",
+      "route": "/reporting/preview",
+      "url": "http://127.0.0.1:5173/workstation/reporting/preview",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/preview",
+      "requestedPath": "/workstation/reporting/preview",
+      "expectedPath": "/workstation/reporting/preview",
+      "actualPath": "/workstation/reporting/preview",
+      "file": "web-reporting-preview-validation.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-preview-validation.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 87481,
+      "textLength": 2171,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4.46,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04I2",
+      "name": "web-reporting-run-detail",
+      "docLabel": "Reporting — Run Detail",
+      "route": "/reporting/runs/detail?runId=report-run-investor-202605",
+      "url": "http://127.0.0.1:5173/workstation/reporting/runs/detail?runId=report-run-investor-202605",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/runs/detail?runId=report-run-investor-202605",
+      "requestedPath": "/workstation/reporting/runs/detail",
+      "expectedPath": "/workstation/reporting/runs/detail",
+      "actualPath": "/workstation/reporting/runs/detail",
+      "file": "web-reporting-run-detail.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-run-detail.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 119800,
+      "textLength": 11380,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "investor-monthly-statement"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "report-run-investor-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "corr-investor-202605-create"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "cfo-1"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "investor-anchor-lp"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "investor-statement-distribution"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "controller-1"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "close-snapshot-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "ledger-sequence-482119"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "reconciliation-checkpoint-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "readiness-receipt-investor-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "evidence-reconciliation-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "evidence-pricing-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "evidence-capital-activity-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "evidence-period-lock-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "manifest-investor-202605"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "investor-statement-202605-pdf"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "investor-statement-202605-supporting-schedules"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "investor-statement-202605-evidence-appendix"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "delivery-investor-202605-portal"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "delivery-investor-202605-email"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "provider-defer-2f81"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "grant-investor-202605-portal"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "grant-investor-202605-email"
+        }
+      ],
+      "durationSeconds": 4.74,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W04J",
+      "name": "web-reporting-scheduled",
+      "docLabel": "Reporting — Scheduled Reports",
+      "route": "/reporting/scheduled",
+      "url": "http://127.0.0.1:5173/workstation/reporting/scheduled",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/scheduled",
+      "requestedPath": "/workstation/reporting/scheduled",
+      "expectedPath": "/workstation/reporting/scheduled",
+      "actualPath": "/workstation/reporting/scheduled",
+      "file": "web-reporting-scheduled.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-reporting-scheduled.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 119155,
+      "textLength": 10590,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4.33,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W05",
+      "name": "web-strategy-workspace",
+      "docLabel": "Strategy",
+      "route": "/strategy",
+      "url": "http://127.0.0.1:5173/workstation/strategy",
+      "actualUrl": "http://127.0.0.1:5173/workstation/strategy",
+      "requestedPath": "/workstation/strategy",
+      "expectedPath": "/workstation/strategy",
+      "actualPath": "/workstation/strategy",
+      "file": "web-strategy-workspace.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-strategy-workspace.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 117409,
+      "textLength": 3123,
+      "kpis": [
+        {
+          "id": "strategy.active-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.queued-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.review-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.winning-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Recent strategy runs"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "run-dev-1"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "run-dev-2"
+        }
+      ],
+      "durationSeconds": 5.01,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W05A",
+      "name": "web-strategy-promotions",
+      "docLabel": "Strategy — Promotions",
+      "route": "/strategy/promotions",
+      "url": "http://127.0.0.1:5173/workstation/strategy/promotions",
+      "actualUrl": "http://127.0.0.1:5173/workstation/strategy/promotions",
+      "requestedPath": "/workstation/strategy/promotions",
+      "expectedPath": "/workstation/strategy/promotions",
+      "actualPath": "/workstation/strategy/promotions",
+      "file": "web-strategy-promotions.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-strategy-promotions.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 132413,
+      "textLength": 3886,
+      "kpis": [
+        {
+          "id": "strategy.active-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.queued-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.review-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.winning-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Recent strategy runs"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "Running",
+          "severity": "review"
+        },
+        {
+          "label": "Completed",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 5.17,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W05B",
+      "name": "web-strategy-lab",
+      "docLabel": "Strategy — Lab",
+      "route": "/strategy/lab",
+      "url": "http://127.0.0.1:5173/workstation/strategy/lab",
+      "actualUrl": "http://127.0.0.1:5173/workstation/strategy/lab",
+      "requestedPath": "/workstation/strategy/lab",
+      "expectedPath": "/workstation/strategy/lab",
+      "actualPath": "/workstation/strategy/lab",
+      "file": "web-strategy-lab.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-strategy-lab.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 97409,
+      "textLength": 2348,
+      "kpis": [
+        {
+          "id": "strategy.active-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.queued-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.review-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Recent strategy runs"
+        },
+        {
+          "id": "strategy.winning-runs",
+          "scope": "{\"account\":\"all\",\"source\":\"strategy\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Recent strategy runs"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.65,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W05C",
+      "name": "web-strategy-quant-lab",
+      "docLabel": "Strategy — Quant Lab",
+      "route": "/strategy/quant-lab",
+      "url": "http://127.0.0.1:5173/workstation/strategy/quant-lab",
+      "actualUrl": "http://127.0.0.1:5173/workstation/strategy/quant-lab",
+      "requestedPath": "/workstation/strategy/quant-lab",
+      "expectedPath": "/workstation/strategy/quant-lab",
+      "actualPath": "/workstation/strategy/quant-lab",
+      "file": "web-strategy-quant-lab.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-strategy-quant-lab.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 101434,
+      "textLength": 2684,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.72,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W05D",
+      "name": "web-strategy-designer",
+      "docLabel": "Strategy — Designer",
+      "route": "/strategy/designer",
+      "url": "http://127.0.0.1:5173/workstation/strategy/designer",
+      "actualUrl": "http://127.0.0.1:5173/workstation/strategy/designer",
+      "requestedPath": "/workstation/strategy/designer",
+      "expectedPath": "/workstation/strategy/designer",
+      "actualPath": "/workstation/strategy/designer",
+      "file": "web-strategy-designer.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-strategy-designer.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 144028,
+      "textLength": 4117,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Open",
+          "severity": "action"
+        },
+        {
+          "label": "Open",
+          "severity": "action"
+        },
+        {
+          "label": "Reference",
+          "severity": "info"
+        },
+        {
+          "label": "Reference",
+          "severity": "info"
+        },
+        {
+          "label": "Reference",
+          "severity": "info"
+        },
+        {
+          "label": "complete",
+          "severity": "ready"
+        },
+        {
+          "label": "ready",
+          "severity": "ready"
+        },
+        {
+          "label": "ready",
+          "severity": "ready"
+        },
+        {
+          "label": "ready",
+          "severity": "ready"
+        },
+        {
+          "label": "ready",
+          "severity": "ready"
+        },
+        {
+          "label": "ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.48,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W05F",
+      "name": "web-strategy-covered-call",
+      "docLabel": "Strategy — Covered Call",
+      "route": "/strategy/covered-call",
+      "url": "http://127.0.0.1:5173/workstation/strategy/covered-call",
+      "actualUrl": "http://127.0.0.1:5173/workstation/strategy/covered-call",
+      "requestedPath": "/workstation/strategy/covered-call",
+      "expectedPath": "/workstation/strategy/covered-call",
+      "actualPath": "/workstation/strategy/covered-call",
+      "file": "web-strategy-covered-call.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-strategy-covered-call.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 122091,
+      "textLength": 4110,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Completed",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.58,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W05G",
+      "name": "web-strategy-run-ledger",
+      "docLabel": "Strategy — Run Ledger Explorer",
+      "route": "/strategy/run-ledger",
+      "url": "http://127.0.0.1:5173/workstation/strategy/run-ledger",
+      "actualUrl": "http://127.0.0.1:5173/workstation/strategy/run-ledger",
+      "requestedPath": "/workstation/strategy/run-ledger",
+      "expectedPath": "/workstation/strategy/run-ledger",
+      "actualPath": "/workstation/strategy/run-ledger",
+      "file": "web-strategy-run-ledger.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-strategy-run-ledger.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 128123,
+      "textLength": 3061,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.88,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06",
+      "name": "web-data-workspace",
+      "docLabel": "Data",
+      "route": "/data",
+      "url": "http://127.0.0.1:5173/workstation/data",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data",
+      "requestedPath": "/workstation/data",
+      "expectedPath": "/workstation/data",
+      "actualPath": "/workstation/data",
+      "file": "web-data-workspace.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-workspace.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 124706,
+      "textLength": 4304,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "1 degraded",
+          "severity": "action"
+        },
+        {
+          "label": "Degraded",
+          "severity": "action"
+        },
+        {
+          "label": "Warning",
+          "severity": "action"
+        },
+        {
+          "label": "Warning",
+          "severity": "action"
+        },
+        {
+          "label": "Stale",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.75,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06A",
+      "name": "web-data-watchlist",
+      "docLabel": "Data — Market Data (Watchlist view)",
+      "route": "/data/quotes?view=watchlist",
+      "url": "http://127.0.0.1:5173/workstation/data/quotes?view=watchlist",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/quotes?view=watchlist",
+      "requestedPath": "/workstation/data/quotes",
+      "expectedPath": "/workstation/data/quotes",
+      "actualPath": "/workstation/data/quotes",
+      "file": "web-data-watchlist.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-watchlist.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 137527,
+      "textLength": 3501,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.83,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06B",
+      "name": "web-data-live-quotes",
+      "docLabel": "Data — Market Data (Live Quotes view)",
+      "route": "/data/quotes",
+      "url": "http://127.0.0.1:5173/workstation/data/quotes",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/quotes?symbol=AAPL&symbols=AAPL%2CMSFT%2CQQQ%2CSPY",
+      "requestedPath": "/workstation/data/quotes",
+      "expectedPath": "/workstation/data/quotes",
+      "actualPath": "/workstation/data/quotes",
+      "file": "web-data-live-quotes.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-live-quotes.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 139589,
+      "textLength": 8196,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "primaryTaskTop": 241,
+      "durationSeconds": 5.18,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06C",
+      "name": "web-data-backfills",
+      "docLabel": "Data — Backfills",
+      "route": "/data/backfills",
+      "url": "http://127.0.0.1:5173/workstation/data/backfills",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/backfills",
+      "requestedPath": "/workstation/data/backfills",
+      "expectedPath": "/workstation/data/backfills",
+      "actualPath": "/workstation/data/backfills",
+      "file": "web-data-backfills.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-backfills.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 121913,
+      "textLength": 3175,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.9,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06D",
+      "name": "web-data-providers",
+      "docLabel": "Data — Providers",
+      "route": "/data/providers",
+      "url": "http://127.0.0.1:5173/workstation/data/providers",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/providers",
+      "requestedPath": "/workstation/data/providers",
+      "expectedPath": "/workstation/data/providers",
+      "actualPath": "/workstation/data/providers",
+      "file": "web-data-providers.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-providers.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 124996,
+      "textLength": 7386,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4.44,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06I",
+      "name": "web-data-import",
+      "docLabel": "Data — Import",
+      "route": "/data/import",
+      "url": "http://127.0.0.1:5173/workstation/data/import",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/import",
+      "requestedPath": "/workstation/data/import",
+      "expectedPath": "/workstation/data/import",
+      "actualPath": "/workstation/data/import",
+      "file": "web-data-import.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-import.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 136731,
+      "textLength": 3725,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 4,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06G",
+      "name": "web-data-exports",
+      "docLabel": "Data — Exports",
+      "route": "/data/exports",
+      "url": "http://127.0.0.1:5173/workstation/data/exports",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/exports",
+      "requestedPath": "/workstation/data/exports",
+      "expectedPath": "/workstation/data/exports",
+      "actualPath": "/workstation/data/exports",
+      "file": "web-data-exports.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-exports.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 120434,
+      "textLength": 3179,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.99,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06H",
+      "name": "web-data-query",
+      "docLabel": "Data — SQL Query",
+      "route": "/data/query",
+      "url": "http://127.0.0.1:5173/workstation/data/query",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/query",
+      "requestedPath": "/workstation/data/query",
+      "expectedPath": "/workstation/data/query",
+      "actualPath": "/workstation/data/query",
+      "file": "web-data-query.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-query.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 105950,
+      "textLength": 2514,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.5,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06E",
+      "name": "web-data-alerts",
+      "docLabel": "Data — Market Data (Price Alerts view)",
+      "route": "/data/quotes?view=alerts",
+      "url": "http://127.0.0.1:5173/workstation/data/quotes?view=alerts",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/quotes?view=alerts",
+      "requestedPath": "/workstation/data/quotes",
+      "expectedPath": "/workstation/data/quotes",
+      "actualPath": "/workstation/data/quotes",
+      "file": "web-data-alerts.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-alerts.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 110752,
+      "textLength": 2625,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.41,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06F",
+      "name": "web-data-evidence-workbench",
+      "docLabel": "Data — Evidence Workbench (redirects to Reporting Evidence)",
+      "route": "/data/evidence",
+      "url": "http://127.0.0.1:5173/workstation/data/evidence",
+      "actualUrl": "http://127.0.0.1:5173/workstation/reporting/evidence",
+      "requestedPath": "/workstation/data/evidence",
+      "expectedPath": "/workstation/reporting/evidence",
+      "actualPath": "/workstation/reporting/evidence",
+      "file": "web-data-evidence-workbench.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-evidence-workbench.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 128560,
+      "textLength": 8723,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "3 ready",
+          "severity": "ready"
+        },
+        {
+          "label": "5 review",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 2.98,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06J",
+      "name": "web-data-ingestion-operations",
+      "docLabel": "Data — Ingestion Operations",
+      "route": "/data/operations",
+      "url": "http://127.0.0.1:5173/workstation/data/operations",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/operations",
+      "requestedPath": "/workstation/data/operations",
+      "expectedPath": "/workstation/data/operations",
+      "actualPath": "/workstation/data/operations",
+      "file": "web-data-ingestion-operations.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-ingestion-operations.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 122358,
+      "textLength": 2882,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 2.86,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W06K",
+      "name": "web-data-storage-assurance",
+      "docLabel": "Data — Storage Assurance",
+      "route": "/data/assurance",
+      "url": "http://127.0.0.1:5173/workstation/data/assurance",
+      "actualUrl": "http://127.0.0.1:5173/workstation/data/assurance",
+      "requestedPath": "/workstation/data/assurance",
+      "expectedPath": "/workstation/data/assurance",
+      "actualPath": "/workstation/data/assurance",
+      "file": "web-data-storage-assurance.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-data-storage-assurance.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 122401,
+      "textLength": 5132,
+      "kpis": [
+        {
+          "id": "data.providers-healthy",
+          "scope": "{\"account\":\"all\",\"source\":\"crossScreenCounts\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1 of 4 providers\",\"currency\":null}",
+          "display": "1 of 4 providers",
+          "renderedDisplay": "1 of 4 providers",
+          "revision": null,
+          "population": "Providers in use"
+        },
+        {
+          "id": "data.backfills-running",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"2\",\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.exports-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3\",\"currency\":null}",
+          "display": "3",
+          "renderedDisplay": "3",
+          "revision": null,
+          "population": "Data operations"
+        },
+        {
+          "id": "data.ops-review",
+          "scope": "{\"account\":\"all\",\"source\":\"data\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Data operations"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.22,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07",
+      "name": "web-settings-workspace",
+      "docLabel": "Settings",
+      "route": "/settings",
+      "url": "http://127.0.0.1:5173/workstation/settings",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings",
+      "requestedPath": "/workstation/settings",
+      "expectedPath": "/workstation/settings",
+      "actualPath": "/workstation/settings",
+      "file": "web-settings-workspace.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-workspace.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 98495,
+      "textLength": 2375,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Defaults or saved preferences active",
+          "severity": "ready"
+        },
+        {
+          "label": "Review authority",
+          "severity": "review"
+        },
+        {
+          "label": "Review setup",
+          "severity": "review"
+        },
+        {
+          "label": "Review connections",
+          "severity": "review"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 4.83,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07A",
+      "name": "web-settings-preferences",
+      "docLabel": "Settings — Preferences",
+      "route": "/settings/preferences",
+      "url": "http://127.0.0.1:5173/workstation/settings/preferences",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/preferences",
+      "requestedPath": "/workstation/settings/preferences",
+      "expectedPath": "/workstation/settings/preferences",
+      "actualPath": "/workstation/settings/preferences",
+      "file": "web-settings-preferences.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-preferences.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 127952,
+      "textLength": 3302,
+      "kpis": [],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.42,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07B",
+      "name": "web-settings-accounting-systems",
+      "docLabel": "Settings — Accounting Systems",
+      "route": "/settings/accounting-systems",
+      "url": "http://127.0.0.1:5173/workstation/settings/accounting-systems",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/accounting-systems",
+      "requestedPath": "/workstation/settings/accounting-systems",
+      "expectedPath": "/workstation/settings/accounting-systems",
+      "actualPath": "/workstation/settings/accounting-systems",
+      "file": "web-settings-accounting-systems.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-accounting-systems.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 150325,
+      "textLength": 4945,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "3 review",
+          "severity": "review"
+        },
+        {
+          "label": "1 unmapped",
+          "severity": "action"
+        },
+        {
+          "label": "2 roles",
+          "severity": "action"
+        },
+        {
+          "label": "1 rule",
+          "severity": "ready"
+        },
+        {
+          "label": "1 blocked",
+          "severity": "blocked"
+        },
+        {
+          "label": "1 approved",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.1,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07C",
+      "name": "web-settings-alpaca-provider-setup",
+      "docLabel": "Settings — Provider Setup",
+      "route": "/settings/providers/alpaca/setup",
+      "url": "http://127.0.0.1:5173/workstation/settings/providers/alpaca/setup",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/providers/alpaca/setup",
+      "requestedPath": "/workstation/settings/providers/alpaca/setup",
+      "expectedPath": "/workstation/settings/providers/alpaca/setup",
+      "actualPath": "/workstation/settings/providers/alpaca/setup",
+      "file": "web-settings-alpaca-provider-setup.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-alpaca-provider-setup.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 119582,
+      "textLength": 4373,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "1 need review",
+          "severity": "action"
+        },
+        {
+          "label": "Healthy",
+          "severity": "ready"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Connected",
+          "severity": "action"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Stored",
+          "severity": "ready"
+        },
+        {
+          "label": "Refresh",
+          "severity": "action"
+        },
+        {
+          "label": "Refresh",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.42,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07D",
+      "name": "web-settings-backend-capability-coverage",
+      "docLabel": "Settings — Advanced Diagnostics",
+      "route": "/settings/diagnostics/advanced",
+      "url": "http://127.0.0.1:5173/workstation/settings/diagnostics/advanced",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/diagnostics/advanced",
+      "requestedPath": "/workstation/settings/diagnostics/advanced",
+      "expectedPath": "/workstation/settings/diagnostics/advanced",
+      "actualPath": "/workstation/settings/diagnostics/advanced",
+      "file": "web-settings-backend-capability-coverage.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-backend-capability-coverage.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 130566,
+      "textLength": 9434,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "No recent events",
+          "severity": "info"
+        },
+        {
+          "label": "All reachable",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "All enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "Enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "Enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "All surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "api-path",
+          "excerpt": "/api/status"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/session"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/data"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/strategy"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/trading"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/accounting"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reporting"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/trading/readiness"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/operator/inbox"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/execution/orders/submit"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/execution/sessions"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/replay/files"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/portfolio"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/portfolio/aggregate"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/portfolio/exposure"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/ledger"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/continuity"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/review-packet"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/activity"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/fund-event-record"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/capital-account-subledger"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/report-output"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/runs"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/break-queue"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/calibration-summary"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/accounting-system/providers"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/accounting-system/reconciliation/latest"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/break-queue/{breakId}/audit"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/security-master/securities"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/export/analysis"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/fund-structure/report-packs"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/export/formats"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/history"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/timeline"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/sweeps"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/compare"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/promotion/evaluate/{runId}"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/providers/status"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/run"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/resumable"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/validation"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/{jobId}/pending"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/{jobId}/resume"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/symbols"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/quality/dashboard"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflow-summary"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflows"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflows/presets"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/config"
+        }
+      ],
+      "durationSeconds": 2.95,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07E",
+      "name": "web-settings-diagnostic-endpoints",
+      "docLabel": "Settings — Diagnostic Endpoints",
+      "route": "/settings/diagnostics/advanced#diagnostic-endpoints",
+      "url": "http://127.0.0.1:5173/workstation/settings/diagnostics/advanced#diagnostic-endpoints",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/diagnostics/advanced#diagnostic-endpoints",
+      "requestedPath": "/workstation/settings/diagnostics/advanced",
+      "expectedPath": "/workstation/settings/diagnostics/advanced",
+      "actualPath": "/workstation/settings/diagnostics/advanced",
+      "file": "web-settings-diagnostic-endpoints.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-diagnostic-endpoints.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 131127,
+      "textLength": 9508,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "No recent events",
+          "severity": "info"
+        },
+        {
+          "label": "All reachable",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "All enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "Enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "Enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "All surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "api-path",
+          "excerpt": "/api/status"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/session"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/data"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/strategy"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/trading"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/accounting"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reporting"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/trading/readiness"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/operator/inbox"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/execution/orders/submit"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/execution/sessions"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/replay/files"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/portfolio"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/portfolio/aggregate"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/portfolio/exposure"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/ledger"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/continuity"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/review-packet"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/activity"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/fund-event-record"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/capital-account-subledger"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/report-output"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/runs"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/break-queue"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/calibration-summary"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/accounting-system/providers"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/accounting-system/reconciliation/latest"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/break-queue/{breakId}/audit"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/security-master/securities"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/export/analysis"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/fund-structure/report-packs"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/export/formats"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/history"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/timeline"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/sweeps"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/compare"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/promotion/evaluate/{runId}"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/providers/status"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/run"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/resumable"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/validation"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/{jobId}/pending"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/{jobId}/resume"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/symbols"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/quality/dashboard"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflow-summary"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflows"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflows/presets"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/config"
+        }
+      ],
+      "durationSeconds": 2.79,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07F",
+      "name": "web-settings-access",
+      "docLabel": "Settings — Access",
+      "route": "/settings/access",
+      "url": "http://127.0.0.1:5173/workstation/settings/access",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/access",
+      "requestedPath": "/workstation/settings/access",
+      "expectedPath": "/workstation/settings/access",
+      "actualPath": "/workstation/settings/access",
+      "file": "web-settings-access.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-access.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 136812,
+      "textLength": 4096,
+      "kpis": [
+        {
+          "id": "portfolio.open-positions",
+          "scope": "{\"account\":\"all\",\"source\":\"live-holdings\"}",
+          "value": "{\"status\":\"available\",\"value\":2,\"currency\":null}",
+          "display": "2",
+          "renderedDisplay": "2",
+          "revision": null,
+          "population": "Live holdings · all accounts"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "Access review",
+          "severity": "action"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "PAPER",
+          "severity": "ready"
+        },
+        {
+          "label": "Stale",
+          "severity": "action"
+        },
+        {
+          "label": "Reachable",
+          "severity": "ready"
+        },
+        {
+          "label": "Degraded",
+          "severity": "action"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 3.33,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07G",
+      "name": "web-settings-providers",
+      "docLabel": "Settings — Providers",
+      "route": "/settings/providers",
+      "url": "http://127.0.0.1:5173/workstation/settings/providers",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/providers",
+      "requestedPath": "/workstation/settings/providers",
+      "expectedPath": "/workstation/settings/providers",
+      "actualPath": "/workstation/settings/providers",
+      "file": "web-settings-providers.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-providers.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 116933,
+      "textLength": 2869,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "1 need review",
+          "severity": "action"
+        },
+        {
+          "label": "Healthy",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 2.79,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07H",
+      "name": "web-settings-diagnostics",
+      "docLabel": "Settings — Diagnostics",
+      "route": "/settings/diagnostics",
+      "url": "http://127.0.0.1:5173/workstation/settings/diagnostics",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/diagnostics",
+      "requestedPath": "/workstation/settings/diagnostics",
+      "expectedPath": "/workstation/settings/diagnostics",
+      "actualPath": "/workstation/settings/diagnostics",
+      "file": "web-settings-diagnostics.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-diagnostics.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 88795,
+      "textLength": 2174,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "No recent events",
+          "severity": "info"
+        },
+        {
+          "label": "All reachable",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 2.98,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07I",
+      "name": "web-settings-feature-coverage",
+      "docLabel": "Settings — Feature Coverage",
+      "route": "/settings/diagnostics/advanced#runtime-feature-capabilities",
+      "url": "http://127.0.0.1:5173/workstation/settings/diagnostics/advanced#runtime-feature-capabilities",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/diagnostics/advanced#runtime-feature-capabilities",
+      "requestedPath": "/workstation/settings/diagnostics/advanced",
+      "expectedPath": "/workstation/settings/diagnostics/advanced",
+      "actualPath": "/workstation/settings/diagnostics/advanced",
+      "file": "web-settings-feature-coverage.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-feature-coverage.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 132669,
+      "textLength": 9516,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "No recent events",
+          "severity": "info"
+        },
+        {
+          "label": "All reachable",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "Loaded",
+          "severity": "ready"
+        },
+        {
+          "label": "All enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "Enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "Enabled",
+          "severity": "ready"
+        },
+        {
+          "label": "All surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        },
+        {
+          "label": "Surfaced",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "api-path",
+          "excerpt": "/api/status"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/session"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/data"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/strategy"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/trading"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/accounting"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reporting"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/trading/readiness"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/operator/inbox"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/execution/orders/submit"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/execution/sessions"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/replay/files"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/portfolio"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/portfolio/aggregate"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/portfolio/exposure"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/ledger"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/continuity"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/{runId}/review-packet"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/activity"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/fund-event-record"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/capital-account-subledger"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/ledger/private-capital/report-output"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/runs"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/break-queue"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/calibration-summary"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/accounting-system/providers"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/accounting-system/reconciliation/latest"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/reconciliation/break-queue/{breakId}/audit"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/security-master/securities"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/export/analysis"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/fund-structure/report-packs"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/export/formats"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/history"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/timeline"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/sweeps"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/runs/compare"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/promotion/evaluate/{runId}"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/providers/status"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/run"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/resumable"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/validation"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/{jobId}/pending"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/backfill/checkpoints/{jobId}/resume"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/symbols"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/quality/dashboard"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflow-summary"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflows"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/workstation/workflows/presets"
+        },
+        {
+          "kind": "api-path",
+          "excerpt": "/api/config"
+        }
+      ],
+      "durationSeconds": 2.79,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W07J",
+      "name": "web-settings-alpaca-provider-advanced",
+      "docLabel": "Settings — Provider Advanced Controls",
+      "route": "/settings/providers/alpaca/advanced",
+      "url": "http://127.0.0.1:5173/workstation/settings/providers/alpaca/advanced",
+      "actualUrl": "http://127.0.0.1:5173/workstation/settings/providers/alpaca/advanced",
+      "requestedPath": "/workstation/settings/providers/alpaca/advanced",
+      "expectedPath": "/workstation/settings/providers/alpaca/advanced",
+      "actualPath": "/workstation/settings/providers/alpaca/advanced",
+      "file": "web-settings-alpaca-provider-advanced.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-settings-alpaca-provider-advanced.png",
+      "viewport": {
+        "width": 1440,
+        "height": 1100
+      },
+      "bytes": 123333,
+      "textLength": 3978,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "1 need review",
+          "severity": "action"
+        },
+        {
+          "label": "Healthy",
+          "severity": "ready"
+        },
+        {
+          "label": "Not loaded",
+          "severity": "info"
+        }
+      ],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "template-alpaca-brokerage-v1"
+        }
+      ],
+      "durationSeconds": 2.98,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03-1024",
+      "name": "web-accounting-workspace-1024",
+      "docLabel": "Accounting — Ledger (1024px)",
+      "route": "/accounting",
+      "url": "http://127.0.0.1:5173/workstation/accounting",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting",
+      "requestedPath": "/workstation/accounting",
+      "expectedPath": "/workstation/accounting",
+      "actualPath": "/workstation/accounting",
+      "file": "web-accounting-workspace-1024.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-workspace-1024.png",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      },
+      "bytes": 105468,
+      "textLength": 3263,
+      "kpis": [
+        {
+          "id": "accounting.open-breaks",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":1,\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Unresolved reconciliation breaks"
+        },
+        {
+          "id": "accounting.timing-drift",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":\"1\",\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Accounting workspace"
+        },
+        {
+          "id": "accounting.security-gaps",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":\"0\",\"currency\":null}",
+          "display": "0",
+          "renderedDisplay": "0",
+          "revision": null,
+          "population": "Accounting workspace"
+        },
+        {
+          "id": "accounting.audit-ready",
+          "scope": "{\"account\":\"all\",\"source\":\"accounting\"}",
+          "value": "{\"status\":\"available\",\"value\":\"4\",\"currency\":null}",
+          "display": "4",
+          "renderedDisplay": "4",
+          "revision": null,
+          "population": "Accounting workspace"
+        }
+      ],
+      "severityBadges": [],
+      "holdingsTables": [],
+      "durationSeconds": 3.03,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W03I-1024",
+      "name": "web-accounting-ledger-1024",
+      "docLabel": "Accounting — Ledger Explorer (1024px)",
+      "route": "/accounting/ledger",
+      "url": "http://127.0.0.1:5173/workstation/accounting/ledger",
+      "actualUrl": "http://127.0.0.1:5173/workstation/accounting/ledger?ledgerBookId=00000000-0000-0000-0000-0000000000aa&periodId=11111111-1111-1111-1111-111111111111",
+      "requestedPath": "/workstation/accounting/ledger",
+      "expectedPath": "/workstation/accounting/ledger",
+      "actualPath": "/workstation/accounting/ledger",
+      "file": "web-accounting-ledger-1024.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-accounting-ledger-1024.png",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      },
+      "bytes": 93235,
+      "textLength": 2824,
+      "kpis": [],
+      "severityBadges": [
+        {
+          "label": "Posted",
+          "severity": "ready"
+        },
+        {
+          "label": "Posted",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "allowedContentIssues": [
+        {
+          "kind": "slug-identifier",
+          "excerpt": "je-cash-1"
+        },
+        {
+          "kind": "slug-identifier",
+          "excerpt": "je-capital-1"
+        }
+      ],
+      "durationSeconds": 2.94,
+      "status": "passed",
+      "attempts": 1
+    },
+    {
+      "id": "W01-1024",
+      "name": "web-trading-workspace-1024",
+      "docLabel": "Trading — Orders blotter (1024px)",
+      "route": "/trading",
+      "url": "http://127.0.0.1:5173/workstation/trading",
+      "actualUrl": "http://127.0.0.1:5173/workstation/trading",
+      "requestedPath": "/workstation/trading",
+      "expectedPath": "/workstation/trading",
+      "actualPath": "/workstation/trading",
+      "file": "web-trading-workspace-1024.png",
+      "path": "/workspace/Meridian-main/artifacts/web-screenshots/captures/web-trading-workspace-1024.png",
+      "viewport": {
+        "width": 1024,
+        "height": 900
+      },
+      "bytes": 91079,
+      "textLength": 4023,
+      "kpis": [
+        {
+          "id": "trading.net-pnl",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":\"3100\",\"currency\":\"USD\"}",
+          "display": "+$3,100",
+          "renderedDisplay": "+$3,100",
+          "revision": null,
+          "population": "Brokerage session · selected account"
+        },
+        {
+          "id": "trading.open-orders",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":1,\"currency\":null}",
+          "display": "1",
+          "renderedDisplay": "1",
+          "revision": null,
+          "population": "Open orders · selected account"
+        },
+        {
+          "id": "trading.fills",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":\"13\",\"currency\":null}",
+          "display": "13",
+          "renderedDisplay": "13",
+          "revision": null,
+          "population": "Brokerage session · selected account"
+        },
+        {
+          "id": "trading.risk",
+          "scope": "{\"account\":\"all\",\"source\":\"trading\"}",
+          "value": "{\"status\":\"available\",\"value\":\"Observe\",\"currency\":null}",
+          "display": "Observe",
+          "renderedDisplay": "Observe",
+          "revision": null,
+          "population": "Brokerage session · selected account"
+        }
+      ],
+      "severityBadges": [
+        {
+          "label": "2/4 ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Review",
+          "severity": "review"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        },
+        {
+          "label": "Ready",
+          "severity": "ready"
+        }
+      ],
+      "holdingsTables": [],
+      "durationSeconds": 2.97,
+      "status": "passed",
+      "attempts": 1
+    }
+  ],
+  "logs": [
+    "> @meridian/workstation-dashboard@0.1.0 predev",
+    "> npm run generate:contracts && npm run design-system:check",
+    "> @meridian/workstation-dashboard@0.1.0 generate:contracts",
+    "> node scripts/generate-contracts.mjs",
+    "> @meridian/workstation-dashboard@0.1.0 design-system:check",
+    "> node scripts/sync-design-system-assets.mjs --check",
+    "Design-system 4.3.0: 77 production asset/font/license files match canonical source.",
+    "> @meridian/workstation-dashboard@0.1.0 dev",
+    "> vite --host 127.0.0.1 --host 127.0.0.1 --port 5173 --strictPort",
+    "stderr: (!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:",
+    "stderr:   - `__dirname` (vite.config.ts:276:30). Use `import.meta.dirname` instead",
+    "stderr:   - import \"./src/lib/dev-fixtures\" without a file extension (vite.config.ts:7:35). Add the file extension",
+    "stderr:   - import \"./src/scenarios\" resolves to a directory index (vite.config.ts:8:97). Import the index file directly",
+    "stderr:   - import \"./src/lib/workstation-endpoints\" without a file extension (vite.config.ts:9:92). Add the file extension",
+    "stderr:   - import \"../lib/dev-fixtures\" without a file extension (src/scenarios/index.ts:1:35). Add the file extension",
+    "stderr:   - import \"./ui-api-routes.generated\" without a file extension (src/lib/workstation-endpoints.ts:3:31). Add the file extension",
+    "stderr:   - import \"../scenarios/accounting-payload\" without a file extension (src/lib/dev-fixtures.ts:1:65). Add the file extension",
+    "stderr:   - import \"../lib/dev-fixtures/fixture-resolver\" without a file extension (src/scenarios/index.ts:2:30). Add the file extension",
+    "stderr:   - import \"./cross-screen-counts\" without a file extension (src/lib/dev-fixtures.ts:10:8). Add the file extension",
+    "stderr:   - import \"./accounting\" without a file extension (src/scenarios/index.ts:3:37). Add the file extension",
+    "stderr:   - import \"./dev-fixtures.trading-risk\" without a file extension (src/lib/dev-fixtures.ts:12:36). Add the file extension",
+    "stderr:   - import \"./accounting\" without a file extension (src/scenarios/index.ts:7:35). Add the file extension",
+    "stderr:   - import \"./workstation-endpoints\" without a file extension (src/lib/dev-fixtures.ts:126:8). Add the file extension",
+    "stderr:   - import \"./dev-fixtures/fixture-resolver\" without a file extension (src/lib/dev-fixtures.ts:134:8). Add the file extension",
+    "stderr:   - import \"./dev-fixtures/market-data-fixtures\" without a file extension (src/lib/dev-fixtures.ts:135:68). Add the file extension",
+    "stderr:   - import \"./dev-fixtures/bootstrap-fixtures\" without a file extension (src/lib/dev-fixtures.ts:136:40). Add the file extension",
+    "stderr:   - import \"./dev-fixtures/analytical-fixtures\" without a file extension (src/lib/dev-fixtures.ts:137:68). Add the file extension",
+    "stderr:   - import \"./dev-fixtures/workstation-surface-fixtures\" without a file extension (src/lib/dev-fixtures.ts:138:84). Add the file extension",
+    "stderr:   - import \"../lib/workstation-endpoints\" without a file extension (src/scenarios/accounting.ts:2:73). Add the file extension",
+    "stderr:   - import \"./ui-api-routes.generated\" without a file extension (src/lib/dev-fixtures.ts:139:31). Add the file extension",
+    "stderr:   - import \"./accounting-payload\" without a file extension (src/scenarios/accounting.ts:3:67). Add the file extension",
+    "stderr:   - import \"./accounting-support\" without a file extension (src/scenarios/accounting.ts:4:47). Add the file extension",
+    "stderr:   - import \"./accounting-payload\" without a file extension (src/scenarios/accounting.ts:7:35). Add the file extension",
+    "stderr:   - import \"../ui-api-routes.generated\" without a file extension (src/lib/dev-fixtures/analytical-fixtures.ts:2:31). Add the file extension",
+    "stderr:   - import \"../workstation-endpoints\" without a file extension (src/lib/dev-fixtures/market-data-fixtures.ts:10:65). Add the file extension",
+    "stderr:   - import \"../workstation-endpoints\" without a file extension (src/lib/dev-fixtures/bootstrap-fixtures.ts:2:43). Add the file extension",
+    "stderr:   - import \"../ui-api-routes.generated\" without a file extension (src/lib/dev-fixtures/workstation-surface-fixtures.ts:19:31). Add the file extension",
+    "stderr:   - import \"./family-analytical-fixtures\" without a file extension (src/lib/dev-fixtures/analytical-fixtures.ts:3:47). Add the file extension",
+    "stderr:   - import \"./fixture-resolver\" without a file extension (src/lib/dev-fixtures/market-data-fixtures.ts:16:8). Add the file extension",
+    "stderr:   - import \"../workstation-endpoints\" without a file extension (src/lib/dev-fixtures/workstation-surface-fixtures.ts:27:8). Add the file extension",
+    "stderr:   - import \"../lib/dev-fixtures\" without a file extension (src/scenarios/accounting-support.ts:1:35). Add the file extension",
+    "stderr:   - import \"./margin-analytical-fixtures\" without a file extension (src/lib/dev-fixtures/analytical-fixtures.ts:4:41). Add the file extension",
+    "stderr:   - import \"./fixture-resolver\" without a file extension (src/lib/dev-fixtures/workstation-surface-fixtures.ts:28:85). Add the file extension",
+    "stderr:   - import \"../lib/workstation-endpoints\" without a file extension (src/scenarios/accounting-support.ts:6:8). Add the file extension",
+    "stderr:   - import \"./strategy-analytical-fixtures\" without a file extension (src/lib/dev-fixtures/analytical-fixtures.ts:5:42). Add the file extension",
+    "stderr:   - import \"./accounting-payload\" without a file extension (src/scenarios/accounting-support.ts:14:35). Add the file extension",
+    "stderr:   - import \"./execution-analytical-fixtures\" without a file extension (src/lib/dev-fixtures/analytical-fixtures.ts:6:49). Add the file extension",
+    "stderr:   - import \"./fixture-resolver\" without a file extension (src/lib/dev-fixtures/analytical-fixtures.ts:7:86). Add the file extension",
+    "stderr:   - import \"./fixture-resolver\" without a file extension (src/lib/dev-fixtures/execution-analytical-fixtures.ts:2:41). Add the file extension",
+    "stderr: Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.",
+    "  VITE v8.3.8  ready in 518 ms",
+    "  ➜  Local:   http://127.0.0.1:5173/workstation/"
+  ],
+  "capturedCount": 86,
+  "failedCaptureCount": 0,
+  "unattemptedCaptureCount": 0,
+  "kpiConsistency": {
+    "observationCount": 75,
+    "comparisonCount": 51,
+    "conflicts": []
+  },
+  "severityConsistency": {
+    "conflicts": []
+  },
+  "kpiLabelConsistency": {
+    "conflicts": []
+  },
+  "holdingsTotals": {
+    "checkedCount": 1,
+    "conflicts": []
+  },
+  "finishedAtUtc": "2026-11-21T00:27:23.322Z",
+  "durationSeconds": 176.97
+}

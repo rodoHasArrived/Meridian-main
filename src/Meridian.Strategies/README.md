@@ -121,6 +121,12 @@ after restart even when the retained record contributes a stronger provenance ma
 
 ## Purpose
 
+Browser casework uses reviewed versions for single decisions and per-case bulk previews/execution.
+The repository checks supplied versions while holding its mutation lease and returns the current
+case on conflict. Existing unversioned legacy review/resolve/bulk adapters retain their historical
+behavior; they do not provide stale-review protection. Queue/detail API projections expose command
+form availability from shared lifecycle validation, while every submitted command is revalidated.
+
 Strategies owns strategy lifecycle, run storage, promotion records, strategy read services, and
 strategy-facing reconciliation governance.
 
@@ -148,7 +154,10 @@ run's retained fund account. A run without a fund account (paper only) keeps the
 promotion, so a live order routes only for an active run that an approved live promotion targets.
 The OMS asks at preflight and again at dispatch, inside its pre-trade gate. The run record is read
 every time; an approved live promotion found for a run is remembered, because promotion history is
-append-only, so the promotion file is not re-read for every order.
+append-only, so the promotion file is not re-read for every order. The active live grant also
+binds the exact executable artifact, account, expiry, and exposure limits. Dispatch checks the
+grant and its withdrawal state. Scoped Designer paper review retains the saved version and
+backtest input hashes with a dedicated paper session.
 
 ### Shared SMA reference and retained comparison
 
@@ -193,6 +202,11 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+Completed native backtests expose replayed bar counts, verified backfill revisions, and a source-bound
+completion fingerprint in Strategy run detail. Research completion records bind the mix in their input
+hash. Runs admitted before replay keep their lifecycle input hash and derive the completion fingerprint
+from retained results. Run comparison discloses different mixes and unavailable evidence.
 
 Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
 `DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal

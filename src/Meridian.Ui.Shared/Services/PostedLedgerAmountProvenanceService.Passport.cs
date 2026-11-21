@@ -46,7 +46,8 @@ public sealed partial class PostedLedgerAmountProvenanceService
             ],
             [journal, new("journal-line", line.EntryId.ToString("D"), "Posting line")], support, history,
             proof.Warnings, proof.Status == EvidenceStatusDto.Blocked)
-            with { AccountingPreparerAttestations = proof.AccountingPreparerAttestations };
+            with
+        { AccountingPreparerAttestations = proof.AccountingPreparerAttestations };
     }
 
     private async Task<(AmountPassportRecordDto[] History, bool Available)> ReadHistoryAsync(

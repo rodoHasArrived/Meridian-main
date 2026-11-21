@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceExecutionHistory
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceExecutionHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1159](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1159).
+
+Tracks maintenance execution history with file-based persistence.
+
+```csharp
+public sealed class MaintenanceExecutionHistory : IMaintenanceExecutionHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MaintenanceExecutionHistory(string dataRoot);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1174](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1174) |  |
+| <code>public async Task RecordExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1182](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1182) |  |
+| <code>public async Task UpdateExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1203](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1203) |  |
+| <code>public MaintenanceExecution? GetExecution(string executionId);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1224](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1224) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetRecentExecutions(int limit = 50);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1231](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1231) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetExecutionsForSchedule(string scheduleId, int limit = 50);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1240](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1240) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetFailedExecutions(int limit = 50);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1250](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1250) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetExecutionsByTimeRange(DateTimeOffset from, DateTimeOffset to);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1261](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1261) |  |
+| <code>public ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 10);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1270](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1270) |  |
+| <code>public MaintenanceStatistics GetStatistics(TimeSpan? period = null);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1308](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1308) |  |
+| <code>public async Task&lt;int&gt; CleanupOldRecordsAsync(int maxAgeDays = 90, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1354](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1354) |  |
+
 ## MaintenanceExecutionStatus
 
 Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceExecutionStatus</code>. Kind: `enum`.
@@ -1216,13 +1244,3 @@ Declared public members:
 | <code>public long MaxRetainedTotalBytes { get; set; } = 128L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:325](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L325) |  |
 | <code>public int MaxRetainedRows { get; set; } = 250_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:326](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L326) |  |
 | <code>public int RetainedResultMinutes { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:327](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L327) |  |
-
-## DataQueryOwner
-
-Qualified name: <code>Meridian.Storage.Query.DataQueryOwner</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:11](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L11).
-
-```csharp
-public sealed record DataQueryOwner(string TenantId, string CompanyId, string OperatorId);
-```

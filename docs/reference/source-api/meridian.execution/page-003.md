@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperMatchOutcome
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:6](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L6).
+
+Outcome kind of one paper-matching evaluation.
+
+```csharp
+public enum PaperMatchOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Filled</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:9](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L9) | The order fills now at PaperMatchResult.FillPrice. |
+| <code>Resting</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:12](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L12) | The order does not fill against the current observation and rests. |
+| <code>NoMarketData</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:15](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L15) | No usable market data has been observed for the symbol. |
+
+## PaperMatchResult
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:28](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L28).
+
+Result of one paper-matching evaluation.
+
+```csharp
+public readonly record struct PaperMatchResult(PaperMatchOutcome Outcome, decimal? FillPrice, bool StopTriggered);
+```
+
 ## PaperObservationFreshnessPolicy
 
 Qualified name: <code>Meridian.Execution.PaperMatching.PaperObservationFreshnessPolicy</code>. Kind: `class`.
@@ -92,6 +124,25 @@ Declared public members:
 | <code>public decimal FeePerOrder { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:44](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L44) | Flat regulatory/exchange fee charged per order. Default: 0. |
 | <code>public decimal FeeBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:47](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L47) | Fee in basis points of fill notional. Default: 0. |
 | <code>public decimal SlippageBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:54](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L54) | Slippage in basis points of fill notional, charged as an explicit cash cost on every fill. The fill price itself stays inside the observed market-data envelope; slippage models execution friction beyond the observed spread. Default: 0. |
+
+## PaperOrderIntentScope
+
+Qualified name: <code>Meridian.Execution.PaperOrderIntentScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/OrderManagementSystemOptions.cs:80](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L80).
+
+```csharp
+public sealed record PaperOrderIntentScope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TenantId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:82](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L82) |  |
+| <code>public string CompanyId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:83](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L83) |  |
+| <code>public Guid FundAccountId { get; init; }</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:84](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L84) |  |
+| <code>public bool CanAccess(string? tenantId, string? companyId, Guid accountId) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:86](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L86) |  |
 
 ## PaperTradingGateway
 
@@ -580,10 +631,10 @@ Declared public members:
 | <code>public ExecutionJournal(string root) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:47](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L47) |  |
 | <code>public Task AppendAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:55](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L55) |  |
 | <code>public Task AppendConditionAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:59](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L59) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionJournalEntry&gt;&gt; ReadAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:117](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L117) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;JournalOrder&gt;&gt; OrdersAsync(Guid accountId, string? symbol = null, string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null, int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null, string? attemptId = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:128](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L128) |  |
-| <code>public async Task&lt;JournalSummary&gt; SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:293](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L293) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:445](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L445) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionJournalEntry&gt;&gt; ReadAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:149](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L149) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;JournalOrder&gt;&gt; OrdersAsync(Guid accountId, string? symbol = null, string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null, int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null, string? attemptId = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:160](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L160) |  |
+| <code>public async Task&lt;JournalSummary&gt; SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:325](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L325) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:477](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L477) |  |
 
 ## ExecutionJournalEntry
 
@@ -828,34 +879,4 @@ Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:24](../../../../src
 
 ```csharp
 public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);
-```
-
-## JournalOpeningEvidence
-
-Qualified name: <code>Meridian.Execution.Services.JournalOpeningEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:23](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L23).
-
-```csharp
-public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
-```
-
-## JournalOrder
-
-Qualified name: <code>Meridian.Execution.Services.JournalOrder</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:26](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L26).
-
-```csharp
-public sealed record JournalOrder(string OrderId, string Scope, Guid AccountId, string Symbol, string Side, string Status, decimal Quantity, decimal FilledQuantity, decimal? AverageFillPrice, string? StrategyId, string? RunId, string? Tag, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, IReadOnlyList<ExecutionJournalEntry> Events, string? AttemptId = null);
-```
-
-## JournalSummary
-
-Qualified name: <code>Meridian.Execution.Services.JournalSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:32](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L32).
-
-```csharp
-public sealed record JournalSummary(int Orders, int Fills, decimal? RealizedPnl, decimal? Commissions, decimal? Fees, decimal? Slippage, string Coverage, string Method = "FIFO operational attribution", decimal? NetRealizedPnl = null, IReadOnlyList<JournalAttribution>? Attributions = null);
 ```

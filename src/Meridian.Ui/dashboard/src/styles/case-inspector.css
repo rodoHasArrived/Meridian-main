@@ -1,0 +1,5 @@
+/* Closed native disclosures must not leave measurable, off-screen control boxes.
+   Chromium otherwise retains layout for descendants hidden by its details slot. */
+.case-inspector details:not([open]) > :not(summary) {
+  display: none;
+}

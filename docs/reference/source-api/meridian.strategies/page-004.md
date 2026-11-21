@@ -6,6 +6,301 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyDesignService
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyDesignService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyDesignService.cs:11](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L11).
+
+Validates, previews, and compiles browser Strategy Builder design documents.
+
+```csharp
+public sealed class StrategyDesignService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyDesignService();</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:27](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L27) |  |
+| <code>public IReadOnlyList&lt;StrategyDesignFieldCatalogItem&gt; GetFieldCatalog() =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:33](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L33) | Returns AMX-style fields mapped into Meridian canonical sources. |
+| <code>public IReadOnlyList&lt;StrategyDesignTemplate&gt; GetTemplates() =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:36](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L36) | Returns built-in Strategy Builder templates. |
+| <code>public StrategyDesignDocument Normalize(StrategyDesignDocument document);</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:39](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L39) | Normalizes a document before validation or persistence. |
+| <code>public StrategyDesignValidationResult Validate(StrategyDesignDocument document);</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:82](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L82) | Validates required inputs, field references, and transition graph safety. |
+| <code>public StrategyDesignPreviewResult Preview(StrategyDesignDocument document);</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:213](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L213) | Builds compile preview rows and trace without executing the design. |
+| <code>public StrategyDesignCompiledScript Compile(StrategyDesignDocument document);</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:225](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L225) | Compiles a validated design into QuantScript source. |
+| <code>public static StrategyDesignDraftSummary CreateDraftSummary(StrategyDesignDocument document);</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:267](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L267) | Builds a stable summary for draft list views. |
+| <code>public IReadOnlyList&lt;StrategyDesignRunTraceEntry&gt; BuildRunTrace(StrategyDesignDocument document, StrategyDesignValidationResult validation);</code> | [src/Meridian.Strategies/Services/StrategyDesignService.cs:291](../../../../src/Meridian.Strategies/Services/StrategyDesignService.cs#L291) | Builds deterministic trace rows used by preview and run responses. |
+
+## StrategyEngineRegistry
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyEngineRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:11](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L11).
+
+In-process registry for Strategy Engine definitions. Definitions stay explicit and serializable so Strategy Designer, QuantScript, covered-call, and future strategy types can share validation without a reflection-heavy plugin framework.
+
+```csharp
+public sealed class StrategyEngineRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyEngineRegistry(StrategyDesignService strategyDesignService);</code> | [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:15](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L15) |  |
+| <code>public IReadOnlyList&lt;StrategyEngineDefinition&gt; GetDefinitions();</code> | [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:20](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L20) |  |
+| <code>public StrategyEngineDefinition? GetDefinition(string strategyId, string? version = null);</code> | [src/Meridian.Strategies/Services/StrategyEngineRegistry.cs:52](../../../../src/Meridian.Strategies/Services/StrategyEngineRegistry.cs#L52) |  |
+
+## StrategyEngineValidationService
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyEngineValidationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyEngineValidationService.cs:13](../../../../src/Meridian.Strategies/Services/StrategyEngineValidationService.cs#L13).
+
+Validates Strategy Engine run requests before they can become durable run history, promotion candidates, or paper-session handoffs.
+
+```csharp
+public sealed class StrategyEngineValidationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyEngineValidationService(StrategyEngineRegistry registry);</code> | [src/Meridian.Strategies/Services/StrategyEngineValidationService.cs:22](../../../../src/Meridian.Strategies/Services/StrategyEngineValidationService.cs#L22) |  |
+| <code>public StrategyEngineValidationResult Validate(StrategyEngineRunRequest request, IReadOnlyList&lt;StrategyEngineDataAvailability&gt;? dataAvailability = null);</code> | [src/Meridian.Strategies/Services/StrategyEngineValidationService.cs:27](../../../../src/Meridian.Strategies/Services/StrategyEngineValidationService.cs#L27) |  |
+| <code>public static string ComputeInputHash(StrategyEngineRunRequest request);</code> | [src/Meridian.Strategies/Services/StrategyEngineValidationService.cs:378](../../../../src/Meridian.Strategies/Services/StrategyEngineValidationService.cs#L378) |  |
+
+## StrategyLedgerReconciliationSourceAdapter
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyLedgerReconciliationSourceAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:81](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L81).
+
+Maps retained strategy ledger snapshots into reconciliation ledger inputs.
+
+```csharp
+public sealed class StrategyLedgerReconciliationSourceAdapter : IStrategyLedgerReconciliationSourceAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationLedgerInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:83](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L83) |  |
+
+## StrategyLifecycleManager
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyLifecycleManager</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:19](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L19).
+
+Manages registered live strategies and returns verified terminal receipts for every admitted lifecycle command. Intent is retained before external state changes so recovery can reconcile an already-completed external action without repeating it.
+
+```csharp
+public sealed class StrategyLifecycleManager : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyLifecycleManager(IStrategyRepository repository, ILogger&lt;StrategyLifecycleManager&gt; logger) : this(repository, logger, null);</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:37](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L37) | Creates a new lifecycle manager. |
+| <code>public StrategyLifecycleManager(IStrategyRepository repository, ILogger&lt;StrategyLifecycleManager&gt; logger, IPromotionRecordStore? promotionRecordStore, ExecutionOperatorControlService? operatorControls = null, BrokerageConfiguration? brokerageConfiguration = null);</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:45](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L45) | Creates a manager with the authority required to revalidate live recovery. |
+| <code>public void Register(ILiveStrategy strategy) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:60](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L60) | Registers a strategy so it can be controlled by this manager. |
+| <code>public void Register(ILiveStrategy strategy, StrategyRunEntry? currentRun);</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:64](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L64) | Registers a restored strategy together with its retained control state. |
+| <code>public Task&lt;VerifiedOperationOutcome&gt; StartAsync(string strategyId, IExecutionContext ctx, RunType runType, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:191](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L191) | Starts a strategy and returns its retained terminal operation receipt. |
+| <code>public Task&lt;VerifiedOperationOutcome&gt; PauseAsync(string strategyId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:432](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L432) | Pauses a running strategy and returns its retained terminal operation receipt. |
+| <code>public Task&lt;VerifiedOperationOutcome&gt; StopAsync(string strategyId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:521](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L521) | Stops a strategy and returns its retained terminal operation receipt. |
+| <code>public Task&lt;VerifiedOperationOutcome&gt; ReconcileExternalStateAsync(string strategyId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:725](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L725) | Reconciles retained history with an external strategy state after an earlier final-evidence append failed. The external action is not repeated. |
+| <code>public IReadOnlyDictionary&lt;string, StrategyStatus&gt; GetStatuses();</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:844](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L844) | Returns a snapshot of all registered strategy IDs and their current status. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Strategies/Services/StrategyLifecycleManager.cs:1224](../../../../src/Meridian.Strategies/Services/StrategyLifecycleManager.cs#L1224) |  |
+
+## StrategyLiveAuthorizationService
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyLiveAuthorizationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs:15](../../../../src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs#L15).
+
+Resolves immutable promotion scope and serializes a run&#x27;s revocation with dispatch.
+
+```csharp
+public sealed class StrategyLiveAuthorizationService(string dataRoot, IStrategyRepository runs, IPromotionRecordStore promotions, StrategyArtifactRegistry artifacts, IExecutionGateway? gateway, TimeProvider clock, Func<Guid, CancellationToken, Task<bool>> accountIsCurrent) : ILiveStrategyOrderAuthorization
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;(StrategyLiveAuthorization? Grant, string? Failure)&gt; PrepareGrantAsync(StrategyRunEntry source, StrategyLiveAuthorizationRequest? request, CancellationToken ct);</code> | [src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs:26](../../../../src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs#L26) |  |
+| <code>public async Task&lt;StrategyLiveAuthorizationStatus&gt; CheckRunAsync(StrategyRunEntry run, CancellationToken ct);</code> | [src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs:55](../../../../src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs#L55) |  |
+| <code>public async Task&lt;LiveStrategyOrderAuthorizationLease&gt; AcquireAsync(string runId, string? strategyArtifactId, Guid? fundAccountId, string symbol, Func&lt;decimal?&gt; measureUsdNotional, CancellationToken ct);</code> | [src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs:61](../../../../src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs#L61) |  |
+
+## StrategyPortfolioReconciliationSourceAdapter
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyPortfolioReconciliationSourceAdapter</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:104](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L104).
+
+Maps retained strategy portfolio snapshots into reconciliation portfolio inputs.
+
+```csharp
+public sealed class StrategyPortfolioReconciliationSourceAdapter : IStrategyPortfolioReconciliationSourceAdapter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationPortfolioInput? Adapt(StrategyRunDetail detail);</code> | [src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs:106](../../../../src/Meridian.Strategies/Services/ReconciliationSourceAdapters.cs#L106) |  |
+
+## StrategyRunAuthoritySource
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyRunAuthoritySource</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:23](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L23).
+
+Supplies the OMS with retained strategy-run authority: the run record and the approved live promotion that targets it. Read-only; it never creates or repairs runs or promotions.
+
+```csharp
+public sealed class StrategyRunAuthoritySource : IStrategyRunAuthoritySource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunAuthoritySource(IStrategyRepository runs, IPromotionRecordStore promotions);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:29](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L29) |  |
+| <code>public async Task&lt;StrategyRunAuthoritySnapshot?&gt; GetAsync(string runId, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs:36](../../../../src/Meridian.Strategies/Services/StrategyRunAuthoritySource.cs#L36) |  |
+
+## StrategyRunContinuityService
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyRunContinuityService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyRunContinuityService.cs:9](../../../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs#L9).
+
+Builds a shared run-centered continuity drill-in across portfolio, ledger, cash-flow, and reconciliation seams.
+
+```csharp
+public sealed class StrategyRunContinuityService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunContinuityService(StrategyRunReadService runReadService, CashFlowProjectionService cashFlowProjectionService, IReconciliationRunService reconciliationRunService);</code> | [src/Meridian.Strategies/Services/StrategyRunContinuityService.cs:18](../../../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs#L18) |  |
+| <code>public Task&lt;StrategyRunContinuityDetail?&gt; GetRunContinuityAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunContinuityService.cs:28](../../../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs#L28) |  |
+| <code>public Task&lt;StrategyRunContinuityDetail?&gt; GetRunContinuityAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunContinuityService.cs:31](../../../../src/Meridian.Strategies/Services/StrategyRunContinuityService.cs#L31) |  |
+
+## StrategyRunReadScope
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyRunReadScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Strategies/Services/StrategyRunReadService.cs:16](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L16).
+
+Authoritative tenant and company scope for workstation strategy-run reads.
+
+```csharp
+public sealed record StrategyRunReadScope(string? TenantId, string? CompanyId);
+```
+
+## StrategyRunReadService
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyRunReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:8](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L8).
+
+```csharp
+public sealed partial class StrategyRunReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;PeriodComparisonDto?&gt; GetAttributionPeriodComparisonAsync(string runId, DateOnly? periodEnd, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:17](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L17) | Per-symbol P&amp;L for one calendar month of a run against the month before (UX Phase E). The month is the one containing periodEnd (default: the run&#x27;s last recorded day). Period P&amp;L is the change in each symbol&#x27;s cumulative realized plus unrealized P&amp;L between month ends, read from the run&#x27;s daily portfolio snapshots, with commissions and financing as their own lines; the total is the change in run equity. Returns null when the run does not exist. |
+| <code>public Task&lt;PeriodComparisonDto?&gt; GetAttributionPeriodComparisonAsync(string runId, DateOnly? periodEnd, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs:20](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.AttributionComparison.cs#L20) |  |
+
+Source: [src/Meridian.Strategies/Services/StrategyRunReadService.cs:21](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L21).
+
+Provides the shared Phase 12 run browser/read model for backtest, paper, and live history.
+
+```csharp
+public sealed partial class StrategyRunReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunReadService(IStrategyRepository repository, PortfolioReadService portfolioReadService, LedgerReadService ledgerReadService, IPromotionRecordStore? promotionRecordStore = null, CashFlowProjectionService? cashFlowProjectionService = null, IStrategyRunLedgerSource? postedLedgerSource = null);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:48](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L48) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunSummary&gt;&gt; GetRunsAsync(string? strategyId = null, RunType? runType = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:64](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L64) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunSummary&gt;&gt; GetRunsAsync(string? strategyId, RunType? runType, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:70](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L70) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunSummary&gt;&gt; GetRunsAsync(StrategyRunHistoryQuery query, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:105](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L105) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunSummary&gt;&gt; GetRunsAsync(StrategyRunHistoryQuery query, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:110](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L110) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunTimelineEntry&gt;&gt; GetMergedTimelineAsync(StrategyRunHistoryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:146](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L146) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunTimelineEntry&gt;&gt; GetMergedTimelineAsync(StrategyRunHistoryQuery query, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:167](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L167) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunLineageTimelineEntry&gt;&gt; GetLineageTimelineAsync(StrategyRunHistoryQuery query, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:190](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L190) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunLineageTimelineEntry&gt;&gt; GetLineageTimelineAsync(StrategyRunHistoryQuery query, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:208](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L208) |  |
+| <code>public Task&lt;StrategyRunDetail?&gt; GetRunDetailAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:228](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L228) |  |
+| <code>public Task&lt;StrategyRunDetail?&gt; GetRunDetailAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:231](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L231) |  |
+| <code>public async Task&lt;bool&gt; IsRunAccessibleAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:240](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L240) |  |
+| <code>public static BiasDisclosureDto? MapBiasDisclosure(BiasDisclosureReport? report);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:374](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L374) | Projects the engine&#x27;s bias-disclosure report onto the workstation DTO. |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunSummary&gt;&gt; GetActiveRunsAsync(CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:645](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L645) | Returns all runs currently in a StrategyRunStatus.Running or StrategyRunStatus.Paused state, ordered most-recently-updated first. Used by workspace shell tiles and summary stats to surface active run counts. |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyRunSummary&gt;&gt; GetRunsByModeAsync(StrategyRunMode mode, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:662](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L662) | Returns runs filtered to a single mode, ordered most-recently-started first. Used by research/trading surfaces that display only backtest, paper, or live rows. |
+| <code>public async Task&lt;BacktestResult?&gt; GetRetainedResultAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:675](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L675) | Returns retained source evidence only after the same tenant/company visibility check as other run reads. |
+| <code>public Task&lt;LedgerSummary?&gt; GetLedgerSummaryAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:682](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L682) |  |
+| <code>public Task&lt;LedgerSummary?&gt; GetLedgerSummaryAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:685](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L685) |  |
+| <code>public Task&lt;LedgerSummary?&gt; GetLedgerSummaryAsync(string runId, DateTimeOffset asOf, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:695](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L695) | Reads retained postings on or before the inclusive economic timestamp. |
+| <code>public Task&lt;LedgerSummary?&gt; GetLedgerSummaryAsync(string runId, DateTimeOffset asOf, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:698](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L698) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(IEnumerable&lt;string&gt; runIds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:723](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L723) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(IEnumerable&lt;string&gt; runIds, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:728](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L728) |  |
+| <code>public Task&lt;IReadOnlyList&lt;RunComparisonDto&gt;&gt; GetRunComparisonDtosAsync(IEnumerable&lt;string&gt; runIds, bool governanceFirst = false, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:794](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L794) |  |
+| <code>public Task&lt;IReadOnlyList&lt;RunComparisonDto&gt;&gt; GetRunComparisonDtosAsync(IEnumerable&lt;string&gt; runIds, StrategyRunReadScope scope, bool governanceFirst = false, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:800](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L800) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategySweepResultGroup&gt;&gt; GetSweepResultGroupsAsync(int limit = 25, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:988](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L988) |  |
+| <code>public Task&lt;IReadOnlyList&lt;StrategySweepResultGroup&gt;&gt; GetSweepResultGroupsAsync(int limit, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:993](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L993) |  |
+| <code>public Task&lt;EquityCurveSummary?&gt; GetEquityCurveAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1505](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1505) | Returns the equity curve with per-point drawdown for the given run. Returns null when the run does not exist or has no snapshots recorded. |
+| <code>public Task&lt;EquityCurveSummary?&gt; GetEquityCurveAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1508](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1508) |  |
+| <code>public Task&lt;RunFillSummary?&gt; GetFillsAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1575](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1575) | Returns all executed fills for the given run, ordered by fill time. Returns null when the run does not exist. |
+| <code>public Task&lt;RunFillSummary?&gt; GetFillsAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1578](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1578) |  |
+| <code>public Task&lt;RunAttributionSummary?&gt; GetAttributionAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1624](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1624) | Returns per-symbol P&amp;L attribution for the given run. Returns null when the run does not exist or has no metrics. |
+| <code>public Task&lt;RunAttributionSummary?&gt; GetAttributionAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1627](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1627) |  |
+| <code>public Task&lt;RunPortfolioDrillInSummary?&gt; GetPortfolioDrillInAsync(string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1677](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1677) | Returns a normalized, versioned portfolio drill-in aggregate for one run. |
+| <code>public Task&lt;RunPortfolioDrillInSummary?&gt; GetPortfolioDrillInAsync(string runId, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.cs:1680](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.cs#L1680) |  |
+
+Source: [src/Meridian.Strategies/Services/StrategyRunReadService.Ledger.cs:7](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.Ledger.cs#L7).
+
+```csharp
+public sealed partial class StrategyRunReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyLedger?&gt; GetLedgerSnapshotAsync(string runId, StrategyRunReadScope scope, DateTimeOffset? asOf = null, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunReadService.Ledger.cs:13](../../../../src/Meridian.Strategies/Services/StrategyRunReadService.Ledger.cs#L13) | Rebuilds an isolated read snapshot from the retained run journal after applying the same tenant/company visibility policy as every other run drill-in. An absent ledger stays absent. |
+
+## StrategyRunResearchRecorder
+
+Qualified name: <code>Meridian.Strategies.Services.StrategyRunResearchRecorder</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs:27](../../../../src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs#L27).
+
+Records research-originated backtests into the configured IStrategyRepository so a run produced in a scripting surface carries the same lineage as one launched from the Studio.
+
+```csharp
+public sealed class StrategyRunResearchRecorder(IStrategyRepository store, ILogger<StrategyRunResearchRecorder> logger, IStrategyRunLedgerArchive? ledgerArchive) : IResearchRunRecorder
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunResearchRecorder(IStrategyRepository store, ILogger&lt;StrategyRunResearchRecorder&gt; logger) : this(store, logger, null);</code> | [src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs:33](../../../../src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs#L33) | Retains the existing in-memory/isolated recorder constructor. |
+| <code>public async Task&lt;string?&gt; RecordAsync(ResearchRunDescriptor descriptor, BacktestResult result, CancellationToken ct = default);</code> | [src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs:45](../../../../src/Meridian.Strategies/Services/StrategyRunResearchRecorder.cs#L45) |  |
+
 ## WeekdayReconciliationSlaCalendarResolver
 
 Qualified name: <code>Meridian.Strategies.Services.WeekdayReconciliationSlaCalendarResolver</code>. Kind: `class`.
@@ -109,6 +404,26 @@ Declared public members:
 | <code>public string HistoryPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:21](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L21) |  |
 | <code>public string AuthorityLockPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs:23](../../../../src/Meridian.Strategies/Storage/JsonlPromotionRecordStore.cs#L23) |  |
 
+## ScopedStrategyDesignStore
+
+Qualified name: <code>Meridian.Strategies.Storage.ScopedStrategyDesignStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs:13](../../../../src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs#L13).
+
+Retains scoped Designer revisions using the case-history store&#x27;s cross-process compare-and-append.
+
+```csharp
+public sealed class ScopedStrategyDesignStore(IOperationalCaseHistoryStore history)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StrategyDesignDocument?&gt; SaveAsync(StrategyRunRepositoryScope scope, string actor, StrategyDesignDocument document, string? expectedRevision, CancellationToken ct);</code> | [src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs:18](../../../../src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs#L18) |  |
+| <code>public async Task&lt;StrategyDesignDocument?&gt; GetAsync(StrategyRunRepositoryScope scope, string documentId, string? revision, CancellationToken ct);</code> | [src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs:74](../../../../src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs#L74) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;StrategyDesignDraftSummary&gt;&gt; ListAsync(StrategyRunRepositoryScope scope, CancellationToken ct);</code> | [src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs:84](../../../../src/Meridian.Strategies/Storage/ScopedStrategyDesignStore.cs#L84) |  |
+
 ## StrategyDesignStoreOptions
 
 Qualified name: <code>Meridian.Strategies.Storage.StrategyDesignStoreOptions</code>. Kind: `record`.
@@ -164,7 +479,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Storage.StrategyRunStoreOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1744](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1744).
+Source: [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1748](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1748).
 
 ```csharp
 public sealed record StrategyRunStoreOptions(string RootDirectory)
@@ -174,4 +489,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1746](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1746) |  |
+| <code>public string SnapshotPath =&gt; …;</code> | [src/Meridian.Strategies/Storage/StrategyRunStore.cs:1750](../../../../src/Meridian.Strategies/Storage/StrategyRunStore.cs#L1750) |  |

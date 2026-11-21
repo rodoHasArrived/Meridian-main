@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SessionTcaReport
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:388](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L388).
+
+TCA report over a paper/live session fill tape.
+
+```csharp
+public sealed record SessionTcaReport(string SessionId, string StrategyId, DateTimeOffset GeneratedAtUtc, SessionTcaCostSummary CostSummary, IReadOnlyList<SessionSymbolTcaSummary> SymbolSummaries, IReadOnlyList<SessionTcaFillOutlier> Outliers, SessionTcaExecutionQuality ExecutionQuality);
+```
+
+## SessionTcaReporter
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReporter</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:12](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L12).
+
+Generates a Transaction Cost Analysis (TCA) report from a paper/live session fill tape. Computes commission attribution, per-symbol cost breakdowns, outlier detection, and execution-quality statistics (time-to-fill, limit-price improvement). This is a post-processing pass over the session&#x27;s persisted ExecutionReport history; it requires no market data beyond the fills and orders already recorded by the session.
+
+```csharp
+public static class SessionTcaReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SessionTcaReport Generate(string sessionId, string strategyId, IReadOnlyList&lt;ExecutionReport&gt; fills, IReadOnlyList&lt;OrderState&gt;? orders = null);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:33](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L33) | Generates a SessionTcaReport for sessionId from the session&#x27;s fill history. Only reports of type ExecutionReportType.Fill or ExecutionReportType.PartialFill with a fill price and positive filled quantity contribute. Report sequences whose per-order quantities are cumulative (as emitted by brokers that report running totals, e.g. the IB gateway) are converted to incremental quantities before aggregation. orders is optional and enriches the report with time-to-fill and limit-price-improvement statistics. Returns a zero-valued report when no usable fills exist. |
+
+## SimulatedFillHandoff
+
+Qualified name: <code>Meridian.Execution.Services.SimulatedFillHandoff</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PaperOrderEvidenceReader.cs:51](../../../../src/Meridian.Execution/Services/PaperOrderEvidenceReader.cs#L51).
+
+```csharp
+public sealed record SimulatedFillHandoff(TradeExecutedEvent Fill, string ReceiptSha256);
+```
+
+## VariationMarginPositionSnapshot
+
+Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1407](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1407).
+
+An open position that settles daily variation margin, as an end-of-day settlement job sees it.
+
+```csharp
+public sealed record VariationMarginPositionSnapshot(string AccountId, string Symbol, decimal Quantity, decimal LastSettlementPrice, decimal ContractMultiplier, DateTimeOffset? OpenedAt);
+```
+
+## ITaxLotSelector
+
+Qualified name: <code>Meridian.Execution.TaxLotAccounting.ITaxLotSelector</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs:9](../../../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs#L9).
+
+Selects which open lots to relieve when a closing trade occurs. Implementations encode cost-basis identification methods (FIFO, LIFO, HIFO, SpecificId).
+
+```csharp
+public interface ITaxLotSelector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TaxLotAccountingMethod Method { get; }</code> | [src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs:12](../../../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs#L12) | The accounting method this selector encodes. |
+| <code>TaxLotReliefResult Relieve(IReadOnlyList&lt;TaxLot&gt; openLots, long quantityToClose, decimal closePrice);</code> | [src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs:28](../../../../src/Meridian.Execution/TaxLotAccounting/ITaxLotSelector.cs#L28) | Selects lots from openLots to satisfy a closing trade of quantityToClose shares/contracts at closePrice. |
+
+## RelievedLot
+
+Qualified name: <code>Meridian.Execution.TaxLotAccounting.RelievedLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:13](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L13).
+
+Represents one lot that was partially or fully relieved during a closing trade, together with the realized gain or loss produced by that relief.
+
+```csharp
+public sealed record RelievedLot(TaxLot Lot, long RelievedQuantity, decimal ClosePrice)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:19](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L19) | Realized gain/(loss) for this specific lot parcel. |
+| <code>public decimal Proceeds =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:23](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L23) | Proceeds received for the relieved quantity. |
+| <code>public decimal CostRelieved =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:26](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L26) | Cost basis of the relieved quantity. |
+
 ## TaxLotAccountingMethod
 
 Qualified name: <code>Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod</code>. Kind: `enum`.

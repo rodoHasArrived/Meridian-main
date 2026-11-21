@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashSourceReceiptRevision
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceReceiptRevision</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L27).
+
+```csharp
+public sealed record AccountCashSourceReceiptRevision(string ExpectedFlowId, DateOnly ReceiptDate);
+```
+
+## AccountCashSourceWatchObservation
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceWatchObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L28).
+
+```csharp
+public sealed record AccountCashSourceWatchObservation(string ObservationId, Guid SecurityId, string Kind, DateOnly EffectiveDate, string Value, string? Agency, string? SupersedesObservationId);
+```
+
 ## BondCouponRecognitionEvidenceVerifier
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.BondCouponRecognitionEvidenceVerifier</code>. Kind: `class`.
@@ -110,11 +130,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EvidenceGraphService(EvidenceSubjectResolver subjectResolver, EvidenceTemplateRegistry templateRegistry, IEnumerable&lt;IEvidenceContributor&gt; contributors, ILogger&lt;EvidenceGraphService&gt; logger, IWorkflowActionCatalog? actionCatalog = null, EvidencePacketValidationService? validationService = null, PostedLedgerAmountProvenanceService? postedLedgerAmounts = null, ReportLedgerAmountProvenanceService? reportLedgerAmounts = null, PreparerAttestationEvidenceProjectionService? preparerAttestations = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L23) |  |
-| <code>public Task&lt;IReadOnlyList&lt;EvidenceSubjectDto&gt;&gt; ListSubjectsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:45](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L45) |  |
-| <code>public bool IsSupportedSubjectKind(string? subjectKind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:48](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L48) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:50](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L50) |  |
-| <code>public async Task&lt;EvidenceGraphDto?&gt; GetGraphAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L183) |  |
+| <code>public EvidenceGraphService(EvidenceSubjectResolver subjectResolver, EvidenceTemplateRegistry templateRegistry, IEnumerable&lt;IEvidenceContributor&gt; contributors, ILogger&lt;EvidenceGraphService&gt; logger, IWorkflowActionCatalog? actionCatalog = null, EvidencePacketValidationService? validationService = null, PostedLedgerAmountProvenanceService? postedLedgerAmounts = null, ReportLedgerAmountProvenanceService? reportLedgerAmounts = null, PreparerAttestationEvidenceProjectionService? preparerAttestations = null, TrialBalanceAmountProvenanceService? trialBalanceAmounts = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L24) |  |
+| <code>public Task&lt;IReadOnlyList&lt;EvidenceSubjectDto&gt;&gt; ListSubjectsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:48](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L48) |  |
+| <code>public bool IsSupportedSubjectKind(string? subjectKind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:51](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L51) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:53](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L53) |  |
+| <code>public async Task&lt;EvidenceGraphDto?&gt; GetGraphAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:190](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L190) |  |
 
 ## EvidenceManifestFile
 
@@ -964,6 +984,18 @@ Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowSe
 public sealed partial class StatementReconciliationReportWorkflowService
 ```
 
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L8).
+
+```csharp
+public sealed partial class StatementReconciliationReportWorkflowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool SupportsReviewedRowCases =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L10) |  |
+
 ## StatementToReportArtifactDownload
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportArtifactDownload</code>. Kind: `record`.
@@ -999,46 +1031,3 @@ Compatibility execution result for callers compiled against the pre-rename opera
 ```csharp
 public sealed record StatementToReportWorkflowExecution(StatementImportCommitResultDto? ImportResult, StatementToReportWorkflowDto Workflow);
 ```
-
-## StatementToReportWorkflowService
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportWorkflowService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:35](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L35).
-
-Source- and binary-compatible adapter over the single statement reconciliation report workflow. It retains the old public API and wire links without owning storage, orchestration, or rendering.
-
-```csharp
-public sealed class StatementToReportWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementToReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementToReportWorkflowService&gt;? logger = null) : this(new StatementReconciliationReportWorkflowService(imports, evidence, statementRuns, dataRoot));</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:39](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L39) |  |
-| <code>public async Task&lt;StatementToReportWorkflowExecution&gt; StartAsync(StatementToReportStartCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:59](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L59) |  |
-| <code>public async Task&lt;StatementToReportWorkflowDto?&gt; GetAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:75](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L75) |  |
-| <code>public async Task&lt;StatementToReportWorkflowExecution?&gt; ResumeAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:85](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L85) |  |
-| <code>public async Task&lt;StatementToReportArtifactDownload?&gt; DownloadArtifactAsync(string workflowId, string artifactId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:99](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L99) |  |
-
-## StrategyRunEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StrategyRunEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L17).
-
-Adds strategy-run provenance and supporting execution evidence to an evidence graph.
-
-```csharp
-public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StrategyRunEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L23) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L28) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L30) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:33](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L33) |  |

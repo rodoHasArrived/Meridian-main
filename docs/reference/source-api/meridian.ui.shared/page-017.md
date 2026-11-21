@@ -6,6 +6,91 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceCoordinatorService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernanceCoordinatorService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.ArtifactAccess.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.ArtifactAccess.cs#L13).
+
+```csharp
+public sealed partial class ReportingGovernanceCoordinatorService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.ArtifactValidation.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.ArtifactValidation.cs#L8).
+
+```csharp
+public sealed partial class ReportingGovernanceCoordinatorService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:418](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L418).
+
+Coordinates the completed renderer manifest with the canonical reporting governance aggregate, immutable artifact vault, and server-owned certification/readiness evidence. The legacy orchestration approval state is intentionally not mutated; governance has one authoritative lifecycle here.
+
+```csharp
+public sealed partial class ReportingGovernanceCoordinatorService : IReportingGovernanceEndpointCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReportingGovernanceCoordinatorService(ReportingGovernanceService governance, IReportingGovernanceRepository repository, ReportingRunCertificationService certification, IReportingOrchestrationService orchestration, ReportingArtifactVaultService artifactVault, IReportingCertifiedArtifactProducer artifactProducer, IReportingArtifactRetentionAuthorityProvider retentionAuthorityProvider, IReportingRestatementChangedLineResolver restatementChangedLineResolver, IReportingRestatementCertificationInputProvider restatementCertificationProvider, IReportingReleaseConsistencyGate releaseConsistencyGate);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:441](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L441) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; GetAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:469](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L469) |  |
+| <code>public Task&lt;IReadOnlyList&lt;GovernedReportingRun&gt;&gt; SearchRunsAsync(string query, int limit, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:488](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L488) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingGovernedArtifactDescriptor&gt;&gt; ListRetainedArtifactsAsync(string runId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:529](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L529) |  |
+| <code>public async Task&lt;ReportingGovernedArtifactDownload&gt; DownloadRetainedArtifactAsync(string runId, string artifactId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:565](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L565) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;GovernedReportingRun&gt;&gt; ListAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:598](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L598) |  |
+| <code>public async Task&lt;ReportingGovernanceSeriesHistory&gt; GetSeriesHistoryAsync(string seriesId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:620](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L620) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReportingRestatementRequest&gt;&gt; ListRestatementRequestsAsync(string predecessorRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:652](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L652) |  |
+| <code>public async Task&lt;ReportingRestatementRequest&gt; GetRestatementRequestAsync(string requestId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:675](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L675) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; CreateFromCompletedCertifiedManifestAsync(string manifestRunId, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:695](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L695) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; ValidateAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:857](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L857) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; SubmitAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:881](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L881) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; ApproveAsync(string runId, long expectedVersion, string decisionNote, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:893](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L893) |  |
+| <code>public async Task&lt;GovernedReportingRun&gt; ReleaseAsync(string runId, long expectedVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:912](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L912) |  |
+| <code>public async Task&lt;ReportingRestatementRequest&gt; RequestRestatementAsync(string predecessorRunId, long expectedPredecessorVersion, string reason, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:980](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L980) |  |
+| <code>public async Task&lt;ReportingRestatementApprovalResult&gt; ApproveRestatementAsync(string requestId, long expectedRequestVersion, ReportingGovernanceCallerContext caller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:1006](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L1006) |  |
+
+## ReportingGovernanceSeriesHistory
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernanceSeriesHistory</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:185](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L185).
+
+```csharp
+public sealed record ReportingGovernanceSeriesHistory(string SeriesId, IReadOnlyList<GovernedReportingRun> Runs, IReadOnlyList<ReportingRestatementRequest> RestatementRequests);
+```
+
+## ReportingGovernedArtifactDescriptor
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L64).
+
+```csharp
+public sealed record ReportingGovernedArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, ReportingDeclaredArtifactKind Kind, bool IsPreview, string DownloadRoute);
+```
+
+## ReportingGovernedArtifactDownload
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDownload</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:74](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L74).
+
+```csharp
+public sealed record ReportingGovernedArtifactDownload(ReportingGovernedArtifactDescriptor Descriptor, byte[] Content, string AccessAuditEventId);
+```
+
+## ReportingGovernedArtifactProduction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactProduction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:58](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L58).
+
+```csharp
+public sealed record ReportingGovernedArtifactProduction(string RunId, string ManifestArtifactId, ReportingAuthoritativeAsOfCertification Certification, ImmutableArray<ReportingRenderedArtifact> Artifacts);
+```
+
 ## ReportingHttpRelayClientOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingHttpRelayClientOptions</code>. Kind: `record`.
@@ -426,6 +511,26 @@ Declared public members:
 | <code>public ReportingRunReadinessService(IReportingTemplateCatalog templateCatalog, GovernedReportingTemplateCatalog? governedTemplateCatalog = null, IReportingRunReadinessDependencyEvaluator? dependencyEvaluator = null, Func&lt;DateTimeOffset&gt;? utcNow = null, ReportingRunReadinessOptions? options = null);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:463](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L463) |  |
 | <code>public async Task&lt;ReportingRunReadinessDto&gt; AssessAsync(ReportingRunRequestDto request, ReportAccessQueryContext? accessContext = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs:477](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReadinessService.cs#L477) |  |
 
+## ReportingRunReviewService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunReviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs#L8).
+
+Authorizes both retained inputs and binds browser approval to exactly reviewed evidence.
+
+```csharp
+public sealed class ReportingRunReviewService(IReportingRunStore runs, IReportingArtifactStore artifacts, IReportingReviewMaterialityPolicyProvider? materialityPolicies = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;RetainedReportingRunReview&gt; PrepareAsync(IReportingGovernanceEndpointCoordinator coordinator, string runId, ReportingGovernanceCallerContext caller, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs:11](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs#L11) |  |
+| <code>public async Task&lt;string&gt; VerifyAndRetainAsync(IReportingGovernanceEndpointCoordinator coordinator, string runId, long expectedVersion, string reviewId, ReportingGovernanceCallerContext caller, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs#L37) |  |
+| <code>public async Task&lt;ReportingRunReview&gt; ReadAsync(IReportingGovernanceEndpointCoordinator coordinator, string runId, string reviewId, ReportingGovernanceCallerContext caller, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs:61](../../../../src/Meridian.Ui.Shared/Services/ReportingRunReviewService.cs#L61) |  |
+
 ## ReportingRunStoreOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingRunStoreOptions</code>. Kind: `record`.
@@ -777,148 +882,3 @@ Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:17](../../
 ```csharp
 public sealed record ReportPackDeliveryStoreOptions(string SnapshotPath);
 ```
-
-## ReportPackProvenanceResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackProvenanceResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs#L19).
-
-W9-TRUTH-001: derives the data-provenance mark a report pack must carry from the evidence it cites — the strategy runs behind its figures and the posted valuation entries behind its balances. A pack citing any simulated, seeded, or sample input inherits the strongest non-real provenance of those inputs, so a derived figure can never enter report-pack evidence without the blocking mark. Unknown tokens degrade to &quot;simulated&quot;, never to real.
-
-```csharp
-public static class ReportPackProvenanceResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static string? ResolveDerivedToken(IReadOnlyList&lt;StrategyRunEntry&gt; runs) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs#L21) |  |
-| <code>public static string? ResolveDerivedToken(IReadOnlyList&lt;StrategyRunEntry&gt; runs, IReadOnlyList&lt;JournalEntry&gt; valuationEntries);</code> | [src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs:34](../../../../src/Meridian.Ui.Shared/Services/ReportPackProvenanceResolver.cs#L34) | Derives the pack&#x27;s mark from both evidence lanes. |
-
-## ReportPackRestatementCandidateResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRestatementCandidateResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs:53](../../../../src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs#L53).
-
-Report-pack-backed IRestatementCandidateResolver for the Security Master Passport Workbench&#x27;s closed-period restatement path (Phase 3). When a governed reference-data edit publishes into a locked accounting period, this resolver locates the published report packs that consumed the edited security and surfaces them as restatement candidates. The operator approves each via ReportPackWorkflowService.Restate; the workbench only proposes — it never mutates a published number. This replaces NullRestatementCandidateResolver as the registered default, so a hard-closed book with report exposure no longer always degrades to a manual &quot;locate affected packs&quot; task. Matching. A pack is an actionable candidate when it is in the live ReportPackWorkflowStateDto.Published state, is scoped to the impacted fund profile, and carries a retained report-line provenance entry tying a line to this security (by SecurityMasterId/SecurityDefinitionId, or a security-kind source whose id is the security). Matching is precise on purpose: a published pack that cannot be tied to the security is left to the caller&#x27;s default-deny safety net (a hard-closed book still reports SecurityMasterRestatementDecision.RestatementRequired with a manual locate task), so a genuine miss is never silently completed. Already-restated packs. A pack already in ReportPackWorkflowStateDto.Restated that still references the security is deliberately NOT returned as a candidate: the workflow only permits Restated -&gt; Archived, so ReportPackWorkflowService.Restate (which transitions to Restated) would reject a repeat restatement as an invalid transition — a candidate the operator could not act on. Such a match is instead logged for manual attention rather than silently dropped. Supporting repeated restatement is a deferred report-pack workflow change. Lookup. Candidate records are located through ReportPackWorkflowService.ListRecordsForSecurityInFund, which uses the durable security→report-line index (IReportPackSecurityLineIndex) for an O(matches) lookup and falls back to a full fund scan when no index is wired. The membership rule is the shared ReportPackSecurityLineMatcher, so the index and this resolver agree on exactly which lines reference the security. Period narrowing. A pack whose reporting period falls entirely before the edit&#x27;s effective date cannot be affected by it and is dropped (via ReportPeriodRange). This is fail-open: only unambiguous ISO period labels (year, year-month, year-month-day) are parsed; fiscal P/Q labels and free text are kept, so narrowing reduces over-inclusion without ever causing a silent miss. Deferred to later slices: repeated-restatement workflow support (so an already-restated pack can be re-restated instead of only logged); soft-closed governed-adjustment posting; exposing the index&#x27;s cross-fund lookup on a public surface; and a canonical period identifier that would let the narrowing parse fiscal period/quarter labels exactly.
-
-```csharp
-public sealed class ReportPackRestatementCandidateResolver : IRestatementCandidateResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportPackRestatementCandidateResolver(ReportPackWorkflowService reportPackWorkflow, ILogger&lt;ReportPackRestatementCandidateResolver&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs:58](../../../../src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs#L58) |  |
-| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs#L66) |  |
-
-## ReportPackRunReadService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Access.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Access.cs#L9).
-
-```csharp
-public sealed partial class ReportPackRunReadService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs#L6).
-
-```csharp
-public sealed partial class ReportPackRunReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;WorkstationReportingPayload&gt; BuildPayloadAsync(ReportAccessQueryContext? accessContext, int recentRunLimit = DefaultRecentRunLimit, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs:8](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs#L8) |  |
-| <code>public async Task&lt;WorkstationReportingHistoryPayload&gt; BuildCanonicalHistoryAsync(ReportAccessQueryContext? accessContext, int limit = 25, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs:53](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.CanonicalDeliveries.cs#L53) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L16).
-
-Builds report-pack run projections and reporting datasets from retained runs and workflow records.
-
-```csharp
-public sealed partial class ReportPackRunReadService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportPackRunReadService(IReportingTemplateCatalog templateCatalog, IReportingRunStore? runStore = null, ReportPackWorkflowService? workflowService = null, ReportTemplateRegistryService? templateRegistry = null, ReportPackDeliveryService? deliveryService = null, ReportingScheduleService? scheduleService = null, ReportingStarterKitService? starterKitService = null, IReportingDeliveryStore? canonicalDeliveryStore = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:158](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L158) |  |
-| <code>public WorkstationReportingPayload BuildPayload(int recentRunLimit = DefaultRecentRunLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:178](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L178) |  |
-| <code>public WorkstationReportingPayload BuildPayload(ReportAccessQueryContext? accessContext, int recentRunLimit = DefaultRecentRunLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:181](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L181) |  |
-| <code>public static WorkstationReportingPayload BuildFallbackPayload() =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:321](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L321) |  |
-| <code>public StructuredReportingExportPayloadDto GetStructuredReportingExport(string exportId, ReportAccessQueryContext? accessContext = null, int recentRunLimit = DefaultRecentRunLimit);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:324](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L324) |  |
-| <code>public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; BuildReportWriterDatasetRows(ReportAccessQueryContext? accessContext = null, int recentRunLimit = DefaultRecentRunLimit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:356](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L356) |  |
-| <code>public static ReportPackDistributionPolicy ResolveDistributionPolicy(string distributionId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:370](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L370) |  |
-| <code>public static WorkstationReportPackDistributionPayload[] BuildDistributionRecords(IReadOnlyList&lt;ReportPackWorkflowRecordDto&gt; workflowRecords, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1675](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1675) |  |
-| <code>public static ReportingScheduleDeliveryPlanDto[] BuildScheduleDeliveryPlans(IReadOnlyList&lt;ReportingScheduleRecordDto&gt; schedules, IReadOnlyList&lt;ReportPackDeliveryAttemptDto&gt;? deliveryAttempts = null);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs:1716](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.cs#L1716) |  |
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:5](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L5).
-
-```csharp
-public sealed partial class ReportPackRunReadService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.ReportedPeriods.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.ReportedPeriods.cs#L9).
-
-Which retained report versions count as reported figures, and the previous reported period the portfolio P&amp;L slices compare with.
-
-```csharp
-public sealed partial class ReportPackRunReadService
-```
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.RunSnapshots.cs:6](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.RunSnapshots.cs#L6).
-
-```csharp
-public sealed partial class ReportPackRunReadService
-```
-
-## ReportPackDistributionPolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService.ReportPackDistributionPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L55).
-
-```csharp
-public sealed record ReportPackDistributionPolicy(string DistributionId, string Recipient, string RecipientRole, string Channel, string Owner, string Route, TimeSpan ApprovalSla, TimeSpan PublicationSla, TimeSpan DeliverySla, TimeSpan CorrectionSla);
-```
-
-## ReportPackSecurityLineIndexEntry
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineIndexEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L10).
-
-One report pack&#x27;s contribution to a security in the security→report-line index: which report (and the fund/state it is in) references SecurityId, and on which report lines.
-
-```csharp
-public sealed record ReportPackSecurityLineIndexEntry(Guid SecurityId, Guid ReportId, string FundProfileId, ReportPackWorkflowStateDto State, IReadOnlyList<string> LineKeys);
-```
-
-## ReportPackSecurityLineMatcher
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineMatcher</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:13](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L13).
-
-Shared &quot;does this report line reference a security&quot; matcher for the report-pack restatement path. Extracted so the candidate resolver (ReportPackRestatementCandidateResolver) and the durable security→report-line index (IReportPackSecurityLineIndex) agree on exactly one membership rule: a report-line provenance entry references a security when its SecurityMasterId or SecurityDefinitionId parses to the security id, or when it carries a security-kind source whose SourceId parses to the security id.
-
-```csharp
-public static class ReportPackSecurityLineMatcher
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static bool LineReferencesSecurity(ReportPackLineProvenanceDto line, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:16](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L16) | True when line ties a report line to securityId. |
-| <code>public static bool RecordReferencesSecurity(ReportPackWorkflowRecordDto record, Guid securityId);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L25) | True when record has any retained provenance line referencing the security. |
-| <code>public static IEnumerable&lt;Guid&gt; ReferencedSecurityIds(ReportPackLineProvenanceDto line);</code> | [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs:37](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineMatcher.cs#L37) | The distinct security ids a single provenance line contributes — the reverse of LineReferencesSecurity: for any returned id s, LineReferencesSecurity(line, s) is true, and vice versa. Used to build the security→report-line index. |

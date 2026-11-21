@@ -299,6 +299,7 @@ public sealed class UiServer : IAsyncDisposable
                 if (!string.IsNullOrWhiteSpace(
                         Environment.GetEnvironmentVariable(LifecycleSupervisorBridgeHostedService.PipeEnvironmentVariable)))
                 {
+                    builder.Services.AddSingleton<RuntimeSupervisorConnection>();
                     builder.Services.AddHostedService<LifecycleSupervisorBridgeHostedService>();
                 }
 
@@ -410,6 +411,7 @@ public sealed class UiServer : IAsyncDisposable
                 CancelAllMaxConcurrency = configuredOrderManagement.CancelAllMaxConcurrency,
                 CancelAllInFlightSettleTimeout = configuredOrderManagement.CancelAllInFlightSettleTimeout,
                 ExecutionSubscriberDrainTimeout = configuredOrderManagement.ExecutionSubscriberDrainTimeout,
+                PaperIntentScope = configuredOrderManagement.PaperIntentScope,
                 RequireProductionSafetyDependencies =
                     ProductionServiceRegistrationPolicy.IsProductionComposition(builder.Services)
             });
