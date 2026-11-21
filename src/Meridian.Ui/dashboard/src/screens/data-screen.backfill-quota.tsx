@@ -155,7 +155,9 @@ export function WorkstationBackfillReceipts({ rows, error }: { rows: BackfillExe
               </p>
             )}
             {row.errorMessage && <p className="text-xs text-muted-foreground">{row.errorMessage}</p>}
-            {row.batchReceipts?.length ? <BackfillBatchReceipts receipts={row.batchReceipts} /> : null}
+            {row.batchReceipts?.length || row.routingAttempts?.length ? (
+              <BackfillBatchReceipts receipts={row.batchReceipts ?? []} attempts={row.routingAttempts ?? []} />
+            ) : null}
           </div>
         </details>
       ))}
@@ -204,7 +206,9 @@ export function BackfillSubmissionPanel({ vm, providerField }: {
           {latestSubmission?.quotaReceipt && <BackfillReceiptEvidence receipt={latestSubmission.quotaReceipt} />}
         </div>
       )}
-      {latestSubmission?.batchReceipts?.length ? <BackfillBatchReceipts receipts={latestSubmission.batchReceipts} /> : null}
+      {latestSubmission && (latestSubmission.batchReceipts?.length || latestSubmission.routingAttempts?.length) ? (
+        <BackfillBatchReceipts receipts={latestSubmission.batchReceipts ?? []} attempts={latestSubmission.routingAttempts ?? []} />
+      ) : null}
     </>
   );
 }

@@ -1,6 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Media;
+using Meridian.Contracts.Configuration;
 
 namespace Meridian.Wpf.ViewModels;
 
@@ -18,6 +19,8 @@ public sealed class ProviderSettingsViewModel : INotifyPropertyChanged
     private string _rateLimitPerMinute = "";
     private string _rateLimitPerHour = "";
     private string? _inlineWarning;
+    private string _activationState = "Unavailable";
+    private string _activationDetail = "The host has no activation evidence for this provider.";
 
     public string ProviderId { get; set; } = string.Empty;
     public string DisplayName { get; set; } = string.Empty;
@@ -26,6 +29,26 @@ public sealed class ProviderSettingsViewModel : INotifyPropertyChanged
     public string HealthStatus { get; set; } = "unknown";
     public bool RequiresApiKey { get; set; }
     public bool FreeTier { get; set; }
+    public string TierId { get; set; } = "free";
+    public int DefaultPriority { get; init; }
+
+    public string ActivationState
+    {
+        get => _activationState;
+        private set { _activationState = value; OnPropertyChanged(); }
+    }
+
+    public string ActivationDetail
+    {
+        get => _activationDetail;
+        private set { _activationDetail = value; OnPropertyChanged(); }
+    }
+
+    internal void UpdateActivation(ProviderActivationEntry? entry)
+    {
+        ActivationState = ProviderActivationViewModel.DescribeState(entry);
+        ActivationDetail = ProviderActivationViewModel.DescribeDetail(entry);
+    }
 
     public bool IsEnabled
     {

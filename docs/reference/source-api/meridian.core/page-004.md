@@ -6,6 +6,71 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## HealthCheckResult
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.HealthCheckResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:33](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L33).
+
+Represents a health check result with status and diagnostics.
+
+```csharp
+public sealed record HealthCheckResult(string ComponentName, HealthSeverity Severity, string Message, DateTimeOffset CheckedAt, TimeSpan Duration, IReadOnlyDictionary<string, object>? Details = null, Exception? Exception = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static HealthCheckResult Healthy(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:45](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L45) | Creates a healthy result. |
+| <code>public static HealthCheckResult Degraded(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:52](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L52) | Creates a degraded result. |
+| <code>public static HealthCheckResult Unhealthy(string componentName, string message, TimeSpan duration, Exception? exception = null, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:59](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L59) | Creates an unhealthy result. |
+| <code>public static HealthCheckResult Unknown(string componentName, string message, TimeSpan duration) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:66](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L66) | Creates an unknown result. |
+
+## HealthSeverity
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.HealthSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L8).
+
+Represents the severity of a health status.
+
+```csharp
+public enum HealthSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Healthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L11) | Component is healthy and fully operational. |
+| <code>Degraded</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L14) | Component is operational but with minor issues. |
+| <code>Unhealthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L17) | Component has critical issues affecting functionality. |
+| <code>Unknown</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L20) | Component status is unknown or cannot be determined. |
+
+## IAlertDispatcher
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.IAlertDispatcher</code>. Kind: `interface`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:164](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L164).
+
+Centralized alert dispatcher for publishing and subscribing to monitoring alerts.
+
+```csharp
+public interface IAlertDispatcher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>void Publish(MonitoringAlert alert);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:170](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L170) | Publishes an alert to all subscribers. |
+| <code>Task PublishAsync(MonitoringAlert alert, CancellationToken ct = default);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:177](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L177) | Publishes an alert asynchronously. |
+| <code>IDisposable Subscribe(Action&lt;MonitoringAlert&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:185](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L185) | Subscribes to alerts with the specified filter. |
+| <code>IDisposable Subscribe(Func&lt;MonitoringAlert, Task&gt; handler, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:193](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L193) | Subscribes to alerts with an async handler. |
+| <code>IReadOnlyList&lt;MonitoringAlert&gt; GetRecentAlerts(int count = 100, AlertFilter? filter = null);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:201](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L201) | Gets recent alerts matching the filter. |
+| <code>AlertStatistics GetStatistics();</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:207](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L207) | Gets alert statistics. |
+
 ## IHealthCheckAggregator
 
 Qualified name: <code>Meridian.Core.Monitoring.Core.IHealthCheckAggregator</code>. Kind: `interface`.
@@ -956,40 +1021,4 @@ Request to copy subscription settings from one symbol to others.
 
 ```csharp
 public sealed record BatchCopySettingsRequest(string SourceSymbol, string[] TargetSymbols);
-```
-
-## BatchDeleteRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchDeleteRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:8](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L8).
-
-Request for batch symbol deletion.
-
-```csharp
-public sealed record BatchDeleteRequest(string[] Symbols, bool RemoveFromWatchlists = true);
-```
-
-## BatchFilter
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchFilter</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:130](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L130).
-
-Filter criteria for batch operations.
-
-```csharp
-public sealed record BatchFilter(string? SymbolPattern = null, bool? HasTradeSubscription = null, bool? HasDepthSubscription = null, string[]? InWatchlists = null, string? SecurityType = null, string? Exchange = null);
-```
-
-## BatchFilteredOperationRequest
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchFilteredOperationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:145](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L145).
-
-Request to perform batch operations with a filter.
-
-```csharp
-public sealed record BatchFilteredOperationRequest(BatchFilter Filter, string Operation, Dictionary<string, object?>? Parameters = null);
 ```

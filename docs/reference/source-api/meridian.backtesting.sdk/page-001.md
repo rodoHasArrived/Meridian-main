@@ -146,7 +146,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestDataRevision</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:17](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L17).
+Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:54](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L54).
 
 ```csharp
 public sealed record BacktestDataRevision(string RevisionId, string ContentHash, string ServingProvider, string Instrument, string Granularity);
@@ -229,19 +229,26 @@ Declared public members:
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestInputCoverage</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:4](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L4).
+Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:9](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L9).
 
 Coverage observed from the exact inputs consumed by a native replay.
 
 ```csharp
-public sealed record BacktestInputCoverage(decimal RequiredSessionFraction, IReadOnlyList<BacktestInstrumentCoverage> Instruments, IReadOnlyList<BacktestDataRevision> Revisions);
+public sealed record BacktestInputCoverage(decimal RequiredSessionFraction, IReadOnlyList<BacktestInstrumentCoverage> Instruments, IReadOnlyList<BacktestDataRevision> Revisions)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;BacktestSourceCount&gt;? SourceMix { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:16](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L16) | Counts of replayed bars by effective symbol and observed source. |
+| <code>[JsonIgnore] public string? SourceMixHash { get; }</code> | [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:20](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L20) | Identity of the observed bar distribution, independent of replay order. |
 
 ## BacktestInstrumentCoverage
 
 Qualified name: <code>Meridian.Backtesting.Sdk.BacktestInstrumentCoverage</code>. Kind: `record`.
 
-Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:9](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L9).
+Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:46](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L46).
 
 ```csharp
 public sealed record BacktestInstrumentCoverage(string Instrument, string Status, string? Calendar, int ObservedSessions, int? ExpectedSessions, IReadOnlyList<DateOnly> MissingSessions);
@@ -330,8 +337,8 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;LedgerIntegrityBreak&gt; LedgerIntegrityBreaks { get; init; } = [];</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:120](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L120) | Day-end accounting differences retained for inspection; empty for a reconciled run. |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BacktestCanonicalActionSnapshot? CanonicalCorporateActions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:124](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L124) | Frozen effective action terms for an explicit canonical settlement replay. |
-| <code>public ExecutionRealismDescriptor ToResolvedRealismDescriptor() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:127](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L127) | Includes the resolved source snapshot in the completed experiment&#x27;s identity. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:133](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L133) |  |
+| <code>public ExecutionRealismDescriptor ToResolvedRealismDescriptor() =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:127](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L127) | Includes observed replay and action evidence in the completed experiment&#x27;s identity. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:134](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L134) |  |
 
 ## BacktestResultKinds
 
@@ -351,6 +358,16 @@ Declared public members:
 | --- | --- | --- |
 | <code>public const string Full = &quot;Full&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:99](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L99) |  |
 | <code>public const string SummaryOnly = &quot;SummaryOnly&quot;;</code> | [src/Meridian.Backtesting.Sdk/BacktestResult.cs:100](../../../../src/Meridian.Backtesting.Sdk/BacktestResult.cs#L100) |  |
+
+## BacktestSourceCount
+
+Qualified name: <code>Meridian.Backtesting.Sdk.BacktestSourceCount</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs:44](../../../../src/Meridian.Backtesting.Sdk/BacktestInputCoverage.cs#L44).
+
+```csharp
+public sealed record BacktestSourceCount(string Symbol, string Source, long Bars);
+```
 
 ## BacktestStage
 
@@ -661,8 +678,9 @@ Declared public members:
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public BacktestCorporateActionMode CorporateActionMode { get; init; } = BacktestCorporateActionMode.Legacy;</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:51](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L51) | Absent/default mode preserves canonical fingerprints created before canonical settlement was added. |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? CorporateActionSnapshotHash { get; init; }</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:53](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L53) |  |
-| <code>public bool? ApplyStoredCorporateActions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:56](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L56) | Null preserves the canonical fingerprint of descriptors retained before this option existed. |
-| <code>public string ToCanonicalString();</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:63](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L63) | Field-order-stable canonical form used for hashing and for human-readable disclosure. Each field is emitted with its name so that adding a field in a future revision cannot silently alias an existing one. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMixHash { get; init; }</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:57](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L57) | Resolved replay bar distribution for a completed run. |
+| <code>public bool? ApplyStoredCorporateActions { get; init; }</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:60](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L60) | Null preserves the canonical fingerprint of descriptors retained before this option existed. |
+| <code>public string ToCanonicalString();</code> | [src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs:67](../../../../src/Meridian.Backtesting.Sdk/ExecutionRealismDescriptor.cs#L67) | Field-order-stable canonical form used for hashing and for human-readable disclosure. Each field is emitted with its name so that adding a field in a future revision cannot silently alias an existing one. |
 
 ## FillConservatism
 
@@ -862,7 +880,7 @@ public readonly record struct IntermediateMetrics(double RollingSharpe, double C
 
 Qualified name: <code>Meridian.Backtesting.Sdk.IResearchRunRecorder</code>. Kind: `interface`.
 
-Source: [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:44](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L44).
+Source: [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:47](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L47).
 
 Records research-originated backtests into the shared strategy-run store so that work done in a scripting surface carries the same lineage as a run launched from the Studio.
 
@@ -874,25 +892,4 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;string?&gt; RecordAsync(ResearchRunDescriptor descriptor, BacktestResult result, CancellationToken ct = default);</code> | [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:50](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L50) | Records a completed backtest and returns the assigned run id, or null when the run could not be recorded. |
-
-## LedgerIntegrityBreak
-
-Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityBreak</code>. Kind: `record`.
-
-Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:9](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L9).
-
-An accounting difference observed against a simulation&#x27;s day-end books.
-
-```csharp
-public sealed record LedgerIntegrityBreak(DateTimeOffset AsOf, string Check, string? FinancialAccountId, string? Symbol, decimal Expected, decimal Actual, string Message)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal Difference =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:18](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L18) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Currency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:21](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L21) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityLotUnitKind? UnitKind { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:24](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L24) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? UnitMultiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:27](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L27) |  |
+| <code>Task&lt;string?&gt; RecordAsync(ResearchRunDescriptor descriptor, BacktestResult result, CancellationToken ct = default);</code> | [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:53](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L53) | Records a completed backtest and returns the assigned run id, or null when the run could not be recorded. |

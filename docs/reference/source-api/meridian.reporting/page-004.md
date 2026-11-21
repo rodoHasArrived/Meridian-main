@@ -150,7 +150,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingRunAuditEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:220](../../../../src/Meridian.Reporting/ReportingContracts.cs#L220).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:224](../../../../src/Meridian.Reporting/ReportingContracts.cs#L224).
 
 ```csharp
 public sealed record ReportingRunAuditEntry(string RunId, DateTimeOffset TimestampUtc, string Action, string Actor, string Notes);
@@ -160,7 +160,7 @@ public sealed record ReportingRunAuditEntry(string RunId, DateTimeOffset Timesta
 
 Qualified name: <code>Meridian.Reporting.ReportingRunConcurrencyException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:625](../../../../src/Meridian.Reporting/ReportingContracts.cs#L625).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:629](../../../../src/Meridian.Reporting/ReportingContracts.cs#L629).
 
 Reports a reporting run revision conflict with the expected and actual revisions.
 
@@ -172,18 +172,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:641](../../../../src/Meridian.Reporting/ReportingContracts.cs#L641) |  |
-| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:643](../../../../src/Meridian.Reporting/ReportingContracts.cs#L643) |  |
-| <code>public string? ExpectedRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:645](../../../../src/Meridian.Reporting/ReportingContracts.cs#L645) |  |
-| <code>public string? ActualRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:647](../../../../src/Meridian.Reporting/ReportingContracts.cs#L647) |  |
-| <code>public static ReportingRunConcurrencyException ForConflict(string? tenantId, string runId, string? expectedRevision, string actualRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:649](../../../../src/Meridian.Reporting/ReportingContracts.cs#L649) |  |
-| <code>public static ReportingRunConcurrencyException ForMissing(string? tenantId, string runId, string expectedRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:661](../../../../src/Meridian.Reporting/ReportingContracts.cs#L661) |  |
+| <code>public string? TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:645](../../../../src/Meridian.Reporting/ReportingContracts.cs#L645) |  |
+| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:647](../../../../src/Meridian.Reporting/ReportingContracts.cs#L647) |  |
+| <code>public string? ExpectedRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:649](../../../../src/Meridian.Reporting/ReportingContracts.cs#L649) |  |
+| <code>public string? ActualRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:651](../../../../src/Meridian.Reporting/ReportingContracts.cs#L651) |  |
+| <code>public static ReportingRunConcurrencyException ForConflict(string? tenantId, string runId, string? expectedRevision, string actualRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:653](../../../../src/Meridian.Reporting/ReportingContracts.cs#L653) |  |
+| <code>public static ReportingRunConcurrencyException ForMissing(string? tenantId, string runId, string expectedRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:665](../../../../src/Meridian.Reporting/ReportingContracts.cs#L665) |  |
 
 ## ReportingRunCreateClaimException
 
 Qualified name: <code>Meridian.Reporting.ReportingRunCreateClaimException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:248](../../../../src/Meridian.Reporting/ReportingContracts.cs#L248).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:252](../../../../src/Meridian.Reporting/ReportingContracts.cs#L252).
 
 Indicates that a reporting run creation claim could not be used for the specified tenant and run.
 
@@ -195,15 +195,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingRunCreateClaimException(string tenantId, string runId, string message) : base(message);</code> | [src/Meridian.Reporting/ReportingContracts.cs:250](../../../../src/Meridian.Reporting/ReportingContracts.cs#L250) |  |
-| <code>public string TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:260](../../../../src/Meridian.Reporting/ReportingContracts.cs#L260) |  |
-| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:262](../../../../src/Meridian.Reporting/ReportingContracts.cs#L262) |  |
+| <code>public ReportingRunCreateClaimException(string tenantId, string runId, string message) : base(message);</code> | [src/Meridian.Reporting/ReportingContracts.cs:254](../../../../src/Meridian.Reporting/ReportingContracts.cs#L254) |  |
+| <code>public string TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:264](../../../../src/Meridian.Reporting/ReportingContracts.cs#L264) |  |
+| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:266](../../../../src/Meridian.Reporting/ReportingContracts.cs#L266) |  |
 
 ## ReportingRunCreateClaimResult
 
 Qualified name: <code>Meridian.Reporting.ReportingRunCreateClaimResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:242](../../../../src/Meridian.Reporting/ReportingContracts.cs#L242).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:246](../../../../src/Meridian.Reporting/ReportingContracts.cs#L246).
 
 ```csharp
 public sealed record ReportingRunCreateClaimResult(ReportingRunCreateClaimStatus Status, DateTimeOffset? LeaseExpiresAtUtc = null, long LeaseVersion = 0);
@@ -213,7 +213,7 @@ public sealed record ReportingRunCreateClaimResult(ReportingRunCreateClaimStatus
 
 Qualified name: <code>Meridian.Reporting.ReportingRunCreateClaimStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:234](../../../../src/Meridian.Reporting/ReportingContracts.cs#L234).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:238](../../../../src/Meridian.Reporting/ReportingContracts.cs#L238).
 
 ```csharp
 public enum ReportingRunCreateClaimStatus
@@ -223,10 +223,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Acquired</code> | [src/Meridian.Reporting/ReportingContracts.cs:236](../../../../src/Meridian.Reporting/ReportingContracts.cs#L236) |  |
-| <code>AlreadyExists</code> | [src/Meridian.Reporting/ReportingContracts.cs:237](../../../../src/Meridian.Reporting/ReportingContracts.cs#L237) |  |
-| <code>LeasedByAnotherOwner</code> | [src/Meridian.Reporting/ReportingContracts.cs:238](../../../../src/Meridian.Reporting/ReportingContracts.cs#L238) |  |
-| <code>Unsupported</code> | [src/Meridian.Reporting/ReportingContracts.cs:239](../../../../src/Meridian.Reporting/ReportingContracts.cs#L239) |  |
+| <code>Acquired</code> | [src/Meridian.Reporting/ReportingContracts.cs:240](../../../../src/Meridian.Reporting/ReportingContracts.cs#L240) |  |
+| <code>AlreadyExists</code> | [src/Meridian.Reporting/ReportingContracts.cs:241](../../../../src/Meridian.Reporting/ReportingContracts.cs#L241) |  |
+| <code>LeasedByAnotherOwner</code> | [src/Meridian.Reporting/ReportingContracts.cs:242](../../../../src/Meridian.Reporting/ReportingContracts.cs#L242) |  |
+| <code>Unsupported</code> | [src/Meridian.Reporting/ReportingContracts.cs:243](../../../../src/Meridian.Reporting/ReportingContracts.cs#L243) |  |
 
 ## ReportingRunCreationRequest
 
@@ -244,7 +244,7 @@ public sealed record ReportingRunCreationRequest(string RunId, string SeriesId, 
 
 Qualified name: <code>Meridian.Reporting.ReportingRunReportWriterGridArtifact</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:163](../../../../src/Meridian.Reporting/ReportingContracts.cs#L163).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:167](../../../../src/Meridian.Reporting/ReportingContracts.cs#L167).
 
 ```csharp
 public sealed record ReportingRunReportWriterGridArtifact(string GridId, string Title, string Kind, string Artifact, int DimensionCount, int MetricCount, int FormulaCount);
@@ -254,7 +254,7 @@ public sealed record ReportingRunReportWriterGridArtifact(string GridId, string 
 
 Qualified name: <code>Meridian.Reporting.ReportingRunSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:227](../../../../src/Meridian.Reporting/ReportingContracts.cs#L227).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:231](../../../../src/Meridian.Reporting/ReportingContracts.cs#L231).
 
 ```csharp
 public sealed record ReportingRunSnapshot(ReportingOutputManifest Manifest, IReadOnlyList<ReportingRunAuditEntry> AuditTrail, DateTimeOffset UpdatedAtUtc, string? CertifiedDatasetHashSha256 = null, string? ManifestHashSha256 = null);
@@ -284,7 +284,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Reporting.ReportingRunStoreRevision</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:534](../../../../src/Meridian.Reporting/ReportingContracts.cs#L534).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:538](../../../../src/Meridian.Reporting/ReportingContracts.cs#L538).
 
 Computes deterministic reporting run revisions from manifest and audit-trail content.
 
@@ -296,8 +296,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static string Compute(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail);</code> | [src/Meridian.Reporting/ReportingContracts.cs:539](../../../../src/Meridian.Reporting/ReportingContracts.cs#L539) |  |
-| <code>public static bool Matches(string left, string right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:567](../../../../src/Meridian.Reporting/ReportingContracts.cs#L567) |  |
+| <code>public static string Compute(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail);</code> | [src/Meridian.Reporting/ReportingContracts.cs:543](../../../../src/Meridian.Reporting/ReportingContracts.cs#L543) |  |
+| <code>public static bool Matches(string left, string right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:571](../../../../src/Meridian.Reporting/ReportingContracts.cs#L571) |  |
 
 ## ReportingRunTrigger
 
@@ -344,7 +344,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingScheduleContract</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:211](../../../../src/Meridian.Reporting/ReportingContracts.cs#L211).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:215](../../../../src/Meridian.Reporting/ReportingContracts.cs#L215).
 
 ```csharp
 public sealed record ReportingScheduleContract(string ScheduleId, string TemplateId, string CronExpression, DateOnly NextAsOfDate, DateTimeOffset DueAtUtc, int MaxRetries, string RequestedBy);
@@ -417,7 +417,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingSectionManifest</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:172](../../../../src/Meridian.Reporting/ReportingContracts.cs#L172).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:176](../../../../src/Meridian.Reporting/ReportingContracts.cs#L176).
 
 ```csharp
 public sealed record ReportingSectionManifest(string SectionId, string DatasetSnapshotId, string ReconciliationCheckpointId, string Hash, ReportingLineageReference Lineage);
@@ -655,7 +655,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;ReportWriterGridRenderDto&gt; RenderGrids(IReadOnlyList&lt;ReportWriterGridDefinitionDto&gt;? grids, IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt;? datasetRows);</code> | [src/Meridian.Reporting/ReportWriterGridEngine.cs:10](../../../../src/Meridian.Reporting/ReportWriterGridEngine.cs#L10) |  |
+| <code>public static IReadOnlyList&lt;ReportWriterGridRenderDto&gt; RenderGrids(IReadOnlyList&lt;ReportWriterGridDefinitionDto&gt;? grids, IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string&gt;&gt;? datasetRows);</code> | [src/Meridian.Reporting/ReportWriterGridEngine.cs:12](../../../../src/Meridian.Reporting/ReportWriterGridEngine.cs#L12) |  |
+
+## ReportWriterMetricValidationException
+
+Qualified name: <code>Meridian.Reporting.ReportWriterMetricValidationException</code>. Kind: `class`.
+
+Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:11](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L11).
+
+A run cannot render its configured metrics against the resolved dataset.
+
+```csharp
+public sealed class ReportWriterMetricValidationException(string message) : InvalidOperationException(message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string FailureCode = &quot;report-writer-metric-source&quot;;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:13](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L13) |  |
 
 ## RetainedReportingIncomeComparison
 

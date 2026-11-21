@@ -779,14 +779,19 @@ requires per-loan tenant authority before those workers can be enabled.
 Bond cash-flow context overloads resolve retained terms once, honor forward-curve recorded cutoffs, and retain content-addressed calculation receipts under `bonds/calculations`. The passive `GetProjectionBlockerAsync` capability read uses the same current calculation rules on selected terms and cutoffs, retains no receipt, and returns only a typed refusal. Replay reloads immutable inputs and checks calendar hashes rather than substituting current terms. Storage composition shares the durable bond-cutover policy with calculation and accounting orchestration; the ledger composition preserves independent approval and replay. See [bond expansion](../../docs/engineering/plans/bond-capability-expansion.md).
 
 Provider routing previews accept a restricted, read-only proposed configuration: tenant-owned binding
-priority/enabled changes or host backfill provider priority/enabled changes. The host backfill preview
-constructs adapters with the authoritative prepared credential resolver, then disposes them without
-fetching data or changing saved configuration. Daily symbol/date queries disclose that vendor coverage,
+priority/enabled changes or host backfill provider priority/enabled changes. The effective backfill
+preview reads the active routing snapshot. A proposed preview constructs adapters with the prepared
+credential resolver and disposes them after projecting the order. Daily symbol/date queries disclose that vendor coverage,
 network health and current quota remain unverified; fabricated Synthetic selections and enabled but
 unavailable vendors are explicit. Composite and quota-rotation ordering hold fabricated adapters behind
 observed vendors regardless of numeric priority, retaining explicit Source stamps when real-vendor failure
 requires a synthetic fallback. `BackfillRoutingLint` adds fabricated-fallback warnings to the unified
 configuration pipeline after credential resolution. Focused invariant coverage is in `RoutingPreviewTests`.
+
+The host builds backfill adapters at startup using the active credentials, pacing, and feed settings.
+Provider enablement and priority apply to jobs that start after the operator saves the edit. Each running
+job keeps its chosen route through retries. Scheduled jobs read their ordered provider preferences when
+they begin. Set `Backfill.Jobs.Scheduling.Enabled` to enable the schedule worker on a collector or workstation host.
 
 ## Purpose
 

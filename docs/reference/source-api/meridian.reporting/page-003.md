@@ -492,7 +492,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingJobContract</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:179](../../../../src/Meridian.Reporting/ReportingContracts.cs#L179).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:183](../../../../src/Meridian.Reporting/ReportingContracts.cs#L183).
 
 ```csharp
 public sealed record ReportingJobContract(string JobId, string TemplateId, DateOnly AsOfDate, ReportingRunTrigger Trigger, int MaxRetries, string RequestedBy, DateTimeOffset RequestedAtUtc, string? CronExpression = null, string? ScheduleId = null, IReadOnlyList<IReadOnlyDictionary<string, string>>? DatasetRows = null, string? ReportWriterDatasetSourceId = null, string? ReportWriterDatasetSourceLabel = null, string? BrandingThemeId = null, ReportBrandingThemeDto? BrandingTheme = null, ReportAccessPolicyDto? AccessPolicy = null, string? RetryReason = null, bool AllowRestatement = false, VersionedReportTemplateIdDto? ResolvedTemplate = null, ReportingRunParametersDto? ResolvedParameters = null, ReportingRunReadinessDto? Readiness = null, ReportingOperationalScope? OperationalScope = null, ReportingAccessScope? ImmutableAccessScope = null, ReportingCertifiedSnapshotScope? CertifiedSnapshot = null, ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null, string? GovernedRunSeriesId = null)
@@ -502,8 +502,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? DurableOperationId { get; init; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:207](../../../../src/Meridian.Reporting/ReportingContracts.cs#L207) | Server-resolved durable operation identity; never supplied by the generic reporting HTTP contract. |
-| <code>public string? OperationRequestHash { get; init; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:208](../../../../src/Meridian.Reporting/ReportingContracts.cs#L208) |  |
+| <code>public string? DurableOperationId { get; init; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:211](../../../../src/Meridian.Reporting/ReportingContracts.cs#L211) | Server-resolved durable operation identity; never supplied by the generic reporting HTTP contract. |
+| <code>public string? OperationRequestHash { get; init; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:212](../../../../src/Meridian.Reporting/ReportingContracts.cs#L212) |  |
 
 ## ReportingLineageReference
 
@@ -583,7 +583,7 @@ public sealed record ReportingOrchestrationRetentionSnapshot(int RetainedRunCoun
 
 Qualified name: <code>Meridian.Reporting.ReportingOrchestrationService</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:88](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L88).
+Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:94](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L94).
 
 Coordinates reporting run creation, section rendering, persistence, and governed lifecycle transitions.
 
@@ -595,19 +595,19 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog) : this(catalog, new DeterministicReportingSectionRenderer(), () =&gt; DateTimeOffset.UtcNow);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:110](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L110) |  |
-| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore = null) : this(catalog, renderer, utcNow, runStore, runNotifier : null);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:118](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L118) |  |
-| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore, IReportingRunNotifier? runNotifier) : this(catalog, renderer, utcNow, runStore, runNotifier, partnersCapitalSource : null);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:127](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L127) |  |
-| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore, IReportingRunNotifier? runNotifier, IReportingPartnersCapitalSource? partnersCapitalSource) : this(catalog, renderer, utcNow, runStore, runNotifier, partnersCapitalSource, new ReportingOrchestrationRetentionOptions());</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:137](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L137) |  |
-| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore, IReportingRunNotifier? runNotifier, IReportingPartnersCapitalSource? partnersCapitalSource, ReportingOrchestrationRetentionOptions retentionOptions);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:155](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L155) |  |
-| <code>public ReportingOrchestrationRetentionSnapshot GetRetentionSnapshot();</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:185](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L185) | Returns retention diagnostics without exposing mutable cache state. |
-| <code>public async Task&lt;ReportingOutputManifest&gt; ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:199](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L199) |  |
-| <code>[Obsolete(&quot;Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.&quot;, error : false)] public Task&lt;IReadOnlyList&lt;ReportingOutputManifest&gt;&gt; ExecuteDueSchedulesAsync(IEnumerable&lt;ReportingScheduleContract&gt; schedules, DateTimeOffset nowUtc, CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:457](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L457) |  |
-| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:465](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L465) |  |
-| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:478](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L478) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:492](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L492) |  |
-| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:513](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L513) |  |
-| <code>public async Task&lt;bool&gt; TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:528](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L528) |  |
+| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog) : this(catalog, new DeterministicReportingSectionRenderer(), () =&gt; DateTimeOffset.UtcNow);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:116](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L116) |  |
+| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore = null) : this(catalog, renderer, utcNow, runStore, runNotifier : null);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:124](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L124) |  |
+| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore, IReportingRunNotifier? runNotifier) : this(catalog, renderer, utcNow, runStore, runNotifier, partnersCapitalSource : null);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:133](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L133) |  |
+| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore, IReportingRunNotifier? runNotifier, IReportingPartnersCapitalSource? partnersCapitalSource) : this(catalog, renderer, utcNow, runStore, runNotifier, partnersCapitalSource, new ReportingOrchestrationRetentionOptions());</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:143](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L143) |  |
+| <code>public ReportingOrchestrationService(IReportingTemplateCatalog catalog, IReportingSectionRenderer renderer, Func&lt;DateTimeOffset&gt; utcNow, IReportingRunStore? runStore, IReportingRunNotifier? runNotifier, IReportingPartnersCapitalSource? partnersCapitalSource, ReportingOrchestrationRetentionOptions retentionOptions);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:161](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L161) |  |
+| <code>public ReportingOrchestrationRetentionSnapshot GetRetentionSnapshot();</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:191](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L191) | Returns retention diagnostics without exposing mutable cache state. |
+| <code>public async Task&lt;ReportingOutputManifest&gt; ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:205](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L205) |  |
+| <code>[Obsolete(&quot;Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.&quot;, error : false)] public Task&lt;IReadOnlyList&lt;ReportingOutputManifest&gt;&gt; ExecuteDueSchedulesAsync(IEnumerable&lt;ReportingScheduleContract&gt; schedules, DateTimeOffset nowUtc, CancellationToken cancellationToken) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:483](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L483) |  |
+| <code>public ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:491](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L491) |  |
+| <code>public ReportingOutputManifest? GetManifest(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:504](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L504) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:518](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L518) |  |
+| <code>public IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:539](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L539) |  |
+| <code>public async Task&lt;bool&gt; TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:554](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L554) |  |
 
 ## ReportingOutputManifest
 
@@ -623,7 +623,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public ImmutableArray&lt;ReportingIncomeMethodologyEvidence&gt; IncomeMethodologyEvidence { get; init; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:160](../../../../src/Meridian.Reporting/ReportingContracts.cs#L160) | Optional documented, quantified methodology effects retained with this run. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? FailureCode { get; init; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:160](../../../../src/Meridian.Reporting/ReportingContracts.cs#L160) | Stable classification for terminal failures that are safe to replay. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public ImmutableArray&lt;ReportingIncomeMethodologyEvidence&gt; IncomeMethodologyEvidence { get; init; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:164](../../../../src/Meridian.Reporting/ReportingContracts.cs#L164) | Optional documented, quantified methodology effects retained with this run. |
 
 ## ReportingReadinessCheck
 

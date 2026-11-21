@@ -161,6 +161,8 @@ public sealed record StrategyDesignRunBacktestRequest(
     StrategyDesignDocument Document,
     IReadOnlyDictionary<string, string>? Parameters = null)
 {
+    public Guid? FundAccountId { get; init; }
+
     private IReadOnlyList<string> _operatorAcceptanceCriteria = [];
     private IReadOnlyList<string> _retainedEvidenceReferences = [];
     private IReadOnlyList<string> _accountingRecordReferences = [];

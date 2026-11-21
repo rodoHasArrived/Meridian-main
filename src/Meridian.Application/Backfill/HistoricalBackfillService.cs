@@ -66,6 +66,10 @@ public sealed class HistoricalBackfillService : IDisposable
     /// <summary>Calendar evidence for instruments whose listing is known to the host.</summary>
     public Func<string, DateOnly, DateOnly, CancellationToken, Task<HistoricalSessionSchedule?>>? ResolveSessionsAsync { get; init; }
 
+    internal BackfillRoutingAdmission? DirectRoutingAdmission { get; init; }
+    internal Action<BackfillRoutingAttempt>? CaptureRoutingAttempt { get; init; }
+    internal Func<IHistoricalDataProvider, int>? ResolveRoutingPriority { get; init; }
+
     // Queued work shares durable coverage, while progress belongs to its own job receipt.
     internal bool PublishCheckpointStatus { get; init; } = true;
 
@@ -80,7 +84,7 @@ public sealed class HistoricalBackfillService : IDisposable
     internal BackfillProvenanceCapture DescribeRoute(BackfillRequest request) => new(
         _providers[request.Provider.ToLowerInvariant()], request.Granularity,
         !request.Granularity.IsIntraday() && request.From.HasValue && _symbolTimelineResolver is not null,
-        resolveStaleToleranceDays: ResolveStaleToleranceDays);
+        resolveStaleToleranceDays: ResolveStaleToleranceDays, resolvePriority: ResolveRoutingPriority);
 
     private int ResolveStaleToleranceDays(string provider) => _validationProfiles
         ?.FirstOrDefault(pair => string.Equals(pair.Key, provider, StringComparison.OrdinalIgnoreCase))
@@ -381,15 +385,23 @@ public sealed class HistoricalBackfillService : IDisposable
 
                 Task<IReadOnlyList<HistoricalBar>> FetchDailyAsync(string eraSymbol, DateOnly? from, DateOnly? to) =>
                     composite is not null
-                        ? composite.GetDailyBarsAsync(eraSymbol, from, to, provenance, ct)
-                        : FetchWithQuotaAsync(provider, () => provenance.ObserveDirectAsync(provider,
-                            () => provider.GetDailyBarsAsync(eraSymbol, from, to, ct)), ct);
+                        ? composite.GetDailyBarsAsync(eraSymbol, from, to, provenance, ct,
+                            CaptureRoutingAttempt is { } capture ? attempt => capture(attempt with { Symbol = symbol }) : null)
+                        : FetchDirectAsync(token => provider.GetDailyBarsAsync(eraSymbol, from, to, token));
 
                 Task<IReadOnlyList<AggregateBar>> FetchAggregateAsync(DateOnly? from, DateOnly? to) =>
                     composite is not null
                         ? composite.GetAggregateBarsAsync(symbol, request.Granularity, from, to, provenance, ct)
-                        : FetchWithQuotaAsync(provider, () => provenance.ObserveDirectAsync(provider,
-                            () => aggregateProvider!.GetAggregateBarsAsync(symbol, request.Granularity, from, to, ct)), ct);
+                        : FetchDirectAsync(token => aggregateProvider!.GetAggregateBarsAsync(symbol, request.Granularity, from, to, token));
+
+                Task<IReadOnlyList<T>> FetchDirectAsync<T>(Func<CancellationToken, Task<IReadOnlyList<T>>> fetch)
+                {
+                    var admission = DirectRoutingAdmission;
+                    return FetchWithQuotaAsync(provider, () => admission is null
+                        ? provenance.ObserveDirectAsync(provider, () => fetch(ct))
+                        : admission.FetchPinnedAsync(provider, symbol, fetch, CaptureRoutingAttempt, ct, provenance),
+                        observeUnmeteredFetch: admission is null, ct);
+                }
 
                 async Task PublishAggregateBarsAsync(IReadOnlyList<AggregateBar> bars, DateOnly? from, DateOnly? to)
                 {
@@ -703,7 +715,7 @@ public sealed class HistoricalBackfillService : IDisposable
             : barSource!;
 
     private static async Task<IReadOnlyList<T>> FetchWithQuotaAsync<T>(
-        IHistoricalDataProvider provider, Func<Task<IReadOnlyList<T>>> fetch, CancellationToken ct)
+        IHistoricalDataProvider provider, Func<Task<IReadOnlyList<T>>> fetch, bool observeUnmeteredFetch, CancellationToken ct)
     {
         var scope = HistoricalBackfillRequestScope.Current;
         if (scope is null || provider is CompositeHistoricalDataProvider)
@@ -711,8 +723,12 @@ public sealed class HistoricalBackfillService : IDisposable
 
         for (var attempt = 0; ; attempt++)
         {
-            if (provider is not IBackfillRequestMeteredProvider)
+            if (observeUnmeteredFetch && provider is not IBackfillRequestMeteredProvider)
+            {
                 await scope.BeforeUnmeteredFetch(provider, ct).ConfigureAwait(false);
+                ct.ThrowIfCancellationRequested();
+                scope.UnmeteredFetchStarted?.Invoke(provider.Name);
+            }
 
             try
             {

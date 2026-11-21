@@ -158,6 +158,9 @@ public sealed class BackfillExecution
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<BackfillBatchReceiptSummary>? BatchReceipts { get; set; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillRoutingAttempt>? RoutingAttempts { get; set; }
+
     /// <summary>
     /// Gets or sets the unique execution identifier.
     /// </summary>

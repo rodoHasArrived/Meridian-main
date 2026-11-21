@@ -40,7 +40,14 @@ public record DataSourceConfigRequest(
 public record ToggleRequest(bool Enabled);
 
 /// <summary>Request to set default data sources.</summary>
-public record DefaultSourcesRequest(string? DefaultRealTimeSourceId, string? DefaultHistoricalSourceId);
+public record DefaultSourcesRequest(string? DefaultRealTimeSourceId, string? DefaultHistoricalSourceId)
+{
+    /// <summary>Whether to update the real-time default. Existing requests update both defaults.</summary>
+    public bool UpdateRealTime { get; init; } = true;
+
+    /// <summary>Whether to update the historical default. Existing requests update both defaults.</summary>
+    public bool UpdateHistorical { get; init; } = true;
+}
 
 /// <summary>Request to update failover settings.</summary>
 public record FailoverSettingsRequest(bool EnableFailover, int FailoverTimeoutSeconds);
@@ -93,6 +100,9 @@ public record SymbolMappingRequest(
     string? YahooSymbol = null,
     string? Name = null,
     string? Figi = null);
+
+/// <summary>Set one provider override on the requested canonical symbol.</summary>
+public sealed record SymbolProviderOverrideRequest(string ProviderSymbol);
 
 // ============================================================
 // Response DTOs
@@ -225,7 +235,14 @@ public record SymbolMappingResponse(
     string? PolygonSymbol,
     string? YahooSymbol,
     string? Name,
-    string? Figi);
+    string? Figi)
+{
+    /// <summary>Manual overrides across provider families, keyed by canonical provider ID.</summary>
+    public IReadOnlyDictionary<string, string>? ProviderSymbols { get; init; }
+
+    /// <summary>Most recent retained override update, when available.</summary>
+    public DateTimeOffset? UpdatedAt { get; init; }
+}
 
 /// <summary>
 /// Additive registry projection used by both workstations during canonical-symbol migration.

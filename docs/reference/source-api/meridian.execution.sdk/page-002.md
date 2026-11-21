@@ -505,6 +505,24 @@ Declared public members:
 | --- | --- | --- |
 | <code>bool UsesFaceValuePercentageOfPar(OrderRequest request);</code> | [src/Meridian.Execution.Sdk/IFaceValueOrderSizingGateway.cs:14](../../../../src/Meridian.Execution.Sdk/IFaceValueOrderSizingGateway.cs#L14) | Whether this gateway will route OrderRequest.Quantity as face value and treat the order price as a percentage of par for this request. |
 
+## IGuardedOrderModificationGateway
+
+Qualified name: <code>Meridian.Execution.Sdk.IGuardedOrderModificationGateway</code>. Kind: `interface`.
+
+Source: [src/Meridian.Execution.Sdk/IExplicitOrderModificationGateway.cs:14](../../../../src/Meridian.Execution.Sdk/IExplicitOrderModificationGateway.cs#L14).
+
+Places the final live authorization check at the provider&#x27;s actual replacement send.
+
+```csharp
+public interface IGuardedOrderModificationGateway
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ExecutionReport&gt; ModifyOrderAsync(OrderCancellationIdentifier identifier, OrderModification modification, Func&lt;CancellationToken, Task&lt;IAsyncDisposable&gt;&gt; acquireDispatch, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/IExplicitOrderModificationGateway.cs:16](../../../../src/Meridian.Execution.Sdk/IExplicitOrderModificationGateway.cs#L16) |  |
+
 ## INotionalOrderSizingGateway
 
 Qualified name: <code>Meridian.Execution.Sdk.INotionalOrderSizingGateway</code>. Kind: `interface`.
@@ -986,16 +1004,4 @@ Source: [src/Meridian.Execution.Sdk/ExecutionWorkflows.cs:7](../../../../src/Mer
 
 ```csharp
 public sealed record OrderPreviewResult(OrderRequest Request, string Fingerprint, DateTimeOffset EvaluatedAt, DateTimeOffset ExpiresAt, bool CanSubmit, bool RequiresApproval, decimal? EstimatedNotional, decimal? EstimatedFees, OrderMarketReference? Reference, IReadOnlyList<OrderCheck> Checks);
-```
-
-## OrderPricing
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderPricing</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/ValidatedOrder.cs:100](../../../../src/Meridian.Execution.Sdk/ValidatedOrder.cs#L100).
-
-Closed pricing shapes: required price limbs cannot be absent in a validated order.
-
-```csharp
-public abstract class OrderPricing
 ```

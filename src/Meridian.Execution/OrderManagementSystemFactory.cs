@@ -90,7 +90,8 @@ public static class OrderManagementSystemFactory
             marketReferences: services.GetService<IOrderMarketReferenceSource>(),
             instrumentCoverage: services.GetService<IOrderInstrumentCoverageSource>(),
             strategyRunAuthority: services.GetService<IStrategyRunAuthoritySource>(),
-            authorityOptions: services.GetService<OrderAuthorityOptions>())
+            authorityOptions: services.GetService<OrderAuthorityOptions>(),
+            liveStrategyAuthorization: services.GetService<ILiveStrategyOrderAuthorization>())
         {
             BindNativePaperSessions = hosted && gateway is PaperTradingGateway
                 && portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: false }

@@ -15,7 +15,8 @@ public sealed class HistoricalBackfillRequestScope : IDisposable
         Action<string> requestStarted,
         Action<string> barsPublished,
         Action<string, string, TimeSpan?> throttled,
-        bool retryRateLimited)
+        bool retryRateLimited,
+        Action<string>? unmeteredFetchStarted = null)
     {
         HeadroomPercent = headroomPercent;
         BeforeUnmeteredFetch = beforeUnmeteredFetch;
@@ -23,6 +24,7 @@ public sealed class HistoricalBackfillRequestScope : IDisposable
         BarsPublished = barsPublished;
         Throttled = throttled;
         RetryRateLimited = retryRateLimited;
+        UnmeteredFetchStarted = unmeteredFetchStarted;
         _previous = Ambient.Value;
         Ambient.Value = this;
     }
@@ -31,6 +33,7 @@ public sealed class HistoricalBackfillRequestScope : IDisposable
     public Func<IHistoricalDataProvider, int> HeadroomPercent { get; }
     public Func<IHistoricalDataProvider, CancellationToken, Task> BeforeUnmeteredFetch { get; }
     public Action<string> RequestStarted { get; }
+    public Action<string>? UnmeteredFetchStarted { get; }
     public Action<string> BarsPublished { get; }
     public Action<string, string, TimeSpan?> Throttled { get; }
     public bool RetryRateLimited { get; }

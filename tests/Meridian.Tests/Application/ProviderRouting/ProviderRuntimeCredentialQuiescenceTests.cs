@@ -119,6 +119,36 @@ public sealed class ProviderRuntimeCredentialQuiescenceTests : IDisposable
     }
 
     [Fact]
+    public async Task RestrictedTemplateSelection_IsRefusedBeforeDrainingTheActiveRuntime()
+    {
+        var vault = await InitializeAsync();
+        var applier = new CapturedKeyRuntime(vault);
+        var tracker = new ProviderRuntimeCredentialApplicationTracker();
+        var guard = new ProviderRuntimeCredentialMutationGuard(Config, Required, applier, tracker);
+        var runtime = new ProviderRuntimeCredentialService(Config, vault, applicationTracker: tracker,
+            applier: applier, mutationGuard: guard, ownershipPolicy: Required);
+        var active = await runtime.BindAsync("alpaca", Scope.ConnectionId, Scope.TenantId);
+        await runtime.ApplyAsync("alpaca", Scope.ConnectionId, Scope.TenantId, "operator");
+        var instance = applier.Active;
+        var template = new ProviderConnectionTemplateDto("Research quotes", "alpaca", 1, "paper", "DataVendor", "Research",
+            "Research", [new("HistoricalBars", 1)], new("HistoricalBars", 100), "ResearchBars", ["ResearchCoverage"]);
+        await Config.UpdateAsync(config => config with
+        {
+            ProviderConnections = config.ProviderConnections! with
+            {
+                Connections = [.. config.ProviderConnections!.Connections!, new("research", "alpaca", "Research quotes",
+                    ExternalAccountId: "account-research", TenantId: Scope.TenantId, CredentialEnvironment: "paper") { SetupTemplate = template }]
+            }
+        });
+
+        var select = () => runtime.BindAsync("alpaca", "research", Scope.TenantId);
+        await select.Should().ThrowAsync<InvalidOperationException>().WithMessage("*do not permit a host-wide runtime binding*");
+        applier.Stopping.Task.IsCompleted.Should().BeFalse();
+        applier.Active.Should().BeSameAs(instance);
+        Config.LoadRequired().ProviderConnections!.RuntimeCredentials.Should().Equal(active);
+    }
+
+    [Fact]
     public async Task CancellationDuringDrain_DoesNotDeleteCredentialsOrLeaveAnAppliedClaim()
     {
         var vault = await InitializeAsync();

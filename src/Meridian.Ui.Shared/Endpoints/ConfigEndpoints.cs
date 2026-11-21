@@ -4,6 +4,7 @@ using Meridian.Application.Services;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Contracts.Configuration;
+using Meridian.DataIntegration.Credentials;
 using Meridian.Storage;
 // Import extension methods for DTO to domain conversion
 using Meridian.Ui.Shared;
@@ -175,14 +176,51 @@ public static class ConfigEndpoints
         // Update Alpaca settings
         group.MapPost(UiApiRoutes.ConfigAlpaca, async (ConfigStore store, AlpacaOptionsDto alpaca, CancellationToken ct) =>
         {
-            var alpacaDomain = alpaca.ToDomain();
-            await store.UpdateAsync(cfg => cfg with { Alpaca = alpacaDomain }, ct);
+            await store.UpdateAsync(cfg => cfg with { Alpaca = alpaca.ToDomain(cfg.Alpaca) }, ct);
             return Results.Ok(store.GetChangeStatus());
         }).WithName("UpdateAlpaca")
         .WithDescription("Updates Alpaca provider connection settings.")
         .Produces(200).RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .AddEndpointFilter(requireModifyConfig)
         .RequirePermission(UserPermission.ModifyConfig);
+
+        group.MapGet(UiApiRoutes.ConfigAlpacaFeed, (ConfigStore store) =>
+            Results.Json(new { feed = AlpacaFeedConfiguration.SavedFeed(store.Load()) }, jsonOptions))
+            .WithName("GetAlpacaEquityFeed");
+
+        group.MapPut(UiApiRoutes.ConfigAlpacaFeed, async (HttpContext context, AlpacaFeedUpdateDto request,
+            [FromServices] ProviderConnectionLifecycleService connections, CancellationToken ct) =>
+        {
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (string.Equals(request.Feed?.Trim(), "sip", StringComparison.OrdinalIgnoreCase) &&
+                (!tenant.HasTenantScope || !EndpointAuthorization.HasPermission(context, UserPermission.ManageCredentials)))
+                return EndpointHelpers.Forbidden();
+            try
+            {
+                var status = await connections.SetAlpacaFeedAsync(request, tenant.TenantId, ct).ConfigureAwait(false);
+                return Results.Json(status, jsonOptions);
+            }
+            catch (ArgumentException)
+            {
+                return Results.BadRequest(new { error = "Select IEX, SIP, or delayed SIP for Alpaca." });
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return EndpointHelpers.Forbidden();
+            }
+            catch (ProviderCredentialConflictException failure)
+            {
+                return Results.Conflict(new { error = failure.Message });
+            }
+            catch (AlpacaFeedVerificationException failure)
+            {
+                return Results.UnprocessableEntity(new { error = failure.Message });
+            }
+        })
+        .WithName("UpdateAlpacaEquityFeed")
+        .RequirePermission(UserPermission.ModifyConfig)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .Produces<ConfigurationChangeStatus>(StatusCodes.Status200OK);
 
         // Update storage settings
         group.MapPost(UiApiRoutes.ConfigStorage, async (ConfigStore store, StorageSettingsRequest req, CancellationToken ct) =>

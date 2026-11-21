@@ -21,7 +21,12 @@ export interface PromotionGateForm {
   manualOverrideId: string;
   evidenceReferences: string;
   approvalChecklist: string[];
+  liveSymbols?: string;
+  liveNotional?: string;
+  liveExpiry?: string;
 }
+
+export type LiveAuthorizationField = "liveSymbols" | "liveNotional" | "liveExpiry";
 
 export const emptyPromotionGateForm: PromotionGateForm = {
   runId: "",
@@ -106,6 +111,14 @@ export function validatePromotionApproval(
     return `${liveTarget ? "Live" : "Paper"} promotion evidence references are invalid: ${invalidEvidence.join(", ")}.`;
   }
 
+  if (liveTarget && !evaluation.strategyArtifactId) {
+    return "Review a Paper run with retained strategy revision evidence.";
+  }
+
+  if (liveTarget && !buildLiveAuthorization(form, evaluation)) {
+    return "Enter authorized symbols, a positive USD order ceiling, and a future expiry.";
+  }
+
   return null;
 }
 
@@ -135,7 +148,28 @@ export function buildPromotionApprovalRequest(
     approvalChecklist: approvalChecklist.length > 0 ? approvalChecklist : undefined,
     evidenceReferences: evidenceReferences.length > 0 ? evidenceReferences : undefined,
     reviewNotes: trimmedForm.reviewNotes || undefined,
-    manualOverrideId: trimmedForm.manualOverrideId || undefined
+    manualOverrideId: trimmedForm.manualOverrideId || undefined,
+    ...(isLivePromotionTarget(evaluation) && evaluation
+      ? { liveAuthorization: buildLiveAuthorization(form, evaluation) }
+      : {})
+  };
+}
+
+function buildLiveAuthorization(
+  form: PromotionGateForm, evaluation: PromotionEvaluationResult
+): ApprovePromotionRequest["liveAuthorization"] {
+  const symbols = form.liveSymbols?.split(/[,\s]+/).filter(Boolean).map((symbol) => symbol.toUpperCase()) ?? [];
+  const limit = Number(form.liveNotional);
+  const expiry = Date.parse(form.liveExpiry ?? "");
+  if (!evaluation.strategyArtifactId || symbols.length === 0 || !Number.isFinite(limit) || limit <= 0
+    || !Number.isFinite(expiry) || expiry <= Date.now()) return undefined;
+
+  return {
+    expectedStrategyArtifactId: evaluation.strategyArtifactId,
+    allowedSymbols: [...new Set(symbols)],
+    maxOrderNotional: limit,
+    currency: "USD",
+    expiresAt: new Date(expiry).toISOString()
   };
 }
 
@@ -369,4 +403,21 @@ export function buildPromotionApprovalChecklist(
     ...item,
     ariaLabel: `${item.label}: ${item.status}${item.description ? `. ${item.description}` : ""}`
   }));
+}
+
+export function formatTradingOperatorLabel(value: string | null | undefined): string {
+  const normalized = value?.trim() ?? "";
+  if (!normalized) {
+    return "Unknown operator";
+  }
+
+  if (/^fixture[-_:]/i.test(normalized)) {
+    return "Paper operator";
+  }
+
+  const words = normalized.replace(/[._:-]+/g, " ").replace(/\s+/g, " ").trim();
+  return words
+    .split(" ")
+    .map((word) => word ? `${word.charAt(0).toUpperCase()}${word.slice(1)}` : word)
+    .join(" ");
 }

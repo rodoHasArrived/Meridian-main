@@ -32,8 +32,7 @@ public sealed partial class BackfillCoordinator
         if (cfg is null)
             return MissingCloneConfiguration(retained.Receipt);
 
-        var providers = await CreateProvidersAsync(ct).ConfigureAwait(false);
-        using var service = CreateService(cfg: cfg, tenantId: tenantId, createdProviders: providers);
+        using var service = await CreateOperationServiceAsync(cfg, tenantId, ct).ConfigureAwait(false);
         var (plan, _) = await AssessCloneAsync(retained, cfg, service, ct).ConfigureAwait(false);
         return plan;
     }
@@ -91,7 +90,7 @@ public sealed partial class BackfillCoordinator
         {
             service.ValidateRequest(request);
             if (inputs.MaxConcurrentSymbols is { } originalConcurrency &&
-                BackfillQuotaPlanner.ResolveConcurrency(request, cfg.Backfill, provider, service.Providers) != originalConcurrency)
+                BackfillQuotaPlanner.ResolveConcurrency(request, cfg.Backfill, provider) != originalConcurrency)
             {
                 return Unavailable("The shared provider budget now caps concurrency below the saved request.");
             }
@@ -104,8 +103,12 @@ public sealed partial class BackfillCoordinator
         var route = service.DescribeRoute(request);
         var historicalProviders = receipt.Providers.Select(p => p with
         {
-            Requests = 0, ResponsesWithData = 0, Unavailable = 0, EmptyResponses = 0,
-            StaleResponses = 0, StaleResponsesAccepted = 0
+            Requests = 0,
+            ResponsesWithData = 0,
+            Unavailable = 0,
+            EmptyResponses = 0,
+            StaleResponses = 0,
+            StaleResponsesAccepted = 0
         });
         if (route.RoutingDecision != receipt.RoutingDecision || route.Validation != receipt.ValidationProfile ||
             !route.Sources.SequenceEqual(historicalProviders))
@@ -205,7 +208,9 @@ public sealed partial class BackfillCoordinator
 
         var provider = cfg.Backfill?.Providers?.Alpaca;
         var module = cfg.ProviderModules?.Modules?.GetValueOrDefault("alpaca");
-        var feed = module?.Settings?.GetValueOrDefault("feed") ?? provider?.Feed ?? cfg.Alpaca?.Feed ?? "iex";
+        var overrideFeed = provider?.Feed;
+        var configuredFeed = string.IsNullOrWhiteSpace(overrideFeed) ? cfg.Alpaca?.Feed : overrideFeed;
+        var feed = module?.Settings?.GetValueOrDefault("feed") ?? configuredFeed ?? "iex";
         var adjustment = (provider?.Adjustment ?? "all").ToLowerInvariant();
         return source.FeedLabel.Equals(feed, StringComparison.OrdinalIgnoreCase) &&
             source.DataSemantics == $"Historical bars ({adjustment} adjustment)";

@@ -23,6 +23,9 @@ public sealed record BackfillExecutionLog
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<BackfillBatchReceiptSummary>? BatchReceipts { get; init; }
 
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillRoutingAttempt>? RoutingAttempts { get; init; }
+
     [JsonIgnore]
     public DateTimeOffset ThrottledUntil => new(Interlocked.Read(ref _throttledUntilUtcTicks), TimeSpan.Zero);
 
@@ -279,6 +282,8 @@ public sealed class SymbolExecutionResult
     public int GapsFilled { get; set; }
     public long BarsRetrieved { get; set; }
     public string? Provider { get; set; }
+    public IReadOnlyList<BackfillProviderContribution>? ServedBy { get; init; }
+    public IReadOnlyList<BackfillRoutingAttempt>? RoutingAttempts { get; init; }
     public string? ErrorMessage { get; set; }
     public DateTimeOffset? StartedAt { get; set; }
     public DateTimeOffset? CompletedAt { get; set; }
