@@ -87,7 +87,8 @@ internal sealed class LiveRunMetricsTracker
         decimal cash,
         decimal equity,
         IReadOnlyDictionary<string, Position> positions,
-        IReadOnlyDictionary<string, FinancialAccountSnapshot> accounts)
+        IReadOnlyDictionary<string, FinancialAccountSnapshot> accounts,
+        Meridian.Execution.Sdk.PositionAccountingEvidenceSnapshot? accountingEvidence = null)
     {
         var dailyReturn = _previousEquity > 0m ? (equity - _previousEquity) / _previousEquity : 0m;
 
@@ -104,7 +105,7 @@ internal sealed class LiveRunMetricsTracker
         _maxDrawdownFraction = Math.Max(_maxDrawdownFraction, drawdownFraction);
 
         _snapshots.Add(new PortfolioSnapshot(
-            Timestamp: new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),
+            Timestamp: accountingEvidence?.AsOf ?? new DateTimeOffset(date.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero),
             Date: date,
             Cash: cash,
             MarginBalance: 0m,
@@ -114,7 +115,14 @@ internal sealed class LiveRunMetricsTracker
             DailyReturn: dailyReturn,
             Positions: positions,
             Accounts: accounts,
-            DayCashFlows: _currentDayCashFlows.ToArray()));
+            DayCashFlows: _currentDayCashFlows.ToArray())
+        {
+            AccountingPositions = accountingEvidence is null ? null : Array.AsReadOnly(accountingEvidence.Positions
+                .Select(position => position with
+                {
+                    EvidenceReferences = position.EvidenceReferences is null ? null : Array.AsReadOnly(position.EvidenceReferences.ToArray())
+                }).ToArray())
+        });
         _currentDayCashFlows.Clear();
         _previousEquity = equity;
     }

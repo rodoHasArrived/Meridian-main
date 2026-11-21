@@ -148,6 +148,11 @@ public sealed class PortfolioReadService
 
     private static IReadOnlyList<StrategyPositionAccountingEvidence> BuildAccountingPositions(PortfolioSnapshot snapshot)
     {
+        if (snapshot.AccountingPositions is not null)
+            return Array.AsReadOnly(snapshot.AccountingPositions.Select(position => position with
+            {
+                EvidenceReferences = position.EvidenceReferences is null ? null : Array.AsReadOnly(position.EvidenceReferences.ToArray())
+            }).ToArray());
         var rows = new List<StrategyPositionAccountingEvidence>();
         foreach (var account in snapshot.Accounts.Values.OrderBy(static item => item.AccountId, StringComparer.OrdinalIgnoreCase))
         foreach (var position in account.Positions.Values.OrderBy(static item => item.Symbol, StringComparer.OrdinalIgnoreCase))

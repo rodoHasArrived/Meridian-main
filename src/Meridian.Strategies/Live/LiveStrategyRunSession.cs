@@ -483,12 +483,14 @@ internal sealed class LiveStrategyRunSession
             _strategy.OnDayEnd(date, _context);
         }
 
+        var accountingEvidence = _context.CapturePositionAccountingEvidence();
         _metrics.RecordDayEnd(
             date,
             _context.Cash,
             _context.PortfolioValue,
             _context.Positions,
-            _context.Accounts);
+            _context.Accounts,
+            accountingEvidence);
     }
 
     private async Task RouteQueuedOrdersAsync(CancellationToken ct)

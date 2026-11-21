@@ -236,7 +236,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
             }
 
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
-            var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe);
+            var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe,
+                accountingFinancialAccountId: run.FundAccountId?.ToString("D"), accountingStrategyRunId: run.RunId);
             var restorePaused = run.TerminalStatus == Meridian.Contracts.Workstation.StrategyRunStatus.Paused;
             if (restorePaused)
             {

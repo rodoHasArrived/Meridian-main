@@ -22,6 +22,8 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     private readonly List<Guid> _pendingCancellations = [];
     private readonly List<Guid> _locallyCancelledOrders = [];
     private readonly string _defaultAccountId;
+    private readonly string? _accountingFinancialAccountId;
+    private readonly string? _accountingStrategyRunId;
     private readonly Meridian.Ledger.Ledger _sessionLedger = new();
 
     public LiveStrategyExecutionContext(
@@ -29,13 +31,17 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
         ILiveFeedAdapter feed,
         IPortfolioState portfolio,
         IReadOnlySet<string> universe,
-        string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId)
+        string defaultAccountId = BacktestDefaults.DefaultBrokerageAccountId,
+        string? accountingFinancialAccountId = null,
+        string? accountingStrategyRunId = null)
     {
         Gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
         _portfolio = portfolio ?? throw new ArgumentNullException(nameof(portfolio));
         Universe = universe ?? throw new ArgumentNullException(nameof(universe));
         _defaultAccountId = defaultAccountId;
+        _accountingFinancialAccountId = string.IsNullOrWhiteSpace(accountingFinancialAccountId) ? null : accountingFinancialAccountId;
+        _accountingStrategyRunId = string.IsNullOrWhiteSpace(accountingStrategyRunId) ? null : accountingStrategyRunId;
         CurrentTime = DateTimeOffset.UtcNow;
         CurrentDate = DateOnly.FromDateTime(CurrentTime.UtcDateTime);
     }
@@ -275,6 +281,34 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
     {
         CurrentTime = time;
         CurrentDate = DateOnly.FromDateTime(time.UtcDateTime);
+    }
+
+    /// <summary>Captures one native receipt for one authorized account without rebuilding money from quotes.</summary>
+    internal Meridian.Execution.Sdk.PositionAccountingEvidenceSnapshot? CapturePositionAccountingEvidence()
+    {
+        if (_accountingFinancialAccountId is null || _accountingStrategyRunId is null
+            || _portfolio is not Meridian.Execution.Sdk.IPositionAccountingEvidenceSource source)
+            return null;
+        var captured = source.CapturePositionAccountingEvidence();
+        if (!captured.CoveredFinancialAccountIds.Contains(_accountingFinancialAccountId, StringComparer.OrdinalIgnoreCase))
+            return null;
+        var positions = captured.Positions
+            .Where(position => string.Equals(position.FinancialAccountId, _accountingFinancialAccountId, StringComparison.OrdinalIgnoreCase))
+            .Where(position => position.StrategyRunId is null || position.StrategyRunId == _accountingStrategyRunId)
+            .Select(position => position with
+            {
+                Quantity = position.StrategyRunId is null ? null : position.Quantity,
+                MonetaryBasis = position.StrategyRunId is null ? null : position.MonetaryBasis,
+                CoverageFailure = position.StrategyRunId is null
+                    ? $"The captured account position has missing or mixed strategy-run acquisition history. {position.CoverageFailure}".TrimEnd()
+                    : position.CoverageFailure,
+                EvidenceReferences = position.EvidenceReferences is null ? null : Array.AsReadOnly(position.EvidenceReferences.ToArray())
+            }).ToArray();
+        return captured with
+        {
+            Positions = Array.AsReadOnly(positions),
+            CoveredFinancialAccountIds = Array.AsReadOnly(new[] { _accountingFinancialAccountId })
+        };
     }
 
     /// <summary>Returns and clears the orders queued by strategy callbacks since the last drain.</summary>

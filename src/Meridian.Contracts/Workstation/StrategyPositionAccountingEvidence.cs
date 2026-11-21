@@ -4,4 +4,9 @@ namespace Meridian.Contracts.Workstation;
 public sealed record StrategyPositionAccountingEvidence(
     string Symbol, string? FinancialAccountId, Guid? SecurityId, bool IsShort,
     decimal? Quantity, decimal? MonetaryBasis, string? QuantityUnit, decimal? Multiplier,
-    string? Currency, string? CoverageFailure = null, IReadOnlyList<string>? EvidenceReferences = null);
+    string? Currency, string? CoverageFailure = null, IReadOnlyList<string>? EvidenceReferences = null)
+{
+    /// <summary>Retained paper acquisition/relief run attribution; missing is never inferred from a ticker.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyRunId { get; init; }
+}

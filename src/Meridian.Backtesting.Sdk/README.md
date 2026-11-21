@@ -11,6 +11,13 @@ last_reviewed: 2026-10-15
 
 # src/Meridian.Backtesting.Sdk
 
+`PortfolioSnapshot.AccountingPositions` optionally retains one atomic native paper accounting
+receipt. It carries exact signed quantities and monetary basis with their account, security,
+unit, multiplier, currency and retained run attribution; it never manufactures simulation lots
+from quoted average prices. The snapshot timestamp is the captured economic population cut.
+Null means unavailable or legacy coverage, while an authorized captured empty partition is an
+empty list. Existing backtest open-lot receipts continue through their original path.
+
 `BacktestEngineMetadata` carries optional `FinancingCoverageStatus` and nullable
 `RunAttributedMarginInterest` as init properties, preserving its existing constructor. An explicit
 `Unavailable` status means the decimal metric is a compatibility placeholder and financing/gross

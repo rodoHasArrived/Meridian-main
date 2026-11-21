@@ -458,3 +458,11 @@ three-way reconciliation lane supplies atomic canonical lot evidence for its sup
 An absent account scope, differing identities, currency, native convention or economic cutoff
 suppresses both operands and the variance in the single-unit measure. Per-source evidence retains
 its original dimensions. Missing coverage cannot appear as a successful native comparison.
+
+Paper metrics capture the optional native accounting source once per observation, retain its
+economic cutoff and exact quantities/basis, and limit the receipt to the run's authorized financial
+account. Only retained same-run acquisition/relief history supplies strategy quantities and basis;
+mixed or missing run history stays unavailable. Clearly attributed sibling-run holdings are not
+relabeled as this run. Legacy snapshots keep their missing receipt, and no ticker lookup repairs
+missing accounting identity. A variation-margin future without a journal position footprint keeps
+its ledger-side native measurement unavailable; these reads never invent memo or money journals.
