@@ -11,10 +11,10 @@ public sealed record ReconciliationMonetaryTotal(decimal? Amount, string? Curren
         foreach (var item in breaks)
         {
             var money = (item.Measures ?? []).Where(static measure =>
-                measure.Kind is ReconciliationBreakMeasureKindDto.Value or ReconciliationBreakMeasureKindDto.CostBasis
-                && measure.UnavailableReason is null && measure.Expected.HasValue && measure.Actual.HasValue
-                && measure.Variance == measure.Actual - measure.Expected && IsCurrency(measure.Unit)).ToArray();
-            if (money.Length != 1)
+                measure.Kind is ReconciliationBreakMeasureKindDto.Value or ReconciliationBreakMeasureKindDto.CostBasis).ToArray();
+            if (money.Length != 1 || money[0].UnavailableReason is not null
+                || !money[0].Expected.HasValue || !money[0].Actual.HasValue || !money[0].Variance.HasValue
+                || money[0].Variance != money[0].Actual - money[0].Expected || !IsCurrency(money[0].Unit))
                 return Unavailable("A break has no single comparable monetary measure; quantities and unavailable evidence cannot be summed as money.");
             totals.Add(new(Math.Abs(money[0].Variance!.Value), money[0].Unit.ToUpperInvariant(), null));
         }
