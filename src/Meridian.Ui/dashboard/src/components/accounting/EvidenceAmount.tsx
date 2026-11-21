@@ -6,11 +6,24 @@ import { getJson } from "@/lib/api";
 import { workstationEvidencePacketEndpoint } from "@/lib/workstation-endpoints";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type { EvidencePacket } from "@/types";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
+import type { AmountPassportReference } from "@/types/amount-passport";
+import { formatMoney } from "./money";
 
 export interface AmountEvidenceSubject {
   subjectKind: string;
   subjectId: string;
   ledgerBookId?: string | null;
+}
+
+export function PostedEvidenceAmount({ reference, label, asOf, ...amount }: AmountCellProps & {
+  reference: AmountPassportReference | null; label: string; asOf?: string | null;
+}) {
+  const currency = reference?.currency ?? amount.currency;
+  return <AmountPassportTrigger selection={{
+    label, reference, asOf, currency, unit: "currency", zero: amount.value === 0,
+    displayValue: formatMoney(amount.value, { currency, decimals: amount.decimals, zeroDash: amount.zeroDash })
+  }}><AmountCell {...amount} currency={currency} /></AmountPassportTrigger>;
 }
 
 /** An amount opens only its retained subject. It never derives provenance from a numeric value. */
@@ -56,13 +69,14 @@ export function EvidenceAmount({ subject, ...amount }: AmountCellProps & { subje
       <AmountCell {...amount} />
     </button>
     <Sheet open={open} onOpenChange={setOpen}>
-      <SheetContent aria-label="Amount evidence">
+      <SheetContent aria-label="Amount passport">
         <SheetHeader>
-          <SheetTitle>Amount evidence</SheetTitle>
-          <SheetDescription>Retained source, reconciliation, approval, and audit evidence for this entry. Completeness reflects the evidence service.</SheetDescription>
+          <SheetTitle>Amount passport</SheetTitle>
+          <SheetDescription>Record evidence for this entry. This record-level packet does not certify a specific amount. Completeness reflects the evidence service.</SheetDescription>
           <SheetCloseButton onClick={() => setOpen(false)} />
         </SheetHeader>
         <SheetBody>
+          <h3 className="mb-2 text-sm font-semibold">Record evidence</h3>
           <p className="mb-3"><AmountCell {...amount} /></p>
           {!current ? <p role="status">Loading retained evidence…</p> : null}
           {current?.error ? <p role="alert">{current.error}</p> : null}

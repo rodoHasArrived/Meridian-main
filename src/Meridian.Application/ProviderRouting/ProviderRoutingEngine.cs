@@ -123,6 +123,9 @@ public sealed class ProviderRoutingService : ICapabilityRouter
                 continue;
             }
 
+            if (!AllowsTemplateScope(connection, context, policy, tenantId))
+                continue;
+
             var adapter = GetAdapter(connection.ProviderFamilyId);
             if (!SupportsCapability(connection, adapter, context.Capability))
             {
@@ -145,6 +148,8 @@ public sealed class ProviderRoutingService : ICapabilityRouter
             };
 
             var fallbackConnectionIds = ResolveFallbacks(binding, connection, connections, effectivePolicy);
+            fallbackConnectionIds = fallbackConnectionIds.Where(id => !connections.TryGetValue(id, out var fallback) ||
+                AllowsTemplateScope(fallback, context, effectivePolicy, tenantId)).ToArray();
             var fallbackScopeRanks = new Dictionary<string, int>(StringComparer.OrdinalIgnoreCase);
             if (tenantId is not null)
             {
@@ -327,6 +332,10 @@ public sealed class ProviderRoutingService : ICapabilityRouter
         IProviderFamilyAdapter? adapter,
         ProviderCapabilityKind capability)
     {
+        if (connection.SetupTemplate is { } template && (!connection.Enabled ||
+            !template.RequestedCapabilities.Any(request => request.Capability == capability.ToString())))
+            return false;
+
         if (adapter?.SupportsCapability(capability) == true)
             return true;
 
@@ -396,6 +405,18 @@ public sealed class ProviderRoutingService : ICapabilityRouter
 
         return null;
     }
+
+    private static bool AllowsTemplateScope(ProviderConnectionConfig connection, ProviderRouteContext context, ProviderSafetyPolicy policy, string? tenantId)
+        => connection.SetupTemplate?.AllowedScope switch
+        {
+            null => true,
+            _ when tenantId is null => false,
+            "Research" => string.Equals(context.Workspace, "research", StringComparison.OrdinalIgnoreCase) &&
+                !context.RequireProductionReady && !policy.RequireProductionReady,
+            "Trading" => string.Equals(context.Workspace, "trading", StringComparison.OrdinalIgnoreCase),
+            "Data" => string.Equals(context.Workspace, "data", StringComparison.OrdinalIgnoreCase),
+            _ => true
+        };
 
     private static IReadOnlyList<string> ResolveFallbacks(
         ProviderBindingConfig binding,

@@ -140,8 +140,12 @@ export function ledgerPeriodPnlSummaryEndpoint(periodId: string): string {
   return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodPnlSummary, "periodId", periodId);
 }
 
-export function ledgerPeriodJournalEntriesEndpoint(periodId: string): string {
-  return routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
+export function ledgerPeriodJournalEntriesEndpoint(periodId: string, query: { instrumentId?: string | null; accountId?: string | null } = {}): string {
+  const route = routeWithParam(WORKSTATION_API_ENDPOINTS.ledgerPeriodJournalEntries, "periodId", periodId);
+  const params = new URLSearchParams();
+  if (query.instrumentId) params.set("instrumentId", query.instrumentId);
+  if (query.accountId) params.set("dimensionAccountId", query.accountId);
+  return params.size ? `${route}?${params}` : route;
 }
 
 export function workstationIngestionOperationActionEndpoint(jobId: string, action: string): string {
@@ -527,10 +531,16 @@ export const BACKFILL_API_ENDPOINTS = {
   checkpointsResumable: UI_API_ROUTES.BackfillCheckpointsResumable,
   checkpointsValidation: UI_API_ROUTES.BackfillCheckpointsValidation,
   executions: UI_API_ROUTES.BackfillExecutions,
+  receipts: UI_API_ROUTES.BackfillReceipts,
+  clone: UI_API_ROUTES.BackfillClone,
   progress: UI_API_ROUTES.BackfillProgress,
   run: UI_API_ROUTES.BackfillRun,
   runPreview: UI_API_ROUTES.BackfillRunPreview
 } as const;
+
+export function backfillCloneEndpoint(receiptId: string): string {
+  return BACKFILL_API_ENDPOINTS.clone.replace("{receiptId:guid}", encodeURIComponent(receiptId));
+}
 
 export const PROVIDER_API_ENDPOINTS = {
   configure: UI_API_ROUTES.ProviderConfigure,
@@ -1256,6 +1266,10 @@ export function promotionEvaluateEndpoint(runId: string): string {
   return routeWithParam(UI_API_ROUTES.PromotionEvaluate, "runId", runId);
 }
 
+export function promotionLiveAuthorizationRevokeEndpoint(authorizationId: string): string {
+  return routeWithParam(UI_API_ROUTES.PromotionLiveAuthorizationRevoke, "id", authorizationId);
+}
+
 export function executionOrderCancelEndpoint(orderId: string): string {
   return routeWithParam(UI_API_ROUTES.ExecutionOrderCancel, "orderId", orderId);
 }
@@ -1298,8 +1312,8 @@ export function replayFilesEndpoint(symbol?: string): string {
   return `${REPLAY_API_ENDPOINTS.files}${queryString({ symbol })}`;
 }
 
-export function portfolioHouseholdEndpoint(provider = "alpaca"): string {
-  return `${PORTFOLIO_API_ENDPOINTS.household}${queryString({ provider })}`;
+export function portfolioHouseholdEndpoint(provider = "alpaca", fundAccountId?: string | null): string {
+  return `${PORTFOLIO_API_ENDPOINTS.household}${queryString({ provider, fundAccountId })}`;
 }
 
 export function portfolioSymbolExposureEndpoint(symbol: string): string {

@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MainWindow
+
+Qualified name: <code>Meridian.Wpf.MainWindow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/MainWindow.xaml.cs:34](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L34).
+
+Main application window containing the navigation frame. Handles global keyboard shortcuts, command palette, and window state persistence.
+
+```csharp
+public partial class MainWindow : Window
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
+| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:996](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L996) |  |
+
 ## AccountingSubarea
 
 Qualified name: <code>Meridian.Wpf.Models.AccountingSubarea</code>. Kind: `enum`.
@@ -918,14 +937,4 @@ Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:198](../..
 
 ```csharp
 public sealed record FundReconciliationCheckDetailRow(string RowKey, string CheckLabel, string CategoryLabel, string StatusLabel, string StatusIcon, string SourceLabel, string ExpectedAmountText, string ActualAmountText, string VarianceText, string Reason, string ExpectedAsOfText, string ActualAsOfText, bool IsHighlighted = false);
-```
-
-## FundReconciliationDetailModel
-
-Qualified name: <code>Meridian.Wpf.Models.FundReconciliationDetailModel</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs:173](../../../../src/Meridian.Wpf/Models/FundReconciliationWorkbenchModels.cs#L173).
-
-```csharp
-public sealed record FundReconciliationDetailModel(FundReconciliationSourceType SourceType, string DetailKey, string Title, string Subtitle, string StatusLabel, string CoverageSummary, string LastUpdatedText, Guid? AccountId, Guid ReconciliationRunId, string? RunId, string? FocusBreakId, bool SupportsBreakActions, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, int SecurityIssueCount, string EmptyExceptionsText, string EmptySecurityCoverageText, IReadOnlyList<FundReconciliationCheckDetailRow> ExceptionRows, IReadOnlyList<FundReconciliationCheckDetailRow> AllCheckRows, IReadOnlyList<FundReconciliationSecurityCoverageRow> SecurityCoverageRows, IReadOnlyList<FundReconciliationAuditTrailRow> AuditRows);
 ```

@@ -9,6 +9,8 @@ import { EmptyState } from "@/components/data/empty-state";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
 import { FamilyOwnershipGraph } from "@/screens/family-ownership-graph";
 import { PrivateCapitalLifecyclePanel } from "@/components/meridian/private-capital-lifecycle-panel";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import type { RecordIdentity } from "@/lib/record-workspace-context";
 import {
   MetricTile,
   KeyValueGrid
@@ -151,6 +153,20 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
     ? loadedReadScope === readScopeKey ? loadedStructure : null
     : entityStructure;
   const vm = buildFamilyOfficeScreenViewModel(selectedNodeId, resolvedStructure);
+  const fund = resolvedStructure?.entities.find((entity) => entity.entityId === vm.ownershipGraph.selectedNodeId && entity.entityType === "Fund");
+  const linkedFundUnavailable = selectedNodeId && vm.ownershipGraph.selectedNodeId !== selectedNodeId;
+  const fundNeedsReview = Boolean(fund && (fund.reconciliationBreakCount > 0 || fund.staleValuationWarningCount > 0));
+  const fundRecord: RecordIdentity | null = fund && !linkedFundUnavailable ? {
+    kind: "fund",
+    id: fund.entityId,
+    name: fund.displayName,
+    entity: fund.displayName,
+    asOf: resolvedStructure?.asOfDate,
+    trust: fundNeedsReview ? "Exposure evidence needs review" : "No flagged checks",
+    trustTone: fundNeedsReview ? "review" : "ready",
+    scope: { entityId: fund.entityId }
+  } : null;
+  const fundContext = useRecordWorkspaceContext(fundRecord, { ownershipNode: fund?.entityId }, "#family-office-ownership-detail");
   const selectNode = (nodeId: string) => {
     updateQuery((current) => { const next = new URLSearchParams(current); next.set("ownershipNode", nodeId); return next; });
   };
@@ -290,7 +306,9 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
             role="region"
             aria-label={vm.ownershipGraph.selectedDetailTitle}
           >
-            {vm.ownershipGraph.selectedNode ? (
+            {linkedFundUnavailable ? (
+              <p role="status" className="text-sm text-muted-foreground">The linked fund is unavailable in the current ownership structure.</p>
+            ) : vm.ownershipGraph.selectedNode ? (
               <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
                 <div>
                   <div className="flex flex-wrap items-center gap-2">
@@ -318,6 +336,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
             ) : (
               <p className="text-sm text-muted-foreground">{vm.ownershipGraph.selectedDetailEmptyTitle}</p>
             )}
+            {fundRecord ? <RecordIdentitySpine record={fundRecord} context={fundContext} /> : null}
           </section>
         </CardContent>
       </Card>

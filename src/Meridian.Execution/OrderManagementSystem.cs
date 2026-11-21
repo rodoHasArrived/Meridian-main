@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using System.Threading.Channels;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Execution.Events;
 using Meridian.Execution.Logging;
 using Meridian.Execution.OrderManagement;
@@ -19,10 +20,11 @@ namespace Meridian.Execution;
 /// for backpressure-aware execution event processing.
 /// </summary>
 [ImplementsAdr("ADR-013", "Uses bounded channels for execution event pipeline")]
-public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
+public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentSubmitter, IOrderManagementLifecycle, IDisposable, IAsyncDisposable
 {
     private readonly OrderStateTable _orders = new();
     private readonly IExecutionGateway _gateway;
+    private readonly OrderIntentJournal? _intentJournal;
     private readonly OrderFillProcessor _fillProcessor;
     private readonly OrderExecutionAudit _executionAudit;
     private readonly AccountingHandoffCoordinator _accountingHandoff;
@@ -101,9 +103,12 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         IOrderMarketReferenceSource? marketReferences = null,
         IOrderInstrumentCoverageSource? instrumentCoverage = null,
         IStrategyRunAuthoritySource? strategyRunAuthority = null,
-        OrderAuthorityOptions? authorityOptions = null)
+        OrderAuthorityOptions? authorityOptions = null,
+        IOperationalCaseHistoryStore? orderIntentHistory = null,
+        ILiveStrategyOrderAuthorization? liveStrategyAuthorization = null)
     {
         _gateway = gateway ?? throw new ArgumentNullException(nameof(gateway));
+        _intentJournal = orderIntentHistory is null ? null : new OrderIntentJournal(orderIntentHistory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _riskValidator = riskValidator;
         _journal = journal;
@@ -118,8 +123,6 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         _sessionPersistence = sessionPersistence;
         _recoveryJournal = new BrokerageOrderRecoveryJournal(recoveryStore);
         _brokerageConfiguration = brokerageConfiguration;
-        _accountingHandoff = new AccountingHandoffCoordinator(
-            tradeEventPublisher, tradeFillHandoffFailureStore, logger);
         _options = options ?? new OrderManagementSystemOptions();
         if (portfolioState is PaperTradingPortfolio { UsesCanonicalAccounting: true })
         {
@@ -128,6 +131,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 throw new InvalidOperationException("Canonical paper execution requires its exact v2 accounting publisher and in-process synthetic gateway.");
             synthetic.EnableCanonicalSyntheticPricing();
         }
+        _accountingHandoff = new AccountingHandoffCoordinator(
+            ScopedPaperBook is null ? tradeEventPublisher : null, tradeFillHandoffFailureStore, logger);
         if (_options.RequireProductionSafetyDependencies)
         {
             if (_riskValidator is null)
@@ -140,7 +145,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         _admissionPolicy = new OrderAdmissionPolicy(
             gateway, logger, brokerageConfiguration, securityMasterGate,
             operatorControls, liveOrderReadinessGate, portfolioState, sessionPolicy, marketReferences, instrumentCoverage,
-            runAuthority: strategyRunAuthority, authorityOptions: authorityOptions);
+            runAuthority: strategyRunAuthority, authorityOptions: authorityOptions,
+            liveStrategyAuthorization: liveStrategyAuthorization,
+            requireLiveStrategyAuthorization: _options.RequireProductionSafetyDependencies);
         _executionFailureState = new ExecutionFailureState(logger);
         _executionReportHub = new ExecutionReportHub(_options, () => gateway.GatewayId, auditTrail, logger, _executionFailureState);
         _executionAudit = new OrderExecutionAudit(auditTrail, () => gateway.GatewayId, logger);
@@ -151,7 +158,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             new OrderFillContext(_orders, _orderFinancialAccountIds, _orderContractMultipliers, _orderFaceValueSizing,
                 tradeEventPublisher is IScopedTradeEventPublisher scopedPublisher && scopedPublisher.ScopeIdentity.AccountingProtocolVersion == 2,
                 gateway is PaperTradingGateway),
-            portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger);
+            portfolioState, sessionPersistence, _accountingHandoff, _executionReportHub, _executionAudit, logger, _intentJournal);
         _lifecycle = new OrderManagementLifecycleCoordinator(
             PumpGatewayExecutionReportsAsync, _accountingHandoff, _executionReportHub,
             _executionFailureState, operatorControls, ResolveWorkingReductionQuantity);
@@ -166,13 +173,13 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
     /// <inheritdoc />
     /// <remarks>Legacy entry point: identity comes from request metadata (unattributed authority).</remarks>
     public Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default) =>
-        PlaceOrderSerializedAsync(request, authority: null, ct);
+        SubmitWithoutIntentAsync(request, authority: null, ct);
 
     /// <inheritdoc />
     public Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(command);
-        return PlaceOrderSerializedAsync(OrderAuthorityMetadata.Bind(command.Order, command.Authority), command.Authority, ct);
+        return SubmitWithoutIntentAsync(OrderAuthorityMetadata.Bind(command.Order, command.Authority), command.Authority, ct);
     }
 
     /// <summary>
@@ -238,6 +245,11 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
         var correlationId = prepared.CorrelationId;
         var runId = prepared.RunId;
         var sessionId = BindNativePaperSessions ? null : prepared.SessionId;
+        var usePaperClaim = journalAttemptId.HasValue && _gateway is PaperTradingGateway;
+        var claimedTicket = usePaperClaim && prepared.Authority.Origin == OrderCommandOrigin.OperatorTicket;
+        if (claimedTicket && await ClaimPaperTicketAsync(safeRequest, journalAttemptId!.Value,
+                prepared.Authority.ToRecord(), ct).ConfigureAwait(false) is { } receipt)
+            return receipt;
 
         // A duplicate client order id must never reach the state table or the gateway: every
         // downstream write in this method (including gate rejections) keys on orderId, so a
@@ -259,7 +271,14 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 journalAttemptId).ConfigureAwait(false);
         }
 
-        await RecordJournalIntentAsync(safeRequest, "Intent", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
+        if (usePaperClaim && !claimedTicket)
+        {
+            if (await ClaimPaperIntentAsync(safeRequest, journalAttemptId!.Value, RetainedAuthority(prepared), ct).ConfigureAwait(false) is not null)
+                return await RejectDuplicateClientOrderIdAsync(orderId, safeRequest, actor, brokerName, runId,
+                    correlationId, ct, journalAttemptId).ConfigureAwait(false);
+        }
+        else if (!claimedTicket)
+            await RecordJournalIntentAsync(safeRequest, "Intent", journalAttemptId, ct, RetainedAuthority(prepared)).ConfigureAwait(false);
         var admission = await _admissionPolicy.EvaluatePreflightAsync(prepared, ct).ConfigureAwait(false);
         if (admission.Refusal is { } refusal)
         {
@@ -434,6 +453,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             orderState = new OrderState
             {
                 Origin = prepared.Authority.Origin,
+                StrategyArtifactId = OrderAuthorityResolver.Root(prepared.Authority).StrategyArtifactId,
                 OrderId = orderId,
                 JournalAttemptId = journalAttemptId,
                 Symbol = safeRequest.Symbol,
@@ -445,6 +465,7 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
                 Status = OrderStatus.PendingNew,
                 CreatedAt = DateTimeOffset.UtcNow,
                 StrategyId = safeRequest.StrategyId,
+                IntentId = safeRequest.IntentId,
                 FundAccountId = safeRequest.FundAccountId,
                 SessionIntent = safeRequest.SessionIntent,
                 RunId = runId,
@@ -639,9 +660,20 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             var recoveryVersion = _recoveryJournal.CaptureVersion(orderId);
             if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(safeRequest, ct).ConfigureAwait(false) is { } marketRefusal)
                 throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow dispatch.");
-            dispatchAttempted = true;
-            var report = await _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct)
-                .ConfigureAwait(false);
+            if (_admissionPolicy.UsesLiveStrategyAuthorization &&
+                await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false) is { } authorityRefusal)
+                throw new BrokerageRequestNotSentException(authorityRefusal.Reason ?? "Live order authority was withdrawn.");
+
+            Task<ExecutionReport> submission;
+            await using (var authorization = await _admissionPolicy.AcquireLiveStrategyAuthorizationAsync(
+                safeRequest, runId, orderState.StrategyArtifactId, resolvedOrder, ct).ConfigureAwait(false))
+            {
+                if (authorization.Refusal is { } reason)
+                    throw new BrokerageRequestNotSentException(reason);
+                dispatchAttempted = true;
+                submission = _gateway.SubmitOrderAsync(safeRequest with { ClientOrderId = orderId }, ct);
+            }
+            var report = await submission.ConfigureAwait(false);
             if (_orders.TryGetValue(orderId, out var accountState))
                 ValidateBrokerAccountEvidence(accountState, report);
             await RecordJournalReportAsync(report, orderState, CancellationToken.None, boundToTrackedAttempt: true).ConfigureAwait(false);
@@ -695,9 +727,9 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderManagem
             try
             {
                 await RecordSessionOrderUpdateAsync(sessionId, updatedState,
-                    BindNativePaperSessions ? CancellationToken.None : ct).ConfigureAwait(false);
+                    BindNativePaperSessions || updatedState.IntentId.HasValue ? CancellationToken.None : ct).ConfigureAwait(false);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (!updatedState.IntentId.HasValue)
             {
                 _logger.LogError(
                     ex,

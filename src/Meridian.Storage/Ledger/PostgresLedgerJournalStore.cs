@@ -69,9 +69,6 @@ public sealed partial class PostgresLedgerJournalStore :
         _intercompanyAgreementAuthority = intercompanyAgreementAuthority;
     }
 
-    // SEC-005 slice 4c-ii: the caller's tenant for the current ambient scope, or null (fail-open).
-    private string? ResolveCallerTenant() => _tenantAccessor?.ResolveCallerTenant();
-
     public async Task AppendAsync(LedgerJournalEntryWrite entry, CancellationToken ct = default)
     {
         RequireWriteTenant();
@@ -307,6 +304,7 @@ public sealed partial class PostgresLedgerJournalStore :
             && !query.AggregateId.HasValue
             && !query.JournalEntryId.HasValue
             && !query.SourceEventId.HasValue
+            && !query.SourceJournalEntryId.HasValue
             && !query.FillId.HasValue
             && string.IsNullOrWhiteSpace(query.OrderId)
             && string.IsNullOrWhiteSpace(query.AccountName)
@@ -342,9 +340,19 @@ public sealed partial class PostgresLedgerJournalStore :
             command.Parameters.AddWithValue("journal_entry_id", query.JournalEntryId.Value);
         }
 
+        if (!string.IsNullOrEmpty(query.JournalEntryIdPrefix))
+        {
+            command.Parameters.AddWithValue("journal_entry_id_prefix", query.JournalEntryIdPrefix.ToLowerInvariant());
+        }
+
         if (query.SourceEventId.HasValue)
         {
             command.Parameters.AddWithValue("source_event_id", query.SourceEventId.Value);
+        }
+
+        if (query.SourceJournalEntryId.HasValue)
+        {
+            command.Parameters.AddWithValue("source_journal_entry_id", query.SourceJournalEntryId.Value);
         }
 
         if (query.EffectiveFrom.HasValue)
@@ -653,12 +661,21 @@ public sealed partial class PostgresLedgerJournalStore :
         // Hard-close relies on the shared period-row lock for exclusion. ReadCommitted gives the
         // balance recheck a fresh snapshot after any earlier append that held the row lock commits;
         // using one transaction-wide snapshot here could otherwise hide that just-completed append.
-        var isolationLevel = requireClosedTemporaryAccounts
+        var finalizing = string.Equals(period.Status, "HardClosed", StringComparison.Ordinal);
+        var isolationLevel = finalizing
             ? IsolationLevel.ReadCommitted
             : IsolationLevel.Serializable;
         await using var transaction = await connection.BeginTransactionAsync(isolationLevel, ct).ConfigureAwait(false);
 
         await EnsureBookWriteAuthorityAsync(connection, transaction, period.LedgerBookId, ct).ConfigureAwait(false);
+        if (finalizing && period.LedgerBookId is { } bookId)
+        {
+            // The book lock also serializes required-policy changes when no policy row exists yet.
+            await using var lockBook = new NpgsqlCommand(
+                $"select 1 from {Qualified("ledger_books")} where ledger_book_id = @book for share", connection, transaction);
+            lockBook.Parameters.AddWithValue("book", bookId);
+            await lockBook.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        }
         await EnsureTenantRowAsync(connection, transaction, "accounting_periods", "period_id", period.PeriodId, true, ct).ConfigureAwait(false);
         var current = await LoadPeriodAsync(
                 connection,
@@ -722,6 +739,14 @@ public sealed partial class PostgresLedgerJournalStore :
 
             await RejectPopulatedPeriodBookMoveAsync(connection, transaction, current, period, ct)
                 .ConfigureAwait(false);
+
+            // A permitted period move has an empty journal population under the period lock.
+            if (finalizing && current.LedgerBookId is { } confirmationBook
+                && confirmationBook == period.LedgerBookId)
+            {
+                await RequireExternalGlConfirmationAsync(connection, transaction, confirmationBook, current.PeriodId, ct)
+                    .ConfigureAwait(false);
+            }
 
             if (requireClosedTemporaryAccounts)
             {
@@ -1899,55 +1924,6 @@ public sealed partial class PostgresLedgerJournalStore :
     private string Qualified(string table) => $"{ValidateIdentifier(_options.SchemaName, nameof(_options.SchemaName))}.{ValidateIdentifier(table, nameof(table))}";
 
     private static string ForUpdateClause(bool enabled) => enabled ? "for update" : string.Empty;
-
-    // SEC-005 slice 4c-ii, tightened for W9-GOV-008 criterion 2: append the tenant predicate (and bind
-    // its parameter) to a read command. Under the deployment-boundary posture a tenantless caller adds
-    // nothing, so every row passes — identical behavior under one-company-per-deployment. Under the
-    // fail-closed posture that caller is refused instead, and the clause itself no longer serves
-    // unattributed rows. The column expression is table-qualified by the caller.
-    private void ApplyTenantReadFilter(NpgsqlCommand command, string tenantColumnExpression, string? callerTenantId)
-    {
-        RejectUnscopedRead(callerTenantId, "ledger records");
-
-        if (!TenantReadPredicate.ShouldFilter(callerTenantId))
-        {
-            return;
-        }
-
-        command.CommandText += TenantReadPredicate.FilterClause(tenantColumnExpression, _tenantScope.Mode);
-        command.Parameters.AddWithValue(
-            TenantReadPredicate.ParameterName,
-            TenantReadPredicate.NormalizeParameter(callerTenantId!));
-    }
-
-    // SEC-005 slice 4c-ii: scope a journal-entry read (which has no period join in its main query) by
-    // the tenant stamped on the entry's accounting period, via an EXISTS subquery.
-    private void ApplyTenantPeriodReadFilter(NpgsqlCommand command, string periodIdColumnExpression, string? callerTenantId)
-    {
-        RejectUnscopedRead(callerTenantId, "ledger journal entries");
-
-        if (!TenantReadPredicate.ShouldFilter(callerTenantId))
-        {
-            return;
-        }
-
-        command.CommandText += TenantReadPredicate.PeriodExistsClause(
-            Qualified("accounting_periods"), periodIdColumnExpression, _tenantScope.Mode);
-        command.Parameters.AddWithValue(
-            TenantReadPredicate.ParameterName,
-            TenantReadPredicate.NormalizeParameter(callerTenantId!));
-    }
-
-    // Rejected, not emptied: an empty result set is indistinguishable from a genuinely empty ledger,
-    // both to the caller and to whoever reads the support ticket it produces. A background job that
-    // holds retained authority declares it through FundScopeTenantAuthority rather than being exempt.
-    private void RejectUnscopedRead(string? callerTenantId, string readDescription)
-    {
-        if (TenantReadPredicate.ShouldRejectRead(callerTenantId, _tenantScope.Mode))
-        {
-            throw new TenantScopeRejectedException(readDescription);
-        }
-    }
 
     private static InvalidOperationException PeriodVersionConflict(Guid periodId, long expectedVersion, long actualVersion)
         => new($"Ledger period version conflict for {periodId}. Expected {expectedVersion}, actual {actualVersion}.");

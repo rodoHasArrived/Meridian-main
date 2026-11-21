@@ -6,6 +6,43 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundStructureLegacyImportResult
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureLegacyImportResult</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:152](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L152).
+
+```csharp
+public enum FundStructureLegacyImportResult : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Imported = 0</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:154](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L154) |  |
+| <code>AlreadyImported = 1</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:155](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L155) |  |
+| <code>StoreNotEmpty = 2</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:156](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L156) |  |
+
+## FundStructureMigrationRunner
+
+Qualified name: <code>Meridian.Storage.FundStructure.FundStructureMigrationRunner</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L8).
+
+Applies the PostgreSQL migrations used by fund structure persistence.
+
+```csharp
+public sealed class FundStructureMigrationRunner
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FundStructureMigrationRunner(FundStructureStoreOptions options);</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:12](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L12) |  |
+| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:30](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L30) |  |
+
 ## FundStructureStoreOptions
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureStoreOptions</code>. Kind: `class`.
@@ -1076,36 +1113,4 @@ Information about a data source.
 
 ```csharp
 public sealed record SourceInfo(string Id, string Name, SourceType Type, int Priority = 1, string[]? AssetClasses = null, string[]? DataTypes = null, double? LatencyMs = null, double? Reliability = null, decimal? CostPerEvent = null, bool Enabled = true);
-```
-
-## SourceType
-
-Qualified name: <code>Meridian.Storage.Interfaces.SourceType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:68](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L68).
-
-Type of data source.
-
-```csharp
-public enum SourceType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Live</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:71](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L71) | Live real-time data source. |
-| <code>Historical</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:73](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L73) | Historical backfill data source. |
-| <code>Consolidated</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:75](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L75) | Consolidated/derived data source. |
-
-## SymbolInfo
-
-Qualified name: <code>Meridian.Storage.Interfaces.SymbolInfo</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:81](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L81).
-
-Information about a symbol.
-
-```csharp
-public sealed record SymbolInfo(string Symbol, string Canonical, string[]? Aliases = null, string? AssetClass = null, string? Exchange = null, string? Currency = null, string? Sedol = null, string? Isin = null, string? Figi = null, string? Sector = null, string? Industry = null, Dictionary<string, string>? Metadata = null);
 ```

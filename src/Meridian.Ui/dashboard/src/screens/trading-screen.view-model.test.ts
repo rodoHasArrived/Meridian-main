@@ -1758,6 +1758,44 @@ describe("trading order ticket view model", () => {
     expect(result.current.statusAnnouncement).toContain("parked for risk approval");
   });
 
+  it("restores the exact scoped paper command after a lost response and remount", async () => {
+    const submitOrder = vi.fn<OrderTicketServices["submitOrder"]>()
+      .mockRejectedValueOnce(new TypeError("Connection lost"))
+      .mockResolvedValueOnce({ success: true, orderId: "paper-1", reason: null, intentStatus: "Retained" });
+    const renderTicket = (scope = "synthetic-order-operator") => renderHook(() => useOrderTicketViewModel({
+      services: { submitOrder },
+      scopedPaperIntentKey: scope,
+      fundAccountId: "53bf0251-17f6-4fb7-8dbe-6fb4966e2749"
+    }));
+    const { result, unmount } = renderTicket();
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "MSFT");
+      result.current.updateField("quantity", "2");
+      result.current.setAcknowledged(true);
+    });
+
+    await act(async () => result.current.submitOrder());
+    expect(result.current.phase).toBe("reconciliation");
+    expect(result.current.submitButtonLabel).toBe("Check order outcome");
+    const original = submitOrder.mock.calls[0][0];
+    expect(original.intentId).toMatch(/^[0-9a-f-]{36}$/);
+    unmount();
+
+    const differentOperator = renderTicket("other-order-operator");
+    expect(differentOperator.result.current.phase).toBe("idle");
+    differentOperator.unmount();
+    const reopened = renderTicket();
+    expect(reopened.result.current.phase).toBe("reconciliation");
+    expect(reopened.result.current.open).toBe(true);
+    act(() => reopened.result.current.updateField("quantity", "3"));
+    await act(async () => reopened.result.current.submitOrder());
+    expect(submitOrder.mock.calls[1][0]).toEqual(original);
+    expect(reopened.result.current.successText).toBe("Order submitted - paper-1.");
+    reopened.unmount();
+    expect(renderTicket().result.current.phase).toBe("idle");
+  });
+
   it("keeps non-blocking risk warnings visible on an approved order", async () => {
     const services: OrderTicketServices = {
       submitOrder: vi.fn().mockResolvedValue({
@@ -3014,7 +3052,8 @@ describe("promotion approval checklist", () => {
     expect(error).toContain("LIVE_OVERRIDE_REVIEWED must reference active manual override override-9");
   });
 
-  it("allows live approval when all live evidence references are attached", () => {
+  it("binds live approval to the reviewed artifact and an explicit mandate", () => {
+    const evaluation = { ...liveEligibleEvaluation, strategyArtifactId: "sa1-" + "a".repeat(64) };
     const form = {
       ...emptyPromotionGateForm,
       runId: "run-live-source",
@@ -3022,10 +3061,22 @@ describe("promotion approval checklist", () => {
       approvalReason: "Live readiness evidence reviewed",
       manualOverrideId: "override-9",
       evidenceReferences: livePromotionEvidenceReferences.join("\n"),
-      approvalChecklist: livePromotionApprovalChecklist
+      approvalChecklist: livePromotionApprovalChecklist,
+      liveSymbols: "aapl, MSFT aapl",
+      liveNotional: "1200",
+      liveExpiry: "2099-01-01T12:00"
     };
 
-    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toBeNull();
+    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toContain("retained strategy revision");
+    expect(validatePromotionApproval({ ...form, liveNotional: "0" }, evaluation)).toContain("positive USD");
+    expect(validatePromotionApproval(form, evaluation)).toBeNull();
+    expect(buildPromotionApprovalRequest(form, evaluation).liveAuthorization).toEqual({
+      expectedStrategyArtifactId: evaluation.strategyArtifactId,
+      allowedSymbols: ["AAPL", "MSFT"],
+      maxOrderNotional: 1200,
+      currency: "USD",
+      expiresAt: new Date(form.liveExpiry).toISOString()
+    });
   });
 
   it("omits approvalChecklist from the request when the form list is empty", () => {

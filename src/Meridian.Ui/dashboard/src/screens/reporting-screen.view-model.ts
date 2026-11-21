@@ -1678,6 +1678,23 @@ function buildFilterRows(grid: ReportingTemplateGridMetadata): ReportingWriterFi
   });
 }
 
+export function buildReportWriterCatalogTokens(fields: NonNullable<ReportingTemplateGridMetadata["sourceFields"]>): ReportingWriterToken[] {
+  return fields.map((field) => ({
+    id: `source:${field.name}`,
+    label: field.label || field.name,
+    detail: `${field.dataset} · ${field.role} · ${field.dataType}${field.description ? ` · ${field.description}` : ""}`,
+    kind: field.role?.toLowerCase() === "generated" ? "formula" : field.role?.toLowerCase() === "metric" ? "metric" : "field",
+    fieldName: field.name,
+    sourceField: field.name,
+    name: field.name,
+    function: field.role?.toLowerCase() === "metric" ? "Sum" : null,
+    expression: field.role?.toLowerCase() === "generated" ? `{${field.name}}` : null,
+    dataType: field.dataType,
+    dataset: field.dataset,
+    role: field.role
+  }));
+}
+
 export function buildSourceFieldTokens(
   grid: ReportingTemplateGridMetadata,
   rowFields: ReportingWriterToken[],
@@ -1686,20 +1703,7 @@ export function buildSourceFieldTokens(
   formulas: ReportingWriterToken[]
 ): ReportingWriterToken[] {
   if (grid.sourceFields && grid.sourceFields.length > 0) {
-    return grid.sourceFields.map((field) => ({
-      id: `source:${field.name}`,
-      label: field.label || field.name,
-      detail: `${field.dataset} · ${field.role} · ${field.dataType}${field.description ? ` · ${field.description}` : ""}`,
-      kind: field.role?.toLowerCase() === "generated" ? "formula" : field.role?.toLowerCase() === "metric" ? "metric" : "field",
-      fieldName: field.name,
-      sourceField: field.name,
-      name: field.name,
-      function: field.role?.toLowerCase() === "metric" ? "Sum" : null,
-      expression: field.role?.toLowerCase() === "generated" ? `{${field.name}}` : null,
-      dataType: field.dataType,
-      dataset: field.dataset,
-      role: field.role
-    }));
+    return buildReportWriterCatalogTokens(grid.sourceFields);
   }
 
   const names = new Set<string>();

@@ -780,6 +780,7 @@ export interface MetricSnapshot {
   asOf?: string | null;
   source?: string | null;
   numberPassport?: import("./number-passport-reference").NumberPassportReference | null;
+  amountPassport?: import("./amount-passport").AmountPassportReference | null;
   /** Producer-built history, oldest first; a null value is a day the source could not establish. */
   history?: MetricHistoryPoint[] | null;
   /** How the producer rebuilt `history`, shown with the sparkline. */
@@ -839,6 +840,7 @@ export interface StrategyRunRecord {
 // --- Promotion workflow types ---
 
 export interface PromotionEvaluationResult {
+  strategyArtifactId?: string | null;
   runId: string;
   strategyId: string | null;
   strategyName: string | null;
@@ -867,6 +869,15 @@ export interface PromotionDecisionResult {
 }
 
 export interface PromotionRecord {
+  strategyArtifactId?: string | null;
+  liveAuthorizationStatus?: { state: string; reason?: string | null } | null;
+  liveAuthorization?: {
+    fundAccountId: string;
+    allowedSymbols: string[];
+    maxOrderNotional: number;
+    currency: string;
+    expiresAt: string;
+  } | null;
   promotionId: string;
   strategyId: string;
   strategyName: string;

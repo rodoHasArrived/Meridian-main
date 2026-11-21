@@ -52,6 +52,10 @@ public sealed record ExecutionRealismDescriptor(
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? CorporateActionSnapshotHash { get; init; }
 
+    /// <summary>Resolved replay bar distribution for a completed run.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? SourceMixHash { get; init; }
+
     /// <summary>Null preserves the canonical fingerprint of descriptors retained before this option existed.</summary>
     public bool? ApplyStoredCorporateActions { get; init; }
 
@@ -110,6 +114,8 @@ public sealed record ExecutionRealismDescriptor(
             Append(builder, nameof(CorporateActionMode), CorporateActionMode.ToString());
         if (CorporateActionSnapshotHash is not null)
             Append(builder, nameof(CorporateActionSnapshotHash), CorporateActionSnapshotHash);
+        if (SourceMixHash is not null)
+            Append(builder, nameof(SourceMixHash), SourceMixHash);
 
         return builder.ToString();
     }

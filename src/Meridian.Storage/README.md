@@ -6,7 +6,7 @@ module_id: SRC-STORAGE
 path: src/Meridian.Storage
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Storage
@@ -19,6 +19,13 @@ Storage primitives.
 
 Position snapshots preserve reviewed preparation lineages alongside economic-state history.
 Historical reads still exclude lineage effective after their requested date.
+
+`IInstrumentPositionProjectionStore.GetBookAsync` enumerates retained holdings begun by an observation
+date, including expired holdings with potentially unpaid receipts. Its in-memory and PostgreSQL
+implementations bound economic-state history by that date and isolate the exact book; PostgreSQL
+uses a repeatable-read transaction. The shared receipt source separately verifies canonical book
+ownership and accepted projection evidence before deriving amounts. These source paths compile in
+`Meridian.Storage.Accounting`. See [book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 `FileBondMarketDataStore` retains host-local typed bond market observations in hashed tenant
 partitions with process-wide file leases, atomic publication, content validation and immutable
@@ -1017,6 +1024,11 @@ journal and retained wash-sale deferrals. They do not invent a source execution 
 an explicit retained quote exactly, while old unversioned batches keep the legacy allocator.
 Unsupported versions or inconsistent retained economics block reporting.
 
+Migration `V_ledger_082__external_gl_posting.sql` retains scoped mapping revisions, immutable
+packages, decisions and receipt observations. Approval atomically reserves a journal at the
+external destination and enqueues it. Worker leases fence receipt writes. Hard close checks
+required external-GL coverage under the existing period lock.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never
@@ -1663,6 +1675,9 @@ connection so production journal reads stay explicitly scoped. Account and line-
 first identify matching journal entries, then rehydrate every retained leg for those entries, so
 durable scoped reads do not return unbalanced partial journals to close, reporting, reconciliation,
 or export consumers.
+The `PostgresLedgerJournalStore.TenantReads.cs` partial keeps caller resolution, read predicates,
+and unscoped-read refusal together. It shares the existing store fields and preserves both
+deployment-boundary and fail-closed tenant enforcement.
 `LedgerJournalEntryQuery.SourceEventId` also filters the existing indexed
 `journal_entries.source_event_id` column, allowing a book/event proof chain to find its immutable
 journal without scanning unrelated metadata. No projection-event-to-journal link table, alternate

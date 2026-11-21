@@ -11,6 +11,20 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
+canonical statement cash and retained reconciliation/journal links. Expected, received and posted
+amounts stay separate; missing account/provider coverage remains incomplete. Explicit capture commands
+retain dated, content-addressed observations and reuse the canonical exception queue, including
+version-checked reversal reopening that respects close freezes. Scoped GETs only read saved runs.
+No queue action creates a payment or journal. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md) for authority and recovery.
+
+The Provider Accounting quota editor uses `GET /api/providers/{providerId}/quota` and
+`PUT /api/providers/{providerId}/quota`. Reads show saved values and observe running limits on
+initialized historical adapters. Edits require provider-management and configuration permissions
+and take effect at host restart. `GET /api/providers/{providerName}/rate-limit-history` includes
+seven UTC dates of recorded daily throttles and rotations alongside recent events.
+
 Receipt-backed Long bond acquisitions built through the asset-accounting candidate endpoint now
 enter the immutable journal review queue. Intake requires face-value per-100 terms, an explicit
 amortization method, matching acquisition/functional currency and reconciled settlement; the
@@ -84,6 +98,17 @@ Changes use the configuration lock and atomic writer and do not activate a runni
 responses explicitly report `RestartHost`. Unacknowledged or stale promotions leave config intact.
 Focused coverage: `SymbolMappingRolloutEndpointTests` and `CanonicalRegistrySymbolResolverTests`.
 
+Browser and WPF mapping edits use the host registry. Add or remove an operator override at
+`/api/symbols/mappings/{symbol}/providers/{provider}` and use the host's CSV import and export
+for bulk changes. An accepted mapping edit refreshes the running registry and retains other
+provider mappings and canonical identity. The provider's existing rollout mode governs its
+outbound symbol choice. Canonical mode uses the saved mapping on the next resolution.
+
+`GET /api/providers/activation` reports observed streaming clients, active backfill adapters,
+registered modules, and saved paths awaiting activation. A confirmed lifecycle supervisor can
+relaunch the host after an authorized restart request. The confirmation lists pending paths and
+the impact on connected workstations.
+
 Streaming failover compatibility trigger/reset controls await the live runtime hand-off and refuse
 unavailable or rejected transitions. Config reads with `configurationOnly=true` remain available
 while streaming is stopped and report unknown active providers explicitly. Rule quality, latency,
@@ -112,6 +137,16 @@ status.
 
 Provider edits that require credential ownership validate a frozen snapshot before ordinary
 settings validation. Both data-source aliases return safe HTTP 400 errors for invalid settings.
+
+The credential setup controls use `POST /api/providers/{providerId}/verify-draft` for Alpaca,
+Polygon, Tiingo and Finnhub. Draft tests use fixed read-only requests and return a bounded result.
+Save and saved re-verification remain separate credential operations. Credential status includes
+the vault's rotation date when available.
+
+`PUT /api/config/alpaca/feed` changes the equity feed for the host at the next restart. SIP
+requires a successful market-data probe using the selected owned Alpaca runtime credential.
+The save checks the binding and credential generation again under the configuration write lock.
+Ordinary settings writes direct new SIP selections to the feed editor.
 
 
 The browser's fixed-income journeys use shared permissioned adapters rather than calculation-only
@@ -824,6 +859,10 @@ file implies gives the import its own batch identity, so a corrected header can 
 with the same bytes. Provider shadow cash comparisons use the same statement authority as
 account reconciliation instead of choosing a balance from arrival order.
 
+The external GL posting endpoints and hosted dispatcher use the PostgreSQL ledger. The routes
+derive tenant, company and operator identity from the workstation session. Final ledger report
+certification and release check receipts when the book requires external GL confirmation.
+
 `ProviderConnectionLifecycleService` verifies retained Xero, NetSuite and QuickBooks
 connections through credential-bound adapters. Each adapter reads and rotates only the
 selected connection's secrets; provider-wide credentials never supply scoped verification.
@@ -1190,6 +1229,24 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
 
+## Provider connection templates
+
+The browser Data workspace and WPF Add Provider wizard use the same tenant-owned template library.
+The built-ins cover paper brokerage, historical equities, options chains, reference data, and research-only backfill.
+The review shows the new connection settings, required capabilities, data semantics, recommended binding priority, and verification checklist.
+
+Template JSON uses schema version 1 with separate provider and capability contract versions.
+Import validates the full document before updating the library and reports fields with unsupported versions.
+The portable format uses catalog values for scope, environment, data semantics, and checklist items.
+Saving an owned connection as a template copies those settings and its binding recommendation. It requires a new template name and a portable scope.
+
+Credential entry uses the existing scoped vault. The draft stays outside the connection inventory until the operator tests and saves it.
+Alpaca verifies the account. Tiingo, Polygon, and OpenFIGI request a sample with the draft's credentials.
+Credential-free providers and adapters without scoped verification show the coverage of their setup check.
+The checklist describes the remaining data and entitlement checks. Activation and routing bindings are separate operator actions.
+
+Abandoned drafts expire after 24 hours. The operator's next setup clears their expired drafts and the corresponding vault records.
+
 ## Shared close and lot convergence
 
 `LedgerReportingAuthoritativeSource` reconciles corporate-action successor journals against the
@@ -1446,7 +1503,14 @@ case as its own casework command (`{bulkActionId}:{breakId}`) and retain one aud
 The endpoint stamps the actor and source from the session. When `AssignToCurrentOperator` is set on
 an Assign request, it also replaces the assignee with the authenticated operator, then clears the
 flag before the queue hashes the request. `WorkstationEndpointsTests.BulkCasework.cs` covers the
-dry run, the per-case audit and the session assignee.
+dry run, the per-case audit and the session assignee. Fresh executions must submit the returned
+`bulkActionId` as `previewBulkActionId` and include the eligible cases in preview order. Validation
+uses the case versions retained by the server. A changed case blocks the reviewed batch, whose
+terminal result remains available through the bulk result route.
+
+Governed statement intake publishes retained rule and operand evidence from the verified match
+artifact. Completed, comparable runs may attach split or merge proof from accepted transaction
+groups. Multi-source ambiguity prevents a run from establishing source absence.
 
 ## Return figures on the brokerage performance seam
 
@@ -1491,6 +1555,13 @@ through their reviewed lot labels; only refunded successors receive Schedule D t
 Bond routes expose explicitly dated analytics, bounded reference pages, settlement preparation and reviewed migration. Submission carries preview fingerprints rather than browser-rounded economic amounts, rechecks inputs on the server and stages a normal workbench draft. Administrative cutover requires a fresh complete inventory hash. These routes preserve permission declarations and server-resolved actors.
 
 ## Purpose
+
+Guarded statement preview/commit routes expose retained, scope-authorized normalized rows and paged
+outcomes. Accepting a valid row as a break keeps it in the import and creates an idempotent,
+row-addressed operator review case after accounting intake authorization. These cases retain the
+operator rationale and source identity, block close/report/delivery, and require normal governed
+casework; acceptance never resolves a discrepancy. Supplemental projections without exact row
+mapping cannot be silently excluded. Review identity and dispositions survive workflow recovery.
 
 UI shared contains shared UI read models, endpoint adapters, and compatibility shims for browser
 and desktop surfaces.
@@ -3009,13 +3080,12 @@ when ad-hoc or scheduled automation uses a governed source-backed dataset. `Repo
 `/api/fund-structure/reporting/runs/{runId}/report-writer-grids/{gridId}` as JSON by default, with
 `format=csv`, `format=pdf`, and `format=xlsx` downloads for operators that need direct grid extracts
 or allocator-ready grid previews from a governed run artifact; `format=xls` and `format=excel` are
-compatibility aliases for the same canonical `.xlsx` workbook. JSON, PDF, and XLSX downloads enrich
-the retained render with a data dictionary or lineage summary plus validation checks for row-count,
-column coverage, source-field lineage, and render warnings, while CSV stays a flat grid extract for
-downstream ingestion. Those retained
-grid downloads evaluate the source template access policy at read time, so private, restricted
-user/group/company, and company-wide report audiences are enforced for JSON, CSV, and XLSX artifact
-retrieval.
+compatibility aliases for the same canonical `.xlsx` workbook. PDF shows up to 28 retained rows
+in tables with repeated headers and column bands for wide pivots. XLSX includes the retained rows
+with numeric formatting, plus lineage, data dictionary, validation, and branding sheets.
+Values beyond Excel's numeric precision are carried as exact text and counted on the validation
+sheet. CSV uses canonical field keys for downstream ingestion. All grid downloads evaluate the
+retained run's access policy at read time.
 `ReportPackRunReadService` uses the same registry list when it is registered, so Reporting payloads
 include custom template drafts, in-review records, approvals, latest-approved status, and
 report-writer grid metadata alongside built-in templates. For custom templates, that projection
@@ -4264,6 +4334,21 @@ subject, so unrelated report, strategy, or reconciliation evidence cannot enter 
 
 The legacy report amount service accepts only explicit retained amount IDs and fully scoped pointers;
 label-only manifests fail closed. See [validation and slice boundaries](../../docs/testing/w10-amount-provenance.md).
+
+The Amount passport read uses `GET /api/workstation/evidence/subjects/{subjectKind}/{subjectId}/amount-passport`.
+The browser passes the server-issued address with its tenant, company, applicable fund, book,
+period, entity and account, basis, as-of timestamp and immutable revision. The endpoint checks the
+authenticated actor and the complete address before returning exact decimal text, source records,
+calculation and FX details, freshness, history and permission posture. A report amount uses the
+checkpoint certified on its governed run. Report contributors retain their original posting
+periods. Existing source-document links still revalidate the selected amount and artifact digest.
+
+The brokerage position address identifies the authorized account, retained snapshot, source row
+and field. A scoped sync writes a digest-bound raw snapshot. Later syncs preserve the original
+bytes and link a newer observation when the provider retains the same position identity. Broker
+snapshot age follows the sync freshness policy. Missing mark timestamps, pricing rules, incomplete
+provider inputs and absent position currency remain explicit gaps. Existing projections without a
+scoped snapshot surface the gap until the next successful scoped sync.
 
 Broker synchronization resolves option multipliers from the Security Master OCC identity retained
 as of each broker observation. Missing/ambiguous identities or missing/nonpositive multipliers block

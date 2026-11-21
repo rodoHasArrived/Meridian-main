@@ -496,6 +496,9 @@ public sealed class ReportWriterDatasetSourceService
         return "string";
     }
 
+    internal static string GetFieldLabel(string field) =>
+        KnownFields.TryGetValue(field, out var known) ? known.Label : FormatFieldLabel(field);
+
     private static string FormatFieldLabel(string field)
     {
         var spaced = field

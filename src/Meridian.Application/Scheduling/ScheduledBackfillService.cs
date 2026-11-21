@@ -2,6 +2,7 @@ using Meridian.Application.Backfill;
 using Meridian.Contracts.Coordination;
 using Meridian.Infrastructure.Adapters.Core;
 using Microsoft.Extensions.Logging;
+using BackfillProviderContribution = Meridian.Contracts.Backfill.BackfillProviderContribution;
 
 namespace Meridian.Application.Scheduling;
 
@@ -264,11 +265,10 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                         Symbols = new List<string>(schedule.Symbols)
                     };
 
-                    EnqueueExecution(schedule, execution, schedule.Priority);
-
-                    // Update next execution time
-                    schedule.NextExecutionAt = schedule.CalculateNextExecution();
-                    await _scheduleManager.UpdateScheduleAsync(schedule, ct);
+                    if (await _scheduleManager.TryAdvanceDueScheduleAsync(schedule.ScheduleId, schedule.NextExecutionAt, ct).ConfigureAwait(false))
+                        EnqueueExecution(schedule, execution, schedule.Priority);
+                    else if (_ownershipService is not null)
+                        await _ownershipService.ReleaseScheduleAsync(schedule.ScheduleId, ct).ConfigureAwait(false);
                 }
 
                 // Wait for next check interval
@@ -354,6 +354,20 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
 
         try
         {
+            if (execution.ScheduleId != "ad-hoc")
+            {
+                var current = _scheduleManager.GetSchedule(schedule.ScheduleId);
+                if (current is null || (!current.Enabled && execution.Trigger is ExecutionTrigger.Scheduled or ExecutionTrigger.CatchUp))
+                {
+                    execution.Status = ExecutionStatus.Skipped;
+                    execution.ErrorMessage = "The schedule was deleted or disabled before the execution started.";
+                    execution.CompletedAt = DateTimeOffset.UtcNow;
+                    await _scheduleManager.RecordExecutionAsync(schedule, execution, ct).ConfigureAwait(false);
+                    ExecutionCompleted?.Invoke(this, execution);
+                    return;
+                }
+                schedule = current;
+            }
             execution.Status = ExecutionStatus.Running;
             execution.StartedAt = DateTimeOffset.UtcNow;
             ExecutionStarted?.Invoke(this, execution);
@@ -388,7 +402,7 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                     schedule.Granularity,
                     ct);
 
-                if (_autoGapRemediationService is not null)
+                if (_autoGapRemediationService is not null && !_workerService.UsesActiveRouting)
                 {
                     await _autoGapRemediationService
                         .HandleGapAnalysisResultAsync(gapAnalysis, schedule.PreferredProviders.FirstOrDefault(), ct)
@@ -473,6 +487,9 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                         },
                         BarsRetrieved = progress.BarsRetrieved,
                         Provider = progress.SuccessfulProvider,
+                        ServedBy = progress.ServedBy.Count == 0 ? null : progress.ServedBy.OrderBy(pair => pair.Key, StringComparer.Ordinal)
+                            .Select(pair => new BackfillProviderContribution(pair.Key, pair.Value)).ToArray(),
+                        RoutingAttempts = progress.RoutingAttempts.Count == 0 ? null : progress.RoutingAttempts.ToArray(),
                         ErrorMessage = progress.LastError
                     };
 
@@ -480,6 +497,20 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
                         execution.Statistics.SuccessfulSymbols++;
                     else if (progress.Status == SymbolBackfillStatus.Failed)
                         execution.Statistics.FailedSymbols++;
+                }
+
+                foreach (var group in finalJob.SymbolProgress.Values.SelectMany(progress => progress.RoutingAttempts)
+                    .Where(attempt => attempt.Attempted).GroupBy(attempt => attempt.ProviderId, StringComparer.OrdinalIgnoreCase))
+                {
+                    execution.ProviderStats[group.Key] = new ProviderUsageStats
+                    {
+                        ProviderName = group.Key,
+                        RequestCount = group.Count(),
+                        SuccessCount = group.Count(attempt => attempt.Reason == "completed"),
+                        FailureCount = group.Count(attempt => attempt.Reason == "failed"),
+                        RateLimitHits = group.Count(attempt => attempt.Reason == "rate-limited"),
+                        BarsRetrieved = finalJob.Statistics.BarsByProvider.GetValueOrDefault(group.Key)
+                    };
                 }
 
                 execution.Status = finalJob.Status switch
@@ -519,15 +550,19 @@ public sealed class ScheduledBackfillService : IAsyncDisposable
         }
         finally
         {
-            if (_ownershipService is not null)
+            try
             {
-                if (jobLeaseHeld && !string.IsNullOrWhiteSpace(execution.JobId))
-                    await _ownershipService.ReleaseJobAsync(execution.JobId, ct).ConfigureAwait(false);
-
-                await _ownershipService.ReleaseScheduleAsync(schedule.ScheduleId, ct).ConfigureAwait(false);
+                if (_ownershipService is not null)
+                {
+                    if (jobLeaseHeld && !string.IsNullOrWhiteSpace(execution.JobId))
+                        await _ownershipService.ReleaseJobAsync(execution.JobId, CancellationToken.None).ConfigureAwait(false);
+                    await _ownershipService.ReleaseScheduleAsync(schedule.ScheduleId, CancellationToken.None).ConfigureAwait(false);
+                }
             }
-
-            _executionLock.Release();
+            finally
+            {
+                _executionLock.Release();
+            }
         }
     }
 

@@ -94,7 +94,11 @@ public sealed record ProviderConnectionRowDto(
     string RecommendedAction,
     string ActionHref,
     IReadOnlyList<ProviderCredentialFieldMetadataDto>? CredentialFields = null,
-    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null);
+    IReadOnlyList<ProviderEnvironmentOptionDto>? EnvironmentOptions = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateTimeOffset? RotationDueAt { get; init; }
+}
 
 public sealed record ProviderCredentialUpsertRequestDto(
     IReadOnlyDictionary<string, string?>? Credentials,
@@ -120,3 +124,22 @@ public sealed record ProviderCredentialVerificationResultDto(
     string? LastError,
     string? ExternalAccountId,
     IReadOnlyList<string> Warnings);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ProviderCredentialDraftStatusDto>))]
+public enum ProviderCredentialDraftStatusDto
+{
+    Verified,
+    Rejected,
+    Unavailable
+}
+
+public sealed record ProviderCredentialDraftRequestDto(
+    IReadOnlyDictionary<string, string?>? Credentials,
+    string? Environment = null);
+
+public sealed record ProviderCredentialDraftVerificationResultDto(
+    string ProviderId,
+    ProviderCredentialDraftStatusDto Status,
+    string Message);
+
+public sealed record AlpacaFeedUpdateDto(string Feed, string? SourceId = null);

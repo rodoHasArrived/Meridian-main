@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScriptDocumentEntry
+
+Qualified name: <code>Meridian.Wpf.Models.ScriptDocumentEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/QuantScriptModels.cs:12](../../../../src/Meridian.Wpf/Models/QuantScriptModels.cs#L12).
+
+A saved QuantScript document shown in the browser.
+
+```csharp
+public sealed record ScriptDocumentEntry(string Name, string FullPath, QuantScriptDocumentKind Kind)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string KindLabel =&gt; …;</code> | [src/Meridian.Wpf/Models/QuantScriptModels.cs:14](../../../../src/Meridian.Wpf/Models/QuantScriptModels.cs#L14) |  |
+
 ## SecurityMasterChecklistItem
 
 Qualified name: <code>Meridian.Wpf.Models.SecurityMasterChecklistItem</code>. Kind: `record`.
@@ -972,24 +990,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public WorkspaceShellSlot Slot =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:76](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L76) |  |
-
-## WorkspaceShellBadge
-
-Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellBadge</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:82](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L82).
-
-Carries the label, value, glyph, and tone of a shell context badge.
-
-```csharp
-public sealed class WorkspaceShellBadge
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Label { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:84](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L84) |  |
-| <code>public string Value { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:86](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L86) |  |
-| <code>public string Glyph { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:88](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L88) |  |
-| <code>public string Tone { get; init; } = WorkspaceTone.Neutral;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:90](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L90) |  |

@@ -11,7 +11,7 @@ import {
 } from "./trading-screen.order-ticket-text";
 
 export type OrderTicketField = "symbol" | "side" | "type" | "quantity" | "limitPrice";
-export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | "error";
+export type OrderTicketPhase = "idle" | "submitting" | "submitted" | "parked" | "reconciliation" | "error";
 
 export interface OrderTicketFieldControl {
   field: OrderTicketField;
@@ -143,9 +143,9 @@ export function buildOrderTicketState({
     formId: "trading-order-ticket",
     requirementId,
     controls: buildOrderTicketControls(form, invalidField, requirementId),
-    openButtonLabel: open ? "Close order ticket" : "New order",
-    submitButtonLabel: phase === "submitting" ? "Submitting…" : "Submit order",
-    submitAriaLabel: phase === "submitting" ? "Submitting order request" : "Submit order request",
+    openButtonLabel: open ? "Close order ticket" : phase === "reconciliation" ? "Review pending order" : "New order",
+    submitButtonLabel: phase === "submitting" ? "Submitting…" : phase === "reconciliation" ? "Check order outcome" : "Submit order",
+    submitAriaLabel: phase === "submitting" ? "Submitting order request" : phase === "reconciliation" ? "Check order outcome" : "Submit order request",
     submitDisabledReason,
     submitBusy: phase === "submitting",
     submitBusyLabel: phase === "submitting" ? "Submitting…" : null,

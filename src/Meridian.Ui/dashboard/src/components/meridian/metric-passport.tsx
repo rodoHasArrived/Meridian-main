@@ -1,6 +1,6 @@
 import { createContext, useContext, useEffect, useId, useMemo, useRef, useState, type ReactNode } from "react";
-import { Info } from "lucide-react";
 import { NumberPassport } from "@/components/meridian/number-passport";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import { hasExactRetainedSource, isCurrentRetainedEvidence } from "@/components/meridian/ledger-amount-proof-validation";
 import { apiGetJson } from "@/lib/api";
 import { workstationEvidencePacketEndpoint } from "@/lib/workstation-endpoints";
@@ -60,7 +60,6 @@ export function MetricPassport({ metric }: { metric: MetricSnapshot }) {
   const session = useContext(MetricSessionContext);
   const id = useId();
   const container = useRef<HTMLSpanElement>(null);
-  const trigger = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   useEffect(() => {
     if (!open) return;
@@ -74,7 +73,7 @@ export function MetricPassport({ metric }: { metric: MetricSnapshot }) {
   const [result, setResult] = useState<{ key: string; session: unknown; proof: LedgerAmountProof | null; error: string | null } | null>(null);
   useEffect(() => {
     const reference = metric.numberPassport;
-    if (!open || !reference?.subjectId || !reference.subjectType || reference.unavailableReason) return;
+    if (metric.amountPassport || !open || !reference?.subjectId || !reference.subjectType || reference.unavailableReason) return;
     const controller = new AbortController();
     let current = true;
     const query = new URLSearchParams();
@@ -91,21 +90,26 @@ export function MetricPassport({ metric }: { metric: MetricSnapshot }) {
       .then(packet => { if (current) setResult({ key, session, ...validateMetricPassport(reference, packet) }); })
       .catch(() => { if (current) setResult({ key, session, proof: null, error: "Retained evidence is unavailable. This figure remains unverified." }); });
     return () => { current = false; controller.abort(); };
-  }, [open, key, metric.numberPassport, session]);
+  }, [open, key, metric.amountPassport, metric.numberPassport, session]);
   const current = result?.key === key && result.session === session ? result : null;
   const unavailable = metric.numberPassport?.unavailableReason || (!metric.numberPassport?.subjectId || !metric.numberPassport.subjectType
     ? "Unverified: this source has not supplied a retained evidence subject for the figure." : null);
   const close = () => setOpen(false);
   return <span ref={container} className="relative inline-flex" onMouseEnter={() => setOpen(true)}
+    onFocus={() => setOpen(true)}
     onMouseLeave={() => { if (!container.current?.contains(document.activeElement)) close(); }}
     onBlur={event => { if (!event.currentTarget.contains(event.relatedTarget as Node | null)) close(); }}
     onKeyDown={event => { if (event.key === "Escape" && open) { event.preventDefault(); event.stopPropagation(); close(); } }}>
-    <button ref={trigger} type="button" className="inline-flex h-6 w-6 items-center justify-center text-muted-foreground focus-visible:outline focus-visible:outline-2"
-      aria-label={`Inspect ${metric.label} basis and evidence`} aria-expanded={open} aria-controls={id}
-      onFocus={() => setOpen(true)} onClick={() => setOpen(true)}><Info size={12} aria-hidden="true" /></button>
-    {open ? <span id={id} role="dialog" aria-label={`${metric.label} figure context`}
-      style={{ left: Math.max(8 - (trigger.current?.getBoundingClientRect().left ?? 8),
-        Math.min(0, window.innerWidth - (trigger.current?.getBoundingClientRect().left ?? 0) - Math.min(416, window.innerWidth * 0.7) - 8)) }}
+    <AmountPassportTrigger compact
+      className="h-6 w-6 justify-center"
+      ariaLabel={`Inspect ${metric.label} basis and evidence`}
+      selection={{ label: metric.label, category: "Headline metric", displayValue: metric.value,
+        reference: metric.amountPassport, basis: metric.basis ?? metric.numberPassport?.basis, asOf: metric.asOf ?? metric.provenance?.asOf,
+        currency: metric.numberPassport?.currency, freshness: metric.freshness === "stale" ? "stale" : undefined,
+        unavailableReason: metric.numberPassport?.unavailableReason ?? "The metric source did not publish a scoped amount revision." }} />
+    {open && !metric.amountPassport ? <span id={id} role="dialog" aria-label={`${metric.label} figure context`}
+      style={{ left: Math.max(8 - (container.current?.getBoundingClientRect().left ?? 8),
+        Math.min(0, window.innerWidth - (container.current?.getBoundingClientRect().left ?? 0) - Math.min(416, window.innerWidth * 0.7) - 8)) }}
       className="absolute left-0 top-full z-40 block max-h-[65vh] w-[min(26rem,70vw)] overflow-auto border border-border bg-card p-3 text-left text-xs shadow-md">
       <span className="block font-semibold">{metric.label}: <span className="tabular-nums">{metric.value}</span></span>
       <span className="mt-1 block">{metricBasisLabel(metric)}</span>

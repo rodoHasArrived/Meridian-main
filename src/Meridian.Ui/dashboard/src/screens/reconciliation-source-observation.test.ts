@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { ReconciliationBreakLineage } from "@/types";
-import { sourceObservationAge, sourceObservationLabel } from "./reconciliation-source-observation";
+import { originalComparisonScope, sourceObservationAge, sourceObservationLabel } from "./reconciliation-source-observation";
 import { areReconciliationBreakQueuesEquivalent } from "./accounting-screen.reconciliation-queue-utils";
 import type { ReconciliationBreakQueueItem } from "@/types";
 const lineage: ReconciliationBreakLineage = {
@@ -25,5 +25,18 @@ describe("retained source observation", () => {
     const row = { breakId: "b", lineage } as ReconciliationBreakQueueItem;
     expect(areReconciliationBreakQueuesEquivalent([row], [{ ...row, lineage: { ...lineage, observationState: "Cleared" } }])).toBe(false);
     expect(areReconciliationBreakQueuesEquivalent([row], [{ ...row, lineage: { ...lineage } }])).toBe(true);
+  });
+
+  it("uses the original scope from the exact observation when the source comparison head advances", () => {
+    const row = { breakId: "b", runId: "ledger-run", sourceImportId: "prior-run", sourceFingerprint: "source-proof",
+      lineage: { ...lineage, comparisonScopeId: "next-policy" } } as ReconciliationBreakQueueItem;
+    const snapshot = { ...row, lineage: { ...lineage, comparisonScopeId: "prior-policy", lastObservedRunId: "prior-run" } };
+    const event = { eventId: "observed", breakId: "b", eventType: "SourceBreakObserved", occurredAt: "2026-09-01T00:00:00Z",
+      correlationId: "prior-run", afterPayload: JSON.stringify(snapshot) };
+    expect(originalComparisonScope(row)).toBeNull();
+    expect(originalComparisonScope(row, [{ ...event, correlationId: "another-run" }])).toBeNull();
+    expect(originalComparisonScope(row, [event])).toBe("prior-policy");
+    expect(originalComparisonScope(row, [event, { ...event, afterPayload: JSON.stringify({ ...snapshot,
+      lineage: { ...snapshot.lineage, comparisonScopeId: "different-policy" } }) }])).toBeNull();
   });
 });

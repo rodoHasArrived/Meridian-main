@@ -68,8 +68,18 @@ public sealed partial class AlpacaBrokerageGateway
         ModifyOrderAsync(new OrderCancellationIdentifier(orderId, OrderCancellationIdentifierKind.BrokerOrderId), modification, ct);
 
     /// <inheritdoc />
-    public async Task<ExecutionReport> ModifyOrderAsync(
-        OrderCancellationIdentifier identifier, OrderModification modification, CancellationToken ct = default)
+    public Task<ExecutionReport> ModifyOrderAsync(
+        OrderCancellationIdentifier identifier, OrderModification modification, CancellationToken ct = default) =>
+        ModifyOrderCoreAsync(identifier, modification, acquireDispatch: null, ct);
+
+    Task<ExecutionReport> IGuardedOrderModificationGateway.ModifyOrderAsync(
+        OrderCancellationIdentifier identifier, OrderModification modification,
+        Func<CancellationToken, Task<IAsyncDisposable>> acquireDispatch, CancellationToken ct) =>
+        ModifyOrderCoreAsync(identifier, modification, acquireDispatch, ct);
+
+    private async Task<ExecutionReport> ModifyOrderCoreAsync(
+        OrderCancellationIdentifier identifier, OrderModification modification,
+        Func<CancellationToken, Task<IAsyncDisposable>>? acquireDispatch, CancellationToken ct)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(identifier.Value);
         ArgumentNullException.ThrowIfNull(modification);
@@ -111,14 +121,19 @@ public sealed partial class AlpacaBrokerageGateway
                 Trail = FormatDecimal(modification.NewTrail),
             };
             ct.ThrowIfCancellationRequested();
-            sent = true;
             try
             {
-                response = await client.PatchAsJsonAsync(
-                    $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(brokerOrderId)}", payload,
-                    AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct).ConfigureAwait(false);
+                Task<HttpResponseMessage> dispatch;
+                await using (var lease = acquireDispatch is null ? null : await acquireDispatch(ct).ConfigureAwait(false))
+                {
+                    sent = true;
+                    dispatch = client.PatchAsJsonAsync(
+                        $"{BaseUrl}/v2/orders/{Uri.EscapeDataString(brokerOrderId)}", payload,
+                        AlpacaBrokerageSerializerContext.Default.AlpacaOrderModifyPayload, ct);
+                }
+                response = await dispatch.ConfigureAwait(false);
             }
-            catch (Exception ex) when (ex is HttpRequestException or OperationCanceledException)
+            catch (Exception ex) when (sent && ex is (HttpRequestException or OperationCanceledException))
             {
                 return PublishPendingModification(attempt, "Alpaca amendment acknowledgement was lost; reconcile the replacement before retrying.");
             }

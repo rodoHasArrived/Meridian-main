@@ -173,7 +173,15 @@ public sealed class OrderSubmissionAuthority
         string actor,
         ExecutionAccountGrant accountGrant,
         string runId,
-        string? strategyArtifactId = null)
+        string? strategyArtifactId = null) =>
+        ForStrategyRun(actor, accountGrant, runId, strategyArtifactId, sessionId: null);
+
+    public static OrderSubmissionAuthority ForStrategyRun(
+        string actor,
+        ExecutionAccountGrant accountGrant,
+        string runId,
+        string? strategyArtifactId,
+        string? sessionId)
     {
         ArgumentNullException.ThrowIfNull(accountGrant);
         var normalizedRunId = RequireText(runId, nameof(runId));
@@ -184,7 +192,7 @@ public sealed class OrderSubmissionAuthority
             normalizedRunId,
             NormalizeOptional(strategyArtifactId),
             normalizedRunId,
-            sessionId: null,
+            NormalizeOptional(sessionId),
             releasedFrom: null);
     }
 
@@ -262,7 +270,7 @@ public sealed class OrderSubmissionAuthority
             OrderCommandOrigin.PositionAction =>
                 ForPositionAction(record.Actor, RequireGrant(grant), record.CorrelationId),
             OrderCommandOrigin.StrategyRun =>
-                ForStrategyRun(record.Actor, RequireGrant(grant), record.RunId!, record.StrategyArtifactId),
+                ForStrategyRun(record.Actor, RequireGrant(grant), record.RunId!, record.StrategyArtifactId, record.SessionId),
             OrderCommandOrigin.KillSwitch => ForKillSwitch(record.Actor, record.CorrelationId),
             OrderCommandOrigin.EscalationRelease => ForEscalationRelease(
                 FromRetainedRecord(record.ReleasedFrom

@@ -286,7 +286,26 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 
         // Use full-text search when the query is long enough for meaningful tokenisation.
         // The ILIKE fallback catches short identifiers (e.g. "GE", "T") that tsvector skips.
-        command.CommandText = useFts
+        command.CommandText = request.PrefixOnly
+            ? $"""
+               select security_id
+               from {Qualified("securities")}
+               where (security_id::text = @exact_id
+                   or lower(primary_identifier_value) = lower(@query)
+                   or lower(display_name) = lower(@query)
+                   or (length(@query) >= 2 and (
+                       starts_with(security_id::text, lower(@query))
+                       or starts_with(lower(primary_identifier_value), lower(@query))
+                       or starts_with(lower(display_name), lower(@query)))))
+                 and (@active_only = false or status = 'Active')
+               order by case
+                   when security_id::text = @exact_id then 0
+                   when lower(primary_identifier_value) = lower(@query) or lower(display_name) = lower(@query) then 1
+                   when starts_with(security_id::text, lower(@query)) or starts_with(lower(primary_identifier_value), lower(@query)) then 2
+                   else 3 end, display_name, security_id
+               limit @take offset @skip;
+               """
+            : useFts
             ? $"""
                select security_id,
                       ts_rank(search_vector, plainto_tsquery('simple', @query)) as rank
@@ -311,7 +330,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                """;
 
         command.Parameters.AddWithValue("query", trimmedQuery);
-        command.Parameters.AddWithValue("pattern", $"%{trimmedQuery}%");
+        if (request.PrefixOnly)
+        {
+            command.Parameters.AddWithValue("exact_id", Guid.TryParse(trimmedQuery, out var id) ? id.ToString("D") : string.Empty);
+        }
+        else
+        {
+            command.Parameters.AddWithValue("pattern", $"%{trimmedQuery}%");
+        }
         command.Parameters.AddWithValue("active_only", request.ActiveOnly);
         command.Parameters.AddWithValue("take", request.Take);
         command.Parameters.AddWithValue("skip", request.Skip);

@@ -96,6 +96,8 @@ public sealed record OrderRequest
     public decimal? TrailPercent { get; init; }
     public TimeInForce TimeInForce { get; init; } = TimeInForce.Day;
     public string? ClientOrderId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntentId { get; init; }
     public string? StrategyId { get; init; }
     public Guid? FundAccountId { get; init; }
     public PositionIntent? PositionIntent { get; init; }
@@ -313,6 +315,10 @@ public sealed record OrderResult
     public required string OrderId { get; init; }
     public string? ErrorMessage { get; init; }
     public OrderState? OrderState { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntentId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? IntentStatus { get; init; }
 
     /// <summary>True when a failed submission may have routed and requires reconciliation before retrying.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
@@ -360,6 +366,9 @@ public sealed record OrderResult
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyArtifactId { get; init; }
+
     /// <summary>Who or what originated the order; null for states created outside order submission.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public OrderCommandOrigin? Origin { get; init; }
@@ -383,6 +392,8 @@ public sealed record OrderState
     public DateTimeOffset CreatedAt { get; init; }
     public DateTimeOffset? LastUpdatedAt { get; init; }
     public string? StrategyId { get; init; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? IntentId { get; init; }
 
     /// <summary>Accounting scope the order was submitted under, when fund-scoped.</summary>
     public Guid? FundAccountId { get; init; }

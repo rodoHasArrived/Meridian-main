@@ -3237,6 +3237,9 @@ W13-OMS-001: planned; health green; evidence planned_evidence. Planned unranked 
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W13-OMS-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 - Evidence: [docs/product/implementation-todo-list.md](../../product/implementation-todo-list.md)
+- Evidence: [docs/domain/strategy-order-execution.md](../../domain/strategy-order-execution.md)
+- Evidence: [tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs](../../../tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs)
+- Evidence: [tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs](../../../tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs)
 
 
 ### Exit Criteria
@@ -3286,6 +3289,9 @@ W13-STRAT-001: planned; health green; evidence planned_evidence. Planned unranke
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W13-STRAT-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 - Evidence: [docs/development/policies/promotion-policy-matrix.md](../../development/policies/promotion-policy-matrix.md)
+- Evidence: [src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs](../../../src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs)
+- Evidence: [src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs](../../../src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs)
+- Evidence: [tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs](../../../tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs)
 
 
 ### Exit Criteria

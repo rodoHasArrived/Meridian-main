@@ -78,7 +78,7 @@ export function buildWorkflowContinuityViewModel(
     symbol: operatingContextScope?.symbol ?? operatingContextSymbol
   }, pathname);
   const subjectSymbol = operatingScope.subjectSymbol;
-  const isShellHome = pathname === "/";
+  const isShellHome = pathname === "/" || pathname === "/today";
   const currentRoute = `${pathname}${search}${hash}`;
   const routeResolution = resolveWorkflowContinuityRoute(pathname, hash);
   const trail = routeResolution.trail;
@@ -91,7 +91,7 @@ export function buildWorkflowContinuityViewModel(
   const nextStep = nextIndex === null ? null : steps[nextIndex] ?? activeStep;
   const stepStatuses = steps.map((step) => buildWorkflowContinuityStepStatus(step.id, statusContext));
   const attentionCount = stepStatuses.filter((status) => status.tone === "blocked" || status.tone === "review").length;
-  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, pathname === "/");
+  const operatorFocus = buildOperatorFocusViewModel(statusContext, operatingScope, isShellHome);
   const evidenceTimeline = buildEvidenceTimelineViewModel(statusContext, operatingScope);
   const linkedContext = buildLinkedContextViewModel(statusContext, subjectSymbol, operatingScope);
   const disclosure = buildWorkflowContinuityDisclosureState(statusContext, operatorFocus, evidenceTimeline, linkedContext);

@@ -1422,6 +1422,17 @@ export interface CapitalAccountWorkbenchViewModel {
   refresh: () => Promise<void>;
 }
 
+export interface ManualJournalLifecycleConflict {
+  action: JournalEntryLifecycleAction;
+  notes: string;
+  before: ManualJournalEntryDraft;
+  latest: ManualJournalEntryDraft | null;
+  loading: boolean;
+  unavailableReason: string | null;
+  reviewedLatest: boolean;
+  changes: Array<{ label: string; before: string; after: string }>;
+}
+
 export interface ManualJournalEntryWorkbenchViewModel {
   assetWorkflow?: AssetAccountingWorkflowViewModel;
   title: string;
@@ -1455,6 +1466,9 @@ export interface ManualJournalEntryWorkbenchViewModel {
   lifecycleTransitions: ManualJournalLifecycleTransitionViewModel[];
   lifecycleCorrectionRows: ManualJournalLifecycleCorrectionViewModel[];
   lifecycleStatusText: string | null;
+  lifecycleConflict?: ManualJournalLifecycleConflict | null;
+  reviewLatestLifecycleDraft?: () => void;
+  discardLifecycleConflict?: () => void;
   lifecycleBusyAction: JournalEntryLifecycleAction | null;
   saveBusy: boolean; validateBusy: boolean; submitBusy: boolean;
   attachEvidenceBusy: boolean;
@@ -1479,7 +1493,7 @@ export interface ManualJournalEntryWorkbenchViewModel {
   updateAttachmentDraft: (patch: Partial<ManualJournalEvidenceAttachmentDraft>) => void;
   addAttachment: () => Promise<void>;
   removeAttachment: (attachmentId: string) => void;
-  applyLifecycleAction: (action: JournalEntryLifecycleAction) => Promise<void>;
+  applyLifecycleAction: (action: JournalEntryLifecycleAction, reason?: string) => Promise<void>;
   save: () => Promise<void>;
   validate: () => Promise<void>;
   submit: () => Promise<void>;
@@ -1754,6 +1768,7 @@ export interface AccountingTrialBalanceBasisOption {
 }
 
 export interface AccountingTrialBalanceRowViewModel extends LedgerTrialBalanceLine {
+  currency?: string | null;
   rowId: string;
   accountLabel: string;
   accountTypeLabel: string;
@@ -2950,6 +2965,7 @@ export function useAccountingReconciliationViewModel(
     try {
       const operation = await services.reviewBreak({
         breakId,
+        expectedVersion: breakQueue.find((item) => item.breakId === breakId)?.version,
         ...(operatorIdentity ? { assignedTo: operatorIdentity, reviewedBy: operatorIdentity } : {})
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
@@ -2961,7 +2977,7 @@ export function useAccountingReconciliationViewModel(
     } finally {
       if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
 
   const resolveBreak = useCallback(async (
     breakId: string,
@@ -2993,7 +3009,8 @@ export function useAccountingReconciliationViewModel(
         status,
         ...(operatorIdentity ? { resolvedBy: operatorIdentity } : {}),
         resolutionNote: trimmedRationale,
-        operatorRationale: trimmedRationale
+        operatorRationale: trimmedRationale,
+        expectedVersion: breakQueue.find((item) => item.breakId === breakId)?.version
       });
       const updated = requireSuccessfulReconciliationCasework(operation);
       // A committed result remains authoritative for this queue when the operator changes runs.
@@ -3005,7 +3022,16 @@ export function useAccountingReconciliationViewModel(
     } finally {
       if (activeScopeRef.current === requestScope && actionContextRef.current.revision === requestActionContext) setBreakAction(null);
     }
-  }, [actionContextRevision, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+  }, [actionContextRevision, breakQueue, canActOnCurrentQueue, operatorIdentity, scopeRevision, services]);
+
+  const applyCaseUpdate = useCallback((item: ReconciliationBreakQueueItem) => {
+    if (activeScopeRef.current !== scopeRevision) return;
+    setBreakQueue((current) => {
+      const retained = current.find((entry) => entry.breakId === item.breakId);
+      if (!retained || (retained.version != null && (item.version == null || item.version < retained.version))) return current;
+      return replaceBreakQueueItem(current, item);
+    });
+  }, [scopeRevision]);
 
   // Bulk triage (C2) returns the committed cases from the governed bulk endpoint. Like the
   // single-case handlers, the update is bound to the scope the action started in: a response that
@@ -3014,7 +3040,11 @@ export function useAccountingReconciliationViewModel(
     const requestScope = activeScopeRef.current;
     return (items: ReconciliationBreakQueueItem[]) => {
       if (items.length === 0 || activeScopeRef.current !== requestScope) return;
-      setBreakQueue((current) => items.reduce((queue, item) => replaceBreakQueueItem(queue, item), current));
+      setBreakQueue((current) => items.reduce((queue, item) => {
+        const retained = queue.find((entry) => entry.breakId === item.breakId);
+        return retained?.version != null && (item.version == null || item.version < retained.version)
+          ? queue : replaceBreakQueueItem(queue, item);
+      }, current));
     };
   }, []);
 
@@ -3231,16 +3261,11 @@ export function useAccountingReconciliationViewModel(
 
   return {
     reconciliationQueue,
+    caseRecords: scopedBreakQueue,
+    applyCaseUpdate,
     sourceRows: scopedBreakQueue,
-    applyCaseworkUpdate: (updated: ReconciliationBreakQueueItem) => {
-      if (scopedBreakQueue.some((item) => item.breakId === updated.breakId)) {
-        setBreakQueue((current) => {
-          const retained = current.find((item) => item.breakId === updated.breakId);
-          if (retained?.version != null && (updated.version == null || updated.version < retained.version)) return current;
-          return replaceBreakQueueItem(current, updated);
-        });
-      }
-    },
+    lineageRows: breakQueueReadScope === scopeRevision && !breakQueueLoading && !breakQueueError ? breakQueue : scopedBreakQueue,
+    applyCaseworkUpdate: applyCaseUpdate,
     selectionNotice: selectedBreakId && (!selectionState || breakQueueReadScope === scopeRevision) && !breakQueueLoading && !breakQueueError && !scopedBreakQueue.some((item) => item.breakId === selectedBreakId)
       ? "The selected break is no longer available in this queue. Select another break to continue."
       : selectedRunId && !statementRunsLoading && !statementRunsError && !reconciliationQueue.some((item) => item.runId === selectedRunId) && !statementRuns.some((item) => item.runId === selectedRunId)
@@ -3763,6 +3788,7 @@ function buildTrialBalanceRow(
   return {
     ...line,
     rowId,
+    currency,
     accountLabel,
     accountTypeLabel,
     basisLabel,

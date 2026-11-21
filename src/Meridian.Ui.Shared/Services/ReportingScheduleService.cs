@@ -993,6 +993,10 @@ public sealed partial class ReportingScheduleService
             ? await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false)
             : ResolveReusableScheduledManifest(contract, certified)
               ?? await _orchestrationService.ExecuteAsync(contract, ct).ConfigureAwait(false);
+        if (manifest is { Status: ReportingRunStatus.Failed, FailureCode: ReportWriterMetricValidationException.FailureCode })
+        {
+            throw new ReportWriterMetricValidationException(manifest.FailureReason ?? "A metric source field is absent from the dataset.");
+        }
         if (certified is not null)
         {
             var governanceCaller = BuildScheduledGovernanceCaller(
@@ -1087,7 +1091,7 @@ public sealed partial class ReportingScheduleService
         for (var ordinal = 1; ordinal <= maximumProbeCount; ordinal++)
         {
             var runId = ordinal == 1 ? runSeriesId : $"{runSeriesId}-v{ordinal}";
-            var existing = _orchestrationService.GetManifest(runId);
+            var existing = _orchestrationService.GetManifest(certified.OperationalScope.TenantId, runId);
             if (existing is null)
             {
                 return reusable;
@@ -1107,7 +1111,9 @@ public sealed partial class ReportingScheduleService
         ReportingOutputManifest existing,
         ReportingJobContract contract,
         CertifiedReportingRunContext certified) =>
-        existing.Status == ReportingRunStatus.Draft
+        (existing.Status == ReportingRunStatus.Draft
+            || existing is { Status: ReportingRunStatus.Failed, FailureCode: ReportWriterMetricValidationException.FailureCode }
+                && existing.ResolvedTemplate == contract.ResolvedTemplate)
             && existing.Trigger == ReportingRunTrigger.Scheduled
             && string.Equals(existing.ScheduleId, contract.ScheduleId, StringComparison.Ordinal)
             && existing.OperationalScope is not null

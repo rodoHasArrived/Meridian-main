@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RepairResult
+
+Qualified name: <code>Meridian.Storage.Services.RepairResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929).
+
+```csharp
+public sealed record RepairResult(int FilesProcessed, int FilesRepaired, IReadOnlyList<string> Errors, bool DryRun, IReadOnlyList<string>? PlannedActions)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:937](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L937) |  |
+| <code>public int FilesChanged { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:938](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L938) |  |
+| <code>public int FilesUnresolved =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:939](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L939) |  |
+
+## RepairScope
+
+Qualified name: <code>Meridian.Storage.Services.RepairScope</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927).
+
+```csharp
+public enum RepairScope : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>SingleFile</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927) |  |
+| <code>Directory</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927) |  |
+| <code>Symbol</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927) |  |
+| <code>DateRange</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927) |  |
+| <code>EventType</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927) |  |
+| <code>All</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:927](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L927) |  |
+
+## RepairStrategy
+
+Qualified name: <code>Meridian.Storage.Services.RepairStrategy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:917](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L917).
+
+```csharp
+public enum RepairStrategy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RestoreFromBackup</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:919](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L919) |  |
+| <code>BackfillFromSource</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:920](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L920) |  |
+| <code>TruncateCorrupted</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:921](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L921) |  |
+| <code>RebuildIndex</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:922](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L922) |  |
+| <code>MergeFragments</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:923](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L923) |  |
+| <code>RecompressOptimal</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:924](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L924) |  |
+
 ## ResourceLimits
 
 Qualified name: <code>Meridian.Storage.Services.ResourceLimits</code>. Kind: `record`.
@@ -439,6 +499,12 @@ Declared public members:
 | <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:26](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L26) |  |
 | <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs:51](../../../../src/Meridian.Storage/Services/SymbolRegistryService.LegacyIdentifierCleanup.cs#L51) |  |
 
+Source: [src/Meridian.Storage/Services/SymbolRegistryService.OperatorMappings.cs:7](../../../../src/Meridian.Storage/Services/SymbolRegistryService.OperatorMappings.cs#L7).
+
+```csharp
+public sealed partial class SymbolRegistryService
+```
+
 Source: [src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs:7](../../../../src/Meridian.Storage/Services/SymbolRegistryService.SecurityMaster.cs#L7).
 
 ```csharp
@@ -869,66 +935,3 @@ Declared public members:
 | <code>public static StorageProfilePreset? GetProfile(string id);</code> | [src/Meridian.Storage/StorageProfiles.cs:138](../../../../src/Meridian.Storage/StorageProfiles.cs#L138) | Gets a profile preset by ID. |
 | <code>public static StorageOptions CreateFromProfile(string? profile, string rootPath, bool? compress = null);</code> | [src/Meridian.Storage/StorageProfiles.cs:147](../../../../src/Meridian.Storage/StorageProfiles.cs#L147) | Creates storage options from a profile without requiring a base options object. Uses default profile if none specified. |
 | <code>public static IReadOnlyList&lt;StorageProfilePreset&gt; GetPresets() =&gt; …;</code> | [src/Meridian.Storage/StorageProfiles.cs:158](../../../../src/Meridian.Storage/StorageProfiles.cs#L158) |  |
-
-## StorageQuota
-
-Qualified name: <code>Meridian.Storage.StorageQuota</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageOptions.cs:405](../../../../src/Meridian.Storage/StorageOptions.cs#L405).
-
-Storage quota specification.
-
-```csharp
-public sealed class StorageQuota
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long MaxBytes { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:408](../../../../src/Meridian.Storage/StorageOptions.cs#L408) | Maximum bytes for this quota. |
-| <code>public long? MaxFiles { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:411](../../../../src/Meridian.Storage/StorageOptions.cs#L411) | Maximum number of files. |
-| <code>public long? MaxEventsPerDay { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:414](../../../../src/Meridian.Storage/StorageOptions.cs#L414) | Maximum events per day. |
-| <code>public QuotaEnforcementPolicy Enforcement { get; init; } = QuotaEnforcementPolicy.SoftLimit;</code> | [src/Meridian.Storage/StorageOptions.cs:417](../../../../src/Meridian.Storage/StorageOptions.cs#L417) | Enforcement policy when quota is exceeded. |
-
-## StorageSinkAttribute
-
-Qualified name: <code>Meridian.Storage.StorageSinkAttribute</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageSinkAttribute.cs:36](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L36).
-
-Marks a class as a storage sink plugin for automatic discovery and registration. Classes decorated with this attribute will be discovered by StorageSinkRegistry at startup when their assembly is scanned.
-
-```csharp
-public sealed class StorageSinkAttribute : Attribute
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:42](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L42) | Unique identifier for this sink (e.g., &quot;jsonl&quot;, &quot;parquet&quot;, &quot;clickhouse&quot;). Used in the Storage.Sinks configuration list to activate the sink. |
-| <code>public string DisplayName { get; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:47](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L47) | Human-readable display name (e.g., &quot;JSONL Storage&quot;, &quot;Apache Parquet Storage&quot;). |
-| <code>public string? Description { get; set; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:52](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L52) | Optional description of the sink and its use case. |
-| <code>public bool EnabledByDefault { get; set; } = false;</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:58](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L58) | Whether this sink is included in the default composition when no explicit Sinks list is provided. Default is false. |
-| <code>public StorageSinkAttribute(string id, string displayName);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:65](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L65) | Creates a new StorageSinkAttribute. |
-
-## StorageSinkAttributeExtensions
-
-Qualified name: <code>Meridian.Storage.StorageSinkAttributeExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/StorageSinkAttribute.cs:102](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L102).
-
-Extension methods for StorageSinkAttribute discovery on Type.
-
-```csharp
-public static class StorageSinkAttributeExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static StorageSinkAttribute? GetStorageSinkAttribute(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:107](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L107) | Gets the StorageSinkAttribute from a type, if present. |
-| <code>public static StorageSinkMetadata? GetStorageSinkMetadata(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:116](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L116) | Gets the StorageSinkMetadata from a type decorated with StorageSinkAttribute, or null if not decorated. |
-| <code>public static bool IsStorageSinkPlugin(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:126](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L126) | Returns true when the type is a concrete class that implements IStorageSink and is decorated with StorageSinkAttribute. |
