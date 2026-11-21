@@ -699,7 +699,7 @@ internal sealed class LiveStrategyRunSession
 
                 var signedQuantity = ConvertToBacktestFillQuantity(report);
                 var fill = new FillEvent(
-                    FillId: Guid.NewGuid(),
+                    FillId: report.AccountingFillId ?? Guid.NewGuid(),
                     OrderId: order.OrderId,
                     Symbol: report.Symbol,
                     FilledQuantity: signedQuantity,

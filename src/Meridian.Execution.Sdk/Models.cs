@@ -148,6 +148,13 @@ public sealed record OrderModification
 /// <summary>Report from the execution gateway about an order event.</summary>
 public sealed record ExecutionReport
 {
+    /// <summary>
+    /// Canonical OMS fill identity passed to authoritative subscribers after the accounting handoff.
+    /// It is recreated by the OMS on replay and is never part of a broker-report fingerprint.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore]
+    public Guid? AccountingFillId { get; init; }
+
     /// <summary>Canonical identity retained from the accepted order admission; absent on older reports.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public Guid? AccountingSecurityId { get; init; }

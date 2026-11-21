@@ -11,6 +11,12 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Execution.Sdk
 
+`ExecutionReport.AccountingFillId` carries the canonical OMS fill identity to authoritative
+in-process subscribers after the accounting handoff. The hub replaces any gateway-supplied value
+with its accepted identity and retains that delivery object across retries. The field is excluded
+from JSON, so durable broker-report hashes and replay identities do not become self-referential.
+Strategy metrics retain this exact fill identity for posted-journal and data-quality joins.
+
 `ExecutionReport.MarketDataEvidence` optionally carries the source and quality snapshots of the
 observations used to produce a fill. Producers freeze these snapshots before the observation cache
 advances; consumers retain them through accounting and recovery rather than looking up a later
