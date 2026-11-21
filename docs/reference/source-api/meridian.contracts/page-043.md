@@ -6,6 +6,72 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## VerificationStatusValues
+
+Qualified name: <code>Meridian.Contracts.Manifest.VerificationStatusValues</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Manifest/DataManifest.cs:104](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L104).
+
+Verification status constants.
+
+```csharp
+public static class VerificationStatusValues
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Pending = &quot;Pending&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:109](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L109) | Indicates verification has not yet been performed. |
+| <code>public const string Verified = &quot;Verified&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:114](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L114) | Indicates verification completed successfully. |
+| <code>public const string Failed = &quot;Failed&quot;;</code> | [src/Meridian.Contracts/Manifest/DataManifest.cs:119](../../../../src/Meridian.Contracts/Manifest/DataManifest.cs#L119) | Indicates verification failed. |
+
+## MoneyMarketFundReferenceDto
+
+Qualified name: <code>Meridian.Contracts.MoneyMarketFunds.MoneyMarketFundReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs:3](../../../../src/Meridian.Contracts/MoneyMarketFunds/MoneyMarketFundReferenceDtos.cs#L3).
+
+```csharp
+public sealed record MoneyMarketFundReferenceDto(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifier, long Version);
+```
+
+## IEventMetrics
+
+Qualified name: <code>Meridian.Contracts.Monitoring.IEventMetrics</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:8](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L8).
+
+Abstraction over event pipeline counters so that hot-path metrics can be injected rather than accessed through a static class. Default implementations should preserve zero-allocation / thread-safe behavior on the hot path.
+
+```csharp
+public interface IEventMetrics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>long Published { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:10](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L10) |  |
+| <code>long Dropped { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:11](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L11) |  |
+| <code>long Integrity { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:12](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L12) |  |
+| <code>long Trades { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:13](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L13) |  |
+| <code>long DepthUpdates { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:14](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L14) |  |
+| <code>long Quotes { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:15](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L15) |  |
+| <code>long HistoricalBars { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:16](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L16) |  |
+| <code>double EventsPerSecond { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:17](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L17) |  |
+| <code>double DropRate { get; }</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:18](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L18) |  |
+| <code>void IncPublished();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:20](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L20) |  |
+| <code>void IncDropped();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:21](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L21) |  |
+| <code>void IncIntegrity();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:22](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L22) |  |
+| <code>void IncTrades();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:23](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L23) |  |
+| <code>void IncDepthUpdates();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:24](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L24) |  |
+| <code>void IncQuotes();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:25](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L25) |  |
+| <code>void IncHistoricalBars();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:26](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L26) |  |
+| <code>void RecordLatency(long startTimestamp);</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:27](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L27) |  |
+| <code>void Reset();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:29](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L29) |  |
+| <code>MetricsSnapshot GetSnapshot();</code> | [src/Meridian.Contracts/Monitoring/IEventMetrics.cs:30](../../../../src/Meridian.Contracts/Monitoring/IEventMetrics.cs#L30) |  |
+
 ## IMonitoringWebhookSink
 
 Qualified name: <code>Meridian.Contracts.Monitoring.IMonitoringWebhookSink</code>. Kind: `interface`.
@@ -832,35 +898,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public SecurityOptionRight? Right =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:23](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L23) | PutCall as a typed right, or null when the stored text names neither. The raw text stays on PutCall. |
-
-## OptionScreenCandidate
-
-Qualified name: <code>Meridian.Contracts.Options.OptionScreenCandidate</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:18](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L18).
-
-```csharp
-public sealed record OptionScreenCandidate(string Id, string Symbol, string UnderlyingSymbol, string Right, string Expiration, int DaysToExpiration, string Strike, string? Delta, string Bid, string Ask, string? Mid, string? SpreadFraction, long? OpenInterest, long? Volume, string Multiplier, string Currency, string Exchange, string Style, string Source, DateTimeOffset ObservedAt, bool PassesScreen, IReadOnlyList<string> RejectionReasons);
-```
-
-## OptionScreenRequest
-
-Qualified name: <code>Meridian.Contracts.Options.OptionScreenRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:4](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L4).
-
-Neutral single-contract criteria. Passing these criteria is not trading permission.
-
-```csharp
-public sealed record OptionScreenRequest(string UnderlyingSymbol, int MinDte = 0, int MaxDte = 365, decimal MinDelta = - 1m, decimal MaxDelta = 1m, string Right = "Both", long MinOpenInterest = 0, long MinVolume = 0, decimal? MaxSpreadFraction = null, decimal? MinPremium = null, string PremiumBasis = "Bid", int StrikeRange = 20);
-```
-
-## OptionScreenResult
-
-Qualified name: <code>Meridian.Contracts.Options.OptionScreenResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:26](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L26).
-
-```csharp
-public sealed record OptionScreenResult(OptionScreenRequest Criteria, DateTimeOffset ScreenedAt, IReadOnlyList<OptionScreenCandidate> Candidates, IReadOnlyList<string> LoadedExpirations, IReadOnlyList<string> FailedExpirations, IReadOnlyList<string> OmittedExpirations, int StrikeRange, string CoverageNote, string AuthorityNote);
-```

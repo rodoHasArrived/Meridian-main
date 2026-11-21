@@ -83,7 +83,7 @@
   },
   "monospaceCapsLabels": {
     "src/screens/accounting-screen.operations-panels.tsx": 2,
-    "src/screens/asset-detail-screen.tsx": 5,
+    "src/screens/asset-detail-screen.tsx": 1,
     "src/screens/settings-screen.brokerage-sections.tsx": 1,
     "src/screens/statement-import-panel.tsx": 9,
     "src/screens/statement-import-preview.tsx": 3,

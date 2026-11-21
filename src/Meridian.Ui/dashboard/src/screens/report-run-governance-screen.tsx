@@ -541,7 +541,7 @@ export function ReportRunGovernanceScreen() {
 
       <AuditPanel run={run} />
 
-      <ReportingIncomeComparisonPanel key={run.runId} currentRunId={run.runId} />
+      <ReportingIncomeComparisonPanel key={`income-comparison:${run.runId}`} currentRunId={run.runId} />
 
       <RestatementPanel
         run={run}

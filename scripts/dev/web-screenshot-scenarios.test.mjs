@@ -283,8 +283,9 @@ test("match workbench readiness proves the retained selected case and its eviden
   const selectedBreak = source.module.accountingPayload.breakQueue[0];
   assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
   assert.ok(capture.waitForTexts.includes("Disagreement"));
+  assert.ok(capture.waitForTexts.includes("Retained evidence"));
   assert.ok(capture.waitForTexts.includes("Retained comparison and lineage"));
-  assert.ok(capture.waitForSelectors.includes('[aria-label="Case inspector"] details:has(summary:has-text("Case identifiers")):has(dd:has-text("run-42:cash"))'));
+  assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"][data-case-id="${selectedBreak.breakId}"][aria-busy="false"]`));
   assert.ok(capture.waitForSelectors.includes(`[aria-label="Case inspector"] a[href="/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(selectedBreak.breakId)}"]:visible`));
   for (const obsolete of ["Open breaks", "Record match decision"]) {
     assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must match retained case evidence: ${obsolete}`);

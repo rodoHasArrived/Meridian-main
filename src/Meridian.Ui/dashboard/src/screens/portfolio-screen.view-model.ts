@@ -14,7 +14,7 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
-import { formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
 import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -24,6 +24,7 @@ import {
   formatDateTime,
   formatRatioAsPercent,
   nextBrokerageAccountKey,
+  numericPnlTone,
   pnlFieldTone,
   pnlTone,
   riskFieldTone,
@@ -50,7 +51,6 @@ import type {
   StrategyRunContinuityWarningSeverity,
   TradingWorkspaceResponse
 } from "@/types";
-import { formatCount } from "@/lib/format";
 
 export { resolveBrokerageAccountFilterKeyCommand } from "@/screens/portfolio-screen.presentation";
 
@@ -683,7 +683,7 @@ export function buildPortfolioScreenViewModel({
   });
   const positionKeys = positions.map((position, index) => ({
     position,
-    id: `${position.symbol.toLowerCase()}-${position.side.toLowerCase()}-${index}`,
+    id: positionId(position.symbol, position.side, index),
     ref: positionReference(position)
   }));
   const selectedPositionKey = positionKeys.find((row) => row.id === selectedPositionId) ?? (requestedPositionRef
@@ -2279,6 +2279,10 @@ function normalizePathname(pathname: string): string {
   return normalized === "" ? "/" : normalized;
 }
 
+function positionId(symbol: string, side: string, index: number): string {
+  return `${symbol.toLowerCase()}-${side.toLowerCase()}-${index}`;
+}
+
 function parseNumericValue(value: string): number | null {
   const normalizedPercent = value.trim().endsWith("%");
   const cleaned = value.replace(/[$+,%]/g, "").trim();
@@ -2296,12 +2300,6 @@ function parseNumericValue(value: string): number | null {
 
 function distinctNormalizedValues(values: string[]): string[] {
   return [...new Set(values.map((value) => value.trim()).filter((value) => value.length > 0))].sort();
-}
-
-function numericPnlTone(value: number): "success" | "danger" | "default" {
-  if (value > 0) return "success";
-  if (value < 0) return "danger";
-  return "default";
 }
 
 function modeBadgeVariant(mode: string): "paper" | "live" | "outline" {

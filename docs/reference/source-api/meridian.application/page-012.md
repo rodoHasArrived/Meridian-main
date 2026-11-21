@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolPreset
+
+Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979).
+
+Preset symbol lists.
+
+```csharp
+public enum SymbolPreset : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
+| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
+| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
+| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:984](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L984) |  |
+| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:985](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L985) |  |
+
 ## UseCase
 
 Qualified name: <code>Meridian.Application.Services.UseCase</code>. Kind: `enum`.
@@ -1064,24 +1086,3 @@ Declared public members:
 | <code>public static WizardStepResult Skipped(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:27](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L27) | Creates a skip result with the default next step. |
 | <code>public static WizardStepResult Failed(string message) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:31](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L31) | Creates a failure result. |
 | <code>public static WizardStepResult Cancelled(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:35](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L35) | Creates a cancellation result. |
-
-## WizardStepStatus
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:6](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L6).
-
-Outcome of a single wizard step execution.
-
-```csharp
-public enum WizardStepStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Success</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L9) | Step completed normally; continue to next step. |
-| <code>Failure</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L12) | Step failed; the wizard should surface an error. |
-| <code>Skip</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L15) | Step was skipped (condition not met); continue to next step. |
-| <code>Cancelled</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L18) | User or code cancelled; stop the wizard immediately. |

@@ -40,8 +40,8 @@ export function getSecurityTrustSnapshot(securityId: string) {
   return getJson<SecurityMasterTrustSnapshot>(workstationSecurityMasterTrustSnapshotEndpoint(securityId));
 }
 
-export function getSecurityInstrumentPassport(securityId: string) {
-  return getJson<InstrumentPassport>(workstationSecurityMasterInstrumentPassportEndpoint(securityId));
+export function getSecurityInstrumentPassport(securityId: string, options: ApiRequestOptions = {}) {
+  return getJson<InstrumentPassport>(workstationSecurityMasterInstrumentPassportEndpoint(securityId), options);
 }
 
 export function createSecurityMasterEntry(request: Record<string, unknown>) {

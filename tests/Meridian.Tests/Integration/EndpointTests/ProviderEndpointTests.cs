@@ -5,6 +5,7 @@ using FluentAssertions;
 using Meridian.Core.IO;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
@@ -120,6 +121,8 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task GetRateLimitHistory_ReportsRecentEventsAndDurableDailyRetention()
     {
+        // The ring is shared by data root. Use an isolated provider key so parallel provider tests
+        // cannot make this empty-history assertion depend on their quota observations.
         var provider = $"history-empty-{Guid.NewGuid():N}";
         var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
 
@@ -145,7 +148,8 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         var now = DateTimeOffset.UtcNow;
         var resetAt = now.AddMinutes(1);
         var history = ProviderRateLimitHistory.ForDataRoot(
-            _fixture.DataRoot, _fixture.Services.GetRequiredService<IAtomicFileWriter>());
+            _fixture.Services.GetRequiredService<StorageOptions>().RootPath,
+            _fixture.Services.GetRequiredService<IAtomicFileWriter>());
         history.Record(provider,
             new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
                 TimeSpan.FromMinutes(1), 1, now, resetAt),

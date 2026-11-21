@@ -597,11 +597,11 @@ internal sealed class OperationsWorkflowReadModelBuilder(IOperationsStatusDeriva
             new OperationsDashboardMetricDto(
                 "match-records",
                 "Match Records",
-                $"{readyLaneCount}/{workflow.ReconciliationLanes.Count} reconciliation checks ready",
+                $"{readyLaneCount}/{workflow.ReconciliationLanes.Count} lanes ready",
                 ResolveLaneMetricStatus(workflow.ReconciliationLanes),
                 workflow.ReconciliationLanes.Count == 0
-                    ? "No reconciliation checks were returned for this workflow."
-                    : "The selected workflow tracks cash, position, trade, income, MBS factor, bank, and GL reconciliation checks.",
+                    ? "No reconciliation lane coverage has been projected for this workflow."
+                    : "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
                 "/workstation/accounting/reconciliation",
                 reconciliationEvidence,
                 BuildMatchRecordsRequiredActions(workflow.ReconciliationLanes)),
@@ -724,7 +724,7 @@ internal sealed class OperationsWorkflowReadModelBuilder(IOperationsStatusDeriva
 
         return BuildCappedDashboardRequiredActions(
             laneActions,
-            "Complete source-backed reconciliation checks before approval.",
+            "Complete source-backed reconciliation lanes before approval.",
             "reconciliation lane action");
     }
 

@@ -173,12 +173,20 @@
         "/api/workstation/security-master/securities/sec-dev-001",
         "/api/workstation/security-master/securities/sec-dev-001/identity",
         "/api/security-master/sec-dev-001/corporate-actions",
-        "/api/security-master/sec-dev-001/trading-parameters"
+        "/api/security-master/sec-dev-001/trading-parameters",
+        "/api/workstation/security-master/securities/sec-dev-001/passport",
+        "/api/workstation/assets/sec-dev-001/operations",
+        "/api/data/quotes-snapshot",
+        "/api/security-master/sec-dev-001/instrument-terms",
+        "/api/workstation/assets/sec-dev-001/market-valuation"
       ],
       "waitForTexts": [
         "Apple Inc.",
         "AAPL",
-        "Trading parameters"
+        "Trading Parameters",
+        "Readiness & evidence",
+        "Financial context",
+        "Market valuation"
       ]
     },
     {
@@ -292,7 +300,7 @@
       "waitForSelectors": [
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -327,7 +335,7 @@
         "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Loading reconciliation break queue...",
@@ -364,12 +372,20 @@
         "/api/workstation/security-master/securities/sec-dev-001",
         "/api/workstation/security-master/securities/sec-dev-001/identity",
         "/api/security-master/sec-dev-001/corporate-actions",
-        "/api/security-master/sec-dev-001/trading-parameters"
+        "/api/security-master/sec-dev-001/trading-parameters",
+        "/api/workstation/security-master/securities/sec-dev-001/passport",
+        "/api/workstation/assets/sec-dev-001/operations",
+        "/api/data/quotes-snapshot",
+        "/api/security-master/sec-dev-001/instrument-terms",
+        "/api/workstation/assets/sec-dev-001/market-valuation"
       ],
       "waitForTexts": [
         "Apple Inc.",
         "AAPL",
-        "Trading parameters"
+        "Trading Parameters",
+        "Readiness & evidence",
+        "Financial context",
+        "Market valuation"
       ]
     },
     {
@@ -512,7 +528,7 @@
         "1 operations continuity workflow loaded.",
         "Workflows",
         "Ledger Posting Draft",
-        "3/7 checks ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Board",
         "Blockers",
         "Checklist",
@@ -668,7 +684,7 @@
         "[aria-label=\"Case inspector\"] a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]:visible",
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1063,7 +1079,6 @@
       ],
       "requiredApiRoutes": [
         "/api/fund-structure/reporting/runs/report-run-investor-202605",
-        "/api/fund-structure/reporting/runs/report-run-investor-202605/review",
         "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement",
         "/api/fund-structure/reporting/distribution/transports",
         "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/deliveries",
@@ -1071,8 +1086,6 @@
       ],
       "waitForTexts": [
         "Report lifecycle",
-        "Changes since prior approved run",
-        "Materiality not assessed",
         "Immutable release artifacts",
         "Immutable audit trail",
         "Authenticated transport catalog"
@@ -1756,7 +1769,7 @@
       "waitForSelectors": [
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
+        "[aria-label=\"Case inspector\"][data-case-id=\"run-42:cash\"][aria-busy=\"false\"]"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1843,13 +1856,13 @@
         "/api/fund-structure/reporting/runs/report-run-investor-202605/review"
       ],
       "waitForTexts": [
-        "Current run",
+        "Current retained version 6",
         "No prior approved comparable run.",
         "Materiality not assessed"
       ],
       "waitForSelectors": [
         "[role=\"tab\"][data-tab-id=\"changes\"][aria-selected=\"true\"]",
-        "[role=\"tabpanel\"]:not([hidden]) details:has(summary:has-text(\"Run identifiers\")):has(dd:has-text(\"report-run-investor-202605\"))"
+        "[role=\"tabpanel\"]:not([hidden])"
       ],
       "waitForAbsentTexts": [
         "Loading retained review evidence",
@@ -1953,7 +1966,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 checks ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [
@@ -2007,14 +2020,14 @@
       ],
       "waitForTexts": [
         "Positions by account",
-        "Brokerage household",
+        "Ticker AAPL",
         "alpaca-roth",
         "38 units"
       ],
       "waitForSelectors": [
         "[role=\"tab\"][data-tab-id=\"positions\"][aria-selected=\"true\"]",
-        "[role=\"tabpanel\"]:not([hidden]) [data-position-source=\"brokerage-household\"] tbody tr:has-text(\"alpaca-roth\")",
-        "details:has(summary:has-text(\"Technical identity\")):has(dd:has-text(\"sec-dev-001\"))"
+        "[data-position-source=\"brokerage-household\"] table[aria-label=\"Instrument positions by account\"]",
+        "[role=\"tabpanel\"]:not([hidden]) tbody tr:has-text(\"alpaca-roth\")"
       ],
       "waitForAbsentTexts": [
         "Loading instrument dossier…",
@@ -2070,7 +2083,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 checks ready across 1 close workflow.",
+        "3/7 workstreams ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [

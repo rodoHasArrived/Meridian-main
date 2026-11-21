@@ -4,7 +4,7 @@
  * session for the selected account; Portfolio shows live holdings across every account, or the
  * records retained by one run.
  */
-export type PositionSourceKind = "paper-session" | "live-session" | "live-holdings" | "retained-run" | "brokerage-household" | "execution-gateway" | "trading-workspace";
+export type PositionSourceKind = "paper-session" | "live-session" | "live-holdings" | "retained-run" | "brokerage-household" | "execution-gateway";
 
 export interface PositionSource {
   kind: PositionSourceKind;

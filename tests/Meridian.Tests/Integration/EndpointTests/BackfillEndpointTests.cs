@@ -366,7 +366,7 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
             new BackfillProvidersConfig(),
             "alphavantage");
 
-        options.Enabled.Should().BeFalse();
+        options.Enabled.Should().BeFalse("an absent runtime configuration must not opt a credentialed provider in");
         options.Priority.Should().Be(new AlphaVantageConfig().Priority);
         options.RateLimitPerMinute.Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
     }
@@ -417,7 +417,10 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     [Fact]
     public async Task ProviderStatuses_WhenRuntimeIsActive_ExposeDefaultsWithoutProviderConfiguration()
     {
+        (_fixture.Services.GetRequiredService<Meridian.Ui.Shared.Services.ConfigStore>().Load().Backfill?.Providers)
+            .Should().BeNull();
         _fixture.Services.GetRequiredService<BackfillRoutingRuntime>().Current.Should().NotBeNull();
+
         using var response = await _client.GetAsync("/api/backfill/providers/statuses");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);

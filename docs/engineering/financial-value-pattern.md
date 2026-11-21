@@ -19,9 +19,6 @@ Legacy numeric reads remain supported but cannot recover precision already lost 
 only when the source establishes that condition. Conditions must come from source-backed
 assessment, never from the presence of a value. Omitted conditions render **Unavailable**
 with an explanation. Mark eligibility is not reconciliation or accounting approval.
-When several values share an unavailable condition, the surrounding comparison or table can
-explain it once. Each amount keeps an accessible condition label, and values with a specific
-source condition still show that label alongside the amount.
 
 A passport requires an exact `LedgerAmountSelection` identifying retained subject, fund,
 book, period, amount, and currency. The displayed value and currency must match the selection

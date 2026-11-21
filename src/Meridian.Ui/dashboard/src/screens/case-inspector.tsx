@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useId, useRef, useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -81,6 +81,7 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
   onDecisionRequestHandled?: () => void;
 }) {
   const location = useLocation();
+  const comparisonConditionId = useId();
   const params = new URLSearchParams(location.search);
   const scopeKey = JSON.stringify(["fundId", "fundProfileId", "fundAccountId", "entityId", "companyId", "organizationId",
     "ledgerBookId", "bookId", "periodId", "accountingPeriodId", "asOf", "date", "from", "to"].map((name) => params.get(name)));
@@ -288,27 +289,29 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
       disabledReason={disabledReason} onClick={() => choose(name)}>{decisionLabels[name]}</Button>
       {disabledReason ? <span id={descriptionId} className="max-w-64 text-xs text-muted-foreground">{disabledReason}</span> : null}</span>;
   };
-  return <section className="case-inspector min-w-0 space-y-4 break-words" aria-label="Case inspector" aria-busy={loading || busy}>
+  return <section className="case-inspector min-w-0 space-y-4 break-words" aria-label="Case inspector" aria-busy={loading || busy} data-case-id={item?.breakId}>
     {loading ? <p role="status">Loading latest case…</p> : null}
     {error ? <div role="alert"><p>{error}</p><Button type="button" variant="outline" onClick={() => setRevision((value) => value + 1)}>Reload case</Button></div> : null}
     {item ? <div className="space-y-4">
       <header><div className="flex flex-wrap items-start justify-between gap-2"><h3 className="text-base font-semibold">{item.reason || item.strategyName}</h3><Badge>{item.status}</Badge></div>
         {item.recommendedAction ? <p className="mt-2 text-sm">{item.recommendedAction}</p> : null}
         <dl className="mt-3 grid gap-2 sm:grid-cols-2"><Fact label="Owner" value={item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"} />
-          <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Version" value={String(item.version ?? "Not recorded")} />
-          <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Period" value={item.accountingPeriodId ?? "Not recorded"} /></dl></header>
-      <TechnicalDetails label="Case identifiers"><dl><Fact label="Case ID" value={item.breakId} /></dl></TechnicalDetails>
+          <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Version" value={String(item.version ?? "Not recorded")} /></dl></header>
+      <TechnicalDetails label="Case identifiers">
+        <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} />
+          <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Accounting period" value={item.accountingPeriodId ?? "Not recorded"} /></dl>
+      </TechnicalDetails>
       <section aria-label="Comparison" className="rounded border border-border p-3">
         {item.statementEvidence ? <ReconciliationCaseEvidence item={item} relatedRows={relatedCases} onOpenCase={onOpenCase}
           comparisonBreakId={comparisonBreakId} onComparisonChange={onComparisonChange} /> : <>
         <h4 className="text-sm font-semibold">Disagreement</h4>
         {!hasComparison ? <p className="my-2 text-sm">Comparison unavailable: {missingComparison}</p> : null}
-        <p className="mt-2 text-xs text-muted-foreground">{dataReason}</p>
+        <p id={comparisonConditionId} className="mt-2 text-xs text-muted-foreground">Data condition unavailable. {dataReason}</p>
         <dl className="mt-3 grid gap-3 sm:grid-cols-2">
-          <ValueFact label="Expected" value={expected} unit={measure?.unit} reason={dataReason} />
-          <ValueFact label="Actual" value={actual} unit={measure?.unit} reason={dataReason} />
-          <ValueFact label="Residual" value={caseResidual(item)} unit={measure?.unit} reason={dataReason} signed />
-          <ValueFact label="Tolerance" value={caseTolerance(item)} unit={measure?.unit} reason={dataReason} />
+          <ValueFact label="Expected" value={expected} unit={measure?.unit} reason={dataReason} conditionContextId={comparisonConditionId} />
+          <ValueFact label="Actual" value={actual} unit={measure?.unit} reason={dataReason} conditionContextId={comparisonConditionId} />
+          <ValueFact label="Residual" value={caseResidual(item)} unit={measure?.unit} reason={dataReason} conditionContextId={comparisonConditionId} signed />
+          <ValueFact label="Tolerance" value={caseTolerance(item)} unit={measure?.unit} reason={dataReason} conditionContextId={comparisonConditionId} />
         </dl><p className="mt-2 text-xs text-muted-foreground">Basis: Not recorded; the source has not identified the comparison sides or subtraction convention.</p>
         {item.breakExplanation?.summary ? <p className="mt-2 text-sm">{item.breakExplanation.summary}</p> : null}
         <TechnicalDetails label="Retained comparison and lineage"><ReconciliationCaseEvidence item={item} relatedRows={relatedCases}
@@ -375,8 +378,8 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
 }
 
 function Fact({ label, value }: { label: string; value: string }) { return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd className="text-sm">{value}</dd></div>; }
-function ValueFact({ label, value, unit, reason, signed }: { label: string; value?: string | number | null; unit?: string; reason: string; signed?: boolean }) {
-  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd><FinancialValue value={value} currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={unit || "Unit unavailable"} summarizeUnavailableCondition reason={reason} signed={signed} /></dd></div>;
+function ValueFact({ label, value, unit, reason, signed, conditionContextId }: { label: string; value?: string | number | null; unit?: string; reason: string; signed?: boolean; conditionContextId?: string }) {
+  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd><FinancialValue value={value} currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={unit || "Unit unavailable"} reason={reason} signed={signed} conditionContextId={conditionContextId} /></dd></div>;
 }
 
 export function CaseVariance({ item }: { item: ReconciliationBreakQueueItem }) {
