@@ -142,4 +142,9 @@ public sealed record StrategyPromotionRecord(
     string[]? EvidenceReferences = null,
     string? AuditReference = null,
     string? ApprovedBy = null,
-    string? ManualOverrideId = null);
+    string? ManualOverrideId = null)
+{
+    public string? StrategyArtifactId { get; init; }
+    public StrategyLiveAuthorization? LiveAuthorization { get; init; }
+    public StrategyLiveAuthorizationStatus? LiveAuthorizationStatus { get; init; }
+}

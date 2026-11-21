@@ -622,7 +622,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1636](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1636) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1654](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1654) |  |
 
 ## WorkstationWorkflowReadScope
 

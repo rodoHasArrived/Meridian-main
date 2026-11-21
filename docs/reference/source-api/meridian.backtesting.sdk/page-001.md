@@ -862,7 +862,7 @@ public readonly record struct IntermediateMetrics(double RollingSharpe, double C
 
 Qualified name: <code>Meridian.Backtesting.Sdk.IResearchRunRecorder</code>. Kind: `interface`.
 
-Source: [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:44](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L44).
+Source: [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:47](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L47).
 
 Records research-originated backtests into the shared strategy-run store so that work done in a scripting surface carries the same lineage as a run launched from the Studio.
 
@@ -874,7 +874,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;string?&gt; RecordAsync(ResearchRunDescriptor descriptor, BacktestResult result, CancellationToken ct = default);</code> | [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:50](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L50) | Records a completed backtest and returns the assigned run id, or null when the run could not be recorded. |
+| <code>Task&lt;string?&gt; RecordAsync(ResearchRunDescriptor descriptor, BacktestResult result, CancellationToken ct = default);</code> | [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:53](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L53) | Records a completed backtest and returns the assigned run id, or null when the run could not be recorded. |
 
 ## LedgerIntegrityBreak
 

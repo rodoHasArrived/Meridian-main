@@ -387,7 +387,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:28](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L28).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:29](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L29).
 
 Default implementation of ICoveredCallBacktestService. Runs covered-call backtests in-process behind a bounded channel, persists completed runs through IStrategyRepository, and caches full results for quick re-hydration.
 
@@ -399,23 +399,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string StrategyId = &quot;covered-call-overwrite&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L31) | Strategy identifier used when persisting StrategyRunEntry. |
-| <code>public CoveredCallBacktestService(Func&lt;BacktestRequest, BacktestEngine&gt; engineFactory, ICoveredCallChainProviderFactory chainFactory, IStrategyRepository runRepository, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, IMemoryCache resultCache, ILoggerFactory loggerFactory, TimeProvider? timeProvider = null, IEvidenceArtifactStore? evidenceArtifactStore = null);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:88](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L88) |  |
-| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:116](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L116) |  |
-| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:127](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L127) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:159](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L159) |  |
-| <code>public async ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:171](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L171) |  |
-| <code>public ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:223](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L223) |  |
-| <code>public async ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:244](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L244) |  |
-| <code>public async ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:408](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L408) |  |
-| <code>public ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:490](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L490) |  |
-| <code>public async ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:514](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L514) |  |
+| <code>public const string StrategyId = &quot;covered-call-overwrite&quot;;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:32](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L32) | Strategy identifier used when persisting StrategyRunEntry. |
+| <code>public CoveredCallBacktestService(Func&lt;BacktestRequest, BacktestEngine&gt; engineFactory, ICoveredCallChainProviderFactory chainFactory, IStrategyRepository runRepository, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, IMemoryCache resultCache, ILoggerFactory loggerFactory, TimeProvider? timeProvider = null, IEvidenceArtifactStore? evidenceArtifactStore = null, StrategyArtifactRegistry? strategyArtifacts = null);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:90](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L90) |  |
+| <code>public Task StartAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:120](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L120) |  |
+| <code>public async Task StopAsync(CancellationToken cancellationToken);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:131](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L131) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:163](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L163) |  |
+| <code>public async ValueTask&lt;CoveredCallRunHandle&gt; StartAsync(CoveredCallBacktestRequest request, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:175](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L175) |  |
+| <code>public ValueTask&lt;CoveredCallRunStatusDto?&gt; GetStatusAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:227](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L227) |  |
+| <code>public async ValueTask&lt;CoveredCallRunResult?&gt; GetResultAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:248](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L248) |  |
+| <code>public async ValueTask&lt;IReadOnlyList&lt;CoveredCallRunSummary&gt;&gt; ListRunsAsync(CoveredCallRunScope scope, int limit = 50, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:412](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L412) |  |
+| <code>public ValueTask CancelAsync(string runId, CoveredCallRunScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:494](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L494) |  |
+| <code>public async ValueTask&lt;CoveredCallChainPreview&gt; PreviewChainAsync(CoveredCallChainPreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:518](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L518) |  |
 
 ## Start
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1155](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1155).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1181](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1181).
 
 ```csharp
 public sealed record Start(string RunId) : CoveredCallCommand(RunId);

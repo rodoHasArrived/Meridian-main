@@ -5421,8 +5421,6 @@ Meridian-main
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConfigurationCredentialGuard.cs
 │   │   │   ├── ProviderConnectionService.cs
-│   │   │   ├── ProviderConnectionTemplateCatalog.cs
-│   │   │   ├── ProviderConnectionTemplateService.cs
 │   │   │   ├── ProviderCredentialOwnershipPolicy.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrixService.cs
 │   │   │   ├── ProviderOperationsSupportServices.cs
@@ -5823,7 +5821,6 @@ Meridian-main
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
-│   │   │   ├── ProviderConnectionTemplateDtos.cs
 │   │   │   ├── ProviderCredentialOwnershipApiModels.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrix.cs
 │   │   │   ├── ProviderRateLimits.cs
@@ -6769,6 +6766,7 @@ Meridian-main
 │   │   │   ├── BrokerOrderSweep.cs
 │   │   │   ├── ExecutionFailureState.cs
 │   │   │   ├── ExecutionReportHub.cs
+│   │   │   ├── ILiveStrategyOrderAuthorization.cs
 │   │   │   ├── OrderAdmissionPolicy.cs
 │   │   │   ├── OrderAmendmentBook.cs
 │   │   │   ├── OrderApprovalReservations.cs
@@ -8842,6 +8840,9 @@ Meridian-main
 │   │   ├── Meridian.Storage.Accounting.csproj
 │   │   └── README.md
 │   ├── Meridian.Strategies
+│   │   ├── Artifacts
+│   │   │   ├── StrategyArtifact.cs
+│   │   │   └── StrategyArtifactRegistry.cs
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
 │   │   │   ├── IPromotedRunLauncher.cs
@@ -8885,7 +8886,8 @@ Meridian-main
 │   │   ├── Promotions
 │   │   │   ├── BacktestToLivePromoter.cs
 │   │   │   ├── PromotionApprovalChecklist.cs
-│   │   │   └── PromotionRecordService.cs
+│   │   │   ├── PromotionRecordService.cs
+│   │   │   └── StrategyLiveAuthorization.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   ├── PromotionRecordJsonContext.cs
@@ -8931,6 +8933,7 @@ Meridian-main
 │   │   │   ├── StrategyEngineRegistry.cs
 │   │   │   ├── StrategyEngineValidationService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
+│   │   │   ├── StrategyLiveAuthorizationService.cs
 │   │   │   ├── StrategyRunAuthoritySource.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.AttributionComparison.cs
@@ -9178,7 +9181,6 @@ Meridian-main
 │   │   │   │   │   │   ├── pagination.concrete.test.tsx
 │   │   │   │   │   │   ├── pagination.tsx
 │   │   │   │   │   │   ├── provider-capability-badges.tsx
-│   │   │   │   │   │   ├── provider-connection-templates-dialog.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.test.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.integration.test.tsx
@@ -9719,7 +9721,6 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital.api.test.ts
 │   │   │   │   │   │   ├── private-capital.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
-│   │   │   │   │   │   ├── provider-connection-templates.api.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.test.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.ts
 │   │   │   │   │   │   ├── provider-management.api.ts
@@ -10997,7 +10998,6 @@ Meridian-main
 │   │   │   ├── SchemaServiceBase.cs
 │   │   │   ├── SearchService.cs
 │   │   │   ├── SettingsConfigurationService.cs
-│   │   │   ├── SettingsConfigurationService.ProviderTemplates.cs
 │   │   │   ├── SetupWizardService.cs
 │   │   │   ├── SmartRecommendationsService.cs
 │   │   │   ├── StatusServiceBase.cs
@@ -11182,7 +11182,6 @@ Meridian-main
 │   │   │   ├── ProviderConfigurationCredentialFilter.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
-│   │   │   ├── ProviderConnectionTemplateEndpoints.cs
 │   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpoints.cs
 │   │   │   ├── ProviderDataProjectionEndpoints.cs
@@ -11581,7 +11580,6 @@ Meridian-main
 │   │   │   ├── ProviderConnectionLifecycleService.cs
 │   │   │   ├── ProviderConnectionLifecycleService.ExternalGl.cs
 │   │   │   ├── ProviderConnectionLifecycleService.Ownership.cs
-│   │   │   ├── ProviderConnectionLifecycleService.TemplateProbes.cs
 │   │   │   ├── ProviderConnectionLifecycleService.VerificationHistory.cs
 │   │   │   ├── ProviderCredentialStore.cs
 │   │   │   ├── ProviderDataReadModelService.cs
@@ -12355,7 +12353,6 @@ Meridian-main
 │   │   │   ├── ActivityLogPage.xaml
 │   │   │   ├── ActivityLogPage.xaml.cs
 │   │   │   ├── AddProviderWizardPage.OwnedConnections.cs
-│   │   │   ├── AddProviderWizardPage.Templates.cs
 │   │   │   ├── AddProviderWizardPage.xaml
 │   │   │   ├── AddProviderWizardPage.xaml.cs
 │   │   │   ├── AdminMaintenancePage.xaml
@@ -14991,6 +14988,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
+│   │   │   ├── LiveTradingEngineTests.GovernedRehearsal.cs
 │   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
 │   │   │   ├── LiveTradingEngineTests.StopFillDrain.cs
 │   │   │   ├── MovingAverageParityTests.cs
@@ -15008,6 +15006,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAccountingEventSourceRateUnitTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
 │   │   │   ├── StoppedRunPromotionTests.cs
+│   │   │   ├── StrategyArtifactAndLiveAuthorizationTests.cs
 │   │   │   ├── StrategyDesignRepositoryTests.cs
 │   │   │   ├── StrategyDesignServiceTests.cs
 │   │   │   ├── StrategyEngineValidationServiceTests.cs
@@ -15345,7 +15344,6 @@ Meridian-main
 │   │   │   ├── ProviderConfigurationCredentialGuardTests.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjectionTests.cs
 │   │   │   ├── ProviderConnectionEndpointsTests.cs
-│   │   │   ├── ProviderConnectionTemplateEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipRaceTests.cs
 │   │   │   ├── ProviderDataProjectionEndpointsTests.cs
