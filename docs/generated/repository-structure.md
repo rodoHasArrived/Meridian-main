@@ -12107,6 +12107,7 @@ Meridian-main
 │   │   │   ├── ConnectionService.cs
 │   │   │   ├── ContextMenuService.cs
 │   │   │   ├── CredentialService.cs
+│   │   │   ├── CredentialService.OAuth.cs
 │   │   │   ├── DataWorkspacePresentationBuilder.cs
 │   │   │   ├── DemoTourService.cs
 │   │   │   ├── DesktopAuthenticationSession.cs
