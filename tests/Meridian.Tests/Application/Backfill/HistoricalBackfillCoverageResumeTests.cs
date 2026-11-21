@@ -44,7 +44,7 @@ public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
                 QualityAssessedAt: assessmentTime, AssessmentFrom: from, AssessmentTo: to)
         };
         var options = new StorageOptions { RootPath = _dataRoot };
-        Meridian.Application.Backfill.BackfillResult result;
+        Meridian.Contracts.Backfill.BackfillResult result;
         await using (var pipeline = new EventPipeline(new JsonlStorageSink(options, new JsonlStoragePolicy(options)),
             capacity: 1000, enablePeriodicFlush: false))
         {
