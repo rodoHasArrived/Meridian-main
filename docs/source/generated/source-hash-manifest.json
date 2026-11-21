@@ -135,8 +135,8 @@
       "id": "SRC-EXECUTION",
       "path": "src/Meridian.Execution",
       "readme": "src/Meridian.Execution/README.md",
-      "readme_hash": "920dcdaa07e78de7063d5f15a35b6df9d1bacaac67a1974d5307e37e1dc4a7fc",
-      "source_hash": "0c87936f19cb24d31e38c279c5b56191999d280d77657f34c19c6b726197b469"
+      "readme_hash": "07386cd5743658fb4559090e217639c6468e8348a2b94eb743f0519511bbda7c",
+      "source_hash": "931def30fd17cf657e595cd4cf5d25a38ecee0b294bf2f20ea617c84f08d8136"
     },
     {
       "id": "SRC-EXECUTION-SDK",
@@ -276,14 +276,14 @@
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
       "readme_hash": "c2e42d12d60f9cc39ee8e290c6b7f5c27f2a0986cb72a361cf12e5c7eb882184",
-      "source_hash": "cc3aec2d302a6f28662dca1ced467623c3849f801dc6025743a994ef808980f9"
+      "source_hash": "d50c1d7797c652b9cde1b3484cfd53edbf88f50980bd63d85ea7305ad8afe0cf"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "f33871d2b9473f14a7eba04c932332ac25c2af759f6fc45f14daccab2b154c2f",
-      "source_hash": "cc3aec2d302a6f28662dca1ced467623c3849f801dc6025743a994ef808980f9"
+      "readme_hash": "bb6587618a1ea9ebbc98d2301b5770357d3d334e6293221a0f499a336ce09dfd",
+      "source_hash": "d50c1d7797c652b9cde1b3484cfd53edbf88f50980bd63d85ea7305ad8afe0cf"
     },
     {
       "id": "SRC-UI-SERVICES",
