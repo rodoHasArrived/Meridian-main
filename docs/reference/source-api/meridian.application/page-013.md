@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderDescriptor
+
+Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs:28](../../../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs#L28).
+
+Immutable descriptor for a single data provider. Centralises signup URLs, environment variable names, capabilities and priority so that both ConfigurationWizard and AutoConfigurationService can share the same source of truth.
+
+```csharp
+public sealed record ProviderDescriptor(string Name, string DisplayName, string[] RequiredEnvVars, string[] AlternativeEnvVars, string[] Capabilities, int Priority, string SignupUrl = "", string DocsUrl = "", string FreeTierDescription = "");
+```
+
+## ProviderRegistry
+
+Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:8](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L8).
+
+Central registry of all supported data providers with their metadata. Replaces the duplicated dictionaries in ConfigurationWizard and AutoConfigurationService.
+
+```csharp
+public static class ProviderRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderDescriptor&gt; All { get; } = BuildRegistry();</code> | [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:11](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L11) | All provider descriptors, ordered by ascending priority. |
+| <code>public static ProviderDescriptor? Get(string name) =&gt; …;</code> | [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:14](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L14) | Returns the descriptor for the given provider name, or null. |
+
+## ConfigureBackfillStep
+
+Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureBackfillStep</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L11).
+
+Step 8: Configures historical data backfill settings. Writes WizardContext.Backfill (may remain null if skipped).
+
+```csharp
+public sealed class ConfigureBackfillStep : IWizardStep
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L16) |  |
+| <code>public ConfigureBackfillStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L18) |  |
+| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L24) |  |
+
 ## ConfigureDataSourceStep
 
 Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureDataSourceStep</code>. Kind: `class`.

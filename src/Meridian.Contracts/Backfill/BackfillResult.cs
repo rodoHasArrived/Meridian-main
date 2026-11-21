@@ -28,8 +28,9 @@ public sealed record BackfillResult(
     public ProviderProvenanceAccess? ProvenanceAccess { get; init; }
 
     public BackfillResult ForTenant(string? tenantId) =>
-        (ProviderProvenance is not null || QuotaReceipt is not null) && ProvenanceAccess?.IsVisibleTo(tenantId) != true
-            ? this with { ProviderProvenance = null, QuotaReceipt = null } : this;
+        (ProviderProvenance is not null || QuotaReceipt is not null || RoutingAttempts is not null) &&
+            ProvenanceAccess?.IsVisibleTo(tenantId) != true
+            ? this with { ProviderProvenance = null, QuotaReceipt = null, RoutingAttempts = null } : this;
 
     /// <summary>
     /// Symbols skipped because their checkpoint already covered the requested date range.
@@ -48,6 +49,10 @@ public sealed record BackfillResult(
     /// <summary>Immutable response revisions that were retained after storage confirmed this run's data.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<BackfillBatchReceipt>? BatchReceipts { get; init; }
+
+    /// <summary>Provider selection outcomes. Reasons are fixed codes without vendor response details.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BackfillRoutingAttempt>? RoutingAttempts { get; init; }
 
     public static BackfillResult Failed(string provider, IReadOnlyList<string> symbols, DateOnly? from, DateOnly? to, DateTimeOffset started, Exception ex)
         => new(false, provider, symbols.ToArray(), from, to, 0, started, DateTimeOffset.UtcNow, ex.Message);

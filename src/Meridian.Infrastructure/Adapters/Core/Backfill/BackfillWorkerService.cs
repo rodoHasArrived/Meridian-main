@@ -11,6 +11,7 @@ using Meridian.Core.Resilience;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Services;
 using Meridian.Infrastructure.Adapters.Core.SymbolResolution;
+using Meridian.ProviderSdk;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Core;
@@ -33,6 +34,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     private readonly CancellationTokenSource _cts = new();
     private readonly SemaphoreSlim _concurrencySemaphore;
     private readonly BackfillProgressTracker _progressTracker;
+    private readonly ISymbolResolver? _symbolResolver;
     private readonly ConcurrentDictionary<BackfillRequestAttemptToken, ActiveBackfillAttempt> _inFlightRequests = new();
     private readonly ConcurrentDictionary<string, byte> _jobsBeingCancelled =
         new(StringComparer.Ordinal);
@@ -78,6 +80,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     public event Action<ProviderBackfillProgress>? OnProviderProgress;
 
     public bool IsRunning => _isRunning;
+    public bool UsesActiveRouting { get; init; }
 
     /// <summary>
     /// Gets the progress tracker for monitoring backfill progress per symbol.
@@ -96,7 +99,8 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
         AppConfig appConfig,
         IBackfillBarWriter barWriter,
         IConnectivityProbeService? connectivityProbe = null,
-        ILogger? log = null)
+        ILogger? log = null,
+        ISymbolResolver? symbolResolver = null)
     {
         if (config.MaxConcurrentRequests < MinConcurrentRequests || config.MaxConcurrentRequests > MaxConcurrentRequests)
         {
@@ -118,6 +122,7 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
         _requestQueue = requestQueue;
         _provider = provider;
         _progressTracker = provider.ProgressTracker;
+        _symbolResolver = symbolResolver;
         _rateLimitTracker = rateLimitTracker;
         _config = config;
         _appConfig = appConfig;
@@ -653,20 +658,21 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                             throw;
                         }
                         MarketDataTracing.RecordEventCount(storageActivity, bars.Count);
-                        request.BarsRetrieved = bars.Count;
-
                         // Record progress
-                        _progressTracker.RecordProgress(request.Symbol, bars.Count);
+                        _progressTracker.RecordProgress(request.Symbol, request.BarsRetrieved);
                     }
 
                     // Mark as complete
-                    await _requestQueue.CompleteRequestAttemptAsync(
+                    var completed = await _requestQueue.CompleteRequestAttemptAsync(
                         request,
                         attemptToken,
                         success: true,
                         ct: ct).ConfigureAwait(false);
-                    await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
-                    _progressTracker.MarkCompleted(request.Symbol);
+                    if (completed)
+                    {
+                        await _jobManager.UpdateJobProgressAsync(request, CancellationToken.None).ConfigureAwait(false);
+                        _progressTracker.MarkCompleted(request.Symbol);
+                    }
 
                     MarketDataTracing.RecordEventCount(activity, bars.Count);
                     activity?.SetTag("backfill.outcome", "success");
@@ -686,9 +692,10 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                     var retryAfter = isRateLimited
                         ? rateLimit?.RetryAfter ?? TryExtractRetryAfter(ex)
                         : null;
-                    var rateLimitedProvider = ResolveRateLimitedProvider(ex, request.AssignedProvider);
+                    var attemptedProvider = request.RoutingAttempts.LastOrDefault(attempt => attempt.Attempted)?.ProviderId;
+                    var rateLimitedProvider = ResolveRateLimitedProvider(ex, attemptedProvider);
 
-                    if (isRateLimited && rateLimitedProvider is not null)
+                    if (request.RoutingSnapshot is null && isRateLimited && rateLimitedProvider is not null)
                     {
                         _requestQueue.RecordProviderRateLimitHit(rateLimitedProvider, retryAfter);
 
@@ -715,14 +722,17 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
 
                     MarketDataTracing.RecordError(activity, ex);
                     activity?.SetTag("backfill.outcome", isRateLimited ? "rate_limit_exhausted" : "error");
-                    await _requestQueue.CompleteRequestAttemptAsync(
+                    var completed = await _requestQueue.CompleteRequestAttemptAsync(
                         request,
                         attemptToken,
                         success: false,
                         error: ex.Message,
                         ct: ct).ConfigureAwait(false);
-                    await _jobManager.UpdateJobProgressAsync(request, ct).ConfigureAwait(false);
-                    _progressTracker.MarkFailed(request.Symbol, ex.Message);
+                    if (completed)
+                    {
+                        await _jobManager.UpdateJobProgressAsync(request, CancellationToken.None).ConfigureAwait(false);
+                        _progressTracker.MarkFailed(request.Symbol, ex.Message);
+                    }
                     return;
                 }
             }
@@ -1049,36 +1059,48 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
                 $"was requested for {request.Symbol}. No data was fetched or written.");
         }
 
-        // Track the request
-        if (request.AssignedProvider != null)
+        var job = _jobManager.GetJob(request.JobId);
+        if (request.RoutingSnapshot is { } routing)
         {
-            _rateLimitTracker.RecordRequest(request.AssignedProvider);
+            using var provider = routing.CreateComposite(request.PreferredProviders, _symbolResolver, _log,
+                _progressTracker, request.RoutingAttempts.Add);
+            return await provider.GetDailyBarsAsync(request.Symbol, request.FromDate, request.ToDate,
+                job is null ? null : GetJobProvenance(job, provider).Capture, ct).ConfigureAwait(false);
         }
 
-        // Use composite provider which handles fallback
-        var bars = await _provider.GetDailyBarsAsync(
+        return await _provider.GetDailyBarsAsync(
             request.Symbol,
             request.FromDate,
             request.ToDate,
-            _jobManager.GetJob(request.JobId) is { } job ? GetJobProvenance(job).Capture : null,
-            ct).ConfigureAwait(false);
-
-        return bars;
+            job is null ? null : GetJobProvenance(job, _provider).Capture,
+            ct,
+            attempt =>
+            {
+                request.RoutingAttempts.Add(attempt);
+                if (attempt.Attempted)
+                    _rateLimitTracker.RecordRequest(attempt.ProviderId);
+            }).ConfigureAwait(false);
     }
 
-    private JobProvenance GetJobProvenance(BackfillJob job) => _jobProvenance.GetValue(job, key => new(
-        new BackfillProvenanceCapture(_provider, DataGranularity.Daily, symbolTimelineResolution: false, background: true,
-            resolveStaleToleranceDays: provider => ProviderValidationProfile.Resolve(_appConfig.Backfill, provider).StaleToleranceDays),
-        key.Statistics.TotalRequestsMade > 0));
+    private JobProvenance GetJobProvenance(BackfillJob job, CompositeHistoricalDataProvider provider) =>
+        _jobProvenance.GetValue(job, key => new(
+            new BackfillProvenanceCapture(provider, DataGranularity.Daily, symbolTimelineResolution: false, background: true,
+                resolveStaleToleranceDays: providerName => ProviderValidationProfile.Resolve(_appConfig.Backfill, providerName).StaleToleranceDays),
+            key.Statistics.TotalRequestsMade > 0));
 
-    private void CompleteJobReceipt(BackfillJob job, DateTimeOffset completedUtc)
+    private void CompleteJobReceipt(BackfillJob job, DateTimeOffset completedUtc, BackfillRoutingSnapshot? routing)
     {
         lock (job)
         {
             if (job.ProviderProvenance is not null)
                 return;
 
-            var evidence = GetJobProvenance(job);
+            if (!_jobProvenance.TryGetValue(job, out var evidence))
+            {
+                using var composite = routing?.CreateComposite(job.PreferredProviders, _symbolResolver, _log, _progressTracker);
+                evidence = GetJobProvenance(job, composite ?? _provider);
+            }
+
             var request = BackfillProvenanceCapture.DescribeRequest(job.FromDate, job.ToDate, job.Symbols, job.Granularity, _config.MaxConcurrentRequests) with
             {
                 SkipExistingData = job.Options.SkipExistingData,
@@ -1102,16 +1124,32 @@ public sealed class BackfillWorkerService : IDisposable, IAsyncDisposable
     /// </summary>
     private async Task WriteBarsToStorageAsync(BackfillRequest request, IReadOnlyList<HistoricalBar> bars, CancellationToken ct)
     {
-        // Group by date for daily partitioning
-        var barsByDate = bars.GroupBy(b => b.SessionDate);
-
-        foreach (var dateGroup in barsByDate)
+        var successful = request.RoutingAttempts.LastOrDefault(attempt =>
+            attempt.Reason is "completed" or "stale-data-accepted")?.ProviderId ?? "unknown";
+        var normalized = bars.Select(bar =>
+        {
+            var source = string.IsNullOrWhiteSpace(bar.Source) || string.Equals(bar.Source, "composite", StringComparison.OrdinalIgnoreCase)
+                ? successful
+                : bar.Source;
+            return string.Equals(bar.Symbol, request.Symbol, StringComparison.Ordinal) && source == bar.Source
+                ? bar
+                : new HistoricalBar(request.Symbol, bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close,
+                    bar.Volume, source, bar.SequenceNumber, bar.IsAdjusted);
+        });
+        var partitions = normalized.GroupBy(bar => bar.SessionDate);
+        foreach (var partition in partitions)
         {
             ct.ThrowIfCancellationRequested();
+            if (request.RetainedSessions.Contains(partition.Key))
+                continue;
 
-            var dateBars = dateGroup.ToList();
+            var dateBars = partition.ToList();
             var filePath = await _barWriter.WriteAsync(
-                request.Granularity, dateBars, _provider.Name, ct).ConfigureAwait(false);
+                request.Granularity, dateBars, successful, ct).ConfigureAwait(false);
+            request.RetainedSessions.Add(partition.Key);
+            request.BarsRetrieved += dateBars.Count;
+            foreach (var group in dateBars.GroupBy(bar => ProviderIdentity.NormalizeId(bar.Source!)))
+                request.ServedBy[group.Key] = request.ServedBy.GetValueOrDefault(group.Key) + group.Count();
 
             foreach (var bar in dateBars)
             {
@@ -1285,6 +1323,7 @@ public sealed class BackfillServiceFactory
 {
     private readonly ILogger _log;
     private readonly ISymbolResolver? _symbolResolver;
+    private readonly Func<BackfillRoutingSnapshot?>? _captureRouting;
 
     private readonly IAtomicFileWriter _atomicFileWriter;
     private readonly Func<string, BackfillJob, CancellationToken, Task>? _retainReceiptAsync;
@@ -1295,13 +1334,16 @@ public sealed class BackfillServiceFactory
         Func<string, IBackfillBarWriter> barWriterFactory,
         ILogger? log = null,
         ISymbolResolver? symbolResolver = null,
-        Func<string, BackfillJob, CancellationToken, Task>? retainReceiptAsync = null)
+        Func<string, BackfillJob, CancellationToken, Task>? retainReceiptAsync = null,
+        Func<BackfillRoutingSnapshot?>? captureRouting = null)
+
     {
         _atomicFileWriter = atomicFileWriter ?? throw new ArgumentNullException(nameof(atomicFileWriter));
         _barWriterFactory = barWriterFactory ?? throw new ArgumentNullException(nameof(barWriterFactory));
         _log = log ?? LoggingSetup.ForContext<BackfillServiceFactory>();
         _symbolResolver = symbolResolver;
         _retainReceiptAsync = retainReceiptAsync;
+        _captureRouting = captureRouting;
     }
 
     /// <summary>
@@ -1330,13 +1372,16 @@ public sealed class BackfillServiceFactory
             rateLimitTracker.RegisterProvider(provider);
         }
 
-        var composite = new CompositeHistoricalDataProvider(
+        var capturedRouting = _captureRouting?.Invoke();
+        var composite = capturedRouting?.CreateComposite([], _symbolResolver, _log, progressTracker: null)
+            ?? new CompositeHistoricalDataProvider(
             providers,
             config.EnableSymbolResolution ? _symbolResolver : null,
             enableRateLimitRotation: config.EnableRateLimitRotation,
             rateLimitRotationThreshold: config.RateLimitRotationThreshold,
             log: _log,
-            validationProfiles: config.ValidationProfiles);
+            validationProfiles: config.ValidationProfiles,
+            rateLimitHistory: ProviderRateLimitHistory.ForDataRoot(dataRoot, _atomicFileWriter));
 
         // Create gap analyzer
         var gapAnalyzer = new DataGapAnalyzer(dataRoot, _log);
@@ -1349,7 +1394,7 @@ public sealed class BackfillServiceFactory
         };
 
         // Create job manager
-        var jobManager = new BackfillJobManager(gapAnalyzer, requestQueue, jobsDirectory, _atomicFileWriter, _log)
+        var jobManager = new BackfillJobManager(gapAnalyzer, requestQueue, jobsDirectory, _atomicFileWriter, _log, _captureRouting)
         {
             RetainReceiptAsync = _retainReceiptAsync is null ? null : (job, ct) => _retainReceiptAsync(dataRoot, job, ct)
         };
@@ -1364,7 +1409,11 @@ public sealed class BackfillServiceFactory
             appConfig,
             _barWriterFactory(dataRoot),
             connectivityProbe,
-            _log);
+            _log,
+            _symbolResolver)
+        {
+            UsesActiveRouting = capturedRouting is not null
+        };
 
         return new BackfillServices(
             jobManager,

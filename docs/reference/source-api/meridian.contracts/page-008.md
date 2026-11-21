@@ -6,6 +6,87 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderTrustSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTrustSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:155](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L155).
+
+Trust score DTO exposed to clients.
+
+```csharp
+public sealed record ProviderTrustSnapshotDto(string ConnectionId, string ProviderFamilyId, double Score, bool IsHealthy, string HealthStatus, bool IsProductionReady, bool IsCertificationFresh, string[] Signals, DecisionResult<double>? Decision = null);
+```
+
+## ProviderTypeKind
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderTypeKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Api/ProviderCatalog.cs:601](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L601).
+
+Provider type classification for UI routing.
+
+```csharp
+public enum ProviderTypeKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Streaming</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:604](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L604) | Real-time streaming data provider. |
+| <code>Backfill</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:607](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L607) | Historical backfill data provider. |
+| <code>SymbolSearch</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:610](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L610) | Symbol search/lookup provider. |
+| <code>Hybrid</code> | [src/Meridian.Contracts/Api/ProviderCatalog.cs:613](../../../../src/Meridian.Contracts/Api/ProviderCatalog.cs#L613) | Supports both streaming and backfill. |
+
+## QualityAnomalyAcknowledgementResponse
+
+Qualified name: <code>Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgementResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:363](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L363).
+
+Acknowledgement response returned by anomaly acknowledgement endpoints.
+
+```csharp
+public sealed record QualityAnomalyAcknowledgementResponse(bool Acknowledged);
+```
+
+## QualityAnomalyAcknowledgeRequest
+
+Qualified name: <code>Meridian.Contracts.Api.Quality.QualityAnomalyAcknowledgeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:14](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L14).
+
+Request contract for anomaly acknowledgement routes used by desktop clients.
+
+```csharp
+public sealed record QualityAnomalyAcknowledgeRequest(string AnomalyId);
+```
+
+## QualityAnomalyResponse
+
+Qualified name: <code>Meridian.Contracts.Api.Quality.QualityAnomalyResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:298](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L298).
+
+Anomaly row returned by anomaly routes and dashboard payloads.
+
+```csharp
+public sealed record QualityAnomalyResponse(string Id, DateTimeOffset Timestamp, string Symbol, byte Type, byte Severity, string Description, double ExpectedValue, double ActualValue, double DeviationPercent, double ZScore, string? Provider, bool IsAcknowledged, DateTimeOffset DetectedAt);
+```
+
+## QualityAnomalyStatisticsResponse
+
+Qualified name: <code>Meridian.Contracts.Api.Quality.QualityAnomalyStatisticsResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/Quality/QualityApiModels.cs:242](../../../../src/Meridian.Contracts/Api/Quality/QualityApiModels.cs#L242).
+
+Anomaly statistics payload returned by the dashboard.
+
+```csharp
+public sealed record QualityAnomalyStatisticsResponse(long TotalAnomalies, IReadOnlyDictionary<byte, int> AnomaliesByType, IReadOnlyDictionary<byte, int> AnomaliesBySeverity, IReadOnlyList<QualityCountBySymbolResponse> SymbolsWithMostAnomalies, int UnacknowledgedCount, int AnomaliesLast24Hours, DateTimeOffset CalculatedAt);
+```
+
 ## QualityComparisonRequest
 
 Qualified name: <code>Meridian.Contracts.Api.Quality.QualityComparisonRequest</code>. Kind: `record`.
@@ -597,7 +678,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.StorageProfileResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:298](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L298).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:315](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L315).
 
 Response for setting storage profiles.
 
@@ -661,86 +742,3 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;barsDownloaded&quot;)] public int BarsDownloaded { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:289](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L289) |  |
 | <code>[JsonPropertyName(&quot;provider&quot;)] public string? Provider { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:292](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L292) |  |
 | <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Contracts/Api/StatusModels.cs:295](../../../../src/Meridian.Contracts/Api/StatusModels.cs#L295) |  |
-
-## SymbolDataHealthDto
-
-Qualified name: <code>Meridian.Contracts.Api.SymbolDataHealthDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/LiveDataModels.cs:174](../../../../src/Meridian.Contracts/Api/LiveDataModels.cs#L174).
-
-Per-symbol health status in the live data health response.
-
-```csharp
-public sealed record SymbolDataHealthDto(string Symbol, bool HasQuotes, bool HasDepth, bool IsDepthStale, DateTimeOffset? LastQuoteTimestamp, DateTimeOffset? LastOrderBookTimestamp);
-```
-
-## SymbolMappingRequest
-
-Qualified name: <code>Meridian.Contracts.Api.SymbolMappingRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:88](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L88).
-
-Request to create or update a symbol mapping.
-
-```csharp
-public record SymbolMappingRequest(string CanonicalSymbol, string? IbSymbol = null, string? AlpacaSymbol = null, string? PolygonSymbol = null, string? YahooSymbol = null, string? Name = null, string? Figi = null);
-```
-
-## SymbolMappingResponse
-
-Qualified name: <code>Meridian.Contracts.Api.SymbolMappingResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:221](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L221).
-
-Response containing a symbol mapping.
-
-```csharp
-public record SymbolMappingResponse(string CanonicalSymbol, string? IbSymbol, string? AlpacaSymbol, string? PolygonSymbol, string? YahooSymbol, string? Name, string? Figi);
-```
-
-## SymbolResolutionResponse
-
-Qualified name: <code>Meridian.Contracts.Api.SymbolResolutionResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Api/BackfillApiModels.cs:74](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L74).
-
-Symbol resolution result for backfill operations.
-
-```csharp
-public sealed class SymbolResolutionResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:80](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L80) | Gets or sets the original symbol requested for resolution. |
-| <code>[JsonPropertyName(&quot;resolvedSymbol&quot;)] public string? ResolvedSymbol { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:86](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L86) | Gets or sets the resolved symbol returned by the provider. |
-| <code>[JsonPropertyName(&quot;exchange&quot;)] public string? Exchange { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:92](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L92) | Gets or sets the exchange associated with the resolved symbol. |
-| <code>[JsonPropertyName(&quot;currency&quot;)] public string? Currency { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:98](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L98) | Gets or sets the currency code associated with the resolved symbol. |
-| <code>[JsonPropertyName(&quot;securityType&quot;)] public string? SecurityType { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:104](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L104) | Gets or sets the security type for the resolved symbol. |
-| <code>[JsonPropertyName(&quot;providerMappings&quot;)] public Dictionary&lt;string, string&gt;? ProviderMappings { get; set; }</code> | [src/Meridian.Contracts/Api/BackfillApiModels.cs:110](../../../../src/Meridian.Contracts/Api/BackfillApiModels.cs#L110) | Gets or sets provider-specific symbol mapping values. |
-
-## SymbolUniverseRequest
-
-Qualified name: <code>Meridian.Contracts.Api.SymbolUniverseRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/DataIngestionContracts.cs:56](../../../../src/Meridian.Contracts/Api/DataIngestionContracts.cs#L56).
-
-Symbol universe management request.
-
-```csharp
-public sealed record SymbolUniverseRequest(string Symbol, string? Exchange = null, string? Currency = null, bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string? Description = null, string[]? Tags = null);
-```
-
-## SymbolUniverseResponse
-
-Qualified name: <code>Meridian.Contracts.Api.SymbolUniverseResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/DataIngestionContracts.cs:70](../../../../src/Meridian.Contracts/Api/DataIngestionContracts.cs#L70).
-
-Symbol universe management response.
-
-```csharp
-public sealed record SymbolUniverseResponse(string Symbol, bool Configured = false, int DataFilesCount = 0, DateTime? LastDataPoint = null, string Status = "Unconfigured", string? Note = null);
-```

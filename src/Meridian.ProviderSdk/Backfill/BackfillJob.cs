@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -210,6 +211,9 @@ public sealed class SymbolBackfillProgress
     /// Provider that successfully provided data.
     /// </summary>
     public string? SuccessfulProvider { get; set; }
+
+    public Dictionary<string, long> ServedBy { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+    public List<BackfillRoutingAttempt> RoutingAttempts { get; init; } = [];
 
     /// <summary>
     /// Last error message if any.

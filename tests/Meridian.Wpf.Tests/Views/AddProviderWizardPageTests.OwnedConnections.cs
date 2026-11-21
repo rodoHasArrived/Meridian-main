@@ -101,9 +101,13 @@ public sealed partial class AddProviderWizardPageTests
         {
             using var fixture = await Fixture.CreateAsync();
             fixture.EnterCredentials();
-            fixture.PendingWrite = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            var pending = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            if (testConnection)
+                fixture.PendingVerification = pending;
+            else
+                fixture.PendingWrite = pending;
             var operation = testConnection ? fixture.Page.TestProviderConnectionAsync() : fixture.Page.SaveProviderAsync();
-            await fixture.WriteStarted.Task;
+            await (testConnection ? fixture.VerificationStarted.Task : fixture.WriteStarted.Task);
             fixture.Key.Text = "newer-fixture-key";
             fixture.Secret.Secret = "newer-fixture-secret";
             var scope = fixture.ViewModel.SelectedOwnedConnection!;
@@ -114,12 +118,12 @@ public sealed partial class AddProviderWizardPageTests
             await fixture.Page.ApplyOwnedConnectionSelectionAsync(notification);
             fixture.Key.Text.Should().Be("newer-fixture-key");
             fixture.Secret.Secret.Should().Be("newer-fixture-secret");
-            fixture.PendingWrite.SetResult();
+            pending.SetResult();
             await operation;
             fixture.ViewModel.SelectedOwnedConnection!.ConnectionId.Should().Be(scope.ConnectionId);
             fixture.Key.Text.Should().Be("newer-fixture-key");
             fixture.Secret.Secret.Should().Be("newer-fixture-secret");
-            fixture.Writes.Should().ContainSingle().Which.ConnectionId.Should().Be(scope.ConnectionId);
+            (testConnection ? fixture.Drafts : fixture.Writes).Should().ContainSingle().Which.ConnectionId.Should().Be(scope.ConnectionId);
             fixture.ViewModel.ConnectionTestStatusText.Should().Contain("Credentials changed");
         });
     }
@@ -162,20 +166,21 @@ public sealed partial class AddProviderWizardPageTests
             });
             fixture.EnterCredentials();
             var oldSecret = fixture.Secret;
-            fixture.PendingWrite = new(TaskCreationOptions.RunContinuationsAsynchronously);
+            fixture.PendingVerification = new(TaskCreationOptions.RunContinuationsAsynchronously);
             var oldTest = fixture.Page.TestProviderConnectionAsync();
-            await fixture.WriteStarted.Task;
+            await fixture.VerificationStarted.Task;
             await fixture.Page.SelectOwnedConnectionAsync("owned-alpaca-second");
             oldSecret.Secret.Should().BeEmpty();
             fixture.ViewModel.ConnectionTestStatusText.Should().Be("Not tested yet");
             fixture.Secret.Secret = "second-connection-fixture-secret";
-            fixture.PendingWrite.SetResult();
+            fixture.PendingVerification.SetResult();
             await oldTest;
             fixture.ViewModel.SelectedOwnedConnection!.ConnectionId.Should().Be("owned-alpaca-second");
             fixture.Secret.Secret.Should().Be("second-connection-fixture-secret");
-            fixture.VerificationCalls.Should().Be(0);
+            fixture.VerificationCalls.Should().Be(1);
             fixture.ViewModel.ConnectionTestStatusText.Should().NotContain("Credentials verified");
-            fixture.Writes.Should().ContainSingle().Which.ConnectionId.Should().Be("owned-alpaca");
+            fixture.Writes.Should().BeEmpty();
+            fixture.Drafts.Should().ContainSingle().Which.ConnectionId.Should().Be("owned-alpaca");
         });
     }
 }

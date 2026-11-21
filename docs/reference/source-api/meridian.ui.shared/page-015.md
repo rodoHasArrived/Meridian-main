@@ -141,7 +141,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:683](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L683).
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:688](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L688).
 
 Identity of a retained connection one tenant owns; carries no credential material.
 
@@ -758,6 +758,18 @@ public sealed record ProviderCalendarReadModel(ProviderProjectionProvenance Prov
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderConnectionLifecycleService</code>. Kind: `class`.
 
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs#L8).
+
+```csharp
+public sealed partial class ProviderConnectionLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ConfigurationChangeStatus&gt; SetAlpacaFeedAsync(AlpacaFeedUpdateDto update, string? tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.AlpacaFeed.cs#L11) | Updates host-wide Alpaca market data settings with verified account access for SIP. |
+
 Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L18).
 
 Manages tenant-visible provider connections, credential mutations, and live verification requests.
@@ -779,6 +791,18 @@ Declared public members:
 | <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:210](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L210) |  |
 | <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L231) |  |
 | <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:339](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L339) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs#L6).
+
+```csharp
+public sealed partial class ProviderConnectionLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;ProviderCredentialDraftVerificationResultDto&gt; VerifyDraftAsync(string providerId, ProviderCredentialDraftRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs:9](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs#L9) | Checks draft credentials without saving them or recording a saved verification. |
 
 Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.ExternalGl.cs#L6).
 

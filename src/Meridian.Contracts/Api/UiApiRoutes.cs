@@ -48,6 +48,7 @@ public static class UiApiRoutes
     public const string ConfigEffective = "/api/config/effective";
     public const string ConfigDataSource = "/api/config/datasource";
     public const string ConfigAlpaca = "/api/config/alpaca";
+    public const string ConfigAlpacaFeed = "/api/config/alpaca/feed";
     public const string ConfigStorage = "/api/config/storage";
     public const string ConfigSymbols = "/api/config/symbols";
     public const string ConfigDataSources = "/api/config/datasources";
@@ -116,6 +117,7 @@ public static class UiApiRoutes
     public const string ProviderConnections = "/api/providers/connections";
     public const string ProviderCredentialMutation = "/api/providers/{providerId}/credentials";
     public const string ProviderCredentialVerify = "/api/providers/{providerId}/verify";
+    public const string ProviderCredentialVerifyDraft = "/api/providers/{providerId}/verify-draft";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
     public const string ProviderById = "/api/providers/{providerName}";
@@ -123,6 +125,7 @@ public static class UiApiRoutes
     public const string ProviderFailoverTrigger = "/api/providers/failover/trigger";
     public const string ProviderFailoverReset = "/api/providers/failover/reset";
     public const string ProviderRateLimits = "/api/providers/rate-limits";
+    public const string ProviderQuota = "/api/providers/{providerId}/quota";
     public const string ProviderRateLimitHistory = "/api/providers/{providerName}/rate-limit-history";
     public const string ProviderCapabilities = "/api/providers/capabilities";
     public const string ProviderCapabilityMatrix = "/api/providers/capability-matrix";

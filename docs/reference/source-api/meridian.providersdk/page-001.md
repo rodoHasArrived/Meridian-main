@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillError</code>. Kind: `record`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:319](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L319).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:323](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L323).
 
 Error information for a backfill request.
 
@@ -22,7 +22,7 @@ public sealed record BackfillError(string Symbol, DateOnly Date, string Provider
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillJob</code>. Kind: `class`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:10](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L10).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:11](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L11).
 
 Provider SDK backfill job descriptor that tracks the progress of historical data retrieval. Jobs are persistent and can be paused/resumed across application restarts.
 
@@ -34,39 +34,39 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:12](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L12) |  |
-| <code>public Meridian.Contracts.Operations.ProviderProvenanceAccess? ProvenanceAccess { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:13](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L13) |  |
-| <code>public string JobId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:18](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L18) | Unique identifier for this job. |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:23](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L23) | Human-readable name for the job. |
-| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:28](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L28) | Symbols to backfill. |
-| <code>public DateOnly FromDate { get; init; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:33](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L33) | Start date for backfill (inclusive). |
-| <code>public DateOnly ToDate { get; init; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:38](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L38) | End date for backfill (inclusive). |
-| <code>public DataGranularity Granularity { get; init; } = DataGranularity.Daily;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:43](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L43) | Data granularity (timeframe). |
-| <code>public List&lt;string&gt; PreferredProviders { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:48](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L48) | Preferred providers in priority order. Empty = use all available. |
-| <code>public List&lt;string&gt; DependsOnJobIds { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:53](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L53) | Job IDs that must complete successfully before this job can run. |
-| <code>public BackfillJobStatus Status { get; set; } = BackfillJobStatus.Pending;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:58](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L58) | Current job status. |
-| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:63](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L63) | When the job was created. |
-| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:68](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L68) | When the job was last started. |
-| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:73](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L73) | When the job completed (or was cancelled). |
-| <code>public DateTimeOffset? PausedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:78](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L78) | When the job was last paused. |
-| <code>public int TotalSymbols =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:83](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L83) | Total symbols to process. |
-| <code>public int TotalDays =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:88](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L88) | Total date range days. |
-| <code>public ConcurrentDictionary&lt;string, SymbolBackfillProgress&gt; SymbolProgress { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:93](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L93) | Progress tracking per symbol. |
-| <code>public ConcurrentQueue&lt;BackfillError&gt; Errors { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:98](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L98) | Errors encountered during processing. |
-| <code>public BackfillJobOptions Options { get; set; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:103](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L103) | Job configuration options. |
-| <code>public BackfillJobStatistics Statistics { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:108](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L108) | Statistics for the job. |
-| <code>public string? StatusReason { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:113](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L113) | Reason for the current status (e.g., pause reason, error message). |
-| <code>[JsonIgnore] public double ProgressPercent { get; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:119](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L119) | Calculate overall progress percentage. |
-| <code>[JsonIgnore] public bool IsComplete =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:137](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L137) | Check if job is in a terminal state. |
-| <code>[JsonIgnore] public bool CanStart =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:143](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L143) | Check if job can be started. |
-| <code>[JsonIgnore] public bool CanPause =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:149](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L149) | Check if job can be paused. |
-| <code>[JsonIgnore] public TimeSpan Elapsed { get; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:155](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L155) | Elapsed time since job started. |
+| <code>public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:13](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L13) |  |
+| <code>public Meridian.Contracts.Operations.ProviderProvenanceAccess? ProvenanceAccess { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:14](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L14) |  |
+| <code>public string JobId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:19](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L19) | Unique identifier for this job. |
+| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:24](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L24) | Human-readable name for the job. |
+| <code>public List&lt;string&gt; Symbols { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:29](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L29) | Symbols to backfill. |
+| <code>public DateOnly FromDate { get; init; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:34](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L34) | Start date for backfill (inclusive). |
+| <code>public DateOnly ToDate { get; init; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:39](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L39) | End date for backfill (inclusive). |
+| <code>public DataGranularity Granularity { get; init; } = DataGranularity.Daily;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:44](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L44) | Data granularity (timeframe). |
+| <code>public List&lt;string&gt; PreferredProviders { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:49](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L49) | Preferred providers in priority order. Empty = use all available. |
+| <code>public List&lt;string&gt; DependsOnJobIds { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:54](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L54) | Job IDs that must complete successfully before this job can run. |
+| <code>public BackfillJobStatus Status { get; set; } = BackfillJobStatus.Pending;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:59](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L59) | Current job status. |
+| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:64](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L64) | When the job was created. |
+| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:69](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L69) | When the job was last started. |
+| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:74](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L74) | When the job completed (or was cancelled). |
+| <code>public DateTimeOffset? PausedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:79](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L79) | When the job was last paused. |
+| <code>public int TotalSymbols =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:84](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L84) | Total symbols to process. |
+| <code>public int TotalDays =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:89](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L89) | Total date range days. |
+| <code>public ConcurrentDictionary&lt;string, SymbolBackfillProgress&gt; SymbolProgress { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:94](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L94) | Progress tracking per symbol. |
+| <code>public ConcurrentQueue&lt;BackfillError&gt; Errors { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:99](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L99) | Errors encountered during processing. |
+| <code>public BackfillJobOptions Options { get; set; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:104](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L104) | Job configuration options. |
+| <code>public BackfillJobStatistics Statistics { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:109](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L109) | Statistics for the job. |
+| <code>public string? StatusReason { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:114](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L114) | Reason for the current status (e.g., pause reason, error message). |
+| <code>[JsonIgnore] public double ProgressPercent { get; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:120](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L120) | Calculate overall progress percentage. |
+| <code>[JsonIgnore] public bool IsComplete =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:138](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L138) | Check if job is in a terminal state. |
+| <code>[JsonIgnore] public bool CanStart =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:144](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L144) | Check if job can be started. |
+| <code>[JsonIgnore] public bool CanPause =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:150](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L150) | Check if job can be paused. |
+| <code>[JsonIgnore] public TimeSpan Elapsed { get; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:156](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L156) | Elapsed time since job started. |
 
 ## BackfillJobOptions
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillJobOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:240](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L240).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:244](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L244).
 
 Configuration options for a backfill job.
 
@@ -78,23 +78,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int MaxConcurrentRequests { get; init; } = 3;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:245](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L245) | Maximum concurrent requests across all providers. |
-| <code>public int MaxRetries { get; init; } = 3;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:250](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L250) | Maximum retries per failed request. |
-| <code>public TimeSpan RetryDelay { get; init; } = TimeSpan.FromSeconds(5);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:255](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L255) | Delay between retries. |
-| <code>public bool SkipExistingData { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:260](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L260) | Skip existing data (check archive before requesting). |
-| <code>public bool FillGapsOnly { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:265](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L265) | Fill gaps only (vs. overwrite existing data). |
-| <code>public bool PreferAdjustedPrices { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:270](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L270) | Prefer adjusted prices when available. |
-| <code>public bool AutoPauseOnRateLimit { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:275](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L275) | Auto-pause when all providers are rate-limited. |
-| <code>public bool AutoResumeAfterRateLimit { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:280](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L280) | Auto-resume after rate limit window expires. |
-| <code>public TimeSpan MaxRateLimitWait { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:285](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L285) | Maximum time to wait for rate limit reset before pausing. |
-| <code>public int Priority { get; init; } = 10;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:290](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L290) | Priority for this job (lower = higher priority). |
-| <code>public int BatchSizeDays { get; init; } = 365;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:295](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L295) | Batch size for date ranges (days per request). |
+| <code>public int MaxConcurrentRequests { get; init; } = 3;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:249](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L249) | Maximum concurrent requests across all providers. |
+| <code>public int MaxRetries { get; init; } = 3;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:254](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L254) | Maximum retries per failed request. |
+| <code>public TimeSpan RetryDelay { get; init; } = TimeSpan.FromSeconds(5);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:259](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L259) | Delay between retries. |
+| <code>public bool SkipExistingData { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:264](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L264) | Skip existing data (check archive before requesting). |
+| <code>public bool FillGapsOnly { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:269](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L269) | Fill gaps only (vs. overwrite existing data). |
+| <code>public bool PreferAdjustedPrices { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:274](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L274) | Prefer adjusted prices when available. |
+| <code>public bool AutoPauseOnRateLimit { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:279](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L279) | Auto-pause when all providers are rate-limited. |
+| <code>public bool AutoResumeAfterRateLimit { get; init; } = true;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:284](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L284) | Auto-resume after rate limit window expires. |
+| <code>public TimeSpan MaxRateLimitWait { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:289](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L289) | Maximum time to wait for rate limit reset before pausing. |
+| <code>public int Priority { get; init; } = 10;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:294](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L294) | Priority for this job (lower = higher priority). |
+| <code>public int BatchSizeDays { get; init; } = 365;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:299](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L299) | Batch size for date ranges (days per request). |
 
 ## BackfillJobStatistics
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillJobStatistics</code>. Kind: `class`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:301](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L301).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:305](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L305).
 
 Statistics for a backfill job.
 
@@ -106,23 +106,23 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long TotalBarsRetrieved { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:303](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L303) |  |
-| <code>public long TotalBytesDownloaded { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:304](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L304) |  |
-| <code>public int TotalRequestsMade { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:305](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L305) |  |
-| <code>public int SuccessfulRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:306](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L306) |  |
-| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:307](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L307) |  |
-| <code>public int SkippedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:308](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L308) |  |
-| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:309](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L309) |  |
-| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:310](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L310) |  |
-| <code>public TimeSpan TotalWaitTime { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:311](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L311) |  |
-| <code>public Dictionary&lt;string, int&gt; RequestsByProvider { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:312](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L312) |  |
-| <code>public Dictionary&lt;string, int&gt; BarsByProvider { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:313](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L313) |  |
+| <code>public long TotalBarsRetrieved { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:307](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L307) |  |
+| <code>public long TotalBytesDownloaded { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:308](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L308) |  |
+| <code>public int TotalRequestsMade { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:309](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L309) |  |
+| <code>public int SuccessfulRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:310](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L310) |  |
+| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:311](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L311) |  |
+| <code>public int SkippedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:312](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L312) |  |
+| <code>public int GapsDetected { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:313](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L313) |  |
+| <code>public int GapsFilled { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:314](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L314) |  |
+| <code>public TimeSpan TotalWaitTime { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:315](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L315) |  |
+| <code>public Dictionary&lt;string, int&gt; RequestsByProvider { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:316](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L316) |  |
+| <code>public Dictionary&lt;string, int&gt; BarsByProvider { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:317](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L317) |  |
 
 ## BackfillJobStatus
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillJobStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:332](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L332).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:336](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L336).
 
 Status of a backfill job.
 
@@ -134,13 +134,13 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:335](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L335) | Job is created but not started. |
-| <code>Running</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:338](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L338) | Job is actively running. |
-| <code>Paused</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:341](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L341) | Job is paused by user or system. |
-| <code>RateLimited</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:344](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L344) | Job is waiting for rate limit to reset. |
-| <code>Completed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:347](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L347) | Job completed successfully. |
-| <code>Failed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:350](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L350) | Job failed with unrecoverable errors. |
-| <code>Cancelled</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:353](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L353) | Job was cancelled by user. |
+| <code>Pending</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:339](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L339) | Job is created but not started. |
+| <code>Running</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:342](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L342) | Job is actively running. |
+| <code>Paused</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:345](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L345) | Job is paused by user or system. |
+| <code>RateLimited</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:348](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L348) | Job is waiting for rate limit to reset. |
+| <code>Completed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:351](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L351) | Job completed successfully. |
+| <code>Failed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:354](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L354) | Job failed with unrecoverable errors. |
+| <code>Cancelled</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:357](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L357) | Job was cancelled by user. |
 
 ## ConfigurableProviderModuleBase
 
@@ -171,7 +171,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.DataGranularity</code>. Kind: `enum`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:371](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L371).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:375](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L375).
 
 Data granularity for backfill requests.
 
@@ -183,21 +183,21 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Minute1</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:374](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L374) | 1-minute bars. |
-| <code>Minute5</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:377](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L377) | 5-minute bars. |
-| <code>Minute15</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:380](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L380) | 15-minute bars. |
-| <code>Minute30</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:383](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L383) | 30-minute bars. |
-| <code>Hour1</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:386](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L386) | 1-hour bars. |
-| <code>Hour4</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:389](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L389) | 4-hour bars. |
-| <code>Daily</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:392](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L392) | Daily bars (default). |
-| <code>Weekly</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:395](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L395) | Weekly bars. |
-| <code>Monthly</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:398](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L398) | Monthly bars. |
+| <code>Minute1</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:378](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L378) | 1-minute bars. |
+| <code>Minute5</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:381](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L381) | 5-minute bars. |
+| <code>Minute15</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:384](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L384) | 15-minute bars. |
+| <code>Minute30</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:387](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L387) | 30-minute bars. |
+| <code>Hour1</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:390](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L390) | 1-hour bars. |
+| <code>Hour4</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:393](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L393) | 4-hour bars. |
+| <code>Daily</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:396](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L396) | Daily bars (default). |
+| <code>Weekly</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:399](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L399) | Weekly bars. |
+| <code>Monthly</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:402](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L402) | Monthly bars. |
 
 ## DataGranularityExtensions
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.DataGranularityExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:404](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L404).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:408](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L408).
 
 Extension methods for DataGranularity.
 
@@ -209,15 +209,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static bool TryParseValue(string? value, out DataGranularity granularity);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:406](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L406) |  |
-| <code>public static DataGranularity ParseValueOrDefault(string? value, DataGranularity defaultValue = DataGranularity.Daily) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:448](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L448) |  |
-| <code>public static bool IsIntraday(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:451](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L451) |  |
-| <code>public static string ToAlpacaTimeframe(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:462](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L462) |  |
-| <code>public static TimeSpan ToTimeSpan(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:476](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L476) |  |
-| <code>public static string ToUiValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:490](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L490) |  |
-| <code>public static string ToConfigValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:504](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L504) |  |
-| <code>public static string ToStorageFilePrefix(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:518](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L518) |  |
-| <code>public static string ToDisplayName(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:529](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L529) |  |
+| <code>public static bool TryParseValue(string? value, out DataGranularity granularity);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:410](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L410) |  |
+| <code>public static DataGranularity ParseValueOrDefault(string? value, DataGranularity defaultValue = DataGranularity.Daily) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:452](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L452) |  |
+| <code>public static bool IsIntraday(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:455](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L455) |  |
+| <code>public static string ToAlpacaTimeframe(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:466](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L466) |  |
+| <code>public static TimeSpan ToTimeSpan(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:480](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L480) |  |
+| <code>public static string ToUiValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:494](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L494) |  |
+| <code>public static string ToConfigValue(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:508](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L508) |  |
+| <code>public static string ToStorageFilePrefix(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:522](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L522) |  |
+| <code>public static string ToDisplayName(this DataGranularity granularity) =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:533](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L533) |  |
 
 ## FailedModuleInfo
 
@@ -818,7 +818,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.SymbolBackfillProgress</code>. Kind: `class`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:170](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L170).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:171](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L171).
 
 Progress tracking for a single symbol within a backfill job.
 
@@ -830,26 +830,28 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Symbol { get; init; } = string.Empty;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:172](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L172) |  |
-| <code>public List&lt;DateOnly&gt; DatesToFill { get; set; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:177](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L177) | Dates that need to be backfilled (gaps detected). |
-| <code>public HashSet&lt;DateOnly&gt; FilledDates { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:182](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L182) | Dates that have been successfully filled. |
-| <code>public HashSet&lt;DateOnly&gt; FailedDates { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:187](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L187) | Dates that failed to fill after all retries. |
-| <code>public int TotalRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:192](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L192) | Total requests needed for this symbol. |
-| <code>public int CompletedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:197](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L197) | Completed requests. |
-| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:202](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L202) | Failed requests. |
-| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:207](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L207) | Total bars retrieved. |
-| <code>public string? SuccessfulProvider { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:212](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L212) | Provider that successfully provided data. |
-| <code>public string? LastError { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:217](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L217) | Last error message if any. |
-| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:222](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L222) | When this symbol started processing. |
-| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:227](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L227) | When this symbol completed processing. |
-| <code>public SymbolBackfillStatus Status { get; set; } = SymbolBackfillStatus.Pending;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:232](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L232) | Current processing status. |
-| <code>public double ProgressPercent =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:234](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L234) |  |
+| <code>public string Symbol { get; init; } = string.Empty;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:173](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L173) |  |
+| <code>public List&lt;DateOnly&gt; DatesToFill { get; set; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:178](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L178) | Dates that need to be backfilled (gaps detected). |
+| <code>public HashSet&lt;DateOnly&gt; FilledDates { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:183](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L183) | Dates that have been successfully filled. |
+| <code>public HashSet&lt;DateOnly&gt; FailedDates { get; init; } = new ();</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:188](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L188) | Dates that failed to fill after all retries. |
+| <code>public int TotalRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:193](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L193) | Total requests needed for this symbol. |
+| <code>public int CompletedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:198](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L198) | Completed requests. |
+| <code>public int FailedRequests { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:203](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L203) | Failed requests. |
+| <code>public long BarsRetrieved { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:208](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L208) | Total bars retrieved. |
+| <code>public string? SuccessfulProvider { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:213](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L213) | Provider that successfully provided data. |
+| <code>public Dictionary&lt;string, long&gt; ServedBy { get; init; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:215](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L215) |  |
+| <code>public List&lt;BackfillRoutingAttempt&gt; RoutingAttempts { get; init; } = [];</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:216](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L216) |  |
+| <code>public string? LastError { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:221](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L221) | Last error message if any. |
+| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:226](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L226) | When this symbol started processing. |
+| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:231](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L231) | When this symbol completed processing. |
+| <code>public SymbolBackfillStatus Status { get; set; } = SymbolBackfillStatus.Pending;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:236](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L236) | Current processing status. |
+| <code>public double ProgressPercent =&gt; …;</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:238](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L238) |  |
 
 ## SymbolBackfillStatus
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.SymbolBackfillStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:359](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L359).
+Source: [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:363](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L363).
 
 Status of a symbol within a backfill job.
 
@@ -861,11 +863,11 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:361](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L361) |  |
-| <code>InProgress</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:362](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L362) |  |
-| <code>Completed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:363](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L363) |  |
-| <code>Failed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:364](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L364) |  |
-| <code>Skipped</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:365](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L365) |  |
+| <code>Pending</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:365](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L365) |  |
+| <code>InProgress</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:366](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L366) |  |
+| <code>Completed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:367](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L367) |  |
+| <code>Failed</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:368](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L368) |  |
+| <code>Skipped</code> | [src/Meridian.ProviderSdk/Backfill/BackfillJob.cs:369](../../../../src/Meridian.ProviderSdk/Backfill/BackfillJob.cs#L369) |  |
 
 ## AdrImplementation
 

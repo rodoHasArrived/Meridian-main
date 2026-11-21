@@ -766,6 +766,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public PreparerDraftCheckPanel() =&gt; …;</code> | [src/Meridian.Wpf/Controls/PreparerDraftCheckPanel.xaml.cs:7](../../../../src/Meridian.Wpf/Controls/PreparerDraftCheckPanel.xaml.cs#L7) |  |
 
+## ProviderActivationPanel
+
+Qualified name: <code>Meridian.Wpf.Controls.ProviderActivationPanel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Controls/ProviderActivationPanel.xaml.cs:3](../../../../src/Meridian.Wpf/Controls/ProviderActivationPanel.xaml.cs#L3).
+
+```csharp
+public partial class ProviderActivationPanel : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderActivationPanel() =&gt; …;</code> | [src/Meridian.Wpf/Controls/ProviderActivationPanel.xaml.cs:5](../../../../src/Meridian.Wpf/Controls/ProviderActivationPanel.xaml.cs#L5) |  |
+
 ## SectionHeaderBar
 
 Qualified name: <code>Meridian.Wpf.Controls.SectionHeaderBar</code>. Kind: `class`.
@@ -1226,25 +1242,3 @@ Declared public members:
 | <code>public static readonly WorkspaceDescriptorCopy Descriptor = new (WorkspaceId, WorkstationWorkspaceCatalog.ReportingLabel, WorkstationWorkspaceCatalog.ReportingDesktopDescription, WorkstationWorkspaceCatalog.ReportingDesktopSummary, WorkstationWorkspaceCatalog.ReportingDesktopTileSummary, WorkstationWorkspaceCatalog.ReportingDesktopShellDisplayName);</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:98](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L98) |  |
 | <code>public const string ShellTitle = &quot;Reporting Workspace&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:106](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L106) |  |
 | <code>public const string ShellSubtitle = &quot;See which reports are blocked today, who owns each one, and the next action.&quot;;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:107](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L107) |  |
-
-## Research
-
-Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Research</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:172](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L172).
-
-Preserves legacy research workspace copy by forwarding to the strategy workspace.
-
-```csharp
-public static class Research
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string WorkspaceId = Strategy.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:174](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L174) |  |
-| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Strategy.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:175](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L175) |  |
-| <code>public const string ShellTitle = Strategy.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:176](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L176) |  |
-| <code>public const string ShellSubtitle = Strategy.ShellSubtitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:177](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L177) |  |
-| <code>public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:178](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L178) |  |

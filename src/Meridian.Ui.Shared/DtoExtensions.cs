@@ -12,13 +12,18 @@ public static class DtoExtensions
     /// <summary>
     /// Converts AlpacaOptionsDto to AlpacaOptions domain type.
     /// </summary>
-    public static AlpacaOptions ToDomain(this AlpacaOptionsDto dto) => new(
-        KeyId: dto.KeyId ?? "",
-        SecretKey: dto.SecretKey ?? "",
-        Feed: dto.Feed,
-        UseSandbox: dto.UseSandbox,
-        SubscribeQuotes: dto.SubscribeQuotes
-    );
+    public static AlpacaOptions ToDomain(this AlpacaOptionsDto dto)
+        => dto.ToDomain(existing: null);
+
+    internal static AlpacaOptions ToDomain(this AlpacaOptionsDto dto, AlpacaOptions? existing)
+        => (existing ?? new AlpacaOptions()) with
+        {
+            KeyId = dto.KeyId ?? existing?.KeyId ?? "",
+            SecretKey = dto.SecretKey ?? existing?.SecretKey ?? "",
+            Feed = dto.Feed,
+            UseSandbox = dto.UseSandbox,
+            SubscribeQuotes = dto.SubscribeQuotes
+        };
 
     /// <summary>
     /// Converts PolygonOptionsDto to PolygonOptions domain type.

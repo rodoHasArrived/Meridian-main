@@ -1156,6 +1156,15 @@ export interface BackfillTriggerResult {
   quotaReceipt?: BackfillQuotaReceipt | null;
   providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   batchReceipts?: BackfillBatchReceipt[] | null;
+  routingAttempts?: BackfillRoutingAttempt[] | null;
+}
+
+export interface BackfillRoutingAttempt {
+  symbol: string;
+  providerId: string;
+  reason: string;
+  bars: number;
+  attempted: boolean;
 }
 
 export interface BackfillQuotaEstimate {
@@ -1359,6 +1368,7 @@ export interface BackfillExecutionHistoryRow {
   submissionEstimate?: BackfillQuotaEstimate | null;
   quotaReceipt?: BackfillQuotaReceipt | null;
   batchReceipts?: BackfillBatchReceiptSummary[] | null;
+  routingAttempts?: BackfillRoutingAttempt[] | null;
 }
 
 export interface BackfillExecutionHistoryResponse {

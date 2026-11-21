@@ -99,6 +99,11 @@ public static class ProviderRoutingEndpoints
                 {
                     if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewConfig | UserPermission.ManageProviders))
                         return EndpointHelpers.Forbidden();
+                    if (request.ProposedConfig is null &&
+                        context.RequestServices.GetService<Meridian.Application.Backfill.BackfillRoutingRuntime>()?.Current is { } routing)
+                    {
+                        return Results.Json(BackfillRoutingPreview.PreviewActive(routing, request, context.RequestAborted), jsonOptions);
+                    }
                     var store = context.RequestServices.GetService<Meridian.Application.UI.ConfigStore>();
                     var resolver = context.RequestServices.GetService<IProviderCredentialResolver>();
                     if (store is null || resolver is null)
