@@ -102,6 +102,23 @@ public sealed class OrderAdmissionPolicyTests : IDisposable
         Assert.Equal(["face-value", "readiness", "security"], calls);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ApprovedSecurityMasterIdentity_IsRetainedWithoutInventingLegacyIdentity(bool hasIdentity)
+    {
+        var calls = new List<string>();
+        var identity = hasIdentity ? Guid.NewGuid() : (Guid?)null;
+        var security = new SecurityGate(calls, new SecurityMasterGateResult(true) { SecurityId = identity });
+        var policy = CreatePolicy(new TestGateway(ExecutionMode.Paper, calls), calls, security: security);
+
+        var result = await policy.EvaluatePreflightAsync(policy.Prepare(Request(), "identity-order"), default);
+
+        Assert.True(result.IsApproved);
+        Assert.Equal(identity, result.AccountingSecurityId);
+        Assert.Equal(1, calls.Count(static call => call == "security"));
+    }
+
     [Fact]
     public async Task ApprovedReadiness_RequiresRetainedEvidence()
     {

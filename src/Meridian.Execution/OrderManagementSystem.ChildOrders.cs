@@ -48,6 +48,9 @@ public sealed partial class OrderManagementSystem
             {
                 OrderId = childOrderId,
                 Symbol = string.IsNullOrWhiteSpace(child.Symbol) ? parent.Symbol : child.Symbol,
+                AccountingSecurityId = string.IsNullOrWhiteSpace(child.Symbol)
+                    || string.Equals(child.Symbol, parent.Symbol, StringComparison.OrdinalIgnoreCase)
+                        ? parent.AccountingSecurityId : null,
                 Side = child.Side,
                 Type = child.Type,
                 Quantity = child.Quantity,

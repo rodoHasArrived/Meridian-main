@@ -199,6 +199,7 @@ internal sealed class OrderAdmissionPolicy
                 ControlRefusal(controlDecision, "operator controls"));
         }
 
+        Guid? accountingSecurityId = null;
         if (_securityMasterGate is not null)
         {
             var securityDecision = await _securityMasterGate.CheckAsync(safeRequest.Symbol, ct).ConfigureAwait(false);
@@ -207,9 +208,13 @@ internal sealed class OrderAdmissionPolicy
                 return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness,
                     new OrderAdmissionRefusal(securityDecision.Reason, "Security Master gate"));
             }
+            accountingSecurityId = securityDecision.SecurityId is { } id && id != Guid.Empty ? id : null;
         }
 
-        return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null, resolved);
+        return new OrderAdmissionDecision(riskRequest, usesFaceValue, controlDecision, readiness, null, resolved)
+        {
+            AccountingSecurityId = accountingSecurityId
+        };
     }
 
     /// <summary>
@@ -423,6 +428,7 @@ internal sealed record OrderAdmissionDecision(
     GatewayResolvedOrder? ResolvedOrder = null)
 {
     public bool IsApproved => Refusal is null;
+    public Guid? AccountingSecurityId { get; init; }
 }
 
 internal sealed record OrderAdmissionRefusal(

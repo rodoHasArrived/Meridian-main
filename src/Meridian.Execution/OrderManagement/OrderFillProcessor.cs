@@ -147,6 +147,25 @@ internal sealed class OrderFillProcessor(
             var fillIncrement = incrementQuantity == report.FilledQuantity
                 ? report
                 : report with { FilledQuantity = incrementQuantity };
+            // This is the accepted order's retained admission identity, never an assertion
+            // supplied by a gateway or a fresh ticker lookup after execution. Stamp before
+            // both the durable session record and the portfolio mutation consume the fill.
+            OrderState? admittedOrder = null;
+            if (!string.IsNullOrWhiteSpace(orderId) && _context.TryGetOrder(orderId, out var retainedOrder))
+                admittedOrder = retainedOrder;
+            var admittedSecurityId = admittedOrder?.AccountingSecurityId is { } securityId && securityId != Guid.Empty
+                    ? securityId : (Guid?)null;
+            var admittedRunId = admittedOrder?.RunId;
+            admittedRunId = string.IsNullOrWhiteSpace(admittedRunId) ? null : admittedRunId.Trim();
+            if (fillIncrement.AccountingSecurityId != admittedSecurityId
+                || !string.Equals(fillIncrement.AccountingRunId, admittedRunId, StringComparison.Ordinal))
+            {
+                fillIncrement = fillIncrement with
+                {
+                    AccountingSecurityId = admittedSecurityId,
+                    AccountingRunId = admittedRunId
+                };
+            }
             if (fillIncrement.ReportType is not (ExecutionReportType.Fill or ExecutionReportType.PartialFill))
             {
                 var isCompleteFill = report.OrderQuantity > 0m
