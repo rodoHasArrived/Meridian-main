@@ -169,3 +169,10 @@ Keep SDK changes backward-compatible unless the roadmap explicitly accepts a bre
 
 - `docs/architecture/module-map.md`
 - `docs/source/generated/source-module-index.md`
+
+New bound-ledger simulations retain nullable functional currency on account/portfolio snapshots
+and open lots, and the resolved canonical security ID on each open lot. The declarations come from
+the existing ledger policy and historical security resolver. Absent fields in old serialized results
+stay unknown. Processed asset-event cash-flow receipts additionally retain versioned native unit,
+multiplier and currency, including zero-cash splits; a scheduled event alone is not application
+proof for quantity reconciliation.

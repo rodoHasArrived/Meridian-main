@@ -104,6 +104,8 @@ public sealed class LedgerReadService
             return null;
         }
 
+        var postingChart = (ledger as Meridian.Ledger.Ledger)?.Policy?.Chart;
+
         // Reuse the ledger's validation and normal-balance rules for an inclusive economic-time
         // cut. Never mutate the retained run ledger or mix final balances with historical journal.
         if (asOf.HasValue)
@@ -183,7 +185,16 @@ public sealed class LedgerReadService
             SleeveScopeDisplayName: scope.SleeveDisplayName,
             VehicleScopeId: scope.VehicleId,
             VehicleScopeDisplayName: scope.VehicleDisplayName,
-            Dimensions: BuildDimensions(scope, scope.AccountId));
+            Dimensions: BuildDimensions(scope, scope.AccountId))
+        {
+            AccountingPositions = StrategyPositionAccountingProjector.Project(ledger.Journal,
+                (entry.Metrics?.CashFlows ?? []).OfType<Meridian.Backtesting.Sdk.AssetEventCashFlow>()
+                    .Where(flow => !asOf.HasValue || flow.Timestamp <= asOf.Value).ToArray(),
+                postingChart),
+            HasUnresolvedValuation = ledger.Journal.Any(StrategyPositionAccountingProjector.IsValuation),
+            HistoricalCostNetAssets = ledger.Journal.Any(StrategyPositionAccountingProjector.IsValuation) ? null
+                : SumBalance(accountSummaries, LedgerAccountType.Asset) - SumBalance(accountSummaries, LedgerAccountType.Liability)
+        };
     }
 
     private static LedgerDimensionSetDto BuildDimensions(StrategyRunScopeMetadata scope, string? accountId) =>

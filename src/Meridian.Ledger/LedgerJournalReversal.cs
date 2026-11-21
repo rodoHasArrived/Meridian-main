@@ -76,6 +76,15 @@ public static class LedgerJournalReversal
         }
 
         tags[ReversalOfTag] = original.JournalEntryId.ToString("D");
+        if (tags.ContainsKey(SecurityTradePositionEvidence.VersionTag))
+        {
+            if (tags[SecurityTradePositionEvidence.VersionTag] != "1"
+                || !tags.TryGetValue(SecurityTradePositionEvidence.ReversalSignTag, out var sign)
+                || sign is not ("1" or "-1"))
+                throw new LedgerValidationException("Cannot reverse unsupported position evidence or an invalid retained sign.");
+            tags[SecurityTradePositionEvidence.ReversalSignTag] =
+                tags[SecurityTradePositionEvidence.ReversalSignTag] == "1" ? "-1" : "1";
+        }
         if (reason is not null)
             tags[ReversalReasonTag] = reason;
 

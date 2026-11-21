@@ -8,13 +8,22 @@ public sealed record ReconciliationPortfolioInput(
     DateTimeOffset AsOf,
     decimal Cash,
     decimal TotalEquity,
-    IReadOnlyList<ReconciliationPositionInput> Positions);
+    IReadOnlyList<ReconciliationPositionInput> Positions)
+{
+    public decimal UnrealizedPnl { get; init; }
+    public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
+}
 
 public sealed record ReconciliationLedgerInput(
     DateTimeOffset AsOf,
     decimal AssetBalance,
     decimal LiabilityBalance,
-    IReadOnlyList<ReconciliationLedgerLineInput> TrialBalance);
+    IReadOnlyList<ReconciliationLedgerLineInput> TrialBalance)
+{
+    public bool HasUnresolvedValuation { get; init; }
+    public decimal? HistoricalCostNetAssets { get; init; }
+    public IReadOnlyList<StrategyPositionAccountingEvidence> AccountingPositions { get; init; } = [];
+}
 
 public sealed record ReconciliationPositionInput(string Symbol, bool IsShort);
 
@@ -96,7 +105,12 @@ public sealed class StrategyLedgerReconciliationSourceAdapter : IStrategyLedgerR
             ledger.LiabilityBalance,
             ledger.TrialBalance
                 .Select(static line => new ReconciliationLedgerLineInput(line.AccountName, line.Symbol, line.Balance))
-                .ToArray());
+                .ToArray())
+        {
+            HasUnresolvedValuation = ledger.HasUnresolvedValuation,
+            HistoricalCostNetAssets = ledger.HistoricalCostNetAssets,
+            AccountingPositions = ledger.AccountingPositions
+        };
     }
 }
 
@@ -120,7 +134,14 @@ public sealed class StrategyPortfolioReconciliationSourceAdapter : IStrategyPort
             portfolio.Positions
                 .Where(static position => !string.IsNullOrWhiteSpace(position.Symbol))
                 .Select(static position => new ReconciliationPositionInput(position.Symbol, position.IsShort))
-                .ToArray());
+                .ToArray())
+        {
+            UnrealizedPnl = portfolio.UnrealizedPnl,
+            AccountingPositions = portfolio.AccountingPositions.Count > 0 ? portfolio.AccountingPositions
+                : portfolio.Positions.Select(static position => new StrategyPositionAccountingEvidence(position.Symbol,
+                    position.AccountScopeId, position.Security?.SecurityId, position.IsShort, position.Quantity,
+                    null, null, null, null, "Legacy positions have no retained unitized monetary basis or functional currency.")).ToArray()
+        };
     }
 }
 

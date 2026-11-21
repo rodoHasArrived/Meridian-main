@@ -88,6 +88,14 @@ public sealed class ReconciliationRunService : IReconciliationRunService
             return null;
         }
 
+        // Ask the existing retained-ledger reader for the portfolio's economic cut. A process
+        // completion timestamp and the last posting time are not independent snapshot clocks.
+        if (runDetail.Portfolio is { } portfolioCut)
+            runDetail = runDetail with
+            {
+                Ledger = await _runReadService.GetLedgerSummaryAsync(request.RunId, portfolioCut.AsOf, ct).ConfigureAwait(false)
+            };
+
         var normalizedInputs = new ReconciliationNormalizedInputs(
             Portfolio: _portfolioAdapter.Adapt(runDetail),
             Ledger: _ledgerAdapter.Adapt(runDetail),
@@ -163,6 +171,24 @@ public sealed class ReconciliationRunService : IReconciliationRunService
                 SourceScope = sourceScope,
                 CorrelationKeys = correlationKeys
             });
+        }
+
+        foreach (var check in _projectionService.BuildPositionChecks(normalizedInputs, request))
+        {
+            var measure = check.Measure;
+            var identity = ReconciliationLogicalBreakIdentity.Create(check.CheckId, null, check.SourceScope, correlationKeys);
+            if (check.IsMatch)
+                matches.Add(new ReconciliationMatchDto(check.CheckId, check.Label, "portfolio", "ledger",
+                    measure.Expected, measure.Actual, measure.Variance ?? 0m, normalizedInputs.Portfolio?.AsOf, normalizedInputs.Ledger?.AsOf)
+                { Measures = [measure], SourceScope = check.SourceScope, LogicalBreakIdentity = identity, CorrelationKeys = correlationKeys });
+            else
+                breaks.Add(new ReconciliationBreakDto(check.CheckId, check.Label,
+                    measure.UnavailableReason is not null ? ReconciliationBreakCategory.ClassificationGap : ReconciliationBreakCategory.AmountMismatch,
+                    ReconciliationBreakStatus.Open, measure.UnavailableReason is not null ? "position-evidence" : string.Empty,
+                    measure.Expected, measure.Actual, measure.Variance ?? 0m, ReconciliationBreakSeverity.High,
+                    measure.UnavailableReason ?? $"{measure.Kind} differs beyond absolute tolerance {measure.Tolerance} {measure.Unit}.",
+                    normalizedInputs.Portfolio?.AsOf, normalizedInputs.Ledger?.AsOf, Measures: [measure])
+                { FirstObservedAt = observedAt, SourceScope = check.SourceScope, LogicalBreakIdentity = identity, CorrelationKeys = correlationKeys });
         }
 
         var securityCoverageIssues = await BuildSecurityCoverageIssuesAsync(runDetail, request.RunId, ct).ConfigureAwait(false);

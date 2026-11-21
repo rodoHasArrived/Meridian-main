@@ -152,3 +152,10 @@ classification or preparer attestation into approval or posting authority.
 - [Account and book scopes](../../docs/domain/account-and-book-scopes.md)
 - [Governed reporting operations](../../docs/operators/governed-reporting-operations.md)
 - [Module map](../../docs/architecture/module-map.md)
+
+`SecurityTradePositionEvidence` retains version-one native position deltas from the existing
+`SecurityTradePosting` legs. Long quantities and outstanding short quantities have separate deltas;
+exact basis changes must agree with the journal's registered carrying accounts. Native units and
+multipliers are retained facts, never calculated by dividing money by a quote. Reversals negate the
+retained effect sign while preserving currency and chart references. Fees and financing journals
+carry no invented position units, and legacy absent evidence remains explicitly unavailable.

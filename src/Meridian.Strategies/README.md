@@ -435,3 +435,23 @@ legacy passthrough cannot supply classification, factors, or missing evidence. S
 without usable typed history remain subject to factor-coverage gates. Historical profile documents
 that never produced a structural economic module require governed recovery before factor-dependent
 accounting can proceed.
+
+## Run input-quality warnings
+
+The existing replay-provenance projection groups source evidence by exact fill identity, deduplicating trade/cost journals and retaining unknown coverage for an expected fill with missing journal attribution. It reports repaired, gap-filled, low-quality and unassessed dependencies, including paper or legacy runs without source-mix receipts. An assessed empty warning list differs from absent assessment. These warnings identify dependencies and do not invent a monetary P&L allocation.
+
+## Native accounting comparisons
+
+Strategy reconciliation compares the posted ledger at the portfolio snapshot's economic timestamp,
+using the existing retained-ledger reader. Account-level position evidence carries decimal native
+quantities, retained unit/multiplier, canonical security identity, functional currency and exact
+monetary lot basis. Symbols netted across different accounts do not erase long/short coverage.
+Current-ticker lookups enrich display references without relabeling retained accounting identity.
+
+`AmountTolerance` preserves its existing relative-fraction meaning (`0.01` means one percent).
+`QuantityTolerance` is an absolute native-unit tolerance (default zero); `BasisAmountTolerance` is
+absolute functional money (default `0.01`). Existing match/break `Measures` carry typed units,
+variance, tolerance and unavailable reasons. Portfolio unrealized P&L is removed from comparisons
+with historical-cost net assets. Valued journals without canonical historical cost support are
+reported as unavailable rather than compared directly with portfolio acquisition cost; the existing
+three-way reconciliation lane supplies atomic canonical lot evidence for its supported books.
