@@ -275,6 +275,19 @@ test("scenario fallback readiness waits for the selected break rather than an un
   }
 });
 
+test("match workbench readiness proves the retained selected case and its evidence link", async () => {
+  const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
+  const capture = routeConfig.captures.find((item) => item.id === "W03I2");
+  const selectedBreak = source.module.accountingPayload.breakQueue[0];
+  assert.ok(capture.waitForTexts.includes(selectedBreak.reason));
+  assert.ok(capture.waitForTexts.includes("Observed and expected"));
+  assert.ok(capture.waitForTexts.includes("Source lineage"));
+  assert.ok(capture.waitForSelectors.includes(`a[href="/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(selectedBreak.breakId)}"]`));
+  for (const obsolete of ["Open breaks", "Record match decision"]) {
+    assert.ok(!capture.waitForTexts.includes(obsolete), `Readiness must match retained case evidence: ${obsolete}`);
+  }
+});
+
 test("empty and failed previews replace populated readiness with their explicit state", async () => {
   const routeConfig = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-routes.json"), "utf8"));
   const capture = routeConfig.captures.find((item) => item.id === "W03A");
