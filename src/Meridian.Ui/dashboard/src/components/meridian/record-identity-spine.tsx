@@ -36,8 +36,9 @@ export function RecordIdentitySpine({
   const { pathname } = useLocation();
   return (
     <section className="record-identity-spine" aria-label={`${kindLabels[record.kind]} identity`}>
-      {showName ? <RecordName record={record} /> : null}
+      {showName || !record.identifier ? <RecordName record={record} /> : null}
       <IdentityFacts record={record} />
+      <RecordTechnicalIdentity record={record} />
       {context ? <RelatedWork context={context} pathname={pathname} /> : null}
     </section>
   );
@@ -62,6 +63,7 @@ export function RecordWorkspaceHandoff({ context }: { context: RecordWorkspaceCo
         </div>
       </div>
       <IdentityFacts record={record} captured />
+      <RecordTechnicalIdentity record={record} />
       <div className="record-identity-disclosures">
         {recordScope.length > 0 || workspaceScope.length > 0 ? (
           <details className="record-identity-disclosure">
@@ -90,16 +92,7 @@ function RecordName({ record, originWorkspace }: { record: RecordIdentity; origi
 function IdentityFacts({ record, captured = false }: { record: RecordIdentity; captured?: boolean }) {
   return (
     <dl className="record-identity-facts">
-      <div>
-        <dt>Identifiers</dt>
-        {record.identifier && record.identifier !== record.id ? <dd className="font-mono">{record.identifier}</dd> : null}
-        <dd>
-          <details className="record-identity-disclosure">
-            <summary><ChevronRight aria-hidden="true" />Record ID</summary>
-            <code>{record.id}</code>
-          </details>
-        </dd>
-      </div>
+      {record.identifier ? <IdentityFact label="Identifiers" value={record.identifier} mono /> : null}
       <IdentityFact label="Asset class" value={record.assetClass} />
       <IdentityFact label="Entity / book" value={[record.entity, record.book].filter(Boolean).join(" / ")} />
       <IdentityFact label={captured ? "Origin status" : "Status"} value={record.status} />
@@ -113,6 +106,17 @@ function IdentityFacts({ record, captured = false }: { record: RecordIdentity; c
         </dd>
       </div>
     </dl>
+  );
+}
+
+function RecordTechnicalIdentity({ record }: { record: RecordIdentity }) {
+  return (
+    <details className="record-identity-disclosure">
+      <summary><ChevronRight aria-hidden="true" />Technical identity</summary>
+      <dl className="record-identity-facts">
+        <IdentityFact label="Record ID" value={record.id} mono />
+      </dl>
+    </details>
   );
 }
 

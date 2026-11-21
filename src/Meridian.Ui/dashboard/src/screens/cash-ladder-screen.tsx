@@ -215,7 +215,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
       }
     ],
     proof: { href: "#cash-ladder-contributing-flows", label: "Open contributing flows", onOpen: () => setSelectedBucket(bar.index) },
-    sourceDetail: `Projection through ${bar.bucketEnd} · ${activeScenario?.displayName ?? "Selected scenario"}${bar.breachesMinimumBalance ? " · below minimum balance" : ""}.`
+    sourceDetail: `Projection through ${bar.bucketEnd} · ${activeScenario?.displayName ?? ladder.scenarioId}${bar.breachesMinimumBalance ? " · below minimum balance" : ""}.`
   })) : [];
   if (chart?.thresholdY != null && ladder) {
     chartEvidence.push({
@@ -252,7 +252,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
         <div className="flex flex-wrap items-center gap-2">
           {ladder ? (
             <TechnicalDetails label="Projection details">
-              <p className="text-sm">Engine version <code>{ladder.engineVersion}</code></p>
+              <dl><div><dt className="font-semibold">Engine version</dt><dd className="font-mono">{ladder.engineVersion}</dd></div></dl>
             </TechnicalDetails>
           ) : null}
           <label className="flex items-center gap-2 text-sm text-muted-foreground">

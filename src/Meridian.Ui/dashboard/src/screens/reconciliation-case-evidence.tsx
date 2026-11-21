@@ -230,6 +230,13 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
   const statementEvidence = item.statementEvidence;
   const policy = statementEvidence?.tolerancePolicy;
   const regrouping = lineage?.regrouping;
+  const missingContext = [
+    !item.fundAccountId && "fund account",
+    !item.ledgerBookId && "ledger book",
+    !item.accountingPeriodId && "accounting period",
+    !item.asOfDate && "as-of date",
+    !item.sourceSystem && "source"
+  ].filter(Boolean);
 
   return (
     <div className="reconciliation-case-evidence">
@@ -263,12 +270,14 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           </CaseFact></dl>
         </>}
         <dl className="reconciliation-case-facts">
-          <CaseFact label="As of">{formatAccountingDate(item.asOfDate)}</CaseFact>
+          {item.asOfDate ? <CaseFact label="As of">{formatAccountingDate(item.asOfDate)}</CaseFact> : null}
           {item.sourceSystem ? <CaseFact label="Source">{item.sourceSystem}</CaseFact> : null}
-          {policy || item.toleranceProfileId ? <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
-            : `${item.toleranceProfileId} · Version unavailable`}</CaseFact> : null}
+          {ledgerEvidence.length > 0 ? <CaseFact label="Ledger evidence">{ledgerEvidence.length} linked {ledgerEvidence.length === 1 ? "record" : "records"}</CaseFact> : null}
+          {policy ? <CaseFact label="Tolerance policy">Version {policy.version}</CaseFact>
+            : item.toleranceProfileId ? <CaseFact label="Tolerance policy">Version unavailable</CaseFact> : null}
           {policy ? <CaseFact label="Policy applied as of">{formatAccountingDate(policy.effectiveDate)}</CaseFact> : null}
         </dl>
+        {missingContext.length > 0 ? <p className="text-sm text-muted-foreground">Comparison context unavailable: {missingContext.join(", ")}.</p> : null}
         {earlier.length > 0 ? <label className="grid gap-1 text-sm">
           Compare with an earlier retained case
           <Select value={baseline?.breakId ?? ""} onChange={(event) => {
@@ -324,7 +333,8 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
             <CaseFact label="Accounting period">{item.accountingPeriodId}</CaseFact>
             <CaseFact label="Source record">{item.sourceReference}</CaseFact>
             <CaseFact label={item.sourceImportId ? "Source import" : "Source run"}>{sourceRun}</CaseFact>
-            {ledgerEvidence.length > 0 ? <CaseFact label="Ledger evidence">{ledgerEvidence.join(", ")}</CaseFact> : null}
+            <CaseFact label="Tolerance policy">{policy ? `${policy.profileId} · Version ${policy.version}`
+              : item.toleranceProfileId ? `${item.toleranceProfileId} · Version unavailable` : null}</CaseFact>
             <CaseFact label="Lineage ID">{lineage?.lineageId}</CaseFact>
             <CaseFact label="Occurrence ID">{lineage?.occurrenceId}</CaseFact>
             <CaseFact label="Latest lineage scope">{lineage?.comparisonScopeId}</CaseFact>
