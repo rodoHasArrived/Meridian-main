@@ -6,6 +6,155 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementImportReconciliationCaseLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementImportReconciliationCaseLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L197).
+
+Direct reconciliation case handoff returned after statement import so workstation clients can render case actions without relying on parallel route arrays or rebuilding case routes.
+
+```csharp
+public sealed record StatementImportReconciliationCaseLinkDto(string CaseId, string? BreakId, string Route, string Label, string Status, string Priority, string Reason, string SuggestedNextAction);
+```
+
+## StatementKindSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementKindSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L133).
+
+Per-kind record breakdown so operators importing a mixed statement see exactly what lands in each lane (positions, transactions, cash balances, fees, dividends).
+
+```csharp
+public sealed record StatementKindSummaryDto(string Kind, int RecordCount, IReadOnlyList<StatementRecordPreviewDto> SampleRecords);
+```
+
+## StatementMappingProfileActivityCodeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileActivityCodeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L44).
+
+```csharp
+public sealed record StatementMappingProfileActivityCodeDto(string SourceCode, string CanonicalActivityType);
+```
+
+## StatementMappingProfileCsvOptionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileCsvOptionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L33).
+
+```csharp
+public sealed record StatementMappingProfileCsvOptionsDto(string Delimiter, string Quote, bool HasHeader);
+```
+
+## StatementMappingProfileDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L19).
+
+Declarative statement mapping profile shared with workstation clients.
+
+```csharp
+public sealed record StatementMappingProfileDto(int SchemaVersion, string ProfileId, string DisplayName, string Format, StatementMappingProfileCsvOptionsDto? Csv, string? Culture, IReadOnlyList<string>? DateFormats, IReadOnlyList<StatementMappingProfileFieldDto> Fields, IReadOnlyList<StatementMappingProfileActivityCodeDto> ActivityCodes, string? LastAcceptedFingerprint, bool IsBuiltIn, string? Notes);
+```
+
+## StatementMappingProfileFieldDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMappingProfileFieldDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L38).
+
+```csharp
+public sealed record StatementMappingProfileFieldDto(string CanonicalField, string SourceColumn, IReadOnlyList<string>? Aliases, bool Required);
+```
+
+## StatementMatchSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMatchSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:157](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L157).
+
+Aggregate matching posture for a statement reconciliation run.
+
+```csharp
+public sealed record StatementMatchSummaryDto(int? StatementItemCount, int? MatchedItemCount, int? AutoMatchedItemCount, int? ManualMatchedItemCount, int? ReviewRequiredItemCount, int? BreakCount, int? PositionBreakCount, int? CashBreakCount, int? TransactionBreakCount, StatementMatchTier? HighestUnresolvedTier = null, decimal? MatchedNotional = null, decimal? UnmatchedNotional = null, string? BaseCurrency = null);
+```
+
+## StatementMatchTier
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementMatchTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L39).
+
+Confidence tier assigned to a statement item matched against Meridian books and activity.
+
+```csharp
+public enum StatementMatchTier : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L41) |  |
+| <code>Exact = 1</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L42) |  |
+| <code>WithinTolerance = 2</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L43) |  |
+| <code>Probable = 3</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L44) |  |
+| <code>Manual = 4</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L45) |  |
+| <code>Unmatched = 5</code> | [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L46) |  |
+
+## StatementNormalizedCashDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedCashDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:125](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L125).
+
+Canonical cash-balance row normalized from a statement source.
+
+```csharp
+public sealed record StatementNormalizedCashDto(string? RowId, string? AccountId, string? Currency, decimal? Amount, DateTimeOffset? AsOfUtc, string? Fingerprint, string? CashType = null, string? SourceReference = null);
+```
+
+## StatementNormalizedPositionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedPositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:106](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L106).
+
+Canonical position row normalized from a statement source.
+
+```csharp
+public sealed record StatementNormalizedPositionDto(string? RowId, string? AccountId, string? Symbol, decimal? Quantity, decimal? MarketPrice, decimal? MarketValue, string? Currency, DateTimeOffset? AsOfUtc, string? Fingerprint, string? SecurityId = null, string? Cusip = null, string? Isin = null, string? Sedol = null, string? SourceReference = null);
+```
+
+## StatementNormalizedTransactionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementNormalizedTransactionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L138).
+
+Canonical transaction row normalized from a statement source.
+
+```csharp
+public sealed record StatementNormalizedTransactionDto(string? RowId, string? AccountId, string? ActivityType, DateOnly? TradeDate, decimal? Amount, string? Currency, string? Fingerprint, DateOnly? SettleDate = null, string? ExternalTransactionId = null, string? Symbol = null, decimal? Quantity = null, decimal? Price = null, string? Description = null, string? SourceReference = null);
+```
+
+## StatementProfileSuggestionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementProfileSuggestionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs:139](../../../../src/Meridian.Contracts/Workstation/StatementConnectorDtos.cs#L139).
+
+A catalog profile ranked against the detected columns of an uploaded statement.
+
+```csharp
+public sealed record StatementProfileSuggestionDto(string ProfileId, string DisplayName, decimal Score);
+```
+
 ## StatementReconciliationAccountingScopeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto</code>. Kind: `record`.
@@ -489,151 +638,4 @@ Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:140](
 
 ```csharp
 public sealed record StorageQualityAlertDto(string AlertId, string Severity, string Subject, string Message, DateTimeOffset DetectedAt);
-```
-
-## StorageQualitySummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageQualitySummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:102](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L102).
-
-```csharp
-public sealed record StorageQualitySummaryDto(string Status, int FilesAnalyzed, double AverageScore, int LowQualityFileCount, IReadOnlyList<string> Recommendations, string? Message);
-```
-
-## StorageTierSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StorageTierSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs:135](../../../../src/Meridian.Contracts/Workstation/DataOperationsAssuranceDtos.cs#L135).
-
-```csharp
-public sealed record StorageTierSummaryDto(string Tier, int FileCount, long TotalBytes);
-```
-
-## StpProcessingState
-
-Qualified name: <code>Meridian.Contracts.Workstation.StpProcessingState</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4).
-
-```csharp
-public enum StpProcessingState : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Received = 0</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Validated = 1</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Approved = 2</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>QueuedForSettlement = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Settled = 4</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-| <code>Exception = 5</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L4) |  |
-
-## StpStateTransition
-
-Qualified name: <code>Meridian.Contracts.Workstation.StpStateTransition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:38](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L38).
-
-```csharp
-public sealed record StpStateTransition(Guid InstructionId, StpProcessingState State, DateTimeOffset AtUtc, string Detail, string? BreakQueueReason = null);
-```
-
-## StrategyBriefingAlert
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingAlert</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:59](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L59).
-
-Actionable alert shown on the strategy briefing surface.
-
-```csharp
-public sealed record StrategyBriefingAlert(string AlertId, string Title, string Summary, string Tone, string? RunId = null, string? ActionLabel = null);
-```
-
-## StrategyBriefingDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L96).
-
-Typed Strategy briefing payload shared by workstation surfaces.
-
-```csharp
-public sealed record StrategyBriefingDto(StrategyBriefingWorkspaceSummary Workspace, InsightFeed InsightFeed, IReadOnlyList<WorkstationWatchlist> Watchlists, IReadOnlyList<StrategyBriefingRun> RecentRuns, IReadOnlyList<StrategySavedComparison> SavedComparisons, IReadOnlyList<StrategyBriefingAlert> Alerts, IReadOnlyList<StrategyWhatChangedItem> WhatChanged);
-```
-
-## StrategyBriefingRun
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingRun</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L17).
-
-Strategy run card shown in the briefing and recent-run rail.
-
-```csharp
-public sealed record StrategyBriefingRun(string RunId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, string Dataset, string WindowLabel, string ReturnLabel, string SharpeLabel, string LastUpdatedLabel, string Notes, StrategyRunPromotionState? PromotionState, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, StrategyRunDrillInLinks DrillIn);
-```
-
-## StrategyBriefingWorkspaceSummary
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyBriefingWorkspaceSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:82](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L82).
-
-Workspace-level summary used to drive the Strategy shell header.
-
-```csharp
-public sealed record StrategyBriefingWorkspaceSummary(int TotalRuns, int ActiveRuns, int PromotionCandidates, int PositivePnlRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, string Summary);
-```
-
-## StrategyDesignCell
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignCell</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L24).
-
-A visual, formula, code, governance, or template cell inside a strategy design.
-
-```csharp
-public sealed record StrategyDesignCell(string CellId, string Label, string Kind, string Purpose, string Source, IReadOnlyList<string> FieldRefs, IReadOnlyDictionary<string, string>? Parameters = null, string? DisabledReason = null);
-```
-
-## StrategyDesignCompiledScript
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignCompiledScript</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:104](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L104).
-
-Generated QuantScript source and metadata.
-
-```csharp
-public sealed record StrategyDesignCompiledScript(string Source, string DatasetFingerprint, IReadOnlyList<string> FieldRefs, IReadOnlyList<string> DisabledFieldRefs);
-```
-
-## StrategyDesignDocument
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L8).
-
-Workstation-facing strategy design document persisted by the Strategy Builder.
-
-```csharp
-public sealed record StrategyDesignDocument(string DocumentId, string Name, string Description, string Version, string DatasetReference, IReadOnlyList<string> Universe, IReadOnlyList<StrategyDesignCell> Cells, IReadOnlyList<StrategyDesignTransition> Transitions, IReadOnlyDictionary<string, string>? Metadata, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt);
-```
-
-## StrategyDesignDraftSaveRequest
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyDesignDraftSaveRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs:146](../../../../src/Meridian.Contracts/Workstation/StrategyDesignDtos.cs#L146).
-
-Request body for saving a strategy design draft.
-
-```csharp
-public sealed record StrategyDesignDraftSaveRequest(StrategyDesignDocument Document);
 ```

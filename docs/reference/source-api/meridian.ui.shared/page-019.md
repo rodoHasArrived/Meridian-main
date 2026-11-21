@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationCaseworkHandoffException
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationCaseworkHandoffException</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:32](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L32).
+
+Carries a coded failure from statement reconciliation casework handoff.
+
+```csharp
+public sealed class StatementReconciliationCaseworkHandoffException(string code, string message, Exception? innerException = null) : InvalidOperationException(message, innerException)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Code { get; } = code;</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:37](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L37) |  |
+
 ## StatementReconciliationCaseworkHandoffService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StatementReconciliationCaseworkHandoffService</code>. Kind: `class`.
@@ -622,7 +640,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1657](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1657) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1660](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1660) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -876,24 +894,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |
-
-## FileOperatorPreferenceStore
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorPreferenceStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:27](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L27).
-
-JSON-backed store under Meridian&#x27;s data root, keyed by tenant, company and user so one operator&#x27;s preferences never reach another. Writes replace the operator&#x27;s whole set through the snapshot store&#x27;s atomic replace, like the default operating scope. The one exception is OperatorPreferenceValuesDto.DesktopKeyBindings: the desktop owns it, so a save that leaves it null keeps the stored set and a browser save never clears it. Values are validated here so a client cannot store arbitrary text; clients still decode defensively because older hosts or other clients may hold values they do not recognise.
-
-```csharp
-public sealed partial class FileOperatorPreferenceStore : JsonFileSnapshotStore<OperatorPreferenceSnapshot>, IOperatorPreferenceStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FileOperatorPreferenceStore(string dataRoot, ILogger&lt;FileOperatorPreferenceStore&gt; logger, TimeProvider? timeProvider = null) : base(ResolveSnapshotPath(dataRoot), OperatorPreferenceJsonContext.Default.OperatorPreferenceSnapshot);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:46](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L46) |  |
-| <code>public Task&lt;OperatorPreferencesDto&gt; GetAsync(string operatorKey, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:56](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L56) |  |
-| <code>public async Task&lt;OperatorPreferencesDto&gt; SetAsync(string operatorKey, OperatorPreferenceValuesDto? preferences, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:68](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L68) |  |
-| <code>public static OperatorPreferenceValuesDto? Normalize(OperatorPreferenceValuesDto? preferences);</code> | [src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs:114](../../../../src/Meridian.Ui.Shared/Workflows/FileOperatorPreferenceStore.cs#L114) | Validates and trims each value and returns null when nothing is set. Throws ArgumentException naming the field for a value outside its allowed set or shape. |

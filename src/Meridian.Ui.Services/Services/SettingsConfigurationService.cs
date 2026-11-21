@@ -17,7 +17,7 @@ namespace Meridian.Ui.Services.Services;
 /// Provides settings configuration capabilities including storage path preview generation,
 /// provider catalog data, and configuration profile management.
 /// </summary>
-public sealed class SettingsConfigurationService
+public sealed partial class SettingsConfigurationService
 {
     private static readonly Lazy<SettingsConfigurationService> LazyInstance = new(() => new SettingsConfigurationService());
     private static string? _desktopPreferencesFilePathOverride;
@@ -146,11 +146,15 @@ public sealed class SettingsConfigurationService
     /// </summary>
     public async Task<ProviderCredentialStateDto> SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary<string, string?> fields,
         string? connectionId = null, CancellationToken ct = default)
+        => await SaveProviderCredentialFieldsAsync(providerId, fields,
+            CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId), null, ct).ConfigureAwait(false);
+
+    private async Task<ProviderCredentialStateDto> SaveProviderCredentialFieldsAsync(string providerId,
+        IReadOnlyDictionary<string, string?> fields, string route, string? environment, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(fields);
-        var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
         var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
-            new ProviderCredentialUpsertRequestDto(fields), ct).ConfigureAwait(false);
+            new ProviderCredentialUpsertRequestDto(fields, environment), ct).ConfigureAwait(false);
         ThrowIfRefused(response.StatusCode, "persistence");
         if (!response.Success || response.Data is null ||
             !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||

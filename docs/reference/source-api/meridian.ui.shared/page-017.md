@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernedArtifactDownload
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDownload</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:74](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L74).
+
+```csharp
+public sealed record ReportingGovernedArtifactDownload(ReportingGovernedArtifactDescriptor Descriptor, byte[] Content, string AccessAuditEventId);
+```
+
 ## ReportingGovernedArtifactProduction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactProduction</code>. Kind: `record`.
@@ -899,16 +909,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:55](
 
 ```csharp
 public sealed record ReportPackDistributionPolicy(string DistributionId, string Recipient, string RecipientRole, string Channel, string Owner, string Route, TimeSpan ApprovalSla, TimeSpan PublicationSla, TimeSpan DeliverySla, TimeSpan CorrectionSla);
-```
-
-## ReportPackSecurityLineIndexEntry
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineIndexEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs:10](../../../../src/Meridian.Ui.Shared/Services/ReportPackSecurityLineIndex.cs#L10).
-
-One report pack&#x27;s contribution to a security in the security→report-line index: which report (and the fund/state it is in) references SecurityId, and on which report lines.
-
-```csharp
-public sealed record ReportPackSecurityLineIndexEntry(Guid SecurityId, Guid ReportId, string FundProfileId, ReportPackWorkflowStateDto State, IReadOnlyList<string> LineKeys);
 ```

@@ -6,6 +6,297 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderBookSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Domain.OrderBookSnapshotDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:188](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L188).
+
+Order book snapshot data transfer object.
+
+```csharp
+public sealed class OrderBookSnapshotDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:194](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L194) | Gets or sets the snapshot timestamp. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:200](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L200) | Gets or sets the symbol for the snapshot. |
+| <code>[JsonPropertyName(&quot;bids&quot;)] public OrderBookLevelDto[] Bids { get; set; } = Array.Empty&lt;OrderBookLevelDto&gt;();</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:206](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L206) | Gets or sets the bid levels for the order book. |
+| <code>[JsonPropertyName(&quot;asks&quot;)] public OrderBookLevelDto[] Asks { get; set; } = Array.Empty&lt;OrderBookLevelDto&gt;();</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:212](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L212) | Gets or sets the ask levels for the order book. |
+| <code>[JsonPropertyName(&quot;midPrice&quot;)] public decimal? MidPrice { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:218](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L218) | Gets or sets the mid price at the snapshot time. |
+| <code>[JsonPropertyName(&quot;microPrice&quot;)] public decimal? MicroPrice { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:224](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L224) | Gets or sets the micro price at the snapshot time. |
+| <code>[JsonPropertyName(&quot;imbalance&quot;)] public decimal? Imbalance { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:230](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L230) | Gets or sets the order book imbalance, if available. |
+| <code>[JsonPropertyName(&quot;marketState&quot;)] public string MarketState { get; set; } = &quot;Normal&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:236](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L236) | Gets or sets the market state indicator. |
+| <code>[JsonPropertyName(&quot;sequenceNumber&quot;)] public long SequenceNumber { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:242](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L242) | Gets or sets the sequence number associated with the snapshot. |
+
+## PositionRecord
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:13](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L13).
+
+Serialisation-friendly snapshot of a single position for persistence. Used by IPositionSnapshotStore — deliberately flat so that the storage layer has no dependency on Meridian.Execution types.
+
+```csharp
+public sealed record PositionRecord(string Symbol, decimal Quantity, decimal CostBasis, decimal UnrealisedPnl, decimal RealisedPnl)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:26](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L26) | Accrued interest receivable on the holding at snapshot time (absolute, in the account&#x27;s base currency) for coupon-bearing positions whose source reports it; null otherwise. Omitted from serialized snapshots when null so retained records are unchanged. |
+
+## PositionSnapshotConflictException
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:92](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L92).
+
+Raised when a position-snapshot partition already contains a different payload at the same logical timestamp. Callers must fail closed rather than selecting a winner by append order.
+
+```csharp
+public sealed class PositionSnapshotConflictException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PositionSnapshotConflictException(string runId, string accountId, DateTimeOffset asOf) : base($&quot;Position snapshot scope &#x27;{runId.Trim()}&#124;{accountId.Trim()}&#x27; contains a different &quot; + $&quot;payload at the same source timestamp {asOf.ToUniversalTime():O}.&quot;);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:94](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L94) |  |
+| <code>public string RunId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:104](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L104) |  |
+| <code>public string AccountId { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:106](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L106) |  |
+| <code>public DateTimeOffset AsOf { get; }</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:108](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L108) |  |
+
+## PositionSnapshotEquivalence
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotEquivalence</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:115](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L115).
+
+Defines the canonical equivalence used by snapshot stores and their callers. Position order and symbol casing do not change the payload; owner, balance, P&amp;L, and position-value differences do.
+
+```csharp
+public static class PositionSnapshotEquivalence
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool AreEquivalent(AccountSnapshotRecord left, AccountSnapshotRecord right);</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:117](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L117) |  |
+
+## PositionSnapshotOwnerScope
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotOwnerScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:69](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L69).
+
+Immutable accounting-owner scope used to retrieve a position snapshot without crossing a tenant, company, fund, ledger-book, or entity boundary.
+
+```csharp
+public sealed record PositionSnapshotOwnerScope(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, string EntityId);
+```
+
+## PositionSnapshotSaveOutcome
+
+Qualified name: <code>Meridian.Contracts.Domain.PositionSnapshotSaveOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:79](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L79).
+
+Result of an atomic position-snapshot conditional append.
+
+```csharp
+public enum PositionSnapshotSaveOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Appended = 0</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:82](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L82) | The proposed snapshot was durably appended. |
+| <code>EquivalentAlreadyExists = 1</code> | [src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs:85](../../../../src/Meridian.Contracts/Domain/IPositionSnapshotStore.cs#L85) | An equivalent snapshot already occupied the logical timestamp. |
+
+## ProviderId
+
+Qualified name: <code>Meridian.Contracts.Domain.ProviderId</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/ProviderId.cs:11](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L11).
+
+Zero-cost value object representing a data-provider identifier. Prevents accidental interchange of provider IDs with SymbolId or VenueCode.
+
+```csharp
+public readonly struct ProviderId : IEquatable<ProviderId>, IComparable<ProviderId>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderId(string value);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:18](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L18) | Initializes a new ProviderId. |
+| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:26](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L26) | Returns the canonical lowercase provider ID string. |
+| <code>public static implicit operator string(ProviderId id) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:29](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L29) | Implicitly converts a ProviderId to its underlying string value. |
+| <code>public static explicit operator ProviderId(string value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:32](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L32) | Explicitly converts a raw string to a ProviderId. |
+| <code>public static readonly ProviderId Alpaca = new (&quot;alpaca&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:36](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L36) | Alpaca Markets streaming and historical provider. |
+| <code>public static readonly ProviderId Polygon = new (&quot;polygon&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:38](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L38) | Polygon.io streaming and historical provider. |
+| <code>public static readonly ProviderId InteractiveBrokers = new (&quot;ib&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:40](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L40) | Interactive Brokers TWS/Gateway provider. |
+| <code>public static readonly ProviderId Nyse = new (&quot;nyse&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:42](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L42) | NYSE direct-feed provider. |
+| <code>public static readonly ProviderId Stooq = new (&quot;stooq&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:44](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L44) | Stooq free end-of-day historical provider. |
+| <code>public static readonly ProviderId Tiingo = new (&quot;tiingo&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:46](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L46) | Tiingo free daily historical provider. |
+| <code>public static readonly ProviderId Finnhub = new (&quot;finnhub&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:48](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L48) | Finnhub provider. |
+| <code>public static readonly ProviderId AlphaVantage = new (&quot;alphavantage&quot;);</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:50](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L50) | Alpha Vantage historical provider. |
+| <code>public bool Equals(ProviderId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:53](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L53) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:57](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L57) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:60](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L60) |  |
+| <code>public int CompareTo(ProviderId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:64](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L64) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:68](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L68) |  |
+| <code>public static bool operator == (ProviderId left, ProviderId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:71](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L71) |  |
+| <code>public static bool operator != (ProviderId left, ProviderId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderId.cs:74](../../../../src/Meridian.Contracts/Domain/ProviderId.cs#L74) |  |
+
+## ProviderSymbol
+
+Qualified name: <code>Meridian.Contracts.Domain.ProviderSymbol</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/ProviderSymbol.cs:31](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L31).
+
+Zero-cost value object pairing a provider identifier with a raw, provider-specific symbol string. Represents the symbol exactly as the upstream provider exposes it — before any canonicalization is applied.
+
+```csharp
+public readonly struct ProviderSymbol : IEquatable<ProviderSymbol>, IComparable<ProviderSymbol>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderId Provider { get; }</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:34](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L34) | The provider that owns this symbol representation. |
+| <code>public SymbolId Symbol { get; }</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:37](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L37) | The raw symbol string as supplied by the provider. |
+| <code>public ProviderSymbol(ProviderId provider, SymbolId symbol);</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:44](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L44) | Initializes a new ProviderSymbol. |
+| <code>public ProviderSymbol(ProviderId provider, string rawSymbol) : this(provider, new SymbolId(rawSymbol));</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:56](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L56) | Convenience constructor that wraps a raw string symbol. |
+| <code>public void Deconstruct(out ProviderId provider, out SymbolId symbol);</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:64](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L64) | Deconstructs the value into its provider and symbol components. |
+| <code>public bool Equals(ProviderSymbol other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:71](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L71) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:75](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L75) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:78](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L78) |  |
+| <code>public int CompareTo(ProviderSymbol other);</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:82](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L82) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:89](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L89) | Returns a human-readable representation in the form &quot;provider:SYMBOL&quot;. |
+| <code>public static bool operator == (ProviderSymbol left, ProviderSymbol right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:92](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L92) |  |
+| <code>public static bool operator != (ProviderSymbol left, ProviderSymbol right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/ProviderSymbol.cs:95](../../../../src/Meridian.Contracts/Domain/ProviderSymbol.cs#L95) |  |
+
+## QuoteDto
+
+Qualified name: <code>Meridian.Contracts.Domain.QuoteDto</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:74](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L74).
+
+Quote (BBO) data transfer object.
+
+```csharp
+public sealed class QuoteDto
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;timestamp&quot;)] public DateTimeOffset Timestamp { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:80](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L80) | Gets or sets the quote timestamp. |
+| <code>[JsonPropertyName(&quot;symbol&quot;)] public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:86](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L86) | Gets or sets the quoted symbol. |
+| <code>[JsonPropertyName(&quot;bidPrice&quot;)] public decimal BidPrice { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:92](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L92) | Gets or sets the bid price. |
+| <code>[JsonPropertyName(&quot;bidSize&quot;)] public long BidSize { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:98](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L98) | Gets or sets the bid size. |
+| <code>[JsonPropertyName(&quot;askPrice&quot;)] public decimal AskPrice { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:104](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L104) | Gets or sets the ask price. |
+| <code>[JsonPropertyName(&quot;askSize&quot;)] public long AskSize { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:110](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L110) | Gets or sets the ask size. |
+| <code>[JsonPropertyName(&quot;midPrice&quot;)] public decimal? MidPrice { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:116](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L116) | Gets or sets the derived mid price, if available. |
+| <code>[JsonPropertyName(&quot;spread&quot;)] public decimal? Spread { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:122](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L122) | Gets or sets the quoted spread, if available. |
+| <code>[JsonPropertyName(&quot;sequenceNumber&quot;)] public long SequenceNumber { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:128](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L128) | Gets or sets the sequence number associated with the quote. |
+| <code>[JsonPropertyName(&quot;streamId&quot;)] public string? StreamId { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:134](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L134) | Gets or sets the stream identifier for the quote. |
+| <code>[JsonPropertyName(&quot;venue&quot;)] public string? Venue { get; set; }</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:140](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L140) | Gets or sets the venue for the quote. |
+
+## StreamId
+
+Qualified name: <code>Meridian.Contracts.Domain.StreamId</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/StreamId.cs:13](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L13).
+
+Zero-cost value object representing a data-stream identifier. Prevents accidental interchange of stream IDs with SymbolId, ProviderId, or VenueCode.
+
+```csharp
+public readonly struct StreamId : IEquatable<StreamId>, IComparable<StreamId>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StreamId(string value);</code> | [src/Meridian.Contracts/Domain/StreamId.cs:20](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L20) | Initializes a new StreamId. |
+| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:28](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L28) | Returns the raw stream identifier string. |
+| <code>public static implicit operator string(StreamId id) =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:31](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L31) | Implicitly converts a StreamId to its underlying string value. |
+| <code>public static explicit operator StreamId(string value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:34](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L34) | Explicitly converts a raw string to a StreamId. |
+| <code>public bool Equals(StreamId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:37](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L37) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:41](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L41) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:44](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L44) |  |
+| <code>public int CompareTo(StreamId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:48](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L48) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:52](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L52) |  |
+| <code>public static bool operator == (StreamId left, StreamId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:55](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L55) |  |
+| <code>public static bool operator != (StreamId left, StreamId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/StreamId.cs:58](../../../../src/Meridian.Contracts/Domain/StreamId.cs#L58) |  |
+
+## SubscriptionId
+
+Qualified name: <code>Meridian.Contracts.Domain.SubscriptionId</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/SubscriptionId.cs:14](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L14).
+
+Zero-cost value object representing a market-data subscription identifier. Prevents accidental interchange of subscription IDs with other integer-typed identifiers such as sequence numbers or request IDs.
+
+```csharp
+public readonly struct SubscriptionId : IEquatable<SubscriptionId>, IComparable<SubscriptionId>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SubscriptionId(int value);</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:18](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L18) | Initializes a new SubscriptionId with the given integer value. |
+| <code>public int Value { get; }</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:24](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L24) | Returns the underlying subscription handle integer. |
+| <code>public static implicit operator int(SubscriptionId id) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:27](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L27) | Implicitly converts a SubscriptionId to its underlying integer value. |
+| <code>public static explicit operator SubscriptionId(int value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:30](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L30) | Explicitly converts an integer to a SubscriptionId. |
+| <code>public bool Equals(SubscriptionId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:33](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L33) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:36](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L36) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:39](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L39) |  |
+| <code>public int CompareTo(SubscriptionId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:42](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L42) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:45](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L45) |  |
+| <code>public static bool operator == (SubscriptionId left, SubscriptionId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:48](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L48) |  |
+| <code>public static bool operator != (SubscriptionId left, SubscriptionId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SubscriptionId.cs:51](../../../../src/Meridian.Contracts/Domain/SubscriptionId.cs#L51) |  |
+
+## SymbolId
+
+Qualified name: <code>Meridian.Contracts.Domain.SymbolId</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/SymbolId.cs:24](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L24).
+
+Zero-cost value object representing a raw, provider-independent market instrument symbol. This is the &quot;Symbol (raw)&quot; type in the typed symbol hierarchy. Prevents accidental interchange of symbols with other string-typed IDs (e.g. ProviderId or VenueCode).
+
+```csharp
+public readonly struct SymbolId : IEquatable<SymbolId>, IComparable<SymbolId>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolId(string value);</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:31](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L31) | Initializes a new SymbolId with the given ticker string. |
+| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:39](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L39) | Returns the raw ticker string. |
+| <code>public static implicit operator string(SymbolId id) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:42](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L42) | Implicitly converts a SymbolId to its underlying string value. |
+| <code>public static explicit operator SymbolId(string value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:45](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L45) | Explicitly converts a raw string to a SymbolId. |
+| <code>public bool Equals(SymbolId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:48](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L48) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:52](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L52) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:55](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L55) |  |
+| <code>public int CompareTo(SymbolId other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:59](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L59) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:63](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L63) |  |
+| <code>public static bool operator == (SymbolId left, SymbolId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:66](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L66) |  |
+| <code>public static bool operator != (SymbolId left, SymbolId right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/SymbolId.cs:69](../../../../src/Meridian.Contracts/Domain/SymbolId.cs#L69) |  |
+
 ## TradeDto
 
 Qualified name: <code>Meridian.Contracts.Domain.TradeDto</code>. Kind: `class`.
@@ -615,251 +906,3 @@ Enum declarations:
 | <code>Ready = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:48](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L48) |  |
 | <code>Warning = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:49](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L49) |  |
 | <code>Error = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:50](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L50) |  |
-
-## EtlPreviewResult
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlPreviewResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:437](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L437).
-
-Aggregates previewed ETL files and errors for a source and partner schema.
-
-```csharp
-public sealed class EtlPreviewResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:440](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L440) |  |
-| <code>[JsonPropertyName(&quot;sourceKind&quot;)] public EtlSourceKind SourceKind { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:443](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L443) |  |
-| <code>[JsonPropertyName(&quot;schemaId&quot;)] public required string SchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:446](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L446) |  |
-| <code>[JsonPropertyName(&quot;files&quot;)] public IReadOnlyList&lt;EtlFilePreview&gt; Files { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:449](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L449) |  |
-| <code>[JsonPropertyName(&quot;errors&quot;)] public IReadOnlyList&lt;string&gt; Errors { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:452](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L452) |  |
-
-## EtlRecordDisposition
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlRecordDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:61](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L61).
-
-```csharp
-public enum EtlRecordDisposition : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Accepted = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:63](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L63) |  |
-| <code>Rejected = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:64](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L64) |  |
-| <code>SkippedDuplicate = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:65](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L65) |  |
-| <code>SkippedOutOfRange = 3</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:66](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L66) |  |
-
-## EtlRejectRecord
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlRejectRecord</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:285](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L285).
-
-Captures a rejected ETL record with its source position and rejection reason.
-
-```csharp
-public sealed class EtlRejectRecord
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;sourceFileName&quot;)] public required string SourceFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:288](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L288) |  |
-| <code>[JsonPropertyName(&quot;recordIndex&quot;)] public long RecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:291](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L291) |  |
-| <code>[JsonPropertyName(&quot;rejectCode&quot;)] public required string RejectCode { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:294](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L294) |  |
-| <code>[JsonPropertyName(&quot;rejectMessage&quot;)] public required string RejectMessage { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:297](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L297) |  |
-| <code>[JsonPropertyName(&quot;rawLine&quot;)] public string? RawLine { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:300](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L300) |  |
-| <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:303](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L303) |  |
-
-## EtlRemoteFile
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlRemoteFile</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:307](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L307).
-
-A file discovered on a remote ETL source (e.g. an SFTP server).
-
-```csharp
-public sealed class EtlRemoteFile
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;path&quot;)] public required string Path { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:310](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L310) |  |
-| <code>[JsonPropertyName(&quot;name&quot;)] public required string Name { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:313](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L313) |  |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:316](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L316) |  |
-| <code>[JsonPropertyName(&quot;lastModifiedUtc&quot;)] public DateTimeOffset? LastModifiedUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:319](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L319) |  |
-
-## EtlSourceDefinition
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlSourceDefinition</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:135](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L135).
-
-Configures an ETL input location, file selection, credentials, and post-processing policy.
-
-```csharp
-public sealed class EtlSourceDefinition
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;kind&quot;)] public required EtlSourceKind Kind { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:138](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L138) |  |
-| <code>[JsonPropertyName(&quot;location&quot;)] public required string Location { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:141](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L141) |  |
-| <code>[JsonPropertyName(&quot;filePattern&quot;)] public string? FilePattern { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:144](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L144) |  |
-| <code>[JsonPropertyName(&quot;username&quot;)] public string? Username { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:147](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L147) |  |
-| <code>[JsonPropertyName(&quot;secretRef&quot;)] public string? SecretRef { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:150](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L150) |  |
-| <code>[JsonPropertyName(&quot;deleteAfterSuccess&quot;)] public bool DeleteAfterSuccess { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:153](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L153) |  |
-| <code>[JsonPropertyName(&quot;postProcessingAction&quot;)] public EtlSourcePostProcessingAction PostProcessingAction { get; init; } = EtlSourcePostProcessingAction.LeaveInPlace;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:156](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L156) |  |
-| <code>[JsonPropertyName(&quot;archiveLocation&quot;)] public string? ArchiveLocation { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:159](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L159) |  |
-| <code>[JsonPropertyName(&quot;errorLocation&quot;)] public string? ErrorLocation { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:162](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L162) |  |
-| <code>[JsonPropertyName(&quot;hostKeySha256Fingerprint&quot;)] public string? HostKeySha256Fingerprint { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:165](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L165) |  |
-
-## EtlSourceKind
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlSourceKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:14](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L14).
-
-```csharp
-public enum EtlSourceKind : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Local = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:16](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L16) |  |
-| <code>Sftp = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:17](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L17) |  |
-
-## EtlSourcePostProcessingAction
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlSourcePostProcessingAction</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:36](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L36).
-
-```csharp
-public enum EtlSourcePostProcessingAction : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>LeaveInPlace = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:38](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L38) |  |
-| <code>Delete = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:39](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L39) |  |
-| <code>MoveToArchive = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:40](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L40) |  |
-| <code>MoveToError = 3</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:41](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L41) |  |
-| <code>WriteDoneMarker = 4</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:42](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L42) |  |
-
-## EtlStagedFile
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlStagedFile</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:323](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L323).
-
-A file that has been downloaded from a remote source and staged locally.
-
-```csharp
-public sealed class EtlStagedFile
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;originalPath&quot;)] public required string OriginalPath { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:326](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L326) |  |
-| <code>[JsonPropertyName(&quot;stagedPath&quot;)] public required string StagedPath { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:329](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L329) |  |
-| <code>[JsonPropertyName(&quot;fileName&quot;)] public required string FileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:332](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L332) |  |
-| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public required string ChecksumSha256 { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:335](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L335) |  |
-| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:338](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L338) |  |
-
-## EtlTransferMode
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlTransferMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:29](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L29).
-
-```csharp
-public enum EtlTransferMode : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>BatchExchange = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:31](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L31) |  |
-| <code>ScheduledDelivery = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:32](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L32) |  |
-
-## IEtlJobDefinitionStore
-
-Qualified name: <code>Meridian.Contracts.Etl.IEtlJobDefinitionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs:6](../../../../src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs#L6).
-
-Saves, retrieves, lists, and removes ETL job definitions by job identity.
-
-```csharp
-public interface IEtlJobDefinitionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task SaveAsync(EtlJobDefinition definition, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs:8](../../../../src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs#L8) |  |
-| <code>Task&lt;EtlJobDefinition?&gt; GetAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs:9](../../../../src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs#L9) |  |
-| <code>Task&lt;IReadOnlyList&lt;EtlJobDefinition&gt;&gt; ListAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs:10](../../../../src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs#L10) |  |
-| <code>Task DeleteAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs:11](../../../../src/Meridian.Contracts/Etl/IEtlJobDefinitionStore.cs#L11) |  |
-
-## IEtlSourceReader
-
-Qualified name: <code>Meridian.Contracts.Etl.IEtlSourceReader</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:366](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L366).
-
-Reads source files (local or remote) for an ETL job.
-
-```csharp
-public interface IEtlSourceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>EtlSourceKind Kind { get; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:368](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L368) |  |
-| <code>Task&lt;IReadOnlyList&lt;EtlRemoteFile&gt;&gt; ListFilesAsync(EtlSourceDefinition source, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:369](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L369) |  |
-| <code>Task&lt;EtlStagedFile&gt; StageFileAsync(string jobId, EtlSourceDefinition source, EtlRemoteFile file, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:370](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L370) |  |
-| <code>Task PostProcessFileAsync(EtlSourceDefinition source, EtlRemoteFile file, bool succeeded, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:371](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L371) |  |
-
-## IEtlStagingStore
-
-Qualified name: <code>Meridian.Contracts.Etl.IEtlStagingStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Etl/IEtlStagingStore.cs:7](../../../../src/Meridian.Contracts/Etl/IEtlStagingStore.cs#L7).
-
-Retains an imported source stream and returns its staged location and content checksum. The caller owns the source stream; persistence is supplied by application composition.
-
-```csharp
-public interface IEtlStagingStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;EtlStagedFile&gt; StageAsync(string jobId, EtlRemoteFile file, Stream sourceStream, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Etl/IEtlStagingStore.cs:9](../../../../src/Meridian.Contracts/Etl/IEtlStagingStore.cs#L9) |  |

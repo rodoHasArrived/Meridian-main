@@ -5,7 +5,7 @@ import type { BackfillPreviewResult, BackfillExecutionHistoryResponse, BackfillP
 import { BACKFILL_API_ENDPOINTS, backfillCloneEndpoint, PORTFOLIO_API_ENDPOINTS, PLAID_API_ENDPOINTS, PROVIDER_API_ENDPOINTS, PROVIDER_INTEGRATION_API_ENDPOINTS, PROVIDER_ROUTING_API_ENDPOINTS, QUALITY_API_ENDPOINTS, SECURITY_MASTER_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS, securityMasterCoverageDraftEndpoint, brokerageConnectionConnectEndpoint, brokerageConnectionEndpoint, brokerageConnectionStatusEndpoint, portfolioHouseholdEndpoint, portfolioSymbolExposureEndpoint, providerCredentialEndpoint, providerVerifyEndpoint, workstationProviderIntegrationConnectionMonitorEndpoint, workstationProviderIntegrationConnectionRunDueSyncEndpoint, workstationProviderIntegrationConnectionSyncPlanEndpoint, workstationProviderIntegrationConnectionSyncRunsEndpoint, workstationProviderIntegrationIdentityResolutionEndpoint, workstationProviderIntegrationPromotionReadinessEndpoint, workstationProviderIntegrationQuarantineReviewEndpoint, workstationProviderIntegrationReadinessEndpoint, workstationProviderIntegrationReconciliationHandoffHistoryEndpoint, workstationProviderIntegrationStagingReviewEndpoint, workstationProviderIntegrationTemplateEndpoint, providerRemoveEndpoint, providerTestEndpoint, qualityAnomalyAcknowledgeEndpoint, securityMasterCorporateActionSourceProposalAcceptEndpoint, workstationAssetOperationsEndpoint } from "@/lib/workstation-endpoints";
 import { deleteJson, getJson, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
 import type { ProviderCredentialDraftResult } from "@/types/workstation-2";
-import type { BackfillSubmissionReceipt, BackfillSubmissionRequest, ProviderReadinessEvidence, ProviderReadinessRow, ProviderReadinessStatus } from "@/types";
+import type { BackfillSubmissionReceipt, BackfillSubmissionRequest, ProviderReadinessEvidence, ProviderReadinessEvidenceKind, ProviderReadinessRow, ProviderReadinessStatus } from "@/types";
 
 // --- Backfill mutations ---
 
@@ -378,41 +378,24 @@ export function getProviderConnections(options: ProviderCredentialRequestOptions
   return getJson<ProviderConnectionRow[]>(providerConnectionScopeEndpoint(PROVIDER_API_ENDPOINTS.connections, options.connectionId), options);
 }
 
-type ReadinessWireEvidence = Omit<ProviderReadinessEvidence, "status" | "kind"> & {
-  status: ProviderReadinessStatus | number;
-  kind: ProviderReadinessEvidence["kind"] | number;
+type ReadinessWireStatus = ProviderReadinessStatus | number;
+type ReadinessEvidenceWire = Omit<ProviderReadinessEvidence, "status" | "kind"> & {
+  status: ReadinessWireStatus;
+  kind: ProviderReadinessEvidenceKind | number;
 };
-
-type ReadinessWireRow = Omit<ProviderReadinessRow, "status" | "evidence"> & {
-  status: ProviderReadinessStatus | number;
-  evidence: ReadinessWireEvidence[];
-};
-
-type ReadinessWireSummary = Omit<ProviderReadinessSummary, "status" | "providers"> & {
-  status: ProviderReadinessStatus | number;
-  providers: ReadinessWireRow[];
-};
-
+type ReadinessRowWire = Omit<ProviderReadinessRow, "status" | "evidence"> & { status: ReadinessWireStatus; evidence: ReadinessEvidenceWire[] };
+type ReadinessSummaryWire = Omit<ProviderReadinessSummary, "status" | "providers"> & { status: ReadinessWireStatus; providers: ReadinessRowWire[] };
 const readinessStatuses: readonly ProviderReadinessStatus[] = ["Ready", "Review", "Degraded", "Blocked", "Unknown"];
-const readinessEvidenceKinds: readonly ProviderReadinessEvidence["kind"][] = [
-  "Credential", "Connection", "Validation", "Degradation", "Plaid", "Routing"
-];
-
-function readReadinessStatus(status: ProviderReadinessStatus | number): ProviderReadinessStatus {
-  return typeof status === "number" ? readinessStatuses[status] ?? "Unknown" : status;
-}
+const readinessEvidenceKinds: readonly ProviderReadinessEvidenceKind[] = ["Credential", "Connection", "Validation", "Degradation", "Plaid", "Routing"];
 
 export async function getProviderReadiness(options: ApiRequestOptions = {}): Promise<ProviderReadinessSummary> {
-  const summary = await getJson<ReadinessWireSummary>(PROVIDER_API_ENDPOINTS.readiness, options);
+  const result = await getJson<ReadinessSummaryWire>(PROVIDER_API_ENDPOINTS.readiness, options);
+  const status = (value: ReadinessWireStatus) => typeof value === "number" ? readinessStatuses[value] ?? "Unknown" : value;
   return {
-    ...summary,
-    status: readReadinessStatus(summary.status),
-    providers: summary.providers.map(provider => ({
-      ...provider,
-      status: readReadinessStatus(provider.status),
-      evidence: provider.evidence.map(item => ({
-        ...item,
-        status: readReadinessStatus(item.status),
+    ...result,
+    status: status(result.status),
+    providers: result.providers.map(provider => ({ ...provider, status: status(provider.status),
+      evidence: provider.evidence.map(item => ({ ...item, status: status(item.status),
         kind: typeof item.kind === "number" ? readinessEvidenceKinds[item.kind] ?? "Unknown" : item.kind
       }))
     }))

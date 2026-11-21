@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RobinhoodConfig
+
+Qualified name: <code>Meridian.Core.Config.RobinhoodConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:330](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L330).
+
+Robinhood historical data provider configuration. Uses the unofficial Robinhood API; requires a personal access token. No official public API exists — set ROBINHOOD_ACCESS_TOKEN via environment variable.
+
+```csharp
+public sealed record RobinhoodConfig(bool Enabled = false, int Priority = 35, int RateLimitPerHour = 100);
+```
+
+## ScheduledBackfillConfig
+
+Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:111](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L111).
+
+Configuration for scheduled backfill operations.
+
+```csharp
+public sealed record ScheduledBackfillConfig(bool Enabled = false, int ScheduleCheckIntervalSeconds = 60, int MaxExecutionDurationHours = 6, bool CatchUpMissedSchedules = true, int CatchUpWindowHours = 24, int MaxConcurrentExecutions = 1, bool PauseDuringMarketHours = false, DefaultScheduleConfig[]? DefaultSchedules = null);
+```
+
 ## SemanticValidationStage
 
 Qualified name: <code>Meridian.Core.Config.SemanticValidationStage</code>. Kind: `class`.
@@ -901,45 +925,3 @@ Statistics about published alerts.
 ```csharp
 public sealed record AlertStatistics(long TotalAlerts, IReadOnlyDictionary<AlertSeverity, long> AlertsBySeverity, IReadOnlyDictionary<AlertCategory, long> AlertsByCategory, IReadOnlyDictionary<string, long> AlertsBySource, DateTimeOffset Since);
 ```
-
-## HealthCheckResult
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.HealthCheckResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:33](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L33).
-
-Represents a health check result with status and diagnostics.
-
-```csharp
-public sealed record HealthCheckResult(string ComponentName, HealthSeverity Severity, string Message, DateTimeOffset CheckedAt, TimeSpan Duration, IReadOnlyDictionary<string, object>? Details = null, Exception? Exception = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static HealthCheckResult Healthy(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:45](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L45) | Creates a healthy result. |
-| <code>public static HealthCheckResult Degraded(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:52](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L52) | Creates a degraded result. |
-| <code>public static HealthCheckResult Unhealthy(string componentName, string message, TimeSpan duration, Exception? exception = null, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:59](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L59) | Creates an unhealthy result. |
-| <code>public static HealthCheckResult Unknown(string componentName, string message, TimeSpan duration) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:66](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L66) | Creates an unknown result. |
-
-## HealthSeverity
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.HealthSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L8).
-
-Represents the severity of a health status.
-
-```csharp
-public enum HealthSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L11) | Component is healthy and fully operational. |
-| <code>Degraded</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L14) | Component is operational but with minor issues. |
-| <code>Unhealthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L17) | Component has critical issues affecting functionality. |
-| <code>Unknown</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L20) | Component status is unknown or cannot be determined. |
