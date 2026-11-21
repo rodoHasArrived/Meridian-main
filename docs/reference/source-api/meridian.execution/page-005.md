@@ -50,7 +50,7 @@ public sealed record SimulatedFillHandoff(TradeExecutedEvent Fill, string Receip
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1442](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1442).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1443](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1443).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 

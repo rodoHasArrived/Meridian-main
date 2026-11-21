@@ -896,7 +896,7 @@ Declared public members:
 | <code>public const string VersionTag = &quot;positionEvidence.version&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:13](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L13) |  |
 | <code>public const string ReversalSignTag = &quot;positionEvidence.reversalSign&quot;;</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:14](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L14) |  |
 | <code>public static JournalEntryMetadata WithPostings(JournalEntryMetadata metadata, IReadOnlyList&lt;SecurityTradePosting&gt; postings, SecurityLotUnitKind unit, decimal multiplier);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:17](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L17) |  |
-| <code>public static bool TryRead(JournalEntry journal, out SecurityTradePositionEffect? effect, out string? failure, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:63](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L63) |  |
+| <code>public static bool TryRead(JournalEntry journal, out SecurityTradePositionEffect? effect, out string? failure, IChartOfAccounts? chart = null);</code> | [src/Meridian.Ledger/SecurityTradePositionEvidence.cs:67](../../../../src/Meridian.Ledger/SecurityTradePositionEvidence.cs#L67) |  |
 
 ## SecurityTradePosting
 

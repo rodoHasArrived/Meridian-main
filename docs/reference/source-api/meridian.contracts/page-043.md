@@ -240,7 +240,7 @@ public sealed record MarketDataInputEvidence(string? ProviderId = null, string? 
 
 Qualified name: <code>Meridian.Contracts.Operations.MarketDataInputEvidenceJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:122](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L122).
+Source: [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:127](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L127).
 
 ```csharp
 public partial class MarketDataInputEvidenceJsonContext : JsonSerializerContext;
@@ -265,11 +265,11 @@ Declared public members:
 | <code>public const string VersionTag = &quot;marketData.input.version&quot;;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:31](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L31) |  |
 | <code>public const string InputsTag = &quot;marketData.input.v1&quot;;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:32](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L32) |  |
 | <code>public static IReadOnlyList&lt;MarketDataInputEvidence&gt;? Freeze(IReadOnlyList&lt;MarketDataInputEvidence&gt;? inputs);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:34](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L34) |  |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; Create(IEnumerable&lt;MarketDataInputEvidence&gt;? inputs);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:56](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L56) |  |
-| <code>public static IReadOnlyDictionary&lt;string, string&gt; ToTags(IEnumerable&lt;MarketDataInputEvidence&gt;? inputs) =&gt; …;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:67](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L67) |  |
-| <code>public static MarketDataInputEvidence ForObservation(MarketDataInputEvidence input, DateOnly observedDate) =&gt; …;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:70](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L70) | A symbol/range assessment cannot certify an observation outside that retained window. |
-| <code>public static IReadOnlyList&lt;MarketDataInputEvidence&gt; Read(IReadOnlyDictionary&lt;string, string&gt;? tags);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:77](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L77) | Missing, unsupported or malformed evidence remains unassessed. |
-| <code>public static IReadOnlyList&lt;MarketDataQualityWarningDto&gt; BuildWarnings(IEnumerable&lt;IReadOnlyList&lt;MarketDataInputEvidence&gt;?&gt; logicalFills, double minimumQualityScore =.8d);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:89](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L89) | The caller supplies one source population per logical fill, deduplicating cost journals. |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; Create(IEnumerable&lt;MarketDataInputEvidence&gt;? inputs);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:59](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L59) |  |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; ToTags(IEnumerable&lt;MarketDataInputEvidence&gt;? inputs) =&gt; …;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:71](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L71) |  |
+| <code>public static MarketDataInputEvidence ForObservation(MarketDataInputEvidence input, DateOnly observedDate) =&gt; …;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:74](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L74) | A symbol/range assessment cannot certify an observation outside that retained window. |
+| <code>public static IReadOnlyList&lt;MarketDataInputEvidence&gt; Read(IReadOnlyDictionary&lt;string, string&gt;? tags);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:81](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L81) | Missing, unsupported or malformed evidence remains unassessed. |
+| <code>public static IReadOnlyList&lt;MarketDataQualityWarningDto&gt; BuildWarnings(IEnumerable&lt;IReadOnlyList&lt;MarketDataInputEvidence&gt;?&gt; logicalFills, double minimumQualityScore =.8d);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:94](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L94) | The caller supplies one source population per logical fill, deduplicating cost journals. |
 
 ## MarketDataQualityWarningDto
 
