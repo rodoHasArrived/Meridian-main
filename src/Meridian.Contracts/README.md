@@ -22,7 +22,8 @@ basis, functional currency and canonical security identity separately. Incompati
 remain unavailable. `FundReconciliationItem` and `ReconciliationSummary` expose nullable
 `ComparableBreakAmountTotal`, `BreakAmountCurrency` and `BreakAmountUnavailableReason`; consumers
 must use this evidence instead of formatting the legacy scalar as money. Quantity residuals never
-become currency totals. Direct-lending reconciliation retains its as-of date, servicing revision,
+become currency totals, and an unavailable monetary dimension cannot be discarded to produce a
+partial subtotal. Direct-lending reconciliation retains its as-of date, servicing revision,
 journal identities, currency and single-use payment-allocation evidence. Missing legacy evidence
 does not imply a zero balance or a match.
 

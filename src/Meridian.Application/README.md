@@ -24,7 +24,9 @@ and outgoing refunds cannot satisfy projected receipts. Optional amount/day tole
 to the retryable command; omitted requests preserve exact matching. Canonical balance comparisons
 use the registered loan account roles, an atomic exact-book journal capture and any pinned configured
 chart revision, including PIK, prepaid-interest and unapplied-cash balances. Missing role, currency or
-book evidence stays unavailable. Migration `012_direct_lending_reconciliation_evidence.sql` retains
+book evidence stays unavailable. A changed canonical security reference or incompatible chart history
+cannot hide earlier carrying legs: the comparison reports unavailable with its captured journal IDs.
+Migration `012_direct_lending_reconciliation_evidence.sql` retains
 new request/source evidence across restarts while leaving legacy evidence unknown.
 
 Native intercompany legal rules validate structured declarations without turning them into accrual
