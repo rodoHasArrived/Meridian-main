@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getJson } from "@/lib/api/http-client";
-import { isIsoDate } from "@/lib/reporting-periods";
+import { formatUtcDate } from "@/lib/format";
 
 export interface RateLimitHistoryResponse {
   provider: string; periodHours: number; timestamp: string; isAvailable: boolean; message: string;
@@ -22,7 +22,7 @@ const historyColumns: DenseDataTableColumn<HistoryRow>[] = [
   { id: "next", label: "Next attempted provider", render: (row) => row.nextProvider ?? "Not yet observed" }
 ];
 const dailyColumns: DenseDataTableColumn<DailyRollup>[] = [
-  { id: "date", label: "Date (UTC)", className: "font-mono text-xs", render: (row) => isIsoDate(row.dateUtc) ? row.dateUtc : "Date unavailable" },
+  { id: "date", label: "Date (UTC)", className: "font-mono text-xs", render: (row) => formatUtcDate(new Date(row.dateUtc)) },
   { id: "throttles", label: "Throttles", render: (row) => row.throttleCount },
   { id: "rotations", label: "Fallback rotations", render: (row) => row.rotationCount }
 ];

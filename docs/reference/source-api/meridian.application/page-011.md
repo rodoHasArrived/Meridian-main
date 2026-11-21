@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullSecurityValidationSnapshotStore
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.NullSecurityValidationSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:85](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L85).
+
+Returns validation snapshot results without retaining them in durable storage.
+
+```csharp
+public sealed class NullSecurityValidationSnapshotStore : ISecurityValidationSnapshotStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;SecurityValidationSnapshotDto&gt; RecordAsync(SecurityValidationReportDto report, SecurityValidationSnapshotRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs:87](../../../../src/Meridian.Application/SecurityMaster/Validation/FileSecurityValidationSnapshotStore.cs#L87) |  |
+
+## SecurityMasterOptionsValidator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityMasterOptionsValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs:10](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs#L10).
+
+Validates SecurityMasterOptions at startup so misconfigured connection strings or out-of-range tuning parameters are caught early.
+
+```csharp
+public sealed class SecurityMasterOptionsValidator : IValidateOptions<SecurityMasterOptions>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ValidateOptionsResult Validate(string? name, SecurityMasterOptions options);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs:12](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs#L12) |  |
+
 ## SecurityValidationContext
 
 Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationContext</code>. Kind: `record`.
@@ -952,46 +988,3 @@ Enum declarations:
 | <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
 | <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:984](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L984) |  |
 | <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:985](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L985) |  |
-
-## UseCase
-
-Qualified name: <code>Meridian.Application.Services.UseCase</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:965](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L965).
-
-Use case for configuration.
-
-```csharp
-public enum UseCase : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Development</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:967](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L967) |  |
-| <code>Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:968](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L968) |  |
-| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
-| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |
-| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:972](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L972) |  |
-| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:973](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L973) |  |
-
-## ValidationCheck
-
-Qualified name: <code>Meridian.Application.Services.ValidationCheck</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Services/DryRunService.cs:584](../../../../src/Meridian.Application/Services/DryRunService.cs#L584).
-
-A single validation check.
-
-```csharp
-public sealed class ValidationCheck
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:586](../../../../src/Meridian.Application/Services/DryRunService.cs#L586) |  |
-| <code>public bool Passed { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:587](../../../../src/Meridian.Application/Services/DryRunService.cs#L587) |  |
-| <code>public string Message { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:588](../../../../src/Meridian.Application/Services/DryRunService.cs#L588) |  |

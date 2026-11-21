@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## OnboardingOpeningStateSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingOpeningStateSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs#L15).
-
-Reads Meridian&#x27;s own retained account records for the workspace start date: the latest balance snapshot (cash and NAV components) and the retained position lines. It never imports, posts, or substitutes zero for an absent component.
-
-```csharp
-public sealed class OnboardingOpeningStateSource(IAccountQueryService? accounts = null, ICloseReadinessSubjectSource? subjects = null, IFundProfileTenancyRegistry? tenancy = null) : IOnboardingOpeningStateProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureOpeningAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs:22](../../../../src/Meridian.Ui.Shared/Services/OnboardingOpeningStateSource.cs#L22) |  |
-
 ## OpenBreakHistory
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OpenBreakHistory</code>. Kind: `class`.
@@ -179,7 +161,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OwnedProviderConnection</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:688](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L688).
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:692](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L692).
 
 Identity of a retained connection one tenant owns; carries no credential material.
 
@@ -820,15 +802,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null, Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null, Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:35](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L35) |  |
-| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:72](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L72) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
-| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:89](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L89) | Reads one authorized connection without borrowing provider-wide health or credentials. |
-| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:108](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L108) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:140](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L140) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
-| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:194](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L194) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:210](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L210) |  |
-| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:231](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L231) |  |
-| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:339](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L339) |  |
+| <code>public ProviderConnectionLifecycleService(IProviderCredentialStore credentialStore, ConfigStore configStore, ILogger&lt;ProviderConnectionLifecycleService&gt; logger, IHttpClientFactory? httpClientFactory = null, IEnumerable&lt;IAccountingSystemProvider&gt;? accountingSystemProviders = null, IProviderSetupRegistry? setupRegistry = null, ProviderCredentialScope? ownershipScope = null, Meridian.Application.ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null, Meridian.Application.ProviderRouting.ProviderRuntimeCredentialMutationGuard? mutationGuard = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:37](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L37) |  |
+| <code>public ProviderConnectionLifecycleService ForConnection(string connectionId, string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:76](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L76) | Binds the lifecycle to retained connection ownership after the HTTP boundary resolves its tenant. |
+| <code>public async Task&lt;ProviderConnectionRowDto&gt; GetConnectionStatusForTenantAsync(string connectionId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:93](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L93) | Reads one authorized connection without borrowing provider-wide health or credentials. |
+| <code>public IReadOnlyList&lt;OwnedProviderConnection&gt; GetOwnedConnectionsForTenant(string tenantId, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:112](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L112) | Lists the retained connections of one provider family that tenantId owns completely (unique id, external account and environment). Other tenants&#x27; connections, unassigned connections and ambiguous duplicate ids are never returned. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:144](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L144) | Provider-level readiness for one tenant. Each provider starts from its provider-wide row; when that row is not ready, the best credential state among the tenant&#x27;s own retained connections for the same provider replaces it. Other tenants&#x27; connections and unassigned connections never contribute. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderConnectionRowDto&gt;&gt; GetConnectionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:198](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L198) |  |
+| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; SaveCredentialsAsync(string providerId, ProviderCredentialUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:214](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L214) |  |
+| <code>public async Task&lt;ProviderCredentialVerificationResultDto&gt; VerifyAsync(string providerId, CancellationToken ct = default, string? actor = null);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:235](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L235) |  |
+| <code>public async Task&lt;ProviderCredentialMutationResultDto&gt; DeleteCredentialsAsync(string providerId, string? actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs:343](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.cs#L343) |  |
 
 Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs:6](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.DraftVerification.cs#L6).
 
@@ -848,7 +830,20 @@ Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Exte
 public sealed partial class ProviderConnectionLifecycleService : IQuickBooksPostingConnectionResolver
 ```
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:7](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L7).
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L8).
+
+```csharp
+public sealed partial class ProviderConnectionLifecycleService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderConnectionLifecycleService ForTemplateSetup(Guid setupId, string tenantId, string actor, string providerId);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:10](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L10) |  |
+| <code>public async Task&lt;ProviderTemplateSetupTestResult&gt; TestTemplateSetupAsync(string providerId, string actor, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs:17](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.Ownership.cs#L17) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs:8](../../../../src/Meridian.Ui.Shared/Services/ProviderConnectionLifecycleService.TemplateProbes.cs#L8).
 
 ```csharp
 public sealed partial class ProviderConnectionLifecycleService
@@ -953,3 +948,13 @@ Declared public members:
 | <code>public int UtcHour { get; set; } = 23;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:13](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L13) |  |
 | <code>public int RetryMinutes { get; set; } = 15;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:14](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L14) |  |
 | <code>public List&lt;ProviderLedgerDailyReconciliationTarget&gt; Targets { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:15](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L15) |  |
+
+## ProviderLedgerDailyReconciliationTarget
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationTarget</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L18).
+
+```csharp
+public sealed record ProviderLedgerDailyReconciliationTarget(string TenantId, string CompanyId, string FundProfileId, Guid AccountId, decimal AmountTolerance = 0.01m, int ProviderStaleAfterMinutes = 30);
+```

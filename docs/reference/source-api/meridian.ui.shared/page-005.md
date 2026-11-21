@@ -364,6 +364,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapProviderConnectionEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionEndpoints.cs#L18) |  |
 
+## ProviderConnectionTemplateEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderConnectionTemplateEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L12).
+
+```csharp
+public static class ProviderConnectionTemplateEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapProviderConnectionTemplateEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/ProviderConnectionTemplateEndpoints.cs#L16) |  |
+
 ## ProviderCredentialEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ProviderCredentialEndpoints</code>. Kind: `class`.
@@ -783,14 +799,4 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:1
 
 ```csharp
 public sealed record RestoreRecurringJournalDefinitionsRequest(string ScheduleId, int ScheduleVersion, int TemplateVersion, string Reason);
-```
-
-## RevokeStrategyLiveAuthorizationRequest
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.RevokeStrategyLiveAuthorizationRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:262](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L262).
-
-```csharp
-public sealed record RevokeStrategyLiveAuthorizationRequest(string Reason);
 ```

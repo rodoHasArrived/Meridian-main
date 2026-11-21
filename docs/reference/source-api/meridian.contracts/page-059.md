@@ -6,6 +6,225 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundScopedWriteTenantGate
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopedWriteTenantGate</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:25](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L25).
+
+Pure decision for the SEC-005 4c-iii fund-scoped write tenant gate.
+
+```csharp
+public static class FundScopedWriteTenantGate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static FundScopedWriteTenantDecision Decide(bool hasTenantScope, bool enforce) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs:31](../../../../src/Meridian.Contracts/Tenancy/FundScopedWriteTenantGate.cs#L31) | A caller with a resolved tenant is always allowed. A tenantless caller is denied only when enforcement is enabled; otherwise it is allowed but flagged for detection. |
+
+## FundScopeTenantAuthority
+
+Qualified name: <code>Meridian.Contracts.Tenancy.FundScopeTenantAuthority</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L28).
+
+The tenant an out-of-request reader is acting for, established explicitly for the duration of a unit of background work (W9-GOV-008 criterion 2).
+
+```csharp
+public static class FundScopeTenantAuthority
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? CurrentTenantId =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:33](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L33) | The tenant the current background scope holds authority for, or null when none is held. |
+| <code>public static string? CurrentReason =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:39](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L39) | Why the current scope holds authority — the job or workflow name — for diagnostics when a background read is scoped differently from an operator&#x27;s. |
+| <code>public static IDisposable Enter(string tenantId, string reason);</code> | [src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs:50](../../../../src/Meridian.Contracts/Tenancy/FundScopeTenantAuthority.cs#L50) | Acts as tenantId until the returned scope is disposed. |
+
+## IAuthoritativeScopeFanOutService
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IAuthoritativeScopeFanOutService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:121](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L121).
+
+The authoritative multi-tenant scope fan-out authority: given a security-level fact, it names every accounting scope that fact reaches, or refuses to answer. This is the tenancy authority that security-master decisions depend on. A corporate-action source decision is a statement about a globally observed fact, but applying it creates per-scope casework; without an authority that can enumerate the affected scopes, a decision taken in one tenant either silently misses other affected tenants or leaks their existence. Consumers must treat a non-authoritative result as a denial, never as an empty affected set.
+
+```csharp
+public interface IAuthoritativeScopeFanOutService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ScopeFanOutResult&gt; ResolveAffectedScopesAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:127](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L127) | Enumerates every accounting scope affected by the fact, across all tenants. Never throws for an unavailable backing store — that is reported as a blocker. |
+| <code>Task&lt;ScopeFanOutResult&gt; ResolveOwnedScopesAsync(string tenantId, string companyId, ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:137](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L137) | Enumerates the affected scopes owned by exactly one tenant/company, for a caller that may only see its own tenancy. The result is authoritative only when the full cross-tenant resolution was authoritative, so a caller cannot obtain a confident single-tenant answer while the wider fan-out is unknown. |
+
+## IFundProfileTenancyRegistry
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IFundProfileTenancyRegistry</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:13](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L13).
+
+Authoritative registry mapping a fund profile to its owning tenant/company — the storage-enforced source of truth for fund-scoped tenant isolation (security backlog SEC-005). Once a fund profile is bound to a tenant, data keyed by that fund (strategy runs, ledger books, report packs) must only be served to callers in the owning tenant. Ownership is established on first authoritative use under a tenant scope (trust-on-first-use); the first owner wins and is never silently reassigned. Under a single-company-per-deployment runtime every fund binds to the one tenant, so nothing is ever foreign and behavior is unchanged.
+
+```csharp
+public interface IFundProfileTenancyRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FundProfileOwnership&gt; BindAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:21](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L21) | Claims fundProfileId for the given tenant/company if it is currently unbound, then returns the effective owner. Idempotent and first-owner-wins: a fund already bound to a different tenant is left unchanged and that existing owner is returned, so the caller can compare it to detect a foreign fund. |
+| <code>Task&lt;FundProfileOwnership?&gt; ResolveAsync(string fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:28](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L28) | Resolves the owning tenant/company for a fund profile, or null when it is unbound. |
+| <code>Task&lt;bool&gt; IsAccessibleAsync(string fundProfileId, string tenantId, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:34](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L34) | True when the caller&#x27;s tenant may use the fund: it is unbound (unknown) or bound to the caller. False only when the fund is bound to a different tenant. A read-only check — it never binds. |
+
+## IFundScopeTenantAccessor
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IFundScopeTenantAccessor</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:52](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L52).
+
+Resolves the caller&#x27;s server-side tenant for the current ambient scope (e.g. the active HTTP request), so storage can apply SEC-005 slice 4c-ii tenant read predicates without threading a caller-tenant argument through every read method and intermediate service. Returns null when there is no tenant in scope — a non-request/background caller, or the single-company-per-deployment runtime where the legacy tenantless admin profile has no company. A null result is the fail-open signal: reads are not tenant-scoped and every row passes, matching the deployment-boundary posture. The web layer supplies an IHttpContextAccessor-backed implementation; the storage layer depends only on this abstraction (no ASP.NET Core coupling).
+
+```csharp
+public interface IFundScopeTenantAccessor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string? ResolveCallerTenant();</code> | [src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs:57](../../../../src/Meridian.Contracts/Tenancy/FundProfileTenancy.cs#L57) | The caller&#x27;s resolved tenant id for the current scope, or null when none is in scope (fail-open). |
+
+## IScopeAssignmentProvider
+
+Qualified name: <code>Meridian.Contracts.Tenancy.IScopeAssignmentProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:149](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L149).
+
+One authority over a slice of the scope-assignment graph (custodied holdings, ledger books, mandates, …). Providers are composed by IAuthoritativeScopeFanOutService; each is individually responsible for failing closed rather than under-reporting.
+
+```csharp
+public interface IScopeAssignmentProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>string AuthorityId { get; }</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:152](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L152) | Stable id stamped onto every assignment this provider asserts. |
+| <code>Task&lt;ScopeAssignmentProviderResult&gt; ResolveAsync(ScopeFanOutRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:159](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L159) | Resolves the scopes this authority can attribute the fact to. Implementations must report IsAuthoritative = false with a stated blocker whenever they cannot see the whole of their own slice, and must not throw for expected unavailability. |
+
+## ScopeAssignmentProviderResult
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeAssignmentProviderResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:168](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L168).
+
+One authority&#x27;s contribution to a fan-out resolution.
+
+```csharp
+public sealed record ScopeAssignmentProviderResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScopeAssignmentProviderResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:174](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L174) | A fail-closed contribution carrying a single stated reason. |
+| <code>public static ScopeAssignmentProviderResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:178](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L178) | A complete contribution over the supplied scopes (possibly none). |
+
+## ScopeFanOutIdentifier
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutIdentifier</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:66](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L66).
+
+One identifier a holdings record may carry for the security under decision.
+
+```csharp
+public sealed record ScopeFanOutIdentifier(string IdentifierType, string Value);
+```
+
+## ScopeFanOutRequest
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:78](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L78).
+
+A request to enumerate every accounting scope affected by a security-level fact.
+
+```csharp
+public sealed record ScopeFanOutRequest(Guid SecurityId, IReadOnlyList<ScopeFanOutIdentifier> Identifiers, DateOnly EffectiveDate);
+```
+
+## ScopeFanOutResult
+
+Qualified name: <code>Meridian.Contracts.Tenancy.ScopeFanOutResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:97](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L97).
+
+The result of a fan-out resolution. IsAuthoritative is the only field a caller may gate a mutation on. Scopes is meaningful only when it is true: a non-authoritative result may still carry partially resolved scopes for diagnostics, and acting on those would apply a decision to some affected scopes while silently missing others.
+
+```csharp
+public sealed record ScopeFanOutResult(bool IsAuthoritative, IReadOnlyList<AuthoritativeScopeAssignment> Scopes, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ScopeFanOutResult NotAuthoritative(string blocker) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:103](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L103) | A fail-closed result carrying a single stated reason. |
+| <code>public static ScopeFanOutResult Authoritative(IReadOnlyList&lt;AuthoritativeScopeAssignment&gt; scopes) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs:107](../../../../src/Meridian.Contracts/Tenancy/AuthoritativeScopeFanOut.cs#L107) | An authoritative result over the supplied affected scopes (possibly none). |
+
+## TenantReadPredicate
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantReadPredicate</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:31](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L31).
+
+SEC-005 slice 4c-ii read-predicate decision, extended for W9-GOV-008 criterion 2. Centralizes whether a fund-scoped read filters by the stamped tenant_id column and the SQL fragment that does so, so the decision is unit-testable without a database and is shared across every fund-scoped store (ledger, fund accounts, operations-continuity) rather than re-derived per store.
+
+```csharp
+public static class TenantReadPredicate
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ParameterName = &quot;caller_tenant&quot;;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:34](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L34) | The conventional bind-parameter name for the caller&#x27;s tenant. |
+| <code>public static bool IsResolvedTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:37](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L37) | A concrete tenant excludes the legacy unscoped all sentinel. |
+| <code>public static bool ShouldFilter(string? callerTenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:51](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L51) | True when the caller has a resolved tenant and the read must be scoped to it. |
+| <code>public static bool ShouldRejectRead(string? callerTenantId, TenantScopeEnforcementMode mode) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:64](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L64) | True when the read must be refused outright rather than served. |
+| <code>public static string NormalizeParameter(string callerTenantId) =&gt; …;</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:71](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L71) | The normalized tenant value to bind as the predicate parameter, trimmed to match the write-side stamp. Only meaningful when ShouldFilter is true. |
+| <code>public static string FilterClause(string tenantColumnExpression, TenantScopeEnforcementMode mode);</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:79](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L79) | The tenant predicate for a row whose tenant column is given by tenantColumnExpression (e.g. tenant_id or p.tenant_id). Prefixed with and for direct concatenation onto a where 1 = 1 clause. |
+| <code>public static string PeriodExistsClause(string periodsTable, string periodIdColumnExpression, TenantScopeEnforcementMode mode);</code> | [src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs:93](../../../../src/Meridian.Contracts/Tenancy/TenantReadPredicate.cs#L93) | The tenant predicate for a journal-entry read with no period join in its main query: scopes the entry by the tenant stamped on its accounting period via an EXISTS subquery. |
+
+## TenantScopeEnforcementMode
+
+Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeEnforcementMode</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:6](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L6).
+
+How strictly tenant scope is enforced on fund-partitioned reads.
+
+```csharp
+public enum TenantScopeEnforcementMode
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>DeploymentBoundary = 0</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:17](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L17) | The historical SEC-005 posture: unattributed rows stay visible and a caller with no resolved tenant reads unfiltered, with one-company-per-deployment as the actual control. |
+| <code>FailClosed = 1</code> | [src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs:24](../../../../src/Meridian.Contracts/Tenancy/TenantScopeEnforcement.cs#L24) | Cross-tenant reads fail closed: a scoped caller sees only rows their tenant owns, unattributed rows excluded, and a caller whose tenant cannot be resolved is refused rather than defaulted to an unfiltered read. |
+
 ## TenantScopeEnforcementOptions
 
 Qualified name: <code>Meridian.Contracts.Tenancy.TenantScopeEnforcementOptions</code>. Kind: `record`.
@@ -506,176 +725,4 @@ Normalized timeline row used by shared audit explorer surfaces.
 
 ```csharp
 public sealed record AuditTrailTimelineEntryDto(string AuditId, DateTimeOffset OccurredAt, string ObjectKind, string ObjectId, string Category, string Action, string Outcome, string? Actor = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Reason = null, string? Scope = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null, IReadOnlyList<string>? RelatedObjectIds = null, string? EvidenceRoute = null, string? ActionLedgerSource = null, int? ActionLedgerSequence = null, string? PreviousActionHash = null, string? CurrentActionHash = null, string? ActionLedgerStatus = null, string? OrderId = null, string? BrokerName = null);
-```
-
-## AutomatedJournalCapitalAccountReconciliationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalCapitalAccountReconciliationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L25).
-
-Reviewed capital-account tie-out for the NAV and high-water-mark inputs used by one monthly fee-accrual cycle. The scheduler verifies the retained values, variance, confidence, reviewer, source version, and evidence before it can create a draft.
-
-```csharp
-public sealed record AutomatedJournalCapitalAccountReconciliationDto(string ReconciliationId, string PeriodId, string Currency, decimal ReconciledBeginningNav, decimal ReconciledEndingNavBeforeFees, decimal ReconciledHighWaterMark, decimal CapitalAccountOpeningBalance, decimal CapitalAccountEndingBalanceBeforeFees, decimal CapitalAccountHighWaterMark, decimal MaximumVarianceTolerance, decimal ConfidenceScore, bool IsReconciled, string SourceVersion, string ReviewedBy, DateTimeOffset ReviewedAtUtc, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L43) |  |
-
-## AutomatedJournalScheduleStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:8](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L8).
-
-Operator-visible state of scheduled fee-accrual and dividend-capture work.
-
-```csharp
-public enum AutomatedJournalScheduleStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotConfigured = 0</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L10) |  |
-| <code>Scheduled = 1</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L11) |  |
-| <code>Running = 2</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L12) |  |
-| <code>DraftReady = 3</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L13) |  |
-| <code>NeedsInvestigation = 4</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L14) |  |
-| <code>NoDraftRequired = 5</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L15) |  |
-| <code>Blocked = 6</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L16) |  |
-| <code>Failed = 7</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L17) |  |
-
-## AutomatedJournalScheduleStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalScheduleStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:51](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L51).
-
-Close-cockpit projection for the explicitly scoped monthly automated-journal work. Counts are schedule-run counts, not posted-journal counts; every produced item remains in the existing manual workbench for human approval and posting.
-
-```csharp
-public sealed record AutomatedJournalScheduleStatusDto(string? FundProfileId, Guid? LedgerBookId, string? PeriodId, int ConfiguredCount, int EnabledCount, int FeeScheduleCount, int DividendScheduleCount, int DraftReadyCount, int NeedsInvestigationCount, int BlockedCount, AutomatedJournalScheduleStateDto State, string Summary, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? Blockers = null, IReadOnlyList<Guid>? JournalEntryIds = null, decimal? MinimumEvidenceConfidence = null, AutomatedJournalEvidenceQualityDto? LowestEvidenceQuality = null, int HumanReviewQueueCount = 0, string? EntityId = null, string? TenantId = null, string? CompanyId = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;OperationsEvidenceLinkDto&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L74) |  |
-| <code>public IReadOnlyList&lt;string&gt; Blockers { get; init; } = Blockers??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:76](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L76) |  |
-| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = JournalEntryIds??[];</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L78) |  |
-
-## BankAccountSnapshot
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankAccountSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:103](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L103).
-
-Banking-focused projection for statement and balance review tabs.
-
-```csharp
-public sealed record BankAccountSnapshot(Guid AccountId, string DisplayName, string AccountCode, string BankName, string Currency, decimal? CurrentBalance, decimal PendingSettlement, DateOnly? LastStatementDate, int StatementLineCount, string? LatestTransactionType, decimal? LatestTransactionAmount);
-```
-
-## BankStatementImportResultDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BankStatementImportResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/DataUploadDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/DataUploadDtos.cs#L74).
-
-Result returned after a retained bank-statement source file is applied as account evidence.
-
-```csharp
-public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId, Guid AccountId, string AccountCode, string BankName, DateOnly StatementDate, string FileName, long FileSizeBytes, string ImportedBy, DateTimeOffset ImportedAtUtc, string RetainedPath, int LineCount, IReadOnlyList<DataUploadValidationIssueDto> Issues, string Status, string NextAction);
-```
-
-## BiasDisclosureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:285](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L285).
-
-Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
-
-```csharp
-public sealed record BiasDisclosureDto(string FillTiming, string FillConservatism, string DelistingPolicy, string UniverseSource, bool CorporateActionsAdjusted, string MaxSeverity, IReadOnlyList<BiasDisclosureItemDto> Items);
-```
-
-## BiasDisclosureItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:274](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L274).
-
-One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
-
-```csharp
-public sealed record BiasDisclosureItemDto(string Code, string Severity, string Title, string Detail);
-```
-
-## BookOfRecordStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BookOfRecordStatusDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:140](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L140).
-
-Whether a ledger book may act as the book of record (publish, release, hard-close).
-
-```csharp
-public sealed record BookOfRecordStatusDto(Guid LedgerBookId, bool IsBookOfRecord, string? ShadowState, string? ShadowWorkspaceId, string Reason, int? CleanPeriodCount = null, int? RequiredPeriodCount = null, int? UnexplainedDifferenceCount = null);
-```
-
-## BooksBeforeBrokerReadinessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BooksBeforeBrokerReadinessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/InvestmentAccountingTransactionLabDtos.cs#L63).
-
-```csharp
-public sealed record BooksBeforeBrokerReadinessDto(bool IsBooksBeforeBrokerMode, bool CanStageBrokerAction, string ExpectedBrokerAction, string BrokerInstructionSummary, IReadOnlyList<string> RequiredApprovals, IReadOnlyList<string> Blockers, IReadOnlyList<string> EvidenceIds);
-```
-
-## BrokerageAccountKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L18).
-
-```csharp
-public enum BrokerageAccountKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L20) |  |
-| <code>TaxableBrokerage = 1</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L21) |  |
-| <code>RothIra = 2</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L22) |  |
-| <code>TraditionalIra = 3</code> | [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:23](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L23) |  |
-
-## BrokerageAccountLinkRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAccountLinkRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L62).
-
-```csharp
-public sealed record BrokerageAccountLinkRequestDto(string ProviderId, string ExternalAccountId, string? DisplayName = null, string? LinkedBy = null, BrokerageAccountKindDto AccountKind = BrokerageAccountKindDto.Unknown);
-```
-
-## BrokerageAmountPassportSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.BrokerageAmountPassportSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs:308](../../../../src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs#L308).
-
-```csharp
-public sealed record BrokerageAmountPassportSnapshotDto(AmountPassportScopeDto Scope, DateTimeOffset CapturedAt, DateTimeOffset AsOf, string ContentHash, bool IsComplete);
 ```

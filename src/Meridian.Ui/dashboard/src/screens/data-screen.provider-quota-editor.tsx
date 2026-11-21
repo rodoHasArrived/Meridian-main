@@ -53,7 +53,6 @@ const quotaServices = {
     putJson<ProviderQuotaResponse>(endpoint(id), draft, { signal })
 };
 
-
 export function ProviderQuotaEditor({ services = quotaServices }: { services?: typeof quotaServices }) {
   const [provider, setProvider] = useState("twelvedata");
   const [snapshot, setSnapshot] = useState<ProviderQuotaResponse | null>(null);
@@ -108,8 +107,8 @@ export function ProviderQuotaEditor({ services = quotaServices }: { services?: t
       <summary className="cursor-pointer text-sm font-semibold focus-visible:outline-2">Quota settings</summary>
       <div className="mt-3 space-y-3">
         <div className="flex flex-wrap items-end gap-2">
-          <label className="grid text-sm">Quota provider
-            <Select className="mt-1" value={provider} disabled={status.inFlight}
+          <label className="grid gap-1 text-sm">Quota provider
+            <Select value={provider} disabled={status.inFlight}
               onChange={(event) => setProvider(event.target.value)}>
               <option value="twelvedata">Twelve Data</option>
               <option value="alphavantage">Alpha Vantage</option>
@@ -147,8 +146,8 @@ export function ProviderQuotaEditor({ services = quotaServices }: { services?: t
               <form onSubmit={save}>
                 <fieldset className="space-y-3" disabled={status.inFlight}>
                   <div className="grid grid-cols-1 gap-2 md:grid-cols-2">
-                    <label className="grid text-sm">Vendor tier
-                      <Select className="mt-1" value={draft?.tierId ?? ""}
+                    <label className="grid gap-1 text-sm">Vendor tier
+                      <Select value={draft?.tierId ?? ""}
                         onChange={(event) => selectTier(event.target.value)} required>
                         <option value="">Select tier</option>
                         {quota.tiers.map((item) => <option value={item.id} key={item.id}>{item.label}</option>)}

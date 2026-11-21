@@ -5428,6 +5428,8 @@ Meridian-main
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConfigurationCredentialGuard.cs
 │   │   │   ├── ProviderConnectionService.cs
+│   │   │   ├── ProviderConnectionTemplateCatalog.cs
+│   │   │   ├── ProviderConnectionTemplateService.cs
 │   │   │   ├── ProviderCredentialOwnershipPolicy.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrixService.cs
 │   │   │   ├── ProviderOperationsSupportServices.cs
@@ -5828,6 +5830,7 @@ Meridian-main
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
+│   │   │   ├── ProviderConnectionTemplateDtos.cs
 │   │   │   ├── ProviderCredentialOwnershipApiModels.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrix.cs
 │   │   │   ├── ProviderQuota.cs
@@ -6789,7 +6792,6 @@ Meridian-main
 │   │   │   ├── OrderExecutionAudit.cs
 │   │   │   ├── OrderFillContext.cs
 │   │   │   ├── OrderFillProcessor.cs
-│   │   │   ├── OrderIntentJournal.cs
 │   │   │   ├── OrderManagementLifecycleCoordinator.cs
 │   │   │   ├── OrderRiskSizingPolicy.cs
 │   │   │   ├── OrderStateTable.cs
@@ -6822,7 +6824,6 @@ Meridian-main
 │   │   │   ├── OrderManagementHostedService.cs
 │   │   │   ├── OrderPreviewService.cs
 │   │   │   ├── PaperLedgerIntegrityBreak.cs
-│   │   │   ├── PaperOrderEvidenceReader.cs
 │   │   │   ├── PaperPosition.cs
 │   │   │   ├── PaperSessionDtos.cs
 │   │   │   ├── PaperSessionJournalBatch.cs
@@ -6867,7 +6868,6 @@ Meridian-main
 │   │   ├── OrderManagementSystem.KillSwitch.cs
 │   │   ├── OrderManagementSystem.Lifecycle.cs
 │   │   ├── OrderManagementSystem.Modifications.cs
-│   │   ├── OrderManagementSystem.OrderIntents.cs
 │   │   ├── OrderManagementSystem.PendingAmendments.cs
 │   │   ├── OrderManagementSystem.Recovery.cs
 │   │   ├── OrderManagementSystem.Retention.cs
@@ -6919,7 +6919,6 @@ Meridian-main
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
 │   │   ├── OrderCommandAuthority.cs
-│   │   ├── OrderIntent.cs
 │   │   ├── OrderSizingMetadata.cs
 │   │   ├── OrderSubmissionRefusal.cs
 │   │   ├── PositionExtensions.cs
@@ -8877,10 +8876,8 @@ Meridian-main
 │   │   │   │   ├── DesignerDocumentStrategy.cs
 │   │   │   │   ├── DesignerExpression.cs
 │   │   │   │   ├── DesignerLiveFields.cs
-│   │   │   │   ├── DesignerPaperExecution.cs
 │   │   │   │   ├── DesignerSessionClock.cs
-│   │   │   │   ├── DesignerStrategyPlan.cs
-│   │   │   │   └── DesignerStrategyVersion.cs
+│   │   │   │   └── DesignerStrategyPlan.cs
 │   │   │   ├── Strategies
 │   │   │   │   ├── BuyAndHoldLiveStrategy.cs
 │   │   │   │   └── MovingAverageCrossoverLiveStrategy.cs
@@ -8965,7 +8962,6 @@ Meridian-main
 │   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   ├── JsonlStrategyDesignRepository.cs
 │   │   │   ├── JsonlStrategyRunLedgerArchive.cs
-│   │   │   ├── ScopedStrategyDesignStore.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Strategies.csproj
@@ -9204,6 +9200,7 @@ Meridian-main
 │   │   │   │   │   │   ├── provider-activation-panel.test.tsx
 │   │   │   │   │   │   ├── provider-activation-panel.tsx
 │   │   │   │   │   │   ├── provider-capability-badges.tsx
+│   │   │   │   │   │   ├── provider-connection-templates-dialog.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.test.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.integration.test.tsx
@@ -9744,6 +9741,7 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital.api.test.ts
 │   │   │   │   │   │   ├── private-capital.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
+│   │   │   │   │   │   ├── provider-connection-templates.api.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.test.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.ts
 │   │   │   │   │   │   ├── provider-management.api.ts
@@ -10551,7 +10549,6 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.production-surface.test.ts
 │   │   │   │   │   ├── reporting-screen.production-surface.ts
-│   │   │   │   │   ├── reporting-screen.report-writer-dataset.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-filters.tsx
 │   │   │   │   │   ├── reporting-screen.report-writer-formula-references.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.test.ts
@@ -10627,7 +10624,6 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-backtest.test.ts
 │   │   │   │   │   ├── strategy-designer-backtest.ts
-│   │   │   │   │   ├── strategy-designer-hosted.ts
 │   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
@@ -10687,7 +10683,6 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.journal.test.tsx
 │   │   │   │   │   ├── trading-screen.journal.tsx
 │   │   │   │   │   ├── trading-screen.linked-context.ts
-│   │   │   │   │   ├── trading-screen.live-authorization-revoke.tsx
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
 │   │   │   │   │   ├── trading-screen.order-authority.test.tsx
 │   │   │   │   │   ├── trading-screen.order-authority.ts
@@ -10695,7 +10690,6 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.order-ticket-state.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
 │   │   │   │   │   ├── trading-screen.paper-reconciliation.tsx
-│   │   │   │   │   ├── trading-screen.pending-paper-intent.ts
 │   │   │   │   │   ├── trading-screen.promotion-evidence.ts
 │   │   │   │   │   ├── trading-screen.readiness-summary.ts
 │   │   │   │   │   ├── trading-screen.server-preview.test.tsx
@@ -11040,6 +11034,7 @@ Meridian-main
 │   │   │   ├── SchemaServiceBase.cs
 │   │   │   ├── SearchService.cs
 │   │   │   ├── SettingsConfigurationService.cs
+│   │   │   ├── SettingsConfigurationService.ProviderTemplates.cs
 │   │   │   ├── SetupWizardService.cs
 │   │   │   ├── SmartRecommendationsService.cs
 │   │   │   ├── StatusServiceBase.cs
@@ -11125,7 +11120,6 @@ Meridian-main
 │   │   │   ├── ExecutionEndpoints.Audit.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.Metadata.cs
-│   │   │   ├── ExecutionEndpoints.PaperIntents.cs
 │   │   │   ├── ExecutionEndpoints.PaperSessionReconciliation.cs
 │   │   │   ├── ExecutionEndpoints.Positions.cs
 │   │   │   ├── ExecutionEndpoints.Sessions.cs
@@ -11227,6 +11221,7 @@ Meridian-main
 │   │   │   ├── ProviderConfigurationCredentialFilter.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
+│   │   │   ├── ProviderConnectionTemplateEndpoints.cs
 │   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpoints.cs
 │   │   │   ├── ProviderDataProjectionEndpoints.cs
@@ -11480,7 +11475,6 @@ Meridian-main
 │   │   │   ├── DemoTenantBlueprint.cs
 │   │   │   ├── DemoTenantProvisioner.cs
 │   │   │   ├── DemoWorkspaceSeeder.cs
-│   │   │   ├── DesignerBacktestService.cs
 │   │   │   ├── DesktopLaunchTicketService.cs
 │   │   │   ├── DesktopWorkstationLaunchService.cs
 │   │   │   ├── DirectLendingOperationsReadService.cs
@@ -11630,6 +11624,7 @@ Meridian-main
 │   │   │   ├── ProviderConnectionLifecycleService.DraftVerification.cs
 │   │   │   ├── ProviderConnectionLifecycleService.ExternalGl.cs
 │   │   │   ├── ProviderConnectionLifecycleService.Ownership.cs
+│   │   │   ├── ProviderConnectionLifecycleService.TemplateProbes.cs
 │   │   │   ├── ProviderConnectionLifecycleService.VerificationHistory.cs
 │   │   │   ├── ProviderCredentialProbe.cs
 │   │   │   ├── ProviderCredentialStore.cs
@@ -12408,6 +12403,7 @@ Meridian-main
 │   │   │   ├── ActivityLogPage.xaml
 │   │   │   ├── ActivityLogPage.xaml.cs
 │   │   │   ├── AddProviderWizardPage.OwnedConnections.cs
+│   │   │   ├── AddProviderWizardPage.Templates.cs
 │   │   │   ├── AddProviderWizardPage.xaml
 │   │   │   ├── AddProviderWizardPage.xaml.cs
 │   │   │   ├── AdminMaintenancePage.xaml
@@ -13668,7 +13664,6 @@ Meridian-main
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageOrderRecoveryJournalTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
-│   │   │   ├── BrokerageOrderRecoveryTests.FaultReplay.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── BrokerOrderSweepTests.cs
@@ -15269,7 +15264,6 @@ Meridian-main
 │   │   │   ├── DataOperationsAssuranceServiceTests.cs
 │   │   │   ├── DegradedModeEvaluationTests.cs
 │   │   │   ├── DemoTenantProvisionerTests.cs
-│   │   │   ├── DesignerPaperRehearsalTests.cs
 │   │   │   ├── DesktopLaunchTicketServiceTests.cs
 │   │   │   ├── DiagnosticsEndpointsTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs
@@ -15406,6 +15400,7 @@ Meridian-main
 │   │   │   ├── ProviderConfigurationCredentialGuardTests.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjectionTests.cs
 │   │   │   ├── ProviderConnectionEndpointsTests.cs
+│   │   │   ├── ProviderConnectionTemplateEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipRaceTests.cs
 │   │   │   ├── ProviderDataProjectionEndpointsTests.cs

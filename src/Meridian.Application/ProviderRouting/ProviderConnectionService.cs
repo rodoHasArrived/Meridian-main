@@ -95,6 +95,9 @@ public sealed class ProviderConnectionService
             var section = ProviderRoutingConfigExtensions.GetSection(cfg);
             var connections = (section.Connections ?? Array.Empty<ProviderConnectionConfig>()).ToList();
 
+            if ((section.TemplateSetups ?? []).Any(draft => string.Equals(draft.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)))
+                throw new InvalidOperationException("The connection identity is reserved for a template setup draft.");
+
             if (connections.Count(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase)) > 1)
                 throw new InvalidOperationException("Connection ownership is ambiguous.");
             var existingIndex = connections.FindIndex(c => string.Equals(c.ConnectionId, connectionId, StringComparison.OrdinalIgnoreCase));
@@ -140,7 +143,8 @@ public sealed class ProviderConnectionService
                 Description: request.Description,
                 ProductionReady: request.ProductionReady,
                 TenantId: tenantId,
-                CredentialEnvironment: environment);
+                CredentialEnvironment: environment)
+            { SetupTemplate = existing?.SetupTemplate, TemplateSetupId = existing?.TemplateSetupId };
 
             if (existingIndex >= 0)
                 connections[existingIndex] = next;

@@ -271,6 +271,18 @@ Response DTO for best bid/offer data.
 public sealed record BboResponse(string Symbol, DateTimeOffset Timestamp, decimal BidPrice, long BidSize, decimal AskPrice, long AskSize, decimal? MidPrice, decimal? Spread, long SequenceNumber, string? StreamId, string? Venue);
 ```
 
+## BeginProviderTemplateSetupRequest
+
+Qualified name: <code>Meridian.Contracts.Api.BeginProviderTemplateSetupRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:44](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L44).
+
+The account identity, when required, belongs to this instance alone.
+
+```csharp
+public sealed record BeginProviderTemplateSetupRequest(Guid SetupId, string TemplateName, string Revision, string? ExternalAccountId = null);
+```
+
 ## BindProviderRuntimeCredentialRequest
 
 Qualified name: <code>Meridian.Contracts.Api.BindProviderRuntimeCredentialRequest</code>. Kind: `record`.
@@ -842,16 +854,4 @@ Request to update failover settings.
 
 ```csharp
 public record FailoverSettingsRequest(bool EnableFailover, int FailoverTimeoutSeconds);
-```
-
-## FieldError
-
-Qualified name: <code>Meridian.Contracts.Api.FieldError</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ErrorResponse.cs:267](../../../../src/Meridian.Contracts/Api/ErrorResponse.cs#L267).
-
-Represents a field-level validation error.
-
-```csharp
-public sealed record FieldError([property : JsonPropertyName("field")] string Field, [property : JsonPropertyName("message")] string Message, [property : JsonPropertyName("code")] string? Code = null, [property : JsonPropertyName("attemptedValue")] object? AttemptedValue = null);
 ```

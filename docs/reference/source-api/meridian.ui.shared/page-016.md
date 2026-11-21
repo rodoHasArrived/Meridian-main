@@ -6,16 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderLedgerDailyReconciliationTarget
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationTarget</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:18](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L18).
-
-```csharp
-public sealed record ProviderLedgerDailyReconciliationTarget(string TenantId, string CompanyId, string FundProfileId, Guid AccountId, decimal AmountTolerance = 0.01m, int ProviderStaleAfterMinutes = 30);
-```
-
 ## ProviderLedgerDailyReconciliationWorker
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationWorker</code>. Kind: `class`.
@@ -868,4 +858,14 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.c
 
 ```csharp
 public sealed record ReportingGovernanceSeriesHistory(string SeriesId, IReadOnlyList<GovernedReportingRun> Runs, IReadOnlyList<ReportingRestatementRequest> RestatementRequests);
+```
+
+## ReportingGovernedArtifactDescriptor
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingGovernedArtifactDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:64](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L64).
+
+```csharp
+public sealed record ReportingGovernedArtifactDescriptor(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, ReportingDeclaredArtifactKind Kind, bool IsPreview, string DownloadRoute);
 ```

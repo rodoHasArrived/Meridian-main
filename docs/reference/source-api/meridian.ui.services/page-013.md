@@ -22,7 +22,7 @@ public sealed record PeriodComparisonView(bool IsReady, string Heading, string W
 
 Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:740](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L740).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:744](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L744).
 
 Represents a configuration profile (built-in or custom).
 
@@ -131,7 +131,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.CredentialServiceRefusedException</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:778](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L778).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:782](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L782).
 
 Credential configuration state for a provider.
 
@@ -143,7 +143,7 @@ public sealed class CredentialServiceRefusedException(string message) : InvalidO
 
 Qualified name: <code>Meridian.Ui.Services.Services.CredentialState</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:780](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L780).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:784](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L784).
 
 ```csharp
 public enum CredentialState : byte
@@ -153,11 +153,11 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>NotRequired</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:782](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L782) |  |
-| <code>Configured</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:783](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L783) |  |
-| <code>Partial</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:784](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L784) |  |
-| <code>Missing</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:785](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L785) |  |
-| <code>Unavailable</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:786](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L786) |  |
+| <code>NotRequired</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:786](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L786) |  |
+| <code>Configured</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:787](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L787) |  |
+| <code>Partial</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:788](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L788) |  |
+| <code>Missing</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:789](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L789) |  |
+| <code>Unavailable</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:790](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L790) |  |
 
 ## DailyQualityRecord
 
@@ -1030,7 +1030,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.ProviderCatalogEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:743](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L743).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:747](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L747).
 
 Provider catalog entry for the provider marketplace display.
 
@@ -1042,13 +1042,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string[] RequiredEnvVars =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:756](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L756) |  |
+| <code>public string[] RequiredEnvVars =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:760](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L760) |  |
 
 ## ProviderCredentialStatus
 
 Qualified name: <code>Meridian.Ui.Services.Services.ProviderCredentialStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:790](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L790).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:794](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L794).
 
 Credential status for a specific provider.
 
@@ -1060,8 +1060,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DateTimeOffset? RotationDueAt { get; init; }</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:800](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L800) |  |
-| <code>public bool HasServiceFieldSchema =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:807](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L807) | True when the authenticated credential service reported this provider together with the field names its vault accepts. Editors must use these names; the local provider catalog&#x27;s field names are not the vault schema. |
+| <code>public DateTimeOffset? RotationDueAt { get; init; }</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:804](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L804) |  |
+| <code>public bool HasServiceFieldSchema =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:811](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L811) | True when the authenticated credential service reported this provider together with the field names its vault accepts. Editors must use these names; the local provider catalog&#x27;s field names are not the vault schema. |
 
 ## ProviderInfo
 
@@ -1089,7 +1089,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.ProviderTier</code>. Kind: `enum`.
 
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:764](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L764).
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:768](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L768).
 
 Provider tier classification.
 
@@ -1101,10 +1101,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Free</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:766](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L766) |  |
-| <code>FreeWithAccount</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:767](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L767) |  |
-| <code>LimitedFree</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:768](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L768) |  |
-| <code>Premium</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:769](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L769) |  |
+| <code>Free</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:770](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L770) |  |
+| <code>FreeWithAccount</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:771](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L771) |  |
+| <code>LimitedFree</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:772](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L772) |  |
+| <code>Premium</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:773](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L773) |  |
 
 ## QualityAlert
 

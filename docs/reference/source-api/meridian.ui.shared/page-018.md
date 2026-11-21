@@ -6,16 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ReportPackDistributionPolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackRunReadService.ReportPackDistributionPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs:55](../../../../src/Meridian.Ui.Shared/Services/ReportPackRunReadService.Models.cs#L55).
-
-```csharp
-public sealed record ReportPackDistributionPolicy(string DistributionId, string Recipient, string RecipientRole, string Channel, string Owner, string Route, TimeSpan ApprovalSla, TimeSpan PublicationSla, TimeSpan DeliverySla, TimeSpan CorrectionSla);
-```
-
 ## ReportPackSecurityLineIndexEntry
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackSecurityLineIndexEntry</code>. Kind: `record`.
@@ -878,3 +868,21 @@ Minimal scheduled-fetch loop for statement connectors: every minute, runs any en
 ```csharp
 public sealed class StatementFetchSchedulerService(IServiceProvider serviceProvider, ILogger<StatementFetchSchedulerService> logger) : BackgroundService
 ```
+
+## StatementFetchSchedulerServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:83](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L83).
+
+Registers the statement fetch scheduler as a shared singleton and hosted service.
+
+```csharp
+public static class StatementFetchSchedulerServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddStatementFetchSchedulerHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs:85](../../../../src/Meridian.Ui.Shared/Services/StatementFetchSchedulerService.cs#L85) |  |

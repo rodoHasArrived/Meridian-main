@@ -6,24 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BuiltInWorkflowDefinitionProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Workflows.BuiltInWorkflowDefinitionProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:9](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L9).
-
-Built-in workflow library entries based on the current workstation surfaces.
-
-```csharp
-public sealed class BuiltInWorkflowDefinitionProvider : IWorkflowDefinitionProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;WorkflowDefinitionDto&gt; GetWorkflowDefinitions() =&gt; …;</code> | [src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs:11](../../../../src/Meridian.Ui.Shared/Workflows/BuiltInWorkflowDefinitionProvider.cs#L11) |  |
-
 ## FileOperatorPreferenceStore
 
 Qualified name: <code>Meridian.Ui.Shared.Workflows.FileOperatorPreferenceStore</code>. Kind: `class`.

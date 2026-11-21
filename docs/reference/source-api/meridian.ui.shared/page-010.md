@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashOperationsOrchestratorService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CashOperationsOrchestratorService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:22](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L22).
+
+Builds cash synchronization windows, validation decisions, approval requirements, forecasts, and settlement trails.
+
+```csharp
+public sealed class CashOperationsOrchestratorService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;CashSyncWindow&gt; BuildDailySyncWindows(DateTimeOffset nowUtc, IReadOnlyList&lt;CashSyncWindow&gt; configuredWindows);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:24](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L24) |  |
+| <code>public WorkstationSyncValidationResult ValidateSync(IReadOnlyList&lt;SyncCompletenessResult&gt; completeness, IReadOnlyList&lt;DeltaOutlierResult&gt; outliers);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:36](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L36) |  |
+| <code>public WorkstationApprovalDecision EvaluateApproval(decimal amount, string currency, Guid accountId, string riskBucket, WorkstationApprovalPolicy policy);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:52](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L52) |  |
+| <code>public DateOnly ResolveSettlementDateWithCutoff(DateTimeOffset bookingTimeLocal, TimeOnly cutoffLocal, int normalSettlementLagDays);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:102](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L102) |  |
+| <code>public CashForecastResult BuildCashForecast(DateOnly asOf, IReadOnlyDictionary&lt;(Guid AccountId, string Currency), decimal&gt; openingBalances, IReadOnlyList&lt;WorkstationPaymentInstruction&gt; payments, IReadOnlyList&lt;WorkstationSettlementInstruction&gt; settlements, IReadOnlyList&lt;WorkstationCouponEvent&gt; coupons, IReadOnlyList&lt;WorkstationFxConversionReference&gt; fx, decimal liquidityWarningThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:110](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L110) |  |
+| <code>public IReadOnlyList&lt;WorkstationStpStateTransition&gt; BuildStpTrail(Guid instructionId, bool validationPassed, bool approved, bool settled, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L150) |  |
+
 ## CashSyncOrchestrationService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CashSyncOrchestrationService</code>. Kind: `class`.
@@ -887,30 +910,22 @@ Outcome of seeding the demo workspace.
 public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
 ```
 
-## DesignerBacktestBlockedException
+## DesktopLaunchTicketService
 
-Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestBlockedException</code>. Kind: `class`.
+Qualified name: <code>Meridian.Ui.Shared.Services.DesktopLaunchTicketService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:260](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L260).
+Source: [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:12](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L12).
 
-```csharp
-public sealed class DesignerBacktestBlockedException(string message, Exception? cause = null) : Exception(message, cause);
-```
-
-## DesignerBacktestService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DesignerBacktestService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:24](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L24).
-
-Runs the hosted Designer&#x27;s bounded daily-equity replay against retained, exact inputs.
+Issues short-lived, single-use launch claims so the desktop workstation never trusts browser-selected identity or navigation state directly from process arguments.
 
 ```csharp
-public sealed class DesignerBacktestService(string dataRoot, Func<BacktestRequest, BacktestEngine> engineFactory, IStrategyRepository runs, IEvidenceArtifactStore evidence, StrategyDesignService designs, IOperationalTradingCalendar calendar, ISecurityIdentityQueryService? securities, ISecurityCorporateActionsQueryService? corporateActions)
+public sealed class DesktopLaunchTicketService
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;StrategyRunEntry&gt; RunAsync(StrategyDesignDocument document, StrategyRunRepositoryScope scope, string actor, Guid accountId, DateOnly from, DateOnly to, StrategyRunEvidenceLoop evidenceLoop, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs:38](../../../../src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs#L38) |  |
+| <code>public DesktopLaunchTicketService(TimeProvider? timeProvider = null);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:18](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L18) |  |
+| <code>public string Issue(string username, string page);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:23](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L23) |  |
+| <code>public DesktopLaunchTicketRedemptionDto? Redeem(IPAddress? remoteAddress, string token);</code> | [src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs:35](../../../../src/Meridian.Ui.Shared/Services/DesktopLaunchTicketService.cs#L35) |  |
