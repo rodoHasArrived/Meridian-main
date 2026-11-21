@@ -92,7 +92,8 @@ public sealed record TradeExecutedEvent(
 
     internal string? GetValidatedAccountingRunId()
     {
-        if (AccountingRunId is null) return null;
+        if (AccountingRunId is null)
+            return null;
         if (string.IsNullOrWhiteSpace(AccountingRunId)
             || !string.Equals(AccountingRunId, AccountingRunId.Trim(), StringComparison.Ordinal)
             || !string.Equals(AccountingRunId, RunId?.Trim(), StringComparison.Ordinal))

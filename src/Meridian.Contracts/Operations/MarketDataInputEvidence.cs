@@ -33,16 +33,19 @@ public static class MarketDataInputEvidenceTags
 
     public static IReadOnlyList<MarketDataInputEvidence>? Freeze(IReadOnlyList<MarketDataInputEvidence>? inputs)
     {
-        if (inputs is null) return null;
+        if (inputs is null)
+            return null;
         // Optional provenance must not prevent the WAL or its fallback from retaining a fill
         // that has already executed. Invalid assertions become explicitly unassessed evidence.
         return Array.AsReadOnly(inputs.Select(static input =>
         {
-            if (input is null) return new MarketDataInputEvidence(EvidenceIssue: "Missing source evidence.");
+            if (input is null)
+                return new MarketDataInputEvidence(EvidenceIssue: "Missing source evidence.");
             if (string.Equals(input.ProviderId?.Trim(), ProviderProvenanceLabels.Unknown, StringComparison.OrdinalIgnoreCase))
                 input = input with { ProviderId = null };
             var issues = new List<string>();
-            if (input.EvidenceIssue is { Length: > 0 } existing) issues.Add(existing);
+            if (input.EvidenceIssue is { Length: > 0 } existing)
+                issues.Add(existing);
             if (input.QualityScore is { } score && (!double.IsFinite(score) || score < 0d || score > 1d))
             { input = input with { QualityScore = null }; issues.Add("Invalid quality score."); }
             if (input.QualityThreshold is { } threshold && (!double.IsFinite(threshold) || threshold < 0d || threshold > 1d))
@@ -55,7 +58,8 @@ public static class MarketDataInputEvidenceTags
 
     public static IReadOnlyDictionary<string, string> Create(IEnumerable<MarketDataInputEvidence>? inputs)
     {
-        if (inputs is null) return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (inputs is null)
+            return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
         var frozen = Freeze(inputs?.ToArray()) ?? [];
         return new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
         {
@@ -77,7 +81,8 @@ public static class MarketDataInputEvidenceTags
     public static IReadOnlyList<MarketDataInputEvidence> Read(IReadOnlyDictionary<string, string>? tags)
     {
         if (tags?.TryGetValue(VersionTag, out var version) != true || version != "1"
-            || !tags.TryGetValue(InputsTag, out var json)) return [];
+            || !tags.TryGetValue(InputsTag, out var json))
+            return [];
         try
         {
             return Freeze(JsonSerializer.Deserialize(json, MarketDataInputEvidenceJsonContext.Default.MarketDataInputEvidenceArray)) ?? [];

@@ -382,8 +382,10 @@ public sealed partial class InMemoryDirectLendingService
             { MeasurementKind = "ledger-balance:population", AsOfDate = asOf });
             var run = new ReconciliationRunDto(runId, loanId, projection.ProjectionRunId, observedAt, observedAt, "Completed")
             {
-                RequestHash = LoanCashReconciliation.RequestHash(request), AsOfDate = asOf,
-                AmountTolerance = request.AmountTolerance, DateToleranceDays = request.DateToleranceDays
+                RequestHash = LoanCashReconciliation.RequestHash(request),
+                AsOfDate = asOf,
+                AmountTolerance = request.AmountTolerance,
+                DateToleranceDays = request.DateToleranceDays
             };
             _reconciliationExceptions.AddRange(LoanCashReconciliation.Exceptions(results, observedAt));
             _reconciliationResults[runId] = results;

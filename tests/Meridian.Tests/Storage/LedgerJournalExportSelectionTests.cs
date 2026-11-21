@@ -100,7 +100,10 @@ public sealed class LedgerJournalExportSelectionTests
 
     private static LedgerJournalEntryRecord Rebuild(LedgerJournalEntryRecord record, string description,
         JournalEntryMetadata metadata, DateTimeOffset timestamp)
-        => record with { Entry = new JournalEntry(record.Entry.JournalEntryId, timestamp, description,
+        => record with
+        {
+            Entry = new JournalEntry(record.Entry.JournalEntryId, timestamp, description,
             record.Entry.Lines.Select(line => new LedgerEntry(line.EntryId, line.JournalEntryId, timestamp,
-                line.Account, line.Debit, line.Credit, description, line.Dimensions, line.Currency)).ToArray(), metadata) };
+                line.Account, line.Debit, line.Credit, description, line.Dimensions, line.Currency)).ToArray(), metadata)
+        };
 }

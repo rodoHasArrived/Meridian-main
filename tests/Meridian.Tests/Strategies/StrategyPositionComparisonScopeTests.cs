@@ -30,7 +30,8 @@ public sealed class StrategyPositionComparisonScopeTests
             "missing-account" => expected with { FinancialAccountId = null },
             _ => expected
         };
-        if (change == "missing-account") expected = actual;
+        if (change == "missing-account")
+            expected = actual;
         var at = DateTimeOffset.Parse("2026-11-21T20:00:00Z");
         var inputs = new ReconciliationNormalizedInputs(
             new(at, 0m, 0m, []) { AccountingPositions = [expected] },

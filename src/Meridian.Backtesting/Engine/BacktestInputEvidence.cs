@@ -38,14 +38,16 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
         {
             if (timestamp.HasValue && timestamp != item.Timestamp)
             {
-                await foreach (var verified in VerifyWindowAsync(window, ct).ConfigureAwait(false)) yield return verified;
+                await foreach (var verified in VerifyWindowAsync(window, ct).ConfigureAwait(false))
+                    yield return verified;
                 window.Clear();
             }
             timestamp = item.Timestamp;
             window.Add(item);
         }
         if (window.Count > 0)
-            await foreach (var verified in VerifyWindowAsync(window, ct).ConfigureAwait(false)) yield return verified;
+            await foreach (var verified in VerifyWindowAsync(window, ct).ConfigureAwait(false))
+                yield return verified;
     }
 
     private async IAsyncEnumerable<MarketEvent> VerifyWindowAsync(IReadOnlyList<MarketEvent> window,
@@ -83,7 +85,8 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
             _unverified.Add(item.EffectiveSymbol);
             order.Add((item with { BackfillRevisionId = null }, null));
         }
-        foreach (var item in order) yield return item.Key is { } key ? selected[key] : item.Item;
+        foreach (var item in order)
+            yield return item.Key is { } key ? selected[key] : item.Item;
     }
 
     public void Observe(MarketEvent item)
@@ -155,7 +158,8 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
     public IReadOnlyList<MarketDataInputEvidence> PriceInputEvidence(string symbol, DateTimeOffset priceTimestamp)
     {
         if (_currentEvent is { } observed && observed.Timestamp == priceTimestamp &&
-            string.Equals(observed.EffectiveSymbol, symbol, StringComparison.OrdinalIgnoreCase)) return _currentInputs;
+            string.Equals(observed.EffectiveSymbol, symbol, StringComparison.OrdinalIgnoreCase))
+            return _currentInputs;
         return _lastPriceInputs.TryGetValue(symbol, out var mark) && mark.At <= priceTimestamp ? mark.Inputs : [];
     }
 

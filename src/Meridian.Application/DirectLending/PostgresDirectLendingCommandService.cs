@@ -680,7 +680,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         if (latestProjection is null)
         {
             var projected = await RequestProjectionAsync(loanId, projectionAsOf: null, metadata, ct).ConfigureAwait(false);
-            if (!projected.IsSuccess) return new(null, projected.Error);
+            if (!projected.IsSuccess)
+                return new(null, projected.Error);
             latestProjection = projected.Value!;
         }
         var flows = await _operationsStore.GetProjectedCashFlowsAsync(latestProjection.ProjectionRunId, ct).ConfigureAwait(false);
@@ -695,8 +696,10 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 "Loan state changed while capturing reconciliation evidence; retry with a new command identity.");
         var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, observedAt, DateTimeOffset.UtcNow, "Completed")
         {
-            RequestHash = LoanCashReconciliation.RequestHash(request), AsOfDate = asOf,
-            AmountTolerance = request.AmountTolerance, DateToleranceDays = request.DateToleranceDays
+            RequestHash = LoanCashReconciliation.RequestHash(request),
+            AsOfDate = asOf,
+            AmountTolerance = request.AmountTolerance,
+            DateToleranceDays = request.DateToleranceDays
         };
         return DirectLendingCommandResult<ReconciliationRunDto>.Success(await _operationsStore.SaveReconciliationRunAsync(run, results,
             LoanCashReconciliation.Exceptions(results, observedAt), ct).ConfigureAwait(false));

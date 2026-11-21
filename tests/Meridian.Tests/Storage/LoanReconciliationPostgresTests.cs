@@ -50,8 +50,12 @@ public sealed class LoanReconciliationPostgresTests
         var row = new ReconciliationResultDto(Guid.NewGuid(), run.ReconciliationRunId, loanId, null, null,
             "LedgerBalanceMismatch", 100m, 99m, -1m, run.AsOfDate, run.AsOfDate, "CanonicalRole:LoanPrincipal", null, ["Synthetic mismatch"], now)
         {
-            MeasurementKind = "ledger-balance:LoanPrincipal", Currency = "USD", AsOfDate = run.AsOfDate,
-            LedgerBookId = Guid.NewGuid(), ServicingRevision = 1, JournalEntryIds = [Guid.NewGuid()]
+            MeasurementKind = "ledger-balance:LoanPrincipal",
+            Currency = "USD",
+            AsOfDate = run.AsOfDate,
+            LedgerBookId = Guid.NewGuid(),
+            ServicingRevision = 1,
+            JournalEntryIds = [Guid.NewGuid()]
         };
         var exception = new ReconciliationExceptionDto(Guid.NewGuid(), row.ReconciliationResultId,
             "LedgerBalanceMismatch", "High", "Resolved", "synthetic-owner", "Synthetic explanation", now, now);

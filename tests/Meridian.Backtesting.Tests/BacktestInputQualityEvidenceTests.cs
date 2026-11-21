@@ -64,7 +64,8 @@ public sealed class BacktestInputQualityEvidenceTests : IDisposable
         var evidence = NewEvidence();
         var later = Bar("SPY", Date.AddDays(1), 101m);
         var replay = await Read(evidence, [first with { BackfillRevisionId = batch.Receipt.RevisionId }, later]);
-        foreach (var item in replay) evidence.Observe(item);
+        foreach (var item in replay)
+            evidence.Observe(item);
         var source = evidence.PriceInputEvidence("SPY", later.Timestamp).Single();
         source.BackfillRevisionId.Should().BeNull();
         source.Repaired.Should().BeNull();
@@ -98,12 +99,14 @@ public sealed class BacktestInputQualityEvidenceTests : IDisposable
     private static async Task<List<MarketEvent>> Read(BacktestInputEvidence evidence, IEnumerable<MarketEvent> rows)
     {
         var result = new List<MarketEvent>();
-        await foreach (var item in evidence.VerifyAsync(Events(rows), CancellationToken.None)) result.Add(item);
+        await foreach (var item in evidence.VerifyAsync(Events(rows), CancellationToken.None))
+            result.Add(item);
         return result;
     }
     private static async IAsyncEnumerable<MarketEvent> Events(IEnumerable<MarketEvent> rows)
     {
-        foreach (var row in rows) { yield return row; await Task.Yield(); }
+        foreach (var row in rows)
+        { yield return row; await Task.Yield(); }
     }
     public void Dispose() { if (Directory.Exists(_root)) Directory.Delete(_root, true); }
 }

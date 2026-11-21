@@ -105,7 +105,8 @@ public sealed class AccountingSystemIntegrationStateStore
 
     internal static bool Same(AccountingSystemStateExpectation left, AccountingSystemStateExpectation right)
     {
-        if (left.Json is null || right.Json is null) return left.Json == right.Json;
+        if (left.Json is null || right.Json is null)
+            return left.Json == right.Json;
         using var first = JsonDocument.Parse(left.Json);
         using var second = JsonDocument.Parse(right.Json);
         return JsonElement.DeepEquals(first.RootElement, second.RootElement);

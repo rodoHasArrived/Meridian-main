@@ -33,28 +33,38 @@ internal static class LoanReconciliationEvidence
 
     internal static ReconciliationRunDto Restore(ReconciliationRunDto run, string? json)
     {
-        if (json is null) return run;
+        if (json is null)
+            return run;
         var evidence = JsonSerializer.Deserialize(json, LoanReconciliationEvidenceJsonContext.Default.LoanReconciliationRunEvidence)
             ?? throw new InvalidDataException("Loan reconciliation run evidence is null.");
-        if (evidence.SchemaVersion != Version) throw new InvalidDataException("Unsupported loan reconciliation run evidence version.");
+        if (evidence.SchemaVersion != Version)
+            throw new InvalidDataException("Unsupported loan reconciliation run evidence version.");
         return run with
         {
-            RequestHash = evidence.RequestHash, AsOfDate = evidence.AsOfDate,
-            AmountTolerance = evidence.AmountTolerance, DateToleranceDays = evidence.DateToleranceDays
+            RequestHash = evidence.RequestHash,
+            AsOfDate = evidence.AsOfDate,
+            AmountTolerance = evidence.AmountTolerance,
+            DateToleranceDays = evidence.DateToleranceDays
         };
     }
 
     internal static ReconciliationResultDto Restore(ReconciliationResultDto result, string? json)
     {
-        if (json is null) return result;
+        if (json is null)
+            return result;
         var evidence = JsonSerializer.Deserialize(json, LoanReconciliationEvidenceJsonContext.Default.LoanReconciliationResultEvidence)
             ?? throw new InvalidDataException("Loan reconciliation result evidence is null.");
-        if (evidence.SchemaVersion != Version) throw new InvalidDataException("Unsupported loan reconciliation result evidence version.");
+        if (evidence.SchemaVersion != Version)
+            throw new InvalidDataException("Unsupported loan reconciliation result evidence version.");
         return result with
         {
-            MeasurementKind = evidence.MeasurementKind, Currency = evidence.Currency, AsOfDate = evidence.AsOfDate,
-            LedgerBookId = evidence.LedgerBookId, ServicingRevision = evidence.ServicingRevision,
-            PaymentAllocationId = evidence.PaymentAllocationId, JournalEntryIds = evidence.JournalEntryIds ?? []
+            MeasurementKind = evidence.MeasurementKind,
+            Currency = evidence.Currency,
+            AsOfDate = evidence.AsOfDate,
+            LedgerBookId = evidence.LedgerBookId,
+            ServicingRevision = evidence.ServicingRevision,
+            PaymentAllocationId = evidence.PaymentAllocationId,
+            JournalEntryIds = evidence.JournalEntryIds ?? []
         };
     }
 

@@ -28,7 +28,8 @@ public sealed class StrategyRunReadServiceTests
             RunType = RunType.Paper,
             ParameterSet = new Dictionary<string, string>
             {
-                ["workstationTenantId"] = "tenant-alpha", ["workstationCompanyId"] = "company-alpha"
+                ["workstationTenantId"] = "tenant-alpha",
+                ["workstationCompanyId"] = "company-alpha"
             },
             Metrics = run.Metrics! with { Ledger = new Meridian.Ledger.Ledger() }
         };
@@ -41,7 +42,8 @@ public sealed class StrategyRunReadServiceTests
                 Repaired: matchesExpectedFill, GapFilled: false, QualityScore: .95, QualityThreshold: .8,
                 QualityAssessedAt: time, AssessmentFrom: date, AssessmentTo: date)]))
         {
-            [LedgerQuery.StrategyRunIdTag] = run.RunId, [LedgerQuery.AccountingRunIdTag] = run.RunId
+            [LedgerQuery.StrategyRunIdTag] = run.RunId,
+            [LedgerQuery.AccountingRunIdTag] = run.RunId
         };
         var posted = new Meridian.Ledger.Ledger();
         posted.PostLines(time, "retained trade", [(LedgerAccounts.Cash, 100m, 0m), (LedgerAccounts.RealizedGain, 0m, 100m)],
@@ -100,7 +102,8 @@ public sealed class StrategyRunReadServiceTests
                 .And.Contain(warning => warning.Kind == "LowQuality");
             detail.ReplayProvenance.DataQualityWarnings.Should().OnlyContain(warning => warning.AffectedFillCount == 1);
         }
-        else detail.ReplayProvenance.DataQualityWarnings.Should().BeEmpty("an assessed clean population differs from unassessed legacy input");
+        else
+            detail.ReplayProvenance.DataQualityWarnings.Should().BeEmpty("an assessed clean population differs from unassessed legacy input");
     }
 
     [Fact]

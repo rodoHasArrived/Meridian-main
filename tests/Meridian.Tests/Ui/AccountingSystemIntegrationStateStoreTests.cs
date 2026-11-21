@@ -54,7 +54,8 @@ public sealed class AccountingSystemIntegrationStateStoreTests
         var expected = AccountingSystemIntegrationStateStore.Capture(firstRows, "profile", Options);
         async Task<bool> Attempt(AccountingSystemIntegrationStateStore store, ConcurrentDictionary<string, string> rows, string value)
         {
-            try { await store.RetainAsync("mapping-profiles", rows, "profile", value, Options, default, expected); return true; }
+            try
+            { await store.RetainAsync("mapping-profiles", rows, "profile", value, Options, default, expected); return true; }
             catch (InvalidOperationException) { return false; }
         }
         var results = await Task.WhenAll(Task.Run(() => Attempt(first, firstRows, "a")), Task.Run(() => Attempt(second, secondRows, "b")));

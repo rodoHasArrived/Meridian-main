@@ -25,8 +25,13 @@ public sealed class LoanReconciliationEvidenceTests
         var row = new ReconciliationResultDto(Guid.NewGuid(), Guid.NewGuid(), Guid.NewGuid(), null, null,
             "Matched", 1m, 1m, 0m, null, null, null, null, [], DateTimeOffset.UtcNow)
         {
-            MeasurementKind = "ledger-balance:LoanPrincipal", Currency = "USD", AsOfDate = new(2026, 11, 21),
-            LedgerBookId = Guid.NewGuid(), ServicingRevision = 9, PaymentAllocationId = Guid.NewGuid(), JournalEntryIds = [Guid.NewGuid()]
+            MeasurementKind = "ledger-balance:LoanPrincipal",
+            Currency = "USD",
+            AsOfDate = new(2026, 11, 21),
+            LedgerBookId = Guid.NewGuid(),
+            ServicingRevision = 9,
+            PaymentAllocationId = Guid.NewGuid(),
+            JournalEntryIds = [Guid.NewGuid()]
         };
         var restored = LoanReconciliationEvidence.Restore(row with { Currency = null, LedgerBookId = null, ServicingRevision = null, JournalEntryIds = [] },
             LoanReconciliationEvidence.Serialize(row));

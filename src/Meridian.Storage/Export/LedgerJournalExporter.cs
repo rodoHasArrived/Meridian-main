@@ -85,7 +85,8 @@ public static class LedgerJournalExporter
         // Hash original values, not formula-escaped CSV cells, which are deliberately not invertible.
         var source = JsonSerializer.SerializeToElement(records.ToArray(), LedgerJournalExportJsonContext.Default.LedgerJournalEntryRecordArray);
         using var stream = new MemoryStream();
-        using (var writer = new Utf8JsonWriter(stream)) WriteCanonical(source, writer);
+        using (var writer = new Utf8JsonWriter(stream))
+            WriteCanonical(source, writer);
         return Sha256Digest.Compute(stream.ToArray());
 
         static void WriteCanonical(JsonElement element, Utf8JsonWriter writer)
@@ -103,10 +104,12 @@ public static class LedgerJournalExporter
             else if (element.ValueKind == JsonValueKind.Array)
             {
                 writer.WriteStartArray();
-                foreach (var item in element.EnumerateArray()) WriteCanonical(item, writer);
+                foreach (var item in element.EnumerateArray())
+                    WriteCanonical(item, writer);
                 writer.WriteEndArray();
             }
-            else element.WriteTo(writer);
+            else
+                element.WriteTo(writer);
         }
     }
 

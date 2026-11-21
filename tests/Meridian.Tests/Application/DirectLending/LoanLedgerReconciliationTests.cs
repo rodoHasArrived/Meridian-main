@@ -41,7 +41,8 @@ public sealed class LoanLedgerReconciliationTests
         var (store, book) = Store(state, 100m, configured: true);
         var options = new DirectLendingOptions
         {
-            LedgerBookId = book.LedgerBookId, LedgerChartMappingRevision = "synthetic-r7",
+            LedgerBookId = book.LedgerBookId,
+            LedgerChartMappingRevision = "synthetic-r7",
             LedgerAccountPaths = new() { ["LoanPrincipal"] = "Assets:Loans" }
         };
         var resolver = Substitute.For<IConfiguredLedgerAccountResolver>();
@@ -83,7 +84,7 @@ public sealed class LoanLedgerReconciliationTests
         var oldLines = current.Entry.Lines.Select(line => new LedgerEntry(Guid.NewGuid(), oldJournalId,
             line.Timestamp, line.Account.Symbol is null ? line.Account : line.Account with { Symbol = "OLDLOAN" },
             line.Debit, line.Credit, current.Entry.Description, line.Dimensions, line.Currency)
-            { ChartAccount = line.ChartAccount }).ToArray();
+        { ChartAccount = line.ChartAccount }).ToArray();
         var oldJournal = new JournalEntry(oldJournalId, current.Entry.Timestamp, current.Entry.Description, oldLines,
             current.Entry.Metadata with
             {

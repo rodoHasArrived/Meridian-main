@@ -358,7 +358,8 @@ public sealed partial class StrategyRunReadService
         var sources = expectedIds.Order().Select(id => (IReadOnlyList<MarketDataInputEvidence>?)
             observed.GetValueOrDefault(id) ?? []).ToList();
         // Join on identity: another journal's clean evidence cannot substitute for a missing fill.
-        foreach (var fill in fills.Where(fill => fill.FillId == Guid.Empty)) sources.Add([]);
+        foreach (var fill in fills.Where(fill => fill.FillId == Guid.Empty))
+            sources.Add([]);
         foreach (var pair in observed.Where(pair => !expectedIds.Contains(pair.Key)))
             sources.Add(pair.Key == Guid.Empty ? [] : pair.Value);
         return MarketDataInputEvidenceTags.BuildWarnings(sources);

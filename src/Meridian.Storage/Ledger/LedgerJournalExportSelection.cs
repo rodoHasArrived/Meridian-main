@@ -22,7 +22,8 @@ public static class LedgerJournalExportSelection
         if (from > to || from < period.StartDate || to > period.EndDate)
             throw new ArgumentException("The accounting-date range must be ordered and inside the selected period.");
         var ids = journalEntryIds?.ToHashSet() ?? [];
-        if (ids.Contains(Guid.Empty)) throw new ArgumentException("Selected journal identifiers must be nonempty.");
+        if (ids.Contains(Guid.Empty))
+            throw new ArgumentException("Selected journal identifiers must be nonempty.");
         if (snapshot.Journals.Select(record => record.Entry.JournalEntryId).Distinct().Count() != snapshot.Journals.Count)
             throw new InvalidOperationException("The captured journal population contains duplicate identities.");
         var records = snapshot.Journals.Where(record =>

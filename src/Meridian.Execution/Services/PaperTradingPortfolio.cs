@@ -669,7 +669,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState,
             return new PaperFillAccountingResult(
                 canCertifyOwnership ? evidence : null,
                 evidence.RealizedPnl,
-                _accounts.Values.Sum(static entry => entry.Cash)) { MarketDataEvidence = resultInputs };
+                _accounts.Values.Sum(static entry => entry.Cash))
+            { MarketDataEvidence = resultInputs };
         }
     }
 

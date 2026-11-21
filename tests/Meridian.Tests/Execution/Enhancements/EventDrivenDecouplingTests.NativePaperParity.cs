@@ -42,12 +42,20 @@ public sealed partial class EventDrivenDecouplingTests
             var id = Guid.NewGuid();
             var report = new ExecutionReport
             {
-                OrderId = id.ToString("D"), Symbol = "AAPL", Side = side,
-                ReportType = ExecutionReportType.Fill, OrderStatus = OrderStatus.Filled,
-                OrderQuantity = quantity, FilledQuantity = quantity, FillPrice = price,
-                Commission = 1m, Fees = 2m, SlippageCost = 3m,
+                OrderId = id.ToString("D"),
+                Symbol = "AAPL",
+                Side = side,
+                ReportType = ExecutionReportType.Fill,
+                OrderStatus = OrderStatus.Filled,
+                OrderQuantity = quantity,
+                FilledQuantity = quantity,
+                FillPrice = price,
+                Commission = 1m,
+                Fees = 2m,
+                SlippageCost = 3m,
                 Timestamp = new DateTimeOffset(2026, 11, 20, 14, 30, 0, TimeSpan.Zero).AddMinutes(events.Count),
-                LotUnitKind = unit, LotMultiplier = multiplier,
+                LotUnitKind = unit,
+                LotMultiplier = multiplier,
                 AssetClass = scenario == "contracts" ? "Option" : scenario == "variation-margin" ? "Future" : null,
                 BookedMoneyMultiplier = multiplier,
                 BookedVariationMargin = scenario == "variation-margin",
@@ -77,7 +85,8 @@ public sealed partial class EventDrivenDecouplingTests
         for (var prefix = 1; prefix <= events.Count; prefix++)
         {
             var projected = new Meridian.Ledger.Ledger();
-            foreach (var opening in openingJournals) projected.Post(opening);
+            foreach (var opening in openingJournals)
+                projected.Post(opening);
             var store = new InMemoryTradeFillPostingStore(TestPostingScope);
             var consumer = new LedgerPostingConsumer(new InMemoryTradeFillLedgerPostingTarget(),
                 NullLogger<LedgerPostingConsumer>.Instance, store, TestPostingContext,

@@ -126,8 +126,11 @@ public static class LoanLedgerReconciliation
                 System.Text.Json.JsonSerializer.Serialize(new { amountTolerance = request.AmountTolerance }),
                 [$"Compared servicing revision {state.Servicing.ServicingRevision} with the captured {book.AccountingBasis} carrying balance."], observedAt)
             {
-                MeasurementKind = $"ledger-balance:{measure.Role}", Currency = currency, AsOfDate = asOf,
-                LedgerBookId = bookId, ServicingRevision = state.Servicing.ServicingRevision,
+                MeasurementKind = $"ledger-balance:{measure.Role}",
+                Currency = currency,
+                AsOfDate = asOf,
+                LedgerBookId = bookId,
+                ServicingRevision = state.Servicing.ServicingRevision,
                 JournalEntryIds = selected.Select(static item => item.Record.Entry.JournalEntryId).Distinct().Order().ToArray()
             });
         }
@@ -138,8 +141,10 @@ public static class LoanLedgerReconciliation
                 asOf, null, role is null ? "CanonicalRole:population" : $"CanonicalRole:{role}", null, [reason], observedAt)
             {
                 MeasurementKind = role is null ? "ledger-balance:population" : $"ledger-balance:{role}",
-                AsOfDate = asOf, ServicingRevision = state.Servicing.ServicingRevision,
-                LedgerBookId = capturedBookId, JournalEntryIds = capturedJournalIds
+                AsOfDate = asOf,
+                ServicingRevision = state.Servicing.ServicingRevision,
+                LedgerBookId = capturedBookId,
+                JournalEntryIds = capturedJournalIds
             };
     }
 

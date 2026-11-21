@@ -59,8 +59,10 @@ internal static class CanonicalPaperPositionAttribution
             }
             else
             {
-                if (before == 0m) runId = observedRun;
-                else if (!string.Equals(runId, observedRun, StringComparison.Ordinal)) runId = null;
+                if (before == 0m)
+                    runId = observedRun;
+                else if (!string.Equals(runId, observedRun, StringComparison.Ordinal))
+                    runId = null;
                 fillIds.Add(fillId);
             }
         }

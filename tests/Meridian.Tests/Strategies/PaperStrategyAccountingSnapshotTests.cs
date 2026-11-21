@@ -30,7 +30,8 @@ public sealed class PaperStrategyAccountingSnapshotTests
     {
         var references = new List<string> { "retained:synthetic-fill" };
         var expected = new StrategyPositionAccountingEvidence("TEST", Account, Guid.NewGuid(), isShort,
-            (decimal)quantity, basis, unit, multiplier, "USD", EvidenceReferences: references) { StrategyRunId = RunId };
+            (decimal)quantity, basis, unit, multiplier, "USD", EvidenceReferences: references)
+        { StrategyRunId = RunId };
         var source = CreateSource([expected, expected with { FinancialAccountId = "foreign-account", Symbol = "PRIVATE" }]);
         var context = CreateContext(source);
 
@@ -76,7 +77,8 @@ public sealed class PaperStrategyAccountingSnapshotTests
     {
         var foreignAccount = Guid.NewGuid().ToString("D");
         var row = new StrategyPositionAccountingEvidence("TEST", foreignAccount, Guid.NewGuid(), false,
-            10, 1000, "Shares", 1, "USD") { StrategyRunId = RunId };
+            10, 1000, "Shares", 1, "USD")
+        { StrategyRunId = RunId };
         var source = CreateSource([row], [foreignAccount]);
         var context = CreateContext(source);
         context.CapturePositionAccountingEvidence().Should().BeNull();
@@ -224,7 +226,9 @@ public sealed class PaperStrategyAccountingSnapshotTests
         [new ExecutionPosition("LONG", 10, 100m, 0m, 0m), new ExecutionPosition("SHORT", -4, 100m, 0m, 0m)],
         Cutoff, BuyingPower: 300m, ShortMarginCollateral: 80m)
     {
-        FunctionalCurrency = "USD", AccountingEquity = 810m,
-        AccountingLongMarketValue = 1000m, AccountingShortMarketValue = -400m
+        FunctionalCurrency = "USD",
+        AccountingEquity = 810m,
+        AccountingLongMarketValue = 1000m,
+        AccountingShortMarketValue = -400m
     };
 }

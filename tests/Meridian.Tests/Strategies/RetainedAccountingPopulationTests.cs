@@ -56,7 +56,8 @@ public sealed class RetainedAccountingPopulationTests
             {
                 ["account"] = new("account", "Synthetic account", FinancialAccountKind.Brokerage, "Synthetic",
                     1000m, 0m, 1000m, 0m, 2000m, positions, new())
-            }, []) { AccountingPositions = receiptPresent ? [] : null };
+            }, [])
+        { AccountingPositions = receiptPresent ? [] : null };
         var request = new BacktestRequest(day, day, ["SIBLING"], InitialCash: 2000m);
         var metrics = new BacktestResult(request, new HashSet<string> { "SIBLING" }, [snapshot], [], [],
             BacktestMetricsEngine.Compute([snapshot], [], [], request), new Meridian.Ledger.Ledger(), TimeSpan.Zero, 1);
@@ -170,10 +171,13 @@ public sealed class RetainedAccountingPopulationTests
         await store.RecordRunAsync(run);
         var detail = (await new StrategyRunReadService(store, new PortfolioReadService(), new LedgerReadService()).GetRunDetailAsync(run.RunId))!;
         var reference = new WorkstationSecurityReference(securityId, "Retained identity", "Equity", "USD", SecurityStatusDto.Active, "TEST");
-        detail = detail with { Ledger = detail.Ledger! with
+        detail = detail with
         {
-            TrialBalance = detail.Ledger!.TrialBalance.Select(line => line.Symbol == "TEST" ? line with { Security = reference } : line).ToArray()
-        } };
+            Ledger = detail.Ledger! with
+            {
+                TrialBalance = detail.Ledger!.TrialBalance.Select(line => line.Symbol == "TEST" ? line with { Security = reference } : line).ToArray()
+            }
+        };
         var query = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
         if (nativeUnitsRetained)
             query.Setup(item => item.GetEconomicDefinitionByIdAsync(securityId, It.IsAny<CancellationToken>()))
@@ -190,11 +194,14 @@ public sealed class RetainedAccountingPopulationTests
             source.SourceCoverageIssues.Should().BeEmpty();
             query.Verify(item => item.GetEconomicDefinitionByIdAsync(securityId, It.IsAny<CancellationToken>()), Times.Once);
             var face = new StrategyPositionAccountingEvidence("TEST", "account", securityId, false, 10m, 1000m, "FaceValue", 1m, "USD");
-            var conflicting = detail with { Portfolio = detail.Portfolio! with
+            var conflicting = detail with
             {
-                HasRetainedAccountingPositionPopulation = true,
-                AccountingPositions = [face, face with { QuantityUnit = "Contracts", Multiplier = 100m }]
-            } };
+                Portfolio = detail.Portfolio! with
+                {
+                    HasRetainedAccountingPositionPopulation = true,
+                    AccountingPositions = [face, face with { QuantityUnit = "Contracts", Multiplier = 100m }]
+                }
+            };
             var strict = new Mock<ISecurityMasterQueryService>(MockBehavior.Strict);
             var unavailable = (await new SecurityMasterAccountingEventSourceAdapter(strict.Object).BuildRequestAsync(conflicting, new(run.RunId)))!;
             unavailable.Positions.Should().BeEmpty();
@@ -225,7 +232,8 @@ public sealed class RetainedAccountingPopulationTests
         var security = new SecurityMasterAccountingSecurity(id, "BOND", "Bond", "USD",
             new SecurityFixedIncomeTerms(.06m, "Fixed", "ACT/365", 2,
                 IssueDate: new(2020, 1, 1), NextCouponDate: new(2026, 1, 31),
-                MaturityDate: new(2030, 1, 1), AccrualStartDate: start) { CouponRateUnit = RateUnit.Fraction },
+                MaturityDate: new(2030, 1, 1), AccrualStartDate: start)
+            { CouponRateUnit = RateUnit.Fraction },
             new SecurityAccountingRule("AvailableForSale", "GAAP"));
         var request = new SecurityMasterAccountingEventRequest("native-unit-coverage", start, new(2026, 2, 1), [security],
             [new("BOND", id, "account", 100000m)

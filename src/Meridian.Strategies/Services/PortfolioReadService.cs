@@ -156,23 +156,23 @@ public sealed class PortfolioReadService
             }).ToArray());
         var rows = new List<StrategyPositionAccountingEvidence>();
         foreach (var account in snapshot.Accounts.Values.OrderBy(static item => item.AccountId, StringComparer.OrdinalIgnoreCase))
-        foreach (var position in account.Positions.Values.OrderBy(static item => item.Symbol, StringComparer.OrdinalIgnoreCase))
-        {
-            var lots = (position.OpenLots ?? account.OpenLots ?? [])
-                .Where(lot => string.Equals(lot.Symbol, position.Symbol, StringComparison.OrdinalIgnoreCase)
-                    && lot.IsShort == (position.ExactQuantity < 0m)).ToArray();
-            var units = lots.Select(static lot => lot.UnitKind).Distinct().ToArray();
-            var multipliers = lots.Select(static lot => lot.Multiplier).Distinct().ToArray();
-            var complete = lots.Length > 0 && units.Length == 1 && multipliers.Length == 1
-                && lots.Sum(static lot => lot.Quantity) == Math.Abs(position.ExactQuantity)
-                && lots.All(lot => lot.FunctionalCurrency is not null && lot.FunctionalCurrency == account.FunctionalCurrency);
-            var ids = lots.Select(static lot => lot.SecurityId).Distinct().ToArray();
-            rows.Add(new(position.Symbol, account.AccountId, ids.Length == 1 ? ids[0] : null, position.ExactQuantity < 0m,
-                position.ExactQuantity, complete ? lots.Sum(static lot => lot.CostBasis()) : null,
-                units.Length == 1 ? units[0].ToString() : null, multipliers.Length == 1 ? multipliers[0] : null,
-                account.FunctionalCurrency, complete ? null : "A complete unitized, currency-declared open-lot population is unavailable.",
-                lots.Select(static lot => $"simulation-lot:{lot.LotId:D}").ToArray()));
-        }
+            foreach (var position in account.Positions.Values.OrderBy(static item => item.Symbol, StringComparer.OrdinalIgnoreCase))
+            {
+                var lots = (position.OpenLots ?? account.OpenLots ?? [])
+                    .Where(lot => string.Equals(lot.Symbol, position.Symbol, StringComparison.OrdinalIgnoreCase)
+                        && lot.IsShort == (position.ExactQuantity < 0m)).ToArray();
+                var units = lots.Select(static lot => lot.UnitKind).Distinct().ToArray();
+                var multipliers = lots.Select(static lot => lot.Multiplier).Distinct().ToArray();
+                var complete = lots.Length > 0 && units.Length == 1 && multipliers.Length == 1
+                    && lots.Sum(static lot => lot.Quantity) == Math.Abs(position.ExactQuantity)
+                    && lots.All(lot => lot.FunctionalCurrency is not null && lot.FunctionalCurrency == account.FunctionalCurrency);
+                var ids = lots.Select(static lot => lot.SecurityId).Distinct().ToArray();
+                rows.Add(new(position.Symbol, account.AccountId, ids.Length == 1 ? ids[0] : null, position.ExactQuantity < 0m,
+                    position.ExactQuantity, complete ? lots.Sum(static lot => lot.CostBasis()) : null,
+                    units.Length == 1 ? units[0].ToString() : null, multipliers.Length == 1 ? multipliers[0] : null,
+                    account.FunctionalCurrency, complete ? null : "A complete unitized, currency-declared open-lot population is unavailable.",
+                    lots.Select(static lot => $"simulation-lot:{lot.LotId:D}").ToArray()));
+            }
         return rows;
     }
 

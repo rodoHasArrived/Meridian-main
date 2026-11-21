@@ -3023,7 +3023,8 @@ public sealed class ReconciliationRunServiceTests
         var snapshot = metrics.Snapshots.Single();
         var position = snapshot.Positions["AAPL"];
         var native = new StrategyPositionAccountingEvidence("AAPL", "unscoped-account", securityId, false,
-            position.ExactQuantity, null, "FaceValue", 1m, "USD") { StrategyRunId = runId };
+            position.ExactQuantity, null, "FaceValue", 1m, "USD")
+        { StrategyRunId = runId };
         await store.RecordRunAsync(run with
         {
             Metrics = metrics with { Snapshots = [snapshot with { AccountingPositions = [native] }] }

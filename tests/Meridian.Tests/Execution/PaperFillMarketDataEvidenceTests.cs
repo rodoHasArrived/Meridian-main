@@ -66,7 +66,8 @@ public sealed class PaperFillMarketDataEvidenceTests
     {
         var inputs = new List<MarketDataInputEvidence> { Repaired };
         var evt = new TradeExecutedEvent(Guid.NewGuid(), "order", "SYN", OrderSide.Buy, 1m, 10m,
-            0m, 0m, 0m, DateTimeOffset.UtcNow) { MarketDataEvidence = inputs }.FreezeFees();
+            0m, 0m, 0m, DateTimeOffset.UtcNow)
+        { MarketDataEvidence = inputs }.FreezeFees();
         inputs.Add(Clean);
         evt.MarketDataEvidence.Should().ContainSingle();
         var rehydrated = JsonSerializer.Deserialize(JsonSerializer.Serialize(evt,
@@ -104,14 +105,17 @@ public sealed class PaperFillMarketDataEvidenceTests
                 var summary = await service.CreateSessionAsync(new("source-test", null, 10_000m));
                 sessionId = summary.SessionId;
                 var report = Fill("source-fill", OrderSide.Buy, 3m, observedInputs ? [Repaired] : null)
-                    with { Timestamp = summary.CreatedAt.AddMinutes(1) };
+                    with
+                { Timestamp = summary.CreatedAt.AddMinutes(1) };
                 await service.RecordFillAsync(sessionId, report);
                 var entries = service.GetLedger(sessionId)!.Journal.Where(entry => entry.Metadata.FillId.HasValue).ToArray();
                 entries.Should().NotBeEmpty();
                 foreach (var entry in entries)
                 {
-                    if (observedInputs) MarketDataInputEvidenceTags.Read(entry.Metadata.Tags).Should().Contain(Repaired);
-                    else (entry.Metadata.Tags?.ContainsKey(MarketDataInputEvidenceTags.VersionTag) ?? false).Should().BeFalse();
+                    if (observedInputs)
+                        MarketDataInputEvidenceTags.Read(entry.Metadata.Tags).Should().Contain(Repaired);
+                    else
+                        (entry.Metadata.Tags?.ContainsKey(MarketDataInputEvidenceTags.VersionTag) ?? false).Should().BeFalse();
                 }
                 originalJournal = JsonSerializer.Serialize(service.GetLedger(sessionId)!.Journal);
             }
@@ -124,10 +128,16 @@ public sealed class PaperFillMarketDataEvidenceTests
 
     private static ExecutionReport Fill(string id, OrderSide side, decimal quantity,
         IReadOnlyList<MarketDataInputEvidence>? sources) => new()
-    {
-        OrderId = id, Symbol = "SYN", Side = side, ReportType = ExecutionReportType.Fill,
-        OrderStatus = OrderStatus.Filled, OrderQuantity = quantity, FilledQuantity = quantity,
-        FillPrice = 10m, Timestamp = new DateTimeOffset(2026, 11, 21, 12, 0, 0, TimeSpan.Zero),
-        MarketDataEvidence = sources
-    };
+        {
+            OrderId = id,
+            Symbol = "SYN",
+            Side = side,
+            ReportType = ExecutionReportType.Fill,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = quantity,
+            FilledQuantity = quantity,
+            FillPrice = 10m,
+            Timestamp = new DateTimeOffset(2026, 11, 21, 12, 0, 0, TimeSpan.Zero),
+            MarketDataEvidence = sources
+        };
 }

@@ -48,11 +48,14 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         }
         else
         {
-            if (AccountingSecurityId != securityId) AccountingSecurityId = null;
-            if (!string.Equals(AccountingRunId, runId, StringComparison.Ordinal)) AccountingRunId = null;
+            if (AccountingSecurityId != securityId)
+                AccountingSecurityId = null;
+            if (!string.Equals(AccountingRunId, runId, StringComparison.Ordinal))
+                AccountingRunId = null;
             AccountingChronologyKnown &= occurredAt != default;
         }
-        if (fillId != Guid.Empty) _accountingFillIds.Add(fillId);
+        if (fillId != Guid.Empty)
+            _accountingFillIds.Add(fillId);
     }
 
     public void RestoreAccountingIdentity(Guid? securityId, string? runId, IEnumerable<Guid> fillIds)
@@ -60,7 +63,8 @@ internal sealed class PaperPosition(string symbol, decimal marketPrice = 0m)
         AccountingSecurityId = securityId is { } id && id != Guid.Empty ? id : null;
         AccountingRunId = string.IsNullOrWhiteSpace(runId) ? null : runId.Trim();
         AccountingChronologyKnown = true;
-        foreach (var fillId in fillIds.Where(static id => id != Guid.Empty)) _accountingFillIds.Add(fillId);
+        foreach (var fillId in fillIds.Where(static id => id != Guid.Empty))
+            _accountingFillIds.Add(fillId);
     }
     public decimal OpenCostBasis { get; private set; }
     public long LotVersion { get; private set; }

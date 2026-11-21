@@ -83,13 +83,16 @@ public static class LoanCashReconciliation
                 payment?.Cash.SettlementDate, payment is null ? "ExpectedFlowVsCash" : "SingleUseAmountDateCurrency",
                 tolerance, payment is null ? ["Due projected flow did not match eligible cash."] : ["Matched retained cash once."], observedAt)
             {
-                MeasurementKind = "cash-flow", Currency = flow.Currency.ToString(), AsOfDate = asOf,
+                MeasurementKind = "cash-flow",
+                Currency = flow.Currency.ToString(),
+                AsOfDate = asOf,
                 PaymentAllocationId = payment?.AllocationId
             });
         }
         for (var i = 0; i < candidates.Count; i++)
         {
-            if (owners[i] >= 0) continue;
+            if (owners[i] >= 0)
+                continue;
             var payment = candidates[i];
             results.Add(new ReconciliationResultDto(Guid.NewGuid(), runId, loanId, null, payment.Cash.CashTransactionId,
                 payment.TargetType is "RetainedExcess" ? "Matched" : "UnexpectedCash",
@@ -99,7 +102,9 @@ public static class LoanCashReconciliation
                 payment.TargetType is "RetainedExcess" ? ["Cash has an explicit retained prepaid-interest, unapplied-cash or principal-prepayment disposition."]
                     : ["Eligible cash or allocation has no due projected counterpart."], observedAt)
             {
-                MeasurementKind = payment.TargetType is "RetainedExcess" ? "cash-disposition" : "cash-flow", Currency = payment.Cash.Currency.ToString(), AsOfDate = asOf,
+                MeasurementKind = payment.TargetType is "RetainedExcess" ? "cash-disposition" : "cash-flow",
+                Currency = payment.Cash.Currency.ToString(),
+                AsOfDate = asOf,
                 PaymentAllocationId = payment.AllocationId
             });
         }

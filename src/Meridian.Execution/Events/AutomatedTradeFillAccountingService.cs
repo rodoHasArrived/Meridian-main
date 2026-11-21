@@ -379,7 +379,8 @@ public sealed class AutomatedTradeFillAccountingService(
         if (fill.GetValidatedAccountingRunId() is { } accountingRunId)
             tags[LedgerQuery.AccountingRunIdTag] = accountingRunId;
         if (fill.MarketDataEvidence is not null)
-            foreach (var pair in MarketDataInputEvidenceTags.Create(fill.MarketDataEvidence)) tags[pair.Key] = pair.Value;
+            foreach (var pair in MarketDataInputEvidenceTags.Create(fill.MarketDataEvidence))
+                tags[pair.Key] = pair.Value;
         if (source == "execution.trade-fill")
         {
             tags["execution.cash-account"] = amounts.Single(line => line.Account.Symbol is null && line.Account.AccountType == LedgerAccountType.Asset).Account.Name;

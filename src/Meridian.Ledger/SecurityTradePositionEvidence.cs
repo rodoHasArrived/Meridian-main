@@ -52,9 +52,13 @@ public static class SecurityTradePositionEvidence
         }
         var tags = new Dictionary<string, string>(metadata.Tags ?? new Dictionary<string, string>(), StringComparer.OrdinalIgnoreCase)
         {
-            [VersionTag] = "1", [ReversalSignTag] = "1", [Prefix + "unit"] = unit.ToString(),
-            [Prefix + "multiplier"] = Number(multiplier), [Prefix + "longQuantity"] = Number(longQuantity),
-            [Prefix + "shortQuantity"] = Number(shortQuantity), [Prefix + "longBasis"] = Number(longBasis),
+            [VersionTag] = "1",
+            [ReversalSignTag] = "1",
+            [Prefix + "unit"] = unit.ToString(),
+            [Prefix + "multiplier"] = Number(multiplier),
+            [Prefix + "longQuantity"] = Number(longQuantity),
+            [Prefix + "shortQuantity"] = Number(shortQuantity),
+            [Prefix + "longBasis"] = Number(longBasis),
             [Prefix + "shortBasis"] = Number(shortBasis)
         };
         return metadata with { Tags = tags };

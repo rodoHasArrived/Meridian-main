@@ -41,8 +41,10 @@ public sealed partial class ExternalGlPostingPostgresTests
                 truncate.CommandText = $"truncate table \"{database.Options.SchemaName}\".{table}{(cascade ? " cascade" : "")}";
                 var action = () => truncate.ExecuteNonQueryAsync(ct);
                 var rejection = (await action.Should().ThrowAsync<PostgresException>()).Which;
-                if (cascade) rejection.SqlState.Should().Be("55000", "the immutable statement guard must refuse cascading truncation");
-                else rejection.SqlState.Should().BeOneOf("55000", "0A000");
+                if (cascade)
+                    rejection.SqlState.Should().Be("55000", "the immutable statement guard must refuse cascading truncation");
+                else
+                    rejection.SqlState.Should().BeOneOf("55000", "0A000");
             }
         }
         await using (var truncateOutbox = connection.CreateCommand())

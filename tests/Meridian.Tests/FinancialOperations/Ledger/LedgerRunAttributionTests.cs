@@ -15,8 +15,10 @@ public sealed class LedgerRunAttributionTests
     public void TrustedOwnershipRequiresRetainedMarkerAndExactRunLabel(string? admittedRun, string? label, bool expected)
     {
         var tags = new Dictionary<string, string>();
-        if (label is not null) tags[LedgerQuery.StrategyRunIdTag] = label;
-        if (admittedRun is not null) tags[LedgerQuery.AccountingRunIdTag] = admittedRun;
+        if (label is not null)
+            tags[LedgerQuery.StrategyRunIdTag] = label;
+        if (admittedRun is not null)
+            tags[LedgerQuery.AccountingRunIdTag] = admittedRun;
         Assert.Equal(expected, LedgerRunAttribution.TryGetTrustedRunId(new(Tags: tags), out var runId));
         Assert.Equal(expected ? admittedRun : null, runId);
     }

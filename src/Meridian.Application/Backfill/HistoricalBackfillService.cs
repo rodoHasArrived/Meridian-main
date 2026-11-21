@@ -87,9 +87,8 @@ public sealed class HistoricalBackfillService : IDisposable
         !request.Granularity.IsIntraday() && request.From.HasValue && _symbolTimelineResolver is not null,
         resolveStaleToleranceDays: ResolveStaleToleranceDays, resolvePriority: ResolveRoutingPriority);
 
-    private int ResolveStaleToleranceDays(string provider) => _validationProfiles
-        ?.FirstOrDefault(pair => string.Equals(pair.Key, provider, StringComparison.OrdinalIgnoreCase))
-        .Value?.StaleToleranceDays ?? BackfillBarValidation.DefaultStaleToleranceDays;
+    private int ResolveStaleToleranceDays(string provider) =>
+        ProviderValidationProfile.ResolveProfiles(_validationProfiles, provider).StaleToleranceDays;
 
     public void ValidateRequest(BackfillRequest request)
     {

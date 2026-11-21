@@ -41,7 +41,8 @@ public sealed class StrategyEvidenceMissingAuthorityTests
                 DateTimeOffset.UtcNow, [], [], new(100, EvidenceStatusDto.Ready, [], [], [], [], []), [], []),
                 new("synthetic-author", "Retained scoped strategy evidence")
                 {
-                    TenantId = "tenant-evidence", Scope = "company-evidence",
+                    TenantId = "tenant-evidence",
+                    Scope = "company-evidence",
                     Linkage = new($"{EvidenceSubjectResolver.StrategyRunKind}/{runId}", runId, null, null, null)
                 });
             var lookup = new EvidenceVaultLookupRequestDto(null, runId, null, null, null)

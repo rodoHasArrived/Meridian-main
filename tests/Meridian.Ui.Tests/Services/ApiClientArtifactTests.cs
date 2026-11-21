@@ -35,7 +35,7 @@ public sealed class ApiClientArtifactTests
     public async Task PostArtifactAsync_AuthorizationFailureCannotBecomeDownloadableBytes()
     {
         using var handler = new ArtifactHandler(_ => Task.FromResult(new HttpResponseMessage(HttpStatusCode.Forbidden)
-            { Content = new StringContent("Export permission is required.") }));
+        { Content = new StringContent("Export permission is required.") }));
         using var service = new ApiClientService(new ArtifactFactory(handler));
 
         var response = await service.PostArtifactAsync("/api/ledger/periods/period-1/journal-export", new { format = "csv" });

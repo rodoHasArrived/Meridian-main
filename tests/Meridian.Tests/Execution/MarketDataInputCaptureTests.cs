@@ -93,8 +93,11 @@ public sealed class MarketDataInputCaptureTests
     {
         var report = new ExecutionReport
         {
-            OrderId = "legacy", Symbol = "SYN", Side = OrderSide.Buy,
-            ReportType = ExecutionReportType.Fill, OrderStatus = OrderStatus.Filled
+            OrderId = "legacy",
+            Symbol = "SYN",
+            Side = OrderSide.Buy,
+            ReportType = ExecutionReportType.Fill,
+            OrderStatus = OrderStatus.Filled
         };
         JsonSerializer.Serialize(report, ExecutionJsonContext.Default.ExecutionReport)
             .Should().NotContain("marketDataEvidence");

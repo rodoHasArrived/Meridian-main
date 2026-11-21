@@ -251,12 +251,11 @@ establish clearing. The optional fields preserve legacy artifact hashes when abs
 
 ## Purpose
 
-Provider validation profiles are retained per provider in `Backfill.ValidationProfiles` and
-applied when providers are constructed: daily-bar recency uses calendar-day tolerance,
-and Alpaca, Polygon and Robinhood boundary checks use future-skew, stale-event and latency
-tolerances. Profile edits require a host restart; loosening records a reason and atomic
-before/after audit evidence through the shared provider settings endpoint. Null stale-event
-threshold and zero maximum latency disable their respective optional checks.
+`Backfill.ValidationProfiles` holds each provider's calendar-day tolerance for daily-bar recency.
+The composite resolves each candidate through the shared provider lookup. Workstation jobs load
+the saved tolerance on start. At host startup, the factory captures the future-skew, stale-event,
+and latency tolerances used by Alpaca, Polygon, and Robinhood. Changes to those live thresholds
+take effect after restart. A null stale-event threshold or zero maximum latency disables that check.
 
 `StreamingFailoverService.ApplyConfiguration` swaps edited rule thresholds and backup lists (limited
 to providers with a live client) and the health-check interval without a restart, keeping each

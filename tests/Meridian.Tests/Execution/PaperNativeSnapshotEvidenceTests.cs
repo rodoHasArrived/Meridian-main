@@ -209,11 +209,18 @@ public sealed class PaperNativeSnapshotEvidenceTests
 
     private static ExecutionReport Fill(OrderSide side, decimal quantity, decimal price, int sequence = 0) => new()
     {
-        OrderId = "native-" + sequence, Symbol = "TEST", Side = side,
-        ReportType = ExecutionReportType.Fill, OrderStatus = OrderStatus.Filled,
-        OrderQuantity = quantity, FilledQuantity = quantity, FillPrice = price,
-        AccountingSecurityId = SecurityId, AccountingRunId = RunId,
-        LotUnitKind = SecurityLotUnitKind.Shares, LotMultiplier = 1m,
+        OrderId = "native-" + sequence,
+        Symbol = "TEST",
+        Side = side,
+        ReportType = ExecutionReportType.Fill,
+        OrderStatus = OrderStatus.Filled,
+        OrderQuantity = quantity,
+        FilledQuantity = quantity,
+        FillPrice = price,
+        AccountingSecurityId = SecurityId,
+        AccountingRunId = RunId,
+        LotUnitKind = SecurityLotUnitKind.Shares,
+        LotMultiplier = 1m,
         Timestamp = DateTimeOffset.UtcNow.AddMinutes(-1).AddSeconds(sequence)
     };
 }

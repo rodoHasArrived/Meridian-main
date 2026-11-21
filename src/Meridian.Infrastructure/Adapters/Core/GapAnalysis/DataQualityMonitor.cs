@@ -247,7 +247,8 @@ public sealed class DataQualityMonitor
             Dimensions: dimensions.ToArray(),
             Issues: issues,
             CalculatedAt: DateTimeOffset.UtcNow
-        ) { AssessmentFrom = start, AssessmentTo = end, QualityThreshold = _options.AlertThreshold };
+        )
+        { AssessmentFrom = start, AssessmentTo = end, QualityThreshold = _options.AlertThreshold };
 
         // Cache the score
         _scoreCache[symbol] = score;

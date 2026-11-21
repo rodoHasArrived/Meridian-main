@@ -70,7 +70,10 @@ public sealed class AutomatedTradeFillAccountingServiceTests
         using var fixture = new Fixture();
         var fill = fixture.Fill() with
         {
-            StrategyId = "strategy-source", RunId = "run-source", AccountingRunId = "run-source", Commission = 1m,
+            StrategyId = "strategy-source",
+            RunId = "run-source",
+            AccountingRunId = "run-source",
+            Commission = 1m,
             Fees = [new("source-fee", "Regulatory", 0.25m, "USD")]
         };
         var entries = await fixture.Service.PostAsync(fill, fixture.Context, fixture.SecurityId);
@@ -424,16 +427,25 @@ public sealed class AutomatedTradeFillAccountingServiceTests
             var path = Path.Combine(_root, new TradeFillPostingStoreOptions(_root, Context).ScopeStorageKey, $"{fill.FillId:N}.json");
             var intent = JsonSerializer.Deserialize(File.ReadAllText(path), FillAccountingJsonContext.Default.PreparedFillAccountingIntent)!;
             var entry = intent.Trade.Journal.Entry;
-            var metadata = entry.Metadata with { Tags = entry.Metadata.Tags!
+            var metadata = entry.Metadata with
+            {
+                Tags = entry.Metadata.Tags!
                 .Where(static item => !item.Key.StartsWith("positionEvidence.", StringComparison.OrdinalIgnoreCase)
                     && item.Key != LedgerQuery.AccountingRunIdTag)
-                .ToDictionary(static item => item.Key, static item => item.Value, StringComparer.OrdinalIgnoreCase) };
-            var priorWrite = intent.Trade.Journal with { Entry = new JournalEntry(entry.JournalEntryId,
-                entry.Timestamp, entry.Description, entry.Lines, metadata) };
+                .ToDictionary(static item => item.Key, static item => item.Value, StringComparer.OrdinalIgnoreCase)
+            };
+            var priorWrite = intent.Trade.Journal with
+            {
+                Entry = new JournalEntry(entry.JournalEntryId,
+                entry.Timestamp, entry.Description, entry.Lines, metadata)
+            };
             var priorTrade = (intent.Trade with { Journal = priorWrite }).WithComputedFingerprint();
             intent = intent with { Trade = priorTrade, ContentHash = "" };
-            intent = intent with { ContentHash = "sha256:" + Sha256Digest.ComputeUtf8(
-                JsonSerializer.Serialize(intent, FillAccountingJsonContext.Default.PreparedFillAccountingIntent)) };
+            intent = intent with
+            {
+                ContentHash = "sha256:" + Sha256Digest.ComputeUtf8(
+                JsonSerializer.Serialize(intent, FillAccountingJsonContext.Default.PreparedFillAccountingIntent))
+            };
             _receipts[priorTrade.MutationBatchId] = _receipts[priorTrade.MutationBatchId] with
             { CanonicalFingerprint = priorTrade.CanonicalFingerprint, Journal = Record(priorWrite) };
             var bytes = JsonSerializer.SerializeToUtf8Bytes(intent, FillAccountingJsonContext.Default.PreparedFillAccountingIntent);

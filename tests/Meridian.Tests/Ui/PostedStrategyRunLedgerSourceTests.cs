@@ -350,7 +350,8 @@ public sealed class PostedStrategyRunLedgerSourceTests
             {
                 [account] = new(account, "Captured account", FinancialAccountKind.Brokerage, "Synthetic",
                     100m, 0m, 0m, 0m, 100m, positions, new())
-            }, []) { AccountingPositions = [], FunctionalCurrency = "USD" };
+            }, [])
+        { AccountingPositions = [], FunctionalCurrency = "USD" };
         var run = Run with { Metrics = Result(new Meridian.Ledger.Ledger()) with { Snapshots = [snapshot] } };
         var source = new CapturedEmptyRunSource(run.RunId, Scope);
         var (reads, continuity) = await ReadersAsync(run, source);

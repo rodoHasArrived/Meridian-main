@@ -84,13 +84,15 @@ public sealed class CanonicalPaperPositionAttributionTests
         var history = new History();
         var first = history.Acquire("run-a", 5m);
         history.Dispose("run-a", first, 1m);
-        if (defect == "missing-receipt") history.Receipts.Remove(history.Receipts.Keys.First());
+        if (defect == "missing-receipt")
+            history.Receipts.Remove(history.Receipts.Keys.First());
         if (defect == "missing-mutations")
         {
             var key = history.Receipts.Keys.First();
             history.Receipts[key] = history.Receipts[key] with { Mutations = [] };
         }
-        if (defect == "duplicate-sequence") history.Journals[1] = history.Journals[1] with { GlobalSequence = history.Journals[0].GlobalSequence };
+        if (defect == "duplicate-sequence")
+            history.Journals[1] = history.Journals[1] with { GlobalSequence = history.Journals[0].GlobalSequence };
         history.Recover().RunId.Should().BeNull();
     }
 
@@ -139,7 +141,8 @@ public sealed class CanonicalPaperPositionAttributionTests
             var tags = new Dictionary<string, string>
             { ["sourceEventType"] = "execution.trade-fill", [LedgerQuery.StrategyRunIdTag] = runId };
             var trustedRun = UseExplicitTrustedRun ? RetainedTrustedRun : runId;
-            if (trustedRun is not null) tags[LedgerQuery.AccountingRunIdTag] = trustedRun;
+            if (trustedRun is not null)
+                tags[LedgerQuery.AccountingRunIdTag] = trustedRun;
             var journal = new JournalEntry(journalId, time, description, lines,
                 new JournalEntryMetadata(ActivityType: "execution.trade-fill", Symbol: "TEST", SecurityId: _securityId,
                     FillId: fillId, FinancialAccountId: AccountId, Tags: tags));
