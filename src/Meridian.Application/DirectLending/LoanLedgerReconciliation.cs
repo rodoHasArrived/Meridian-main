@@ -15,6 +15,8 @@ public static class LoanLedgerReconciliation
         DirectLendingOptions options, IConfiguredLedgerAccountResolver? resolver, IFundProfileTenancyRegistry? tenancy,
         DateOnly asOf, DateTimeOffset observedAt, ReconcileLoanRequest request, CancellationToken ct)
     {
+        IReadOnlyList<Guid> capturedJournalIds = [];
+        Guid? capturedBookId = null;
         if (store is not ILedgerReportingSnapshotSource source)
             return [Unavailable("The journal store cannot capture an authoritative accounting population.")];
         if (state.Servicing.RevisionHistory.Any(revision => revision.EffectiveAsOfDate > asOf))
@@ -47,6 +49,24 @@ public static class LoanLedgerReconciliation
         if (records.Count == 0 || records.Any(record => record.AggregateId != loanId || record.AccountingBasis != book.AccountingBasis
                 || (record.Entry.Metadata.EffectiveDate ?? DateOnly.FromDateTime(record.Entry.Timestamp.UtcDateTime)) > asOf))
             return [Unavailable("The captured loan journal population is absent or disagrees with its accounting scope.")];
+        capturedBookId = bookId;
+        capturedJournalIds = records.Select(static record => record.Entry.JournalEntryId).Distinct().Order().ToArray();
+        var securityReference = state.Contract.CurrentTerms.SecurityMasterReference;
+        if (securityReference is null || securityReference.SecurityId == Guid.Empty || string.IsNullOrWhiteSpace(securityReference.Symbol))
+            return [Unavailable("The servicing state has no exact canonical security identity for the loan journal population.")];
+        // Do not silently select only the current ticker from a loan's earlier security history.
+        // A terms amendment can change that reference without disposing or transferring every old
+        // carrying leg; omitting the old legs could falsely match a smaller current position.
+        if (records.Any(record => record.Entry.Metadata.SecurityId != securityReference.SecurityId
+                || !string.Equals(record.Entry.Metadata.Symbol, securityReference.Symbol, StringComparison.OrdinalIgnoreCase)
+                || record.Entry.Lines.Any(line =>
+                    line.Account.FinancialAccountId is { } accountId && string.Equals(accountId, loanId.ToString("D"), StringComparison.OrdinalIgnoreCase)
+                    && (line.Account.Symbol is { } lineSymbol && !string.Equals(lineSymbol, securityReference.Symbol, StringComparison.OrdinalIgnoreCase)
+                        || line.Dimensions?.InstrumentId is { } instrumentId && instrumentId != securityReference.SecurityId))))
+            return [Unavailable("The captured loan journals contain a different or missing security identity/symbol; the full retained history cannot be compared under the current reference.")];
+        if (options.LedgerBookId.HasValue && records.SelectMany(static record => record.Entry.Lines)
+                .Any(line => !string.Equals(line.ChartAccount?.Revision, options.LedgerChartMappingRevision, StringComparison.Ordinal)))
+            return [Unavailable("The captured loan journal history does not use one exact retained configured chart revision.")];
         var chart = StandardChartOfAccounts.Instance;
         var balances = state.Servicing.Balances;
         (LedgerAccountRole Role, decimal Expected)[] measures =
@@ -116,7 +136,11 @@ public static class LoanLedgerReconciliation
         ReconciliationResultDto Unavailable(string reason, LedgerAccountRole? role = null, decimal? expected = null) =>
             new(Guid.NewGuid(), runId, loanId, null, null, "LedgerCoverageUnavailable", expected, null, null,
                 asOf, null, role is null ? "CanonicalRole:population" : $"CanonicalRole:{role}", null, [reason], observedAt)
-            { MeasurementKind = role is null ? "ledger-balance:population" : $"ledger-balance:{role}", AsOfDate = asOf, ServicingRevision = state.Servicing.ServicingRevision };
+            {
+                MeasurementKind = role is null ? "ledger-balance:population" : $"ledger-balance:{role}",
+                AsOfDate = asOf, ServicingRevision = state.Servicing.ServicingRevision,
+                LedgerBookId = capturedBookId, JournalEntryIds = capturedJournalIds
+            };
     }
 
     private static bool HasCurrency(LedgerJournalEntryRecord record, LedgerEntry line, string expected) =>

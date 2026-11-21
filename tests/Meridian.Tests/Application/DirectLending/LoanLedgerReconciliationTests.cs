@@ -69,6 +69,40 @@ public sealed class LoanLedgerReconciliationTests
         absent.Should().ContainSingle().Which.MatchStatus.Should().Be("LedgerCoverageUnavailable");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReadAsync_ChangedSecurityHistoryCannotHideAnOldPrincipalBalance(bool changeSecurityId)
+    {
+        var state = State();
+        var (store, book) = Store(state, 100m);
+        var captureSource = (ILedgerReportingSnapshotSource)store;
+        var captured = await captureSource.CaptureReportingSnapshotAsync(new(LedgerBookId: book.LedgerBookId), null, default);
+        var current = captured.Journals.Single();
+        var oldJournalId = Guid.NewGuid();
+        var oldLines = current.Entry.Lines.Select(line => new LedgerEntry(Guid.NewGuid(), oldJournalId,
+            line.Timestamp, line.Account.Symbol is null ? line.Account : line.Account with { Symbol = "OLDLOAN" },
+            line.Debit, line.Credit, current.Entry.Description, line.Dimensions, line.Currency)
+            { ChartAccount = line.ChartAccount }).ToArray();
+        var oldJournal = new JournalEntry(oldJournalId, current.Entry.Timestamp, current.Entry.Description, oldLines,
+            current.Entry.Metadata with
+            {
+                Symbol = "OLDLOAN",
+                SecurityId = changeSecurityId ? Guid.NewGuid() : state.Contract.CurrentTerms.SecurityMasterReference!.SecurityId
+            });
+        var oldRecord = current with { Entry = oldJournal, GlobalSequence = 0 };
+        captureSource.CaptureReportingSnapshotAsync(Arg.Any<LedgerJournalEntryQuery>(), null, Arg.Any<CancellationToken>())
+            .Returns(new LedgerReportingSnapshot([oldRecord, current], []));
+
+        var results = await Read(state, store);
+
+        var unavailable = results.Should().ContainSingle().Subject;
+        unavailable.MatchStatus.Should().Be("LedgerCoverageUnavailable");
+        unavailable.ActualAmount.Should().BeNull();
+        unavailable.JournalEntryIds.Should().BeEquivalentTo([oldJournalId, current.Entry.JournalEntryId]);
+        unavailable.LedgerBookId.Should().Be(book.LedgerBookId);
+    }
+
     private static Task<IReadOnlyList<ReconciliationResultDto>> Read(PersistedDirectLendingState state, ILedgerJournalStore store) =>
         LoanLedgerReconciliation.ReadAsync(Guid.NewGuid(), state.LoanId, state, store, new(), null, null, AsOf, ObservedAt, new(0.01m, 0), default);
 
@@ -101,8 +135,10 @@ public sealed class LoanLedgerReconciliationTests
             principal, 0m, description, currency: new("USD", "USD", principal, 0m, 1m))
         { ChartAccount = configured ? new("principal-node", "synthetic-r7", "synthetic-code") : chart.GetPostingReference(principalAccount) };
         var entry = new JournalEntry(journalId, ObservedAt, description, [principalLine,
-            new(Guid.NewGuid(), journalId, ObservedAt, cashAccount, 0m, principal, description, currency: new("USD", "USD", 0m, principal, 1m))],
-            new(EffectiveDate: AsOf, FinancialAccountId: state.LoanId.ToString("D")));
+            new(Guid.NewGuid(), journalId, ObservedAt, cashAccount, 0m, principal, description, currency: new("USD", "USD", 0m, principal, 1m))
+            { ChartAccount = configured ? new("cash-node", "synthetic-r7", "synthetic-cash") : chart.GetPostingReference(cashAccount) }],
+            new(EffectiveDate: AsOf, FinancialAccountId: state.LoanId.ToString("D"),
+                Symbol: "SYNLOAN", SecurityId: state.Contract.CurrentTerms.SecurityMasterReference!.SecurityId));
         var book = new LedgerBookRecord(bookId, "synthetic-fund", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Synthetic book", "USD", ObservedAt, ObservedAt, AccountingBasis: configured ? AccountingBasisKindDto.Gaap : AccountingBasisKindDto.Primary);
         LedgerJournalEntryRecord[] records = [new(entry, state.LoanId, periodId, null, null, 1, ObservedAt, AccountingBasis: book.AccountingBasis)];
