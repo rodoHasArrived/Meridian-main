@@ -44,10 +44,13 @@ public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
                 QualityAssessedAt: assessmentTime, AssessmentFrom: from, AssessmentTo: to)
         };
         var options = new StorageOptions { RootPath = _dataRoot };
-        await using var sink = new JsonlStorageSink(options, new JsonlStoragePolicy(options));
-        await using var pipeline = new EventPipeline(sink, capacity: 1000, enablePeriodicFlush: false);
-        var result = await service.RunAsync(new AppBackfillRequest("alpha", ["SPY"], from, to)
-        { GapRepairReference = "retained-gap-operation" }, pipeline);
+        Meridian.Application.Backfill.BackfillResult result;
+        await using (var pipeline = new EventPipeline(new JsonlStorageSink(options, new JsonlStoragePolicy(options)),
+            capacity: 1000, enablePeriodicFlush: false))
+        {
+            result = await service.RunAsync(new AppBackfillRequest("alpha", ["SPY"], from, to)
+            { GapRepairReference = "retained-gap-operation" }, pipeline);
+        }
         var receipt = result.BatchReceipts.Should().ContainSingle().Which;
         var retained = (await store.Batches.ReadAsync(receipt.RevisionId))!;
 
@@ -58,8 +61,11 @@ public sealed class HistoricalBackfillCoverageResumeTests : IDisposable
         receipt.InputEvidence.QualityScore.Should().Be(.4);
         receipt.InputEvidence.QualityThreshold.Should().Be(.85);
         receipt.InputEvidence.QualityAssessedAt.Should().Be(assessmentTime);
+        var replayedRows = new List<MarketEvent>();
         await foreach (var row in new JsonlReplayer(_dataRoot).ReadEventsAsync())
-            row.BackfillRevisionId.Should().Be(receipt.RevisionId);
+            replayedRows.Add(row);
+        replayedRows.Should().HaveCount(3);
+        replayedRows.Should().OnlyContain(row => row.BackfillRevisionId == receipt.RevisionId);
         foreach (var changedEvidence in new[]
         {
             retained.Receipt.InputEvidence! with { Repaired = false },
