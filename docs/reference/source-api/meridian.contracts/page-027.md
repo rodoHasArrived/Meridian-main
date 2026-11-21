@@ -6,6 +6,83 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondHoldingNormalization
+
+Qualified name: <code>Meridian.Contracts.FundStructure.BondHoldingNormalization</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:46](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L46).
+
+Pure normalization and immutable identity shared by both account stores.
+
+```csharp
+public static class BondHoldingNormalization
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ModelVersion = &quot;bond-holding-normalization-v1&quot;;</code> | [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:48](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L48) |  |
+| <code>public static (decimal Clean, decimal Dirty) Calculate(BondHoldingEconomicsDto bond, string currency);</code> | [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:50](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L50) |  |
+| <code>public static string ContentHash(IngestCustodianStatementRequest request);</code> | [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:78](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L78) |  |
+
+## BondHoldingQuoteBasis
+
+Qualified name: <code>Meridian.Contracts.FundStructure.BondHoldingQuoteBasis</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:10](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L10).
+
+```csharp
+public enum BondHoldingQuoteBasis
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:10](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L10) |  |
+| <code>PercentOfCurrentFace</code> | [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:10](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L10) |  |
+| <code>PercentOfOriginalFace</code> | [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:10](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L10) |  |
+| <code>CurrencyPerCurrentFace</code> | [src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs:10](../../../../src/Meridian.Contracts/FundStructure/BondHoldingEconomicsDto.cs#L10) |  |
+
+## BusinessKindDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.BusinessKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:20](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L20).
+
+```csharp
+public enum BusinessKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>FinancialAdvisor</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:22](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L22) |  |
+| <code>FundManager</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:23](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L23) |  |
+| <code>Hybrid</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:24](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L24) |  |
+
+## BusinessSummaryDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.BusinessSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:147](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L147).
+
+```csharp
+public sealed record BusinessSummaryDto(Guid BusinessId, Guid OrganizationId, BusinessKindDto BusinessKind, string Code, string Name, string BaseCurrency, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, IReadOnlyList<Guid> ClientIds, IReadOnlyList<Guid> FundIds, IReadOnlyList<Guid> InvestmentPortfolioIds, string? Description = null);
+```
+
+## CashReconciliationBreakDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.CashReconciliationBreakDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:655](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L655).
+
+```csharp
+public sealed record CashReconciliationBreakDto(Guid BreakId, Guid AccountId, DateOnly AsOfDate, string Currency, decimal ExpectedBalance, decimal ActualBalance, decimal BalanceVariance, string Reason);
+```
+
 ## CashTransferDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.CashTransferDto</code>. Kind: `record`.
@@ -569,68 +646,4 @@ Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:126](../../..
 
 ```csharp
 public sealed record FundStructureNodeDto(Guid NodeId, FundStructureNodeKindDto Kind, string Code, string Name, string? Description, bool IsActive, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo);
-```
-
-## FundStructureNodeKindDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureNodeKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:6](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L6).
-
-```csharp
-public enum FundStructureNodeKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Organization</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:8](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L8) |  |
-| <code>Business</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:9](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L9) |  |
-| <code>Client</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:10](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L10) |  |
-| <code>Fund</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:11](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L11) |  |
-| <code>Sleeve</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:12](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L12) |  |
-| <code>Vehicle</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:13](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L13) |  |
-| <code>InvestmentPortfolio</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:14](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L14) |  |
-| <code>Entity</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:15](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L15) |  |
-| <code>Account</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:16](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L16) |  |
-
-## FundStructureQuery
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:3](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L3).
-
-```csharp
-public sealed record FundStructureQuery(Guid? FundId = null, Guid? NodeId = null, FundStructureNodeKindDto? NodeKind = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null);
-```
-
-## FundStructureSetupAccountHandoffDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupAccountHandoffDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:73](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L73).
-
-```csharp
-public sealed record FundStructureSetupAccountHandoffDraftDto(string AccountCode, string DisplayName, AccountTypeDto AccountType, string BaseCurrency, string? Institution = null, string? LedgerReference = null, string? Notes = null);
-```
-
-## FundStructureSetupBusinessDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupBusinessDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:25](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L25).
-
-```csharp
-public sealed record FundStructureSetupBusinessDraftDto(Guid? BusinessId, BusinessKindDto BusinessKind, string Code, string Name, string BaseCurrency, string? Description = null);
-```
-
-## FundStructureSetupClientOrFundDraftDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.FundStructureSetupClientOrFundDraftDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs:33](../../../../src/Meridian.Contracts/FundStructure/FundStructureSetupWorkflowDtos.cs#L33).
-
-```csharp
-public sealed record FundStructureSetupClientOrFundDraftDto(Guid? ClientId, Guid? FundId, bool CreateClient, string Code, string Name, string BaseCurrency, string? Description = null, ClientSegmentKind ClientSegmentKind = ClientSegmentKind.Unspecified);
 ```

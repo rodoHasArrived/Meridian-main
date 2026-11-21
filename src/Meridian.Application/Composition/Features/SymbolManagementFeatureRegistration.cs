@@ -5,6 +5,7 @@ using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.OpenFigi;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Storage.Services;
+using Meridian.Storage.Interfaces;
 using Meridian.Application.UI;
 using Meridian.Application.SecurityMaster;
 using Microsoft.Extensions.DependencyInjection;
@@ -24,7 +25,8 @@ internal sealed class SymbolManagementFeatureRegistration : IServiceFeatureRegis
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
         // Canonical symbol registry - identity resolution for canonicalization
-        services.AddSingleton<CanonicalSymbolRegistry>();
+        services.AddSingleton(sp =>
+            ProcessSymbolRegistries.ResolverFor(sp.GetRequiredService<ISymbolRegistryService>()));
         services.AddSingleton<Contracts.Catalog.ICanonicalSymbolRegistry>(sp =>
             sp.GetRequiredService<CanonicalSymbolRegistry>());
         services.AddSingleton<SymbolResolutionMismatchTracker>();

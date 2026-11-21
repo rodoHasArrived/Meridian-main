@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderConnectionDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs:85](../../../../src/Meridian.Contracts/Api/ProviderRoutingApiModels.cs#L85).
-
-Provider connection DTO exposed to clients.
-
-```csharp
-public sealed record ProviderConnectionDto(string ConnectionId, string ProviderFamilyId, string DisplayName, string ConnectionType, string ConnectionMode, bool Enabled, string? CredentialReference, string? InstitutionId, string? ExternalAccountId, ProviderRouteScopeDto? Scope, string[] Tags, string? Description, bool ProductionReady, string? TenantId = null, string? CredentialEnvironment = null);
-```
-
 ## ProviderConnectionHealthResponse
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionHealthResponse</code>. Kind: `record`.
@@ -38,38 +26,6 @@ Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:20](../../../../src/Me
 
 ```csharp
 public sealed record ProviderConnectionHealthSnapshotDto([property : JsonPropertyName("providerId")] string ProviderId, [property : JsonPropertyName("displayName")] string DisplayName, [property : JsonPropertyName("isEnabled")] bool IsEnabled, [property : JsonPropertyName("isConnected")] bool? IsConnected, [property : JsonPropertyName("connectionState")] string ConnectionState, [property : JsonPropertyName("diagnosticsAvailable")] bool DiagnosticsAvailable, [property : JsonPropertyName("lastFailureKind")] string? LastFailureKind, [property : JsonPropertyName("reconnectAttempts")] int? ReconnectAttempts = null);
-```
-
-## ProviderConnectionTemplateDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:8](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L8).
-
-The portable allowlist. Semantics and checklist entries are catalog codes.
-
-```csharp
-public sealed record ProviderConnectionTemplateDto(string Name, string ProviderKind, int ProviderVersion, string Environment, string ConnectionType, string ConnectionMode, string AllowedScope, ProviderTemplateCapabilityDto[] RequestedCapabilities, ProviderTemplateBindingDto SuggestedBinding, string ExpectedDataSemantics, string[] VerificationChecklist);
-```
-
-## ProviderConnectionTemplateFile
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateFile</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:28](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L28).
-
-```csharp
-public sealed record ProviderConnectionTemplateFile(int SchemaVersion, ProviderConnectionTemplateDto[] Templates);
-```
-
-## ProviderConnectionTemplateOption
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderConnectionTemplateOption</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:32](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L32).
-
-```csharp
-public sealed record ProviderConnectionTemplateOption(ProviderConnectionTemplateDto Template, string Revision, bool IsBuiltIn, bool RequiresExternalAccount, ProviderTemplateReviewRow[] ReviewRows, string[] VerificationChecks);
 ```
 
 ## ProviderConnectionTest
@@ -170,7 +126,7 @@ public sealed record ProviderFixedIncomeTaskCapabilityDto(string Task, string Ad
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderHealthResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:184](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L184).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:194](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L194).
 
 Response containing provider health information.
 
@@ -218,7 +174,7 @@ public sealed record ProviderInstrumentCapabilityRowDto(string ProviderId, IRead
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderKernelProvenanceResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:196](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L196).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:206](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L206).
 
 ```csharp
 public record ProviderKernelProvenanceResponse(string BaselineKernelVersion, string CandidateKernelVersion, string DatasetId, DateTimeOffset CalibratedAt, string CalibratedBy);
@@ -275,7 +231,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderMetricsResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:144](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L144).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:154](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L154).
 
 Response containing detailed provider metrics.
 
@@ -307,11 +263,65 @@ Preset DTO exposed to clients.
 public sealed record ProviderPresetDto(string PresetId, string Name, string Description, string[] Highlights, bool IsBuiltIn, bool IsEnabled);
 ```
 
+## ProviderQuotaEditDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderQuotaEditDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderQuota.cs:7](../../../../src/Meridian.Contracts/Api/ProviderQuota.cs#L7).
+
+Secret-free limits selected for one vendor account profile.
+
+```csharp
+public sealed record ProviderQuotaEditDto(string TierId, int UnitsPerMinute, int? DailyLimit, int RequestsPerMinute);
+```
+
+## ProviderQuotaResponse
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderQuotaResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderQuota.cs:29](../../../../src/Meridian.Contracts/Api/ProviderQuota.cs#L29).
+
+```csharp
+public sealed record ProviderQuotaResponse(string ProviderId, string DisplayName, string Unit, string? DailyResetPolicy, bool Editable, bool CanEdit, string Policy, ProviderQuotaSettingsDto? Saved, ProviderQuotaRuntimeDto? Running, bool PendingRestart, IReadOnlyList<ProviderQuotaTierDto> Tiers);
+```
+
+## ProviderQuotaRuntimeDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderQuotaRuntimeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderQuota.cs:23](../../../../src/Meridian.Contracts/Api/ProviderQuota.cs#L23).
+
+Limits measured on an initialized provider adapter.
+
+```csharp
+public sealed record ProviderQuotaRuntimeDto(int MaximumPerWindow, double WindowSeconds, int? DailyLimit, double MinimumDelaySeconds);
+```
+
+## ProviderQuotaSettingsDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderQuotaSettingsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderQuota.cs:16](../../../../src/Meridian.Contracts/Api/ProviderQuota.cs#L16).
+
+```csharp
+public sealed record ProviderQuotaSettingsDto(string? TierId, int UnitsPerMinute, int? DailyLimit, int RequestsPerMinute);
+```
+
+## ProviderQuotaTierDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderQuotaTierDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderQuota.cs:9](../../../../src/Meridian.Contracts/Api/ProviderQuota.cs#L9).
+
+```csharp
+public sealed record ProviderQuotaTierDto(string Id, string Label, int MinuteCeiling, int DailyCeiling, int? DefaultDailyLimit);
+```
+
 ## ProviderRateLimitCapabilitiesDto
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitCapabilitiesDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:78](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L78).
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:83](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L83).
 
 Historical-data capabilities preserved from the previous rate-limit endpoint shape.
 
@@ -319,11 +329,21 @@ Historical-data capabilities preserved from the previous rate-limit endpoint sha
 public sealed record ProviderRateLimitCapabilitiesDto([property : JsonPropertyName("adjustedPrices")] bool AdjustedPrices, [property : JsonPropertyName("intraday")] bool Intraday, [property : JsonPropertyName("dividends")] bool Dividends, [property : JsonPropertyName("splits")] bool Splits, [property : JsonPropertyName("quotes")] bool Quotes, [property : JsonPropertyName("trades")] bool Trades, [property : JsonPropertyName("auctions")] bool Auctions, [property : JsonPropertyName("supportedMarkets")] IReadOnlyList<string> SupportedMarkets);
 ```
 
+## ProviderRateLimitDailyRollupDto
+
+Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitDailyRollupDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:108](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L108).
+
+```csharp
+public sealed record ProviderRateLimitDailyRollupDto(DateOnly DateUtc, long ThrottleCount, long RotationCount);
+```
+
 ## ProviderRateLimitEventDto
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitEventDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:102](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L102).
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:113](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L113).
 
 A rate-limit observation or subsequent provider rotation.
 
@@ -335,19 +355,26 @@ public sealed record ProviderRateLimitEventDto([property : JsonPropertyName("tim
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitHistoryResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:91](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L91).
+Source: [src/Meridian.Contracts/Api/ProviderRateLimits.cs:96](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L96).
 
-Bounded process-lifetime rate-limit history; older events may have been evicted.
+Bounded recent rate-limit events and durable observations grouped by UTC day.
 
 ```csharp
-public sealed record ProviderRateLimitHistoryResponse([property : JsonPropertyName("provider")] string Provider, [property : JsonPropertyName("periodHours")] int PeriodHours, [property : JsonPropertyName("history")] IReadOnlyList<ProviderRateLimitEventDto> History, [property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp, [property : JsonPropertyName("isAvailable")] bool IsAvailable, [property : JsonPropertyName("message")] string Message);
+public sealed record ProviderRateLimitHistoryResponse([property : JsonPropertyName("provider")] string Provider, [property : JsonPropertyName("periodHours")] int PeriodHours, [property : JsonPropertyName("history")] IReadOnlyList<ProviderRateLimitEventDto> History, [property : JsonPropertyName("timestamp")] DateTimeOffset Timestamp, [property : JsonPropertyName("isAvailable")] bool IsAvailable, [property : JsonPropertyName("message")] string Message)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ProviderRateLimitDailyRollupDto&gt; DailyRollups { get; init; } = [];</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:104](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L104) |  |
+| <code>public bool DailyRollupsAvailable { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:105](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L105) |  |
 
 ## ProviderRateLimitOutput
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderRateLimitOutput</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:484](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L484).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:501](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L501).
 
 Rate limit output for UI display.
 
@@ -359,10 +386,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;maxRequestsPerWindow&quot;)] public int MaxRequestsPerWindow { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:487](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L487) |  |
-| <code>[JsonPropertyName(&quot;windowSeconds&quot;)] public int WindowSeconds { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:490](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L490) |  |
-| <code>[JsonPropertyName(&quot;minDelayMs&quot;)] public int MinDelayMs { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:493](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L493) |  |
-| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:496](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L496) |  |
+| <code>[JsonPropertyName(&quot;maxRequestsPerWindow&quot;)] public int MaxRequestsPerWindow { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:504](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L504) |  |
+| <code>[JsonPropertyName(&quot;windowSeconds&quot;)] public int WindowSeconds { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:507](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L507) |  |
+| <code>[JsonPropertyName(&quot;minDelayMs&quot;)] public int MinDelayMs { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:510](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L510) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:513](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L513) |  |
 
 ## ProviderRateLimitSnapshotDto
 
@@ -385,8 +412,10 @@ Declared public members:
 | <code>[JsonPropertyName(&quot;dailyMaximum&quot;)] public int? DailyMaximum { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:60](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L60) |  |
 | <code>[JsonPropertyName(&quot;dailyResetsAt&quot;)] public DateTimeOffset? DailyResetsAt { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:63](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L63) |  |
 | <code>[JsonPropertyName(&quot;dailyResetPolicy&quot;)] public string? DailyResetPolicy { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:66](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L66) |  |
-| <code>[JsonPropertyName(&quot;isThrottled&quot;)] public bool IsThrottled =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:69](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L69) |  |
-| <code>[JsonPropertyName(&quot;status&quot;)] public string Status =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:72](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L72) |  |
+| <code>public int? BackfillAttemptsInWindow { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:69](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L69) | Provider calls admitted by the shared backfill router in the observed window. |
+| <code>public double? BackfillAttemptWindowSeconds { get; init; }</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:71](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L71) |  |
+| <code>[JsonPropertyName(&quot;isThrottled&quot;)] public bool IsThrottled =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:74](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L74) |  |
+| <code>[JsonPropertyName(&quot;status&quot;)] public string Status =&gt; …;</code> | [src/Meridian.Contracts/Api/ProviderRateLimits.cs:77](../../../../src/Meridian.Contracts/Api/ProviderRateLimits.cs#L77) |  |
 
 ## ProviderRateLimitsResponse
 
@@ -566,7 +595,7 @@ public sealed record ProviderRuntimeCredentialApplicationStatus(string ProviderI
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderScoreReasonResponse</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:210](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L210).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:220](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L220).
 
 Compact explanation reason attached to score outputs.
 
@@ -602,7 +631,7 @@ public sealed record ProviderSetupResult(bool Success, string? ProviderId, strin
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderStatusResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:119](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L119).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:129](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L129).
 
 Response containing provider connection status.
 
@@ -614,7 +643,7 @@ public record ProviderStatusResponse(string ProviderId, string Name, string Prov
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderStreamStatusResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:109](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L109).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:119](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L119).
 
 Response containing provider connection status.
 
@@ -622,32 +651,36 @@ Response containing provider connection status.
 public record ProviderStreamStatusResponse(string AssetClass, string Feed, string Entitlement, string LifecycleState, bool IsConnected, bool IsDegraded, string? DegradationReason);
 ```
 
-## ProviderTemplateBindingDto
+## ProviderTemplateOutput
 
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateBindingDto</code>. Kind: `record`.
+Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateOutput</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:25](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L25).
+Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:330](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L330).
 
-```csharp
-public sealed record ProviderTemplateBindingDto(string Capability, int Priority);
-```
-
-## ProviderTemplateCapabilityDto
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateCapabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:22](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L22).
+Unified provider template output for standardized UI consumption. Combines provider catalog metadata with runtime status into a single consistent structure that both Web and desktop can consume without provider-specific conditionals.
 
 ```csharp
-public sealed record ProviderTemplateCapabilityDto(string Capability, int Version);
+public sealed class ProviderTemplateOutput
 ```
 
-## ProviderTemplateImportIssue
+Declared public members:
 
-Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateImportIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:53](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L53).
-
-```csharp
-public sealed record ProviderTemplateImportIssue(string Field, string Code, string Message);
-```
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;providerId&quot;)] public string ProviderId { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:334](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L334) |  |
+| <code>[JsonPropertyName(&quot;displayName&quot;)] public string DisplayName { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:337](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L337) |  |
+| <code>[JsonPropertyName(&quot;description&quot;)] public string Description { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:340](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L340) |  |
+| <code>[JsonPropertyName(&quot;providerType&quot;)] public string ProviderType { get; init; } = &quot;backfill&quot;;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:343](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L343) |  |
+| <code>[JsonPropertyName(&quot;isEnabled&quot;)] public bool IsEnabled { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:347](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L347) |  |
+| <code>[JsonPropertyName(&quot;isConnected&quot;)] public bool IsConnected { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:350](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L350) |  |
+| <code>[JsonPropertyName(&quot;isHealthy&quot;)] public bool IsHealthy { get; init; } = true;</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:353](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L353) |  |
+| <code>[JsonPropertyName(&quot;requiresCredentials&quot;)] public bool RequiresCredentials { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:357](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L357) |  |
+| <code>[JsonPropertyName(&quot;hasValidCredentials&quot;)] public bool HasValidCredentials { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:360](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L360) |  |
+| <code>[JsonPropertyName(&quot;credentialFields&quot;)] public CredentialFieldOutput[] CredentialFields { get; init; } = Array.Empty&lt;CredentialFieldOutput&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:363](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L363) |  |
+| <code>[JsonPropertyName(&quot;capabilities&quot;)] public ProviderCapabilityOutput Capabilities { get; init; } = new ();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:367](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L367) |  |
+| <code>[JsonPropertyName(&quot;notes&quot;)] public string[] Notes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:371](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L371) |  |
+| <code>[JsonPropertyName(&quot;warnings&quot;)] public string[] Warnings { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:374](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L374) |  |
+| <code>[JsonPropertyName(&quot;rateLimit&quot;)] public ProviderRateLimitOutput? RateLimit { get; init; }</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:378](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L378) |  |
+| <code>[JsonPropertyName(&quot;supportedMarkets&quot;)] public string[] SupportedMarkets { get; init; } = new[] { &quot;US&quot; };</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:382](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L382) |  |
+| <code>[JsonPropertyName(&quot;dataTypes&quot;)] public string[] DataTypes { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:385](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L385) |  |
+| <code>public static ProviderTemplateOutput FromCatalogEntry(ProviderCatalogEntry entry);</code> | [src/Meridian.Contracts/Api/UiDashboardModels.cs:390](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L390) | Creates a ProviderTemplateOutput from a ProviderCatalogEntry. |

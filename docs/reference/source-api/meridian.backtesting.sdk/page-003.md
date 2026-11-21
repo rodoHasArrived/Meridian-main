@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ShortCallExitReason
+
+Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason</code>. Kind: `enum`.
+
+Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:154](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L154).
+
+Outcome of a completed short-call cycle (entry → exit).
+
+```csharp
+public enum ShortCallExitReason
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ExpiredWorthless</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:157](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L157) | Option expired worthless. |
+| <code>Assigned</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:159](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L159) | Option was exercised (assignment). |
+| <code>TakeProfitRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:161](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L161) | Take-profit trigger reached; position was closed / rolled. |
+| <code>RiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:163](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L163) | Delta-risk trigger reached; position was rolled. |
+| <code>DividendRiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:165](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L165) | Dividend-assignment risk trigger; position was closed / rolled. |
+| <code>ForcedClose</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:167](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L167) | Strategy ended while position was still open (backtest ran out of data). |
+
 ## ShortCallPosition
 
 Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallPosition</code>. Kind: `class`.

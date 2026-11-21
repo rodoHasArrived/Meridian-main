@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BatchFilter
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchFilter</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:130](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L130).
-
-Filter criteria for batch operations.
-
-```csharp
-public sealed record BatchFilter(string? SymbolPattern = null, bool? HasTradeSubscription = null, bool? HasDepthSubscription = null, string[]? InWatchlists = null, string? SecurityType = null, string? Exchange = null);
-```
-
 ## BatchFilteredOperationRequest
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchFilteredOperationRequest</code>. Kind: `record`.
@@ -723,4 +711,16 @@ Represents a single symbol search result from autocomplete.
 
 ```csharp
 public sealed record SymbolSearchResult(string Symbol, string Name, string? Exchange = null, string? AssetType = null, string? Country = null, string? Currency = null, string? Source = null, int MatchScore = 0, string? Figi = null, string? CompositeFigi = null);
+```
+
+## SymbolTemplate
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolTemplate</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:7](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L7).
+
+Predefined template for bulk symbol subscriptions. Supports equity groups, sectors, and indices.
+
+```csharp
+public sealed record SymbolTemplate(string Id, string Name, string Description, TemplateCategory Category, string[] Symbols, TemplateSubscriptionDefaults Defaults);
 ```

@@ -6,40 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## BacktestPreflightRequestDto
-
-Qualified name: <code>Meridian.Contracts.Backtesting.BacktestPreflightRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs:3](../../../../src/Meridian.Contracts/Backtesting/BacktestPreflightDtos.cs#L3).
-
-```csharp
-public sealed record BacktestPreflightRequestDto(DateOnly From, DateOnly To, string DataRoot, IReadOnlyList<string>? Symbols = null, string? RequiredExecutionModel = null, IReadOnlyList<string>? RequiredReplayDataTypes = null);
-```
-
-## ApprovePaymentRequest
-
-Qualified name: <code>Meridian.Contracts.Banking.ApprovePaymentRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:68](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L68).
-
-Approve a pending payment request.
-
-```csharp
-public sealed record ApprovePaymentRequest(string? ReviewNotes, string? ReviewedBy, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## BankTransactionDto
-
-Qualified name: <code>Meridian.Contracts.Banking.BankTransactionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Banking/BankingModels.cs:104](../../../../src/Meridian.Contracts/Banking/BankingModels.cs#L104).
-
-A single bank-side transaction record. This is distinct from a loan-level CashTransactionDto in the DirectLending module; the two may be reconciled but are not the same object.
-
-```csharp
-public sealed record BankTransactionDto(Guid BankTransactionId, Guid EntityId, string TransactionType, DateOnly EffectiveDate, DateOnly TransactionDate, DateOnly SettlementDate, decimal Amount, string Currency, string? ExternalRef, DateTimeOffset RecordedAt, bool IsVoided, string? RecordedBy = null, Guid? PendingPaymentId = null, string? EvidenceId = null, string? CanonicalInputHash = null);
-```
-
 ## BankTransactionSeedRequest
 
 Qualified name: <code>Meridian.Contracts.Banking.BankTransactionSeedRequest</code>. Kind: `record`.
@@ -790,3 +756,49 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public ContractualCashFlowAttestationContextDto? AttestationContext { get; init; }</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:179](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L179) | Server-stamped review scope for new non-posting draft checks; old packets remain unbound. |
+
+## ContractualCashFlowRunComparer
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRunComparer</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:32](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L32).
+
+```csharp
+public static class ContractualCashFlowRunComparer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ContractualCashFlowRunComparison Compare(ContractualCashFlowRun left, ContractualCashFlowRun right);</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:34](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L34) |  |
+
+## ContractualCashFlowRunComparison
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowRunComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:16](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L16).
+
+Pure read comparing two retained runs of the same subject: per-date, per-stream net cash deltas, the symmetric difference of blockers, and whether each retained packet still replays to its own output hash. Nothing is recalculated against current terms; both sides are the retained packets.
+
+```csharp
+public sealed record ContractualCashFlowRunComparison(string SubjectKind, Guid SubjectId, Guid LeftRunId, Guid RightRunId, bool LeftReplayVerified, bool RightReplayVerified, bool SameRequest, string LeftOutputHash, string RightOutputHash, IReadOnlyList<CashFlowDateDelta> CashDeltas, IReadOnlyList<CashFlowBlockerDelta> BlockerDeltas)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal TotalDelta =&gt; …;</code> | [src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs:29](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowRunComparer.cs#L29) |  |
+
+## ContractualCashFlowStream
+
+Qualified name: <code>Meridian.Contracts.CashFlows.ContractualCashFlowStream</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs:30](../../../../src/Meridian.Contracts/CashFlows/ContractualCashFlowContracts.cs#L30).
+
+Explicit periods replace generation for this stream; no contract date is inferred.
+
+```csharp
+public sealed record ContractualCashFlowStream(string StreamId, decimal Principal, int PaymentMonths, [property : JsonConverter(typeof(JsonStringEnumConverter<DayCountConvention>))] DayCountConvention DayCount, decimal? FixedRate, [property : JsonConverter(typeof(JsonStringEnumConverter<CashFlowLegDirection>))] CashFlowLegDirection Direction = CashFlowLegDirection.Receive, bool ExchangesPrincipal = true, ScheduleConventionTerms? Conventions = null, IReadOnlyList<SchedulePeriod>? CouponPeriods = null, IReadOnlyList<StructuredPrincipalScheduleEntry>? PrincipalSchedule = null, IReadOnlyList<StructuredCashFlowNotionalStep>? NotionalSchedule = null, IReadOnlyList<StructuredStepCouponEntry>? RateSteps = null, IReadOnlyList<ContractualCouponAmount>? CouponAmounts = null, string? IndexName = null, decimal SpreadBps = 0m, IReadOnlyList<StructuredCashFlowResetFixing>? Resets = null, decimal? Floor = null, decimal? Cap = null, decimal PikFraction = 0m, CashFlowAmortization Amortization = CashFlowAmortization.Bullet, bool PrepaymentAllowed = false, decimal PrepaymentPenaltyRate = 0m, decimal? OpeningBalance = null, DateOnly? OpeningBalanceDate = null);
+```

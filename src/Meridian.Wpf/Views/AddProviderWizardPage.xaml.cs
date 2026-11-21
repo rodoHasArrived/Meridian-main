@@ -39,6 +39,7 @@ public partial class AddProviderWizardPage : Page
     // predecessor and invalidates delayed responses before they can update the new editors.
     private bool _operationInProgress;
     private bool _clearingPersistedFields;
+    private long _credentialDraftRevision;
 
     public AddProviderWizardPage(
         WpfServices.NavigationService navigationService,
@@ -73,7 +74,8 @@ public partial class AddProviderWizardPage : Page
         var providers = _settingsConfigService.GetProviderCatalog();
         var catalogStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync();
         await LoadOwnedConnectionsAsync(generation);
-        if (!IsCurrentCredentialScope(generation)) return;
+        if (!IsCurrentCredentialScope(generation))
+            return;
         _credentialStatuses = [];
         _catalogCredentialStatuses = catalogStatuses;
         _viewModel.LoadProviderCatalog(providers, catalogStatuses);
@@ -130,6 +132,9 @@ public partial class AddProviderWizardPage : Page
     private void BuildCredentialFields()
     {
         CredentialFieldsPanel.Children.Clear();
+        _viewModel.SetCredentialDraftPresence(false);
+        _viewModel.SetCredentialRotation(_selectedProvider is { } selected
+            ? FindStatus(_credentialStatuses, selected)?.RotationDueAt : null);
         _serviceFields = null;
 
         if (_selectedProvider == null)
@@ -213,25 +218,40 @@ public partial class AddProviderWizardPage : Page
     internal async Task TestProviderConnectionAsync()
     {
         var provider = _selectedProvider;
-        if (provider is null || _operationInProgress) return;
-        if (!TryGetOwnedCredentialScope(provider, out var connection)) return;
+        if (provider is null || _operationInProgress)
+            return;
+        if (!TryGetOwnedCredentialScope(provider, out var connection))
+            return;
         var generation = _credentialScopeGeneration;
         var ct = _credentialScopeCts.Token;
         var fields = CollectEnteredCredentialFields();
+        var draftRevision = _credentialDraftRevision;
         _operationInProgress = true;
         _viewModel.SetConnectionTestTesting(provider.DisplayName);
         try
         {
             await ValidateOwnedConnectionAsync(provider, connection!, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
-            await PersistCredentialsAsync(provider, fields, connection!.ConnectionId, generation, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
-            var verified = await _settingsConfigService.VerifyProviderCredentialsAsync(provider.Id, connection.ConnectionId, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
-            if (CollectEnteredCredentialFields().Count > 0)
-                _viewModel.ResetConnectionTest("Credentials changed. Test connection to verify the current edits.");
-            else if (verified) _viewModel.SetConnectionTestSuccess();
-            else _viewModel.SetConnectionTestUnverified();
+            if (!IsCurrentCredentialScope(generation))
+                return;
+            if (draftRevision != _credentialDraftRevision)
+                return;
+            if (fields.Count > 0)
+            {
+                var draft = await _settingsConfigService.VerifyDraftProviderCredentialsAsync(provider.Id, fields, connection!.ConnectionId, ct);
+                if (!IsCurrentCredentialScope(generation) || draftRevision != _credentialDraftRevision)
+                    return;
+                _viewModel.SetDraftTestResult(draft.Status, draft.Message);
+            }
+            else
+            {
+                var verified = await _settingsConfigService.VerifyProviderCredentialsAsync(provider.Id, connection!.ConnectionId, ct);
+                if (!IsCurrentCredentialScope(generation) || draftRevision != _credentialDraftRevision)
+                    return;
+                if (verified)
+                    _viewModel.SetConnectionTestSuccess();
+                else
+                    _viewModel.SetConnectionTestUnverified();
+            }
             _viewModel.CurrentStep = 3;
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
@@ -248,8 +268,10 @@ public partial class AddProviderWizardPage : Page
     internal async Task SaveProviderAsync()
     {
         var provider = _selectedProvider;
-        if (provider is null || _operationInProgress) return;
-        if (!TryGetOwnedCredentialScope(provider, out var connection)) return;
+        if (provider is null || _operationInProgress)
+            return;
+        if (!TryGetOwnedCredentialScope(provider, out var connection))
+            return;
         var generation = _credentialScopeGeneration;
         var ct = _credentialScopeCts.Token;
         var fields = CollectEnteredCredentialFields();
@@ -258,12 +280,16 @@ public partial class AddProviderWizardPage : Page
         try
         {
             await ValidateOwnedConnectionAsync(provider, connection!, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             await PersistCredentialsAsync(provider, fields, connection!.ConnectionId, generation, ct);
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             _credentialStatuses = await _settingsConfigService.GetProviderCredentialStatusesAsync(ct, connection.ConnectionId);
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             var current = FindStatus(_credentialStatuses, provider);
+            _viewModel.SetCredentialRotation(current?.RotationDueAt);
             if (serviceFields.Any(field => field.Required) && current?.State != CredentialState.Configured)
             {
                 _viewModel.SetConnectionTestError("The credential service could not confirm saved credentials for this selected connection.");
@@ -274,11 +300,14 @@ public partial class AddProviderWizardPage : Page
             }
             var hasPendingEdits = CollectEnteredCredentialFields().Count > 0;
             var verified = !hasPendingEdits && (current is
-                { State: CredentialState.Configured, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null }
+            { State: CredentialState.Configured, VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null }
                 or { State: CredentialState.NotRequired });
-            if (hasPendingEdits) _viewModel.ResetConnectionTest("Credentials changed during the operation. Save and test the current edits.");
-            else if (verified) _viewModel.SetConnectionTestSuccess();
-            else _viewModel.SetConnectionTestUnverified();
+            if (hasPendingEdits)
+                _viewModel.ResetConnectionTest("Credentials changed during the operation. Save and test the current edits.");
+            else if (verified)
+                _viewModel.SetConnectionTestSuccess();
+            else
+                _viewModel.SetConnectionTestUnverified();
             _viewModel.CurrentStep = 4;
             _viewModel.SetSaveSuccess(provider.DisplayName);
             _viewModel.SaveStatusText = $"Credentials saved for owned connection {connection.ConnectionId}. Runtime activation is managed separately."
@@ -287,7 +316,8 @@ public partial class AddProviderWizardPage : Page
         catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception ex)
         {
-            if (!IsCurrentCredentialScope(generation)) return;
+            if (!IsCurrentCredentialScope(generation))
+                return;
             _viewModel.SetConnectionTestError("The save was not confirmed. Reload the selected connection after resolving the error.");
             _viewModel.SetSaveError(ex.Message);
         }
@@ -305,7 +335,8 @@ public partial class AddProviderWizardPage : Page
             return;
 
         await _settingsConfigService.SaveProviderCredentialsAsync(provider.Id, fields, connectionId, ct);
-        if (!IsCurrentCredentialScope(generation)) return;
+        if (!IsCurrentCredentialScope(generation))
+            return;
         ClearPersistedCredentialFields(fields);
     }
 
@@ -335,12 +366,15 @@ public partial class AddProviderWizardPage : Page
         {
             _clearingPersistedFields = false;
         }
+        UpdateCredentialDraftPresence();
     }
 
     private void CredentialEditorChanged(object? sender, EventArgs e)
     {
         if (!_clearingPersistedFields)
         {
+            _credentialDraftRevision++;
+            UpdateCredentialDraftPresence();
             _viewModel.ResetConnectionTest("Credentials changed. Test connection to verify the current edits.");
             if (_templateDraft is not null)
             {
@@ -350,6 +384,14 @@ public partial class AddProviderWizardPage : Page
             }
         }
     }
+
+    private void UpdateCredentialDraftPresence() => _viewModel.SetCredentialDraftPresence(
+        CredentialFieldsPanel.Children.Cast<UIElement>().Any(control => control switch
+        {
+            TextBox text => !string.IsNullOrWhiteSpace(text.Text),
+            SecretInputControl secret => !string.IsNullOrWhiteSpace(secret.Secret),
+            _ => false
+        }));
 
     private Dictionary<string, string?> CollectEnteredCredentialFields()
     {

@@ -352,6 +352,18 @@
                                    Margin="0,0,0,16" />
 
                         <StackPanel x:Name="CredentialFieldsPanel" />
+                        <TextBlock Text="{Binding CredentialRotationText}" TextWrapping="Wrap"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CredentialRotationText}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
                         <TextBlock x:Name="NoCredentialsNeededText"
                                    Text="This provider does not require API credentials."
@@ -385,17 +397,21 @@
                             <TextBlock Text="Test Connection" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Ellipse x:Name="ConnectionTestDot" Width="12" Height="12"
                                      Fill="{Binding ConnectionTestDotBrush}" Margin="0,0,10,0"
                                      VerticalAlignment="Center" />
-                            <TextBlock x:Name="ConnectionTestStatusText"
+                            <TextBlock x:Name="ConnectionTestStatusText" Grid.Column="1" TextWrapping="Wrap"
                                        Text="{Binding ConnectionTestStatusText}"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        VerticalAlignment="Center" />
-                        </StackPanel>
+                        </Grid>
 
-                        <Button Content="Test Connection"
+                        <Button Content="{Binding TestCredentialActionLabel}"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Click="TestProviderConnection_Click" IsEnabled="{Binding CanUseOwnedCredentials}" />
                     </StackPanel>
@@ -417,7 +433,7 @@
                         <TextBlock Text="This action saves credentials for the selected existing connection. Connection creation, subscriptions and runtime activation are managed separately."
                                    TextWrapping="Wrap" Margin="0,0,0,12" />
 
-                        <Button Content="Save selected connection credentials"
+                        <Button Content="{Binding SaveCredentialActionLabel}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Click="SaveProvider_Click" IsEnabled="{Binding CanUseOwnedCredentials}"
                                 Margin="0,16,0,0" />

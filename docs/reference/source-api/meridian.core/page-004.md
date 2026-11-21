@@ -6,27 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## HealthSeverity
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.HealthSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L8).
-
-Represents the severity of a health status.
-
-```csharp
-public enum HealthSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L11) | Component is healthy and fully operational. |
-| <code>Degraded</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L14) | Component is operational but with minor issues. |
-| <code>Unhealthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L17) | Component has critical issues affecting functionality. |
-| <code>Unknown</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L20) | Component status is unknown or cannot be determined. |
-
 ## IAlertDispatcher
 
 Qualified name: <code>Meridian.Core.Monitoring.Core.IAlertDispatcher</code>. Kind: `interface`.
@@ -1012,4 +991,16 @@ Request for batch symbol deletion.
 
 ```csharp
 public sealed record BatchDeleteRequest(string[] Symbols, bool RemoveFromWatchlists = true);
+```
+
+## BatchFilter
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchFilter</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:130](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L130).
+
+Filter criteria for batch operations.
+
+```csharp
+public sealed record BatchFilter(string? SymbolPattern = null, bool? HasTradeSubscription = null, bool? HasDepthSubscription = null, string[]? InWatchlists = null, string? SecurityType = null, string? Exchange = null);
 ```

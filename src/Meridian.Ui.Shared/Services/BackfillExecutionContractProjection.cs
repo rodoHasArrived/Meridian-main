@@ -84,6 +84,7 @@ public static class BackfillExecutionContractProjection
             SubmissionEstimate = execution.WorkstationSubmission?.Estimate,
             QuotaReceipt = execution.QuotaReceipt,
             BatchReceipts = execution.BatchReceipts,
+            RoutingAttempts = execution.RoutingAttempts,
             AutoRemediationTriggerReason = execution.AutoRemediationTriggerReason,
             AutoRemediationAttemptCount = execution.AutoRemediationAttemptCount,
             AutoRemediationLastOutcome = execution.AutoRemediationLastOutcome,

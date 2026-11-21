@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterGovernanceProfileSource
+
+Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceProfileSource</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L9).
+
+Why the effective SecurityMasterGovernanceProfile is what it is.
+
+```csharp
+public enum SecurityMasterGovernanceProfileSource
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Default = 0</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L12) | Nothing declared a profile, so the Standard code default applies. |
+| <code>Configuration = 1</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L15) | SecurityMasterWorkbenchOptions.GovernanceProfile declared it. |
+| <code>ProductionComposition = 2</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L21) | The host is a production composition, which always runs the Institutional profile. Reported in preference to Configuration because configuration cannot change it. |
+| <code>Latched = 3</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L28) | This process ran the Institutional profile earlier and configuration no longer declares it. The profile stays in force until the process restarts; the current configuration is ignored and SecurityMasterWorkbench:GovernanceProfile is reported as contradicted. |
+
 ## SecurityMasterGovernanceRequirementBasis
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceRequirementBasis</code>. Kind: `enum`.
@@ -1043,13 +1064,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ValidateOptionsResult Validate(string? name, SecurityMasterOptions options);</code> | [src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs:12](../../../../src/Meridian.Application/SecurityMaster/Validation/SecurityMasterOptionsValidator.cs#L12) |  |
-
-## SecurityValidationContext
-
-Qualified name: <code>Meridian.Application.SecurityMaster.Validation.SecurityValidationContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs:8](../../../../src/Meridian.Application/SecurityMaster/Validation/AssetClassValidatorRegistry.cs#L8).
-
-```csharp
-public sealed record SecurityValidationContext(SecurityProjectionRecord Record, DateTimeOffset EvaluatedAtUtc);
-```

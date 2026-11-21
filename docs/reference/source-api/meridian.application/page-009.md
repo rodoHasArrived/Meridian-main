@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullMultiAssetCoverageInvalidator
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullMultiAssetCoverageInvalidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:26](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L26).
+
+No-op IMultiAssetCoverageInvalidator default for the currently-uncached coverage read path. Replace with a cache-backed implementation when multi-asset coverage gains a cache.
+
+```csharp
+public sealed class NullMultiAssetCoverageInvalidator : IMultiAssetCoverageInvalidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task InvalidateAsync(SecurityMasterRevisionPublishedEvent evt, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs:28](../../../../src/Meridian.Application/SecurityMaster/IMultiAssetCoverageInvalidator.cs#L28) |  |
+
 ## NullRestatementCandidateResolver
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullRestatementCandidateResolver</code>. Kind: `class`.
@@ -1009,24 +1027,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Standard = 0</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:13](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L13) | Each governance requirement follows its own setting; all three default to off. The code default, because the supported local workstation is single-operator. |
 | <code>Institutional = 1</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs:19](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchOptions.cs#L19) | Governed term amendments, independent field-edit review and independent profile approval are all in force and cannot be turned off. A production composition always runs this profile. |
-
-## SecurityMasterGovernanceProfileSource
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterGovernanceProfileSource</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L9).
-
-Why the effective SecurityMasterGovernanceProfile is what it is.
-
-```csharp
-public enum SecurityMasterGovernanceProfileSource
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Default = 0</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:12](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L12) | Nothing declared a profile, so the Standard code default applies. |
-| <code>Configuration = 1</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L15) | SecurityMasterWorkbenchOptions.GovernanceProfile declared it. |
-| <code>ProductionComposition = 2</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:21](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L21) | The host is a production composition, which always runs the Institutional profile. Reported in preference to Configuration because configuration cannot change it. |
-| <code>Latched = 3</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs:28](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterGovernanceRequirements.cs#L28) | This process ran the Institutional profile earlier and configuration no longer declares it. The profile stays in force until the process restarts; the current configuration is ignored and SecurityMasterWorkbench:GovernanceProfile is reported as contradicted. |

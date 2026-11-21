@@ -156,6 +156,9 @@ public static class WorkstationServiceCollectionExtensions
         }
 
         services.AddHttpClient();
+        services.AddHttpClient(ProviderCredentialProbe.ClientName)
+            .RemoveAllLoggers()
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
         services.AddHttpContextAccessor();
         services.AddMemoryCache();
 

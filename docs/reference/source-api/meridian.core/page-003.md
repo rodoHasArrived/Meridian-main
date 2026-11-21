@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ScheduledBackfillConfig
-
-Qualified name: <code>Meridian.Core.Config.ScheduledBackfillConfig</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:110](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L110).
-
-Configuration for scheduled backfill operations.
-
-```csharp
-public sealed record ScheduledBackfillConfig(bool Enabled = false, int ScheduleCheckIntervalSeconds = 60, int MaxExecutionDurationHours = 6, bool CatchUpMissedSchedules = true, int CatchUpWindowHours = 24, int MaxConcurrentExecutions = 1, bool PauseDuringMarketHours = false, DefaultScheduleConfig[]? DefaultSchedules = null);
-```
-
 ## SemanticValidationStage
 
 Qualified name: <code>Meridian.Core.Config.SemanticValidationStage</code>. Kind: `class`.
@@ -102,7 +90,7 @@ public sealed record SourceRegistryConfig(string? PersistencePath = null);
 
 Qualified name: <code>Meridian.Core.Config.StooqConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:191](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L191).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:192](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L192).
 
 Stooq provider configuration.
 
@@ -208,7 +196,7 @@ public sealed record SyntheticScenarioConfig(bool Enabled = false, int ThrottleE
 
 Qualified name: <code>Meridian.Core.Config.TiingoConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:241](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L241).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:242](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L242).
 
 Tiingo provider configuration. Best for: High-quality dividend-adjusted OHLCV with corporate actions. Free tier: 1,000 requests/day, 50 requests/hour.
 
@@ -247,7 +235,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Core.Config.TwelveDataConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:331](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L331).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:337](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L337).
 
 Twelve Data options; credentials are resolved separately from the provider settings UI.
 
@@ -264,7 +252,7 @@ Source: [src/Meridian.Core/Config/ProviderQuotasConfig.cs:13](../../../../src/Me
 Twelve Data Basic defaults. Daily credits reset at midnight UTC. A paid account must explicitly declare its limits and fundamentals entitlement; numeric capacity alone grants none. NoDailyLimit explicitly declares an account without a daily credit cap.
 
 ```csharp
-public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = 8, int DailyCredits = 800, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
+public sealed record TwelveDataQuotaConfig(int CreditsPerMinute = BackfillProviderCatalog.TwelveDataPerMinute, int DailyCredits = BackfillProviderCatalog.TwelveDataBasicDailyCredits, bool FundamentalsEntitled = false, bool NoDailyLimit = false);
 ```
 
 ## ValidatedConfig
@@ -314,7 +302,7 @@ public sealed record ValidationPipelineConfig(bool Enabled = false, bool UseReal
 
 Qualified name: <code>Meridian.Core.Config.YahooFinanceConfig</code>. Kind: `record`.
 
-Source: [src/Meridian.Core/Config/BackfillConfig.cs:164](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L164).
+Source: [src/Meridian.Core/Config/BackfillConfig.cs:165](../../../../src/Meridian.Core/Config/BackfillConfig.cs#L165).
 
 Yahoo Finance provider configuration.
 
@@ -934,3 +922,24 @@ Declared public members:
 | <code>public static HealthCheckResult Degraded(string componentName, string message, TimeSpan duration, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:52](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L52) | Creates a degraded result. |
 | <code>public static HealthCheckResult Unhealthy(string componentName, string message, TimeSpan duration, Exception? exception = null, IReadOnlyDictionary&lt;string, object&gt;? details = null) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:59](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L59) | Creates an unhealthy result. |
 | <code>public static HealthCheckResult Unknown(string componentName, string message, TimeSpan duration) =&gt; …;</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:66](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L66) | Creates an unknown result. |
+
+## HealthSeverity
+
+Qualified name: <code>Meridian.Core.Monitoring.Core.HealthSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L8).
+
+Represents the severity of a health status.
+
+```csharp
+public enum HealthSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Healthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L11) | Component is healthy and fully operational. |
+| <code>Degraded</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L14) | Component is operational but with minor issues. |
+| <code>Unhealthy</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L17) | Component has critical issues affecting functionality. |
+| <code>Unknown</code> | [src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IHealthCheckProvider.cs#L20) | Component status is unknown or cannot be determined. |

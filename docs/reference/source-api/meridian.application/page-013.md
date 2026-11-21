@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderDescriptor
+
+Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs:28](../../../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs#L28).
+
+Immutable descriptor for a single data provider. Centralises signup URLs, environment variable names, capabilities and priority so that both ConfigurationWizard and AutoConfigurationService can share the same source of truth.
+
+```csharp
+public sealed record ProviderDescriptor(string Name, string DisplayName, string[] RequiredEnvVars, string[] AlternativeEnvVars, string[] Capabilities, int Priority, string SignupUrl = "", string DocsUrl = "", string FreeTierDescription = "");
+```
+
 ## ProviderRegistry
 
 Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderRegistry</code>. Kind: `class`.

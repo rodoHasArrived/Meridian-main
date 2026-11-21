@@ -550,7 +550,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.UpsertProviderModuleRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:40](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L40).
+Source: [src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs:42](../../../../src/Meridian.Ui.Shared/Services/ProviderModuleSetupModels.cs#L42).
 
 Request body for creating or updating a provider module configuration. CredentialValues are stored server-side and never returned.
 
