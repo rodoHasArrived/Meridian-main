@@ -360,7 +360,8 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
             account.AccountingLongMarketValue ?? throw new InvalidOperationException("Native long carrying market value is unavailable."),
             account.AccountingShortMarketValue ?? throw new InvalidOperationException("Native short carrying market value is unavailable."),
             RequireEquity(account), ToStrategyPositions(account.Positions),
-            new FinancialAccountRules(AllowMargin: account.BuyingPower > account.Cash,
+            new FinancialAccountRules(AllowMargin: account.MarginType != Meridian.Execution.Margin.MarginAccountType.Cash
+                    || account.BuyingPower > account.Cash,
                 AllowShortSelling: account.Positions.Any(static position => position.ExactQuantity < 0m)))
         { FunctionalCurrency = account.FunctionalCurrency };
         return new Dictionary<string, FinancialAccountSnapshot>(StringComparer.OrdinalIgnoreCase) { [account.AccountId] = snapshot };
