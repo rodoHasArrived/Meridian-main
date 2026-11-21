@@ -5,48 +5,25 @@
 
 ## Overall Coverage
 
-**11817 / 11833** items documented (**99.9%**) &mdash; Grade: **A**
+**11833 / 11833** items documented (**100.0%**) &mdash; Grade: **A**
 
 ```text
-[====================] 99.9%
+[====================] 100.0%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 11203 | 11219 | 99.9% | A |
+| Public Classes / Interfaces | 11219 | 11219 | 100.0% | A |
 | API Endpoints | 456 | 456 | 100.0% | A |
 | Configuration Options | 147 | 147 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
-## Undocumented Items
-
-### Public Classes / Interfaces (16 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `ProviderTemplateCompatibilityException` | `src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:10` |
-| `ProviderConnectionTemplateService` | `src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs:18` |
-| `ProviderConnectionTemplateDto` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:7` |
-| `ProviderTemplateCapabilityDto` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:20` |
-| `ProviderTemplateBindingDto` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:23` |
-| `ProviderConnectionTemplateFile` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:26` |
-| `ProviderTemplateReviewRow` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:29` |
-| `ProviderConnectionTemplateOption` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:31` |
-| `SaveProviderConnectionTemplateRequest` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:39` |
-| `ProviderTemplateSetupDraft` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:45` |
-| `ProviderTemplateSetupTestResult` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:48` |
-| `SavedProviderTemplateConnection` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:50` |
-| `ProviderTemplateImportIssue` | `src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:52` |
-| `OwnedProviderTemplateConfig` | `src/Meridian.Core/Config/ProviderConnectionsConfig.cs:36` |
-| `ProviderTemplateSetupConfig` | `src/Meridian.Core/Config/ProviderConnectionsConfig.cs:40` |
-| `OpenBreakHistory` | `src/Meridian.Ui.Shared/Services/OpenBreakHistory.cs:16` |
-
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 16 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
+1. All categories are fully documented. Great job!
 
 ---
 
