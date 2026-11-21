@@ -47,8 +47,8 @@ export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount:
     return { amount: "Unavailable", unit: null };
   }
   const measures = item.measures ?? [];
+  if (measures.length > 1) return { amount: "Multiple", unit: null };
   const reported = measures.filter((measure) => retainedResidual(measure) != null);
-  if (reported.length > 1) return { amount: "Multiple", unit: null };
   if (reported.length === 1) return { amount: displayAmount(retainedResidual(reported[0]), true), unit: measureUnit(reported[0].unit) };
   return measures.length > 0
     ? { amount: "Unavailable", unit: null }

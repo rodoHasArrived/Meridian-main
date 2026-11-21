@@ -5,6 +5,7 @@ import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { CaseInspector, CaseVariance, caseChanges } from "./case-inspector";
+import { caseResidual } from "./reconciliation-case-values";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type { ReconciliationBreakQueueItem, ReconciliationCaseworkOperationResult, ReconciliationCaseworkCommand } from "@/types";
 
@@ -82,6 +83,28 @@ describe("shared case inspector", () => {
     rerender(<MemoryRouter><CaseVariance item={{ ...record, measures: [{ ...record.measures![0], actualExact: null }] }} /></MemoryRouter>);
     expect(screen.getByText("Unavailable")).toBeInTheDocument();
     expect(screen.queryByText(/500/)).not.toBeInTheDocument();
+  });
+
+  it.each([false, true])("keeps incomplete quantity coverage visible beside zero basis without a scalar money header (reversed: %s)", async (reversed) => {
+    const measures: NonNullable<ReconciliationBreakQueueItem["measures"]> = [
+      { kind: "Quantity", expected: null, actual: null, variance: null, tolerance: 0.01,
+        unit: "Shares", unavailableReason: "Native quantity coverage is unavailable." },
+      { kind: "CostBasis", expected: 100, actual: 100, variance: 0, tolerance: 0.01, unit: "EUR" }
+    ];
+    const mixed: ReconciliationBreakQueueItem = { ...record, variance: 0, measures: reversed ? measures.slice().reverse() : measures };
+    const { rerender } = setup(mixed);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    const comparison = within(screen.getByRole("table", { name: "Retained residual components" }));
+    const quantity = within(comparison.getByRole("row", { name: /Quantity\s*Shares/ }));
+    expect(quantity.getAllByText("Unavailable")).toHaveLength(3);
+    const basis = within(comparison.getByRole("row", { name: /Cost basis\s*EUR/ }));
+    expect(basis.getAllByText("100")).toHaveLength(2);
+    expect(basis.getByRole("button", { name: /Inspect Cost basis residual 0/ })).toBeVisible();
+    expect(caseResidual(mixed)).toBeNull();
+    rerender(<MemoryRouter><CaseVariance item={mixed} /></MemoryRouter>);
+    expect(screen.getByText("Multiple")).toBeInTheDocument();
+    expect(screen.queryByText(/0(?:\.00)? EUR/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Amount passport/ })).not.toBeInTheDocument();
   });
 
   it("opens a visible form and sends the exact loaded version and decision fields before showing a receipt", async () => {

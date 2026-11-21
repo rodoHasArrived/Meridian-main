@@ -16,8 +16,7 @@ export function caseResidual(item: ReconciliationBreakQueueItem): string | numbe
     return residuals.length === 1 ? residuals[0].residual : null;
   }
   if (item.measures?.length) {
-    const reported = item.measures.map(retainedResidual).filter((value) => value != null);
-    return reported.length === 1 ? reported[0] : null;
+    return item.measures.length === 1 ? retainedResidual(item.measures[0]) : null;
   }
   return item.varianceExact === undefined ? item.variance : item.varianceExact;
 }

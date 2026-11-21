@@ -772,6 +772,20 @@ describe("accounting-screen reconciliation view model", () => {
     expect(row.rowAriaLabel).not.toContain("$");
   });
 
+  it("keeps partially available quantity and basis comparisons distinct from a balanced money summary", () => {
+    const item: ReconciliationBreakQueueItem = { ...breakQueue[0], variance: 0, measures: [
+      { kind: "Quantity", expected: null, actual: null, variance: null, tolerance: 0.01,
+        unit: "Shares", unavailableReason: "Native quantity coverage is unavailable." },
+      { kind: "CostBasis", expected: 100, actual: 100, variance: 0, tolerance: 0.01, unit: "EUR" }
+    ] };
+    const [row] = buildReconciliationBreakRows([item], null);
+
+    expect(row.varianceLabel).toBe("Multiple");
+    expect(row.varianceTone).toBe("default");
+    expect(row.rowAriaLabel).toContain("Variance Multiple");
+    expect(row.rowAriaLabel).not.toContain("0 EUR");
+  });
+
   it("preserves retained exact quantity residuals and tolerances over rounded numeric fields", () => {
     const item: ReconciliationBreakQueueItem = { ...breakQueue[0], variance: -999,
       measures: [{ kind: "Quantity", expected: 1, expectedExact: "1.0000000000000000000000000000", actual: 1,
