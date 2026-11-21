@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServiceRegistryExtensions
+
+Qualified name: <code>Meridian.Application.Services.ServiceRegistryExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ServiceRegistry.cs:199](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L199).
+
+Extension methods for service registration with common patterns.
+
+```csharp
+public static class ServiceRegistryExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ServiceRegistry RegisterSetupServices(this ServiceRegistry registry, ConfigurationWizard? wizard = null, AutoConfigurationService? autoConfig = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:204](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L204) | Registers setup services (configuration, wizard, auto-config). |
+| <code>public static ServiceRegistry RegisterValidationServices(this ServiceRegistry registry, CredentialValidationService? credentialValidator = null, ConnectivityTestService? connectivityTest = null, PreflightChecker? preflightChecker = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:221](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L221) | Registers validation services (credentials, connectivity, preflight). |
+| <code>public static ServiceRegistry RegisterDiagnosticServices(this ServiceRegistry registry, DiagnosticBundleService? diagnosticBundle = null, ErrorTracker? errorTracker = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:242](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L242) | Registers diagnostic services (error tracking, diagnostics bundle). |
+| <code>public static ServiceRegistry RegisterLifecycleServices(this ServiceRegistry registry, GracefulShutdownService? shutdownService = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:259](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L259) | Registers lifecycle services (shutdown, startup summary). |
+| <code>public static ServiceRegistry RegisterDataServices(this ServiceRegistry registry, HistoricalDataQueryService? historicalQuery = null, SampleDataGenerator? sampleGenerator = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:272](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L272) | Registers data services (historical query, sample generator). |
+| <code>public static ServiceRegistry RegisterCalendarServices(this ServiceRegistry registry, TradingCalendar? tradingCalendar = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:289](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L289) | Registers calendar services (trading calendar). |
+| <code>public static ServiceRegistry RegisterReportingServices(this ServiceRegistry registry, ProgressDisplayService? progressDisplay = null, ApiDocumentationService? apiDocs = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:302](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L302) | Registers reporting services (progress, webhooks, documentation). |
+
+## StoredProviderCredentialResolver
+
+Qualified name: <code>Meridian.Application.Services.StoredProviderCredentialResolver</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:14](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L14).
+
+Resolves catalog-managed provider credentials exclusively through the credential store. Unmanaged provider types retain their legacy resolver; managed records never mix sources.
+
+```csharp
+public sealed class StoredProviderCredentialResolver : IProviderCredentialResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:23](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L23) |  |
+| <code>public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, UI.ConfigStore configStore, ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:32](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L32) | Resolves host defaults from the current retained configuration at provider construction. |
+| <code>public StoredProviderCredentialResolver(IScopedProviderCredentialStore credentialStore, IProviderCredentialResolver fallback, ProviderCredentialScope scope) : this(credentialStore, fallback);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:45](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L45) | Binds runtime credential resolution to an already authorized connection scope. The caller must derive this scope from trusted ownership context. Missing scoped records never fall back to provider-wide credentials, configuration or environment. |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:54](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L54) |  |
+| <code>public async ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Services/StoredProviderCredentialResolver.cs:113](../../../../src/Meridian.Application/Services/StoredProviderCredentialResolver.cs#L113) |  |
+
 ## SymbolPreset
 
 Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
@@ -1036,53 +1082,3 @@ Declared public members:
 | <code>public WizardCoordinator AddStep(IWizardStep step);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L19) | Registers a step implementation. |
 | <code>public WizardCoordinator AddTransition(WizardStepId from, WizardStepId to, Func&lt;WizardContext, bool&gt;? condition = null);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:26](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L26) | Adds a directed transition between two steps. |
 | <code>public async Task&lt;WizardContext&gt; RunAsync(WizardContext context, WizardStepId entryStep, CancellationToken ct = default);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:37](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L37) | Runs the step graph starting at entryStep and returns the final WizardContext after all steps have been executed. |
-
-## WizardStepId
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepId</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepId.cs:7](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L7).
-
-Identifies each discrete step in the configuration wizard workflow. Steps form a directed graph; transitions are declared in WizardTransition.
-
-```csharp
-public enum WizardStepId : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DetectProviders</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L9) |  |
-| <code>CredentialGuidance</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:10](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L10) |  |
-| <code>SelectUseCase</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L11) |  |
-| <code>ConfigureDataSource</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L12) |  |
-| <code>ValidateCredentials</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L13) |  |
-| <code>ConfigureSymbols</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:14](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L14) |  |
-| <code>ConfigureStorage</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L15) |  |
-| <code>ConfigureBackfill</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L16) |  |
-| <code>ReviewConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:17](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L17) |  |
-| <code>SaveConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L18) |  |
-| <code>Summary</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L19) |  |
-
-## WizardStepResult
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L13).
-
-Returned by an IWizardStep after execution. Carries the outcome, an optional message, and an optional override for the next step.
-
-```csharp
-public sealed record WizardStepResult(WizardStepStatus Status, WizardStepId? NextStep = null, string? Message = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WizardStepResult Succeeded(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L19) | Creates a successful result with the default next step. |
-| <code>public static WizardStepResult JumpTo(WizardStepId next, string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:23](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L23) | Creates a successful result that jumps to a specific step. |
-| <code>public static WizardStepResult Skipped(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:27](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L27) | Creates a skip result with the default next step. |
-| <code>public static WizardStepResult Failed(string message) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:31](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L31) | Creates a failure result. |
-| <code>public static WizardStepResult Cancelled(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:35](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L35) | Creates a cancellation result. |

@@ -5,38 +5,25 @@
 
 ## Overall Coverage
 
-**11898 / 11904** items documented (**99.9%**) &mdash; Grade: **A**
+**11904 / 11904** items documented (**100.0%**) &mdash; Grade: **A**
 
 ```text
-[====================] 99.9%
+[====================] 100.0%
 ```
 
 ## Coverage by Category
 
 | Category | Documented | Total | Coverage | Grade |
 | ---------- | ----------- | ------- | ---------- | ------- |
-| Public Classes / Interfaces | 11282 | 11288 | 99.9% | A |
+| Public Classes / Interfaces | 11288 | 11288 | 100.0% | A |
 | API Endpoints | 458 | 458 | 100.0% | A |
 | Configuration Options | 147 | 147 | 100.0% | A |
 | Provider Implementations | 0 | 0 | 100.0% | A |
 | ADR Implementations | 11 | 11 | 100.0% | A |
 
-## Undocumented Items
-
-### Public Classes / Interfaces (6 undocumented)
-
-| Item | Location |
-| ------ | ---------- |
-| `NullSecurityValidationGateService` | `src/Meridian.Application/SecurityMaster/Validation/SecurityValidationGateService.cs:194` |
-| `NullSecurityValidationService` | `src/Meridian.Application/SecurityMaster/Validation/SecurityValidationService.cs:872` |
-| `MarketDataQualityWarningDto` | `src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:25` |
-| `MarketDataInputEvidenceTags` | `src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:29` |
-| `MarketDataInputEvidenceJsonContext` | `src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:121` |
-| `ReconciliationMonetaryTotal` | `src/Meridian.Contracts/Workstation/ReconciliationMonetaryTotal.cs:4` |
-
 ## Recommendations
 
-1. **Public Classes / Interfaces**: 6 undocumented type(s). Add entries to `docs/reference/api-reference.md` for the most important ones.
+1. All categories are fully documented. Great job!
 
 ---
 

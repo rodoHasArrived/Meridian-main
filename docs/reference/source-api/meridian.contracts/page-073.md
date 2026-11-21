@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackAuditEventDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackAuditEventDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1756](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1756).
+
+```csharp
+public sealed record ReportPackAuditEventDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
+```
+
+## ReportPackChangedLineDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackChangedLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1758](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1758).
+
+```csharp
+public sealed record ReportPackChangedLineDto(string LineKey, string PreviousValue, string CurrentValue, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null);
+```
+
+## ReportPackCreateRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackCreateRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1808](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1808).
+
+```csharp
+public sealed record ReportPackCreateRequestDto(string FundProfileId, string FundAccountId, string Period, VersionedReportTemplateIdDto TemplateId, IReadOnlyList<ReportPackLineProvenanceDto>? LineProvenance = null, ReportAccessPolicyDto? AccessPolicy = null);
+```
+
+## ReportPackDeliveryAccessLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryAccessLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:883](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L883).
+
+```csharp
+public sealed record ReportPackDeliveryAccessLinkDto(string Kind, string Label, string Href, bool RequiresToken, DateTimeOffset? ExpiresAtUtc = null, string? Description = null);
+```
+
+## ReportPackDeliveryApprovalStepDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryApprovalStepDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:911](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L911).
+
+```csharp
+public sealed record ReportPackDeliveryApprovalStepDto(DateTimeOffset At, string Actor, string Action, ReportPackWorkflowStateDto FromState, ReportPackWorkflowStateDto ToState, string? Note = null);
+```
+
 ## ReportPackDeliveryArtifactDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryArtifactDto</code>. Kind: `record`.
@@ -573,62 +623,3 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1570]
 ```csharp
 public sealed record ReportWriterGridDataDictionaryFieldDto(string Key, string Label, string Role, string SourceField, string DataType, bool IsGenerated, string Description);
 ```
-
-## ReportWriterGridDefinitionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDefinitionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1483](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1483).
-
-```csharp
-public sealed record ReportWriterGridDefinitionDto(string GridId, string Title, ReportWriterGridKindDto Kind, IReadOnlyList<string>? RowFields = null, IReadOnlyList<string>? ColumnFields = null, IReadOnlyList<ReportWriterMetricDefinitionDto>? Metrics = null, IReadOnlyList<ReportWriterFormulaDefinitionDto>? Formulas = null, int? TopN = null, string? SortBy = null, bool SortDescending = true, IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null, IReadOnlyList<ReportWriterFormatRuleDto>? FormatRules = null, ReportWriterChartDefinitionDto? Chart = null);
-```
-
-## ReportWriterGridDiffCellDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffCellDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1622](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1622).
-
-```csharp
-public sealed record ReportWriterGridDiffCellDto(string Column, string? PriorValue, string? CurrentValue, string? Delta, ReportWriterDiffDirectionDto Direction);
-```
-
-## ReportWriterGridDiffDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1636](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1636).
-
-```csharp
-public sealed record ReportWriterGridDiffDto(string GridId, string Title, IReadOnlyList<ReportWriterGridColumnDto> Columns, IReadOnlyList<ReportWriterGridDiffRowDto> Rows, IReadOnlyList<string> Warnings, int AddedRowCount, int RemovedRowCount, int ChangedRowCount, int UnchangedRowCount);
-```
-
-## ReportWriterGridDiffRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1629](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1629).
-
-```csharp
-public sealed record ReportWriterGridDiffRowDto(string RowKey, ReportWriterDiffRowStateDto State, IReadOnlyDictionary<string, string> PriorValues, IReadOnlyDictionary<string, string> CurrentValues, IReadOnlyList<ReportWriterGridDiffCellDto> Cells);
-```
-
-## ReportWriterGridKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1432](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1432).
-
-```csharp
-public enum ReportWriterGridKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Detail = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1434](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1434) |  |
-| <code>Pivot = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1435](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1435) |  |
-| <code>TopN = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1436](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1436) |  |
-| <code>Contribution = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1437](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1437) |  |

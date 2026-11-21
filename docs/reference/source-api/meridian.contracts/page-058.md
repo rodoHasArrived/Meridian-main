@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredCreditReclassificationReportDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:47](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L47).
+
+Report-first inventory of the active securitised rows still homed on Bond or CustomAsset (ADR-022). Building the report changes nothing; applying a proposal is a separate governed amendment.
+
+```csharp
+public sealed record StructuredCreditReclassificationReportDto(DateTimeOffset GeneratedAt, int SecuritiesScanned, int UnreadableCount, int CandidateCount, int ReadyCount, int BlockedCount, IReadOnlyList<StructuredCreditReclassificationCandidateDto> Candidates);
+```
+
+## StructuredFactorScheduleEntry
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredFactorScheduleEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L67).
+
+A single typed factor-schedule point: the outstanding pool factor effective on AsOfDate. Replaces the free-text &quot;factor schedule&quot; term for structured (factor-based) instruments so amortization can be seeded from a dated schedule rather than a single scalar factor.
+
+```csharp
+public sealed record StructuredFactorScheduleEntry(DateOnly AsOfDate, decimal Factor);
+```
+
+## StructuredPrincipalScheduleEntry
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredPrincipalScheduleEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L72).
+
+A contractual principal payment retained from the security&#x27;s economic terms.
+
+```csharp
+public sealed record StructuredPrincipalScheduleEntry(DateOnly PaymentDate, decimal Amount);
+```
+
+## StructuredStepCouponEntry
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L126).
+
+One dated coupon-rate step resolved from a bond&#x27;s stepSchedule: the annual rate payable from EffectiveDate until the next entry&#x27;s effective date (or maturity).
+
+```csharp
+public sealed record StructuredStepCouponEntry(DateOnly EffectiveDate, decimal Rate);
+```
+
 ## SubscriptionCorporateActionTerms
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SubscriptionCorporateActionTerms</code>. Kind: `record`.
@@ -832,69 +880,4 @@ Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:141](.
 
 ```csharp
 public sealed record StrategyEngineDefinition(string StrategyId, string Version, string Name, StrategyEngineStrategyType Type, string Description, IReadOnlyList<string> AssetUniverse, IReadOnlyList<StrategyEngineDataDependency> RequiredDataInputs, IReadOnlyList<StrategyEngineParameterDefinition> ParameterSchema, IReadOnlyList<StrategyEngineRunMode> SupportedModes, string Owner, string Source, IReadOnlyDictionary<string, string>? UiMetadata = null, IReadOnlyDictionary<string, string>? Extensions = null);
-```
-
-## StrategyEngineMissingDataPolicy
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineMissingDataPolicy</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:81](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L81).
-
-How a strategy may proceed when a declared data dependency is incomplete.
-
-```csharp
-public enum StrategyEngineMissingDataPolicy : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Block</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:83](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L83) |  |
-| <code>AllowDegradedWithEvidence</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:84](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L84) |  |
-| <code>Optional</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:85](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L85) |  |
-
-## StrategyEngineParameterDefinition
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineParameterDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:115](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L115).
-
-```csharp
-public sealed record StrategyEngineParameterDefinition(string Name, StrategyEngineParameterType Type, string? DefaultValue, string? Description, string? DisplayLabel = null, string? CurrentValue = null, string? MinValue = null, string? MaxValue = null, IReadOnlyList<string>? AllowedValues = null, string? ValidationRule = null, string? SweepHint = null, bool IsRequired = true);
-```
-
-## StrategyEngineParameterType
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineParameterType</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:44](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L44).
-
-Strategy parameter value type used for validation and browser rendering.
-
-```csharp
-public enum StrategyEngineParameterType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>String</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:46](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L46) |  |
-| <code>Decimal</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:47](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L47) |  |
-| <code>Integer</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:48](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L48) |  |
-| <code>Boolean</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:49](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L49) |  |
-| <code>Date</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:50](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L50) |  |
-| <code>Enum</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:51](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L51) |  |
-| <code>Symbol</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:52](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L52) |  |
-| <code>SymbolList</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:53](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L53) |  |
-
-## StrategyEnginePromotionRequest
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEnginePromotionRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:207](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L207).
-
-```csharp
-public sealed record StrategyEnginePromotionRequest(string SourceRunId, StrategyEnginePromotionTarget Target, string? OperatorAcknowledgement, IReadOnlyList<string> ReadinessChecks, IReadOnlyList<string> RiskChecks, string EvidencePacket, string? Rationale = null);
 ```
