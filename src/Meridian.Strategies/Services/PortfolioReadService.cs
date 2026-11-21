@@ -212,9 +212,10 @@ public sealed class PortfolioReadService
                             string.Equals(position.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
                         .Select(static position => position.SecurityId).Where(static id => id.HasValue && id != Guid.Empty)
                         .Distinct().ToArray();
-                    if (retainedIds.Length > 0)
+                    if (retainedIds.Length > 0 || summary.HasRetainedAccountingPositionPopulation)
                         return new SecurityReferenceLookupRequest(SecurityId: retainedIds.Length == 1 ? retainedIds[0] : null,
-                            Symbol: symbol, Source: retainedIds.Length == 1 ? "native-accounting-security-id" : "native-accounting-identity-conflict");
+                            Symbol: symbol, Source: retainedIds.Length == 1 ? "native-accounting-security-id"
+                                : retainedIds.Length > 1 ? "native-accounting-identity-conflict" : "native-accounting-identity-unavailable");
                     var resolvedSecurityId = symbolsToSecurityId.GetValueOrDefault(symbol);
                     var source = resolvedSecurityId is null ? "portfolio-position-symbol" : "ledger-metadata-security-id";
                     return new SecurityReferenceLookupRequest(
@@ -239,7 +240,7 @@ public sealed class PortfolioReadService
 
         foreach (var (symbol, request) in requests)
         {
-            if (request.Source == "native-accounting-identity-conflict")
+            if (request.Source is "native-accounting-identity-conflict" or "native-accounting-identity-unavailable")
             {
                 lookup[symbol] = null;
                 continue;

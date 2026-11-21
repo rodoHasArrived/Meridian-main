@@ -176,10 +176,12 @@ public sealed class PaperStrategyAccountingSnapshotTests
         JsonSerializer.Serialize(snapshot).Should().NotContain("AccountingPositions");
     }
 
-    [Fact]
-    public async Task DisplayLookupCannotRelabelRetainedPaperIdentityWithTheCurrentTickerOwner()
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task DisplayLookupCannotRelabelRetainedPaperIdentityWithTheCurrentTickerOwner(bool hasRetainedIdentity)
     {
-        var retainedId = Guid.NewGuid();
+        Guid? retainedId = hasRetainedIdentity ? Guid.NewGuid() : null;
         var tracker = new LiveRunMetricsTracker(1000m, Cutoff.AddDays(-1));
         tracker.RecordDayEnd(DateOnly.FromDateTime(Cutoff.UtcDateTime), 1000m, 1000m,
             new Dictionary<string, Position>(), new Dictionary<string, FinancialAccountSnapshot>(),
@@ -199,6 +201,8 @@ public sealed class PaperStrategyAccountingSnapshotTests
         summary.SecurityResolvedCount.Should().Be(0);
         summary.SecurityMissingCount.Should().Be(1);
         lookup.Verify(item => item.GetBySymbolAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+        lookup.Verify(item => item.GetByCanonicalAsync(It.IsAny<SecurityReferenceLookupRequest>(), It.IsAny<CancellationToken>()),
+            hasRetainedIdentity ? Times.Once() : Times.Never());
     }
 
     private static Mock<IPortfolioState> CreateSource(IReadOnlyList<StrategyPositionAccountingEvidence> positions,
