@@ -25,7 +25,7 @@ export function AmountPassportProvider({ children, enabled, scopeKey, session }:
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search);
   const routeKey = JSON.stringify([location.pathname, scopeKey, ...[
-    "view", "runId", "ledgerBookId", "periodId", "reconciliationBreak", "caseId", "breakId", "reconciliationCompare"
+    "view", "tab", "runId", "ledgerBookId", "periodId", "reconciliationBreak", "caseId", "breakId", "reconciliationCompare"
   ].map(key => query.get(key))]);
   const [investigation, setInvestigation] = useState<Investigation | null>(null);
   const [width, setWidth] = useState(32);
@@ -33,15 +33,17 @@ export function AmountPassportProvider({ children, enabled, scopeKey, session }:
   const [authority, setAuthority] = useState({ session, revision: 0 });
   if (authority.session !== session) setAuthority({ session, revision: authority.revision + 1 });
   const [linked, setLinked] = useState(() => ({
-    pathname: location.pathname, hash: location.hash, identity: readAmountPassportLink(location.hash)
+    pathname: location.pathname, hash: location.hash, tab: query.get("tab"), identity: readAmountPassportLink(location.hash)
   }));
 
   // Some originating screens normalize their filters or scope on mount. Capture the linked
   // address before that normalization, and keep it available for this route.
-  if (linked.pathname !== location.pathname || (location.hash && linked.hash !== location.hash)) {
-    setLinked({ pathname: location.pathname, hash: location.hash, identity: readAmountPassportLink(location.hash) });
+  const linkedTabChanged = linked.pathname === location.pathname && linked.tab !== query.get("tab");
+  if (linked.pathname !== location.pathname || (location.hash && linked.hash !== location.hash) || linkedTabChanged) {
+    setLinked({ pathname: location.pathname, hash: location.hash, tab: query.get("tab"),
+      identity: linkedTabChanged && linked.hash === location.hash ? null : readAmountPassportLink(location.hash) });
   }
-  const link = linked.pathname === location.pathname ? linked.identity : null;
+  const link = linked.pathname === location.pathname && !linkedTabChanged ? linked.identity : null;
   const current = enabled && investigation?.routeKey === routeKey && investigation.session === session ? investigation : null;
   const selection = current?.selections.at(-1) ?? (enabled && link ? { label: "Linked amount", identity: link } : null);
   useEffect(() => {
@@ -55,7 +57,7 @@ export function AmountPassportProvider({ children, enabled, scopeKey, session }:
   function close() {
     const trigger = current?.trigger;
     setInvestigation(null);
-    setLinked({ pathname: location.pathname, hash: location.hash, identity: null });
+    setLinked({ pathname: location.pathname, hash: location.hash, tab: query.get("tab"), identity: null });
     if (location.hash && readAmountPassportLink(location.hash)) {
       void navigate({ pathname: location.pathname, search: location.search, hash: "" }, { replace: true, preventScrollReset: true });
     }

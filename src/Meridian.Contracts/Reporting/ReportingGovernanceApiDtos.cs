@@ -12,7 +12,8 @@ public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
 /// <summary>Human approval rationale plus the required optimistic concurrency token.</summary>
 public sealed record ReportingGovernanceApprovalRequestDto(
     long ExpectedVersion,
-    string DecisionNote);
+    string DecisionNote,
+    string? ReviewEvidenceId = null);
 
 /// <summary>
 /// Human rationale for opening a governed restatement. Changed-line evidence and replacement

@@ -220,7 +220,7 @@ describe("finance standard pages", () => {
   });
 
   it("renders the report preview and validation checkpoint tabs", async () => {
-    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview?runId=run-tb-1");
 
     expect(screen.getByRole("heading", { name: "Report Preview & Validation" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Preview" })).toBeInTheDocument();
@@ -238,7 +238,7 @@ describe("finance standard pages", () => {
       }
     } as unknown as AccountingWorkspaceResponse;
 
-    await renderPage(<ReportPreviewValidationScreen data={readyData} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={readyData} />, "/reporting/preview?runId=run-tb-1");
 
     expect(screen.getByText("Ready to run")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Run report" })).toHaveAttribute(
@@ -339,6 +339,15 @@ describe("finance standard pages", () => {
     expect(screen.getAllByText("No report selected").length).toBeGreaterThan(0);
     expect(screen.queryByRole("link", { name: "Run report" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Choose report" })).toHaveAttribute("href", "/reporting/library");
+  });
+
+  it("requires an explicit preview run instead of selecting the first recent run", async () => {
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    expect(screen.getByLabelText("Report run")).toHaveValue("");
+    expect(screen.queryByText("Open reconciliation break")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Run report" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Report run"), { target: { value: "run-tb-1" } });
+    expect(await screen.findByRole("button", { name: "Run report" })).toBeDisabled();
   });
 
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
@@ -534,13 +543,13 @@ describe("finance standard pages", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
     await waitForAsyncEffects();
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
+    await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     await act(async () => { completeProof(proofPacket); });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /^Retained journal line/ })).not.toBeInTheDocument();
     expect(getAmountPassport).toHaveBeenCalledTimes(1);
-    fireEvent.click(amount);
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
     expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
     expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
@@ -1362,13 +1371,15 @@ describe("finance standard pages", () => {
     expect(screen.queryByLabelText("Search by account, amount, journal ID, source, security, entity")).not.toBeInTheDocument();
   });
 
-  it("renders reconciliation match workbench as a focused clearing queue", async () => {
-    await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, "/accounting/reconciliation/match");
+  it("renders the shared case inspector in the reconciliation match workbench", async () => {
+    await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, `/accounting/reconciliation/match?reconciliationBreak=${encodeURIComponent(data.breakQueue[0].breakId)}`);
 
     expect(screen.getByRole("heading", { name: "Reconciliation Match Workbench" })).toBeInTheDocument();
     expect(screen.getAllByText("Cash variance needs review").length).toBeGreaterThan(0);
     expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", `/accounting/reconciliation?reconciliationBreak=${encodeURIComponent(data.breakQueue[0].breakId)}`);
-    expect(screen.getByRole("heading", { name: "Source lineage" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Case" })).toHaveValue(data.breakQueue[0].breakId);
+    expect(screen.getByRole("region", { name: "Case inspector" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Record match decision" })).not.toBeInTheDocument();
   });
 
   it.each([
@@ -1391,9 +1402,9 @@ describe("finance standard pages", () => {
       `/accounting/reconciliation/match?${query}`
     );
 
-    expect(screen.getByText(importedBreak.reason)).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Case inspector" })).getByRole("heading", { name: importedBreak.reason })).toBeInTheDocument();
     expect(screen.queryByText(priorBreak.reason)).not.toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "Review retained evidence" })).toHaveAttribute(
+    expect(screen.getByRole("link", { name: "Retained evidence" })).toHaveAttribute(
       "href", "/reporting/evidence?subjectKind=reconciliation-break&subjectId=statement%3Aqueue-break"
     );
     expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
@@ -1420,7 +1431,7 @@ describe("finance standard pages", () => {
     expect(api.getReconciliationBreakQueue).toHaveBeenCalledWith(
       undefined, "fund-alpha", { signal: expect.any(AbortSignal), allowDevelopmentFallback: false }
     );
-    expect(screen.getByText(importedBreak.reason)).toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Case inspector" })).getByRole("heading", { name: importedBreak.reason })).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
       "href", "/accounting/reconciliation?reconciliationBreak=statement%3Aqueue-break&fundAccountId=fund-alpha"
     );
@@ -1435,7 +1446,7 @@ describe("finance standard pages", () => {
 
     expect(screen.getByText("Requested reconciliation break unavailable")).toBeInTheDocument();
     expect(screen.queryByText(requireFirst(data.breakQueue, "prior reconciliation break").reason)).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Review retained evidence" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Retained evidence" })).not.toBeInTheDocument();
   });
 
   it("renders close calendar tasks", async () => {

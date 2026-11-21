@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StreamBroadcaster (generic arity 1)
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamBroadcaster</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:26](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L26).
+
+Event-driven fan-out engine shared by all workstation stream kinds. Woken via WakeAll (or Wake), it rebuilds each active topic&#x27;s payload on a coalescing loop (latest-wins) and pushes it to every subscriber of that topic over a bounded, drop-oldest channel — so one build is shared across all subscribers of a topic and a slow client never blocks the loop. The payload build, coalesce comparison, and empty-topic lifecycle are supplied by the owning broadcaster (quotes, report-run, …).
+
+```csharp
+public sealed class StreamBroadcaster<TPayload>: IAsyncDisposable where TPayload : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StreamBroadcaster(StreamConnectionRegistry registry, Func&lt;StreamTopic, TPayload?&gt; build, IEqualityComparer&lt;TPayload&gt; coalesceComparer, int coalesceIntervalMs, int subscriberChannelCapacity, bool evictEmptyTopics, ILogger? logger = null);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:48](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L48) |  |
+| <code>public void WakeAll() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:71](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L71) | Wake the loop to rebuild every active topic (any topic may have changed). |
+| <code>public void Wake(StreamTopic topic) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:78](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L78) | Wake the loop for a change to a single topic. The loop currently rebuilds all active topics and coalesces unchanged ones to no-ops, so this is equivalent to WakeAll today; the topic argument is accepted for a future targeted-rebuild optimization. |
+| <code>public StreamSubscription&lt;TPayload&gt;? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L85) | Subscribe to a topic&#x27;s coalesced payload feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:246](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L246) |  |
+
+## StreamConnectionRegistry
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamConnectionRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:11](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L11).
+
+Tracks the number of concurrent quote-stream connections per session and enforces a per-session cap. A singleton hit concurrently by many request threads, so all counter mutations are atomic (compare-and-swap on a ConcurrentDictionary{TKey,TValue}).
+
+```csharp
+public sealed class StreamConnectionRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StreamConnectionRegistry(int maxConcurrentStreamsPerSession);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L16) |  |
+| <code>public bool TryReserve(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L25) | Atomically reserves a stream slot for the session. Returns false when the session is already at its cap. An empty session id is treated as unscoped and never capped. |
+| <code>public void Release(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:61](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L61) | Releases a previously reserved slot for the session. |
+| <code>public int ActiveCount(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:93](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L93) | Current number of active streams for the session. |
+| <code>public void CloseSession(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:97](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L97) | Drops all accounting for a session (e.g. on logout / session expiry). |
+
+## StreamSubscription (generic arity 1)
+
+Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamSubscription</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L12).
+
+A live subscription to a stream topic produced by StreamBroadcaster{TPayload}. Read coalesced payloads from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
+
+```csharp
+public sealed class StreamSubscription<TPayload>: IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ChannelReader&lt;TPayload&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L23) | Coalesced payload feed for this subscription&#x27;s topic. |
+| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L25) |  |
+
 ## StreamTopic
 
 Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamTopic</code>. Kind: `struct`.

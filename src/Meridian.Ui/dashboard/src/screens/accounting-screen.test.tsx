@@ -65,6 +65,13 @@ async function findAlertContaining(text: string): Promise<HTMLElement> {
   return match;
 }
 
+vi.mock("@/lib/api/reconciliation-readiness.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/reconciliation-readiness.api")>("@/lib/api/reconciliation-readiness.api");
+  return { ...actual, getReconciliationTaxonomy: vi.fn().mockResolvedValue({ version: 1,
+    rootCauses: [{ code: "BrokerCashTiming", displayName: "Broker cash timing", version: 1, isActive: true }],
+    resolutionCodes: [{ code: "EvidenceAccepted", displayName: "Evidence accepted", version: 1, isActive: true }] }) };
+});
+
 vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerBooks: vi.fn().mockResolvedValue([{
     ledgerBookId: "00000000-0000-0000-0000-0000000000aa",
@@ -249,6 +256,10 @@ vi.mock("@/lib/api", async () => {
     patchOperatorOverrides: vi.fn(),
     getSecurityConflicts: vi.fn().mockResolvedValue([]),
     getReconciliationBreakQueue: vi.fn().mockResolvedValue([]),
+    getReconciliationBreakDetail: vi.fn(),
+    getReconciliationBreakAudit: vi.fn().mockResolvedValue([]),
+    assignReconciliationBreak: vi.fn(),
+    transitionReconciliationBreak: vi.fn(),
     getReconciliationStatementRuns: vi.fn().mockResolvedValue([]),
     getReconciliationStatementRun: vi.fn(),
     getReconciliationCalibrationSummary: vi.fn().mockResolvedValue({
@@ -1635,9 +1646,27 @@ function findAppleSecuritySearchRow() {
   );
 }
 
+function inspectorCase(item: ReconciliationBreakQueueItem): ReconciliationBreakQueueItem {
+  const active = item.status !== "Resolved" && item.status !== "Dismissed";
+  return { ...item, version: item.version ?? 1, rootCauseCode: item.rootCauseCode ?? "BrokerCashTiming",
+    resolutionCode: item.resolutionCode ?? "EvidenceAccepted", permittedCommands: item.permittedCommands ?? [
+    { action: "Resolve", enabled: active, disabledReason: active ? null : "This case is already resolved or dismissed." },
+    { action: "Assign", enabled: active, disabledReason: active ? null : "This case is read only until reopened." },
+    { action: "Dismiss", enabled: active, disabledReason: active ? null : "This case is already resolved or dismissed." }
+  ] };
+}
+
 describe("AccountingScreen", () => {
   beforeEach(() => {
     window.localStorage.clear();
+    vi.mocked(api.getReconciliationBreakDetail).mockReset().mockImplementation(async (id) => {
+      const queueRead = vi.mocked(api.getReconciliationBreakQueue).mock.results.at(-1)?.value;
+      const queue: ReconciliationBreakQueueItem[] = queueRead ? await queueRead : data.breakQueue;
+      const item = queue.find((entry) => entry.breakId === id) ?? data.breakQueue.find((entry) => entry.breakId === id);
+      if (!item) throw new Error("Case not available in this scope.");
+      return inspectorCase(item);
+    });
+    vi.mocked(api.getReconciliationBreakAudit).mockResolvedValue([]);
     vi.mocked(recurringJournalsApi.getRecurringJournalQueue).mockReset()
       .mockImplementation(async (scope) => ({ ...scope, occurrences: [] }));
     const searchSecurities = vi.mocked(api.searchSecurities);
@@ -1723,7 +1752,7 @@ describe("AccountingScreen", () => {
     await waitForAsyncEffects();
 
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Accounting today", level: 2 })).toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
   });
 
@@ -3227,7 +3256,7 @@ describe("AccountingScreen", () => {
     });
     vi.mocked(api.createLedgerCloseManagementLateAdjustment).mockResolvedValueOnce(lateAdjustmentPlan);
 
-    await renderAccountingScreen(data, "/accounting");
+    await renderAccountingScreen(data, "/accounting/workflow");
 
     const cockpit = await screen.findByRole("region", { name: "Accounting close and report package certification cockpit" });
     expect(await within(cockpit).findByText("$1,000 USD or 1% review by Controller")).toBeInTheDocument();
@@ -3472,7 +3501,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(
       data,
-      `/accounting?fundProfileId=fund-alpha&ledgerBookId=${ledgerBookId}&periodId=${periodId}`
+      `/accounting/workflow?fundProfileId=fund-alpha&ledgerBookId=${ledgerBookId}&periodId=${periodId}`
     );
 
     const commandCenter = await screen.findByRole("region", { name: "CFO and controller close command center" });
@@ -3597,30 +3626,20 @@ describe("AccountingScreen", () => {
 
     expect(screen.getByLabelText("Accounting headline metrics")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting workbench context" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Accounting today", level: 2 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Accounting case workbench" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Accounting case queue" })).toBeInTheDocument();
     const selectedCase = screen.getByRole("region", { name: "Selected accounting case" });
     expect(selectedCase).toBeInTheDocument();
-    expect(selectedCase).not.toHaveTextContent("run-42");
+    expect(within(selectedCase).getByRole("region", { name: "Case inspector" })).toHaveTextContent("run-42:cash");
     const caseQueue = screen.getByRole("region", { name: "Accounting case queue" });
     expect(caseQueue).not.toHaveTextContent("LEDGER_VALIDATION_REQUIRED");
-    expect(screen.getByRole("region", { name: "Selected case evidence and actions" })).toBeInTheDocument();
+    expect(within(selectedCase).getByRole("region", { name: "Case decisions" })).toBeInTheDocument();
     expect(screen.queryByRole("tablist", { name: "Accounting routes" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByText("System details"));
-    const workflow = screen.getByRole("region", { name: "Accounting workflow launch paths" });
-    expect(within(workflow).getByRole("link", { name: "Open Accounting journal entry workbench" })).toHaveAttribute(
-      "href",
-      "/accounting/journal-entries"
-    );
-    expect(within(workflow).getByRole("link", { name: "Open retained accounting record evidence" })).toHaveAttribute(
-      "href",
-      "/reporting/evidence"
-    );
-    expect(screen.getByRole("link", { name: "Open Accounting reconciliation workflow" })).toHaveAttribute(
-      "href",
-      "/accounting/reconciliation"
-    );
+    expect(screen.queryByText("System details")).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Close hub" })).toHaveAttribute("href", "/accounting/close");
+    expect(screen.getByRole("link", { name: "Valuation and period operations" })).toHaveAttribute("href", "/accounting/workflow#close-command-center");
+    expect(screen.queryByRole("region", { name: "Accounting workflow launch paths" })).not.toBeInTheDocument();
     expect(screen.queryByRole("navigation", { name: "Accounting task modes" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ledger Explorer" })).not.toBeInTheDocument();
     expect(screen.queryByRole("treegrid", { name: "Reconciliation runs" })).not.toBeInTheDocument();
@@ -3630,7 +3649,7 @@ describe("AccountingScreen", () => {
   it("renders hash-targeted Accounting sections from the close cockpit route", async () => {
     await renderAccountingScreen(data, "/accounting#accounting-exceptions");
 
-    expect(screen.getByRole("heading", { name: "Close Cockpit", level: 2 })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Accounting today", level: 2 })).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Reconciliation exceptions and evidence" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Reconciliation runs" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Accounting case workbench" })).not.toBeInTheDocument();
@@ -3725,7 +3744,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha");
 
     expect(screen.queryByLabelText("Accounting headline metrics")).not.toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal Entry");
+    expect(screen.getByRole("region", { name: "Accounting workbench context" })).toHaveTextContent("Journal entries");
     expect(screen.getByRole("heading", { name: "Manual journal entry workbench" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Balanced");
     expect(screen.getByRole("region", { name: "Journal health and actions" })).toHaveTextContent("Validation required");
@@ -4129,14 +4148,18 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/journal-entries");
 
     await user.click(screen.getByRole("button", { name: "Approve" }));
+    await user.click(screen.getByRole("button", { name: "Confirm approve" }));
     expect(await screen.findByText("Approve recorded: Submitted → Approved")).toBeInTheDocument();
     expect(screen.getByText("Approve: Submitted → Approved")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Post" }));
+    await user.click(screen.getByRole("button", { name: "Confirm post" }));
     expect(await screen.findByText("Post recorded: Approved → Posted")).toBeInTheDocument();
     expect(screen.getByText("Post: Approved → Posted")).toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Reverse" }));
+    await user.type(screen.getByRole("textbox", { name: "Reason (required)" }), "Create reversal draft for posted journal entry manual-je-1.");
+    await user.click(screen.getByRole("button", { name: "Confirm reverse" }));
     expect(await screen.findByText("Reverse recorded: Posted → Reversed")).toBeInTheDocument();
     expect(screen.getByText("Reverse: Posted → Reversed")).toBeInTheDocument();
     expect(screen.getAllByText("Reversal for manual-je-1").length).toBeGreaterThan(0);
@@ -4222,6 +4245,7 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/journal-entries");
 
     await user.click(screen.getByRole("button", { name: "Rebook" }));
+    await user.click(screen.getByRole("button", { name: "Confirm rebook" }));
 
     expect(await screen.findByText("Rebook recorded: Posted → Rebooked")).toBeInTheDocument();
     expect(screen.getByText("Rebook: Posted → Rebooked")).toBeInTheDocument();
@@ -4286,6 +4310,8 @@ describe("AccountingScreen", () => {
     await renderAccountingScreen(data, "/accounting/journal-entries");
 
     await user.click(screen.getByRole("button", { name: "Lock after close" }));
+    await user.type(screen.getByRole("textbox", { name: "Reason (required)" }), "Lock posted journal entry manual-je-1 after close.");
+    await user.click(screen.getByRole("button", { name: "Confirm lock after close" }));
 
     expect(await screen.findByText("LockAfterClose recorded: Posted → CloseLocked")).toBeInTheDocument();
     expect(screen.getByText("LockAfterClose: Posted → CloseLocked")).toBeInTheDocument();
@@ -4708,7 +4734,6 @@ describe("AccountingScreen", () => {
   });
 
   it("renders operational exception workbench with queue, comment, audit, and workflow handoffs", async () => {
-    const user = userEvent.setup();
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
 
     await renderAccountingScreen(data, "/accounting/exceptions");
@@ -4729,13 +4754,9 @@ describe("AccountingScreen", () => {
     );
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).not.toHaveTextContent("run-42:cash");
-    const breakMetadata = screen.getByText("Break metadata").closest("details");
-    expect(breakMetadata).not.toHaveAttribute("open");
-    const details = within(screen.getByRole("region", { name: "Reconciliation break detail for run-42:cash" }));
-    const caseId = details.getByText("run-42:cash");
-    expect(caseId).not.toBeVisible();
-    await user.click(details.getByText("Evidence identifiers"));
-    expect(caseId).toBeVisible();
+    const inspector = screen.getByRole("region", { name: "Case inspector" });
+    expect(inspector).toHaveTextContent("run-42:cash");
+    expect(within(inspector).getByRole("region", { name: "Comparison" })).toBeInTheDocument();
   });
 
   it("renders calibration tolerance profiles as selectable row-detail evidence", async () => {
@@ -4853,7 +4874,7 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(screen.getByRole("link", { name: "Open routing target for reconciliation break run-42:cash" })).toHaveAttribute("href", "/accounting/ledger");
+    expect(await screen.findByRole("region", { name: "Case inspector" })).toHaveTextContent("Cash variance over tolerance.");
     expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
 
     const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
@@ -5800,227 +5821,105 @@ describe("AccountingScreen", () => {
     expect(screen.getByText(/Historical breaks have been worked through/)).toBeInTheDocument();
   });
 
-  it("assigns reconciliation breaks without a fabricated actor when no session identity is available", async () => {
+  it("assigns through a versioned command with server-owned actor attribution", async () => {
     const user = userEvent.setup();
-    const updatedBreak = {
-      ...data.breakQueue[0],
-      status: "InReview" as const,
-      assignedTo: "ops-user",
-      reviewedBy: "ops-user",
-      reviewedAt: "2026-01-01T00:05:00Z"
-    };
-
+    const initial = inspectorCase(data.breakQueue[0]);
+    const updated = { ...initial, version: 2, assignedTo: "ops-user" };
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
-    vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(
-      successfulReconciliationCaseworkOperation(updatedBreak)
-    );
-
+    vi.mocked(api.getReconciliationBreakDetail).mockResolvedValueOnce(initial).mockResolvedValue(updated);
+    vi.mocked(api.assignReconciliationBreak).mockResolvedValueOnce(successfulReconciliationCaseworkOperation(updated));
     await renderAccountingScreen(data, "/accounting/reconciliation");
-
-    await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
-
-    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({ breakId: "run-42:cash" });
-    const detail = await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" });
-    expect(within(detail).getByText("InReview")).toBeInTheDocument();
+    await user.click(screen.getByText("Other decisions"));
+    await user.click(screen.getByRole("button", { name: "Assign" }));
+    await user.type(within(screen.getByRole("form", { name: "Assign case" })).getByRole("textbox", { name: "Assignee" }), "ops-user");
+    await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Investigate the retained evidence");
+    await user.click(screen.getByRole("button", { name: "Confirm assign" }));
+    await waitFor(() => expect(api.assignReconciliationBreak).toHaveBeenCalledWith(expect.objectContaining({ breakId: "run-42:cash", expectedVersion: 1, actor: "", assignee: "ops-user" })));
+    expect(await screen.findByRole("status", { name: "Decision receipt" })).toHaveTextContent("Succeeded");
+    expect(screen.getByRole("region", { name: "Case inspector" })).toHaveTextContent("ops-user");
   });
 
-  it("sends the session operator identity when assigning reconciliation breaks", async () => {
+  it("keeps authenticated actor authority on the server when a browser session is present", async () => {
     const user = userEvent.setup();
-    const session: SessionInfo = {
-      displayName: "Avery Chen",
-      role: "Fund operations",
-      environment: "paper",
-      activeWorkspace: "accounting",
-      commandCount: 3
-    };
-    const updatedBreak = {
-      ...data.breakQueue[0],
-      status: "InReview" as const,
-      assignedTo: "Avery Chen",
-      reviewedBy: "Avery Chen",
-      reviewedAt: "2026-01-01T00:05:00Z"
-    };
-
+    const session: SessionInfo = { displayName: "Avery Chen", role: "Fund operations", environment: "paper", activeWorkspace: "accounting", commandCount: 3 };
+    const initial = inspectorCase(data.breakQueue[0]);
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
-    vi.mocked(api.reviewReconciliationBreak).mockResolvedValueOnce(
-      successfulReconciliationCaseworkOperation(updatedBreak)
-    );
-
-    renderWithRouter(
-      <AccountingScreen data={data} session={session} />,
-      { initialEntries: ["/accounting/reconciliation"] }
-    );
+    vi.mocked(api.getReconciliationBreakDetail).mockResolvedValue(initial);
+    vi.mocked(api.assignReconciliationBreak).mockResolvedValueOnce(successfulReconciliationCaseworkOperation({ ...initial, version: 2, assignedTo: "ops-user" }));
+    renderWithRouter(<AccountingScreen data={data} session={session} />, { initialEntries: ["/accounting/reconciliation"] });
     await waitForAsyncEffects();
-
-    await user.click(await screen.findByRole("button", { name: "Assign reconciliation break run-42:cash" }));
-
-    expect(api.reviewReconciliationBreak).toHaveBeenCalledWith({
-      breakId: "run-42:cash",
-      assignedTo: "Avery Chen",
-      reviewedBy: "Avery Chen"
-    });
+    await user.click(screen.getByText("Other decisions"));
+    await user.click(screen.getByRole("button", { name: "Assign" }));
+    await user.type(within(screen.getByRole("form", { name: "Assign case" })).getByRole("textbox", { name: "Assignee" }), "ops-user");
+    await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Reviewed assignment");
+    await user.click(screen.getByRole("button", { name: "Confirm assign" }));
+    await waitFor(() => expect(api.assignReconciliationBreak).toHaveBeenCalledWith(expect.objectContaining({ actor: "", expectedVersion: 1 })));
   });
 
-  it("sends the operator rationale and session identity when resolving reconciliation breaks", async () => {
+  it("submits the reviewed version and rationale while the server supplies resolver identity", async () => {
     const user = userEvent.setup();
-    const session: SessionInfo = {
-      displayName: "Avery Chen",
-      role: "Fund operations",
-      environment: "paper",
-      activeWorkspace: "accounting",
-      commandCount: 3
-    };
-    const resolvedBreak = {
-      ...data.breakQueue[0],
-      status: "Resolved" as const,
-      resolvedBy: "Avery Chen",
-      resolvedAt: "2026-01-01T00:10:00Z",
-      resolutionNote: "Matched the balancing ledger entry."
-    };
-
+    const initial = inspectorCase(data.breakQueue[0]);
+    const resolved = { ...initial, version: 2, status: "Resolved" as const, resolvedBy: "Avery Chen" };
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
-    vi.mocked(api.resolveReconciliationBreak).mockResolvedValueOnce(
-      successfulReconciliationCaseworkOperation(resolvedBreak)
-    );
-
-    renderWithRouter(
-      <AccountingScreen data={data} session={session} />,
-      { initialEntries: ["/accounting/reconciliation"] }
-    );
-    await waitForAsyncEffects();
-
-    await user.click(await screen.findByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
-    await user.type(await screen.findByLabelText(/resolve rationale/i), "Matched the balancing ledger entry.");
-    await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
-
-    await waitFor(() => expect(api.resolveReconciliationBreak).toHaveBeenCalledWith({
-      breakId: "run-42:cash",
-      status: "Resolved",
-      resolvedBy: "Avery Chen",
-      resolutionNote: "Matched the balancing ledger entry.",
-      operatorRationale: "Matched the balancing ledger entry."
-    }));
+    vi.mocked(api.getReconciliationBreakDetail).mockResolvedValueOnce(initial).mockResolvedValue(resolved);
+    vi.mocked(api.resolveReconciliationBreak).mockResolvedValueOnce(successfulReconciliationCaseworkOperation(resolved));
+    await renderAccountingScreen(data, "/accounting/reconciliation");
+    await user.click(screen.getByRole("button", { name: "Resolve" }));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Root cause code" }), "BrokerCashTiming");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Resolution code" }), "EvidenceAccepted");
+    await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Matched the balancing ledger entry.");
+    await user.click(screen.getByRole("button", { name: "Confirm resolve" }));
+    await waitFor(() => expect(api.resolveReconciliationBreak).toHaveBeenCalledWith({ breakId: "run-42:cash", status: "Resolved", expectedVersion: 1,
+      rootCauseCode: "BrokerCashTiming", resolutionCode: "EvidenceAccepted", resolutionNote: "Matched the balancing ledger entry.", operatorRationale: "Matched the balancing ledger entry." }));
+    expect(await screen.findByRole("status", { name: "Decision receipt" })).toHaveTextContent("version 2");
   });
 
-  it("surfaces view-model disabled reasons for reconciliation queue actions", async () => {
+  it("shows server-disabled decisions and keeps confirmation disabled without a rationale", async () => {
     const user = userEvent.setup();
-    const resolvedBreak = {
-      ...data.breakQueue[0],
-      breakId: "run-42:resolved",
-      status: "Resolved" as const,
-      resolvedBy: "ops.gov",
-      resolvedAt: "2026-01-01T00:10:00Z",
-      resolutionNote: "Matched ledger adjustment.",
-      exceptionRoute: "fund-ops-review",
-      toleranceProfileId: "cash-variance-ops",
-      toleranceBand: 250,
-      requiredSignoffRole: "Fund operations lead",
-      signoffStatus: "Pending Signoff"
-    };
-    const dismissedBreak = {
-      ...data.breakQueue[0],
-      breakId: "run-42:dismissed",
-      status: "Dismissed" as const,
-      resolvedBy: "ops.gov",
-      resolvedAt: "2026-01-01T00:12:00Z",
-      resolutionNote: "Vendor duplicate ignored."
-    };
-
-    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([
-      data.breakQueue[0],
-      resolvedBreak,
-      dismissedBreak
-    ]);
-
+    const initial = inspectorCase(data.breakQueue[0]);
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    vi.mocked(api.getReconciliationBreakDetail).mockResolvedValue({ ...initial, permittedCommands: [
+      { action: "Resolve", enabled: true, disabledReason: null },
+      { action: "Assign", enabled: false, disabledReason: "Requires an operations role." }
+    ] });
     await renderAccountingScreen(data, "/accounting/reconciliation");
-
-    await user.click(await screen.findByRole("row", { name: "Inspect reconciliation break run-42:resolved" }));
-    expect(screen.getByRole("button", { name: "Assign reconciliation break run-42:resolved" }))
-      .toHaveAttribute("title", "Only open breaks can be assigned; this break is Resolved.");
-    expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:resolved" }))
-      .toHaveAttribute("title", "This break is already resolved.");
-    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:dismissed" }));
-    expect(screen.getByRole("button", { name: "Dismiss reconciliation break run-42:dismissed" }))
-      .toHaveAttribute("title", "This break is already dismissed.");
-
-    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:resolved" }));
-    const resolvedDetail = screen.getByRole("region", { name: "Reconciliation break detail for run-42:resolved" });
-    expect(resolvedDetail).toHaveTextContent("Decision captured; sign-off: Pending Signoff by Fund operations lead. Close approval remains blocked.");
-    expect(resolvedDetail).toHaveTextContent("Matched ledger adjustment.");
-
-    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-42:cash" }));
-    await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
-
-    expect(screen.getByRole("button", { name: "Resolve reconciliation break run-42:cash" }))
-      .toHaveAttribute("title", "Enter the rationale or cancel the open queue action before choosing another action.");
-    expect(screen.getByRole("button", { name: "Confirm resolve for reconciliation break run-42:cash" }))
-      .toHaveAttribute("title", "Enter an operator rationale before confirming this queue action.");
+    await user.click(screen.getByText("Other decisions"));
+    expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
+    expect(screen.getByText("Requires an operations role.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Resolve" }));
+    expect(screen.getByRole("button", { name: "Confirm resolve" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Resolve" })).toHaveAttribute("title", "Complete or cancel the current decision first.");
   });
 
-  it("opens queue actions from the selected reconciliation break inspector", async () => {
+  it("opens the shared decision form for the selected URL-addressable case", async () => {
     const user = userEvent.setup();
-    const feeBreak = {
-      ...data.breakQueue[0],
-      breakId: "run-57:fees",
-      runId: "run-57",
-      strategyName: "Intraday Vol Carry",
-      category: "FeeMismatch",
-      variance: -125,
-      reason: "Fee accrual differs from broker statement."
-    };
-
-    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([
-      data.breakQueue[0],
-      feeBreak
-    ]);
-
-    await renderAccountingScreen(data, "/accounting/reconciliation");
-
-    expect(await screen.findByRole("region", { name: "Reconciliation break detail for run-42:cash" }))
-      .toHaveTextContent("Paper Index Mean Reversion - Cash variance needs review");
-
-    await user.click(screen.getByText("Readiness, source comparison, and run evidence"));
-    await user.click(screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" }));
-    await user.click(screen.getByRole("row", { name: "Inspect reconciliation break run-57:fees" }));
-    await user.click(screen.getByRole("button", { name: "Resolve reconciliation break run-57:fees" }));
-
-    expect(screen.getByRole("region", { name: "Reconciliation break detail for run-57:fees" }))
-      .toHaveTextContent("Intraday Vol Carry - Cash variance needs review");
+    const fee = inspectorCase({ ...data.breakQueue[0], breakId: "run-57:fees", runId: "run-57", strategyName: "Intraday Vol Carry", category: "FeeMismatch", variance: -125, reason: "Fee accrual differs from broker statement." });
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([data.breakQueue[0], fee]);
+    await renderAccountingScreen(data, "/accounting/reconciliation?reconciliationRun=run-57&reconciliationBreak=run-57%3Afees");
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    expect(screen.getByRole("region", { name: "Case inspector" })).toHaveTextContent("Fee accrual differs from broker statement.");
+    await user.click(screen.getByRole("button", { name: "Resolve" }));
     expect(screen.getByRole("textbox", { name: "Resolve rationale" })).toBeInTheDocument();
+    expect(screen.getByRole("form", { name: "Resolve case" })).toHaveTextContent("run-57:fees");
   });
 
-  it("announces reconciliation break action failures", async () => {
+  it("shows the current record on a version conflict and does not retry automatically", async () => {
     const user = userEvent.setup();
-
+    const initial = inspectorCase(data.breakQueue[0]);
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
-    vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(
-      new ApiError({
-        path: "/api/workstation/reconciliation/break-queue/run-42:cash/resolve",
-        status: 409,
-        detail: "Ledger write rejected",
-        validationIssues: [
-          {
-            field: "operatorRationale",
-            label: "operatorRationale",
-            messages: ["Operator rationale must cite the balancing ledger entry."]
-          }
-        ]
-      })
-    );
-
+    vi.mocked(api.getReconciliationBreakDetail).mockResolvedValueOnce(initial).mockResolvedValue({ ...initial, version: 2, assignedTo: "controller" });
+    vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new ApiError({ path: "/case", status: 409, detail: "Ledger write rejected" }));
     await renderAccountingScreen(data, "/accounting/reconciliation");
-
-    await user.click(await screen.findByRole("button", { name: "Resolve reconciliation break run-42:cash" }));
-
-    // The inline rationale form appears; fill in the rationale and submit
-    const rationaleInput = await screen.findByLabelText(/resolve rationale/i);
-    await user.type(rationaleInput, "Reviewed cash mismatch");
-    await user.click(screen.getByRole("button", { name: /confirm resolve/i }));
-
-    const alert = await findAlertContaining("Break action failed: Ledger write rejected");
-    expect(within(alert).getByText("Meridian service returned 409. Open diagnostics for technical details.")).toBeInTheDocument();
-    expect(within(alert).getByText("operatorRationale: Operator rationale must cite the balancing ledger entry.")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Resolve" }));
+    await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Reviewed cash mismatch");
+    await user.click(screen.getByRole("button", { name: "Confirm resolve" }));
+    const conflict = await screen.findByRole("alert", { name: "Case changed" });
+    expect(conflict).toHaveTextContent("controller");
+    expect(conflict).toHaveTextContent("Review the latest case before confirming again.");
+    expect(screen.getByRole("button", { name: "Confirm resolve" })).toBeDisabled();
+    expect(api.resolveReconciliationBreak).toHaveBeenCalledTimes(1);
   });
+
 });
 
 describe("AccountingScreen accessibility", () => {

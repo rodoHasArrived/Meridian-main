@@ -141,7 +141,11 @@ public static partial class WorkstationEndpoints
                     MarkPrice: hasMark ? effectiveMark.ToString("F2", CultureInfo.InvariantCulture) : "—",
                     DayPnl: "—",
                     UnrealizedPnl: FormatCurrency(hasMark ? liveUnrealized : pos.UnrealizedPnl),
-                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—");
+                    Exposure: hasMark ? FormatCurrency(liveExposure) : "—",
+                    AveragePriceExact: pos.AverageCostBasis.ToString(CultureInfo.InvariantCulture),
+                    MarkPriceExact: hasMark ? effectiveMark.ToString(CultureInfo.InvariantCulture) : null,
+                    UnrealizedPnlExact: (hasMark ? liveUnrealized : pos.UnrealizedPnl).ToString(CultureInfo.InvariantCulture),
+                    ExposureExact: hasMark ? liveExposure.ToString(CultureInfo.InvariantCulture) : null);
             }).ToArray();
         }
         else

@@ -558,6 +558,7 @@ Declared public members:
 | <code>public async Task&lt;LedgerPeriodSummaryDto?&gt; GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:338](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L338) |  |
 | <code>public async Task&lt;LedgerPeriodCloseResultDto&gt; ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:362](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L362) |  |
 | <code>public async Task&lt;LedgerPeriodReopenResultDto&gt; ReopenPeriodAsync(Guid periodId, ReopenLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:443](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L443) |  |
+| <code>public static IReadOnlyList&lt;LedgerPeriodTrialBalanceLineDto&gt; ProjectTrialBalanceCheckpoint(IEnumerable&lt;LedgerJournalEntryRecord&gt; records);</code> | [src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs:787](../../../../src/Meridian.Storage/Ledger/PostgresLedgerBookService.cs#L787) | Canonical balance/dimension projection for immutable journal checkpoint proofs. |
 
 ## PostgresLedgerCurrencyBackfill
 

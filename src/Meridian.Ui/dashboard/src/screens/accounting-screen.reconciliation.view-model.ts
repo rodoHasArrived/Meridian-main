@@ -1,5 +1,7 @@
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
+import { formatExactDecimal } from "@/lib/exact-financial-value";
+import { caseResidual, caseResidualUnit } from "./reconciliation-case-values";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 import {
   evidenceWorkbenchPath,
@@ -42,7 +44,7 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
-import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency } from "@/lib/format";
 import {
   TIE_OUT_EPSILON,
   usableAmount,
@@ -915,6 +917,12 @@ export function buildReconciliationBreakRows(
   selectedBreakId: string | null = null
 ): ReconciliationBreakRowViewModel[] {
   return breakQueue.map((item) => {
+    const unit = caseResidualUnit(item)?.trim();
+    const residual = formatExactDecimal(caseResidual(item), {
+      currency: unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined, signed: true
+    });
+    const varianceLabel = (item.statementEvidence?.match.residuals.length ?? 0) > 1 ? "Multiple"
+      : residual === null ? "Not recorded" : `${residual} ${unit || "Unit unavailable"}`;
     const actionBusy = action?.breakId === item.breakId;
     const assignBusy = actionBusy && action?.command === "assign";
     const resolveBusy = actionBusy && action?.command === "resolve";
@@ -929,13 +937,13 @@ export function buildReconciliationBreakRows(
       ...item,
       actionBusy,
       financeLabel,
-      varianceLabel: formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" }),
+      varianceLabel,
       varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
       detectedAtLabel: formatAccountingDate(item.detectedAt),
       lastUpdatedAtLabel: formatAccountingDate(item.lastUpdatedAt),
       ownerLabel: item.assignedTo ?? "Unassigned",
-      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" })}. ${item.reason}`,
+      rowAriaLabel: `${financeLabel} ${item.breakId}. ${item.status}. Variance ${varianceLabel}. ${item.reason}`,
       rowSelectAriaLabel: `Inspect reconciliation break ${item.breakId}`,
       detailPanelId: "reconciliation-break-detail-panel",
       isSelected,
@@ -1117,7 +1125,7 @@ function reconciliationSlaStateLabel(state: ReconciliationBreakQueueItem["slaSta
   }
 }
 
-function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {
+export function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {
   const trimmedTarget = routingTarget?.trim();
   if (!trimmedTarget) {
     return null;

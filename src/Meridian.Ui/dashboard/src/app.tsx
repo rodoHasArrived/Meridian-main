@@ -135,6 +135,8 @@ import type { WorkspaceKey, WorkspaceSummary } from "@/types";
 import { FirstRunScreen } from "@/features/first-run/first-run-screen";
 import type { FirstRunStatus } from "@/features/first-run/types";
 import { apiGetJson } from "@/lib/api";
+import { closeWorkspaceRedirect } from "@/lib/workstation-close-routing";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 // Lazy route modules and data-backed panels often mount hash targets after the
@@ -149,7 +151,9 @@ type FirstRunLoadState =
   | { phase: "failed"; status: null };
 
 const DataScreen = lazy(() => import("@/screens/data-screen").then((module) => ({ default: memo(module.DataScreen) })));
-const DailyControlTowerScreen = lazy(() => import("@/screens/daily-control-tower-screen").then((module) => ({ default: memo(module.DailyControlTowerScreen) })));
+const TodayScreen = lazy(() => import("@/screens/today-screen").then((module) => ({ default: memo(module.TodayScreen) })));
+const ImportStartScreen = lazy(() => import("@/screens/import-start-screen").then((module) => ({ default: module.ImportStartScreen })));
+const InstrumentDossierScreen = lazy(() => import("@/screens/instrument-dossier-screen").then((module) => ({ default: module.InstrumentDossierScreen })));
 const EvidenceWorkbenchScreen = lazy(() => import("@/screens/evidence-workbench-screen").then((module) => ({ default: module.EvidenceWorkbenchScreen })));
 const AccountingScreen = lazy(() => import("@/screens/accounting-screen").then((module) => ({ default: memo(module.AccountingScreen) })));
 const FamilyOfficeScreen = lazy(() => import("@/screens/family-office-screen").then((module) => ({ default: module.FamilyOfficeScreen })));
@@ -1102,25 +1106,17 @@ function AppShell({
               <RouteErrorBoundary routeKey={routeErrorContext.routeKey} context={routeErrorContext}>
                 <Suspense fallback={<WorkspaceRouteFallback title={`Loading ${shell.activeWorkspace.label}`} />}>
                   <Routes location={scopedLocation}>
-                  <Route path="/" element={(
-                    <DailyControlTowerScreen
-                      viewModel={shell.workflowContinuity}
-                      trustStrip={shell.trustStrip}
-                      attention={shell.attention}
-                      triage={triageInbox}
+                  {["/", "/today"].map((route) => <Route key={route} path={route} element={(
+                    <TodayScreen
+                      viewModel={shell.workflowContinuity} trustStrip={shell.trustStrip}
+                      attention={shell.attention} triage={triageInbox}
                       refreshing={loading || refreshStatus.inFlight}
-                    />
-                  )} />
-                  <Route path="/trading/readiness" element={(
-                    <OperatorReadinessConsole
-                      strategy={strategy}
-                      trading={trading}
-                      data={data}
-                      accounting={accounting}
-                      reporting={reporting}
+                      strategy={strategy} trading={trading} data={data} accounting={accounting} reporting={reporting}
                       fundAccountId={operatingScopeInput.fundAccountId}
                     />
-                  )} />
+                  )} />)}
+                  <Route path="/trading/readiness" element={<CloseWorkspaceRedirect />} />
+                  <Route path="/records/instrument/:id" element={<InstrumentDossierScreen portfolio={portfolio} trading={trading} accounting={accounting} brokeragePortfolio={brokeragePortfolio} />} />
                   <Route path="/trading/*" element={<TradingScreen
                     key={`${operatingScopeInput.fundAccountId ?? ""}/${trading?.scopedPaperOrderIntentKey ?? ""}`}
                     data={trading} fundAccountId={operatingScopeInput.fundAccountId} />} />
@@ -1141,7 +1137,8 @@ function AppShell({
                       refreshStatus={portfolioRefreshStatus}
                     />
                   )} />
-                  <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+                  <Route path="/accounting/operations-continuity" element={<CloseWorkspaceRedirect />} />
+                  <Route path="/accounting/close" element={<OperationsContinuityScreen closeHub />} />
                   <Route path="/accounting/entity-setup" element={<EntitySetupWizard />} />
                   <Route path="/accounting/ledger" element={<LedgerExplorerScreen data={accounting} />} />
                   <Route path="/accounting/factor-paydown" element={<FactorPaydownScreen />} />
@@ -1172,6 +1169,7 @@ function AppShell({
                   <Route path="/strategy/quant-lab" element={<QuantLabScreen />} />
                   <Route path="/strategy/run-ledger" element={<StrategyRunLedgerScreen />} />
                   <Route path="/strategy/*" element={<StrategyScreen data={strategy} fundAccountId={operatingScopeInput.fundAccountId} />} />
+                  <Route path="/data/import/start" element={<ImportStartScreen />} />
                   <Route path="/data/quotes" element={<MarketDataScreen />} />
                   <Route path="/data/watchlist" element={<LegacyWorkspaceRedirect />} />
                   <Route path="/data/alerts" element={<LegacyWorkspaceRedirect />} />
@@ -1182,7 +1180,12 @@ function AppShell({
                     <Route key={route} path={route} element={dataRouteElement} />
                   ))}
                   {SETTINGS_WORKSTATION_SCREEN_ROUTES.map((route) => (
-                    <Route key={route} path={route} element={settingsRouteElement} />
+                    <Route key={route} path={route} element={route === "/settings/diagnostics" ? <>
+                      {settingsRouteElement}
+                      <TechnicalDetails label="Cross-workspace readiness evidence" className="mt-4">
+                        <OperatorReadinessConsole strategy={strategy} trading={trading} data={data} accounting={accounting} reporting={reporting} fundAccountId={operatingScopeInput.fundAccountId} />
+                      </TechnicalDetails>
+                    </> : settingsRouteElement} />
                   ))}
                   {SETTINGS_PROVIDER_SCREEN_ROUTE_PATTERNS.map((route) => (
                     <Route key={route} path={route} element={settingsRouteElement} />
@@ -1284,6 +1287,8 @@ function AppShell({
 function resolveWorkspaceKeyFromPath(pathname: string): WorkspaceKey {
   const root = pathname.split("/").filter(Boolean)[0]?.toLowerCase();
   switch (root) {
+    case "records":
+      return "portfolio";
     case "portfolio":
     case "accounting":
     case "reporting":
@@ -1298,7 +1303,7 @@ function resolveWorkspaceKeyFromPath(pathname: string): WorkspaceKey {
 }
 
 function buildHeaderWorkspaceSummary(pathname: string, workspace: WorkspaceSummary): WorkspaceSummary {
-  if (pathname !== "/") {
+  if (pathname !== "/" && pathname !== "/today") {
     return workspace;
   }
 
@@ -1377,7 +1382,7 @@ function buildWorkspaceBreadcrumbItems(
 ): BreadcrumbItem[] {
   // The masthead already says "Meridian", so the trail starts at the workspace and ends in the
   // page name, which the header renders as the page heading.
-  if (pathname === "/") {
+  if (pathname === "/" || pathname === "/today") {
     // The Daily Control Tower is the workstation's front door, named "Today" in the sidebar.
     return [{ label: "Today", current: true }];
   }
@@ -1526,4 +1531,9 @@ function focusElementById(targetElementId: string, fallbackElement: HTMLElement 
   }
 
   return true;
+}
+
+function CloseWorkspaceRedirect() {
+  const location = useLocation();
+  return <Navigate to={closeWorkspaceRedirect(location.pathname, location.search, location.hash) ?? "/today"} replace />;
 }

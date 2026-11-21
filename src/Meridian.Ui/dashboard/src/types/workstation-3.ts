@@ -1282,6 +1282,10 @@ export interface TradingPosition {
   currency?: string | null;
   weight?: string | null;
   weightBasis?: string | null;
+  averagePriceExact?: string | null;
+  markPriceExact?: string | null;
+  unrealizedPnlExact?: string | null;
+  exposureExact?: string | null;
   markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   positionKey?: string;
   symbol: string;

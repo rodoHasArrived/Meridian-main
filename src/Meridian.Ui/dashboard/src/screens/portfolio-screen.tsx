@@ -11,6 +11,8 @@ import { Link, useLocation, useNavigate, useSearchParams } from "react-router-do
 import { Badge } from "@/components/ui/badge";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
 import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
+import { FinancialValue } from "@/components/meridian/financial-value";
+import { parseExactDecimal, readLegacyFinancialText } from "@/lib/exact-financial-value";
 import { PositionValueGraphic } from "@/components/meridian/position-value-graphic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -58,6 +60,7 @@ import { getPositionSideOptions, selectPortfolioPositionRows } from "@/lib/portf
 import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-table";
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
 import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
   brokeragePositionId,
@@ -129,16 +132,37 @@ const cashFlowBorderClass = {
   danger: "border-danger/30"
 } as const;
 
+function HoldingValue({ text, exact, row, quantity = false, price = false, markDependent = false }: {
+  text: string; exact?: string | null; row: PortfolioPositionRow; quantity?: boolean; price?: boolean; markDependent?: boolean;
+}) {
+  // Keep upstream source formatting until an exact source field is available.
+  if (exact == null) return <>{text}</>;
+  const legacy = readLegacyFinancialText(text);
+  const value = exact ?? legacy.value;
+  const hasAssessment = row.markFreshness.policyVersion !== "Unavailable";
+  return <FinancialValue value={value} currency={quantity ? undefined : row.currency ?? undefined}
+    unit={quantity ? undefined : row.currency ? undefined : legacy.unit}
+    decimals={quantity ? Math.min(28, parseExactDecimal(value)?.scale ?? 0) : price ? Math.min(28, Math.max(2, parseExactDecimal(value)?.scale ?? 2)) : undefined}
+    condition={markDependent && hasAssessment ? row.markFreshness.reviewRequired ? "review-required" : "provisional" : "unavailable"}
+    reason={markDependent ? row.markFreshness.reason : "The source has not supplied a confirmed data condition or an exact amount proof binding."}
+    freshness={markDependent ? `Observed ${row.markFreshness.observedOn}` : undefined} />;
+}
+
+function InstrumentSymbolLink({ row }: { row: PortfolioPositionRow }) {
+  const location = useLocation();
+  return <EntityLink record={{ kind: "symbol", id: row.symbol, label: row.symbol,
+    workspaceHref: row.securityId ? instrumentDossierRoute(row.securityId, location.search) : workstationRouteWithQuery("accountingSecurityMaster", { symbol: row.symbol }),
+    summary: [{ label: "Source", value: "Portfolio holdings snapshot" }, { label: "Side", value: row.side },
+      { label: "Quantity", value: row.quantity }, { label: "Mark", value: row.markPrice }] }} />;
+}
+
 const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   { id: "mark-readiness", label: "Mark readiness", sortable: true, render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "symbol",
     label: "Symbol",
     sortable: true,
-    render: (row) => <EntityLink record={{ kind: "symbol", id: row.symbol, label: row.symbol,
-      workspaceHref: workstationRouteWithQuery("accountingSecurityMaster", { symbol: row.symbol }),
-      summary: [{ label: "Source", value: "Portfolio holdings snapshot" }, { label: "Side", value: row.side },
-        { label: "Quantity", value: row.quantity }, { label: "Mark", value: row.markPrice }] }} />
+    render: (row) => <InstrumentSymbolLink row={row} />
   },
   {
     id: "side",
@@ -158,14 +182,14 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     label: "Avg price",
     numeric: true,
     hideable: true,
-    render: (row) => <PositionAmount row={row} label="average price" field="average-price" value={row.avgPrice} />
+    render: (row) => <PositionAmount row={row} label="average price" field="average-price" value={row.avgPrice}><HoldingValue text={row.avgPrice} exact={row.averagePriceExact} row={row} price /></PositionAmount>
   },
   {
     id: "mark",
     label: "Recorded mark",
     numeric: true,
     hideable: true,
-    render: (row) => <PositionAmount row={row} label="recorded mark" field="mark" value={row.markPrice} />
+    render: (row) => <PositionAmount row={row} label="recorded mark" field="mark" value={row.markPrice}><HoldingValue text={row.markPrice} exact={row.markPriceExact} row={row} price markDependent /></PositionAmount>
   },
   {
     id: "unrealized-pnl",
@@ -173,7 +197,7 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     numeric: true,
     hideable: true,
     render: (row) => <PositionAmount row={row} label="unrealized P&L" field="unrealized-pnl" value={row.unrealizedPnl}>
-      <PositionValueGraphic value={row.unrealizedPnl} measurement={row.pnlGraphic} kind="pnl" className={cn("font-semibold", pnlToneClass[row.pnlTone])} />
+      <PositionValueGraphic value={row.unrealizedPnl} displayValue={<HoldingValue text={row.unrealizedPnl} exact={row.unrealizedPnlExact} row={row} markDependent />} measurement={row.pnlGraphic} kind="pnl" className={cn("font-semibold", pnlToneClass[row.pnlTone])} />
     </PositionAmount>
   },
   {
@@ -183,7 +207,7 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     hideable: true,
     render: (row) => <span data-holding-exposure={row.exposureAmount ?? ""} data-holding-currency={row.currency ?? ""}>
       <PositionAmount row={row} label="exposure" field="exposure" value={row.exposure}>
-      <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+      <PositionValueGraphic value={row.exposure} displayValue={<HoldingValue text={row.exposure} exact={row.exposureExact} row={row} markDependent />} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
       </PositionAmount>
     </span>
   }
@@ -367,7 +391,7 @@ function PositionAmount({ row, label, field, value, stale, children }: {
   value: string; stale?: boolean; children?: ReactNode;
 }) {
   const reference = "amountPassports" in row ? row.amountPassports?.[field] : null;
-  return <AmountPassportTrigger className="font-mono" selection={{
+  return <AmountPassportTrigger compact className="font-mono" selection={{
     label: `${row.symbol} ${label}`, category: "Position valuation", displayValue: value, reference,
     currency: field === "quantity" ? null : row.currency,
     unit: field === "quantity" ? "position units" : field === "mark" || field === "average-price" ? "currency per position unit" : "currency",
@@ -1334,6 +1358,7 @@ function PortfolioScreenContent({
             ) : null}
             actions={vm.selectedPosition ? (
               <>
+              {vm.selectedPosition.securityId ? <Button asChild size="sm" variant="outline"><Link to={holdingContext ? appendRecordWorkspaceContext(instrumentDossierRoute(vm.selectedPosition.securityId, location.search), holdingContext) ?? instrumentDossierRoute(vm.selectedPosition.securityId, location.search) : instrumentDossierRoute(vm.selectedPosition.securityId, location.search)}>Open instrument dossier</Link></Button> : null}
               <Button asChild size="sm" variant="outline">
                 <Link
                   to={holdingAssetHref ?? WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail}
@@ -1359,7 +1384,7 @@ function PortfolioScreenContent({
           />
         )}>
 
-          <Card className="panel-surface min-w-0">
+          <Card className="panel-surface min-w-0 overflow-x-auto">
             <CardHeader className="px-3 py-2">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>

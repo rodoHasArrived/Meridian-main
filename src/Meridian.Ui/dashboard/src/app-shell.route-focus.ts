@@ -21,7 +21,7 @@ export function buildRouteFocusState(
 ): AppShellRouteFocusState {
   // Name the page the way the header breadcrumb does ("Trading", "Orders - Trading"), page first so
   // browser tabs stay distinguishable; the product name already ends the document title.
-  const pageParts = pathname === "/" ? ["Today"] : routePageParts(pathname, activeWorkspace);
+  const pageParts = pathname === "/" || pathname === "/today" ? ["Today"] : routePageParts(pathname, activeWorkspace);
   const workspaceTitle = pageParts.join(" - ");
   const announcedTitle = pageParts.join(", ");
   const anchor = hash.startsWith(AMOUNT_PASSPORT_FRAGMENT_PREFIX) ? "" : hash;
@@ -45,7 +45,7 @@ function routePageParts(pathname: string, activeWorkspace: WorkspaceSummary): st
 }
 
 function routeFocusSearch(pathname: string, search: string): string {
-  const normalizedPath = pathname.replace(/\/$/, "").toLowerCase();
+  const normalizedPath = pathname.replace(/\/$/, "").toLowerCase() || "/";
   const isReporting = normalizedPath === WORKSTATION_ROUTE_CATALOG.reporting;
   const isPortfolio = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolio;
   const isFamilyOffice = normalizedPath === WORKSTATION_ROUTE_CATALOG.portfolioFamilyOffice;
@@ -61,12 +61,16 @@ function routeFocusSearch(pathname: string, search: string): string {
       ? ["dataJob", "dataTask"]
       : normalizedPath === WORKSTATION_ROUTE_CATALOG.settings
         ? ["settingsTask"] : [];
-  if (!isReporting && !isPortfolio && !isFamilyOffice && !isMarketData && !isReconciliation && !isIncomeComparison && !isLedger && taskKeys.length === 0) return search;
+  const isCloseHub = normalizedPath === "/accounting/close";
+  const isToday = normalizedPath === "/today" || normalizedPath === "/";
+  if (!isCloseHub && !isToday && !isReporting && !isPortfolio && !isFamilyOffice && !isMarketData && !isReconciliation && !isIncomeComparison && !isLedger && taskKeys.length === 0) return search;
 
   // Queue selection, search, and table controls stay in their current workbench.
   // Treating screen-local URL state as navigation would steal the control/row focus.
   const params = new URLSearchParams(search);
-  if (taskKeys.length > 0) {
+  if (isCloseHub || isToday) {
+    for (const key of isCloseHub ? ["closeTab", "workflowId", "reconciliationBreak"] : ["source", "view"]) params.delete(key);
+  } else if (taskKeys.length > 0) {
     for (const key of taskKeys) {
       params.delete(key);
       params.delete(`${key}Search`);

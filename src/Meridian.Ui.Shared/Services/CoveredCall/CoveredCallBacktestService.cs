@@ -725,7 +725,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                     FallbackOccurred = optionsProvenance.FallbackOccurred,
                     ValidationProfile = receipt.ValidationProfile with
                     {
-                        Version = "covered-call-replay/v1", OptionsStrikeRange = optionsProvenance.StrikeRange
+                        Version = "covered-call-replay/v1",
+                        OptionsStrikeRange = optionsProvenance.StrikeRange
                     }
                 };
             }

@@ -94,6 +94,9 @@ export interface ReconciliationBreakQueueItem {
   severity?: "Info" | "Low" | "Medium" | "High" | "Critical";
   status: ReconciliationBreakQueueStatus;
   variance: number;
+  varianceExact?: string;
+  permittedCommands?: Array<{ action: string; enabled: boolean; disabledReason: string | null }> | null;
+  instrumentId?: string | null;
   reason: string;
   assignedTo: string | null;
   detectedAt: string;
@@ -106,6 +109,7 @@ export interface ReconciliationBreakQueueItem {
   exceptionRoute?: string | null;
   toleranceProfileId?: string | null;
   toleranceBand?: number | null;
+  toleranceBandExact?: string | null;
   requiredSignoffRole?: string | null;
   signoffStatus?: string | null;
   tenantId?: string | null;
@@ -255,6 +259,7 @@ export interface ReconciliationBulkCaseworkRequest {
   idempotencyKey: string;
   dryRun: boolean;
   allowPartialSuccess: boolean;
+  expectedVersions?: Record<string, number>;
   reason?: string | null;
   assignee?: string | null;
   priority?: ReconciliationCasePriority | null;
@@ -348,6 +353,7 @@ export interface VerifiedOperationOutcome {
 
 export interface ReviewReconciliationBreakRequest {
   breakId: string;
+  expectedVersion?: number;
   /** Session operator identity when the shell supplies one; omitted otherwise so the server records its own session actor. */
   assignedTo?: string;
   /** Session operator identity when the shell supplies one; the server always rewrites this from the authenticated session. */
@@ -362,6 +368,9 @@ export interface ResolveReconciliationBreakRequest {
   resolvedBy?: string;
   resolutionNote: string;
   operatorRationale: string;
+  expectedVersion?: number;
+  rootCauseCode?: string | null;
+  resolutionCode?: string | null;
 }
 
 // --- Trading action result ---

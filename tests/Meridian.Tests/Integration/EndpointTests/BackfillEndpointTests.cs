@@ -340,7 +340,11 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
         var submissionId = Guid.NewGuid();
         using var submitted = await _client.PostAsJsonAsync("/api/backfill/run", new
         {
-            provider = "stooq", symbols, executionPolicy = "scheduled", scheduledAt, submissionId
+            provider = "stooq",
+            symbols,
+            executionPolicy = "scheduled",
+            scheduledAt,
+            submissionId
         });
         submitted.StatusCode.Should().Be(HttpStatusCode.Accepted);
         var receipt = await submitted.Content.ReadFromJsonAsync<JsonElement>();

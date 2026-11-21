@@ -44,7 +44,8 @@ public sealed partial class ReportLedgerAmountProvenanceService
                 Component("permissions", true, "Inspection is allowed. The retained revision is read-only.")
             ],
             sources, EvidenceLinks(proof), history, proof.Warnings, !verified)
-            with { AccountingPreparerAttestations = proof.AccountingPreparerAttestations };
+            with
+        { AccountingPreparerAttestations = proof.AccountingPreparerAttestations };
         return packet with { LedgerAmount = proof with { AmountPassport = passport } };
     }
 }

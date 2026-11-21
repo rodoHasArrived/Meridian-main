@@ -130,11 +130,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public EvidenceGraphService(EvidenceSubjectResolver subjectResolver, EvidenceTemplateRegistry templateRegistry, IEnumerable&lt;IEvidenceContributor&gt; contributors, ILogger&lt;EvidenceGraphService&gt; logger, IWorkflowActionCatalog? actionCatalog = null, EvidencePacketValidationService? validationService = null, PostedLedgerAmountProvenanceService? postedLedgerAmounts = null, ReportLedgerAmountProvenanceService? reportLedgerAmounts = null, PreparerAttestationEvidenceProjectionService? preparerAttestations = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L23) |  |
-| <code>public Task&lt;IReadOnlyList&lt;EvidenceSubjectDto&gt;&gt; ListSubjectsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:45](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L45) |  |
-| <code>public bool IsSupportedSubjectKind(string? subjectKind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:48](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L48) |  |
-| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:50](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L50) |  |
-| <code>public async Task&lt;EvidenceGraphDto?&gt; GetGraphAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:183](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L183) |  |
+| <code>public EvidenceGraphService(EvidenceSubjectResolver subjectResolver, EvidenceTemplateRegistry templateRegistry, IEnumerable&lt;IEvidenceContributor&gt; contributors, ILogger&lt;EvidenceGraphService&gt; logger, IWorkflowActionCatalog? actionCatalog = null, EvidencePacketValidationService? validationService = null, PostedLedgerAmountProvenanceService? postedLedgerAmounts = null, ReportLedgerAmountProvenanceService? reportLedgerAmounts = null, PreparerAttestationEvidenceProjectionService? preparerAttestations = null, TrialBalanceAmountProvenanceService? trialBalanceAmounts = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:24](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L24) |  |
+| <code>public Task&lt;IReadOnlyList&lt;EvidenceSubjectDto&gt;&gt; ListSubjectsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:48](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L48) |  |
+| <code>public bool IsSupportedSubjectKind(string? subjectKind) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:51](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L51) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:53](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L53) |  |
+| <code>public async Task&lt;EvidenceGraphDto?&gt; GetGraphAsync(string subjectKind, string subjectId, CancellationToken ct = default, Guid? ledgerBookId = null, LedgerAmountScopeDto? ledgerAmountScope = null, ReportAccessQueryContext? reportAccess = null, PreparerAttestationEvidenceReadContext? attestationReadContext = null);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs:190](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs#L190) |  |
 
 ## EvidenceManifestFile
 
@@ -983,6 +983,18 @@ Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowSe
 ```csharp
 public sealed partial class StatementReconciliationReportWorkflowService
 ```
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L8).
+
+```csharp
+public sealed partial class StatementReconciliationReportWorkflowService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool SupportsReviewedRowCases =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L10) |  |
 
 ## StatementToReportArtifactDownload
 
