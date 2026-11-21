@@ -249,8 +249,14 @@ Source: [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:20](../../../../sr
 Identity and provenance for a research-originated backtest, supplied by whichever surface produced it.
 
 ```csharp
-public sealed record ResearchRunDescriptor(string StrategyId, string StrategyName, string? CorrelationId = null, string? DatasetReference = null, IReadOnlyDictionary<string, string>? ParameterSet = null, ExecutionRealismDescriptor? ExecutionRealism = null);
+public sealed record ResearchRunDescriptor(string StrategyId, string StrategyName, string? CorrelationId = null, string? DatasetReference = null, IReadOnlyDictionary<string, string>? ParameterSet = null, ExecutionRealismDescriptor? ExecutionRealism = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:28](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L28) |  |
 
 ## ShortRebateCashFlow
 

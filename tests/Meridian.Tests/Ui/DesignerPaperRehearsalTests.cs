@@ -271,7 +271,9 @@ public sealed class DesignerPaperRehearsalTests
             entry.Metadata.FillId.HasValue && entry.Metadata.FinancialAccountId == AccountId.ToString("D") &&
             entry.Metadata.Tags != null && entry.Metadata.Tags.ContainsKey("runId") && entry.Metadata.Tags["runId"] == paper.RunId);
         var retainedOrders = await orderEvidence.ReadForRunAsync(paper.RunId, AccountId, outcome.StrategyVersionSha256!, timeout.Token);
-        retainedOrders.Should().ContainSingle().Which.Admission!.AuthorityDecision!.Origin.Should().Be(ExecutionSdk.OrderCommandOrigin.StrategyRun);
+        var retainedOrder = retainedOrders.Should().ContainSingle().Which.Admission!;
+        retainedOrder.AuthorityDecision!.Origin.Should().Be(ExecutionSdk.OrderCommandOrigin.StrategyRun);
+        retainedOrder.OrderState!.StrategyArtifactId.Should().BeNull();
         await canonicalPublisher.DidNotReceive().PublishAsync(Arg.Any<TradeExecutedEvent>());
         (await client.GetAsync($"/api/execution/sessions/{sessionId}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
         (await client.GetAsync($"/api/execution/sessions/{sessionId}/reconciliation")).StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -410,7 +412,8 @@ public sealed class DesignerPaperRehearsalTests
         public Task<ScopedAuthorizationDecisionDto> AuthorizeAsync(string actor, UserPermission requiredPermission,
             AccessScopeKindDto scopeKind, Guid? scopeId, UserPermission globalPermissions, CancellationToken ct = default) =>
             Task.FromResult(new ScopedAuthorizationDecisionDto(
-                actor == "rehearsal-operator" && scopeKind == AccessScopeKindDto.Account && scopeId == AccountId,
+                actor == "rehearsal-operator" && requiredPermission != UserPermission.ExecuteTrades &&
+                scopeKind == AccessScopeKindDto.Account && scopeId == AccountId,
                 actor, requiredPermission, scopeKind, scopeId, "Synthetic fixture account authority."));
     }
 }

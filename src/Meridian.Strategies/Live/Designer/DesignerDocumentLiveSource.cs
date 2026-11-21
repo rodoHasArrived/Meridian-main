@@ -34,6 +34,8 @@ namespace Meridian.Strategies.Live.Designer;
 /// </remarks>
 public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
 {
+    internal const string RetainedArtifactParameterKey = "meridian.retainedStrategyArtifactId";
+    private readonly Meridian.Strategies.Artifacts.StrategyArtifactRegistry? _artifacts;
     /// <summary>Run parameter naming the designer document to activate.</summary>
     public const string DesignerDocumentParameterKey = "designerDocumentId";
 
@@ -64,6 +66,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         StrategyDesignService designService,
         ILogger<DesignerDocumentLiveSource>? logger = null,
         TimeSpan? loadTimeout = null,
+        Meridian.Strategies.Artifacts.StrategyArtifactRegistry? artifacts = null,
         ScopedStrategyDesignStore? scopedDesigns = null)
     {
         _repository = repository;
@@ -71,6 +74,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         _logger = logger;
         _loadTimeout = loadTimeout is { } timeout && timeout > TimeSpan.Zero ? timeout : DefaultLoadTimeout;
         _scopedDesigns = scopedDesigns;
+        _artifacts = artifacts;
     }
 
     /// <inheritdoc/>
@@ -93,7 +97,14 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         }
 
         var isVersioned = context.Parameters.ContainsKey(DesignerStrategyVersion.VersionKey);
-        if (isVersioned ? _scopedDesigns is null : _repository is null)
+        var hasArtifact = context.Parameters.TryGetValue(RetainedArtifactParameterKey, out var artifactId);
+        if (hasArtifact && (isVersioned || string.IsNullOrWhiteSpace(artifactId)))
+        {
+            failureReason = "The Designer run has conflicting or incomplete retained strategy identity.";
+            return false;
+        }
+
+        if (hasArtifact ? _artifacts is null : isVersioned ? _scopedDesigns is null : _repository is null)
         {
             failureReason =
                 $"Run references designer document '{documentId}', but no strategy design repository is " +
@@ -101,7 +112,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             return false;
         }
 
-        var document = LoadDocument(context, documentId, isVersioned, out failureReason);
+        var document = LoadDocument(context, documentId, isVersioned, artifactId, out failureReason);
         if (document is null)
         {
             return false;
@@ -333,7 +344,8 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         hash.Length <= 12 ? hash : string.Concat(hash.AsSpan(0, 12), "...");
 
     private StrategyDesignDocument? LoadDocument(
-        LiveStrategyCreationContext context, string documentId, bool isVersioned, out string? failureReason)
+        LiveStrategyCreationContext context, string documentId, bool isVersioned, string? artifactId,
+        out string? failureReason)
     {
         try
         {
@@ -347,15 +359,21 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             // cooperative cancellation alone would let a stalled store block the promotion path
             // and the startup resume sweep indefinitely.
             var document = Task.Run(
-                    () => isVersioned
-                        ? LoadScopedRevisionAsync(context, documentId, timeout.Token)
-                        : _repository!.GetAsync(documentId, timeout.Token),
+                    async () =>
+                    {
+                        if (artifactId is not null)
+                            return (await _artifacts!.GetAsync(artifactId, timeout.Token).ConfigureAwait(false))?.DesignerDocument;
+
+                        return isVersioned
+                            ? await LoadScopedRevisionAsync(context, documentId, timeout.Token).ConfigureAwait(false)
+                            : await _repository!.GetAsync(documentId, timeout.Token).ConfigureAwait(false);
+                    },
                     CancellationToken.None)
                 .WaitAsync(_loadTimeout)
                 .GetAwaiter()
                 .GetResult();
 
-            if (document is null)
+            if (document is null || !string.Equals(document.DocumentId, documentId, StringComparison.Ordinal))
             {
                 failureReason =
                     $"Designer document '{documentId}' was not found in the strategy design repository. " +

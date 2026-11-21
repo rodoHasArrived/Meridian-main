@@ -115,7 +115,7 @@ public sealed partial class OrderManagementSystem
         var commandAuthority = authority is null
             ? OrderSubmissionAuthority.ForOperatorTicket(intent.Actor, grant, intent.IntentId.ToString("D"))
             : OrderSubmissionAuthority.ForStrategyRun(intent.Actor, grant, authority.RunId,
-                authority.StrategyVersionSha256, authority.PaperSessionId);
+                strategyArtifactId: null, sessionId: authority.PaperSessionId);
 
         OrderResult result;
         try

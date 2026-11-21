@@ -3227,7 +3227,8 @@ export function useOrderTicketViewModel({
   const serverPreviewExpired = serverPreview !== null && Date.parse(serverPreview.expiresAt) <= previewNow;
   const serverPreviewBlocked = unconfirmedSubmission !== null
     || (Boolean(services.previewOrder) && (serverPreviewLoading || !serverPreview?.canSubmit || serverPreviewExpired));
-  const manualEntryDisabledReason = manualOrderEntryDisabledReason(manualOrderEntry);
+  const manualEntryDisabledReason = manualOrderEntryDisabledReason(manualOrderEntry)
+    ?? (services.previewOrder && !normalizedAccountScope ? "Select a fund account before submitting a Paper ticket." : null);
   const scopedTermsBlocker = paperIntentStorageKey &&
     (form.type !== "Market" || !Number.isSafeInteger(form.quantity) || sessionIntent !== "RegularOnly")
     ? "This paper book supports regular-session market orders in whole shares."
@@ -3496,6 +3497,7 @@ export function useOrderTicketViewModel({
         : null
     },
     preview,
+    ticketAccountId: normalizedAccountScope,
     serverPreview, serverPreviewError: unconfirmedSubmission ? `Submission ${unconfirmedSubmission.id} is unconfirmed. Run checks again to inspect its retained outcome; do not resubmit.` : serverPreviewError,
     serverPreviewLoading, serverPreviewExpired, sessionIntent,
     setSessionIntent,
@@ -3969,6 +3971,7 @@ export interface PromotionGateServices {
   approvePromotion: (request: ApprovePromotionRequest) => Promise<PromotionDecisionResult>;
   rejectPromotion: (request: RejectPromotionRequest) => Promise<PromotionDecisionResult>;
   getPromotionHistory: () => Promise<PromotionRecord[]>;
+  revokeLiveAuthorization?: typeof workstationApi.revokeLiveAuthorization;
 }
 
 export interface PromotionGateState {
@@ -4014,7 +4017,8 @@ const defaultPromotionServices: PromotionGateServices = {
   evaluatePromotion: (runId) => workstationApi.evaluatePromotion(runId),
   approvePromotion: (request) => workstationApi.approvePromotion(request),
   rejectPromotion: (request) => workstationApi.rejectPromotion(request),
-  getPromotionHistory: () => workstationApi.getPromotionHistory()
+  getPromotionHistory: () => workstationApi.getPromotionHistory(),
+  revokeLiveAuthorization: (id, reason) => workstationApi.revokeLiveAuthorization(id, reason)
 };
 
 export function usePromotionGateViewModel(
@@ -4059,9 +4063,12 @@ export function usePromotionGateViewModel(
     };
   }, [services]);
 
-  useEffect(() => () => {
-    mountedRef.current = false;
-    commandRevisionRef.current += 1;
+  useEffect(() => {
+    mountedRef.current = true;
+    return () => {
+      mountedRef.current = false;
+      commandRevisionRef.current += 1;
+    };
   }, []);
 
   const state = useMemo(
@@ -4076,7 +4083,7 @@ export function usePromotionGateViewModel(
     }
   }, [isCurrentCommandRevision, services]);
 
-  const updateField = useCallback((field: PromotionGateField, value: string) => {
+  const updateField = useCallback((field: PromotionGateField | import("./trading-screen.promotion-evidence").LiveAuthorizationField, value: string) => {
     commandRevisionRef.current += 1;
     setForm((current) => ({ ...current, [field]: value }));
     setErrorText(null);
@@ -4086,7 +4093,7 @@ export function usePromotionGateViewModel(
 
     if (field === "runId") {
       setEvaluation(null);
-      setForm((current) => ({ ...current, approvalChecklist: [] }));
+      setForm((current) => ({ ...current, approvalChecklist: [], liveSymbols: "", liveNotional: "", liveExpiry: "" }));
     }
   }, []);
 
@@ -4204,12 +4211,22 @@ export function usePromotionGateViewModel(
     }
   }, [form, isCurrentCommandRevision, nextCommandRevision, refreshHistory, services]);
 
+  const revokeLiveAuthorization = useCallback(async (id: string, reason: string) => {
+    if (!services.revokeLiveAuthorization) throw new Error("Live authorization revocation is unavailable.");
+    const receipt = await services.revokeLiveAuthorization(id, reason);
+    setHistory((rows) => rows.map((row) => row.promotionId === receipt.authorizationId
+      ? { ...row, liveAuthorizationStatus: { state: "Revoked", reason: receipt.reason } }
+      : row));
+    setOutcome({ level: "success", message: `Live authorization revoked by ${receipt.actor}.` });
+  }, [services]);
+
   return {
     ...state,
     updateField,
     evaluateGateChecks,
     promoteToPaper,
-    rejectPromotion: rejectPromotionDecision
+    rejectPromotion: rejectPromotionDecision,
+    revokeLiveAuthorization
   };
 }
 
@@ -4563,7 +4580,7 @@ function buildPromotionEvaluationPanel(
 }
 
 function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistoryRow[] {
-  return history.slice(0, 4).map((record) => {
+  return history.filter((record, index) => index < 4 || Boolean(record.liveAuthorization)).map((record) => {
     const parts = [
       record.promotedAt,
       record.strategyId,
@@ -4579,14 +4596,28 @@ function buildPromotionHistoryRows(history: PromotionRecord[]): PromotionHistory
     if (record.auditReference) parts.push(`audit: ${record.auditReference}`);
     if (record.manualOverrideId) parts.push(`override: ${record.manualOverrideId}`);
     if (record.reviewNotes) parts.push(`notes: ${record.reviewNotes}`);
+    if (record.liveAuthorizationStatus) {
+      parts.push(`Live authorization ${record.liveAuthorizationStatus.state}`);
+      if (record.liveAuthorizationStatus.reason) parts.push(record.liveAuthorizationStatus.reason);
+    }
+    if (record.liveAuthorization) {
+      const grant = record.liveAuthorization;
+      parts.push(`${grant.allowedSymbols.join(", ")} · ${grant.currency} ${grant.maxOrderNotional} per order · expires ${grant.expiresAt}`);
+    }
 
     const label = parts.join(" | ");
     return {
       id: record.promotionId,
       label,
-      ariaLabel: `Promotion ${record.promotionId}: ${label}`
+      ariaLabel: `Promotion ${record.promotionId}: ${label}`,
+      canRevoke: canRevokeLiveAuthorization(record)
     };
   });
+}
+
+function canRevokeLiveAuthorization(record: PromotionRecord): boolean {
+  const state = record.liveAuthorizationStatus?.state;
+  return Boolean(record.liveAuthorization) && (state === "Active" || state === "Blocked");
 }
 
 function buildApprovalOutcome(result: PromotionDecisionResult): PromotionOutcome {
@@ -4731,6 +4762,7 @@ export interface PromotionHistoryRow {
   id: string;
   label: string;
   ariaLabel: string;
+  canRevoke: boolean;
 }
 
 function toErrorMessage(err: unknown, fallback: string): string {

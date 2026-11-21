@@ -840,6 +840,7 @@ export interface StrategyRunRecord {
 // --- Promotion workflow types ---
 
 export interface PromotionEvaluationResult {
+  strategyArtifactId?: string | null;
   runId: string;
   strategyId: string | null;
   strategyName: string | null;
@@ -868,6 +869,15 @@ export interface PromotionDecisionResult {
 }
 
 export interface PromotionRecord {
+  strategyArtifactId?: string | null;
+  liveAuthorizationStatus?: { state: string; reason?: string | null } | null;
+  liveAuthorization?: {
+    fundAccountId: string;
+    allowedSymbols: string[];
+    maxOrderNotional: number;
+    currency: string;
+    expiresAt: string;
+  } | null;
   promotionId: string;
   strategyId: string;
   strategyName: string;

@@ -7,6 +7,7 @@ import { EXECUTION_API_ENDPOINTS, PROMOTION_API_ENDPOINTS, REPLAY_API_ENDPOINTS,
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { isApiError } from "@/lib/api-errors";
 import { getJson, postJson, putJson } from "@/lib/api/http-client";
+import { promotionLiveAuthorizationRevokeEndpoint } from "@/lib/workstation-endpoints";
 
 // --- Promotion workflow ---
 
@@ -24,6 +25,12 @@ export function rejectPromotion(request: RejectPromotionRequest) {
 
 export function getPromotionHistory() {
   return getJson<PromotionRecord[]>(PROMOTION_API_ENDPOINTS.history);
+}
+
+export function revokeLiveAuthorization(authorizationId: string, reason: string) {
+  return postJson<{ authorizationId: string; actor: string; reason: string; revokedAt: string }>(
+    promotionLiveAuthorizationRevokeEndpoint(authorizationId), { reason }
+  );
 }
 
 // --- Order management ---

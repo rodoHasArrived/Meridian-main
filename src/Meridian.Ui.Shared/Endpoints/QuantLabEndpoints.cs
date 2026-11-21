@@ -221,6 +221,20 @@ public static class QuantLabEndpoints
 
             try
             {
+                if (services.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>() is { } artifacts)
+                {
+                    var effectiveParameters = (request.Parameters ?? new Dictionary<string, object?>()).ToDictionary(
+                        pair => pair.Key,
+                        pair => pair.Value is JsonElement value
+                            ? value.GetRawText()
+                            : Convert.ToString(pair.Value, CultureInfo.InvariantCulture) ?? "null",
+                        StringComparer.Ordinal);
+                    var artifact = new Meridian.Strategies.Artifacts.StrategyArtifact(
+                        request.StrategyId, Meridian.Strategies.Artifacts.StrategyAuthoringRoute.QuantScript,
+                        "quantscript", effectiveParameters, backtest.Request.Symbols ?? [], descriptor.DatasetReference,
+                        descriptor.ExecutionRealism?.ToCanonicalString(), ScriptSource: request.Source);
+                    descriptor = descriptor with { StrategyArtifactId = await artifacts.RetainAsync(artifact, ct).ConfigureAwait(false) };
+                }
                 await recorder.RecordAsync(descriptor, backtest, ct).ConfigureAwait(false);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)

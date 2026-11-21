@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperObservationFreshnessPolicy
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperObservationFreshnessPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs:25](../../../../src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs#L25).
+
+The single freshness rule for paper-matching observations: how old a quote or trade print may be and still price, trigger, or fill a paper order. Disabled by default (MaxAge is null), which preserves the documented paper-match/1 behaviour of matching against the feed cache as it is. When PaperTradingGatewayOptions.MaxObservationAgeSeconds is configured, both paper gateways and the pre-trade guard that predicts them capture through one instance of this policy, so the engine and the guard cannot disagree about which observations count. The window applies to tick data. A quote or print outside it (older, or timestamped further in the future than the window) is dropped. When a symbol has tick data and none of it is current, the feed has stalled: the whole observation is withheld and marked PaperMarketObservation.IsStale, including any cached bar, so a stalled tick feed cannot fall through to an older bar close. A symbol that has only ever produced bars is a bar-driven session with no wall-clock tick cadence and is left untouched.
+
+```csharp
+public sealed class PaperObservationFreshnessPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static PaperObservationFreshnessPolicy Disabled { get; } = new (maxAge : null);</code> | [src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs:30](../../../../src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs#L30) | The policy that applies no freshness window. |
+| <code>public PaperObservationFreshnessPolicy(TimeSpan? maxAge, Func&lt;DateTimeOffset&gt;? clock = null);</code> | [src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs:33](../../../../src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs#L33) | Creates a policy with an explicit window; null disables it. |
+| <code>public TimeSpan? MaxAge { get; }</code> | [src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs:45](../../../../src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs#L45) | Maximum tick observation age, or null when disabled. |
+| <code>public static PaperObservationFreshnessPolicy From(PaperTradingGatewayOptions? options, Func&lt;DateTimeOffset&gt;? clock = null);</code> | [src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs:48](../../../../src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs#L48) | Builds the policy the configured gateway options describe. |
+| <code>public PaperMarketObservation Capture(ILiveFeedAdapter? feed, string symbol);</code> | [src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs:63](../../../../src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs#L63) | Captures the matcher&#x27;s observation for symbol under this policy. |
+| <code>public string BuildStaleObservationRejectReason(string symbol) =&gt; …;</code> | [src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs:88](../../../../src/Meridian.Execution/PaperMatching/PaperObservationFreshnessPolicy.cs#L88) | Reject reason for a market order whose only observations fell outside the window. |
+
+## PaperOrderMatchingPolicy
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperOrderMatchingPolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:63](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L63).
+
+Order-type-aware paper matching over observed market data. This is the documented matching policy (MatchingModelVersion) shared by both paper gateways: Market orders fill from observed market data only — buys at the observed ask (falling back to last trade, then bar close), sells at the observed bid (same fallbacks). With no observation the order does not fill; the gateway decides whether to reject (default, fail closed) or apply explicitly opted-in scaffold pricing. Limit orders fill only at or better than the limit price: a buy fills when the observed aggressive price is at or below the limit, at that observed price; a sell fills when the observed aggressive price is at or above the limit. Otherwise the order rests and is re-evaluated as new market data arrives. Stop triggers are trade-preferred: a buy stop triggers when the last trade (or bar close) is at or above the stop price, a sell stop when at or below. When no trade or bar has been observed, the quote fallback applies: a buy stop triggers on ask, a sell stop on bid. A triggered stop-market order fills with market semantics; a triggered stop-limit order fills with limit semantics. Every fill price is clamped into the observed price envelope (PaperMarketObservation.EnvelopeLow .. PaperMarketObservation.EnvelopeHigh) — a paper fill can never print outside the observed market data in effect. Partial fills are not modeled: an order fills in full or rests. Observations are matched as the feed cache holds them, however old, unless the host opts into PaperObservationFreshnessPolicy; then stale tick data is withheld before evaluation, a market order with only stale tick data is rejected, and resting orders neither fill nor trigger until current data arrives.
+
+```csharp
+public static class PaperOrderMatchingPolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string MatchingModelVersion = &quot;paper-match/1&quot;;</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:69](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L69) | Version identifier for this matching policy, recorded on paper sessions and cited by promotion evidence. |
+| <code>public static PaperMatchResult Evaluate(OrderSide side, OrderType type, decimal? limitPrice, decimal? stopPrice, bool stopAlreadyTriggered, in PaperMarketObservation observation);</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:83](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L83) | Evaluates one order against the current observation. |
+
 ## PaperTradingCostModel
 
 Qualified name: <code>Meridian.Execution.PaperMatching.PaperTradingCostModel</code>. Kind: `class`.
@@ -50,25 +92,6 @@ Declared public members:
 | <code>public decimal FeePerOrder { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:44](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L44) | Flat regulatory/exchange fee charged per order. Default: 0. |
 | <code>public decimal FeeBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:47](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L47) | Fee in basis points of fill notional. Default: 0. |
 | <code>public decimal SlippageBasisPoints { get; set; }</code> | [src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs:54](../../../../src/Meridian.Execution/PaperMatching/PaperTradingCostOptions.cs#L54) | Slippage in basis points of fill notional, charged as an explicit cash cost on every fill. The fill price itself stays inside the observed market-data envelope; slippage models execution friction beyond the observed spread. Default: 0. |
-
-## PaperOrderIntentScope
-
-Qualified name: <code>Meridian.Execution.PaperOrderIntentScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/OrderManagementSystemOptions.cs:80](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L80).
-
-```csharp
-public sealed record PaperOrderIntentScope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string TenantId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:82](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L82) |  |
-| <code>public string CompanyId { get; init; } = &quot;&quot;;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:83](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L83) |  |
-| <code>public Guid FundAccountId { get; init; }</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:84](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L84) |  |
-| <code>public bool CanAccess(string? tenantId, string? companyId, Guid accountId) =&gt; …;</code> | [src/Meridian.Execution/OrderManagementSystemOptions.cs:86](../../../../src/Meridian.Execution/OrderManagementSystemOptions.cs#L86) |  |
 
 ## PaperTradingGateway
 
@@ -557,10 +580,10 @@ Declared public members:
 | <code>public ExecutionJournal(string root) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:47](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L47) |  |
 | <code>public Task AppendAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:55](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L55) |  |
 | <code>public Task AppendConditionAsync(ExecutionJournalEntry entry, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:59](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L59) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionJournalEntry&gt;&gt; ReadAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:117](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L117) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;JournalOrder&gt;&gt; OrdersAsync(Guid accountId, string? symbol = null, string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null, int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null, string? attemptId = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:128](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L128) |  |
-| <code>public async Task&lt;JournalSummary&gt; SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:293](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L293) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:445](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L445) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionJournalEntry&gt;&gt; ReadAsync(Guid? accountId = null, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:149](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L149) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;JournalOrder&gt;&gt; OrdersAsync(Guid accountId, string? symbol = null, string? strategy = null, string? tag = null, DateTimeOffset? from = null, DateTimeOffset? to = null, int take = 100, CancellationToken ct = default, string? scope = null, string? orderId = null, string? status = null, string? attemptId = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:160](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L160) |  |
+| <code>public async Task&lt;JournalSummary&gt; SummaryAsync(Guid accountId, CancellationToken ct = default, string? scope = null, DateTimeOffset? from = null, DateTimeOffset? to = null);</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:325](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L325) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/Services/ExecutionJournal.cs:477](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L477) |  |
 
 ## ExecutionJournalEntry
 
@@ -836,49 +859,3 @@ Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:32](../../../../src
 ```csharp
 public sealed record JournalSummary(int Orders, int Fills, decimal? RealizedPnl, decimal? Commissions, decimal? Fees, decimal? Slippage, string Coverage, string Method = "FIFO operational attribution", decimal? NetRealizedPnl = null, IReadOnlyList<JournalAttribution>? Attributions = null);
 ```
-
-## JsonlFilePaperSessionStore
-
-Qualified name: <code>Meridian.Execution.Services.JsonlFilePaperSessionStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:32](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L32).
-
-File-system backed IPaperSessionStore. Each session occupies its own directory under BaseDirectory: {BaseDirectory}/ {sessionId}/ session.json — session metadata, atomically replaced on every change fills.jsonl — one versioned fill claim per line (legacy raw reports still read) fills.applied.jsonl — idempotent apply acknowledgements orders.jsonl — one OrderState JSON object per line (append-only) settlements.jsonl — one daily variation-margin settlement per line (append-only) journal-batches/ — immutable, crash-atomic journal effect receipts Atomic writes for session.json use write-to-temp-then-rename semantics to guard against partial writes on crash. JSONL appends are serialised per base directory inside this process so concurrent callers never interleave partial lines. Exactly one process may write a base directory; cross-process transactional locking is intentionally outside this local-file store&#x27;s contract.
-
-```csharp
-public sealed partial class JsonlFilePaperSessionStore : IPaperSessionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string BaseDirectory =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:42](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L42) | Root storage directory (guaranteed to be created on first write). |
-| <code>public JsonlFilePaperSessionStore(string baseDirectory, ILogger&lt;JsonlFilePaperSessionStore&gt; logger);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:44](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L44) |  |
-| <code>public async Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:59](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L59) |  |
-| <code>public async Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:68](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L68) |  |
-| <code>public async Task&lt;PaperSessionFillAppendResult&gt; TryAppendFillAsync(string sessionId, PaperSessionFillRecord record, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:92](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L92) |  |
-| <code>public async Task MarkFillAppliedAsync(string sessionId, Guid fillId, string canonicalHash, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:129](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L129) |  |
-| <code>public async Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:172](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L172) |  |
-| <code>public async Task&lt;PaperSessionSettlementAppendStatus&gt; TryAppendSettlementAsync(string sessionId, PaperSessionSettlementRecord record, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:180](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L180) |  |
-| <code>public Task&lt;IReadOnlyList&lt;PaperSessionSettlementRecord&gt;&gt; LoadSettlementsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:215](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L215) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PersistedSessionRecord&gt;&gt; LoadAllSessionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:221](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L221) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ExecutionReport&gt;&gt; LoadFillsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:267](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L267) |  |
-| <code>public Task&lt;IReadOnlyList&lt;PaperSessionFillRecord&gt;&gt; LoadFillRecordsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:274](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L274) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;OrderState&gt;&gt; LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:280](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L280) |  |
-| <code>public async Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList&lt;PersistedJournalEntryDto&gt; entries, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:291](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L291) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PersistedJournalEntryDto&gt;&gt; LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:313](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L313) |  |
-
-Source: [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:8](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L8).
-
-```csharp
-public sealed partial class JsonlFilePaperSessionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool SupportsJournalBatches =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:10](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L10) |  |
-| <code>public async Task&lt;PaperSessionJournalReceipt&gt; AppendJournalBatchAsync(PaperSessionJournalBatch batch, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:12](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L12) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;PaperSessionJournalReceipt&gt;&gt; LoadJournalBatchesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:37](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L37) |  |

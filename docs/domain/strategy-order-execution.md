@@ -94,6 +94,36 @@ A standalone manual OMS journey needs an explicit intent/account-authority desig
 legitimate existing authorization context or a separately reviewed equivalent contract; it cannot
 invent a strategy run or remove the current non-paper admission guard to make a ticket submit.
 
+## Paper tickets and live authorization
+
+The browser ticket submits Day Market and Limit orders for single-leg USD equities measured in
+shares through the in-process Paper gateway. The operator selects a fund account. Meridian
+authenticates the operator, checks account authority and risk, and retains the client order ID
+before dispatch. A retry with the same actor, account, session, and terms returns the retained
+outcome or a reconciliation requirement. A conflicting intent under the same ID is refused.
+
+For a future manual live workflow, the operator intent contract must bind an authenticated human
+reviewer, a retained fund account and verified external broker account, the exact order terms,
+permitted instruments and sizing, the reviewed limits, and a validity interval. The OMS must
+verify that evidence and current readiness before dispatch and retain the decision with the
+client order ID. Review the contract and broker evidence before enabling the workflow. Manual
+live orders currently receive `MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`.
+
+A live strategy grant belongs to the reviewed Paper-to-Live promotion. It names the exact
+strategy artifact and run lineage, its fund and broker account, allowed symbols, USD per-order
+ceiling, and UTC expiry. The Trading promotion panel accepts these fields and shows the grant
+status in the audit trail. An authorized human reviewer can revoke the grant there or at
+`POST /api/promotion/live-authorizations/{id}/revoke` with a reason. The receipt preserves the
+reviewer and time. Expired or revoked grants block new submissions and replacements. Operators
+can still cancel and reconcile dispatched orders. A fresh Paper run and review are required for
+a new grant.
+
+The Buy and Hold rehearsal runs with one synthetic equity and in-process broker observations.
+The .NET CI lane retains the fixture, decisions, fills, reconciliation, and durable handoff
+receipts under `artifacts/test-results/dotnet/governed-execution/`. Production activation requires
+separate owner authorization and broker-backed evidence. The hosted grant currently uses
+Alpaca's verified account identity and remains `live-untested`.
+
 ## Acceptance Cases
 
 Use deterministic synthetic institutions, accounts, strategy inputs, broker reports, and failure

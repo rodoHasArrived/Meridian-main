@@ -945,7 +945,7 @@ internal sealed class LiveStrategyRunSession
 
         var grant = new ExecutionSdk.ExecutionAccountGrant(
             fundAccountId, ActorId, ExecutionSdk.ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow);
-        var authority = ExecutionSdk.OrderSubmissionAuthority.ForStrategyRun(ActorId, grant, _run.RunId);
+        var authority = ExecutionSdk.OrderSubmissionAuthority.ForStrategyRun(ActorId, grant, _run.RunId, _run.StrategyArtifactId);
         return _orderManager.SubmitAsync(new ExecutionSdk.OrderSubmitCommand(request, authority), ct);
     }
 

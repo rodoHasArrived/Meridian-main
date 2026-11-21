@@ -10,6 +10,7 @@ public sealed class MovingAverageCrossoverLiveStrategy : LiveStrategyBase, ILive
     public const string CatalogId = "moving-average-crossover";
     private readonly string _strategyId;
     private readonly MovingAverageCrossoverStrategy _inner;
+    internal (int FastPeriod, int SlowPeriod, long Quantity, bool BarBased) EffectiveParameters { get; }
 
     public MovingAverageCrossoverLiveStrategy(string? strategyId = null, int fastPeriod = 10,
         int slowPeriod = 30, long quantity = 10) : this(strategyId, fastPeriod, slowPeriod, quantity, barBased: false) { }
@@ -18,6 +19,7 @@ public sealed class MovingAverageCrossoverLiveStrategy : LiveStrategyBase, ILive
     {
         _strategyId = string.IsNullOrWhiteSpace(strategyId) ? CatalogId : strategyId;
         _inner = new(fastPeriod, slowPeriod, quantity, barBased);
+        EffectiveParameters = (fastPeriod, slowPeriod, quantity, barBased);
     }
     public override string StrategyId => _strategyId;
     public override string Name => _inner.Name;

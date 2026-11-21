@@ -3052,7 +3052,8 @@ describe("promotion approval checklist", () => {
     expect(error).toContain("LIVE_OVERRIDE_REVIEWED must reference active manual override override-9");
   });
 
-  it("allows live approval when all live evidence references are attached", () => {
+  it("binds live approval to the reviewed artifact and an explicit mandate", () => {
+    const evaluation = { ...liveEligibleEvaluation, strategyArtifactId: "sa1-" + "a".repeat(64) };
     const form = {
       ...emptyPromotionGateForm,
       runId: "run-live-source",
@@ -3060,10 +3061,22 @@ describe("promotion approval checklist", () => {
       approvalReason: "Live readiness evidence reviewed",
       manualOverrideId: "override-9",
       evidenceReferences: livePromotionEvidenceReferences.join("\n"),
-      approvalChecklist: livePromotionApprovalChecklist
+      approvalChecklist: livePromotionApprovalChecklist,
+      liveSymbols: "aapl, MSFT aapl",
+      liveNotional: "1200",
+      liveExpiry: "2099-01-01T12:00"
     };
 
-    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toBeNull();
+    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toContain("retained strategy revision");
+    expect(validatePromotionApproval({ ...form, liveNotional: "0" }, evaluation)).toContain("positive USD");
+    expect(validatePromotionApproval(form, evaluation)).toBeNull();
+    expect(buildPromotionApprovalRequest(form, evaluation).liveAuthorization).toEqual({
+      expectedStrategyArtifactId: evaluation.strategyArtifactId,
+      allowedSymbols: ["AAPL", "MSFT"],
+      maxOrderNotional: 1200,
+      currency: "USD",
+      expiresAt: new Date(form.liveExpiry).toISOString()
+    });
   });
 
   it("omits approvalChecklist from the request when the form list is empty", () => {

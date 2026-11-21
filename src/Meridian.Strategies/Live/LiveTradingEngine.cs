@@ -7,6 +7,8 @@ using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Artifacts;
+using Meridian.Strategies.Live.Designer;
 using Microsoft.Extensions.Logging.Abstractions;
 using ExecutionSdk = Meridian.Execution.Sdk;
 
@@ -40,6 +42,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
     private readonly DesignerPaperExecution? _designerPaper;
+    private readonly StrategyArtifactRegistry? _artifacts;
+    private readonly StrategyLiveAuthorizationService? _liveAuthorizations;
     private readonly CancellationTokenSource _engineCts = new();
     private readonly ConcurrentDictionary<string, ActiveRun> _activeRuns = new(StringComparer.Ordinal);
     // Cross-strategy aggregation and the portfolio-aware risk rails read the registry, so
@@ -69,6 +73,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         ExecutionAuditTrailService? auditTrail = null,
         BrokerageConfiguration? brokerageConfiguration = null,
         Meridian.Execution.Services.PortfolioRegistry? portfolioRegistry = null,
+        StrategyArtifactRegistry? artifacts = null,
+        StrategyLiveAuthorizationService? liveAuthorizations = null,
         DesignerPaperExecution? designerPaper = null)
     {
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
@@ -87,6 +93,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         _brokerageConfiguration = brokerageConfiguration;
         _portfolioRegistry = portfolioRegistry;
         _designerPaper = designerPaper;
+        _artifacts = artifacts;
+        _liveAuthorizations = liveAuthorizations;
     }
 
     /// <summary>Run ids owned by this engine, including restored paused runs.</summary>
@@ -157,6 +165,9 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 }
             }
 
+            if (run.RunType == RunType.Live && await CheckLiveAuthorizationAsync(run, ct).ConfigureAwait(false) is { } authorizationBlock)
+                return await DeferAsync(run, authorizationBlock, ct).ConfigureAwait(false);
+
             if (_activeRuns.ContainsKey(run.RunId))
             {
                 return RunLaunchResult.Success();
@@ -169,12 +180,56 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     ct).ConfigureAwait(false);
             }
 
-            if (!_catalog.TryCreate(run.StrategyId, run.ParameterSet, out var strategy, out var failureReason) || strategy is null)
+            StrategyArtifact? artifact = null;
+            var creationParameters = run.ParameterSet;
+            if (run.StrategyArtifactId is { } artifactId)
+            {
+                try
+                {
+                    artifact = _artifacts is null ? null : await _artifacts.GetAsync(artifactId, ct).ConfigureAwait(false);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+                {
+                    _logger.LogWarning(ex, "Could not verify artifact for run {RunId}.", run.RunId);
+                }
+                if (artifact is null || artifact.StrategyId != run.StrategyId)
+                    return await DeferAsync(run, "The exact retained strategy artifact could not be verified.", ct).ConfigureAwait(false);
+                if (artifact.Route == StrategyAuthoringRoute.QuantScript)
+                    return await DeferAsync(run, "QuantScript activation requires a supported execution runtime.", ct).ConfigureAwait(false);
+                if (artifact.Route == StrategyAuthoringRoute.Designer)
+                {
+                    creationParameters = new Dictionary<string, string>(run.ParameterSet ?? new Dictionary<string, string>(),
+                        StringComparer.OrdinalIgnoreCase)
+                    {
+                        [DesignerDocumentLiveSource.RetainedArtifactParameterKey] = artifactId
+                    };
+                }
+            }
+
+            if (!_catalog.TryCreate(run.StrategyId, creationParameters, out var strategy, out var failureReason) || strategy is null)
             {
                 return await DeferAsync(run, failureReason ?? "No live strategy implementation available.", ct).ConfigureAwait(false);
             }
 
-            var universe = ResolveUniverse(run);
+            if (artifact is { Route: StrategyAuthoringRoute.Code })
+            {
+                var implementation = strategy is BacktestStrategyLiveAdapter adapter ? adapter.ImplementationType : strategy.GetType();
+                var effective = StrategyArtifact.CaptureCodeParameters(strategy, run.ParameterSet ?? new Dictionary<string, string>());
+                try
+                {
+                    if (artifact.SourceRevision != StrategyArtifact.CodeRevision(implementation) ||
+                        artifact.Parameters.Any(pair => !effective.TryGetValue(pair.Key, out var value) || pair.Value != value))
+                        return await DeferAsync(run, "The executable strategy or its inputs differ from the approved revision.", ct).ConfigureAwait(false);
+                }
+                catch (IOException ex)
+                {
+                    _logger.LogWarning(ex, "Could not verify the executable revision for run {RunId}.", run.RunId);
+                    return await DeferAsync(run, "The executable strategy revision could not be verified.", ct).ConfigureAwait(false);
+                }
+            }
+
+            var universe = artifact is null ? ResolveUniverse(run) :
+                artifact.Universe.ToHashSet(StringComparer.OrdinalIgnoreCase);
             if (universe.Count == 0)
             {
                 return await DeferAsync(
@@ -461,6 +516,17 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         }
 
         await activeRun.Initialized.WaitAsync(ct).ConfigureAwait(false);
+        if (activeRun.Session.RunType == RunType.Live && _liveAuthorizations is not null)
+        {
+            var run = await _repository.GetRunByIdAsync(runId, ct).ConfigureAwait(false);
+            if (run is null)
+                return null;
+            if (await CheckLiveAuthorizationAsync(run, ct).ConfigureAwait(false) is { } authorizationBlock)
+            {
+                _logger.LogWarning("Live run {RunId} cannot resume: {Reason}.", runId, authorizationBlock);
+                return null;
+            }
+        }
         return await _lifecycleManager.ResumeRunAsync(
             activeRun.Session.Strategy,
             runId,
@@ -477,6 +543,21 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     /// finished (host restart, engine previously missing). Returns the number of runs
     /// activated.
     /// </summary>
+    private async Task<string?> CheckLiveAuthorizationAsync(StrategyRunEntry run, CancellationToken ct)
+    {
+        if (_liveAuthorizations is null)
+            return null;
+        try
+        {
+            return (await _liveAuthorizations.CheckRunAsync(run, ct).ConfigureAwait(false)).Reason;
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
+        {
+            _logger.LogWarning(ex, "Live authorization for run {RunId} could not be verified.", run.RunId);
+            return "The live strategy authorization could not be verified.";
+        }
+    }
+
     public async Task<int> ResumePendingRunsAsync(CancellationToken ct = default)
     {
         if (!_options.Enabled)

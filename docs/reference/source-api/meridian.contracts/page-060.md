@@ -30,7 +30,7 @@ public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlo
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:978](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L978).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:975](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L975).
 
 A single time-bucket within a projected cash ladder.
 
@@ -81,7 +81,7 @@ public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1160](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1160).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1157](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1157).
 
 Workstation-facing summary of a closed lot for a strategy run.
 
@@ -486,7 +486,7 @@ public sealed record DiscardSecurityMasterRevisionRequest(Guid SecurityId, Guid 
 
 Qualified name: <code>Meridian.Contracts.Workstation.EquityCurvePoint</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:904](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L904).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:901](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L901).
 
 A single point on the portfolio equity curve.
 
@@ -498,7 +498,7 @@ public sealed record EquityCurvePoint(DateOnly Date, decimal TotalEquity, decima
 
 Qualified name: <code>Meridian.Contracts.Workstation.EquityCurveSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:914](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L914).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:911](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L911).
 
 Full equity curve with summary drawdown statistics for one run. Downside-free Sortino retains positive infinity as the named JSON string.
 
