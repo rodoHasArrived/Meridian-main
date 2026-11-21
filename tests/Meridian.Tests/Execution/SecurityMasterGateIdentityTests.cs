@@ -63,6 +63,34 @@ public sealed class SecurityMasterGateIdentityTests
     }
 
     [Fact]
+    public void ReportLineage_NullOmitsLegacyFieldsAndPreservesExecutionIdentity()
+    {
+        var legacy = new ExecutionReport
+        {
+            OrderId = "historical-fill",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            ReportType = ExecutionReportType.Fill,
+            OrderStatus = OrderStatus.Filled,
+            OrderQuantity = 1m,
+            FilledQuantity = 1m,
+            FillPrice = 100m,
+            Timestamp = new DateTimeOffset(2026, 1, 2, 15, 0, 0, TimeSpan.Zero)
+        };
+        var json = JsonSerializer.Serialize(legacy, ExecutionJsonContext.Default.ExecutionReport);
+
+        Assert.DoesNotContain("accountingSecurityId", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("accountingRunId", json, StringComparison.Ordinal);
+        var restored = Assert.IsType<ExecutionReport>(JsonSerializer.Deserialize(json, ExecutionJsonContext.Default.ExecutionReport));
+        Assert.Null(restored.AccountingSecurityId);
+        Assert.Null(restored.AccountingRunId);
+        Assert.Equal(PaperSessionFillRecord.ComputeCanonicalHash(legacy), PaperSessionFillRecord.ComputeCanonicalHash(restored));
+        var attributed = legacy with { AccountingSecurityId = Guid.NewGuid(), AccountingRunId = "retained-run" };
+        Assert.Equal(PaperSessionFillRecord.ComputeCanonicalFillId(legacy), PaperSessionFillRecord.ComputeCanonicalFillId(attributed));
+        Assert.NotEqual(PaperSessionFillRecord.ComputeCanonicalHash(legacy), PaperSessionFillRecord.ComputeCanonicalHash(attributed));
+    }
+
+    [Fact]
     public void BrokerageRestart_RetainsKnownIdentityAndOmitsAbsentLegacyIdentity()
     {
         var root = Path.Combine(Path.GetTempPath(), "meridian-admission-identity", Guid.NewGuid().ToString("N"));
