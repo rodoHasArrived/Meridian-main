@@ -174,7 +174,7 @@ Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackag
 Builds and retains accounting report packages and their certification state.
 
 ```csharp
-public sealed class AccountingReportPackageService : IAccountingReportPackageService
+public sealed partial class AccountingReportPackageService : IAccountingReportPackageService
 ```
 
 Declared public members:
@@ -187,6 +187,12 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;AccountingReportPackageBundleDto&gt;&gt; ListPackagesAsync(string? fundProfileId = null, string? periodId = null, Guid? ledgerBookId = null, LedgerDimensionSetDto? dimensions = null, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:275](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L275) |  |
 | <code>public async Task&lt;AccountingReportPackageBundleDto?&gt; CertifyPackageAsync(CertifyAccountingReportPackageRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:302](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L302) |  |
 | <code>public Task&lt;ReportExportArtifactManifestDto?&gt; GetExportArtifactManifestAsync(string packageId, string artifactId, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs:468](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.cs#L468) |  |
+
+Source: [src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs:8](../../../../src/Meridian.FinancialOperations/AccountingClose/AccountingReportPackageService.Dimensions.cs#L8).
+
+```csharp
+public sealed partial class AccountingReportPackageService
+```
 
 ## CloseApprovalHistoryEntry
 

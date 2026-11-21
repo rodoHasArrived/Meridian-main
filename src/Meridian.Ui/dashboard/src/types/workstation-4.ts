@@ -654,7 +654,7 @@ export interface ReportWriterChartDefinition {
 export interface ReportWriterChartSeries {
   key: string;
   label: string;
-  values: number[];
+  values: (number | null)[];
 }
 
 export interface ReportWriterChartRender {

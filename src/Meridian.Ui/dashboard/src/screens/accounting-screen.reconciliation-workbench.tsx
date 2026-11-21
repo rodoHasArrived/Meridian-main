@@ -1,4 +1,4 @@
-import { useMemo, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type ReactNode, type UIEvent } from "react";
+import { useMemo, useEffect, useLayoutEffect, useRef, useState, type KeyboardEvent, type MouseEvent, type ReactNode, type UIEvent } from "react";
 import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
 import { Link, useLocation } from "react-router-dom";
 import { ThreeWayAccountingPanel } from "./accounting-screen.three-way";
@@ -30,6 +30,7 @@ import {
   type SurfaceVisitServices
 } from "@/lib/since-last-visit";
 import { ReconciliationCaseDiscussion } from "./accounting-screen.case-discussion";
+import { ReconciliationCaseEvidence, ReconciliationMatchCandidate, caseQueueResidual } from "./reconciliation-case-evidence";
 import { BreakLifecyclePanel, type BreakLifecycleServices } from "./accounting-screen.reconciliation-lifecycle";
 import { BreakAuditTimeline, type BreakAuditLoader } from "./accounting-screen.reconciliation-audit-timeline";
 import { cn } from "@/lib/utils";
@@ -43,9 +44,10 @@ import type {
   useAccountingReconciliationViewModel,
   useReconciliationResolveDialogViewModel
 } from "./accounting-screen.view-model";
-import type { ReconciliationQueueStatus, ReconciliationQueueSort } from "./reconciliation-view-state";
+import { readReconciliationViewState, type ReconciliationQueueStatus, type ReconciliationQueueSort } from "./reconciliation-view-state";
 import "@/styles/reconciliation-workbench.css";
 import { Select } from "@/components/ui/select";
+import type { ReconciliationCaseworkCommand } from "@/types";
 
 type ReconciliationViewModel = ReturnType<typeof useAccountingReconciliationViewModel>;
 type Reconciliation = Pick<ReconciliationViewModel,
@@ -69,12 +71,14 @@ type Reconciliation = Pick<ReconciliationViewModel,
   | "emptyText"
   | "tableLabel"
   | "tableCaption"
-> & Partial<Pick<ReconciliationViewModel, "applyCaseworkUpdate" | "sourceRows">>;
+> & Partial<Pick<ReconciliationViewModel, "applyCaseworkUpdate" | "sourceRows" | "lineageRows">>;
 type StatementRuns = Pick<ReconciliationViewModel,
   "statementRunsView" | "refreshStatementRuns" | "selectedRunId" | "selectRun" | "reconciliationQueue"
 >;
 type ResolveDialog = ReturnType<typeof useReconciliationResolveDialogViewModel>;
 export interface ReconciliationQueueControls {
+  comparisonBreakId?: string | null;
+  setComparisonBreakId?: (value: string | null) => void;
   queueSearch: string;
   queueStatus: string;
   queueSort: string;
@@ -91,6 +95,7 @@ const reconciliationBreakColumns: TableWorkbenchColumn<ReconciliationBreakRowVie
   {
     id: "break",
     label: "Break",
+    wrap: true,
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.strategyName}</span>
@@ -103,16 +108,14 @@ const reconciliationBreakColumns: TableWorkbenchColumn<ReconciliationBreakRowVie
     id: "variance",
     label: "Variance",
     numeric: true,
-    render: (row) => (
-      <span
-        className={cn(
-          "font-mono tabular-nums",
-          row.varianceTone === "success" ? "text-success" : row.varianceTone === "danger" ? "text-danger" : "text-foreground"
-        )}
-      >
-        {row.varianceLabel}
-      </span>
-    )
+    exportDisplay: (row) => {
+      const residual = caseQueueResidual(row);
+      return [residual.amount, residual.unit].filter(Boolean).join(" ");
+    },
+    render: (row) => {
+      const residual = caseQueueResidual(row);
+      return <span className="block tabular-nums">{residual.amount}{residual.unit ? <span className="block text-xs text-muted-foreground">{residual.unit}</span> : null}</span>;
+    }
   },
   { id: "owner", label: "Owner", hideable: true, priority: "medium", render: (row) => <span className="font-mono text-muted-foreground">{row.ownerLabel}</span> },
   { id: "updated", label: "Updated", hideable: true, priority: "low", render: (row) => <span className="font-mono text-muted-foreground">{row.lastUpdatedAtLabel}</span> },
@@ -125,12 +128,13 @@ export function ThreeWayReconciliationWorkbench({ children }: { children: ReactN
   return <>{children}<ThreeWayAccountingPanel /></>;
 }
 
-export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, bulkServices, visitServices, lifecycleServices, auditLoader }: {
+export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSelector, controls, selectionNotice, operatorId, bulkServices, visitServices, lifecycleServices, auditLoader }: {
   reconciliation: Reconciliation;
   resolveDialog: ResolveDialog;
   runSelector?: ReactNode;
   controls: ReconciliationQueueControls;
   selectionNotice?: string | null;
+  operatorId?: string | null;
   /** Bulk casework services; tests inject fakes. */
   bulkServices?: BulkTriageServices;
   /** Reads and records the operator's visit for "since your last visit" markers; tests inject fakes. */
@@ -142,18 +146,36 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
 }) {
   const location = useLocation();
   const queueRef = useRef<HTMLDivElement>(null);
+  const queueSearchRef = useRef<HTMLInputElement>(null);
   const toggleRef = useRef<HTMLButtonElement>(null);
+  const commandMemory = useRef(new Map<string, ReconciliationCaseworkCommand>());
+  useEffect(() => { commandMemory.current.clear(); }, [operatorId]);
   const pendingQueueScroll = useRef<number | null>(null);
-  const [detailOpen, setDetailOpen] = useState(false);
+  const focusCaseAfterSelection = useRef(false);
+  const inspectorFocusFrame = useRef<number | null>(null);
+  useEffect(() => () => {
+    if (inspectorFocusFrame.current !== null) cancelAnimationFrame(inspectorFocusFrame.current);
+  }, []);
+  const [detailOpen, setDetailOpen] = useState(() => {
+    const stored = (location.state as { reconciliationDetailOpen?: boolean } | null)?.reconciliationDetailOpen;
+    return stored ?? Boolean(readReconciliationViewState(location.search).selectedBreakId);
+  });
   const selectedRow = reconciliation.rows.find((row) => row.breakId === reconciliation.selectedBreakId) ?? null;
   const selectedSource = selectedRow ? reconciliation.sourceRows?.find((item) => item.breakId === selectedRow.breakId) ?? null : null;
   const activeResolveBreak = resolveDialog.active
     ? reconciliation.rows.find((row) => row.breakId === resolveDialog.active?.breakId) ?? null : null;
   const visibleRows = filterReconciliationRows(reconciliation.rows, controls);
+  const selectedIndex = visibleRows.findIndex((row) => row.breakId === reconciliation.selectedBreakId);
   const [shortcutsOpen, setShortcutsOpen] = useState(false);
+  const queueIdentity = reconciliation.lineageRows?.[0] ?? reconciliation.sourceRows?.[0];
+  const receiptKey = operatorId && queueIdentity?.tenantId && queueIdentity.companyId
+    ? `meridian:reconciliation:batch:${JSON.stringify([operatorId, queueIdentity.tenantId, queueIdentity.companyId])}`
+    : null;
   const triage = useReconciliationBulkTriage({
     visibleBreakIds: visibleRows.map((row) => row.breakId),
+    visibleVersions: new Map(visibleRows.map((row) => [row.breakId, row.version])),
     beginItemsUpdate: reconciliation.beginBreakQueueUpdate,
+    receiptKey,
     services: bulkServices
   });
   const { isSelected: isBulkSelected, toggle: toggleBulkSelected } = triage;
@@ -203,10 +225,17 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
       }
     })
   ], [isBulkSelected, toggleBulkSelected, visitBaseline]);
-  const selectedOutsideFilter = selectedRow && !visibleRows.some((row) => row.breakId === selectedRow.breakId);
+  const selectedOutsideFilter = selectedRow && selectedIndex < 0;
   useLayoutEffect(() => {
-    const position = (window.history.state?.usr as { reconciliationQueueScroll?: number } | null)?.reconciliationQueueScroll;
+    if (!focusCaseAfterSelection.current) return;
+    focusCaseAfterSelection.current = false;
+    document.getElementById(reconciliation.detailPanelId)?.focus({ preventScroll: true });
+  }, [reconciliation.detailPanelId, reconciliation.selectedBreakId]);
+  useLayoutEffect(() => {
+    const saved = window.history.state?.usr as { reconciliationQueueScroll?: number; reconciliationDetailOpen?: boolean } | null;
+    const position = saved?.reconciliationQueueScroll;
     pendingQueueScroll.current = typeof position === "number" ? position : null;
+    if (typeof saved?.reconciliationDetailOpen === "boolean") setDetailOpen(saved.reconciliationDetailOpen);
   }, [location.key]);
   useLayoutEffect(() => {
     const queue = queueRef.current;
@@ -214,35 +243,21 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     if (!queue || position === null) return;
     // Navigation can restore before the asynchronous queue has mounted its rows.
     // Keep the desired offset until there is content rather than accepting a clamp to zero.
-    if (position > 0 && visibleRows.length === 0) return;
+    if (position > 0 && (visibleRows.length === 0 || (detailOpen && queue.clientHeight === 0))) return;
     queue.scrollTop = position;
     if (queue.scrollTop === position || !reconciliation.loadingText) {
       pendingQueueScroll.current = null;
     }
-  }, [location.key, visibleRows.length, reconciliation.loadingText]);
+  }, [location.key, visibleRows.length, reconciliation.loadingText, detailOpen]);
   useEffect(() => {
     if (resolveDialog.active && resolveDialog.active.breakId !== reconciliation.selectedBreakId) resolveDialog.close();
   }, [reconciliation.selectedBreakId, resolveDialog]);
-  const selectedBreakPrimaryFields = reconciliation.selectedDetail?.fields.filter((field) => [
-    "Variance",
-    "Owner",
-    "Detected",
-    "Updated",
-    "Urgency",
-    "Required sign-off",
-    "Decision note",
-    "Comments",
-    "Evidence links"
+  const selectedBreakTechnicalFields = reconciliation.selectedDetail?.fields.filter((field) => ![
+    "Variance", "Owner", "Source observation", "Observed occurrence age", "Comparison scope", "Source lineage",
+    "Occurrence", "Last observed run", "Source clearing", "Fund account", "Tolerance band", "Tolerance profile",
+    "Required sign-off", "Decision note"
   ].includes(field.label)) ?? [];
-  if (selectedRow) {
-    selectedBreakPrimaryFields.push({
-      label: "Source observation",
-      value: `${sourceObservationLabel(selectedRow.lineage)} · ${sourceObservationAge(selectedRow.lineage)}`
-    });
-  }
-  const selectedBreakTechnicalFields = reconciliation.selectedDetail?.fields.filter((field) => (
-    !selectedBreakPrimaryFields.includes(field)
-  )) ?? [];
+  const requiredSignoff = reconciliation.selectedDetail?.fields.find((field) => field.label === "Required sign-off")?.value;
   function renderBreakActions(item: ReconciliationBreakRowViewModel) {
     return (
       <div className="panel-action-zone reconciliation-break-actions">
@@ -289,17 +304,33 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     );
   }
 
+  function setInspectorOpen(open: boolean) {
+    setDetailOpen(open);
+    const state = window.history.state;
+    if (state?.key === location.key) {
+      window.history.replaceState({ ...state, usr: { ...state.usr, reconciliationDetailOpen: open } }, "");
+    }
+  }
+
   function returnToQueue() {
-    setDetailOpen(false);
+    setInspectorOpen(false);
     requestAnimationFrame(() => {
-      const row = queueRef.current?.querySelector<HTMLElement>('[aria-selected="true"]');
-      (row ?? toggleRef.current)?.focus();
+      const queue = queueRef.current;
+      const row = queue?.querySelector<HTMLElement>('[aria-selected="true"]');
+      const rowBounds = row?.getBoundingClientRect();
+      const queueBounds = queue?.getBoundingClientRect();
+      const rowVisible = rowBounds && queueBounds && rowBounds.top >= queueBounds.top && rowBounds.bottom <= queueBounds.bottom;
+      (rowVisible ? row : queueSearchRef.current)?.focus();
     });
   }
 
   function openInspector() {
-    setDetailOpen(true);
-    requestAnimationFrame(() => document.getElementById(reconciliation.detailPanelId)?.focus());
+    setInspectorOpen(true);
+    if (inspectorFocusFrame.current !== null) cancelAnimationFrame(inspectorFocusFrame.current);
+    inspectorFocusFrame.current = requestAnimationFrame(() => {
+      inspectorFocusFrame.current = null;
+      document.getElementById(reconciliation.detailPanelId)?.focus();
+    });
   }
 
   function focusQueueRow(breakId: string) {
@@ -314,27 +345,27 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
     });
   }
 
-  function moveSelection(step: 1 | -1) {
-    if (visibleRows.length === 0) return;
-    const index = visibleRows.findIndex((row) => row.breakId === reconciliation.selectedBreakId);
-    const nextIndex = index < 0 ? 0 : Math.min(visibleRows.length - 1, Math.max(0, index + step));
-    const next = visibleRows[nextIndex];
+  function moveSelection(step: 1 | -1, focusQueue: boolean) {
+    const next = visibleRows[selectedIndex < 0 && step === 1 ? 0 : selectedIndex + step];
     if (!next) return;
+    if (!focusQueue) focusCaseAfterSelection.current = true;
     reconciliation.selectBreak(next.breakId);
-    focusQueueRow(next.breakId);
+    if (focusQueue) focusQueueRow(next.breakId);
   }
 
   // Keyboard triage (C2). The capture phase claims these keys before a focused row's type-ahead.
   function handleQueueShortcut(event: KeyboardEvent<HTMLElement>): boolean {
     const action = resolveQueueShortcut(event);
     if (!action) return false;
-    const current = selectedRow && visibleRows.some((row) => row.breakId === selectedRow.breakId) ? selectedRow : null;
+    const inCase = (event.target as HTMLElement).closest(".reconciliation-inspector") !== null;
+    if (inCase && action !== "next" && action !== "previous") return false;
+    const current = selectedIndex >= 0 ? selectedRow : null;
     switch (action) {
       case "next":
-        moveSelection(1);
+        moveSelection(1, !inCase);
         break;
       case "previous":
-        moveSelection(-1);
+        moveSelection(-1, !inCase);
         break;
       case "toggle-select":
         if (current) toggleBulkSelected(current.breakId);
@@ -384,13 +415,18 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
       && queueRef.current?.contains(target)
       && target.matches("tr[data-dense-row-id]")
     ) {
-      setDetailOpen(true);
+      setInspectorOpen(true);
     }
-    if (event.key === "Escape" && detailOpen && target.closest(".reconciliation-inspector")) {
+    if (event.key === "Escape" && target.closest(".reconciliation-inspector") && !target.closest("select, [role='dialog']")) {
       event.preventDefault();
       event.stopPropagation();
       returnToQueue();
     }
+  }
+
+  function handleQueueClick(event: MouseEvent<HTMLDivElement>) {
+    const target = event.target as HTMLElement;
+    if (target.closest("tr[data-dense-row-id]") && !target.closest("button, a, input, select, [role='checkbox']")) openInspector();
   }
 
   function rememberQueueScroll(event: UIEvent<HTMLDivElement>) {
@@ -421,107 +457,133 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             className="reconciliation-inspector"
             title={reconciliation.selectedDetail?.title ?? reconciliation.detailEmptyTitle}
             status={reconciliation.selectedDetail ? <DesignSystemStatus status={reconciliation.selectedDetail.statusLabel}>{reconciliation.selectedDetail.statusLabel}</DesignSystemStatus> : undefined}
-            actions={selectedRow ? renderBreakActions(selectedRow) : undefined}
-            fields={selectedBreakPrimaryFields.map((field) => ({ ...field, numeric: field.label === "Variance" }))}
+            fields={[]}
           >
-            <Button type="button" variant="outline" className="reconciliation-back-to-queue" onClick={returnToQueue}>
-              Back to break queue
-            </Button>
-            {reconciliation.selectedDetail ? <p className="mt-3 text-sm text-muted-foreground">{reconciliation.selectedDetail.description}</p> : <p role="status" aria-label={reconciliation.detailEmptyAriaLabel} className="text-sm text-muted-foreground">{reconciliation.detailEmptyText}</p>}
-            {selectedSource ? <BreakLifecyclePanel key={`lifecycle:${selectedSource.breakId}`} item={selectedSource} onUpdated={reconciliation.applyCaseworkUpdate} services={lifecycleServices} /> : null}
-            {selectedRow ? <ReconciliationCaseDiscussion key={selectedRow.breakId} breakId={selectedRow.breakId} onUpdated={reconciliation.applyCaseworkUpdate} /> : null}
-            {reconciliation.selectedDetail && selectedBreakTechnicalFields.length > 0 ? (
-              <TechnicalDetails
-                label="Break metadata"
-                description="Identifiers, routing metadata, policy values, and retained explanation detail for audit and support use."
-              >
-                <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-                  <AccountingValue label="Break ID" value={reconciliation.selectedBreakId ?? "Not retained"} />
-                  {selectedBreakTechnicalFields.map((field) => (
-                    <AccountingValue key={field.label} label={field.label} value={field.value} />
-                  ))}
-                </div>
-              </TechnicalDetails>
-            ) : null}
-            {reconciliation.selectedDetail?.analysisText ? (
-              <div className="rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
-                <span className="font-medium text-foreground">Analysis: </span>
-                {reconciliation.selectedDetail.analysisText}
+            <div className="flex flex-wrap items-center gap-2" role="group" aria-label="Case navigation">
+              <Button type="button" size="sm" variant="outline" className="reconciliation-back-to-queue" onClick={returnToQueue}>Back to break queue</Button>
+              {selectedRow ? <>
+                <Button type="button" size="sm" variant="ghost" aria-keyshortcuts="k" disabled={selectedIndex <= 0} onClick={() => moveSelection(-1, false)}>Previous case</Button>
+                <Button type="button" size="sm" variant="ghost" aria-keyshortcuts="j" disabled={selectedIndex >= visibleRows.length - 1} onClick={() => moveSelection(1, false)}>Next case</Button>
+                {selectedIndex >= 0 ? <span className="text-xs text-muted-foreground">{selectedIndex + 1} of {visibleRows.length} filtered cases</span> : null}
+              </> : null}
+            </div>
+            {selectedRow ? <div className="reconciliation-case-layout">
+              <div className="grid min-w-0 content-start gap-3">
+                <ReconciliationCaseEvidence key={selectedRow.breakId} item={selectedSource ?? selectedRow} relatedRows={reconciliation.lineageRows} onOpenCase={reconciliation.selectBreak}
+                  comparisonBreakId={controls.comparisonBreakId} onComparisonChange={controls.setComparisonBreakId} />
+                {selectedBreakTechnicalFields.length > 0 ? (
+                  <TechnicalDetails label="Break metadata">
+                    <div className="grid gap-2 sm:grid-cols-2">
+                      {selectedBreakTechnicalFields.map((field) => <AccountingValue key={field.label} label={field.label} value={field.value} />)}
+                    </div>
+                  </TechnicalDetails>
+                ) : null}
               </div>
-            ) : null}
-            {reconciliation.selectedDetail?.recommendedActionText ? (
-              <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-5">
-                <span className="font-medium text-primary">Recommended: </span>
-                <span className="text-foreground">{reconciliation.selectedDetail.recommendedActionText}</span>
-              </div>
-            ) : null}
-            {reconciliation.selectedDetail?.routingActionHref && reconciliation.selectedDetail.routingActionLabel ? (
-              <Button asChild variant="secondary" className="w-fit">
-                <Link
-                  to={reconciliation.selectedDetail.routingActionHref}
-                  aria-label={reconciliation.selectedDetail.routingActionAriaLabel ?? reconciliation.selectedDetail.routingActionLabel}
-                >
-                  <Network className="h-4 w-4" aria-hidden="true" />
-                  {reconciliation.selectedDetail.routingActionLabel}
-                </Link>
-              </Button>
-            ) : null}
-            {reconciliation.detailActions ? (
-              <div className="panel-action-zone">
-                <Button asChild variant="secondary">
-                  <Link to={reconciliation.detailActions.evidencePacketHref}>Evidence packet</Link>
-                </Button>
-                <Button asChild variant="secondary">
-                  <a href={reconciliation.detailActions.auditPacketHref}>Review audit packet</a>
-                </Button>
-              </div>
-            ) : null}
-            {activeResolveBreak && resolveDialog.active ? (
-              <form
-                className="space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
-                aria-label={resolveDialog.active.formAriaLabel}
-                onSubmit={(e) => {
-                  e.preventDefault();
-                  void resolveDialog.submit();
-                }}
-              >
-                <p className="text-sm">Review {resolveDialog.active.status === "Dismissed" ? "dismissal" : "resolution"} of 1 case: {activeResolveBreak.financeLabel} · {activeResolveBreak.strategyName}. The decision note is retained in case history.</p>
-                <FormRow
-                  label={resolveDialog.active.label}
-                  labelFor={resolveDialog.active.inputId}
-                  hint={resolveDialog.active.helpText}
-                >
-                  <Input
-                    id={resolveDialog.active.inputId}
-                    type="text"
-                    required
-                    autoFocus
-                    aria-describedby={resolveDialog.active.helpId}
-                    placeholder={resolveDialog.active.placeholder}
-                    value={resolveDialog.active.rationale}
-                    onChange={(e) => resolveDialog.updateRationale(e.target.value)}
-                  />
-                  <span id={resolveDialog.active.helpId} className="sr-only">
-                    {resolveDialog.active.helpText}
-                  </span>
-                </FormRow>
-                <div className="panel-action-zone justify-start">
-                  <Button
-                    type="submit"
-                    size="sm"
-                    disabled={resolveDialog.active.isSubmitDisabled}
-                    disabledReason={resolveDialog.active.submitDisabledReason}
-                    aria-label={resolveDialog.active.submitAriaLabel}
+              <section className="reconciliation-case-rail" aria-label="Case actions and history">
+                <h3 className="text-sm font-semibold">Case actions</h3>
+                <ReconciliationMatchCandidate item={selectedSource ?? selectedRow} />
+                {requiredSignoff ? <AccountingValue label="Required sign-off" value={requiredSignoff} /> : null}
+                {selectedRow.resolutionNote ? <AccountingValue label="Decision note" value={selectedRow.resolutionNote} /> : null}
+                {selectedRow.signOffNote ? <AccountingValue label="Sign-off note" value={selectedRow.signOffNote} /> : null}
+                {selectedSource?.dispositionApprovalReference ? <AccountingValue label="Approval reference" value={selectedSource.dispositionApprovalReference} /> : null}
+                {selectedSource?.blockedOutputs?.length ? <div>
+                  <h4 className="text-xs font-semibold">Affected outputs</h4>
+                  <ul aria-label="Outputs blocked by this case" className="mt-1 space-y-1 break-words text-sm text-muted-foreground">
+                    {selectedSource.blockedOutputs.map((output) => <li key={output}>{output}</li>)}
+                  </ul>
+                </div> : null}
+                {renderBreakActions(selectedRow)}
+                {activeResolveBreak && resolveDialog.active ? (
+                  <form
+                    className="space-y-2 rounded-lg border border-border/50 bg-secondary/20 p-3"
+                    aria-label={resolveDialog.active.formAriaLabel}
+                    onSubmit={(e) => {
+                      e.preventDefault();
+                      void resolveDialog.submit();
+                    }}
                   >
-                    {resolveDialog.active.submitLabel}
+                    <p className="text-sm">Review {resolveDialog.active.status === "Dismissed" ? "dismissal" : "resolution"} of 1 case: {activeResolveBreak.financeLabel} · {activeResolveBreak.strategyName}. The decision note is retained in case history.</p>
+                    <FormRow
+                      label={resolveDialog.active.label}
+                      labelFor={resolveDialog.active.inputId}
+                      hint={resolveDialog.active.helpText}
+                    >
+                      <Input
+                        id={resolveDialog.active.inputId}
+                        type="text"
+                        required
+                        autoFocus
+                        aria-describedby={resolveDialog.active.helpId}
+                        placeholder={resolveDialog.active.placeholder}
+                        value={resolveDialog.active.rationale}
+                        onChange={(e) => resolveDialog.updateRationale(e.target.value)}
+                      />
+                      <span id={resolveDialog.active.helpId} className="sr-only">
+                        {resolveDialog.active.helpText}
+                      </span>
+                    </FormRow>
+                    <div className="panel-action-zone justify-start">
+                      <Button
+                        type="submit"
+                        size="sm"
+                        disabled={resolveDialog.active.isSubmitDisabled}
+                        disabledReason={resolveDialog.active.submitDisabledReason}
+                        aria-label={resolveDialog.active.submitAriaLabel}
+                      >
+                        {resolveDialog.active.submitLabel}
+                      </Button>
+                      <Button type="button" size="sm" variant="ghost" aria-label={resolveDialog.active.cancelAriaLabel} onClick={resolveDialog.close}>
+                        {resolveDialog.active.cancelLabel}
+                      </Button>
+                    </div>
+                  </form>
+                ) : null}
+                {selectedSource ? <BreakLifecyclePanel
+                  key={JSON.stringify([operatorId, selectedSource.tenantId, selectedSource.companyId, selectedSource.breakId])}
+                  item={selectedSource}
+                  operatorId={operatorId}
+                  commandMemory={commandMemory.current}
+                  readOnlyReason={reconciliation.loadingText || reconciliation.errorText ? "Refresh the current case before making a change." : null}
+                  onUpdated={reconciliation.applyCaseworkUpdate}
+                  services={lifecycleServices}
+                /> : null}
+                <ReconciliationCaseDiscussion key={selectedRow.breakId} breakId={selectedRow.breakId} onUpdated={reconciliation.applyCaseworkUpdate} />
+                {reconciliation.selectedDetail?.analysisText ? (
+                  <div className="rounded-md border border-border/50 bg-secondary/20 px-3 py-2 text-xs leading-5 text-muted-foreground">
+                    <span className="font-medium text-foreground">Analysis: </span>
+                    {reconciliation.selectedDetail.analysisText}
+                  </div>
+                ) : null}
+                {reconciliation.selectedDetail?.recommendedActionText ? (
+                  <div className="rounded-md border border-primary/20 bg-primary/5 px-3 py-2 text-xs leading-5">
+                    <span className="font-medium text-primary">Recommended: </span>
+                    <span className="text-foreground">{reconciliation.selectedDetail.recommendedActionText}</span>
+                  </div>
+                ) : null}
+                {reconciliation.selectedDetail?.routingActionHref && reconciliation.selectedDetail.routingActionLabel ? (
+                  <Button asChild variant="secondary" className="w-fit">
+                    <Link
+                      to={reconciliation.selectedDetail.routingActionHref}
+                      aria-label={reconciliation.selectedDetail.routingActionAriaLabel ?? reconciliation.selectedDetail.routingActionLabel}
+                    >
+                      <Network className="h-4 w-4" aria-hidden="true" />
+                      {reconciliation.selectedDetail.routingActionLabel}
+                    </Link>
                   </Button>
-                  <Button type="button" size="sm" variant="ghost" aria-label={resolveDialog.active.cancelAriaLabel} onClick={resolveDialog.close}>
-                    {resolveDialog.active.cancelLabel}
-                  </Button>
-                </div>
-              </form>
-            ) : null}
-            {selectedRow ? <BreakAuditTimeline key={`audit:${selectedRow.breakId}`} breakId={selectedRow.breakId} refreshKey={selectedSource?.version ?? null} load={auditLoader} /> : null}
+                ) : null}
+                {reconciliation.detailActions ? (
+                  <div className="panel-action-zone">
+                    <Button asChild variant="secondary">
+                      <Link to={reconciliation.detailActions.evidencePacketHref}>Evidence packet</Link>
+                    </Button>
+                    <Button asChild variant="secondary">
+                      <a href={reconciliation.detailActions.auditPacketHref}>Review audit packet</a>
+                    </Button>
+                  </div>
+                ) : null}
+                <BreakAuditTimeline key={`audit:${selectedRow.breakId}`} breakId={selectedRow.breakId} refreshKey={selectedSource?.version ?? null} load={auditLoader} />
+              </section>
+            </div> : <p role="status" aria-label={reconciliation.detailEmptyAriaLabel} className="text-sm text-muted-foreground">{reconciliation.detailEmptyText}</p>}
           </DetailRail>
         )}
       >
@@ -570,7 +632,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
             <div className="reconciliation-queue-toolbar" role="group" aria-label="Break queue controls">
               <label>
                 Search breaks
-                <Input value={controls.queueSearch} onChange={(e) => controls.setQueueSearch(e.target.value)} placeholder="Break, account, owner…" />
+                <Input ref={queueSearchRef} value={controls.queueSearch} onChange={(e) => controls.setQueueSearch(e.target.value)} placeholder="Break, account, owner…" />
               </label>
               <label>
                 Case status
@@ -596,7 +658,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 <Kbd keys="?" />
               </Button>
             </div>
-            {triage.selectedIds.length > 0 || triage.draft || triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
+            {triage.selectedIds.length > 0 || triage.draft || triage.message || triage.receipt ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
               <Button
                 ref={toggleRef}
                 type="button"
@@ -604,12 +666,13 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 aria-controls={reconciliation.detailPanelId}
                 aria-expanded={detailOpen}
                 className="reconciliation-detail-toggle"
+                disabled={!selectedRow}
                 onClick={openInspector}
               >
                 Inspect selected break
               </Button>
             {selectedOutsideFilter ? <p role="status" className="text-sm text-muted-foreground">The selected break is outside these filters. Its evidence remains in the inspector.</p> : null}
-            <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll}>
+            <div ref={queueRef} className="reconciliation-queue-scroll" onScroll={rememberQueueScroll} onClick={handleQueueClick}>
               <TableWorkbench
                 compactToolbar
                 workbenchId="accounting-reconciliation-breaks"
@@ -639,7 +702,10 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 } }))}
                 rows={visibleRows}
                 getRowId={(item) => item.breakId}
-                getRowAriaLabel={(item) => withVisitMark(item, item.rowAriaLabel)}
+                getRowAriaLabel={(item) => {
+                  const residual = caseQueueResidual(item);
+                  return withVisitMark(item, `${item.financeLabel} ${item.breakId}. ${item.status}. Variance ${[residual.amount, residual.unit].filter(Boolean).join(" ")}. ${item.reason}`);
+                }}
                 getRowSelectAriaLabel={(item) => withVisitMark(item, item.rowSelectAriaLabel)}
                 getRowAriaControls={(item) => item.detailPanelId}
                 getRowAriaExpanded={(item) => item.isExpanded}
@@ -650,7 +716,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
                 caption={reconciliation.tableCaption}
               />
             </div>
-            {triage.selectedIds.length === 0 && !triage.draft && !triage.message ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
+            {triage.selectedIds.length === 0 && !triage.draft && !triage.message && !triage.receipt ? <ReconciliationBulkTriageBar triage={triage} visibleCount={visibleRows.length} /> : null}
             <div className="space-y-0.5">
               <p role="status" className="text-xs text-muted-foreground">{visibleRows.length} of {reconciliation.rows.length} loaded breaks</p>
               {sinceLastVisitLine ? <p className="text-xs text-muted-foreground">{sinceLastVisitLine}</p> : null}
@@ -664,7 +730,7 @@ export function ReconciliationWorkbench({ reconciliation, resolveDialog, runSele
           <DialogHeader>
             <DialogTitle id="break-queue-shortcuts-title">Break queue shortcuts</DialogTitle>
             <DialogDescription id="break-queue-shortcuts-description">
-              These keys work while focus is in the break queue, outside text fields. Actions follow the case
+            Use J and K in the queue or case detail. Other shortcuts work in the queue, outside text fields. Actions follow the case
               permissions and require the same rationale as the buttons.
             </DialogDescription>
           </DialogHeader>
@@ -703,7 +769,7 @@ export function filterReconciliationRows(rows: ReconciliationBreakRowViewModel[]
   const query = controls.queueSearch.trim().toLocaleLowerCase();
   const filtered = rows.filter((row) => (
     (controls.queueStatus === "all" || row.status === controls.queueStatus)
-    && (!query || [row.breakId, row.strategyName, row.financeLabel, row.ownerLabel, row.reason]
+    && (!query || [row.breakId, row.strategyName, row.financeLabel, row.ownerLabel, row.reason, row.fundAccountId, row.sourceReference, row.lineage?.lineageId]
       .some((value) => value?.toLocaleLowerCase().includes(query)))
   ));
   if (controls.queueSort === "oldest" || controls.queueSort === "newest") {

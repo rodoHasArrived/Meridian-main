@@ -154,15 +154,6 @@ public sealed class StartupSummary
             sb.AppendLine($"    Provider:     {config.Backfill.Provider}");
             sb.AppendLine($"    Fallback:     {(config.Backfill.EnableFallback ? "Enabled" : "Disabled")}");
 
-            if (config.Backfill.ProviderPriority?.Length > 0)
-            {
-                var priority = string.Join(" -> ", config.Backfill.ProviderPriority.Take(4));
-                if (config.Backfill.ProviderPriority.Length > 4)
-                {
-                    priority += " -> ...";
-                }
-                sb.AppendLine($"    Priority:     {priority}");
-            }
             sb.AppendLine();
         }
 

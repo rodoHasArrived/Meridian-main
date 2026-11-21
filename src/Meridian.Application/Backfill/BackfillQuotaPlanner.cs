@@ -54,11 +54,10 @@ internal static class BackfillQuotaPlanner
                 aggregate.SupportedGranularities.Contains(granularity))).ToArray();
     }
 
-    public static int ResolveConcurrency(BackfillRequest request, BackfillConfig? config,
-        IHistoricalDataProvider requestedProvider, IReadOnlyCollection<IHistoricalDataProvider> providers)
+    public static int ResolveConcurrency(BackfillRequest request, BackfillConfig? config, IHistoricalDataProvider requestedProvider)
     {
-        var affectedProviders = requestedProvider is CompositeHistoricalDataProvider
-            ? providers.Where(provider => provider is not CompositeHistoricalDataProvider)
+        var affectedProviders = requestedProvider is CompositeHistoricalDataProvider composite
+            ? composite.GetCandidates(request.Granularity)
             : [requestedProvider];
         var concurrency = Math.Max(1, request.MaxConcurrentSymbols ?? config?.Jobs?.MaxConcurrentRequests
             ?? new BackfillJobsConfig().MaxConcurrentRequests);

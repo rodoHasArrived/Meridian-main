@@ -24,7 +24,9 @@ export function AmountPassportProvider({ children, enabled, scopeKey, session }:
   const location = useLocation();
   const navigate = useNavigate();
   const query = new URLSearchParams(location.search);
-  const routeKey = JSON.stringify([location.pathname, scopeKey, ...["view", "runId", "ledgerBookId", "periodId"].map(key => query.get(key))]);
+  const routeKey = JSON.stringify([location.pathname, scopeKey, ...[
+    "view", "runId", "ledgerBookId", "periodId", "reconciliationBreak", "caseId", "breakId", "reconciliationCompare"
+  ].map(key => query.get(key))]);
   const [investigation, setInvestigation] = useState<Investigation | null>(null);
   const [width, setWidth] = useState(32);
   const [pin, setPin] = useState<{ identity: AmountPassportIdentity; session: unknown } | null>(null);

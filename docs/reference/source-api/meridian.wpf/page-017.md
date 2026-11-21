@@ -6,6 +6,91 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WatchlistPosture
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WatchlistPosture</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L18).
+
+```csharp
+public readonly record struct WatchlistPosture(string Title, string Detail, string ActionText, string TotalWatchlistsText, string PinnedWatchlistsText, string SymbolCoverageText, string VisibleScopeText, string EmptyStateTitle, string EmptyStateDescription);
+```
+
+## WatchlistViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WatchlistViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L34).
+
+ViewModel for the Watchlist page. Holds all state, business logic, and commands so the code-behind can be thinned to lifecycle wiring only.
+
+```csharp
+public sealed class WatchlistViewModel : BindableBase, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WatchlistViewModel(WpfServices.WatchlistService watchlistService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:60](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L60) |  |
+| <code>public ObservableCollection&lt;WatchlistDisplayModel&gt; FilteredWatchlists { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:104](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L104) |  |
+| <code>public WorkstationTableModel&lt;WatchlistDisplayModel&gt; WatchlistTable { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L106) |  |
+| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:110](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L110) |  |
+| <code>public bool HasActiveSearch { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L125) |  |
+| <code>public Visibility EmptyStateVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L131) |  |
+| <code>public Visibility ListVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L137) |  |
+| <code>public string PostureTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L143) |  |
+| <code>public string PostureDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L149) |  |
+| <code>public string PostureActionText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L155) |  |
+| <code>public string TotalWatchlistsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L161) |  |
+| <code>public string PinnedWatchlistsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L167) |  |
+| <code>public string SymbolCoverageText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:173](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L173) |  |
+| <code>public string VisibleScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L179) |  |
+| <code>public string EmptyStateTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L185) |  |
+| <code>public string EmptyStateDescription { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L191) |  |
+| <code>public WatchlistDisplayModel? SelectedWatchlist { get; set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L197) |  |
+| <code>public InspectorPanelModel SelectedWatchlistInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L212) |  |
+| <code>public bool HasSelectedWatchlist =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L218) |  |
+| <code>public string SelectedPinActionLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L220) |  |
+| <code>public string LoadSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:222](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L222) |  |
+| <code>public string EditSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:226](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L226) |  |
+| <code>public string PinSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L230) |  |
+| <code>public string ExportSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:234](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L234) |  |
+| <code>public string DuplicateSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:238](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L238) |  |
+| <code>public string DeleteSelectedWatchlistTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:242](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L242) |  |
+| <code>public IAsyncRelayCommand CreateWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:248](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L248) |  |
+| <code>public IAsyncRelayCommand ImportWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L249) |  |
+| <code>public IRelayCommand ClearSearchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L250) |  |
+| <code>public IAsyncRelayCommand&lt;string&gt; LoadWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:251](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L251) |  |
+| <code>public IAsyncRelayCommand&lt;string&gt; EditWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:252](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L252) |  |
+| <code>public IAsyncRelayCommand&lt;string&gt; PinWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L253) |  |
+| <code>public IAsyncRelayCommand LoadSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L254) |  |
+| <code>public IAsyncRelayCommand EditSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:255](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L255) |  |
+| <code>public IAsyncRelayCommand PinSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L256) |  |
+| <code>public IAsyncRelayCommand ExportSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:257](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L257) |  |
+| <code>public IAsyncRelayCommand DuplicateSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:258](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L258) |  |
+| <code>public IAsyncRelayCommand DeleteSelectedWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L259) |  |
+| <code>public IAsyncRelayCommand&lt;string&gt; ExportWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:260](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L260) |  |
+| <code>public IAsyncRelayCommand&lt;string&gt; DuplicateWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:261](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L261) |  |
+| <code>public IAsyncRelayCommand&lt;string&gt; DeleteWatchlistCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:262](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L262) |  |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L266) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:272](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L272) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:280](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L280) |  |
+| <code>public static WatchlistPosture BuildWatchlistPosture(IReadOnlyCollection&lt;WatchlistDisplayModel&gt; allWatchlists, IReadOnlyCollection&lt;WatchlistDisplayModel&gt; visibleWatchlists, string? searchText);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L369) |  |
+| <code>public async Task LoadWatchlistAsync(string? watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:609](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L609) |  |
+| <code>public async Task EditWatchlistAsync(string? watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:632](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L632) |  |
+| <code>public async Task PinWatchlistAsync(string? watchlistId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs:692](../../../../src/Meridian.Wpf/ViewModels/WatchlistViewModel.cs#L692) |  |
+
+## WelcomeNextAction
+
+Qualified name: <code>Meridian.Wpf.ViewModels.WelcomeNextAction</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs:579](../../../../src/Meridian.Wpf/ViewModels/WelcomePageViewModel.cs#L579).
+
+```csharp
+public sealed record WelcomeNextAction(string ToneLabel, string Title, string Summary, string PrimaryActionLabel, string PrimaryActionPageTag, string SecondaryActionLabel, string SecondaryActionPageTag, Brush AccentBrush, Brush AccentBackgroundBrush);
+```
+
 ## WelcomePageViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.WelcomePageViewModel</code>. Kind: `class`.
@@ -549,7 +634,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public AddProviderWizardPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService) : this(navigationService, notificationService, SettingsConfigurationService.Instance);</code> | [src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs:43](../../../../src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs#L43) |  |
+| <code>public AddProviderWizardPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService) : this(navigationService, notificationService, SettingsConfigurationService.Instance);</code> | [src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs:44](../../../../src/Meridian.Wpf/Views/AddProviderWizardPage.xaml.cs#L44) |  |
 
 Source: [src/Meridian.Wpf/Views/Pages.cs:105](../../../../src/Meridian.Wpf/Views/Pages.cs#L105).
 
@@ -1092,9 +1177,9 @@ public partial class DataSamplingPage : Page
 
 Qualified name: <code>Meridian.Wpf.Views.DataSourcesPage</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L16).
+Source: [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L13).
 
-Page for managing multiple data source configurations. Code-behind is limited to: – constructor DI and DataContext wiring – secret input read/restore for the Polygon API key All business logic lives in DataSourcesViewModel.
+Page for editing host data source settings and reviewing activation.
 
 ```csharp
 public partial class DataSourcesPage : Page
@@ -1104,70 +1189,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DataSourcesPage(WpfServices.ConfigService configService, WpfServices.FirstRunService firstRunService, ILogger&lt;DataSourcesViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L20) |  |
+| <code>public DataSourcesPage(ProviderConfigurationApiClient client, WpfServices.FirstRunService firstRunService, ILogger&lt;DataSourcesViewModel&gt; logger);</code> | [src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs:18](../../../../src/Meridian.Wpf/Views/DataSourcesPage.xaml.cs#L18) |  |
 
 Source: [src/Meridian.Wpf/Views/Pages.cs:12](../../../../src/Meridian.Wpf/Views/Pages.cs#L12).
 
 ```csharp
 public partial class DataSourcesPage : Page
-```
-
-## DataWorkspaceShellPageBase
-
-Qualified name: <code>Meridian.Wpf.Views.DataWorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:386](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L386).
-
-Binds derived pages to the data workspace shell definition.
-
-```csharp
-public class DataWorkspaceShellPageBase : WorkspaceShellPageBase<DataWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
-```
-
-## DiagnosticsPage
-
-Qualified name: <code>Meridian.Wpf.Views.DiagnosticsPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs#L20).
-
-Diagnostics page — thin code-behind. All diagnostic checks, system info, and output generation live in DiagnosticsPageViewModel. This file handles only visual concerns that require WPF resource lookups (status dot colours).
-
-```csharp
-public partial class DiagnosticsPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DiagnosticsPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, IConnectivityProbeService? connectivityProbe = null, ICoLocationProfileActivator? coLocationProfileActivator = null, ProviderLatencyService? latencyService = null);</code> | [src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs#L25) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:34](../../../../src/Meridian.Wpf/Views/Pages.cs#L34).
-
-```csharp
-public partial class DiagnosticsPage : Page
-```
-
-## DirectLendingPage
-
-Qualified name: <code>Meridian.Wpf.Views.DirectLendingPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs#L10).
-
-Provides the desktop page to review lending positions and configure credit workflows.
-
-```csharp
-public partial class DirectLendingPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DirectLendingPage();</code> | [src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs#L14) |  |
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:86](../../../../src/Meridian.Wpf/Views/Pages.cs#L86).
-
-```csharp
-public partial class DirectLendingPage : Page
 ```

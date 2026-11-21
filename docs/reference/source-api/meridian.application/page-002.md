@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GapBackfillService
+
+Qualified name: <code>Meridian.Application.Backfill.GapBackfillService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Backfill/GapBackfillService.cs:16](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L16).
+
+Automatically triggers targeted backfill when a streaming provider reconnects after a disconnection. Covers the gap window &#91;disconnect_time, reconnect_time&#93; for all subscribed symbols. Configurable minimum gap threshold prevents unnecessary backfills for brief ping timeouts.
+
+```csharp
+public sealed class GapBackfillService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public GapBackfillService(Func&lt;BackfillRequest, CancellationToken, Task&lt;BackfillResult&gt;&gt; backfillExecutor, Func&lt;IReadOnlyCollection&lt;string&gt;&gt;? subscribedSymbols = null, bool enabled = true, TimeSpan? minimumGap = null, DataGranularity recoveryGranularity = DataGranularity.Minute1, AutoGapRemediationService? guardedRemediation = null, IMarketEventPublisher? integrityPublisher = null);</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:46](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L46) | Creates a new GapBackfillService. |
+| <code>public int GapBackfillsTriggered =&gt; …;</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:67](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L67) | Number of gap backfills triggered since startup. |
+| <code>public int GapBackfillsSucceeded =&gt; …;</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:72](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L72) | Number of gap backfills that completed successfully. |
+| <code>public void Subscribe(IReconnectionGapSource source);</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:78](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L78) | Subscribes to reconnection-gap events from a streaming provider so backfill is automatically triggered when the provider reconnects after a disconnection. |
+| <code>public void Unsubscribe(IReconnectionGapSource source);</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:94](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L94) | Unsubscribes from reconnection-gap events. |
+| <code>public void OnReconnectionGap(ReconnectionGap gap);</code> | [src/Meridian.Application/Backfill/GapBackfillService.cs:103](../../../../src/Meridian.Application/Backfill/GapBackfillService.cs#L103) | Handles a reconnection gap, triggering a background backfill covering the gap window when the gap exceeds the minimum threshold and symbols are subscribed. |
+
 ## HistoricalBackfillService
 
 Qualified name: <code>Meridian.Application.Backfill.HistoricalBackfillService</code>. Kind: `class`.
@@ -25,9 +48,9 @@ Declared public members:
 | <code>public HistoricalBackfillService(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ILogger? logger = null, IEventMetrics? metrics = null, BackfillJobsConfig? jobsConfig = null, BackfillStatusStore? checkpointStore = null, Meridian.Contracts.SecurityMaster.IHistoricalSymbolTimelineResolver? symbolTimelineResolver = null, TimeZoneInfo? intradaySessionTimeZone = null, IReadOnlyDictionary&lt;string, ProviderValidationProfile&gt;? validationProfiles = null, IDisposable? ownedProvider = null);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:40](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L40) |  |
 | <code>public IReadOnlyCollection&lt;IHistoricalDataProvider&gt; Providers =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:64](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L64) |  |
 | <code>public Func&lt;string, DateOnly, DateOnly, CancellationToken, Task&lt;HistoricalSessionSchedule?&gt;&gt;? ResolveSessionsAsync { get; init; }</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:67](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L67) | Calendar evidence for instruments whose listing is known to the host. |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:78](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L78) |  |
-| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:88](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L88) |  |
-| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:117](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L117) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:82](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L82) |  |
+| <code>public void ValidateRequest(BackfillRequest request);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:92](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L92) |  |
+| <code>public async Task&lt;BackfillResult&gt; RunAsync(BackfillRequest request, EventPipeline pipeline, CancellationToken ct = default);</code> | [src/Meridian.Application/Backfill/HistoricalBackfillService.cs:121](../../../../src/Meridian.Application/Backfill/HistoricalBackfillService.cs#L121) |  |
 
 ## IBackfillExecutionGateway
 
@@ -980,21 +1003,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddSecurityMasterTermsCapability(this IServiceCollection services, Func&lt;IServiceProvider, string&gt; dataRoot);</code> | [src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs:98](../../../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs#L98) | Registers the business-day calendar source for declared schedule conventions (ADR-025), read from files under &lt;dataRoot&gt;/calendars once at host start, and the hosted service that checks the persisted minimum capability for configured writers and logs the Security Master terms capability line. An unknown calendar id never falls back to weekends only. Idempotent; StorageFeatureRegistration calls this for every host composed through AddMarketDataServices, and the WPF desktop, which composes its own graph and still writes Security Master terms in-process, calls it directly. |
-
-## ServiceCompositionRoot
-
-Qualified name: <code>Meridian.Application.Composition.ServiceCompositionRoot</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:30](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L30).
-
-Centralizes all shared service registration for the application. This composition root is consumed by HostStartup, HostBuilder, and the extracted startup orchestration layer so every host mode builds from the same graph.
-
-```csharp
-public static class ServiceCompositionRoot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddMarketDataServices(this IServiceCollection services, CompositionOptions? options = null);</code> | [src/Meridian.Application/Composition/ServiceCompositionRoot.cs:74](../../../../src/Meridian.Application/Composition/ServiceCompositionRoot.cs#L74) | Registers all core services required by any host type. This is the minimum set of services needed for the application to function. |

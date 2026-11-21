@@ -48,6 +48,7 @@ public static class UiApiRoutes
     public const string ConfigEffective = "/api/config/effective";
     public const string ConfigDataSource = "/api/config/datasource";
     public const string ConfigAlpaca = "/api/config/alpaca";
+    public const string ConfigAlpacaFeed = "/api/config/alpaca/feed";
     public const string ConfigStorage = "/api/config/storage";
     public const string ConfigSymbols = "/api/config/symbols";
     public const string ConfigDataSources = "/api/config/datasources";
@@ -116,6 +117,7 @@ public static class UiApiRoutes
     public const string ProviderConnections = "/api/providers/connections";
     public const string ProviderCredentialMutation = "/api/providers/{providerId}/credentials";
     public const string ProviderCredentialVerify = "/api/providers/{providerId}/verify";
+    public const string ProviderCredentialVerifyDraft = "/api/providers/{providerId}/verify-draft";
     public const string ProviderCatalog = "/api/providers/catalog";
     public const string ProviderCatalogById = "/api/providers/catalog/{providerId}";
     public const string ProviderById = "/api/providers/{providerName}";
@@ -123,6 +125,7 @@ public static class UiApiRoutes
     public const string ProviderFailoverTrigger = "/api/providers/failover/trigger";
     public const string ProviderFailoverReset = "/api/providers/failover/reset";
     public const string ProviderRateLimits = "/api/providers/rate-limits";
+    public const string ProviderQuota = "/api/providers/{providerId}/quota";
     public const string ProviderRateLimitHistory = "/api/providers/{providerName}/rate-limit-history";
     public const string ProviderCapabilities = "/api/providers/capabilities";
     public const string ProviderCapabilityMatrix = "/api/providers/capability-matrix";
@@ -760,6 +763,7 @@ public static class UiApiRoutes
     public const string PromotionApprove = "/api/promotion/approve";
     public const string PromotionReject = "/api/promotion/reject";
     public const string PromotionHistory = "/api/promotion/history";
+    public const string PromotionLiveAuthorizationRevoke = "/api/promotion/live-authorizations/{id}/revoke";
     public const string PromotionWalkForwardEvidence = "/api/promotion/runs/{runId}/walk-forward-evidence";
 
     // Workstation root and compatibility workspace endpoints
@@ -804,6 +808,9 @@ public static class UiApiRoutes
     public const string WorkstationProviderIntegrationQuarantineReplay = "/api/workstation/provider-integrations/quarantine/replay";
     public const string WorkstationGovernance = "/api/workstation/governance";
     public const string WorkstationAccounting = "/api/workstation/accounting";
+    public const string WorkstationBookReceiptQueue = "/api/workstation/accounting/receipt-queue";
+    public const string WorkstationBookReceiptRuns = "/api/workstation/accounting/receipt-queue/runs";
+    public const string WorkstationBookReceiptRun = "/api/workstation/accounting/receipt-queue/runs/{runId}";
     public const string WorkstationReporting = "/api/workstation/reporting";
     public const string WorkstationReportingStructuredExport = "/api/workstation/reporting/structured-exports/{exportId}";
     public const string WorkstationPortfolio = "/api/workstation/portfolio";

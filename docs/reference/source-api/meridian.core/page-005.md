@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BatchFilteredOperationRequest
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchFilteredOperationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/BatchOperations.cs:145](../../../../src/Meridian.Core/Subscriptions/Models/BatchOperations.cs#L145).
+
+Request to perform batch operations with a filter.
+
+```csharp
+public sealed record BatchFilteredOperationRequest(BatchFilter Filter, string Operation, Dictionary<string, object?>? Parameters = null);
+```
+
 ## BatchMoveToWatchlistRequest
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.BatchMoveToWatchlistRequest</code>. Kind: `record`.
@@ -711,16 +723,4 @@ Predefined template for bulk symbol subscriptions. Supports equity groups, secto
 
 ```csharp
 public sealed record SymbolTemplate(string Id, string Name, string Description, TemplateCategory Category, string[] Symbols, TemplateSubscriptionDefaults Defaults);
-```
-
-## SymbolTradingEligibility
-
-Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolTradingEligibility</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:119](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L119).
-
-Provider-supplied borrow and order-increment evidence for a symbol.
-
-```csharp
-public sealed record SymbolTradingEligibility(bool? IsTradable, bool? IsMarginable, bool? IsShortable, bool? IsEasyToBorrow, bool? IsFractionable, decimal? MaintenanceMarginRequirement, decimal? MinimumOrderSize, decimal? MinimumTradeIncrement, decimal? PriceIncrement, string? Source);
 ```

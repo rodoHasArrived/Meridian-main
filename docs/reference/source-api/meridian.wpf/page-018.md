@@ -6,6 +6,66 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataWorkspaceShellPageBase
+
+Qualified name: <code>Meridian.Wpf.Views.DataWorkspaceShellPageBase</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:386](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L386).
+
+Binds derived pages to the data workspace shell definition.
+
+```csharp
+public class DataWorkspaceShellPageBase : WorkspaceShellPageBase<DataWorkspaceShellStateProvider, Meridian.Wpf.Features.Data.Shell.DataWorkspaceShellViewModel>
+```
+
+## DiagnosticsPage
+
+Qualified name: <code>Meridian.Wpf.Views.DiagnosticsPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs:20](../../../../src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs#L20).
+
+Diagnostics page — thin code-behind. All diagnostic checks, system info, and output generation live in DiagnosticsPageViewModel. This file handles only visual concerns that require WPF resource lookups (status dot colours).
+
+```csharp
+public partial class DiagnosticsPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DiagnosticsPage(WpfServices.NavigationService navigationService, WpfServices.NotificationService notificationService, IConnectivityProbeService? connectivityProbe = null, ICoLocationProfileActivator? coLocationProfileActivator = null, ProviderLatencyService? latencyService = null);</code> | [src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs:25](../../../../src/Meridian.Wpf/Views/DiagnosticsPage.xaml.cs#L25) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:34](../../../../src/Meridian.Wpf/Views/Pages.cs#L34).
+
+```csharp
+public partial class DiagnosticsPage : Page
+```
+
+## DirectLendingPage
+
+Qualified name: <code>Meridian.Wpf.Views.DirectLendingPage</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs:10](../../../../src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs#L10).
+
+Provides the desktop page to review lending positions and configure credit workflows.
+
+```csharp
+public partial class DirectLendingPage : Page
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DirectLendingPage();</code> | [src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs:14](../../../../src/Meridian.Wpf/Views/DirectLendingPage.xaml.cs#L14) |  |
+
+Source: [src/Meridian.Wpf/Views/Pages.cs:86](../../../../src/Meridian.Wpf/Views/Pages.cs#L86).
+
+```csharp
+public partial class DirectLendingPage : Page
+```
+
 ## EditScheduledJobDialog
 
 Qualified name: <code>Meridian.Wpf.Views.EditScheduledJobDialog</code>. Kind: `class`.
@@ -972,58 +1032,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public PortfolioImportPage();</code> | [src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs:13](../../../../src/Meridian.Wpf/Views/PortfolioImportPage.xaml.cs#L13) |  |
-
-## PortfolioWorkspaceShellPageBase
-
-Qualified name: <code>Meridian.Wpf.Views.PortfolioWorkspaceShellPageBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs:428](../../../../src/Meridian.Wpf/Views/WorkspaceShellPageBase.cs#L428).
-
-Binds derived pages to the portfolio workspace shell definition.
-
-```csharp
-public class PortfolioWorkspaceShellPageBase : WorkspaceShellPageBase<PortfolioWorkspaceShellStateProvider, PortfolioWorkspaceShellViewModel>
-```
-
-## PositionBlotterPage
-
-Qualified name: <code>Meridian.Wpf.Views.PositionBlotterPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/Pages.cs:76](../../../../src/Meridian.Wpf/Views/Pages.cs#L76).
-
-```csharp
-public partial class PositionBlotterPage : Page
-```
-
-Source: [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:12](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L12).
-
-Hosts position review and position-related drilldowns.
-
-```csharp
-public partial class PositionBlotterPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PositionBlotterPage() : this(TryResolveOperatingContextService());</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:16](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L16) |  |
-| <code>public PositionBlotterPage(WorkstationOperatingContextService? operatingContextService);</code> | [src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs:21](../../../../src/Meridian.Wpf/Views/PositionBlotterPage.xaml.cs#L21) |  |
-
-## PostedLedgerPage
-
-Qualified name: <code>Meridian.Wpf.Views.PostedLedgerPage</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs:11](../../../../src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs#L11).
-
-Hosts trial-balance and profit-and-loss reporting derived from the posted journal.
-
-```csharp
-public partial class PostedLedgerPage : Page
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PostedLedgerPage(PostedLedgerViewModel viewModel);</code> | [src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs:15](../../../../src/Meridian.Wpf/Views/PostedLedgerPage.xaml.cs#L15) |  |

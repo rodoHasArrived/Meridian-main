@@ -6,6 +6,90 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BatchEnqueueResult
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BatchEnqueueResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L51).
+
+Result of enqueueing a batch of backfill jobs.
+
+```csharp
+public sealed record BatchEnqueueResult(IReadOnlyList<BackfillJob> EnqueuedJobs, IReadOnlyList<BatchEnqueueError> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int TotalEnqueued =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L56) |  |
+| <code>public int TotalFailed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:57](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L57) |  |
+| <code>public bool AllSucceeded =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L58) |  |
+
+## CompositeHistoricalDataProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L30).
+
+Composite provider that chains multiple data providers with automatic failover. Supports symbol resolution, provider health tracking, rate-limit aware rotation, and cross-provider validation.
+
+```csharp
+public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, IHistoricalAggregateBarProvider, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ImmutableArray&lt;IHistoricalDataProvider&gt; GetCandidates(DataGranularity granularity) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:64](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L64) | Provider candidates in captured order before capacity-based rotation. |
+| <code>public event Action&lt;ProviderBackfillProgress&gt;? OnProgressUpdate { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:76](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L76) | Event raised as a request progresses through the provider chain: when a provider attempt starts, succeeds, fails, is rate limited, or all providers are exhausted. Notifications flow through a bounded drop-oldest dispatcher, so slow or failing subscribers never interrupt the data path. |
+| <code>public BackfillProgressTracker ProgressTracker =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:83](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L83) | Coherent provider-attempt snapshot used by workers and API projections. |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:85](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L85) |  |
+| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:86](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L86) |  |
+| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:87](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L87) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:89](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L89) |  |
+| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:90](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L90) |  |
+| <code>public int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L91) |  |
+| <code>public TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L92) |  |
+| <code>public HistoricalDataCapabilities Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:98](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L98) | Aggregated capabilities from all child providers. A capability is supported if ANY child provider supports it. |
+| <code>public IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt; ProviderHealth =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:116](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L116) | Get current health status of all providers. |
+| <code>public IReadOnlyDictionary&lt;string, RateLimitStatus&gt; RateLimitStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:121](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L121) | Get current rate limit status for all providers. |
+| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:123](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L123) |  |
+| <code>public CompositeHistoricalDataProvider(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ISymbolResolver? symbolResolver = null, TimeSpan? failureBackoffDuration = null, bool enableCrossValidation = false, bool enableRateLimitRotation = true, double rateLimitRotationThreshold = 0.8, TimeSpan? maxRateLimitRetryBudget = null, ILogger? log = null, BackfillProgressTracker? progressTracker = null, IReadOnlyDictionary&lt;string, ProviderValidationProfile&gt;? validationProfiles = null, ProviderRateLimitHistory? rateLimitHistory = null, Func&lt;CrossProviderTolerancePolicy&gt;? crossValidationPolicy = null, bool ownsProviders = true, BackfillRoutingAdmission? routingAdmission = null, Action&lt;BackfillRoutingAttempt&gt;? captureAttempt = null, IReadOnlyList&lt;string&gt;? unavailablePreferences = null, IReadOnlyDictionary&lt;string, int&gt;? routingPriorities = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:131](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L131) |  |
+| <code>public async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:196](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L196) |  |
+| <code>public Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:207](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L207) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, BackfillProvenanceCapture? capture, CancellationToken ct, Action&lt;BackfillRoutingAttempt&gt;? captureAttempt = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:210](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L210) |  |
+| <code>public Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:240](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L240) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, BackfillProvenanceCapture? capture, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:247](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L247) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:716](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L716) |  |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckAllProvidersHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:751](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L751) | Check health of all providers. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:793](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L793) |  |
+
+## CompositeProviderOptions
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CompositeProviderOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:855](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L855).
+
+Configuration for composite provider behavior.
+
+```csharp
+public sealed record CompositeProviderOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan FailureBackoffDuration { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:860](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L860) | Duration to skip a provider after failure. |
+| <code>public bool EnableCrossValidation { get; init; } = false;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:865](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L865) | Enable cross-validation of data between providers. |
+| <code>public int MaxRetriesPerProvider { get; init; } = 2;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:870](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L870) | Maximum number of retries per provider. |
+| <code>public bool PreferAdjustedPrices { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:875](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L875) | Prefer providers that support adjusted prices. |
+| <code>public bool EnableRateLimitRotation { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:882](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L882) | Enable rate-limit aware provider rotation. When enabled, providers approaching their rate limit will be deprioritized and rate-limited providers will be skipped until their limit resets. |
+| <code>public double RateLimitRotationThreshold { get; init; } = 0.8;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:889](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L889) | Threshold (0.0 to 1.0) at which a provider is considered &quot;approaching&quot; its rate limit. Providers exceeding this threshold will be deprioritized in favor of providers with more capacity. Default: 0.8 (80% of rate limit used). |
+| <code>public TimeSpan MaxRateLimitRetryBudget { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:896](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L896) | Overall wall-clock budget for waiting out provider rate limits across all retry attempts for a single request. Bounds the worst-case blocking time (jitter is applied to each wait). Default: 5 minutes. |
+
 ## CorporateActionCommand
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CorporateActionCommand</code>. Kind: `record`.
@@ -228,7 +312,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.EnvironmentCredentialResolver</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:610](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L610).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:650](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L650).
 
 Credential resolver that reads from environment variables. Follows the same pattern as ConfigurationService.
 
@@ -240,7 +324,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:612](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L612) |  |
+| <code>public ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:652](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L652) |  |
 
 ## GapAnalysisResult
 
@@ -414,15 +498,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public HistoricalBackfillRequestScope(Func&lt;IHistoricalDataProvider, int&gt; headroomPercent, Func&lt;IHistoricalDataProvider, CancellationToken, Task&gt; beforeUnmeteredFetch, Action&lt;string&gt; requestStarted, Action&lt;string&gt; barsPublished, Action&lt;string, string, TimeSpan?&gt; throttled, bool retryRateLimited);</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L12) |  |
-| <code>public static HistoricalBackfillRequestScope? Current =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L30) |  |
-| <code>public Func&lt;IHistoricalDataProvider, int&gt; HeadroomPercent { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L31) |  |
-| <code>public Func&lt;IHistoricalDataProvider, CancellationToken, Task&gt; BeforeUnmeteredFetch { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L32) |  |
-| <code>public Action&lt;string&gt; RequestStarted { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L33) |  |
-| <code>public Action&lt;string&gt; BarsPublished { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L34) |  |
-| <code>public Action&lt;string, string, TimeSpan?&gt; Throttled { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L35) |  |
-| <code>public bool RetryRateLimited { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L36) |  |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L38) |  |
+| <code>public HistoricalBackfillRequestScope(Func&lt;IHistoricalDataProvider, int&gt; headroomPercent, Func&lt;IHistoricalDataProvider, CancellationToken, Task&gt; beforeUnmeteredFetch, Action&lt;string&gt; requestStarted, Action&lt;string&gt; barsPublished, Action&lt;string, string, TimeSpan?&gt; throttled, bool retryRateLimited, Action&lt;string&gt;? unmeteredFetchStarted = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L12) |  |
+| <code>public static HistoricalBackfillRequestScope? Current =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L32) |  |
+| <code>public Func&lt;IHistoricalDataProvider, int&gt; HeadroomPercent { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L33) |  |
+| <code>public Func&lt;IHistoricalDataProvider, CancellationToken, Task&gt; BeforeUnmeteredFetch { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L34) |  |
+| <code>public Action&lt;string&gt; RequestStarted { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:35](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L35) |  |
+| <code>public Action&lt;string&gt;? UnmeteredFetchStarted { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:36](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L36) |  |
+| <code>public Action&lt;string&gt; BarsPublished { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L37) |  |
+| <code>public Action&lt;string, string, TimeSpan?&gt; Throttled { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L38) |  |
+| <code>public bool RetryRateLimited { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L39) |  |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Core/HistoricalBackfillRequestScope.cs#L41) |  |
 
 ## HistoricalQuotesResult
 
@@ -607,7 +692,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.IPreparedProviderCredentials</code>. Kind: `interface`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:581](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L581).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:621](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L621).
 
 Credentials read ahead of a synchronous provider construction.
 
@@ -619,13 +704,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>IDisposable Activate();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:587](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L587) | Makes the prepared credentials visible to IProviderCredentialResolver.CreateContext on the current execution flow until the returned scope is disposed. |
+| <code>IDisposable Activate();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:627](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L627) | Makes the prepared credentials visible to IProviderCredentialResolver.CreateContext on the current execution flow until the returned scope is disposed. |
 
 ## IProviderCredentialResolver
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.IProviderCredentialResolver</code>. Kind: `interface`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:545](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L545).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:585](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L585).
 
 Generic provider credential context factory used by runtime provider registration.
 
@@ -637,8 +722,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:553](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L553) | Builds the credential context a provider is constructed with. Provider construction is synchronous (dependency-injection factories and adapter constructors cannot await), so this never awaits. A resolver backed by storage serves it from credentials an enclosing PrepareAsync read; with none prepared it has to wait for the read. |
-| <code>ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:574](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L574) | Asynchronously reads everything CreateContext will need, so the synchronous construction that follows does no storage I/O. Await this at an asynchronous entry point, then construct providers inside IPreparedProviderCredentials.Activate: var prepared = await resolver.PrepareAsync(ct: ct); using (prepared.Activate()) { // synchronous provider construction } The prepared credentials are a point-in-time read and are only valid for the construction that immediately follows; do not keep them. |
+| <code>ICredentialContext CreateContext(Type providerType, IReadOnlyDictionary&lt;string, string?&gt;? configuredValues = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:593](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L593) | Builds the credential context a provider is constructed with. Provider construction is synchronous (dependency-injection factories and adapter constructors cannot await), so this never awaits. A resolver backed by storage serves it from credentials an enclosing PrepareAsync read; with none prepared it has to wait for the read. |
+| <code>ValueTask&lt;IPreparedProviderCredentials&gt; PrepareAsync(IReadOnlyCollection&lt;Type&gt;? providerTypes = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:614](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L614) | Asynchronously reads everything CreateContext will need, so the synchronous construction that follows does no storage I/O. Await this at an asynchronous entry point, then construct providers inside IPreparedProviderCredentials.Activate: var prepared = await resolver.PrepareAsync(ct: ct); using (prepared.Activate()) { // synchronous provider construction } The prepared credentials are a point-in-time read and are only valid for the construction that immediately follows; do not keep them. |
 
 ## IRateLimitAwareProvider
 
@@ -754,7 +839,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.PreparedProviderCredentials</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:591](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L591).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:631](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L631).
 
 Shared no-op for resolvers that need no storage read.
 
@@ -766,7 +851,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IPreparedProviderCredentials None { get; } = new NoPreparedCredentials();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:594](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L594) | Nothing to prepare: IPreparedProviderCredentials.Activate does nothing. |
+| <code>public static IPreparedProviderCredentials None { get; } = new NoPreparedCredentials();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:634](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L634) | Nothing to prepare: IPreparedProviderCredentials.Activate does nothing. |
 
 ## PriorityBackfillQueue
 
@@ -971,59 +1056,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Func&lt;ProviderFactory, bool&gt; IsEnabled { get; init; } = static _ =&gt; true;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:291](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L291) |  |
-
-## ProviderCreationResult
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCreationResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:530](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L530).
-
-Result of provider creation operation.
-
-```csharp
-public sealed class ProviderCreationResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;string&gt; BackfillProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:532](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L532) |  |
-| <code>public List&lt;string&gt; SymbolSearchProviders { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:533](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L533) |  |
-| <code>public int TotalProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:535](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L535) |  |
-| <code>public bool HasBackfillProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:538](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L538) |  |
-| <code>public bool HasSymbolSearchProviders =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs:539](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderFactory.cs#L539) |  |
-
-## ProviderDataQualityIssue
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualityIssue</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:217](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L217).
-
-```csharp
-public sealed record ProviderDataQualityIssue(ProviderDataQualitySeverity Severity, string ProviderName, string FieldPath, string? Entity, string Message, string SuggestedRecovery)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static ProviderDataQualityIssue Error(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:225](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L225) |  |
-| <code>public static ProviderDataQualityIssue Warning(string providerName, string fieldPath, string? entity, string message, string suggestedRecovery) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:239](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L239) |  |
-
-## ProviderDataQualitySeverity
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderDataQualitySeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:211](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L211).
-
-```csharp
-public enum ProviderDataQualitySeverity
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Warning = 0</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:213](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L213) |  |
-| <code>Error = 1</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderDataQualityValidator.cs#L214) |  |

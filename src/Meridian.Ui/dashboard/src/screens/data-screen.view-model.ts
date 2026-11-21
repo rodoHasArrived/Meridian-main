@@ -1,10 +1,23 @@
+import { buildBackfillLiveProgressState, buildBackfillRemediationQueueState, formatBackfillRange, formatBackfillValue } from "./data-screen.backfill-progress";
+export { buildBackfillLiveProgressState, buildBackfillRemediationQueueState } from "./data-screen.backfill-progress";
 import { resolveProviderStatus, worstProviderStatus, type ListedProviderStatus } from "@/lib/cross-screen-counts";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
 import * as workstationApi from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { openPlaidLink, type PlaidLinkSuccessMetadata } from "@/lib/plaid-link";
+import { supportsProviderDraft } from "@/lib/provider-credential-scope";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { useProviderSetupDraftVerification } from "./data-screen.draft-verification";
+import {
+  ALL_CAPABILITIES,
+  defaultProviderSetupForm,
+  formatProviderCapabilityLabel,
+  PROVIDER_KIND_CATALOG,
+  resolveProviderKindMeta,
+  resolveProviderSetupNextStep
+} from "./data-screen.provider-setup.catalog";
+export { ALL_CAPABILITIES, PROVIDER_KIND_CATALOG } from "./data-screen.provider-setup.catalog";
 import {
   buildProviderReadinessSummaryText,
   credentialToneFromLabel,
@@ -62,7 +75,6 @@ import type {
   BackfillSubmissionReceipt,
   BackfillSubmissionRequest,
   BackfillExecutionHistoryResponse,
-  BackfillProviderProgressSnapshot,
   BackfillProgressResponse,
   BackfillTriggerRequest,
   BackfillTriggerResult,
@@ -90,7 +102,7 @@ import type {
   ProviderSetupResult
 } from "@/types";
 
-import { formatCount, formatDecimal, formatNumber, formatPercent, formatTimestamp } from "@/lib/format";
+import { formatCount, formatDecimal, formatTimestamp } from "@/lib/format";
 export {
   DATA_BACKFILL_ROUTE_FOCUS_CARD_ID,
   buildDataLoadingState,
@@ -665,98 +677,6 @@ export type DataOperationsStatusRowClassName =
   | "bg-danger/5"
   | "bg-paper/5";
 
-export const PROVIDER_KIND_CATALOG: ProviderKindMeta[] = [
-  {
-    kind: "polygon",
-    label: "Polygon.io",
-    description: "Real-time and historical US equities, options, forex, and crypto.",
-    needsApiKey: true,
-    needsApiSecret: false,
-    needsEndpoint: false,
-    defaultCapabilities: ["streaming", "backfill", "reference"]
-  },
-  {
-    kind: "databento",
-    label: "Databento",
-    description: "High-quality historical bars and tick data across asset classes.",
-    needsApiKey: true,
-    needsApiSecret: false,
-    needsEndpoint: false,
-    defaultCapabilities: ["backfill", "reference"]
-  },
-  {
-    kind: "alpaca",
-    label: "Alpaca",
-    description: "Commission-free US equities broker with market data and paper trading.",
-    needsApiKey: true,
-    needsApiSecret: true,
-    needsEndpoint: false,
-    defaultCapabilities: ["streaming", "backfill", "brokerage"]
-  },
-  {
-    kind: "interactivebrokers",
-    label: "Interactive Brokers",
-    description: "Full-service brokerage with live order routing and market data.",
-    needsApiKey: false,
-    needsApiSecret: false,
-    needsEndpoint: true,
-    defaultCapabilities: ["streaming", "brokerage"]
-  },
-  {
-    kind: "plaid",
-    label: "Plaid",
-    description: "Bank, balance, transaction, identity, and investment account evidence for treasury and reconciliation workflows.",
-    needsApiKey: true,
-    needsApiSecret: true,
-    needsEndpoint: false,
-    defaultCapabilities: ["banking", "identity", "investments"],
-    apiKeyLabel: "Client ID",
-    apiKeyAriaLabel: "Plaid client ID",
-    apiSecretLabel: "Secret",
-    apiSecretAriaLabel: "Plaid secret"
-  },
-  {
-    kind: "yahoo",
-    label: "Yahoo Finance",
-    description: "Free end-of-day historical prices. No API key required.",
-    needsApiKey: false,
-    needsApiSecret: false,
-    needsEndpoint: false,
-    defaultCapabilities: ["backfill"]
-  },
-  {
-    kind: "custom",
-    label: "Custom data connection",
-    description: "Connect a custom or internal data provider using its service URL.",
-    needsApiKey: true,
-    needsApiSecret: false,
-    needsEndpoint: true,
-    defaultCapabilities: []
-  }
-];
-
-export const ALL_CAPABILITIES: Array<{ id: string; label: string; description: string }> = [
-  { id: "streaming", label: "Live streaming", description: "Real-time price ticks and quote updates" },
-  { id: "backfill", label: "Historical backfill", description: "OHLCV bars and tick history" },
-  { id: "reference", label: "Reference data", description: "Security master, identifiers, corporate actions" },
-  { id: "brokerage", label: "Brokerage / order routing", description: "Order submission and fill feed" },
-  { id: "banking", label: "Bank account evidence", description: "Balances, transactions, and bank-link evidence" },
-  { id: "identity", label: "Identity verification", description: "Account-owner identity and verification evidence" },
-  { id: "investments", label: "Investment holdings", description: "Investment account holdings and activity" },
-  { id: "transfers", label: "Sandbox transfers", description: "Sandbox transfer authorization and payment evidence" }
-];
-
-const defaultProviderSetupForm: ProviderSetupFormState = {
-  kind: "yahoo",
-  displayName: "Yahoo Finance",
-  environment: "paper",
-  liveAcknowledged: false,
-  apiKey: "",
-  apiSecret: "",
-  endpoint: "",
-  capabilities: ["backfill"]
-};
-
 // --- Backfill setup defaults ---
 
 export const BACKFILL_PROVIDER_OPTIONS: BackfillProviderOptionState[] = [
@@ -1060,6 +980,9 @@ export function useDataViewModel(
   // Provider setup state
   const [providerSetupOpen, setProviderSetupOpen] = useState(false);
   const [providerForm, setProviderForm] = useState<ProviderSetupFormState>(defaultProviderSetupForm);
+  const providerDraftTest = useProviderSetupDraftVerification();
+  const resetProviderDraftTest = providerDraftTest.reset;
+  const providerSupportsDraft = supportsProviderDraft(providerForm.kind);
   const [providerPhase, setProviderPhase] = useState<ProviderSetupPhase>("idle");
   const [providerSetupResult, setProviderSetupResult] = useState<ProviderSetupResult | null>(null);
   const [providerSetupError, setProviderSetupError] = useState<ApiErrorDisplay | null>(null);
@@ -1641,26 +1564,30 @@ export function useDataViewModel(
 
   const openProviderSetup = useCallback(() => {
     nextProviderSetupCommandRevision();
+    resetProviderDraftTest();
     setProviderSetupOpen(true);
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
     resetPlaidInstitutionSearch();
-  }, [nextProviderSetupCommandRevision, resetPlaidInstitutionSearch]);
+  }, [nextProviderSetupCommandRevision, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const closeProviderSetup = useCallback(() => {
     if (providerPhase === "submitting") return;
     nextProviderSetupCommandRevision();
+    resetProviderDraftTest();
     setProviderForm(clearProviderSetupCredentials);
     setProviderSetupOpen(false);
     setProviderSetupResult(null);
     setProviderSetupError(null);
     setProviderPhase("idle");
     resetPlaidInstitutionSearch();
-  }, [nextProviderSetupCommandRevision, providerPhase, resetPlaidInstitutionSearch]);
+  }, [nextProviderSetupCommandRevision, providerPhase, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const updateProviderForm = useCallback((field: Exclude<keyof ProviderSetupFormState, "capabilities" | "liveAcknowledged">, value: string) => {
+    if (field === "kind" || (providerSupportsDraft && (field === "environment" || field === "apiKey" || field === "apiSecret")))
+      resetProviderDraftTest();
     setProviderForm((current) => {
       if (field === "kind") {
         const meta = PROVIDER_KIND_CATALOG.find((p) => p.kind === value);
@@ -1683,7 +1610,7 @@ export function useDataViewModel(
     if (field === "kind" && value !== "plaid") {
       resetPlaidInstitutionSearch();
     }
-  }, [resetPlaidInstitutionSearch]);
+  }, [providerSupportsDraft, resetPlaidInstitutionSearch, resetProviderDraftTest]);
 
   const updatePlaidInstitutionQuery = useCallback((value: string) => {
     setPlaidInstitutionQuery(value);
@@ -2046,6 +1973,7 @@ export function useDataViewModel(
     openProviderSetup,
     closeProviderSetup,
     providerForm,
+    providerDraftTest,
     updateProviderForm,
     plaidInstitutionQuery,
     updatePlaidInstitutionQuery,
@@ -3981,138 +3909,6 @@ export function buildBackfillResultCardState(
   };
 }
 
-export function buildBackfillLiveProgressState(
-  response: BackfillProgressResponse | null
-): BackfillLiveProgressState | null {
-  const snapshot = response?.providerProgress;
-  if (!snapshot) {
-    return null;
-  }
-
-  const symbols = Object.values(snapshot.symbols)
-    .sort((left, right) => left.symbol.localeCompare(right.symbol))
-    .map((symbol) => ({
-      symbol: symbol.symbol,
-      range: formatBackfillRange(symbol.rangeStart, symbol.rangeEnd),
-      provider: formatBackfillValue(symbol.currentProvider, "Waiting for provider"),
-      attempt: symbol.providerAttempt > 0
-        ? `Attempt ${symbol.providerAttempt}${symbol.retryRound > 0 ? `, retry ${symbol.retryRound}` : ""}`
-        : "Not started",
-      status: resolveBackfillProviderProgressStatus(symbol),
-      progress: `${formatPercent(clampBackfillProgress(symbol.percentComplete), { maximumFractionDigits: 1 })}`,
-      error: symbol.error
-    }));
-  const recentAttempts = snapshot.recentProviderAttempts.slice(-8).reverse().map((attempt) => ({
-    id: [attempt.symbol, attempt.provider, attempt.providerAttempt, attempt.retryRound, attempt.observedAt].join("-"),
-    label: `${attempt.symbol} · ${attempt.provider}`,
-    detail: [
-      formatBackfillRange(attempt.rangeStart, attempt.rangeEnd),
-      `attempt ${attempt.providerAttempt}${attempt.retryRound > 0 ? `, retry ${attempt.retryRound}` : ""}`,
-      attempt.status ?? attempt.operation ?? "provider update",
-      `${formatCount(attempt.barsDownloaded)} bars`,
-      attempt.error
-    ].filter(Boolean).join(" · "),
-    tone: attempt.error
-      ? "danger" as const
-      : attempt.status?.toLowerCase().includes("skip")
-        ? "warning" as const
-        : "default" as const
-  }));
-  const overallPercent = clampBackfillProgress(snapshot.overallPercentComplete);
-  const active = response.isActive ?? response.active ?? false;
-  const observedAt = formatBackfillProgressTimestamp(snapshot.timestamp || response.timestamp);
-
-  return {
-    ariaLabel: `Live backfill provider progress. ${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete. ${formatNumber(overallPercent, { maximumFractionDigits: 1 })} percent.`,
-    title: active ? "Live provider progress" : "Final provider progress",
-    summary: `${snapshot.completedSymbols} of ${snapshot.totalSymbols} symbols complete · ${snapshot.failedSymbols} failed · ${formatPercent(overallPercent, { maximumFractionDigits: 1 })} overall`,
-    active,
-    overallPercent,
-    symbols,
-    recentAttempts,
-    droppedNotificationWarning: snapshot.droppedProviderNotifications > 0
-      ? `${formatCount(snapshot.droppedProviderNotifications)} older provider notification${snapshot.droppedProviderNotifications === 1 ? " was" : "s were"} dropped from the bounded live stream; the latest per-symbol state remains authoritative.`
-      : null,
-    observedAt
-  };
-}
-
-export function buildBackfillRemediationQueueState(
-  response: BackfillExecutionHistoryResponse | null,
-  sort: BackfillRemediationQueueSortState = { columnId: "tier", direction: "asc" }
-): BackfillRemediationQueueState | null {
-  if (!response) return null;
-
-  const defaultProvider = formatBackfillValue(response.autoRemediation.defaultProvider, "Not configured");
-  const rows = response.executions
-    .filter((execution) => execution.autoRemediationSla !== null)
-    .map((execution): BackfillRemediationQueueRow => {
-      const sla = execution.autoRemediationSla!;
-      const dueAt = new Date(sla.dueAtUtc);
-      const deadlineSort = Number.isNaN(dueAt.getTime()) ? Number.MAX_SAFE_INTEGER : dueAt.getTime();
-      return {
-        executionId: execution.executionId,
-        symbols: execution.symbols.length > 0 ? execution.symbols.join(", ") : `${execution.symbolsProcessed} symbol${execution.symbolsProcessed === 1 ? "" : "s"}`,
-        provider: formatBackfillValue(sla.provider, defaultProvider),
-        tier: sla.tier === "SameBusinessDay" ? "Same business day" : "Standard",
-        tierSort: sla.tier === "SameBusinessDay" ? 0 : 1,
-        status: formatBackfillRemediationStatus(sla.status),
-        deadline: Number.isNaN(dueAt.getTime()) ? "Deadline unavailable" : formatTimestamp(dueAt),
-        deadlineSort,
-        workflow: formatBackfillValue(sla.downstreamWorkflow, "Unassigned"),
-        owner: sla.requiresOwnerAssignment ? "Assignment required" : "Not required",
-        outcome: formatBackfillValue(execution.autoRemediationLastOutcome, execution.status),
-        evidence: [
-          formatBackfillValue(sla.reasonCode, "Reason unavailable"),
-          sla.triggerSource,
-          sla.isCompatibilityDerived ? "Compatibility-derived legacy evidence" : null
-        ].filter(Boolean).join(" · ")
-      };
-    });
-
-  const direction = sort.direction === "asc" ? 1 : -1;
-  rows.sort((left, right) => {
-    const comparison = sort.columnId === "deadline"
-      ? left.deadlineSort - right.deadlineSort
-      : left.tierSort - right.tierSort || left.deadlineSort - right.deadlineSort;
-    return comparison === 0
-      ? left.executionId.localeCompare(right.executionId)
-      : comparison * direction;
-  });
-
-  return {
-    rows,
-    summary: `${rows.length} retained remediation execution${rows.length === 1 ? "" : "s"}; ${response.autoRemediation.withReason} carry typed reason evidence.`,
-    defaultProvider,
-    observedAt: formatBackfillProgressTimestamp(response.timestamp)
-  };
-}
-
-function formatBackfillRemediationStatus(status: string): string {
-  return status
-    .replace(/([a-z])([A-Z])/g, "$1 $2")
-    .replace(/^./, (value) => value.toUpperCase());
-}
-
-function resolveBackfillProviderProgressStatus(
-  symbol: BackfillProviderProgressSnapshot["symbols"][string]
-): string {
-  if (symbol.isFailed) return "Failed";
-  if (symbol.isSkipped) return "Skipped";
-  if (symbol.isCompleted) return "Completed";
-  return symbol.currentStatus ?? symbol.operation ?? "Pending";
-}
-
-function clampBackfillProgress(value: number): number {
-  return Number.isFinite(value) ? Math.min(100, Math.max(0, value)) : 0;
-}
-
-function formatBackfillProgressTimestamp(value: string | null | undefined): string {
-  if (!value) return "Time unavailable";
-  const parsed = new Date(value);
-  return Number.isNaN(parsed.getTime()) ? "Time unavailable" : formatTimestamp(parsed);
-}
-
 function waitForBackfillProgressPoll(delayMs: number, signal: AbortSignal): Promise<void> {
   if (signal.aborted) {
     return Promise.resolve();
@@ -4231,30 +4027,6 @@ function parseStrictDateInput(value: string): number | null {
 function formatProviderValue(value: string | null | undefined, fallback: string): string {
   const trimmed = value?.trim();
   return trimmed ? trimmed : fallback;
-}
-
-function formatBackfillValue(value: string | null | undefined, fallback: string): string {
-  const trimmed = value?.trim();
-  return trimmed ? trimmed : fallback;
-}
-
-function formatBackfillRange(from: string | null, to: string | null): string {
-  const fromText = formatBackfillValue(from, "");
-  const toText = formatBackfillValue(to, "");
-
-  if (fromText && toText) {
-    return `${fromText} to ${toText}`;
-  }
-
-  if (fromText) {
-    return `From ${fromText}`;
-  }
-
-  if (toText) {
-    return `Through ${toText}`;
-  }
-
-  return "Full available history";
 }
 
 function formatBackfillTiming(startedUtc: string, completedUtc: string): string {
@@ -4788,42 +4560,6 @@ function isValidEndpointUrl(value: string): boolean {
   } catch {
     return false;
   }
-}
-
-function resolveProviderKindMeta(kind: ProviderSetupFormState["kind"]): ProviderKindMeta | undefined {
-  return PROVIDER_KIND_CATALOG.find((provider) => provider.kind === kind);
-}
-
-function formatProviderCapabilityLabel(capabilityId: string): string {
-  return ALL_CAPABILITIES.find((capability) => capability.id === capabilityId)?.label ?? capabilityId;
-}
-
-function resolveProviderSetupNextStep(capabilities: string[]): string {
-  if (capabilities.includes("banking") || capabilities.includes("identity") || capabilities.includes("investments")) {
-    return "Link account evidence";
-  }
-
-  if (capabilities.includes("transfers")) {
-    return "Review sandbox transfers";
-  }
-
-  if (capabilities.includes("backfill")) {
-    return "Preview a historical backfill";
-  }
-
-  if (capabilities.includes("streaming")) {
-    return "Validate live quotes";
-  }
-
-  if (capabilities.includes("brokerage")) {
-    return "Check Trading readiness";
-  }
-
-  if (capabilities.includes("reference")) {
-    return "Review Security Master";
-  }
-
-  return "Select a capability";
 }
 
 export function buildProviderSetupSuccessActions(form: ProviderSetupFormState): ProviderSetupNextActionState[] {

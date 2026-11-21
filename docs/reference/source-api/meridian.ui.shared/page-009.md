@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalEventProductionSkip
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProductionSkip</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L12).
+
+One position an automated producer could not turn into an event, with the reason.
+
+```csharp
+public sealed record AutomatedJournalEventProductionSkip(string Subject, string Reason);
+```
+
+## AutomatedJournalEvidencePolicy
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEvidencePolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:11](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L11).
+
+Server-owned bounds for evidence that can support an automated accounting draft. Request thresholds may strengthen these controls, but cannot weaken the confidence floor or variance cap selected by the host.
+
+```csharp
+public sealed record AutomatedJournalEvidencePolicy(decimal MinimumCapitalAccountConfidence, decimal MaximumCapitalAccountVarianceTolerance)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AutomatedJournalEvidencePolicy Default { get; } = new (MinimumCapitalAccountConfidence : 0.90m, MaximumCapitalAccountVarianceTolerance : 0.01m);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L15) |  |
+| <code>public decimal ResolveMinimumCapitalAccountConfidence(decimal requestedMinimum);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:19](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L19) |  |
+| <code>public decimal ResolveMaximumCapitalAccountVarianceTolerance(decimal retainedTolerance);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L37) |  |
+
 ## AutomatedJournalIntakeReadiness
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalIntakeReadiness</code>. Kind: `enum`.
@@ -549,6 +581,115 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;BondConnectionCapabilityDto&gt;&gt; GetAsync(string tenantId, string? accountId = null, Guid? securityId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs:21](../../../../src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs#L21) |  |
 | <code>public static IReadOnlyList&lt;BondConnectionCapabilityDto&gt; BuildRows(ProviderConnectionDto connection, ProviderConnectionRowDto? credential, IReadOnlyList&lt;DataVendorEntitlementDto&gt; entitlements, DateTimeOffset now, string? accountId = null, Guid? securityId = null);</code> | [src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs:45](../../../../src/Meridian.Ui.Shared/Services/BondWorkflowConnectionReadinessService.cs#L45) | Pure projection used by endpoint and contract tests; credentials contain status only. |
 
+## BookReceiptEvidenceSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptEvidenceSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:32](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L32).
+
+Adapts canonical statement intake, Security Master and retained reconciliation matches. Receipt cash is never inferred from a journal, and a matching failure never becomes an authoritative zero. Unsupported provider/account authority remains incomplete, including neutral books for which the existing statement-account service has no accepted account population.
+
+```csharp
+public sealed partial class BookReceiptEvidenceSource(IReconciliationApiService? reconciliation = null, ICanonicalStatementStore? statements = null, IStatementRunMatchArtifactStore? matches = null, ILedgerJournalStore? journals = null, ISecurityReferenceLookup? securities = null, IFundProfileTenancyRegistry? tenancy = null, IAccountQueryService? accounts = null, IStatementRunRecoveryRepository? recovery = null) : IBookReceiptEvidenceSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, IReadOnlyList&lt;BookReceiptExpectationDto&gt; expectations, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs:42](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.cs#L42) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.Postings.cs:12](../../../../src/Meridian.Ui.Shared/Services/BookReceiptEvidenceSource.Postings.cs#L12).
+
+```csharp
+public sealed partial class BookReceiptEvidenceSource
+```
+
+## BookReceiptQueueService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptQueueService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.Allocations.cs:9](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.Allocations.cs#L9).
+
+```csharp
+public sealed partial class BookReceiptQueueService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:15](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L15).
+
+Retains exact-book receipt observations over authoritative source evidence. This service neither receives money nor posts journals; both remain separately inspectable source facts.
+
+```csharp
+public sealed partial class BookReceiptQueueService(IBookReceiptSource source, IBookReceiptRunStore store, IReconciliationBreakQueueRepository? exceptions = null) : IBookReceiptQueueService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string EngineVersion = &quot;book-receipts-v1&quot;;</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:20](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L20) |  |
+| <code>public Task&lt;IReadOnlyList&lt;BookReceiptRunDto&gt;&gt; GetRunsAsync(BookReceiptScopeDto scope, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:23](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L23) |  |
+| <code>public async Task&lt;BookReceiptRunDto?&gt; GetRunAsync(BookReceiptScopeDto scope, string runId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:26](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L26) |  |
+| <code>public async Task&lt;BookReceiptRunDto&gt; RunAsync(BookReceiptQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs:29](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.cs#L29) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.History.cs:8](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.History.cs#L8).
+
+```csharp
+public sealed partial class BookReceiptQueueService
+```
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptQueueService.ProjectionIdentities.cs:16](../../../../src/Meridian.Ui.Shared/Services/BookReceiptQueueService.ProjectionIdentities.cs#L16).
+
+```csharp
+public sealed partial class BookReceiptQueueService
+```
+
+## BookReceiptServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs:7](../../../../src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs#L7).
+
+```csharp
+public static class BookReceiptServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddBookReceiptQueueServices(this IServiceCollection services, Func&lt;IServiceProvider, string&gt; dataDirectory);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs:9](../../../../src/Meridian.Ui.Shared/Services/BookReceiptServiceCollectionExtensions.cs#L9) |  |
+
+## BookReceiptSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.BookReceiptSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptSource.cs:13](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.cs#L13).
+
+Reads approved retained holdings and accepted schedules. The instrument query service&#x27;s illustrative Security Master projection is never an expectation source for this queue.
+
+```csharp
+public sealed partial class BookReceiptSource(IInstrumentPositionProjectionStore positions, IAssetOperationsProjectionStore projections, IBookReceiptEvidenceSource? evidenceSource = null, ILedgerJournalStore? journals = null, IFundProfileTenancyRegistry? ownership = null) : IBookReceiptSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;BookReceiptSourceSnapshotDto&gt; LoadAsync(BookReceiptQueryDto query, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.cs#L20) |  |
+
+Source: [src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs:8](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs#L8).
+
+```csharp
+public sealed partial class BookReceiptSource
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string ObligationKey(Guid positionId, string flowType, DateOnly dueDate, DateOnly? accrualStartDate = null, DateOnly? accrualEndDate = null, string? sourceObligationId = null, bool isFinalPrincipal = false);</code> | [src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs:11](../../../../src/Meridian.Ui.Shared/Services/BookReceiptSource.Rules.cs#L11) | Stable schedule identity independent of expectation revision and amended payment date. |
+
 ## BrokerageConnectionOptions
 
 Qualified name: <code>Meridian.Ui.Shared.Services.BrokerageConnectionOptions</code>. Kind: `record`.
@@ -882,106 +1023,3 @@ Declared public members:
 | <code>public DateOnly ResolveSettlementDateWithCutoff(DateTimeOffset bookingTimeLocal, TimeOnly cutoffLocal, int normalSettlementLagDays);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:102](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L102) |  |
 | <code>public CashForecastResult BuildCashForecast(DateOnly asOf, IReadOnlyDictionary&lt;(Guid AccountId, string Currency), decimal&gt; openingBalances, IReadOnlyList&lt;WorkstationPaymentInstruction&gt; payments, IReadOnlyList&lt;WorkstationSettlementInstruction&gt; settlements, IReadOnlyList&lt;WorkstationCouponEvent&gt; coupons, IReadOnlyList&lt;WorkstationFxConversionReference&gt; fx, decimal liquidityWarningThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:110](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L110) |  |
 | <code>public IReadOnlyList&lt;WorkstationStpStateTransition&gt; BuildStpTrail(Guid instructionId, bool validationPassed, bool approved, bool settled, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs:150](../../../../src/Meridian.Ui.Shared/Services/CashOperationsOrchestratorService.cs#L150) |  |
-
-## CashSyncOrchestrationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CashSyncOrchestrationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:97](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L97).
-
-Evaluates regional cash sync windows and produces completeness, approval, settlement, and liquidity results.
-
-```csharp
-public sealed class CashSyncOrchestrationService : ICashSyncOrchestrationService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsSyncWindowOpen(DateTimeOffset utcNow, RegionalSyncWindow window);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L99) |  |
-| <code>public SyncValidationResult ValidateCompleteness(IEnumerable&lt;SyncAccountSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:107](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L107) |  |
-| <code>public SyncValidationResult ValidateOutliers(IEnumerable&lt;SyncAccountSnapshot&gt; currentDay, IEnumerable&lt;SyncAccountSnapshot&gt; priorDay, decimal outlierThreshold);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:117](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L117) |  |
-| <code>public ApprovalDecision BuildApprovalChain(PaymentInstruction paymentInstruction, ApprovalPolicy policy, string primaryApprover, string secondaryApprover);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:140](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L140) |  |
-| <code>public DateOnly ResolveSettlementDate(DateOnly tradeDate, TimeOnly localCutoff, TimeOnly submittedAtLocal, int standardSettlementDays);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:162](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L162) |  |
-| <code>public IReadOnlyList&lt;CashForecastPoint&gt; BuildCashLadder(DateOnly startDate, int horizonDays, IEnumerable&lt;PaymentInstruction&gt; payments, IEnumerable&lt;SettlementInstruction&gt; settlements, IEnumerable&lt;CouponEvent&gt; coupons);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:168](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L168) |  |
-| <code>public IReadOnlyList&lt;LiquidityWarning&gt; BuildLiquidityWarnings(IEnumerable&lt;CashForecastPoint&gt; ladder, decimal minimumNetThreshold) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:218](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L218) |  |
-| <code>public StpTransitionResult AdvanceStpState(string entityId, bool validated, bool approved, string? exceptionReason);</code> | [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:224](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L224) |  |
-
-## CertifiedReportingRunContext
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CertifiedReportingRunContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs:12](../../../../src/Meridian.Ui.Shared/Services/ReportingRunCertificationService.cs#L12).
-
-```csharp
-public sealed record CertifiedReportingRunContext(ReportingOperationalScope OperationalScope, ReportingAccessScope AccessScope, ReportingCertifiedSnapshotScope Snapshot, ReportingAuthoritativeSourceCheckpoint AuthoritativeSource, ImmutableArray<IReadOnlyDictionary<string, string>> DatasetRows, ReportingRunReadinessDto Readiness);
-```
-
-## ClosePublicationReadinessGuard
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ClosePublicationReadinessGuard</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:8](../../../../src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs#L8).
-
-Resolves the shared reader lazily because that reader also consumes workflow state.
-
-```csharp
-public sealed class ClosePublicationReadinessGuard(Func<IFinancialOperationsCommandCenterReadService?> authorityFactory, IWorkstationTenantContextAccessor? tenantAccessor = null, Func<IOperationsReportPackAuthority?>? reportAuthorityFactory = null, Func<IBookOfRecordGuard?>? bookOfRecordGuardFactory = null) : IClosePublicationReadinessGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;OperationsWorkflowBlockerDto&gt;&gt; ValidateAsync(Guid workflowId, long expectedVersion, CloseReadinessScopeDto? scope, string? tenantId = null, string? companyId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs:14](../../../../src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs#L14) |  |
-
-## CloseReadinessSubjectSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CloseReadinessSubjectSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:11](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L11).
-
-Proves the declared close subject from retained account membership and ledger-book ownership.
-
-```csharp
-public sealed class CloseReadinessSubjectSource(ILedgerBookService? books = null, IAccountQueryService? accounts = null) : ICloseReadinessSubjectSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;CloseReadinessSubjectDto?&gt; GetSubjectAsync(CloseReadinessScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs:15](../../../../src/Meridian.Ui.Shared/Services/CloseReadinessSubjectSource.cs#L15) |  |
-
-## CollateralCall
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralCall</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:31](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L31).
-
-```csharp
-public sealed record CollateralCall(string Counterparty, decimal Amount, string Reason, DateTimeOffset CreatedAt);
-```
-
-## CollateralExposureService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CollateralExposureService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:64](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L64).
-
-Builds collateral exposure snapshots and evaluates counterparty thresholds using configured haircuts.
-
-```csharp
-public sealed class CollateralExposureService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CollateralExposureService();</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:69](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L69) |  |
-| <code>public void UpsertThresholdPolicy(CounterpartyThresholdPolicy policy) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:75](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L75) |  |
-| <code>public void UpsertHaircutRule(HaircutRule rule) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:96](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L96) |  |
-| <code>public IReadOnlyList&lt;ExposureSnapshot&gt; BuildSnapshots(IReadOnlyList&lt;CollateralInputRow&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:99](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L99) |  |
-| <code>public IReadOnlyList&lt;ThresholdBreach&gt; EvaluateBreaches(IReadOnlyList&lt;ExposureSnapshot&gt; snapshots);</code> | [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:169](../../../../src/Meridian.Ui.Shared/Services/CollateralExposureService.cs#L169) |  |

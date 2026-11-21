@@ -5,6 +5,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CommunityToolkit.Mvvm.Input;
 using Meridian.Contracts.Configuration;
+using Meridian.Core.Config;
 using Meridian.Ui.Services;
 using Meridian.Ui.Services.ProviderDiagnostics;
 using Meridian.Wpf.Models;
@@ -21,8 +22,12 @@ public sealed class ProviderViewModel : BindableBase
 {
     private readonly WpfServices.NotificationService _notificationService;
     private readonly WpfServices.ConfigService _configService;
-    private readonly BackfillProviderConfigService _providerConfigService;
+    private readonly ProviderConfigurationApiClient _client;
     public ProviderAccountingViewModel ProviderAccounting { get; }
+    public ProviderActivationViewModel Activation { get; }
+    private string _hostSettingsMessage = string.Empty;
+
+    public string HostSettingsMessage { get => _hostSettingsMessage; private set => SetProperty(ref _hostSettingsMessage, value); }
 
     // ── Loading guard ────────────────────────────────────────────────────────
     private bool _isLoading;
@@ -288,7 +293,7 @@ public sealed class ProviderViewModel : BindableBase
         ? "Provider commands are disabled while Meridian refreshes retained backfill settings."
         : SelectedProviderSetting is null
             ? "Save and reset stay disabled until a backfill provider row is selected."
-            : "Selected-provider changes are saved through the WPF configuration service and reflected in the fallback preview.";
+            : "Save changes to the host and review their runtime activation above.";
 
     public string RefreshProvidersTooltip => IsLoading
         ? "Wait for provider settings to finish loading before refreshing."
@@ -317,19 +322,22 @@ public sealed class ProviderViewModel : BindableBase
     public ProviderViewModel(
         WpfServices.NotificationService notificationService,
         WpfServices.ConfigService configService,
-        BackfillProviderConfigService providerConfigService,
+        ProviderConfigurationApiClient client,
         IProviderDiagnosticsApiClient providerDiagnosticsApiClient)
     {
         _notificationService = notificationService;
         _configService = configService;
-        _providerConfigService = providerConfigService;
+        _client = client;
         ProviderAccounting = new ProviderAccountingViewModel(providerDiagnosticsApiClient);
+        Activation = new ProviderActivationViewModel(client, LoadProviderSettingsAsync);
+        Activation.StatusChanged += (_, _) => UpdateActivationRows();
 
         ProviderSettingsTable = new WorkstationTableModel<ProviderSettingsViewModel>(
             ProviderSettings,
             [
                 new("Provider", nameof(ProviderSettingsViewModel.DisplayName), 150),
                 new("Enabled", nameof(ProviderSettingsViewModel.EnabledText), 80),
+                new("Activation", nameof(ProviderSettingsViewModel.ActivationState), 118),
                 new("Priority", nameof(ProviderSettingsViewModel.Priority), 80),
                 new("Data Types", nameof(ProviderSettingsViewModel.DataTypes), 220),
                 new("Rate/min", nameof(ProviderSettingsViewModel.RateLimitPerMinute), 90),
@@ -392,13 +400,22 @@ public sealed class ProviderViewModel : BindableBase
             ProviderAccounting.StartAsync(ct));
     }
 
-    public void Stop() => ProviderAccounting.Stop();
+    public void Stop()
+    {
+        Activation.CancelPending();
+        RefreshProvidersCommand.Cancel();
+        SaveSelectedProviderCommand.Cancel();
+        ResetSelectedProviderCommand.Cancel();
+        ProviderAccounting.Stop();
+    }
 
     private async Task RefreshProviderEvidenceAsync(CancellationToken ct = default)
     {
-        await Task.WhenAll(
-            LoadProviderSettingsAsync(ct),
-            ProviderAccounting.RefreshAsync(ct));
+        try
+        {
+            await Task.WhenAll(LoadProviderSettingsAsync(ct), ProviderAccounting.RefreshAsync(ct));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
     }
 
     // ── Data loading ─────────────────────────────────────────────────────────
@@ -412,8 +429,7 @@ public sealed class ProviderViewModel : BindableBase
 
         try
         {
-            var providersConfig = await _configService.GetBackfillProvidersConfigAsync();
-            var statuses = await _providerConfigService.GetProviderStatusesAsync(providersConfig);
+            var statuses = await _client.GetBackfillProvidersAsync(ct);
 
             var items = statuses.Select(s => new ProviderSettingsViewModel
             {
@@ -428,6 +444,8 @@ public sealed class ProviderViewModel : BindableBase
                 HealthStatus = s.HealthStatus,
                 RequiresApiKey = s.Metadata.RequiresApiKey,
                 FreeTier = s.Metadata.FreeTier,
+                TierId = s.Options.TierId,
+                DefaultPriority = s.Metadata.DefaultPriority
             });
 
             ProviderSettings.Clear();
@@ -438,12 +456,16 @@ public sealed class ProviderViewModel : BindableBase
                 : ProviderSettings.FirstOrDefault(provider =>
                     string.Equals(provider.ProviderId, selectedProviderId, StringComparison.OrdinalIgnoreCase));
 
-            await RefreshFallbackChainAsync(providersConfig, ct);
-            RefreshAuditLog();
+            HostSettingsMessage = string.Empty;
+            await Task.WhenAll(RefreshFallbackChainAsync(statuses, ct), RefreshAuditLogAsync(ct), Activation.RefreshAsync(ct));
+            UpdateActivationRows();
             UpdateProviderPresentation();
         }
-        catch (Exception ex)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
+        catch (InvalidOperationException ex)
         {
+            HostSettingsMessage = $"Could not refresh provider settings. {ex.Message}";
+            await Activation.RefreshAsync(ct);
             _ = _notificationService.NotifyErrorAsync(
                 "Load Error",
                 $"Failed to load provider settings: {ex.Message}");
@@ -454,19 +476,34 @@ public sealed class ProviderViewModel : BindableBase
         }
     }
 
-    private async Task RefreshFallbackChainAsync(BackfillProvidersConfigDto? config, CancellationToken ct = default)
+    private async Task RefreshFallbackChainAsync(BackfillProviderStatusDto[] statuses, CancellationToken ct)
     {
         var selectedProviderName = SelectedFallbackProvider?.DisplayName;
-        var chain = await _providerConfigService.GetFallbackChainAsync(config);
-
-        var items = chain.Select(s => new FallbackChainViewModel
+        IReadOnlyList<EffectiveBackfillProvider> chain;
+        try
         {
-            Priority = (s.Options.Priority ?? s.Metadata.DefaultPriority).ToString(),
-            DisplayName = s.Metadata.DisplayName,
-            DataTypes = string.Join(", ", s.Metadata.DataTypes),
-            HealthStatus = s.HealthStatus,
-            RateLimitUsage = FormatRateLimitUsage(s),
-            ConfigSource = s.EffectiveConfigSource,
+            chain = await _client.GetEffectiveOrderAsync(ct);
+        }
+        catch (InvalidOperationException ex)
+        {
+            FallbackChain.Clear();
+            IsEmptyFallbackChain = true;
+            HostSettingsMessage = $"The active fallback order is unavailable. {ex.Message}";
+            return;
+        }
+
+        var items = chain.Select(provider =>
+        {
+            var status = statuses.FirstOrDefault(status => string.Equals(status.Metadata.ProviderId, provider.ProviderId, StringComparison.OrdinalIgnoreCase));
+            return new FallbackChainViewModel
+            {
+                Priority = provider.Priority.ToString(CultureInfo.InvariantCulture),
+                DisplayName = provider.DisplayName,
+                DataTypes = status is null ? string.Empty : string.Join(", ", status.Metadata.DataTypes),
+                HealthStatus = status?.HealthStatus ?? "unknown",
+                RateLimitUsage = status is null ? string.Empty : FormatRateLimitUsage(status),
+                ConfigSource = status?.EffectiveConfigSource ?? "runtime"
+            };
         });
 
         FallbackChain.Clear();
@@ -481,28 +518,39 @@ public sealed class ProviderViewModel : BindableBase
         UpdateProviderPresentation();
     }
 
-    private void RefreshAuditLog()
+    private async Task RefreshAuditLogAsync(CancellationToken ct)
     {
         var selectedAuditKey = SelectedAuditLog is null
             ? string.Empty
             : $"{SelectedAuditLog.Timestamp}|{SelectedAuditLog.ProviderId}|{SelectedAuditLog.Action}";
-        var entries = _providerConfigService.GetAuditLog(20);
+        ProviderConfigAuditEntryDto[] entries;
+        try
+        {
+            entries = await _client.GetBackfillAuditAsync(ct);
+        }
+        catch (InvalidOperationException ex)
+        {
+            AuditLog.Clear();
+            IsEmptyAuditLog = true;
+            HostSettingsMessage = $"The host's provider audit is unavailable. {ex.Message}";
+            return;
+        }
 
-        var items = entries.Select(e => new AuditLogViewModel
+        var items = entries.Take(20).Select(e => new AuditLogViewModel
         {
             Timestamp = e.Timestamp.ToString("yyyy-MM-dd HH:mm:ss"),
             ProviderId = e.ProviderId,
             Action = e.Action,
             Summary = e.Action == "reset"
                 ? "Reset to defaults"
-                : BackfillProviderConfigService.ComputeAuditDeltaSummary(e.PreviousValue, e.NewValue),
+                : e.NewValue is null ? $"Saved by {e.Source}" : BackfillProviderConfigService.ComputeAuditDeltaSummary(e.PreviousValue, e.NewValue),
         });
 
         AuditLog.Clear();
         foreach (var item in items)
             AuditLog.Add(item);
 
-        IsEmptyAuditLog = entries.Count == 0;
+        IsEmptyAuditLog = entries.Length == 0;
         SelectedAuditLog = string.IsNullOrWhiteSpace(selectedAuditKey)
             ? SelectedAuditLog
             : AuditLog.FirstOrDefault(entry =>
@@ -578,8 +626,7 @@ public sealed class ProviderViewModel : BindableBase
         try
         {
             var symbols = symbolText.Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            var config = await _configService.GetBackfillProvidersConfigAsync();
-            var plan = await _providerConfigService.GenerateDryRunPlanAsync(config, symbols);
+            var plan = await _client.PreviewBackfillAsync(symbols, ct);
 
             if (plan.ValidationErrors.Length > 0)
             {
@@ -620,170 +667,81 @@ public sealed class ProviderViewModel : BindableBase
         }
     }
 
-    // ── Row-level compatibility helpers retained for existing callers ────────
+    public Task OnProviderToggleChangedAsync(ProviderSettingsViewModel provider)
+        => SaveProviderAsync(provider, reset: false, CancellationToken.None);
 
-    public async Task OnProviderToggleChangedAsync(ProviderSettingsViewModel vm)
+    public Task OnPriorityLostFocusAsync(ProviderSettingsViewModel provider, string rawText)
     {
-        if (_isLoading)
-            return;
-
-        try
+        if (!int.TryParse(rawText, out var priority) || priority is < 0 or > 10000)
         {
-            var options = BuildOptionsFromViewModel(vm);
-            await _configService.SetBackfillProviderOptionsAsync(vm.ProviderId, options);
+            _notificationService.NotifyWarning("Validation", "Priority must be between 0 and 10000.");
+            return Task.CompletedTask;
+        }
 
-            var config = await _configService.GetBackfillProvidersConfigAsync();
-            await RefreshFallbackChainAsync(config);
-            RefreshAuditLog();
-        }
-        catch (Exception ex)
-        {
-            _ = _notificationService.NotifyErrorAsync("Save Error", ex.Message);
-        }
+        provider.Priority = priority;
+        return SaveProviderAsync(provider, reset: false, CancellationToken.None);
     }
 
-    public async Task OnPriorityLostFocusAsync(ProviderSettingsViewModel vm, string rawText)
+    public Task OnRateLimitLostFocusAsync(ProviderSettingsViewModel provider)
+        => SaveProviderAsync(provider, reset: false, CancellationToken.None);
+
+    public Task OnResetProviderAsync(string providerId)
+        => SaveProviderAsync(ProviderSettings.FirstOrDefault(provider =>
+            string.Equals(provider.ProviderId, providerId, StringComparison.OrdinalIgnoreCase)), reset: true, CancellationToken.None);
+
+    private Task SaveSelectedProviderAsync(CancellationToken ct = default)
+        => SaveProviderAsync(SelectedProviderSetting, reset: false, ct);
+
+    private Task ResetSelectedProviderAsync(CancellationToken ct = default)
+        => SaveProviderAsync(SelectedProviderSetting, reset: true, ct);
+
+    private async Task SaveProviderAsync(ProviderSettingsViewModel? provider, bool reset, CancellationToken ct)
     {
-        if (_isLoading)
+        if (provider is null || IsLoading)
             return;
 
-        if (!int.TryParse(rawText, out var priority) || priority < 0)
-        {
-            _notificationService.NotifyWarning("Validation", "Priority must be a non-negative integer.");
-            return;
-        }
-
+        IsLoading = true;
         try
         {
-            vm.Priority = priority;
-            var options = BuildOptionsFromViewModel(vm);
-
-            var inlineResult = await _configService.ValidateProviderInlineAsync(vm.ProviderId, options);
-            if (!inlineResult.IsValid)
-            {
-                _notificationService.NotifyWarning("Validation", string.Join(" ", inlineResult.Errors));
-                return;
-            }
-
-            vm.InlineWarning = inlineResult.HasWarnings
-                ? string.Join("; ", inlineResult.Warnings)
-                : null;
-
-            await _configService.SetBackfillProviderOptionsAsync(vm.ProviderId, options);
-
-            var config = await _configService.GetBackfillProvidersConfigAsync();
-            await RefreshFallbackChainAsync(config);
-            RefreshAuditLog();
+            var edit = reset
+                ? new BackfillProviderEdit(Enabled: true, Priority: provider.DefaultPriority)
+                : BuildProviderEdit(provider);
+            var saved = await _client.SaveBackfillProviderAsync(provider.ProviderId, edit, ct);
+            provider.IsEnabled = saved.Enabled;
+            provider.Priority = saved.Priority ?? provider.DefaultPriority;
+            provider.TierId = saved.TierId;
+            provider.RateLimitPerMinute = saved.RateLimitPerMinute?.ToString(CultureInfo.InvariantCulture) ?? "";
+            provider.RateLimitPerHour = saved.RateLimitPerHour?.ToString(CultureInfo.InvariantCulture) ?? "";
+            provider.InlineWarning = null;
         }
-        catch (Exception ex)
-        {
-            _ = _notificationService.NotifyErrorAsync("Save Error", ex.Message);
-        }
-    }
-
-    public async Task OnRateLimitLostFocusAsync(ProviderSettingsViewModel vm)
-    {
-        if (_isLoading)
-            return;
-
-        try
-        {
-            var options = BuildOptionsFromViewModel(vm);
-
-            var inlineResult = await _configService.ValidateProviderInlineAsync(vm.ProviderId, options);
-            if (!inlineResult.IsValid)
-            {
-                vm.InlineWarning = string.Join("; ", inlineResult.Errors);
-                _notificationService.NotifyWarning("Validation", string.Join(" ", inlineResult.Errors));
-                return;
-            }
-
-            vm.InlineWarning = inlineResult.HasWarnings
-                ? string.Join("; ", inlineResult.Warnings)
-                : null;
-
-            await _configService.SetBackfillProviderOptionsAsync(vm.ProviderId, options);
-            RefreshAuditLog();
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            vm.InlineWarning = ex.Message;
-            _notificationService.NotifyWarning("Validation", ex.Message);
-        }
-        catch (Exception ex)
-        {
-            _ = _notificationService.NotifyErrorAsync("Save Error", ex.Message);
-        }
-    }
-
-    public async Task OnResetProviderAsync(string providerId)
-    {
-        try
-        {
-            await _configService.ResetBackfillProviderOptionsAsync(providerId);
-            _notificationService.NotifyInfo("Reset", $"Provider '{providerId}' reset to defaults.");
-            await LoadProviderSettingsAsync(CancellationToken.None);
-            UpdateProviderPresentation();
-        }
-        catch (Exception ex)
-        {
-            _ = _notificationService.NotifyErrorAsync("Reset Error", ex.Message);
-        }
-    }
-
-    private async Task SaveSelectedProviderAsync(CancellationToken ct = default)
-    {
-        var selected = SelectedProviderSetting;
-        if (selected is null || IsLoading)
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
             return;
         }
-
-        try
+        catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
         {
-            var options = BuildOptionsFromViewModel(selected);
-            var inlineResult = await _configService.ValidateProviderInlineAsync(selected.ProviderId, options);
-            if (!inlineResult.IsValid)
-            {
-                selected.InlineWarning = string.Join("; ", inlineResult.Errors);
-                _notificationService.NotifyWarning("Validation", string.Join(" ", inlineResult.Errors));
-                UpdateProviderPresentation();
-                return;
-            }
-
-            selected.InlineWarning = inlineResult.HasWarnings
-                ? string.Join("; ", inlineResult.Warnings)
-                : null;
-
-            await _configService.SetBackfillProviderOptionsAsync(selected.ProviderId, options);
-
-            var config = await _configService.GetBackfillProvidersConfigAsync();
-            await RefreshFallbackChainAsync(config, ct);
-            RefreshAuditLog();
-            SelectedProviderInspector = BuildProviderSettingsInspector(selected);
-            UpdateProviderPresentation();
-        }
-        catch (ArgumentOutOfRangeException ex)
-        {
-            selected.InlineWarning = ex.Message;
-            _notificationService.NotifyWarning("Validation", ex.Message);
-            UpdateProviderPresentation();
-        }
-        catch (Exception ex)
-        {
-            _ = _notificationService.NotifyErrorAsync("Save Error", ex.Message);
-        }
-    }
-
-    private async Task ResetSelectedProviderAsync(CancellationToken ct = default)
-    {
-        var selected = SelectedProviderSetting;
-        if (selected is null || IsLoading)
-        {
+            provider.InlineWarning = ex.Message;
+            SelectedProviderInspector = BuildProviderSettingsInspector(SelectedProviderSetting);
+            OnPropertyChanged(nameof(HasSelectedProviderInlineWarning));
+            _notificationService.NotifyWarning("Provider settings", ex.Message);
             return;
         }
+        finally
+        {
+            IsLoading = false;
+        }
 
-        await OnResetProviderAsync(selected.ProviderId);
+        await LoadProviderSettingsAsync(ct);
+        if (string.IsNullOrEmpty(HostSettingsMessage))
+            HostSettingsMessage = "Provider settings saved to the host.";
+    }
+
+    private void UpdateActivationRows()
+    {
+        foreach (var provider in ProviderSettings)
+            provider.UpdateActivation(Activation.Find(provider.ProviderId, "backfill"));
+
+        SelectedProviderInspector = BuildProviderSettingsInspector(SelectedProviderSetting);
     }
 
     // ── Private helpers ───────────────────────────────────────────────────────
@@ -900,7 +858,7 @@ public sealed class ProviderViewModel : BindableBase
             Subtitle = selected.ProviderId,
             Detail = selected.HasInlineWarning
                 ? selected.InlineWarning ?? "Provider settings need review."
-                : "Backfill settings are retained through the desktop configuration service.",
+                : selected.ActivationDetail,
             Badge = new WorkstationBadgeModel(
                 "Backfill",
                 selected.EnabledText,
@@ -914,6 +872,7 @@ public sealed class ProviderViewModel : BindableBase
                 new("Rate/hr", string.IsNullOrWhiteSpace(selected.RateLimitPerHour) ? "Default" : selected.RateLimitPerHour),
                 new("Source", selected.ConfigSource),
                 new("Health", selected.HealthStatus),
+                new("Activation", selected.ActivationState),
                 new("Credentials", selected.CredentialText),
                 new("Tier", selected.FreeTierText)
             ]
@@ -1091,21 +1050,20 @@ public sealed class ProviderViewModel : BindableBase
         OnPropertyChanged(nameof(BackfillActionStateDetail));
     }
 
-    private static BackfillProviderOptionsDto BuildOptionsFromViewModel(ProviderSettingsViewModel vm)
+    internal static BackfillProviderEdit BuildProviderEdit(ProviderSettingsViewModel provider)
+        => new(provider.IsEnabled, provider.Priority, provider.TierId,
+            ParseRateLimit(provider.RateLimitPerMinute, "minute"),
+            ParseRateLimit(provider.RateLimitPerHour, "hour"));
+
+    private static int? ParseRateLimit(string text, string period)
     {
-        var options = new BackfillProviderOptionsDto
-        {
-            Enabled = vm.IsEnabled,
-            Priority = vm.Priority,
-        };
+        if (string.IsNullOrWhiteSpace(text))
+            return null;
 
-        if (int.TryParse(vm.RateLimitPerMinute, out var rpm) && rpm > 0)
-            options.RateLimitPerMinute = rpm;
+        if (int.TryParse(text.Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var limit) && limit > 0)
+            return limit;
 
-        if (int.TryParse(vm.RateLimitPerHour, out var rph) && rph > 0)
-            options.RateLimitPerHour = rph;
-
-        return options;
+        throw new ArgumentException($"Rate limit per {period} must be a positive integer.");
     }
 
     private static string FormatRateLimitUsage(BackfillProviderStatusDto status)

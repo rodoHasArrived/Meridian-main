@@ -1538,7 +1538,8 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
           <SheetHeader>
             <SheetTitle id="promotion-gate-title">
               <FlaskConical className="h-4 w-4 text-primary" />
-              Backtest → Paper promotion gate
+              {promotionGate.evaluation?.targetMode?.toLowerCase() === "live"
+                ? "Paper → Live promotion gate" : "Backtest → Paper promotion gate"}
             </SheetTitle>
             <SheetDescription id="promotion-gate-description">Requires eligibility check before confirmation and audit refresh.</SheetDescription>
             <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("promotion")} />
@@ -1658,6 +1659,26 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                 <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>
               ) : null}
             </label>
+            {promotionGate.evaluation?.targetMode?.toLowerCase() === "live" && (
+              <fieldset className="grid gap-3 rounded-lg border border-border/60 p-3 text-xs sm:grid-cols-3" disabled={promotionGate.busy}>
+                <legend className="px-1 font-semibold">Live authorization</legend>
+                <p className="break-all text-muted-foreground sm:col-span-3">
+                  Strategy revision {promotionGate.evaluation.strategyArtifactId ?? "unavailable"}
+                </p>
+                <label className="grid gap-1">
+                  Allowed symbols
+                  <Input value={promotionGate.form.liveSymbols ?? ""} onChange={(event) => promotionGate.updateField("liveSymbols", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Max USD per order
+                  <Input type="number" min="0.01" step="0.01" value={promotionGate.form.liveNotional ?? ""} onChange={(event) => promotionGate.updateField("liveNotional", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Expiry (local time)
+                  <Input type="datetime-local" value={promotionGate.form.liveExpiry ?? ""} onChange={(event) => promotionGate.updateField("liveExpiry", event.target.value)} />
+                </label>
+              </fieldset>
+            )}
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
@@ -1771,6 +1792,13 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                 {promotionGate.historyRows.map((record) => (
                   <li key={record.id} className="font-mono" aria-label={record.ariaLabel}>
                     {record.label}
+                    {record.canRevoke && (
+                      <LiveAuthorizationRevokeForm
+                        authorizationId={record.id}
+                        disabled={promotionGate.busy}
+                        revoke={promotionGate.revokeLiveAuthorization}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
@@ -1790,6 +1818,46 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
         onConfirm={confirmSessionClose}
       />
     </div>
+  );
+}
+
+function LiveAuthorizationRevokeForm({ authorizationId, disabled, revoke }: {
+  authorizationId: string;
+  disabled: boolean;
+  revoke: (id: string, reason: string) => Promise<void>;
+}) {
+  const [reason, setReason] = React.useState("");
+  const [busy, setBusy] = React.useState(false);
+  const [error, setError] = React.useState<string | null>(null);
+
+  return (
+    <details className="my-2 font-sans">
+      <summary className="cursor-pointer font-medium">Revoke live authorization</summary>
+      <form className="mt-2 grid gap-2" onSubmit={async (event) => {
+        event.preventDefault();
+        if (busy || disabled || !reason.trim()) return;
+        setBusy(true);
+        setError(null);
+        try {
+          await revoke(authorizationId, reason.trim());
+        } catch (failure) {
+          setError(failure instanceof Error ? failure.message : "Revocation could not be confirmed.");
+        } finally {
+          setBusy(false);
+        }
+      }}>
+        <p className="text-muted-foreground">Blocks new orders and replacements for this run.</p>
+        <label className="grid gap-1">
+          Revocation reason
+          <Input required disabled={busy || disabled} value={reason} onChange={(event) => setReason(event.target.value)} />
+        </label>
+        <Button type="submit" size="sm" variant="destructive" className="justify-self-start"
+          disabled={disabled || !reason.trim()} busy={busy} busyLabel="Revoking authorization">
+          Confirm revocation
+        </Button>
+        {error && <p role="alert" className="text-danger">{error}</p>}
+      </form>
+    </details>
   );
 }
 

@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StrategyRunEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L17).
+
+Adds strategy-run provenance and supporting execution evidence to an evidence graph.
+
+```csharp
+public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StrategyRunEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L23) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L28) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L30) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:33](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L33) |  |
+
+## TradingReadinessEvidenceContributor
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.TradingReadinessEvidenceContributor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L23).
+
+Adds trading readiness gates and their supporting evidence to an evidence graph.
+
+```csharp
+public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TradingReadinessEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L27) |  |
+| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L32) |  |
+| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L34) |  |
+| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L37) |  |
+
 ## ExtensibilityCatalogService
 
 Qualified name: <code>Meridian.Ui.Shared.Extensibility.ExtensibilityCatalogService</code>. Kind: `class`.
@@ -937,35 +979,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyDictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt; EvidenceAssessments { get; init; } = EvidenceAssessments?? new Dictionary&lt;string, AutomatedJournalEvidenceAssessmentDto&gt;(StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:22](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L22) |  |
-
-## AutomatedJournalEventProductionSkip
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProductionSkip</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEventProducers.cs#L12).
-
-One position an automated producer could not turn into an event, with the reason.
-
-```csharp
-public sealed record AutomatedJournalEventProductionSkip(string Subject, string Reason);
-```
-
-## AutomatedJournalEvidencePolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEvidencePolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:11](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L11).
-
-Server-owned bounds for evidence that can support an automated accounting draft. Request thresholds may strengthen these controls, but cannot weaken the confidence floor or variance cap selected by the host.
-
-```csharp
-public sealed record AutomatedJournalEvidencePolicy(decimal MinimumCapitalAccountConfidence, decimal MaximumCapitalAccountVarianceTolerance)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static AutomatedJournalEvidencePolicy Default { get; } = new (MinimumCapitalAccountConfidence : 0.90m, MaximumCapitalAccountVarianceTolerance : 0.01m);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:15](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L15) |  |
-| <code>public decimal ResolveMinimumCapitalAccountConfidence(decimal requestedMinimum);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:19](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L19) |  |
-| <code>public decimal ResolveMaximumCapitalAccountVarianceTolerance(decimal retainedTolerance);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs:37](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalEvidencePolicy.cs#L37) |  |

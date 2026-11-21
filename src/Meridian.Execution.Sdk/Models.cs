@@ -360,6 +360,9 @@ public sealed record OrderResult
 /// <summary>Current state of an order tracked by the OMS.</summary>
 public sealed record OrderState
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyArtifactId { get; init; }
+
     /// <summary>Who or what originated the order; null for states created outside order submission.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public OrderCommandOrigin? Origin { get; init; }

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SourceType
+
+Qualified name: <code>Meridian.Storage.Interfaces.SourceType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:68](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L68).
+
+Type of data source.
+
+```csharp
+public enum SourceType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Live</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:71](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L71) | Live real-time data source. |
+| <code>Historical</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:73](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L73) | Historical backfill data source. |
+| <code>Consolidated</code> | [src/Meridian.Storage/Interfaces/ISourceRegistry.cs:75](../../../../src/Meridian.Storage/Interfaces/ISourceRegistry.cs#L75) | Consolidated/derived data source. |
+
 ## SymbolInfo
 
 Qualified name: <code>Meridian.Storage.Interfaces.SymbolInfo</code>. Kind: `record`.
@@ -904,21 +924,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |
-
-## IIntercompanyAgreementBatchPostingAuthority
-
-Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementBatchPostingAuthority</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:14](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L14).
-
-Validates a transaction&#x27;s union of agreement IDs under one sorted retained lease.
-
-```csharp
-public interface IIntercompanyAgreementBatchPostingAuthority : IIntercompanyAgreementPostingAuthority
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IAsyncDisposable&gt; AcquireValidatedBatchLeaseAsync(IReadOnlyList&lt;IntercompanyAgreementPostingRequest&gt; requests, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs:16](../../../../src/Meridian.Storage/Ledger/IIntercompanyAgreementPostingAuthority.cs#L16) |  |

@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DedupReservationStatus
+
+Qualified name: <code>Meridian.Application.Pipeline.DedupReservationStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:36](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L36).
+
+Outcome classification for IDedupStore.TryReserveAsync.
+
+```csharp
+public enum DedupReservationStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Reserved = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:43](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L43) | The identity was unclaimed. The caller now holds a pending, memory-only reservation and must either commit it with IDedupStore.CommitDurableAsync after the primary sink flushed, or release it with IDedupStore.Release on failure. |
+| <code>Duplicate = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:48](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L48) | A committed ledger entry suppresses this identity in the requested scope. |
+| <code>PendingElsewhere = 2</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:54](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L54) | Another in-flight reservation already holds this identity. The event must be suppressed, but the identity is not yet durably committed. |
+
+## DroppedEventAuditTrail
+
+Qualified name: <code>Meridian.Application.Pipeline.DroppedEventAuditTrail</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:23](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L23).
+
+Audit trail for events dropped by the pipeline due to backpressure. Logs dropped events to a separate audit file for gap-aware consumers.
+
+```csharp
+public sealed class DroppedEventAuditTrail : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DroppedEventAuditTrail(string auditDirectory, ILogger&lt;DroppedEventAuditTrail&gt;? logger = null) : this(auditDirectory, logger, appendLinesAsync : null);</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:35](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L35) |  |
+| <code>public long TotalDropped =&gt; …;</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:63](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L63) | Gets the total number of dropped events recorded. |
+| <code>public long AuditRecordsNotWritten =&gt; …;</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:69](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L69) | Gets the number of dropped events with no line in the audit file, because the write failed or too many records were already waiting for the disk. |
+| <code>public IReadOnlyDictionary&lt;string, long&gt; DropCountsBySymbol =&gt; …;</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:72](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L72) | Gets drop counts keyed by symbol. |
+| <code>public async ValueTask RecordDroppedEventAsync(MarketEvent evt, string reason, CancellationToken ct = default);</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:78](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L78) | Records a dropped event to the audit trail. |
+| <code>public DroppedEventStatistics GetStatistics();</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:119](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L119) | Gets a snapshot of drop statistics for the /api/quality/drops endpoint. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:136](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L136) |  |
+
+## DroppedEventStatistics
+
+Qualified name: <code>Meridian.Application.Pipeline.DroppedEventStatistics</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:150](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L150).
+
+Statistics about dropped events for API exposure.
+
+```csharp
+public sealed record DroppedEventStatistics(long TotalDropped, IReadOnlyDictionary<string, long> DropsBySymbol, string AuditFilePath, DateTimeOffset Timestamp)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long AuditRecordsNotWritten { get; init; }</code> | [src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs:157](../../../../src/Meridian.Application/Pipeline/DroppedEventAuditTrail.cs#L157) | Dropped events counted above that have no line in the audit file. |
+
 ## DualPathEventPipeline
 
 Qualified name: <code>Meridian.Application.Pipeline.DualPathEventPipeline</code>. Kind: `class`.
@@ -339,6 +401,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static RoutePreviewResponse Preview(AppConfig current, RoutePreviewRequest request, Func&lt;AppConfig, IReadOnlyList&lt;IHistoricalDataProvider&gt;&gt; createProviders, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs:11](../../../../src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs#L11) |  |
+| <code>public static RoutePreviewResponse PreviewActive(BackfillRoutingSnapshot routing, RoutePreviewRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs:55](../../../../src/Meridian.Application/ProviderRouting/BackfillRoutingPreview.cs#L55) |  |
 
 ## BestOfBreedProviderSelector
 
@@ -972,57 +1035,3 @@ Declared public members:
 | <code>public ProviderTrustScoringService(UI.ConfigStore store, ProviderSdk.IProviderConnectionHealthSource healthSource);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:65](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L65) |  |
 | <code>public Task&lt;IReadOnlyList&lt;ProviderTrustSnapshotDto&gt;&gt; GetTrustSnapshotsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:71](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L71) |  |
 | <code>public Task&lt;IReadOnlyList&lt;ProviderTrustSnapshotDto&gt;&gt; GetTrustSnapshotsForTenantAsync(string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs:75](../../../../src/Meridian.Application/ProviderRouting/ProviderOperationsSupportServices.cs#L75) | Evaluates only connections belonging to the authorized tenant in the captured configuration. |
-
-## IInternalLedgerTransactionSource
-
-Qualified name: <code>Meridian.Application.Reconciliation.IInternalLedgerTransactionSource</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:37](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L37).
-
-Supplies the internal ledger-transaction population a statement run reconciles against. The contract is fail-closed: when no journal source is composed, the account cannot be attributed, or the period window is unusable, implementations return an empty list so the statement-run matcher keeps classifying transaction breaks as informational (internal-transaction-population-unavailable) instead of comparing against a fabricated book.
-
-```csharp
-public interface IInternalLedgerTransactionSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;IReadOnlyList&lt;InternalLedgerTransaction&gt;&gt; GetTransactionsAsync(InternalLedgerTransactionQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:39](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L39) |  |
-
-## InternalLedgerTransactionQuery
-
-Qualified name: <code>Meridian.Application.Reconciliation.InternalLedgerTransactionQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:19](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L19).
-
-Identifies the fund account and statement window an internal ledger-transaction population is projected for. AccountLabel is the label every projected record carries — the run&#x27;s external (custodian) account key, matching how the retained cash and position populations are labeled. AccountAliases are the identifiers a posted journal may be stamped with for this account (the fund-account GUID, the account&#x27;s ledger reference, the external custodian key); a journal attributable to none of them is never projected.
-
-```csharp
-public sealed record InternalLedgerTransactionQuery(string AccountLabel, IReadOnlyList<string> AccountAliases, DateOnly PeriodStart, DateOnly PeriodEnd, string BaseCurrency)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementAccountingScope? AccountingScope { get; init; }</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:27](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L27) | When present, journals must belong to this exact retained accounting authority. |
-
-## LedgerJournalInternalTransactionSource
-
-Qualified name: <code>Meridian.Application.Reconciliation.LedgerJournalInternalTransactionSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:97](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L97).
-
-Projects posted ledger journals into the custodian-visible internal transactions the StatementMatchingEngine matches statement movements against. This is the period-scoped journal→custodian-transaction projection the retained population provider&#x27;s remarks specify.
-
-```csharp
-public sealed class LedgerJournalInternalTransactionSource(ILedgerJournalStore? journalStore = null, ILogger<LedgerJournalInternalTransactionSource>? logger = null) : IInternalLedgerTransactionSource
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;InternalLedgerTransaction&gt;&gt; GetTransactionsAsync(InternalLedgerTransactionQuery query, CancellationToken ct = default);</code> | [src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs:160](../../../../src/Meridian.Application/Reconciliation/LedgerJournalInternalTransactionSource.cs#L160) |  |

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JobPriority
+
+Qualified name: <code>Meridian.Storage.Services.JobPriority</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1627](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1627).
+
+```csharp
+public enum JobPriority : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Critical</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1629](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1629) |  |
+| <code>High</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1630](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1630) |  |
+| <code>Normal</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1631](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1631) |  |
+| <code>Low</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1632](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1632) |  |
+| <code>Deferred</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1633](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1633) |  |
+
 ## JobStatus
 
 Qualified name: <code>Meridian.Storage.Services.JobStatus</code>. Kind: `enum`.
@@ -736,21 +756,3 @@ Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:908](../../../.
 ```csharp
 public sealed record RepairOptions(RepairStrategy Strategy, bool DryRun = false, bool BackupBeforeRepair = true, string? BackupPath = null, RepairScope Scope = RepairScope.All, string? ScopeTarget = null);
 ```
-
-## RepairResult
-
-Qualified name: <code>Meridian.Storage.Services.RepairResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:929](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L929).
-
-```csharp
-public sealed record RepairResult(int FilesProcessed, int FilesRepaired, IReadOnlyList<string> Errors, bool DryRun, IReadOnlyList<string>? PlannedActions)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RecoveryCopies { get; init; } = [];</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:937](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L937) |  |
-| <code>public int FilesChanged { get; init; }</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:938](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L938) |  |
-| <code>public int FilesUnresolved =&gt; …;</code> | [src/Meridian.Storage/Services/FileMaintenanceService.cs:939](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L939) |  |

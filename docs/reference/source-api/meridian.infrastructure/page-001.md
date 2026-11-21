@@ -40,7 +40,7 @@ Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.cs:4
 Alpaca brokerage gateway for live order execution via the Alpaca Trading API. Uses REST API for order management and a bounded channel for execution report streaming.
 
 ```csharp
-public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
+public sealed partial class AlpacaBrokerageGateway : IBrokerageGateway, IBrokerageAccountCatalog, IBrokeragePortfolioSync, IBrokerageActivitySync, INotionalOrderSizingGateway, IFaceValueOrderSizingGateway, IExplicitOrderCancellationGateway, IExplicitOrderModificationGateway, IGuardedOrderModificationGateway, IBrokerageConnectionState, IBrokerageAccountIdentity, IBrokerageOrderRecoveryGateway, IBrokerageOrderAmendmentRecoveryGateway
 ```
 
 Declared public members:
@@ -80,7 +80,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L66) |  |
-| <code>public async Task&lt;ExecutionReport&gt; ModifyOrderAsync(OrderCancellationIdentifier identifier, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L71) |  |
+| <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(OrderCancellationIdentifier identifier, OrderModification modification, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.Modifications.cs#L71) |  |
 
 Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaBrokerageGateway.PortfolioSync.cs#L6).
 
@@ -695,22 +695,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event Action&lt;BackfillJob, BackfillJobStatus&gt;? OnJobStatusChanged;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L44) | Event raised when a job&#x27;s status changes. |
-| <code>public event Action&lt;BackfillJob&gt;? OnJobProgressUpdated;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L49) | Event raised when job progress is updated. |
-| <code>public BackfillJobManager(DataGapAnalyzer gapAnalyzer, BackfillRequestQueue requestQueue, string jobsDirectory, IAtomicFileWriter atomicFileWriter, ILogger? log = null) : this(gapAnalyzer, requestQueue, jobsDirectory, (atomicFileWriter?? throw new ArgumentNullException(nameof(atomicFileWriter))).WriteAsync, log);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L51) |  |
-| <code>public async Task LoadJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:122](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L122) | Load persisted jobs from disk. |
-| <code>public async Task&lt;BackfillJob&gt; CreateJobAsync(string name, IEnumerable&lt;string&gt; symbols, DateOnly from, DateOnly to, DataGranularity granularity = DataGranularity.Daily, BackfillJobOptions? options = null, IEnumerable&lt;string&gt;? preferredProviders = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:181](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L181) | Create a new backfill job. |
-| <code>public async Task StartJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:215](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L215) | Start a job (analyze gaps and enqueue requests). |
-| <code>public async Task PauseJobAsync(string jobId, string? reason = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:411](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L411) | Pause a running job. |
-| <code>public async Task ResumeJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:433](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L433) | Resume a paused job. |
-| <code>public async Task CancelJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:467](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L467) | Cancel a job. |
-| <code>public async Task UpdateJobProgressAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:512](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L512) | Update job progress from a completed request. |
-| <code>public async Task SetJobRateLimitedAsync(string jobId, TimeSpan? resumeAfter = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:614](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L614) | Mark a job as rate-limited. |
-| <code>public BackfillJob? GetJob(string jobId);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:637](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L637) | Get a job by ID. |
-| <code>public IReadOnlyList&lt;BackfillJob&gt; GetAllJobs();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:646](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L646) | Get all jobs. |
-| <code>public IReadOnlyList&lt;BackfillJob&gt; GetJobsByStatus(BackfillJobStatus status);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:654](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L654) | Get jobs by status. |
-| <code>public Task DeleteJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:662](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L662) | Delete a job (must be completed or cancelled). |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:882](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L882) |  |
+| <code>public event Action&lt;BackfillJob, BackfillJobStatus&gt;? OnJobStatusChanged;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L45) | Event raised when a job&#x27;s status changes. |
+| <code>public event Action&lt;BackfillJob&gt;? OnJobProgressUpdated;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L50) | Event raised when job progress is updated. |
+| <code>public BackfillJobManager(DataGapAnalyzer gapAnalyzer, BackfillRequestQueue requestQueue, string jobsDirectory, IAtomicFileWriter atomicFileWriter, ILogger? log = null, Func&lt;BackfillRoutingSnapshot?&gt;? captureRouting = null) : this(gapAnalyzer, requestQueue, jobsDirectory, (atomicFileWriter?? throw new ArgumentNullException(nameof(atomicFileWriter))).WriteAsync, log);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L52) |  |
+| <code>public async Task LoadJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:125](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L125) | Load persisted jobs from disk. |
+| <code>public async Task&lt;BackfillJob&gt; CreateJobAsync(string name, IEnumerable&lt;string&gt; symbols, DateOnly from, DateOnly to, DataGranularity granularity = DataGranularity.Daily, BackfillJobOptions? options = null, IEnumerable&lt;string&gt;? preferredProviders = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:184](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L184) | Create a new backfill job. |
+| <code>public async Task StartJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:218](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L218) | Start a job (analyze gaps and enqueue requests). |
+| <code>public async Task PauseJobAsync(string jobId, string? reason = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:415](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L415) | Pause a running job. |
+| <code>public async Task ResumeJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:437](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L437) | Resume a paused job. |
+| <code>public async Task CancelJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:471](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L471) | Cancel a job. |
+| <code>public async Task UpdateJobProgressAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:516](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L516) | Update job progress from a completed request. |
+| <code>public async Task SetJobRateLimitedAsync(string jobId, TimeSpan? resumeAfter = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:647](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L647) | Mark a job as rate-limited. |
+| <code>public BackfillJob? GetJob(string jobId);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:670](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L670) | Get a job by ID. |
+| <code>public IReadOnlyList&lt;BackfillJob&gt; GetAllJobs();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:679](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L679) | Get all jobs. |
+| <code>public IReadOnlyList&lt;BackfillJob&gt; GetJobsByStatus(BackfillJobStatus status);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:687](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L687) | Get jobs by status. |
+| <code>public Task DeleteJobAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:695](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L695) | Delete a job (must be completed or cancelled). |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs:917](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillJobManager.cs#L917) |  |
 
 ## BackfillJobRequest
 
@@ -818,16 +818,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillProvenanceCapture(IHistoricalDataProvider provider, DataGranularity granularity, bool symbolTimelineResolution, bool background = false, Func&lt;string, int&gt;? resolveStaleToleranceDays = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L17) |  |
-| <code>public ImmutableArray&lt;ProviderProvenanceSource&gt; Sources { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L47) |  |
-| <code>public ProviderProvenanceAccess Access { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:48](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L48) |  |
-| <code>public ProviderProvenanceValidation Validation { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L49) |  |
-| <code>public string RoutingDecision =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L50) |  |
-| <code>public static bool CanUseProviderForTenant(IHistoricalDataProvider provider, string? tenantId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L52) |  |
-| <code>public Task&lt;bool[]&gt; CheckAvailabilityAsync(CancellationToken ct) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L56) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;T&gt;&gt; ObserveDirectAsync&lt;T&gt;(IHistoricalDataProvider provider, Func&lt;Task&lt;IReadOnlyList&lt;T&gt;&gt;&gt; fetch);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L126) |  |
-| <code>public ProviderProvenanceReceipt Complete(ProviderProvenanceRequest request, DateTimeOffset startedUtc, DateTimeOffset completedUtc, string? unavailableReason = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:142](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L142) |  |
-| <code>public static ProviderProvenanceRequest DescribeRequest(DateOnly? from, DateOnly? to, IEnumerable&lt;string&gt; symbols, DataGranularity granularity, int maxConcurrentSymbols, IReadOnlyDictionary&lt;string, int&gt;? priorities = null, bool resumeFromCheckpoint = false);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:175](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L175) |  |
+| <code>public BackfillProvenanceCapture(IHistoricalDataProvider provider, DataGranularity granularity, bool symbolTimelineResolution, bool background = false, Func&lt;string, int&gt;? resolveStaleToleranceDays = null, Func&lt;IHistoricalDataProvider, int&gt;? resolvePriority = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:17](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L17) |  |
+| <code>public ImmutableArray&lt;ProviderProvenanceSource&gt; Sources { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L49) |  |
+| <code>public ProviderProvenanceAccess Access { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L50) |  |
+| <code>public ProviderProvenanceValidation Validation { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L51) |  |
+| <code>public string RoutingDecision =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L52) |  |
+| <code>public static bool CanUseProviderForTenant(IHistoricalDataProvider provider, string? tenantId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L54) |  |
+| <code>public Task&lt;bool[]&gt; CheckAvailabilityAsync(CancellationToken ct) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L58) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;T&gt;&gt; ObserveDirectAsync&lt;T&gt;(IHistoricalDataProvider provider, Func&lt;Task&lt;IReadOnlyList&lt;T&gt;&gt;&gt; fetch);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:140](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L140) |  |
+| <code>public ProviderProvenanceReceipt Complete(ProviderProvenanceRequest request, DateTimeOffset startedUtc, DateTimeOffset completedUtc, string? unavailableReason = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:156](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L156) |  |
+| <code>public static ProviderProvenanceRequest DescribeRequest(DateOnly? from, DateOnly? to, IEnumerable&lt;string&gt; symbols, DataGranularity granularity, int maxConcurrentSymbols, IReadOnlyDictionary&lt;string, int&gt;? priorities = null, bool resumeFromCheckpoint = false);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs:189](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillProvenanceCapture.cs#L189) |  |
 
 ## BackfillProviderRuntimeOptions
 
@@ -863,7 +863,7 @@ public sealed record BackfillQueueStatistics(int TotalJobs, int PendingJobs, int
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRequest</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:704](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L704).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:717](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L717).
 
 Represents a single backfill request.
 
@@ -875,29 +875,29 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string RequestId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:721](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L721) |  |
-| <code>public string JobId { get; init; } = string.Empty;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:722](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L722) |  |
-| <code>public string Symbol { get; init; } = string.Empty;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:723](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L723) |  |
-| <code>public DateOnly FromDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:724](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L724) |  |
-| <code>public DateOnly ToDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:725](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L725) |  |
-| <code>public DataGranularity Granularity { get; init; } = DataGranularity.Daily;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:726](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L726) |  |
-| <code>public List&lt;string&gt; PreferredProviders { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:727](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L727) |  |
-| <code>public string? AssignedProvider { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:728](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L728) |  |
-| <code>public int Priority { get; set; } = 10;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:729](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L729) |  |
-| <code>public int MaxRetries { get; init; } = 3;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:730](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L730) |  |
-| <code>public int RetryCount { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:731](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L731) |  |
-| <code>public BackfillRequestStatus Status { get; set; } = BackfillRequestStatus.Pending;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:732](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L732) |  |
-| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:733](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L733) |  |
-| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:734](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L734) |  |
-| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:735](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L735) |  |
-| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:736](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L736) |  |
-| <code>public int BarsRetrieved { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:737](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L737) |  |
+| <code>public string RequestId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:738](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L738) |  |
+| <code>public string JobId { get; init; } = string.Empty;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:739](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L739) |  |
+| <code>public string Symbol { get; init; } = string.Empty;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:740](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L740) |  |
+| <code>public DateOnly FromDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:741](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L741) |  |
+| <code>public DateOnly ToDate { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:742](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L742) |  |
+| <code>public DataGranularity Granularity { get; init; } = DataGranularity.Daily;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:743](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L743) |  |
+| <code>public List&lt;string&gt; PreferredProviders { get; init; } = [];</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:744](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L744) |  |
+| <code>public string? AssignedProvider { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:745](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L745) |  |
+| <code>public int Priority { get; set; } = 10;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:746](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L746) |  |
+| <code>public int MaxRetries { get; init; } = 3;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:747](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L747) |  |
+| <code>public int RetryCount { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:748](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L748) |  |
+| <code>public BackfillRequestStatus Status { get; set; } = BackfillRequestStatus.Pending;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:749](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L749) |  |
+| <code>public DateTimeOffset CreatedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:750](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L750) |  |
+| <code>public DateTimeOffset? StartedAt { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:751](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L751) |  |
+| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:752](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L752) |  |
+| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:753](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L753) |  |
+| <code>public int BarsRetrieved { get; set; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:754](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L754) |  |
 
 ## BackfillRequestAttempt
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRequestAttempt</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:744](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L744).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:761](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L761).
 
 One immutable dequeue lease. A request can be requeued, but an earlier lease retains only its original token and cannot discover or act on the replacement attempt.
 
@@ -909,14 +909,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillRequest Request { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:754](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L754) |  |
-| <code>public BackfillRequestAttemptToken Token { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:755](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L755) |  |
+| <code>public BackfillRequest Request { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:771](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L771) |  |
+| <code>public BackfillRequestAttemptToken Token { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:772](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L772) |  |
 
 ## BackfillRequestAttemptToken
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRequestAttemptToken</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:761](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L761).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:778](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L778).
 
 Opaque queue-issued capability for one dequeue attempt.
 
@@ -928,7 +928,7 @@ public readonly record struct BackfillRequestAttemptToken
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRequestQueue</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L15).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:16](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L16).
 
 Intelligent queue for backfill requests with prioritization, rate-limit awareness, and provider-specific scheduling.
 
@@ -940,32 +940,32 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int MaxConcurrentRequests { get; set; } = 3;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:32](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L32) | Maximum concurrent requests across all providers. |
-| <code>public int MaxConcurrentPerProvider { get; set; } = 2;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L37) | Maximum concurrent requests per provider. |
-| <code>public event Func&lt;BackfillRequest, Task&gt;? OnRequestReady;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L43) |  |
-| <code>public event Action&lt;QueueStateChangedEventArgs&gt;? OnQueueStateChanged;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L49) | Event raised when queue state changes. |
-| <code>public int PendingCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L51) |  |
-| <code>public int InFlightCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L52) |  |
-| <code>public int TotalCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L53) |  |
-| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L54) |  |
-| <code>public BackfillRequestQueue(ProviderRateLimitTracker rateLimitTracker, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L56) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;BackfillRequest&gt;&gt; EnqueueJobRequestsAsync(BackfillJob job, GapAnalysisResult gapAnalysis, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L69) | Enqueue a batch of requests from a backfill job. |
-| <code>public async Task EnqueueAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:211](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L211) | Enqueue a single request. |
-| <code>public async Task&lt;BackfillRequestAttempt?&gt; TryDequeueAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:230](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L230) | Try to get the next request that can be processed (respecting rate limits and concurrency). |
-| <code>public Task CompleteRequestAsync(BackfillRequest request, BackfillRequestAttemptToken attemptToken, bool success, string? error = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L337) | Mark a request as completed (success or failure). |
-| <code>public Task&lt;bool&gt; CancelInFlightRequestAsync(BackfillRequest request, BackfillRequestAttemptToken attemptToken, string reason, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:414](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L414) | Atomically releases ownership of the current in-flight attempt and records cancellation. A stale token cannot remove a newer attempt of the same request object. |
-| <code>public void RecordProviderRateLimitHit(string provider, TimeSpan? cooldown = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:510](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L510) | Record that a provider hit a rate limit. |
-| <code>public async Task&lt;List&lt;BackfillRequest&gt;&gt; GetJobRequestsAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:523](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L523) | Get all pending requests for a specific job. |
-| <code>public async Task CancelJobRequestsAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:541](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L541) | Cancel all pending requests for a specific job. |
-| <code>public ChannelReader&lt;BackfillRequest&gt; CompletedRequests =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:597](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L597) | Get the channel reader for completed requests. |
-| <code>public QueueStatistics GetStatistics();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:609](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L609) | Get queue statistics. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:691](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L691) |  |
+| <code>public int MaxConcurrentRequests { get; set; } = 3;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:33](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L33) | Maximum concurrent requests across all providers. |
+| <code>public int MaxConcurrentPerProvider { get; set; } = 2;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:38](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L38) | Maximum concurrent requests per provider. |
+| <code>public event Func&lt;BackfillRequest, Task&gt;? OnRequestReady;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L44) |  |
+| <code>public event Action&lt;QueueStateChangedEventArgs&gt;? OnQueueStateChanged;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:50](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L50) | Event raised when queue state changes. |
+| <code>public int PendingCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L52) |  |
+| <code>public int InFlightCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:53](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L53) |  |
+| <code>public int TotalCount =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L54) |  |
+| <code>public bool IsEmpty =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:55](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L55) |  |
+| <code>public BackfillRequestQueue(ProviderRateLimitTracker rateLimitTracker, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:57](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L57) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;BackfillRequest&gt;&gt; EnqueueJobRequestsAsync(BackfillJob job, GapAnalysisResult gapAnalysis, CancellationToken ct = default, BackfillRoutingSnapshot? routingSnapshot = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L70) | Enqueue a batch of requests from a backfill job. |
+| <code>public async Task EnqueueAsync(BackfillRequest request, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:214](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L214) | Enqueue a single request. |
+| <code>public async Task&lt;BackfillRequestAttempt?&gt; TryDequeueAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:233](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L233) | Try to get the next request that can be processed (respecting rate limits and concurrency). |
+| <code>public Task CompleteRequestAsync(BackfillRequest request, BackfillRequestAttemptToken attemptToken, bool success, string? error = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:346](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L346) | Mark a request as completed (success or failure). |
+| <code>public Task&lt;bool&gt; CancelInFlightRequestAsync(BackfillRequest request, BackfillRequestAttemptToken attemptToken, string reason, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:425](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L425) | Atomically releases ownership of the current in-flight attempt and records cancellation. A stale token cannot remove a newer attempt of the same request object. |
+| <code>public void RecordProviderRateLimitHit(string provider, TimeSpan? cooldown = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:523](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L523) | Record that a provider hit a rate limit. |
+| <code>public async Task&lt;List&lt;BackfillRequest&gt;&gt; GetJobRequestsAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:536](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L536) | Get all pending requests for a specific job. |
+| <code>public async Task CancelJobRequestsAsync(string jobId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:554](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L554) | Cancel all pending requests for a specific job. |
+| <code>public ChannelReader&lt;BackfillRequest&gt; CompletedRequests =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:610](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L610) | Get the channel reader for completed requests. |
+| <code>public QueueStatistics GetStatistics();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:622](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L622) | Get queue statistics. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:704](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L704) |  |
 
 ## BackfillRequestStatus
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRequestStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:774](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L774).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:791](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L791).
 
 Status of a backfill request.
 
@@ -977,17 +977,84 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:776](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L776) |  |
-| <code>InProgress</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:777](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L777) |  |
-| <code>Completed</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:778](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L778) |  |
-| <code>Failed</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:779](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L779) |  |
-| <code>Cancelled</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:780](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L780) |  |
+| <code>Pending</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:793](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L793) |  |
+| <code>InProgress</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:794](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L794) |  |
+| <code>Completed</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:795](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L795) |  |
+| <code>Failed</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:796](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L796) |  |
+| <code>Cancelled</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs:797](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRequestQueue.cs#L797) |  |
+
+## BackfillRoutingAdmission
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRoutingAdmission</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:122](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L122).
+
+Concurrency and attempt observations shared by all routing snapshots in a host.
+
+```csharp
+public sealed class BackfillRoutingAdmission : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillRoutingAdmission(IEnumerable&lt;IHistoricalDataProvider&gt; providers, int perProvider, ProviderRateLimitHistory? history = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L127) |  |
+| <code>public RateLimitStatus? GetStatus(string providerName) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:143](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L143) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;TResult&gt;&gt; FetchPinnedAsync&lt;TResult&gt;(IHistoricalDataProvider provider, string symbol, Func&lt;CancellationToken, Task&lt;IReadOnlyList&lt;TResult&gt;&gt;&gt; fetch, Action&lt;BackfillRoutingAttempt&gt;? capture, CancellationToken ct, BackfillProvenanceCapture? provenance = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:146](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L146) | Uses the same admission and observations for a strictly pinned request. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:208](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L208) |  |
+
+## BackfillRoutingProvider
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRoutingProvider</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L12).
+
+A built historical adapter with the priority in effect for newly started work.
+
+```csharp
+public sealed record BackfillRoutingProvider(IHistoricalDataProvider Provider, int Priority)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L14) |  |
+
+## BackfillRoutingSnapshot
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillRoutingSnapshot</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:18](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L18).
+
+Immutable provider order and routing options acquired by a job when it starts.
+
+```csharp
+public sealed class BackfillRoutingSnapshot
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillRoutingSnapshot(IEnumerable&lt;BackfillRoutingProvider&gt; providers, BackfillConfig settings, BackfillRoutingAdmission admission, DateTimeOffset appliedAtUtc);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:25](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L25) |  |
+| <code>public IReadOnlyList&lt;BackfillRoutingProvider&gt; Providers { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:42](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L42) |  |
+| <code>public DateTimeOffset AppliedAtUtc { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:43](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L43) |  |
+| <code>public bool FallbackEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:44](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L44) |  |
+| <code>public bool RotationEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L45) |  |
+| <code>public IReadOnlyList&lt;BackfillRoutingProvider&gt; DefaultOrder =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:47](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L47) |  |
+| <code>public int GetPriority(IHistoricalDataProvider provider) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:49](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L49) |  |
+| <code>public BackfillRoutingSnapshot ForTenant(string? tenantId) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:52](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L52) | Applies request authority without changing the active route or shared admission state. |
+| <code>public static IOrderedEnumerable&lt;BackfillRoutingProvider&gt; Order(IEnumerable&lt;BackfillRoutingProvider&gt; providers) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L56) |  |
+| <code>public IReadOnlyList&lt;BackfillRoutingProvider&gt; SelectProviders(IReadOnlyList&lt;string&gt; preferences);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:61](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L61) |  |
+| <code>public CompositeHistoricalDataProvider CreateComposite(IReadOnlyList&lt;string&gt; preferences, ISymbolResolver? symbolResolver, ILogger log, BackfillProgressTracker? progressTracker, Action&lt;BackfillRoutingAttempt&gt;? captureAttempt = null, Func&lt;CrossProviderTolerancePolicy&gt;? crossValidationPolicy = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:90](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L90) |  |
 
 ## BackfillServiceFactory
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillServiceFactory</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1284](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1284).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1322](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1322).
 
 Factory for creating backfill service instances.
 
@@ -999,14 +1066,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillServiceFactory(IAtomicFileWriter atomicFileWriter, Func&lt;string, IBackfillBarWriter&gt; barWriterFactory, ILogger? log = null, ISymbolResolver? symbolResolver = null, Func&lt;string, BackfillJob, CancellationToken, Task&gt;? retainReceiptAsync = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1293](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1293) |  |
-| <code>public BackfillServices CreateServices(AppConfig appConfig, BackfillConfig config, string dataRoot, IEnumerable&lt;IHistoricalDataProvider&gt; providers, IConnectivityProbeService? connectivityProbe = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1310](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1310) | Create a complete backfill service stack from configuration. |
+| <code>public BackfillServiceFactory(IAtomicFileWriter atomicFileWriter, Func&lt;string, IBackfillBarWriter&gt; barWriterFactory, ILogger? log = null, ISymbolResolver? symbolResolver = null, Func&lt;string, BackfillJob, CancellationToken, Task&gt;? retainReceiptAsync = null, Func&lt;BackfillRoutingSnapshot?&gt;? captureRouting = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1332](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1332) |  |
+| <code>public BackfillServices CreateServices(AppConfig appConfig, BackfillConfig config, string dataRoot, IEnumerable&lt;IHistoricalDataProvider&gt; providers, IConnectivityProbeService? connectivityProbe = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1352](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1352) | Create a complete backfill service stack from configuration. |
 
 ## BackfillServices
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillServices</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1405](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1405).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1454](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1454).
 
 Container for all backfill-related services.
 
@@ -1018,18 +1085,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillJobManager JobManager { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1407](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1407) |  |
-| <code>public BackfillRequestQueue RequestQueue { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1408](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1408) |  |
-| <code>public DataGapAnalyzer GapAnalyzer { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1409](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1409) |  |
-| <code>public ProviderRateLimitTracker RateLimitTracker { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1410](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1410) |  |
-| <code>public CompositeHistoricalDataProvider Provider { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1411](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1411) |  |
-| <code>public BackfillWorkerService Worker { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1412](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1412) |  |
-| <code>public BackfillServices(BackfillJobManager jobManager, BackfillRequestQueue requestQueue, DataGapAnalyzer gapAnalyzer, ProviderRateLimitTracker rateLimitTracker, CompositeHistoricalDataProvider provider, BackfillWorkerService worker, IDisposable? ownedSymbolResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1418](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1418) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1439](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1439) | Initialize services (load persisted jobs). |
-| <code>public void StartWorker();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1447](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1447) | Start the worker service. |
-| <code>public async Task StopWorkerAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1455](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1455) | Stop the worker service. |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1460](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1460) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1463](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1463) |  |
+| <code>public BackfillJobManager JobManager { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1456](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1456) |  |
+| <code>public BackfillRequestQueue RequestQueue { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1457](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1457) |  |
+| <code>public DataGapAnalyzer GapAnalyzer { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1458](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1458) |  |
+| <code>public ProviderRateLimitTracker RateLimitTracker { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1459](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1459) |  |
+| <code>public CompositeHistoricalDataProvider Provider { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1460](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1460) |  |
+| <code>public BackfillWorkerService Worker { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1461](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1461) |  |
+| <code>public BackfillServices(BackfillJobManager jobManager, BackfillRequestQueue requestQueue, DataGapAnalyzer gapAnalyzer, ProviderRateLimitTracker rateLimitTracker, CompositeHistoricalDataProvider provider, BackfillWorkerService worker, IDisposable? ownedSymbolResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1467](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1467) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1488](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1488) | Initialize services (load persisted jobs). |
+| <code>public void StartWorker();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1496](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1496) | Start the worker service. |
+| <code>public async Task StopWorkerAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1504](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1504) | Stop the worker service. |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1509](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1509) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1512](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1512) |  |
 
 ## BackfillSymbolProgress
 
@@ -1047,7 +1114,7 @@ public sealed record BackfillSymbolProgress(string Symbol, DateOnly FromDate, Da
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BackfillWorkerService</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:22](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L22).
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L23).
 
 Background worker service that processes the backfill request queue. Handles rate limits, retries, writes data to storage, and supports offline-first mode.
 
@@ -1059,16 +1126,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public event Action&lt;string, HistoricalBar&gt;? OnBarWritten;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L67) | Event raised when a bar is successfully written to storage. |
-| <code>public event Action&lt;bool&gt;? OnRunningStateChanged;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:72](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L72) | Event raised when worker status changes. |
-| <code>public event Action&lt;ProviderBackfillProgress&gt;? OnProviderProgress;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:78](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L78) | Provider-level progress relayed from the composite provider: per-provider attempts, failover, rate limiting, and outcomes. |
-| <code>public bool IsRunning =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L80) |  |
-| <code>public BackfillProgressTracker ProgressTracker =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:85](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L85) | Gets the progress tracker for monitoring backfill progress per symbol. |
-| <code>public BackfillWorkerService(BackfillJobManager jobManager, BackfillRequestQueue requestQueue, CompositeHistoricalDataProvider provider, ProviderRateLimitTracker rateLimitTracker, BackfillJobsConfig config, AppConfig appConfig, IBackfillBarWriter barWriter, IConnectivityProbeService? connectivityProbe = null, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:90](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L90) |  |
-| <code>public void Start();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:153](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L153) | Start the worker service. |
-| <code>public Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:186](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L186) | Stop the worker service. |
-| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1208](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1208) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1211](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1211) |  |
+| <code>public event Action&lt;string, HistoricalBar&gt;? OnBarWritten;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L69) | Event raised when a bar is successfully written to storage. |
+| <code>public event Action&lt;bool&gt;? OnRunningStateChanged;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L74) | Event raised when worker status changes. |
+| <code>public event Action&lt;ProviderBackfillProgress&gt;? OnProviderProgress;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L80) | Provider-level progress relayed from the composite provider: per-provider attempts, failover, rate limiting, and outcomes. |
+| <code>public bool IsRunning =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:82](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L82) |  |
+| <code>public bool UsesActiveRouting { get; init; }</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:83](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L83) |  |
+| <code>public BackfillProgressTracker ProgressTracker =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L88) | Gets the progress tracker for monitoring backfill progress per symbol. |
+| <code>public BackfillWorkerService(BackfillJobManager jobManager, BackfillRequestQueue requestQueue, CompositeHistoricalDataProvider provider, ProviderRateLimitTracker rateLimitTracker, BackfillJobsConfig config, AppConfig appConfig, IBackfillBarWriter barWriter, IConnectivityProbeService? connectivityProbe = null, ILogger? log = null, ISymbolResolver? symbolResolver = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:93](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L93) |  |
+| <code>public void Start();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:158](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L158) | Start the worker service. |
+| <code>public Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:191](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L191) | Stop the worker service. |
+| <code>public void Dispose() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1246](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1246) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs:1249](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillWorkerService.cs#L1249) |  |
 
 ## BaseHistoricalDataProvider
 
@@ -1170,86 +1238,3 @@ Declared public members:
 | <code>public bool ContinueOnError { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L75) | Continue enqueueing if individual jobs fail. |
 | <code>public bool CreateDependencyChain { get; init; } = false;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:78](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L78) | Create dependency chain between jobs (each depends on previous). |
 | <code>public BackfillPriority DefaultPriority { get; init; } = BackfillPriority.Normal;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:81](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L81) | Default priority for all jobs in batch. |
-
-## BatchEnqueueResult
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BatchEnqueueResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:51](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L51).
-
-Result of enqueueing a batch of backfill jobs.
-
-```csharp
-public sealed record BatchEnqueueResult(IReadOnlyList<BackfillJob> EnqueuedJobs, IReadOnlyList<BatchEnqueueError> Errors)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalEnqueued =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:56](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L56) |  |
-| <code>public int TotalFailed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:57](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L57) |  |
-| <code>public bool AllSucceeded =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:58](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L58) |  |
-
-## CompositeHistoricalDataProvider
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CompositeHistoricalDataProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:29](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L29).
-
-Composite provider that chains multiple data providers with automatic failover. Supports symbol resolution, provider health tracking, rate-limit aware rotation, and cross-provider validation.
-
-```csharp
-public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, IHistoricalAggregateBarProvider, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public event Action&lt;ProviderBackfillProgress&gt;? OnProgressUpdate { add; remove; }</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L67) | Event raised as a request progresses through the provider chain: when a provider attempt starts, succeeds, fails, is rate limited, or all providers are exhausted. Notifications flow through a bounded drop-oldest dispatcher, so slow or failing subscribers never interrupt the data path. |
-| <code>public BackfillProgressTracker ProgressTracker =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:74](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L74) | Coherent provider-attempt snapshot used by workers and API projections. |
-| <code>public string Name =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:76](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L76) |  |
-| <code>public string DisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:77](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L77) |  |
-| <code>public string Description =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:78](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L78) |  |
-| <code>public int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:80](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L80) |  |
-| <code>public TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:81](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L81) |  |
-| <code>public int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:82](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L82) |  |
-| <code>public TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:83](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L83) |  |
-| <code>public HistoricalDataCapabilities Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:89](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L89) | Aggregated capabilities from all child providers. A capability is supported if ANY child provider supports it. |
-| <code>public IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt; ProviderHealth =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:107](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L107) | Get current health status of all providers. |
-| <code>public IReadOnlyDictionary&lt;string, RateLimitStatus&gt; RateLimitStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:112](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L112) | Get current rate limit status for all providers. |
-| <code>public IReadOnlyList&lt;DataGranularity&gt; SupportedGranularities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:114](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L114) |  |
-| <code>public CompositeHistoricalDataProvider(IEnumerable&lt;IHistoricalDataProvider&gt; providers, ISymbolResolver? symbolResolver = null, TimeSpan? failureBackoffDuration = null, bool enableCrossValidation = false, bool enableRateLimitRotation = true, double rateLimitRotationThreshold = 0.8, TimeSpan? maxRateLimitRetryBudget = null, ILogger? log = null, BackfillProgressTracker? progressTracker = null, IReadOnlyDictionary&lt;string, ProviderValidationProfile&gt;? validationProfiles = null, ProviderRateLimitHistory? rateLimitHistory = null, Func&lt;CrossProviderTolerancePolicy&gt;? crossValidationPolicy = null, bool ownsProviders = true);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:122](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L122) |  |
-| <code>public async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:178](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L178) |  |
-| <code>public Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:189](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L189) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, BackfillProvenanceCapture? capture, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:192](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L192) |  |
-| <code>public Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:217](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L217) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AggregateBar&gt;&gt; GetAggregateBarsAsync(string symbol, DataGranularity granularity, DateOnly? from, DateOnly? to, BackfillProvenanceCapture? capture, CancellationToken ct);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:224](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L224) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:616](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L616) |  |
-| <code>public async Task&lt;IReadOnlyDictionary&lt;string, ProviderHealthStatus&gt;&gt; CheckAllProvidersHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:651](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L651) | Check health of all providers. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:693](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L693) |  |
-
-## CompositeProviderOptions
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.CompositeProviderOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:749](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L749).
-
-Configuration for composite provider behavior.
-
-```csharp
-public sealed record CompositeProviderOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan FailureBackoffDuration { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:754](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L754) | Duration to skip a provider after failure. |
-| <code>public bool EnableCrossValidation { get; init; } = false;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:759](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L759) | Enable cross-validation of data between providers. |
-| <code>public int MaxRetriesPerProvider { get; init; } = 2;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:764](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L764) | Maximum number of retries per provider. |
-| <code>public bool PreferAdjustedPrices { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:769](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L769) | Prefer providers that support adjusted prices. |
-| <code>public bool EnableRateLimitRotation { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:776](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L776) | Enable rate-limit aware provider rotation. When enabled, providers approaching their rate limit will be deprioritized and rate-limited providers will be skipped until their limit resets. |
-| <code>public double RateLimitRotationThreshold { get; init; } = 0.8;</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:783](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L783) | Threshold (0.0 to 1.0) at which a provider is considered &quot;approaching&quot; its rate limit. Providers exceeding this threshold will be deprioritized in favor of providers with more capacity. Default: 0.8 (80% of rate limit used). |
-| <code>public TimeSpan MaxRateLimitRetryBudget { get; init; } = TimeSpan.FromMinutes(5);</code> | [src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs:790](../../../../src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs#L790) | Overall wall-clock budget for waiting out provider rate limits across all retry attempts for a single request. Bounds the worst-case blocking time (jitter is applied to each wait). Default: 5 minutes. |

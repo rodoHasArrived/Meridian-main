@@ -25,11 +25,9 @@ import {
   WorkspaceInspectorHost
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
-import { PanelReload } from "@/components/ui/panel-reload";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -52,34 +50,34 @@ import {
   type QualityDashboardFetcher
 } from "@/screens/data-screen.data-quality.view-model";
 import {
-  CAPABILITY_LEGEND,
   buildCapabilityFreshnessIndex,
-  useCapabilityMatrixPanel,
-  type CapabilityFreshnessModel,
-  type CapabilityMatrixViewModel,
-  type CapabilityMatrixRowModel
+  useCapabilityMatrixPanel
 } from "@/screens/data-screen.capability-matrix.view-model";
+import { CapabilityMatrixRegion } from "@/screens/data-screen.capability-matrix";
 import {
   useCorporateActionInboxPanel
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import { CorporateActionInboxRegion } from "@/screens/data-screen.corporate-action-inbox";
-import { FixedIncomeCapabilityReadiness } from "@/screens/data-screen.fixed-income-capabilities";
 import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
 import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
 import { FailoverRegion } from "@/screens/data-screen.failover";
+import { AlpacaFeedRegion } from "@/screens/data-screen.alpaca-feed";
+import { canTestProviderDraft } from "@/screens/data-screen.draft-verification";
+import { supportsProviderDraft } from "@/lib/provider-credential-scope";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
 import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
+import { BackfillSchedulesRegion } from "@/screens/data-screen.backfill-schedules";
+import { ProviderActivationPanel } from "@/components/data/provider-activation-panel";
 import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
 import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
 import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
-import { BackfillQuotaPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
-import { TimeText } from "@/components/ui/time-text";
+import { BackfillSubmissionPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
 import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
@@ -297,7 +295,7 @@ function DataScreenContent({
   }, [lastReceiptId, onBackfillCompleted]);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
-  const capabilityMatrixPanel = useCapabilityMatrixPanel();
+  const capabilityMatrixPanel = useCapabilityMatrixPanel(vm.workstream === "overview" && data !== null);
   const capabilityFreshness = useMemo(() => buildCapabilityFreshnessIndex(vm.providerSection.rows), [vm.providerSection.rows]);
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
@@ -542,14 +540,16 @@ function DataScreenContent({
 
         {showProviderWorkstream ? (
           <>
+            <ProviderActivationPanel />
             <FailoverRegion />
+            <AlpacaFeedRegion />
             <BackfillProviderEditorRegion />
             <DataRoutingPreviewPanel />
             <RateLimitHistoryPanel />
           </>
         ) : null}
 
-        {showBackfillWorkstream ? (
+        {showBackfillWorkstream ? <>
           <DataBackfillWorkstream vm={vm} onBackfillCompleted={() => void onBackfillCompleted?.("data")}>
             {canLoadOlder ? (
               <Button variant="outline" size="sm" onClick={() => void loadOlderBackfills()} disabled={older?.loading}>
@@ -558,7 +558,8 @@ function DataScreenContent({
             ) : null}
             {older?.error ? <p role="alert" className="text-sm text-danger">Could not load older backfill results.</p> : null}
           </DataBackfillWorkstream>
-        ) : null}
+          <BackfillSchedulesRegion />
+        </> : null}
 
         {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
 
@@ -1215,6 +1216,7 @@ function dataStatusToneToBannerTone(tone: "default" | "warning" | "danger" | "su
 }
 
 function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
+  const draftRejected = vm.providerDraftTest.result !== null && vm.providerDraftTest.result.status !== "Verified";
   return (
     <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
       <DialogContent aria-labelledby={vm.providerSetupDialogState.titleId} aria-describedby={vm.providerSetupDialogState.descriptionId}>
@@ -1437,6 +1439,21 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 </label>
               ))}
 
+              {supportsProviderDraft(vm.providerForm.kind) ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" onClick={() => void vm.providerDraftTest.verify(vm.providerForm)}
+                    disabled={!canTestProviderDraft(vm.providerForm) || vm.providerPhase === "submitting"}
+                    busy={vm.providerDraftTest.busy} busyLabel="Testing draft">
+                    Test draft credentials
+                  </Button>
+                  {vm.providerDraftTest.result ? (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      {vm.providerDraftTest.result.status === "Unavailable" ? "Verification unavailable" : vm.providerDraftTest.result.status}. {vm.providerDraftTest.result.message}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
               <fieldset>
                 <legend className="mb-2 text-sm">Capabilities</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1509,13 +1526,13 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               </Button>
               <Button
                 onClick={() => void vm.submitProviderSetup()}
-                disabled={vm.providerSetupDialogState.submitAction.disabled}
+                disabled={vm.providerSetupDialogState.submitAction.disabled || vm.providerDraftTest.busy}
                 disabledReason={vm.providerSetupDialogState.submitAction.disabledReason}
                 busy={vm.providerSetupDialogState.submitAction.busy}
                 busyLabel={vm.providerSetupDialogState.submitAction.busyLabel}
-                aria-label={vm.providerSetupDialogState.submitAction.ariaLabel}
+                aria-label={draftRejected ? "Save anyway" : vm.providerSetupDialogState.submitAction.ariaLabel}
               >
-                {vm.providerSetupDialogState.submitAction.label}
+                {draftRejected ? "Save anyway" : vm.providerSetupDialogState.submitAction.label}
               </Button>
             </div>
           </>
@@ -1958,42 +1975,14 @@ function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperations
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
-        {vm.preview && <BackfillQuotaPanel preview={vm.preview} submissionEstimate={vm.submission?.quota} busy={vm.busy}
-          selectAlternative={(alternative) => {
-            providerField.current?.focus();
-            vm.selectBackfillAlternative(alternative);
-          }} />}
-        {quota && !vm.submission && (
-          <div className="mt-3 space-y-2 text-sm">
-            <label className="flex w-fit items-center gap-2">
-              <input type="checkbox" checked={vm.scheduleForLater} disabled={vm.busy}
-                onChange={(event) => vm.setScheduleForLater(event.target.checked)} />
-              Schedule for later
-            </label>
-            {vm.scheduleForLater && (
-              <label className="grid max-w-xs gap-1">
-                Earliest start (UTC)
-                <Input type="datetime-local" value={vm.scheduledStart} disabled={vm.busy}
-                  onChange={(event) => vm.setScheduledStart(event.target.value)} />
-              </label>
-            )}
-          </div>
-        )}
-        {vm.submission && (
-          <div className="mt-4 space-y-2 rounded-md border border-border/70 p-3" role="status">
-            <p className="text-sm font-medium">{submissionStatus} · {vm.submission.provider}</p>
-            <p className="break-all font-mono text-xs text-muted-foreground">Job {vm.submission.executionId}</p>
-            {submissionStatus === "Scheduled" && <p className="text-xs">Eligible from <TimeText value={vm.submission.scheduledAt} />.</p>}
-            {vm.submission.quota.exceedsBudget && <p className="text-xs">Requests are paced to the shared provider budget.</p>}
-            {latestSubmission?.quotaReceipt && <BackfillReceiptEvidence receipt={latestSubmission.quotaReceipt} />}
-          </div>
-        )}
-        {latestSubmission?.batchReceipts?.length ? <BackfillBatchReceipts receipts={latestSubmission.batchReceipts} /> : null}
+        <BackfillSubmissionPanel vm={vm} providerField={providerField} />
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
         {vm.result?.quotaReceipt && <div className="mt-3"><BackfillReceiptEvidence receipt={vm.result.quotaReceipt} /></div>}
         {vm.runResultCard ? <ProviderProvenancePanel receipt={vm.result?.providerProvenance} onBackfillCompleted={onBackfillCompleted} /> : null}
-        {vm.result?.batchReceipts?.length ? <BackfillBatchReceipts receipts={vm.result.batchReceipts} /> : null}
+        {vm.result && (vm.result.batchReceipts?.length || vm.result.routingAttempts?.length) ? (
+          <BackfillBatchReceipts receipts={vm.result.batchReceipts ?? []} attempts={vm.result.routingAttempts ?? []} />
+        ) : null}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
@@ -2139,71 +2128,6 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
         </p>
       ) : null}
       <p className="text-right text-xs text-muted-foreground">Observed {state.observedAt}</p>
-    </section>
-  );
-}
-
-const FRESHNESS_SEVERITY: Record<CapabilityFreshnessModel["state"], string> = { current: "ready", stale: "stale", "no-evidence": "unknown" };
-
-function CapabilityMatrixRegion({ panel, freshness }: { panel: CapabilityMatrixViewModel; freshness: (providerId: string) => CapabilityFreshnessModel }) {
-  return (
-    <section aria-labelledby="capability-matrix-title" className="workspace-region capability-matrix-region">
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle id="capability-matrix-title">Provider capability matrix</CardTitle>
-            <CardDescription>
-              Declared provider coverage per instrument type, with how fresh each provider's newest evidence is.
-              {panel.model ? ` ${panel.model.summary}` : null}
-            </CardDescription>
-          </div>
-          <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="provider capability matrix" />
-        </CardHeader>
-        <CardContent>
-          {panel.error ? (
-            <StatusBanner tone="danger" title="Capability matrix unavailable" detail={panel.error} />
-          ) : !panel.model ? (
-            <p className="text-sm text-muted-foreground" role="status">Loading capability matrix…</p>
-          ) : (
-            <div className="grid gap-4">
-              <FixedIncomeCapabilityReadiness rows={panel.model.rows} />
-              <div className="overflow-x-auto">
-                <TableWorkbench workbenchId="data-provider-capabilities" sourceKey={panel.model.rows.map((row) => row.providerId).join("|")}
-                  sourceDescription="Loaded declared provider capability matrix; discovery failures are listed below."
-                  completePopulation={panel.model.failures.length === 0}
-                  rows={panel.model.rows} getRowId={(row) => row.providerId} getSearchText={(row) => `${row.providerId} ${row.cells.map((cell) => cell.description).join(" ")}`}
-                  columns={[{ id: "provider", label: "Provider", rowHeader: true, render: (row) => <span className="font-mono font-semibold">{row.providerId}</span>, exportValue: (row) => row.providerId },
-                    { id: "freshness", label: "Freshness", render: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return (
-                      <span className="inline-flex flex-wrap items-center gap-1.5" data-freshness={fresh.state}>
-                        <StatusBadge status={FRESHNESS_SEVERITY[fresh.state]} label={fresh.label} />
-                        {fresh.ageText ? <span className="text-xs tabular-nums text-muted-foreground">{fresh.ageText}</span> : null}
-                      </span>); },
-                      exportValue: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return fresh.ageText ? `${fresh.label} (${fresh.ageText})` : fresh.label; } },
-                    ...panel.model.columns.map((column) => ({ id: column, label: column,
-                      render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : "Unavailable"; },
-                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" }))]}
-                  ariaLabel="Provider capability by instrument type" emptyText="No declared capabilities." maxVisibleRows={null} />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {CAPABILITY_LEGEND.map((mark) => `${mark.code} = ${mark.label}`).join(" · ")}
-              </p>
-              {panel.model.failures.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold">Discovery failures</h3>
-                  <ul className="mt-2 grid gap-1.5">
-                    {panel.model.failures.map((failure, index) => (
-                      <li key={`${failure.stage}-${failure.subject}-${index}`} className="text-sm text-muted-foreground">
-                        <Badge variant="danger">{failure.stage}</Badge>{" "}
-                        <span className="font-mono">{failure.subject}</span> — {failure.errorType}: {failure.errorMessage}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </section>
   );
 }

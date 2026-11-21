@@ -58,7 +58,8 @@ public static class UiConfigurationSaveGuard
             throw new UiConfigurationValidationException(errors);
     }
 
-    internal static void Validate(AppConfig current, AppConfig next, bool confirmDataSemantics, bool wholeDocument)
+    internal static void Validate(AppConfig current, AppConfig next, bool confirmDataSemantics, bool wholeDocument,
+        bool verifiedAlpacaSip = false)
     {
         ArgumentNullException.ThrowIfNull(next);
         var errors = new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase);
@@ -119,6 +120,11 @@ public static class UiConfigurationSaveGuard
             errors["DataSources.FailoverRules"] = [unknownProvider];
         if (!string.Equals(current.TenantScopeEnforcement, next.TenantScopeEnforcement, StringComparison.Ordinal))
             errors["TenantScopeEnforcement"] = ["Tenant posture is a host deployment setting and cannot be changed by a UI save."];
+        if (!verifiedAlpacaSip && IntroducesAlpacaSip(current, next))
+        {
+            errors["Alpaca.Feed"] = ["Use the Alpaca equity feed editor to verify the selected account's SIP access before saving."];
+            throw new UiConfigurationValidationException(errors);
+        }
 
         var before = JsonSerializer.SerializeToNode(current, AppConfigJsonOptions.Write);
         var after = JsonSerializer.SerializeToNode(next, AppConfigJsonOptions.Write);
@@ -133,6 +139,26 @@ public static class UiConfigurationSaveGuard
         }
         if (errors.Count > 0)
             throw new UiConfigurationValidationException(errors);
+    }
+
+    private static bool IntroducesAlpacaSip(AppConfig current, AppConfig next)
+    {
+        static bool IsSip(string? feed) => string.Equals(feed?.Trim(), "sip", StringComparison.OrdinalIgnoreCase);
+        if (IsSip(AlpacaFeedConfiguration.SavedFeed(next)) && !IsSip(AlpacaFeedConfiguration.SavedFeed(current)))
+            return true;
+        if (IsSip(AlpacaFeedConfiguration.SavedHistoricalFeed(next)) && !IsSip(AlpacaFeedConfiguration.SavedHistoricalFeed(current)))
+            return true;
+        if (IsSip(next.Alpaca?.Feed) && !IsSip(current.Alpaca?.Feed))
+            return true;
+        if (IsSip(next.Backfill?.Providers?.Alpaca?.Feed) && !IsSip(current.Backfill?.Providers?.Alpaca?.Feed))
+            return true;
+        if (IsSip(AlpacaFeedConfiguration.ModuleFeed(next)) && !IsSip(AlpacaFeedConfiguration.ModuleFeed(current)))
+            return true;
+        var previousSources = current.DataSources?.Sources ?? [];
+        return (next.DataSources?.Sources ?? []).Any(nextSource =>
+            nextSource.Provider == DataSourceKind.Alpaca && IsSip(nextSource.Alpaca?.Feed) &&
+            !previousSources.Any(previous => previous.Provider == DataSourceKind.Alpaca &&
+                string.Equals(previous.Id, nextSource.Id, StringComparison.OrdinalIgnoreCase) && IsSip(previous.Alpaca?.Feed)));
     }
 
     private static void RefuseAmbiguousProperties(JsonNode? node)

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProjectionBatchRebuiltRecord
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ProjectionBatchRebuiltRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:46](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L46).
+
+A record written by a rebuild batch. Version 1 stored these two names in PascalCase.
+
+```csharp
+public sealed record ProjectionBatchRebuiltRecord([property : JsonPropertyName("SecurityId")] Guid SecurityId, [property : JsonPropertyName("Version")] long Version);
+```
+
 ## RegistryProjectionReadService
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.RegistryProjectionReadService</code>. Kind: `class`.
@@ -592,34 +604,36 @@ Source: [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:13](../../../.
 Canonical symbol registry providing standardized symbol naming across the system. Wraps the underlying ISymbolRegistryService to provide a unified resolution interface that accepts any known identifier (canonical, alias, ISIN, FIGI, SEDOL, CUSIP, provider-specific ticker) and resolves it to the canonical name.
 
 ```csharp
-public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry, ICanonicalSymbolRegistrySecurityMasterWriter, ISecurityMasterLegacyIdentifierCleanupWriter, ICanonicalSymbolRegistryMigrationWriter
+public sealed class CanonicalSymbolRegistry : ICanonicalSymbolRegistry, ICanonicalSymbolOperatorMappingWriter, ICanonicalSymbolRegistrySecurityMasterWriter, ISecurityMasterLegacyIdentifierCleanupWriter, ICanonicalSymbolRegistryMigrationWriter
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public CanonicalSymbolRegistry(ISymbolRegistryService registryService);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:28](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L28) |  |
-| <code>public int Count =&gt; …;</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:35](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L35) |  |
-| <code>public string? ResolveToCanonical(string input);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:38](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L38) |  |
-| <code>public string? TryResolve(string symbol, string provider);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:62](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L62) |  |
-| <code>public async Task RegisterAsync(CanonicalSymbolDefinition definition, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:88](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L88) |  |
-| <code>public async Task&lt;int&gt; RegisterBatchAsync(IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:105](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L105) |  |
-| <code>public async Task&lt;int&gt; ReconcileSecurityMasterAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:118](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L118) |  |
-| <code>public Task&lt;string&gt; GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:141](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L141) |  |
-| <code>public Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:145](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L145) |  |
-| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:151](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L151) |  |
-| <code>public async Task&lt;int&gt; ApplyMigrationAsync(string migrationId, string fingerprint, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:165](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L165) |  |
-| <code>public CanonicalSymbolDefinition? GetDefinition(string symbolOrIdentifier);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:190](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L190) |  |
-| <code>public IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetAll();</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:207](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L207) |  |
-| <code>public IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByAssetClass(string assetClass);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:215](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L215) |  |
-| <code>public IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByExchange(string exchange);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:223](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L223) |  |
-| <code>public string? TryResolveWithProvider(string symbol, string provider);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:235](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L235) |  |
-| <code>public string? GetProviderSymbol(string symbolOrIdentifier, string provider);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:255](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L255) |  |
-| <code>public async Task SetProviderSymbolAsync(string canonical, string provider, string providerSymbol, string source = SymbolMappingSources.Operator, bool isOverride = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:276](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L276) |  |
-| <code>public async Task&lt;bool&gt; RemoveProviderSymbolAsync(string canonical, string provider, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:300](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L300) |  |
-| <code>public bool IsKnown(string identifier);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:319](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L319) |  |
-| <code>public async Task&lt;bool&gt; RemoveAsync(string canonical, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:328](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L328) |  |
+| <code>public CanonicalSymbolRegistry(ISymbolRegistryService registryService);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:29](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L29) |  |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:36](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L36) |  |
+| <code>public string? ResolveToCanonical(string input);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:39](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L39) |  |
+| <code>public string? TryResolve(string symbol, string provider);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:63](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L63) |  |
+| <code>public async Task RegisterAsync(CanonicalSymbolDefinition definition, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:89](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L89) |  |
+| <code>public async Task&lt;int&gt; RegisterBatchAsync(IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:106](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L106) |  |
+| <code>public async Task&lt;int&gt; SaveOperatorMappingsAsync(IReadOnlyList&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:118](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L118) |  |
+| <code>public async Task&lt;int&gt; RemoveOperatorMappingsAsync(string canonical, string? provider, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:128](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L128) |  |
+| <code>public async Task&lt;int&gt; ReconcileSecurityMasterAsync(IReadOnlyCollection&lt;Guid&gt; securityIds, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:145](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L145) |  |
+| <code>public Task&lt;string&gt; GetLegacyIdentifierCleanupFingerprintAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:168](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L168) |  |
+| <code>public Task&lt;SecurityMasterLegacyIdentifierCleanupValidation&gt; ValidateLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupManifest manifest, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:172](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L172) |  |
+| <code>public async Task&lt;SecurityMasterLegacyIdentifierCleanupReceipt&gt; ApplyLegacyIdentifierCleanupAsync(SecurityMasterLegacyIdentifierCleanupValidation validation, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:178](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L178) |  |
+| <code>public async Task&lt;int&gt; ApplyMigrationAsync(string migrationId, string fingerprint, IEnumerable&lt;CanonicalSymbolDefinition&gt; definitions, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:192](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L192) |  |
+| <code>public CanonicalSymbolDefinition? GetDefinition(string symbolOrIdentifier);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:217](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L217) |  |
+| <code>public IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetAll();</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:234](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L234) |  |
+| <code>public IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByAssetClass(string assetClass);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:242](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L242) |  |
+| <code>public IReadOnlyList&lt;CanonicalSymbolDefinition&gt; GetByExchange(string exchange);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:250](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L250) |  |
+| <code>public string? TryResolveWithProvider(string symbol, string provider);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:262](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L262) |  |
+| <code>public string? GetProviderSymbol(string symbolOrIdentifier, string provider);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:282](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L282) |  |
+| <code>public async Task SetProviderSymbolAsync(string canonical, string provider, string providerSymbol, string source = SymbolMappingSources.Operator, bool isOverride = true, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:303](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L303) |  |
+| <code>public async Task&lt;bool&gt; RemoveProviderSymbolAsync(string canonical, string provider, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:327](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L327) |  |
+| <code>public bool IsKnown(string identifier);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:346](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L346) |  |
+| <code>public async Task&lt;bool&gt; RemoveAsync(string canonical, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs:355](../../../../src/Meridian.Storage/Services/CanonicalSymbolRegistry.cs#L355) |  |
 
 ## ConsolidatedDataset
 
@@ -843,21 +857,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static DataReplacementCostEstimate Empty(DataReplacementCostOptions options) =&gt; …;</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:187](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L187) |  |
-
-## DataReplacementCostEstimator
-
-Qualified name: <code>Meridian.Storage.Services.DataReplacementCostEstimator</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:12](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L12).
-
-Estimates what the locally collected market-data store would cost to repurchase from commercial metered vendors, priced against a configurable rate card. Estimates are deliberately conservative: two independent bases are computed (per symbol-day and per gigabyte) and the lower one is reported as the headline figure. This is a pure post-processing pass over the StorageCatalog; it never touches the data files.
-
-```csharp
-public static class DataReplacementCostEstimator
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static DataReplacementCostEstimate Estimate(StorageCatalog catalog, DataReplacementCostOptions options);</code> | [src/Meridian.Storage/Services/DataReplacementCostEstimator.cs:19](../../../../src/Meridian.Storage/Services/DataReplacementCostEstimator.cs#L19) | Computes a replacement-cost estimate for catalog using options. Returns a zero-valued estimate when the catalog is empty or the meter is disabled. |

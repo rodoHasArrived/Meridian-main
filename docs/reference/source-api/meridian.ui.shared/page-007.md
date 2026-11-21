@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashSourceWatchObservation
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceWatchObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L28).
+
+```csharp
+public sealed record AccountCashSourceWatchObservation(string ObservationId, Guid SecurityId, string Kind, DateOnly EffectiveDate, string Value, string? Agency, string? SupersedesObservationId);
+```
+
+## BondCouponRecognitionEvidenceVerifier
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.BondCouponRecognitionEvidenceVerifier</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L8).
+
+Rechecks exact observed bank cash and independently reviewed deductions before recognition.
+
+```csharp
+public sealed class BondCouponRecognitionEvidenceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondCouponRecognitionEvidenceVerifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task VerifyAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;BondCouponRecognizedCashDto&gt; cash, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L13) |  |
+
 ## ContractualCashFlowDraftAttestationSubjectResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.ContractualCashFlowDraftAttestationSubjectResolver</code>. Kind: `class`.
@@ -1003,45 +1031,3 @@ Declared public members:
 | <code>public async Task&lt;StatementToReportWorkflowDto?&gt; GetAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:75](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L75) |  |
 | <code>public async Task&lt;StatementToReportWorkflowExecution?&gt; ResumeAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:85](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L85) |  |
 | <code>public async Task&lt;StatementToReportArtifactDownload?&gt; DownloadArtifactAsync(string workflowId, string artifactId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:99](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L99) |  |
-
-## StrategyRunEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StrategyRunEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L17).
-
-Adds strategy-run provenance and supporting execution evidence to an evidence graph.
-
-```csharp
-public sealed class StrategyRunEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StrategyRunEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L23) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L28) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L30) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs:33](../../../../src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs#L33) |  |
-
-## TradingReadinessEvidenceContributor
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.TradingReadinessEvidenceContributor</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:23](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L23).
-
-Adds trading readiness gates and their supporting evidence to an evidence graph.
-
-```csharp
-public sealed class TradingReadinessEvidenceContributor : IEvidenceContributor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TradingReadinessEvidenceContributor(IServiceProvider services);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L27) |  |
-| <code>public string ContributorId =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:32](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L32) |  |
-| <code>public bool Supports(EvidenceSubjectDto subject) =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L34) |  |
-| <code>public async Task&lt;EvidenceContribution&gt; ContributeAsync(EvidenceContributionContext context);</code> | [src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs#L37) |  |

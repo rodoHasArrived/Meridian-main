@@ -1,4 +1,5 @@
 using Meridian.Contracts.Backfill;
+using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Integrity;
 using Meridian.Domain.Events;
@@ -8,7 +9,7 @@ using Meridian.Storage.Backfill;
 
 namespace Meridian.Backtesting.Engine;
 
-/// <summary>Records session dates actually replayed and verifies optional ingestion receipts.</summary>
+/// <summary>Records replayed session dates and bar sources and verifies optional ingestion receipts.</summary>
 internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionScheduleResolver scheduleResolver)
 {
     private static readonly TimeZoneInfo UsEquitiesTimeZone = TimeZoneInfo.FindSystemTimeZoneById("America/New_York");
@@ -16,6 +17,7 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
     private readonly DateTimeOffset _capturedAt = DateTimeOffset.UtcNow;
     private readonly Dictionary<string, VerifiedBatch?> _batchCache = new(StringComparer.Ordinal);
     private readonly Dictionary<string, HashSet<DateOnly>> _observedDates = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<(string Symbol, string Source), long> _sourceCounts = new();
     private readonly HashSet<string> _unverified = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, BackfillBatchReceipt> _consumedRevisions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (DateTimeOffset At, JournalEvidenceReference Reference)?> _lastPriceEvidence = new(StringComparer.OrdinalIgnoreCase);
@@ -80,6 +82,12 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
             if (!_observedDates.TryGetValue(symbol, out var dates))
                 _observedDates.Add(symbol, dates = []);
             dates.Add(session);
+
+            var source = MarketDataSources.IsMissing(item.Source)
+                ? MarketDataSources.Unknown
+                : item.Source.Trim().ToUpperInvariant();
+            var key = (symbol.Trim().ToUpperInvariant(), source);
+            _sourceCounts[key] = _sourceCounts.GetValueOrDefault(key) + 1;
         }
 
         if (item.BackfillRevisionId is { } id && _batchCache.GetValueOrDefault(id) is { } batch)
@@ -131,7 +139,14 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
         return new BacktestInputCoverage(1m, instruments,
             _consumedRevisions.Values.OrderBy(static receipt => receipt.RevisionId, StringComparer.Ordinal)
                 .Select(static receipt => new BacktestDataRevision(receipt.RevisionId, receipt.ContentHash,
-                    receipt.ServingProvider!, receipt.Instrument, receipt.Granularity)).ToArray());
+                    receipt.ServingProvider!, receipt.Instrument, receipt.Granularity)).ToArray())
+        {
+            SourceMix = _sourceCounts.Count > 0
+                ? _sourceCounts.OrderBy(static item => item.Key.Symbol, StringComparer.Ordinal)
+                    .ThenBy(static item => item.Key.Source, StringComparer.Ordinal)
+                    .Select(static item => new BacktestSourceCount(item.Key.Symbol, item.Key.Source, item.Value)).ToArray()
+                : null
+        };
     }
 
     private async Task<VerifiedBatch?> ReadBatchAsync(string id, CancellationToken ct)

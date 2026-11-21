@@ -6,10 +6,19 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.FinancialOperations
+
+Mapped CSV intake preserves the `coupon`, `interest` and `principal` classifications and explicit
+receipt metadata through `StatementCanonicalRecord` into the canonical artifact. Reversal references
+retain the original provider payment ID; splits name an obligation or projected flow rather than
+guessing by an amount alone. The artifact writer keeps the legacy column order and emits the extended
+receipt suffix only when needed. New optional DTO fields omit null from JSON, preserving legacy
+serialization when absent. Canonical ingestion then validates identity and payment conservation before
+the queue can consume this evidence. This transport does not approve an expectation or post a journal.
+See [receipt import evidence](../../docs/operators/reconciliation-operations.md).
 
 Mapped statement CSV rejects malformed quotes, null characters and rows whose field count differs
 from the reviewed header. Validation and preview report blocking diagnostics, and commit refuses the
@@ -668,6 +677,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   dimension-scoped package requests, certification state, validation issues, retained package
   history, evidence-backed package certification, independent certifier enforcement, and
   restatement workflow metadata.
+- `AccountingClose/AccountingReportPackageService.Dimensions.cs` - the report package service's
+  dimension normalization, matching, conflict detection, scoped keys, and retained scope hash.
+  The partial shares package certification state without changing dimension or hash semantics.
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
@@ -681,6 +693,11 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `AccountingSystem/AccountingSystemIntegrationStateStore.cs` - optional atomic file retention of latest imports, mapping profiles and export packages across restarts; without it the service keeps them for the process lifetime only.
 - `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
+- `Reconciliation/StatementMatchEvidenceBuilder.cs` retains signed normalized operands, rule evidence,
+  and exact decimal residuals for candidates and accepted groups. The run retains the executed
+  tolerance profile by ID, version, statement date, and comparison fingerprint. The v4 comparison
+  revision covers external transaction identity, date-window, ambiguity, and execution-price rules.
+  Legacy v3 runs retain their original evidence and comparison fingerprint.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
 - `Reconciliation/Connectors/StatementIngressLimits.cs` - the single PRD-010 ingress bound shared by

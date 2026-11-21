@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Ui/dashboard
@@ -27,7 +27,18 @@ Numeric priority and Move up provide keyboard alternatives to dragging. Preview 
 daily date range and proposed priority/availability without saving or fetching prices; unavailable
 vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
 requires a reason and exposes retained change history. Quota history distinguishes an observed
-throttle from the next provider attempted and discloses process-lifetime retention.
+throttle from the next provider attempted. Recent events remain process-lifetime evidence, and
+daily throttle and rotation totals are retained for seven UTC days.
+
+The provider editor reads the host's effective order for new jobs. Save feedback explains when a
+routing change is active and when pacing or tier changes require a restart. The Backfills route
+uses the same runtime provider list for ordered schedule preferences, and shows serving-provider
+counts and attempt outcomes in the backfill result and schedule history.
+
+Provider Accounting shows saved and running account quotas and request pacing. Paid presets
+require a finite Meridian daily cap. Provider activation is read from the host and includes
+pending changes, start failures, and restart confirmation on a supervised host. The Alpaca feed
+editor verifies the selected account's SIP access before saving a change to SIP.
 
 Settings and Providers share the setting-activation banner. Save receipts distinguish `Live`,
 `ReconnectProvider` and `RestartHost`; pending field names remain inspectable until host activation.
@@ -482,6 +493,16 @@ the workstation's demo status. Configure exposes synthetic-only automatic fill
 posting grants: authenticated operators inspect, activate and revoke exact scoped authority against
 the current retained policy/mapping. Grant identities survive uncertain responses for inspection
 and retry; tenant, company and actor are server-owned. These reads never use development fallback.
+
+Accounting Reconciliation also includes a book receipt queue for coupon, interest and principal.
+It reads immutable daily runs from authoritative holdings, accepted projections, retained cash receipts
+and posted journals. Only **Run daily check** creates a run and synchronizes linked exceptions;
+book and history selection perform reads. Expected, received, posted and remaining amounts retain
+their exact decimal strings and individual currencies. Filters expose due, overdue, partial, disputed,
+received-but-unposted, reconciled, scheduled and incomplete-evidence states. Source details preserve
+earlier terms expectations, split allocations, reversals, owner and aging. Missing provider coverage
+remains visible even for an empty queue. Book changes cancel pending UI reads and commands; server
+scope and ledger permissions remain authoritative. No development fallback supplies receipt evidence.
 
 Reporting Exports downloads the server's single-snapshot general-ledger ZIP for the selected
 book/period with the session's explicit ExportData permission, without rebuilding financial rows in JavaScript. Quant Lab's corporate-action selector
@@ -1047,6 +1068,20 @@ Focused coverage lives in `reporting-retained-amounts.test.tsx` and `report-amou
 
 The reconciliation queue shows source observation and retained occurrence age directly. Clearing is labeled Source cleared and never implies case resolution. Legacy rows explicitly show identity/age unavailable. Queue refresh compares lineage metadata; inspector details include business and comparison scopes.
 
+The Match handoff and Casework render the same retained break evidence. Casework keeps the queue beside
+the selected case, with its observed and expected amounts, supplied residuals and lineage next to actions,
+affected outputs and activity. An earlier retained comparison travels in the case link. The browser
+compares supplied residuals only when the retained comparison scope and units agree. Source clearing,
+case disposition and sign-off have separate labels.
+
+Waive, supersede, sign-off and reopen bind the reviewed case version. After a conflict, reload the case and
+review a new preview. The browser tab retains unconfirmed command IDs for audit lookup. Statement
+decisions also require the paired handoff event. After checking the outcome, the operator can resume
+the exact reviewed request while it is available in workbench memory. The bulk bar shows a sample of
+eligible cases, blocked cases and per-case queue receipts. It reports any outstanding statement handoff
+alongside the retained batch result. Match allocations, full run-diff classifications and atomic binding
+to the bulk preview versions depend on further service contracts.
+
 Accounting payment approvals provides an explicit entity-ID selection on the ordinary unscoped route. Unapplied scope edits disable decisions; applying a new entity clears the old review session. Cash Ladder retains the same-account scenario catalog through loading and errors while continuing to withhold stale balances and drill evidence.
 
 
@@ -1477,10 +1512,16 @@ not been recorded.
   breaks the current filters show. Assign to me, Route to owner and Resolve with reason go through
   the governed casework endpoints: a dry run checks the whole selection and lists each blocked
   break with its reason, and the operator then confirms an execute of only the breaks that passed,
-  applied all or nothing. The server stamps the actor (Assign to me sets
+  applied all or nothing. The preview shows sampled case versions. Confirming sends the retained
+  preview ID, and the server checks every eligible version. The server stamps the actor (Assign to me sets
   `assignToCurrentOperator`, so it names the login user, not the display name) and writes an
   audit entry for each case. Resolve takes a reason, a root cause and a resolution from the
   taxonomy endpoint, plus an optional evidence reference.
+- **Retained match evidence.** Casework and the Match Workbench show both statement and ledger
+  contributions, exact decimal residuals, and the executed tolerance policy version. The candidate
+  rail states the rule basis and requires review. Split and merge labels open confirmed group
+  allocations and link the prior cases that participated in the group. Residual amounts open the
+  Amount Passport with their exact unit and comparison basis.
 - **Since your last visit.** `lib/since-last-visit.ts` records the operator's visit to the break
   queue (`POST /api/workstation/operator/visits/reconciliation-breaks`) once per browser tab. The
   visit it replaces is the baseline: a break detected after it is marked New, a break whose
@@ -3330,6 +3371,11 @@ approval workflow panel while presenting as Delivery Evidence, `/reporting/expor
 export artifacts, and `/reporting/governance` owns access, approval, lifecycle, and audit controls.
 Each queued daily item exposes blocked status, owner, affected output, next action, and proof or
 evidence posture so browser Reporting matches the WPF cockpit decision model.
+Report Builder populates the field palette and filter choices from the selected preview dataset.
+Choose retained rows, paste JSON or CSV, or select a sample. Drop fields into the grid or add them
+with the field selectors. A source change preserves placed fields and flags those missing from the
+new dataset. Drafts can be saved independently of preview, and governed runs validate their fields
+against the certified ledger snapshot.
 The Reporting task-mode resolver, report-pack route detector, and launcher links live in
 `reporting-screen.task-mode-view-model.ts`, keeping the daily-cockpit IA out of the broader
 reporting view model.

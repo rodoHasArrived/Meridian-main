@@ -6,6 +6,69 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonlFilePaperSessionStore
+
+Qualified name: <code>Meridian.Execution.Services.JsonlFilePaperSessionStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:32](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L32).
+
+File-system backed IPaperSessionStore. Each session occupies its own directory under BaseDirectory: {BaseDirectory}/ {sessionId}/ session.json — session metadata, atomically replaced on every change fills.jsonl — one versioned fill claim per line (legacy raw reports still read) fills.applied.jsonl — idempotent apply acknowledgements orders.jsonl — one OrderState JSON object per line (append-only) settlements.jsonl — one daily variation-margin settlement per line (append-only) journal-batches/ — immutable, crash-atomic journal effect receipts Atomic writes for session.json use write-to-temp-then-rename semantics to guard against partial writes on crash. JSONL appends are serialised per base directory inside this process so concurrent callers never interleave partial lines. Exactly one process may write a base directory; cross-process transactional locking is intentionally outside this local-file store&#x27;s contract.
+
+```csharp
+public sealed partial class JsonlFilePaperSessionStore : IPaperSessionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string BaseDirectory =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:42](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L42) | Root storage directory (guaranteed to be created on first write). |
+| <code>public JsonlFilePaperSessionStore(string baseDirectory, ILogger&lt;JsonlFilePaperSessionStore&gt; logger);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:44](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L44) |  |
+| <code>public async Task SaveSessionMetadataAsync(PersistedSessionRecord record, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:59](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L59) |  |
+| <code>public async Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:68](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L68) |  |
+| <code>public async Task&lt;PaperSessionFillAppendResult&gt; TryAppendFillAsync(string sessionId, PaperSessionFillRecord record, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:92](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L92) |  |
+| <code>public async Task MarkFillAppliedAsync(string sessionId, Guid fillId, string canonicalHash, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:129](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L129) |  |
+| <code>public async Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:172](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L172) |  |
+| <code>public async Task&lt;PaperSessionSettlementAppendStatus&gt; TryAppendSettlementAsync(string sessionId, PaperSessionSettlementRecord record, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:180](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L180) |  |
+| <code>public Task&lt;IReadOnlyList&lt;PaperSessionSettlementRecord&gt;&gt; LoadSettlementsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:215](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L215) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PersistedSessionRecord&gt;&gt; LoadAllSessionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:221](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L221) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ExecutionReport&gt;&gt; LoadFillsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:267](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L267) |  |
+| <code>public Task&lt;IReadOnlyList&lt;PaperSessionFillRecord&gt;&gt; LoadFillRecordsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:274](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L274) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;OrderState&gt;&gt; LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:280](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L280) |  |
+| <code>public async Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList&lt;PersistedJournalEntryDto&gt; entries, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:291](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L291) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PersistedJournalEntryDto&gt;&gt; LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs:313](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.cs#L313) |  |
+
+Source: [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:8](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L8).
+
+```csharp
+public sealed partial class JsonlFilePaperSessionStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool SupportsJournalBatches =&gt; …;</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:10](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L10) |  |
+| <code>public async Task&lt;PaperSessionJournalReceipt&gt; AppendJournalBatchAsync(PaperSessionJournalBatch batch, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:12](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L12) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;PaperSessionJournalReceipt&gt;&gt; LoadJournalBatchesAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs:37](../../../../src/Meridian.Execution/Services/JsonlFilePaperSessionStore.JournalBatches.cs#L37) |  |
+
+## LiveOrderReadinessDecision
+
+Qualified name: <code>Meridian.Execution.Services.LiveOrderReadinessDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:34](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L34).
+
+```csharp
+public sealed record LiveOrderReadinessDecision(bool IsApproved, string? Reason = null, string? EvidenceReference = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static LiveOrderReadinessDecision Approved(string evidenceReference) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:39](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L39) |  |
+| <code>public static LiveOrderReadinessDecision Rejected(string reason) =&gt; …;</code> | [src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs:42](../../../../src/Meridian.Execution/Services/ILiveOrderReadinessGate.cs#L42) |  |
+
 ## LiveOrderReadinessRequest
 
 Qualified name: <code>Meridian.Execution.Services.LiveOrderReadinessRequest</code>. Kind: `record`.
@@ -987,43 +1050,3 @@ Declared public members:
 | <code>public decimal RealizedPnl =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:19](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L19) | Realized gain/(loss) for this specific lot parcel. |
 | <code>public decimal Proceeds =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:23](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L23) | Proceeds received for the relieved quantity. |
 | <code>public decimal CostRelieved =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:26](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L26) | Cost basis of the relieved quantity. |
-
-## TaxLotAccountingMethod
-
-Qualified name: <code>Meridian.Execution.TaxLotAccounting.TaxLotAccountingMethod</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:8](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L8).
-
-The cost-basis identification method used when relieving (closing) tax lots. The chosen method affects the timing and magnitude of realized gains or losses, which has material tax implications.
-
-```csharp
-public enum TaxLotAccountingMethod
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fifo</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:14](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L14) | First In, First Out — the oldest lots are relieved first. Most common default for equity positions. |
-| <code>Lifo</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:20](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L20) | Last In, First Out — the most recently opened lots are relieved first. May produce lower short-term gains in a rising market. |
-| <code>Hifo</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:26](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L26) | Highest In, First Out — lots with the highest cost basis are relieved first. Minimizes current-period realized gains (maximizes tax deferral in rising markets). |
-| <code>SpecificId</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs:32](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotAccountingMethod.cs#L32) | Specific lot identification — the caller designates exact lot IDs to relieve. Offers the most control but requires explicit lot selection at trade time. |
-
-## TaxLotReliefResult
-
-Qualified name: <code>Meridian.Execution.TaxLotAccounting.TaxLotReliefResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:37](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L37).
-
-The aggregate result of relieving one or more tax lots to fill a closing order.
-
-```csharp
-public sealed record TaxLotReliefResult(IReadOnlyList<RelievedLot> RelievedLots, IReadOnlyList<TaxLot> RemainingLots)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal TotalRealizedPnl =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:42](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L42) | Total realized P&amp;L across all relieved lots. |
-| <code>public long TotalRelievedQuantity =&gt; …;</code> | [src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs:45](../../../../src/Meridian.Execution/TaxLotAccounting/TaxLotRelief.cs#L45) | Total number of shares/contracts relieved. |
