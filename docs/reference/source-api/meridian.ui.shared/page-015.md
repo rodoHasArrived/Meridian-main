@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingComparisonSource
+
+Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingComparisonSource</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L20).
+
+Pins existing comparison evidence without importing, posting, resolving casework, or changing book authority. Account observations always describe the selected financial account, never a substituted whole-book total.
+
+```csharp
+public sealed class OnboardingComparisonSource(AccountingSystemIntegrationService accounting, IAccountQueryService? accounts = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? tenancy = null, ProviderLedgerReconciliationService? providerComparisons = null, FundAccountCloseReadinessService? closeReadiness = null, IEvidenceArtifactStore? evidence = null, BrokeragePortfolioSyncService? brokerageSnapshots = null, BrokeragePortfolioSyncOptions? brokerageOptions = null) : IOnboardingSourceProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;IReadOnlyList&lt;OnboardingSourceSelectionDto&gt;&gt; GetSelectionAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L36) |  |
+| <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:46](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L46) |  |
+
 ## OnboardingOpeningStateSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingOpeningStateSource</code>. Kind: `class`.
@@ -948,21 +967,3 @@ Source: [src/Meridian.Ui.Shared/Services/ProviderDataReadModelService.cs:27](../
 ```csharp
 public sealed record ProviderInstrumentDiscoveryReadModel(ProviderProjectionProvenance Provenance, ProviderProjectionAvailability Availability, ProviderInstrumentDiscoveryResult Item);
 ```
-
-## ProviderLedgerDailyReconciliationOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ProviderLedgerDailyReconciliationOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:11](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L11).
-
-```csharp
-public sealed class ProviderLedgerDailyReconciliationOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int UtcHour { get; set; } = 23;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:13](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L13) |  |
-| <code>public int RetryMinutes { get; set; } = 15;</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:14](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L14) |  |
-| <code>public List&lt;ProviderLedgerDailyReconciliationTarget&gt; Targets { get; set; } = [];</code> | [src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs:15](../../../../src/Meridian.Ui.Shared/Services/ProviderLedgerDailyReconciliationWorker.cs#L15) |  |

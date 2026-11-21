@@ -305,6 +305,25 @@ Declared public members:
 | <code>public IReadOnlyCollection&lt;string&gt; ConfiguredTransportIds =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:237](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L237) |  |
 | <code>public ValueTask&lt;string?&gt; ResolveDestinationAsync(ReportingRecipientDestinationRequest request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L239) |  |
 
+## ConfiguredReportingReviewMaterialityPolicyProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ConfiguredReportingReviewMaterialityPolicyProvider</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:14](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L14).
+
+Admin-owned host configuration seam. Empty configuration provides no policy; never falls back to browser defaults. Hosts may replace this DI interface with a durable policy registry.
+
+```csharp
+public sealed class ConfiguredReportingReviewMaterialityPolicyProvider(CompositionConfiguration configuration) : IReportingReviewMaterialityPolicyProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConfigurationKey = &quot;MERIDIAN_REPORTING_REVIEW_POLICIES&quot;;</code> | [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:17](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L17) |  |
+| <code>public ValueTask&lt;ReportingReviewMaterialityPolicy?&gt; ResolveAsync(ReportingOperationalScope scope, string templateId, string templateVersion, string currency, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs:40](../../../../src/Meridian.Ui.Shared/Services/ConfiguredReportingReviewMaterialityPolicyProvider.cs#L40) |  |
+
 ## ConsolidationWorkbenchService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ConsolidationWorkbenchService</code>. Kind: `class`.
@@ -907,15 +926,3 @@ Declared public members:
 | <code>public string DemoRoot =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:79](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L79) | The isolated demo root this seeder operates on. |
 | <code>public async Task&lt;DemoWorkspaceSeedReport&gt; SeedAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:85](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L85) | Seeds the demo workspace durably and idempotently. Creates the demo root, writes the demo sentinel, and provisions the reconciliation and strategy desks through the real desk stores. |
 | <code>public Task&lt;DemoWorkspaceResetReport&gt; ResetAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:383](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L383) | Tears down the demo workspace, guarded so only the dedicated, sentinel-marked demo root can be deleted. A missing demo root is a no-op, not an error. |
-
-## DemoWorkspaceSeedReport
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoWorkspaceSeedReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs:418](../../../../src/Meridian.Ui.Shared/Services/DemoWorkspaceSeeder.cs#L418).
-
-Outcome of seeding the demo workspace.
-
-```csharp
-public sealed record DemoWorkspaceSeedReport(string DemoRoot, string Provenance, DemoTenantProvisioningReport Provisioning, int MarketHistoryTradePrintsSeeded = 0);
-```

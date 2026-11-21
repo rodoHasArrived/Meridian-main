@@ -513,7 +513,7 @@ public sealed record CashFinancingSummary(string Currency, decimal TotalCash, de
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:986](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L986).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:989](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L989).
 
 A single historical cash-flow entry from a strategy run.
 
@@ -545,7 +545,7 @@ public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlo
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:996](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L996).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:999](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L999).
 
 A single time-bucket within a projected cash ladder.
 
@@ -596,7 +596,7 @@ public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1178](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1178).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1181](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1181).
 
 Workstation-facing summary of a closed lot for a strategy run.
 

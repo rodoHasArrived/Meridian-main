@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StartupRefusalPreflight
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StartupRefusalPreflight</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/StartupRefusalPreflight.cs:25](../../../../src/Meridian.Ui.Shared/Services/StartupRefusalPreflight.cs#L25).
+
+Runs the composition&#x27;s IStartupRefusalGuards on their own, ahead of whatever the host would otherwise start alongside them.
+
+```csharp
+public static class StartupRefusalPreflight
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static async Task RunAsync(IServiceProvider services, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StartupRefusalPreflight.cs:56](../../../../src/Meridian.Ui.Shared/Services/StartupRefusalPreflight.cs#L56) | Starts every registered refusal guard, in registration order, and lets a refusal propagate. A guard that fails is reported as a refusal too. |
+
+## StatementCaseworkCommitFaultPoint
+
+Qualified name: <code>Meridian.Ui.Shared.Services.StatementCaseworkCommitFaultPoint</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1273](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1273).
+
+```csharp
+public enum StatementCaseworkCommitFaultPoint
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>EnvelopeRetained</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1275](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1275) |  |
+| <code>BreakProjected</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1276](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1276) |  |
+| <code>BreakAuditProjected</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1277](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1277) |  |
+| <code>CaseProjected</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1278](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1278) |  |
+| <code>CompletionRetained</code> | [src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs:1279](../../../../src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs#L1279) |  |
+
 ## StatementFetchSchedulerService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StatementFetchSchedulerService</code>. Kind: `class`.
@@ -540,6 +578,26 @@ Source: [src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.Strateg
 public sealed partial class TradingOperatorReadinessService
 ```
 
+## TrialBalanceAmountProvenanceService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.TrialBalanceAmountProvenanceService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:15](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L15).
+
+Binds a trial-balance row to a content-addressed prefix of immutable posted journals. Reopening or appending does not replace the population the operator actually inspected.
+
+```csharp
+public sealed class TrialBalanceAmountProvenanceService(ILedgerJournalStore? journals, ILedgerBookService? books, IFundProfileTenancyRegistry? tenancy, PostedLedgerAmountProvenanceService postedAmounts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static bool IsSubject(string subjectId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:21](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L21) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt; BindAsync(LedgerPeriodSummaryDto summary, string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:23](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L23) |  |
+| <code>public async Task&lt;EvidencePacketDto?&gt; GetPacketAsync(string subjectId, LedgerAmountScopeDto scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs:52](../../../../src/Meridian.Ui.Shared/Services/TrialBalanceAmountProvenanceService.cs#L52) |  |
+
 ## UiConfigurationSaveGuard
 
 Qualified name: <code>Meridian.Ui.Shared.Services.UiConfigurationSaveGuard</code>. Kind: `class`.
@@ -670,7 +728,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddWorkstationSharedServices(this IServiceCollection services, IConfiguration? hostConfiguration = null);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:91](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L91) |  |
-| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1660](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1660) |  |
+| <code>public static IServiceCollection AddLeanAutoExportHostedService(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1662](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1662) |  |
 
 ## WorkstationWorkflowReadScope
 
@@ -811,66 +869,3 @@ Declared public members:
 | <code>public void NotifyRunChanged(string tenantId, string? companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:53](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L53) |  |
 | <code>public StreamSubscription&lt;ReportingRunAuditTrailDto&gt;? TrySubscribe(StreamTopic topic, string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:74](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L74) | Subscribe to a report-run topic&#x27;s coalesced status feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose to unsubscribe and release the session&#x27;s slot. |
 | <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:80](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L80) |  |
-
-## StreamBroadcaster (generic arity 1)
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:26](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L26).
-
-Event-driven fan-out engine shared by all workstation stream kinds. Woken via WakeAll (or Wake), it rebuilds each active topic&#x27;s payload on a coalescing loop (latest-wins) and pushes it to every subscriber of that topic over a bounded, drop-oldest channel — so one build is shared across all subscribers of a topic and a slow client never blocks the loop. The payload build, coalesce comparison, and empty-topic lifecycle are supplied by the owning broadcaster (quotes, report-run, …).
-
-```csharp
-public sealed class StreamBroadcaster<TPayload>: IAsyncDisposable where TPayload : class
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StreamBroadcaster(StreamConnectionRegistry registry, Func&lt;StreamTopic, TPayload?&gt; build, IEqualityComparer&lt;TPayload&gt; coalesceComparer, int coalesceIntervalMs, int subscriberChannelCapacity, bool evictEmptyTopics, ILogger? logger = null);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:48](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L48) |  |
-| <code>public void WakeAll() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:71](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L71) | Wake the loop to rebuild every active topic (any topic may have changed). |
-| <code>public void Wake(StreamTopic topic) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:78](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L78) | Wake the loop for a change to a single topic. The loop currently rebuilds all active topics and coalesces unchanged ones to no-ops, so this is equivalent to WakeAll today; the topic argument is accepted for a future targeted-rebuild optimization. |
-| <code>public StreamSubscription&lt;TPayload&gt;? TrySubscribe(StreamTopic topic, string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:85](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L85) | Subscribe to a topic&#x27;s coalesced payload feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose the subscription to unsubscribe and release the session&#x27;s stream slot. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs:246](../../../../src/Meridian.Ui.Shared/Streaming/StreamBroadcaster.cs#L246) |  |
-
-## StreamConnectionRegistry
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamConnectionRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:11](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L11).
-
-Tracks the number of concurrent quote-stream connections per session and enforces a per-session cap. A singleton hit concurrently by many request threads, so all counter mutations are atomic (compare-and-swap on a ConcurrentDictionary{TKey,TValue}).
-
-```csharp
-public sealed class StreamConnectionRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StreamConnectionRegistry(int maxConcurrentStreamsPerSession);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L16) |  |
-| <code>public bool TryReserve(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L25) | Atomically reserves a stream slot for the session. Returns false when the session is already at its cap. An empty session id is treated as unscoped and never capped. |
-| <code>public void Release(string sessionId);</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:61](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L61) | Releases a previously reserved slot for the session. |
-| <code>public int ActiveCount(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:93](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L93) | Current number of active streams for the session. |
-| <code>public void CloseSession(string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs:97](../../../../src/Meridian.Ui.Shared/Streaming/StreamConnectionRegistry.cs#L97) | Drops all accounting for a session (e.g. on logout / session expiry). |
-
-## StreamSubscription (generic arity 1)
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.StreamSubscription</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L12).
-
-A live subscription to a stream topic produced by StreamBroadcaster{TPayload}. Read coalesced payloads from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
-
-```csharp
-public sealed class StreamSubscription<TPayload>: IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChannelReader&lt;TPayload&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L23) | Coalesced payload feed for this subscription&#x27;s topic. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/StreamSubscription.cs#L25) |  |

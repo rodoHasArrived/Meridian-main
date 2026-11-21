@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingMigrationStartup
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1719](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1719).
+
+Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
+
+```csharp
+public interface IReportingMigrationStartup
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1721](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1721) |  |
+
 ## IReportingPrimaryDocumentRenderer
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingPrimaryDocumentRenderer</code>. Kind: `interface`.
@@ -1023,22 +1041,3 @@ Declared public members:
 | <code>public IReadOnlyCollection&lt;OmsIntegrationAuditEntry&gt; AuditTrail(int take = 200) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L28) |  |
 | <code>public OmsRequestSignatureResult VerifyRequestSignature(OmsRequestSignatureInput signature) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:30](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L30) |  |
 | <code>public OmsKeyRotationResult RotateSigningKey(OmsKeyRotationRequest request) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs:33](../../../../src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs#L33) |  |
-
-## OnboardingComparisonSource
-
-Qualified name: <code>Meridian.Ui.Shared.Services.OnboardingComparisonSource</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:20](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L20).
-
-Pins existing comparison evidence without importing, posting, resolving casework, or changing book authority. Account observations always describe the selected financial account, never a substituted whole-book total.
-
-```csharp
-public sealed class OnboardingComparisonSource(AccountingSystemIntegrationService accounting, IAccountQueryService? accounts = null, ILedgerBookService? books = null, IFundProfileTenancyRegistry? tenancy = null, ProviderLedgerReconciliationService? providerComparisons = null, FundAccountCloseReadinessService? closeReadiness = null, IEvidenceArtifactStore? evidence = null, BrokeragePortfolioSyncService? brokerageSnapshots = null, BrokeragePortfolioSyncOptions? brokerageOptions = null) : IOnboardingSourceProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;OnboardingSourceSelectionDto&gt;&gt; GetSelectionAsync(OnboardingWorkspaceDto workspace, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:36](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L36) |  |
-| <code>public async Task&lt;OnboardingSourceCaptureDto&gt; CaptureAsync(OnboardingWorkspaceDto workspace, CaptureOnboardingComparisonRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs:46](../../../../src/Meridian.Ui.Shared/Services/OnboardingComparisonSource.cs#L46) |  |

@@ -19,6 +19,11 @@ governed Passport editing, and cash-flow scenarios. The selected tab is URL-back
 tabs; switching assets resets inputs, aborts supported reads, and rejects stale responses. Search and bounded, clearable recent
 history keep the tab and route scope. Security Master links carry the exact security ID.
 
+The Instrument Dossier embeds the same asset panel with path-owned instrument identity. Its
+outer tab remains in `tab`; embedded asset tabs use `assetTab` and retain book/account/date scope.
+The dossier owns instrument switching and recovery navigation. Delayed reads for an earlier
+instrument cannot replace the current panel, and each embedded resource retains its retry path.
+
 The overview exposes retained Passport trust/readiness and source timestamps, and exact-security
 Asset Operations book positions. Multiple positions require a choice; quantities and amounts are
 not aggregated across accounts/books. Currency, position/source-event identity, and explicit

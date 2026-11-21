@@ -525,7 +525,7 @@ public sealed record IssueParallelRunCertificateRequestDto(int ExpectedVersion);
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountApprovalClassification</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L88).
+Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L89).
 
 Conservative approval classification shared by amount consumers; it defines no coverage denominator.
 
@@ -537,9 +537,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string PreparerAttestation = &quot;PreparerAttestation&quot;;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L90) |  |
-| <code>public const string Unknown = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L91) |  |
-| <code>public static bool MayCountAsOrdinaryApproval(LedgerAmountProofDto amount, bool ordinaryApprovalRecorded) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L93) |  |
+| <code>public const string PreparerAttestation = &quot;PreparerAttestation&quot;;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L91) |  |
+| <code>public const string Unknown = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:92](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L92) |  |
+| <code>public static bool MayCountAsOrdinaryApproval(LedgerAmountProofDto amount, bool ordinaryApprovalRecorded) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:94](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L94) |  |
 
 ## LedgerAmountApprovalStateDto
 
@@ -567,10 +567,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountingPreparerAttestationDisclosureDto&gt;? AccountingPreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L45) | Accounting decisions retained with contributing journals, independent of source readiness. An absent legacy value establishes no approval or coverage classification. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? OrdinaryRecordedApprovalSatisfied { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:49](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L49) | False for any preparer-attested or unclassified upstream dependency; null makes no claim. |
-| <code>[System.Text.Json.Serialization.JsonIgnore] public AmountPassportDto? AmountPassport { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:54](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L54) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore] public bool RetainedSupportStale { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:57](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L57) |  |
+| <code>public string AmountExact =&gt; …;</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L40) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountingPreparerAttestationDisclosureDto&gt;? AccountingPreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L46) | Accounting decisions retained with contributing journals, independent of source readiness. An absent legacy value establishes no approval or coverage classification. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public bool? OrdinaryRecordedApprovalSatisfied { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:50](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L50) | False for any preparer-attested or unclassified upstream dependency; null makes no claim. |
+| <code>[System.Text.Json.Serialization.JsonIgnore] public AmountPassportDto? AmountPassport { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:55](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L55) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore] public bool RetainedSupportStale { get; init; }</code> | [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L58) |  |
 
 ## LedgerAmountProofEvidenceDto
 

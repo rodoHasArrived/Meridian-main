@@ -147,14 +147,14 @@ describe("AssetDetailScreen", () => {
     </>, { initialEntries: ["/records/instrument/sec-aapl?tab=reference&ledgerBookId=book-1&accountId=account-1&asOf=2026-11-21&securityId=foreign-query"] });
     await screen.findByRole("heading", { name: "Apple Inc.", level: 1 });
     await screen.findByRole("heading", { name: "Apple Inc.", level: 2 });
-    expect(screen.getByRole("tab", { name: "Reference", exact: true })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: "Overview", exact: true })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Reference" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Overview" })).toHaveAttribute("aria-selected", "true");
     expect(screen.queryByRole("combobox", { name: "Switch asset" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Open instrument dossier" })).not.toBeInTheDocument();
 
-    await userEvent.click(screen.getByRole("tab", { name: "Events", exact: true }));
-    expect(screen.getByRole("tab", { name: "Reference", exact: true })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: "Events", exact: true })).toHaveAttribute("aria-selected", "true");
+    await userEvent.click(screen.getByRole("tab", { name: "Events" }));
+    expect(screen.getByRole("tab", { name: "Reference" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Events" })).toHaveAttribute("aria-selected", "true");
     let query = new URLSearchParams(screen.getByLabelText("Current route").textContent ?? "");
     expect(query.get("tab")).toBe("reference");
     expect(query.get("assetTab")).toBe("events");
@@ -163,10 +163,10 @@ describe("AssetDetailScreen", () => {
     expect(query.get("asOf")).toBe("2026-11-21");
     expect(api.getSecurityDetail).not.toHaveBeenCalledWith("foreign-query", expect.anything());
 
-    await userEvent.click(screen.getByRole("tab", { name: "Overview", exact: true }));
-    await userEvent.click(screen.getByRole("button", { name: "View all terms", exact: true }));
-    expect(screen.getByRole("tab", { name: "Reference", exact: true })).toHaveAttribute("aria-selected", "true");
-    expect(screen.getByRole("tab", { name: "Reference data", exact: true })).toHaveAttribute("aria-selected", "true");
+    await userEvent.click(screen.getByRole("tab", { name: "Overview" }));
+    await userEvent.click(screen.getByRole("button", { name: "View all terms" }));
+    expect(screen.getByRole("tab", { name: "Reference" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Reference data" })).toHaveAttribute("aria-selected", "true");
     query = new URLSearchParams(screen.getByLabelText("Current route").textContent ?? "");
     expect(query.get("tab")).toBe("reference");
     expect(query.get("assetTab")).toBe("reference");
@@ -201,7 +201,7 @@ describe("AssetDetailScreen", () => {
     expect(previousSignal?.aborted).toBe(true);
     await act(async () => { resolvePrevious(entry); await Promise.resolve(); });
     expect(screen.queryByRole("heading", { name: "Apple Inc." })).not.toBeInTheDocument();
-    expect(screen.getByRole("tab", { name: "Events", exact: true })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("tab", { name: "Events" })).toHaveAttribute("aria-selected", "true");
     const destination = new URL(screen.getByLabelText("Workflow destination").textContent ?? "", "https://meridian.local");
     expect(destination.pathname).toBe("/records/instrument/sec-msft");
     expect(destination.searchParams.get("tab")).toBe("reference");
