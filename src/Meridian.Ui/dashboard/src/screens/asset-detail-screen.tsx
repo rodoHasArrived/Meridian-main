@@ -29,6 +29,7 @@ import { AssetFinancialSummary } from "@/components/meridian/asset-financial-sum
 import { AssetPassportSummary } from "@/components/meridian/asset-passport-summary";
 import { useAssetDetailResource } from "./asset-detail-resource";
 import { AssetDetailEvents } from "./asset-detail-events";
+import { SecurityInstrumentTerms } from "@/components/meridian/security-instrument-terms";
 
 const assetSearchSuggestions = ["AAPL", "MSFT", "US91282CHT18"];
 const assetDetailReadinessCues = [
@@ -431,6 +432,19 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
       scope={`${overview.symbol} · ${entry.classification.assetClass} · ${entry.economicDefinition.currency}`}
       actions={
         <>
+          <Button
+            size="sm"
+            variant="ghost"
+            onClick={() => {
+              entryResource.retry();
+              identityResource.retry();
+              eventsResource.retry();
+              tradingResource.retry();
+            }}
+            title="Reload server data and clear unsaved form inputs"
+          >
+            Reload asset
+          </Button>
           <Badge variant={overview.statusTone} dot>
             {overview.statusLabel}
           </Badge>
@@ -464,7 +478,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
         }
       />
       <p className="text-xs text-muted-foreground">
-        Switching assets clears unsaved inputs. Switching tabs keeps inputs for the current asset.
+        Switching assets or reloading clears unsaved inputs. Switching tabs keeps inputs for the current asset.
       </p>
       <Tabs tabs={detailTabs} value={activeTab} onValueChange={openTab}>
         <TabPanel>
@@ -475,24 +489,12 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
                 {financialSummary}
               </div>
               <div className="grid gap-4 xl:grid-cols-2">
-                <Card className="panel-surface">
-                  <CardHeader>
-                    <CardTitle>Instrument identity</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <dl className="grid grid-cols-2 gap-3">
-                      {overview.fields.map((field) => (
-                        <div key={field.label}>
-                          <dt className="text-xs text-muted-foreground">{field.label}</dt>
-                          <dd className="mt-1 text-sm">{field.value}</dd>
-                        </div>
-                      ))}
-                    </dl>
-                    <Button className="mt-3" size="sm" variant="ghost" onClick={() => openTab("reference")}>
-                      Inspect reference data and overrides
-                    </Button>
-                  </CardContent>
-                </Card>
+                <SecurityInstrumentTerms
+                  securityId={securityId}
+                  expectedVersion={entry.economicDefinition.version}
+                  mode="summary"
+                  onOpenFull={() => openTab("reference")}
+                />
                 <Card className="panel-surface">
                   <CardHeader>
                     <CardTitle>Corporate actions</CardTitle>
@@ -513,6 +515,13 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
         <TabPanel>
           {keepTab("reference") ? (
             <div className="space-y-4">
+              {activeTab === "reference" ? (
+                <SecurityInstrumentTerms
+                  securityId={securityId}
+                  expectedVersion={entry.economicDefinition.version}
+                  mode="full"
+                />
+              ) : null}
               {identityResource.status === "error" || (identityResource.status === "ready" && !identity) ? (
                 <SectionFailure label="identity evidence" retry={identityResource.retry} />
               ) : null}

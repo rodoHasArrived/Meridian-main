@@ -75,6 +75,13 @@ room for all three layers, and resets on asset changes. Attribute shared overrid
 such; never imply per-field history or governed economic approval from operator annotations.
 Browser-local lot tracking must declare storage/scope and manual-price calculation limits.
 
+Canonical economic terms use `SecurityInstrumentTerms`, separate from operator annotations.
+Its summary links to the full grouped read; nested schedules and raw JSON use native disclosures,
+with exact numeric text and distinct missing/null/invalid/ambiguous states. Version mismatches
+withhold the read and offer asset reload. `AssetMarketValuation` presents server-calculated metrics
+with currency and comparison basis, independent partial/error states, and inspectable model/input
+provenance. It must never reconstruct a missing amount from a symbol quote in the browser.
+
 ### Reconciliation queue–inspector pilot
 
 The browser adapter combines `WorkspaceWorkbenchShell`, `DenseDataTable` and

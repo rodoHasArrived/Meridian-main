@@ -11,6 +11,12 @@ vi.mock("@/lib/api", () => ({
   getLiveQuotesSnapshot: vi.fn()
 }));
 
+vi.mock("./asset-market-valuation", () => ({
+  AssetMarketValuation: ({ query }: { query: { economicStateId: string } }) => (
+    <section aria-label="Market valuation">Retained state: {query.economicStateId}</section>
+  )
+}));
+
 const position: BookPosition = {
   positionId: "position-1",
   securityId: "sec-aapl",
@@ -121,7 +127,7 @@ it("shows retained book amounts and distinguishes symbol quotes from valuations"
   expect(screen.getByText(/State state-1 · Version 2/)).toHaveTextContent("As of 2026-11-20");
   expect(screen.getByText("140.6")).toBeInTheDocument();
   expect(screen.getByText(/quote currency is not supplied/)).toBeInTheDocument();
-  expect(screen.getByText(/Market value and unrealized P\/L are not supplied/)).toBeInTheDocument();
+  expect(screen.getByRole("region", { name: "Market valuation" })).toHaveTextContent("state-1");
   expect(getAssetOperations).toHaveBeenCalledWith(
     "sec-aapl",
     expect.objectContaining({ allowDevelopmentFallback: false })

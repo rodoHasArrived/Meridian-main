@@ -383,6 +383,7 @@ public static class UiApiRoutes
     public const string SecurityMasterTermBlock = "/api/security-master/{securityId:guid}/terms/{blockKey}";
     public const string SecurityMasterCorporateActions = "/api/security-master/{securityId:guid}/corporate-actions";
     public const string SecurityMasterIncomeCashFlows = "/api/security-master/{securityId:guid}/income-cash-flows";
+    public const string SecurityMasterInstrumentTerms = "/api/security-master/{securityId:guid}/instrument-terms";
     public const string SecurityMasterFactorHistory = "/api/security-master/{securityId:guid}/factor-history";
     public const string SecurityMasterUnderlyings = "/api/security-master/{securityId:guid}/underlyings";
     public const string SecurityMasterUnderlyingLink = "/api/security-master/{securityId:guid}/underlyings/{linkId:guid}";
@@ -492,6 +493,7 @@ public static class UiApiRoutes
     public const string ReferenceDataBondCutover = "/api/reference-data/bonds/cutover";
     public const string ReferenceDataBondMigrationBatchPreview = "/api/reference-data/bonds/migration-preview/batch";
     public const string WorkstationAssetOperations = "/api/workstation/assets/{securityId:guid}/operations";
+    public const string WorkstationAssetMarketValuation = "/api/workstation/assets/{securityId:guid}/market-valuation";
     public const string ReferenceDataOptionContract = "/api/reference-data/options/contracts/{contractSymbol}";
     public const string ReferenceDataOptionSeries = "/api/reference-data/options/series/{optionChainId}";
     public const string ReferenceDataOptionUnderlyingLinkage = "/api/reference-data/options/contracts/{contractSymbol}/underlying-linkage";

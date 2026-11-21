@@ -153,14 +153,17 @@
         "/api/security-master/sec-dev-001/trading-parameters",
         "/api/workstation/security-master/securities/sec-dev-001/passport",
         "/api/workstation/assets/sec-dev-001/operations",
-        "/api/data/quotes-snapshot"
+        "/api/data/quotes-snapshot",
+        "/api/security-master/sec-dev-001/instrument-terms",
+        "/api/workstation/assets/sec-dev-001/market-valuation"
       ],
       "waitForTexts": [
         "Apple Inc.",
         "AAPL",
         "Trading Parameters",
         "Readiness & evidence",
-        "Financial context"
+        "Financial context",
+        "Market valuation"
       ]
     },
     {
@@ -303,14 +306,17 @@
         "/api/security-master/sec-dev-001/trading-parameters",
         "/api/workstation/security-master/securities/sec-dev-001/passport",
         "/api/workstation/assets/sec-dev-001/operations",
-        "/api/data/quotes-snapshot"
+        "/api/data/quotes-snapshot",
+        "/api/security-master/sec-dev-001/instrument-terms",
+        "/api/workstation/assets/sec-dev-001/market-valuation"
       ],
       "waitForTexts": [
         "Apple Inc.",
         "AAPL",
         "Trading Parameters",
         "Readiness & evidence",
-        "Financial context"
+        "Financial context",
+        "Market valuation"
       ]
     },
     {

@@ -1,4 +1,5 @@
 import { useEffect, useId, useState } from "react";
+import { AssetMarketValuation } from "./asset-market-valuation";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { getAssetOperations, getLiveQuotesSnapshot } from "@/lib/api";
@@ -214,9 +215,26 @@ export function AssetFinancialSummary({
                   A matching {currency} economic state is unavailable. Holdings amounts are withheld.
                 </p>
               )}
-              <p className="text-xs text-muted-foreground">
-                Market value and unrealized P/L are not supplied by this book-position record.
-              </p>
+              {validState ? (
+                selected.primaryAccountId ? (
+                  <AssetMarketValuation
+                    securityId={securityId}
+                    currency={validState.currency}
+                    query={{
+                      positionId: selected.positionId,
+                      ledgerBookId: selected.bookContext.ledgerBookId,
+                      accountId: selected.primaryAccountId,
+                      valuationDate: validState.asOfDate,
+                      economicStateId: validState.economicStateId,
+                      economicStateVersion: validState.version
+                    }}
+                  />
+                ) : (
+                  <p className="text-xs text-muted-foreground">
+                    A retained financial-account identity is required for market valuation.
+                  </p>
+                )
+              ) : null}
             </div>
           ) : (
             <p className="text-sm text-muted-foreground">

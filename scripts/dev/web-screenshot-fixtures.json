@@ -7060,6 +7060,137 @@
           "session": null
         }
       ]
+    },
+    "/api/security-master/sec-dev-001/instrument-terms": {
+      "securityId": "sec-dev-001",
+      "assetClass": "Equity",
+      "currency": "USD",
+      "version": 3,
+      "effectiveFrom": "2020-01-01",
+      "effectiveTo": null,
+      "retrievedAtUtc": "2026-11-21T10:00:00Z",
+      "status": "Ready",
+      "fingerprint": "cccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccccc",
+      "termsFormat": "flat",
+      "assetClassTermsVersion": 1,
+      "schema": {
+        "assetClass": "Equity",
+        "writeVersion": 1,
+        "readVersion": 1,
+        "lotUnit": "Shares",
+        "cashFlowBehavior": "Dividends",
+        "profileId": null,
+        "profileVersion": null,
+        "profileStatus": null
+      },
+      "source": {
+        "status": "Matched",
+        "summary": "Retained synthetic provenance matches economic-definition v3.",
+        "provenanceJson": "{\"sourceSystem\":\"Synthetic QA\",\"version\":3}"
+      },
+      "commonTermsJson": "{\"currency\":\"USD\"}",
+      "assetSpecificTermsJson": "{\"classification\":\"Common\",\"shareClass\":\"Common\",\"votingRightsCat\":\"Ordinary\"}",
+      "fields": [
+        {
+          "path": "/assetSpecificTerms/classification",
+          "key": "classification",
+          "label": "Classification",
+          "group": "Asset-specific terms",
+          "declaredType": "String",
+          "jsonType": "String",
+          "state": "Present",
+          "isDeclared": true,
+          "required": false,
+          "role": "Economic",
+          "valueText": "Common",
+          "rawJson": "\"Common\"",
+          "unit": null,
+          "unitStatus": "NotApplicable",
+          "unitPath": null,
+          "validationMessage": null,
+          "children": []
+        },
+        {
+          "path": "/assetSpecificTerms/shareClass",
+          "key": "shareClass",
+          "label": "Share class",
+          "group": "Asset-specific terms",
+          "declaredType": "String",
+          "jsonType": "String",
+          "state": "Present",
+          "isDeclared": true,
+          "required": false,
+          "role": "Economic",
+          "valueText": "Common",
+          "rawJson": "\"Common\"",
+          "unit": null,
+          "unitStatus": "NotApplicable",
+          "unitPath": null,
+          "validationMessage": null,
+          "children": []
+        },
+        {
+          "path": "/assetSpecificTerms/votingRightsCat",
+          "key": "votingRightsCat",
+          "label": "Voting rights",
+          "group": "Asset-specific terms",
+          "declaredType": "String",
+          "jsonType": "String",
+          "state": "Present",
+          "isDeclared": true,
+          "required": false,
+          "role": "Economic",
+          "valueText": "Ordinary",
+          "rawJson": "\"Ordinary\"",
+          "unit": null,
+          "unitStatus": "NotApplicable",
+          "unitPath": null,
+          "validationMessage": null,
+          "children": []
+        }
+      ],
+      "diagnostics": []
+    },
+    "/api/workstation/assets/sec-dev-001/market-valuation": {
+      "securityId": "sec-dev-001",
+      "positionId": "position-sec-dev-001",
+      "ledgerBookId": "book-qa",
+      "accountId": "account-qa",
+      "valuationDate": "2026-11-21",
+      "economicStateId": "state-sec-dev-001",
+      "economicStateVersion": 2,
+      "status": "Ready",
+      "fundProfileId": "fund-qa",
+      "positionVersion": 1,
+      "currency": "USD",
+      "accountingBasis": "Gaap",
+      "positionSide": "Long",
+      "modelKey": "quoted-price",
+      "modelVersion": "1",
+      "calculationBasis": "Retained share quantity \u00d7 selected currency-per-unit price.",
+      "unrealizedPnlBasis": "Market value less retained carrying amount. This is a mark-to-carrying comparison, not total-return or tax-cost P/L.",
+      "quantity": "100",
+      "carryingAmount": "18025.00",
+      "price": "210.25",
+      "priceUnit": "CurrencyPerUnit",
+      "marketValue": "21025.00",
+      "unrealizedPnl": "3000.00",
+      "observedAsOf": "2026-11-21T10:00:00Z",
+      "knowledgeAsOf": "2026-11-21T10:00:00Z",
+      "freshnessStatus": "Current",
+      "isStaleFallback": false,
+      "daysStale": 0,
+      "selectedSource": "Synthetic QA selected equity price",
+      "selectionReceiptId": "receipt-1",
+      "inputs": [
+        {
+          "kind": "PriceSelectionReceipt",
+          "reference": "receipt-1",
+          "contentSha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+        }
+      ],
+      "diagnostics": [],
+      "blockers": []
     }
   }
 }

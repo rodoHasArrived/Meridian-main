@@ -31,6 +31,12 @@ vi.mock("@/components/meridian/asset-passport-summary", () => ({
   )
 }));
 
+vi.mock("@/components/meridian/security-instrument-terms", () => ({
+  SecurityInstrumentTerms: ({ expectedVersion }: { expectedVersion: number }) => (
+    <section aria-label="Instrument terms">Retained terms version {expectedVersion}</section>
+  )
+}));
+
 function RouteProbe() {
   const location = useLocation();
   const navigate = useNavigate();

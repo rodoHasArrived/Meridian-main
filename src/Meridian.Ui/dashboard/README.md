@@ -24,9 +24,21 @@ Asset Operations book positions. Multiple positions require a choice; quantities
 not aggregated across accounts/books. Currency, position/source-event identity, and explicit
 book/account/date filters must match. Fund-account scope cannot be mapped by this contract and
 withholds holdings. Quote snapshots remain symbol-level observations with missing currency
-explicit; they do not establish book valuations. Market value and unrealized P/L are not inferred.
-Canonical coupon, maturity, expiry, and strike terms are not supplied by the summary DTO; the
-screen shows only supplied instrument context and preserves the governed editing path.
+explicit; they do not establish book valuations. Market valuation now comes from the exact-security `market-valuation` endpoint, with position,
+book, account, date and economic-state identity/version. It returns exact decimal text, selected
+price/receipt evidence, registered-model provenance, freshness and metric-specific blockers.
+Unrealized P/L is labelled as an unposted market-value-minus-carrying comparison, not realized,
+tax-cost, or total-return P/L. Unit/share positions without a multiplier can use typed quoted
+prices; original-face DCF market values retain their dirty-value basis and withhold the comparison
+when carrying accrual basis is unknown. Unsupported or stale evidence does not supply amounts.
+
+Canonical instrument terms load from `/api/security-master/{securityId}/instrument-terms` in the
+overview and Reference data. Complete raw common/asset-specific JSON and schema-guided nested
+fields remain inspectable, including schedules and unknown retained fields. Numeric lexemes stay
+exact strings; units are displayed only when explicitly declared. Missing, null, invalid and
+ambiguous values remain distinct. Terms bind to the loaded economic-definition version; Reload
+asset refreshes that identity and clears unsaved form inputs. These read models grant no edit,
+valuation approval or posting authority.
 
 Sections load and retry independently, distinguishing empty, unavailable, and HTTP-404 states.
 Corporate actions group remaining dates separately from retained lifecycle state; past payment
@@ -35,7 +47,8 @@ override, and effective panel value with override-set attribution. Local lots re
 manual-price P/L is an estimate, separate from retained positions and ledger amounts.
 
 Focused tests: `asset-detail-screen`, `asset-detail-events`, `asset-financial-summary`,
-`asset-passport-summary`, `asset-switcher`, `security-details-tracker`, and Security Master
+`asset-passport-summary`, `asset-switcher`, `asset-market-valuation`, `security-instrument-terms`,
+`security-details-tracker`, and Security Master
 route-identity regressions in `accounting-screen.test.tsx`.
 
 Bond records in Security Master expose calculated analytics and a convention-migration preview

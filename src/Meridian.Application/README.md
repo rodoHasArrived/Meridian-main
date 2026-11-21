@@ -11,6 +11,18 @@ last_reviewed: 2026-10-31
 
 # src/Meridian.Application
 
+
+`SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
+instrument-position projection to registered valuation models. It resolves retained-only dated
+Security Master terms, validates their economic window, checks position/state identity and all
+book/policy/account/currency boundaries, and replays the exact golden-copy receipt for quoted
+prices. Stale or mismatched evidence blocks amounts. Supported long holder share/unit conventions
+and original-face DCF delegate to existing kernels; multiplier/notional and ambiguous signed
+conventions require dedicated adapters. DCF dirty values withhold P/L without a compatible
+carrying/accrual basis. The comparison is market value less retained carrying amount, separate
+from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection
+history does not certify historical transaction visibility. Tests: `AssetPositionMarketValuationServiceTests`.
+
 Bond cash-flow context receipts now use `bond-cash-flow-context-v2`, sharing declared fixed-coupon economics and retaining floating reset evidence. Replay dispatches v1 through its original arithmetic. Declared observed rates must match the exact supported period reset; an explicit missing or empty fixing schedule cannot revive an older observation. A scalar current rate requires its reset date and source. Future resets use retained forward inputs; other instrument families keep their existing fixing behavior.
 
 `ContractualCashFlowPreviewService` resolves retained Security Master/direct-lending facts and pinned curves for the shared calculation engine. Swap leg conventions are decoded only at or above their declared terms version, preserving inert residue on earlier rows. Currency and convention lookup follow the shared resolver's source and alias ordering; malformed leg rows block calculation before raw and typed rows are paired. Invalid retained economic schedules produce a structured `ContractInputsUnavailable` blocker before calculation or run persistence; unrelated storage and runtime failures still propagate. `FileContractualCashFlowRunStore` publishes write-once, verifiable replay packets under the data root; replay uses the packet's normalized contract without rerunning current source mapping. Missing historical balance/notice evidence and assigned provider schedules block rather than falling back. See [contractual projection](../../docs/domain/contractual-cash-flow-projection.md).

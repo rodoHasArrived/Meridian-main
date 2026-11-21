@@ -1456,6 +1456,25 @@ export function workstationAssetOperationsEndpoint(securityId: string): string {
   return routeWithParam(UI_API_ROUTES.WorkstationAssetOperations, "securityId", securityId);
 }
 
+/** Exact-security economic terms, preserving source numeric tokens and schema state. */
+export function securityInstrumentTermsEndpoint(securityId: string): string {
+  return routeWithParam(UI_API_ROUTES.SecurityMasterInstrumentTerms, "securityId", securityId);
+}
+
+export interface AssetMarketValuationQuery {
+  positionId: string;
+  ledgerBookId: string;
+  accountId: string;
+  valuationDate: string;
+  economicStateId: string;
+  economicStateVersion: number;
+  knownAt?: string;
+}
+
+export function workstationAssetMarketValuationEndpoint(securityId: string, query: AssetMarketValuationQuery): string {
+  return `${routeWithParam(UI_API_ROUTES.WorkstationAssetMarketValuation, "securityId", securityId)}${queryString({ ...query })}`;
+}
+
 /**
  * One explorer-side filter to send with an explorer request, so the explorer answers for the same
  * subject the screen is showing. The ledger explorer reads `run`; without it it answers for
