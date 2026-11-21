@@ -16,6 +16,9 @@ observation. A filled report freezes those inputs before the cache can advance; 
 excludes discarded inputs. Range assessments retain their observation window, calculation time and
 threshold, and an assessment outside that window remains unassessed. Missing or malformed optional
 quality facts do not prevent an executed fill reaching its durable handoff.
+Live historical observations retain their backfill revision reference but do not resolve a receipt
+that may still await publication. Their repair status remains unassessed; backtest replay resolves
+repair evidence only after validating the retained batch receipt and exact source row.
 Canonical authorized fill accounting retains source evidence, strategy identity and run identity on
 trade and cost journals and in its existing prepared intent. Exact recovery returns those retained
 snapshots; it never looks up newer quality data or rewrites posted journals. This does not expand the
