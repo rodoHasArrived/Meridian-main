@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalChoice
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalChoice</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:7](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L7).
+
+```csharp
+public sealed record PrivateCapitalChoice(Guid Id, string Label);
+```
+
+## PrivateCapitalChoices
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalChoices</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:8](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L8).
+
+```csharp
+public sealed record PrivateCapitalChoices(IReadOnlyList<PrivateCapitalChoice> Entities, IReadOnlyList<PrivateCapitalChoice> Vehicles);
+```
+
+## PrivateCapitalCommitment
+
+Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalCommitment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:11](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L11).
+
+```csharp
+public sealed record PrivateCapitalCommitment(Guid CommitmentId, Guid HolderEntityId, Guid VehicleSecurityId, string VehicleName, string Strategy, int? VintageYear, string Currency, string SourceReference, PrivateCapitalEvidence Evidence, DateTimeOffset CreatedAt, string CreatedBy, long VehicleVersion);
+```
+
 ## PrivateCapitalEvidence
 
 Qualified name: <code>Meridian.Contracts.PrivateCapital.PrivateCapitalEvidence</code>. Kind: `record`.
@@ -551,56 +581,3 @@ Enum declarations:
 | <code>Warning = 1</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:18](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L18) |  |
 | <code>Error = 2</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:19](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L19) |  |
 | <code>Critical = 3</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:20](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L20) |  |
-
-## DecisionTrace
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionTrace</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:37](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L37).
-
-Versioned and traceable metadata for decision kernel outputs.
-
-```csharp
-public sealed record DecisionTrace(string SchemaVersion, string KernelVersion, DateTimeOffset EvaluatedAt, string? CorrelationId = null, IReadOnlyDictionary<string, string?>? Metadata = null);
-```
-
-## IDecisionKernel (generic arity 2)
-
-Qualified name: <code>Meridian.Contracts.RuleEvaluation.IDecisionKernel</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:55](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L55).
-
-Contract for rule kernels that evaluate a decision subject into a standardized envelope.
-
-```csharp
-public interface IDecisionKernel<in TInput, TScore>
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DecisionResult&lt;TScore&gt; Evaluate(TInput input, CancellationToken ct = default);</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:57](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L57) |  |
-
-## DataDictionary
-
-Qualified name: <code>Meridian.Contracts.Schema.DataDictionary</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Schema/EventSchema.cs:170](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L170).
-
-Data dictionary containing all schemas.
-
-```csharp
-public sealed class DataDictionary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;version&quot;)] public string Version { get; set; } = &quot;1.0&quot;;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:176](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L176) | Gets or sets the data dictionary version. |
-| <code>[JsonPropertyName(&quot;generatedAt&quot;)] public DateTime GeneratedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:182](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L182) | Gets or sets the timestamp when the dictionary was generated. |
-| <code>[JsonPropertyName(&quot;schemas&quot;)] public Dictionary&lt;string, EventSchema&gt; Schemas { get; set; } = new ();</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:188](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L188) | Gets or sets the schema definitions keyed by schema name. |
-| <code>[JsonPropertyName(&quot;exchangeCodes&quot;)] public Dictionary&lt;string, string&gt;? ExchangeCodes { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:194](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L194) | Gets or sets the exchange code mappings (code to name). |
-| <code>[JsonPropertyName(&quot;tradeConditions&quot;)] public Dictionary&lt;string, string&gt;? TradeConditions { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:200](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L200) | Gets or sets the trade condition code mappings (code to description). |
-| <code>[JsonPropertyName(&quot;quoteConditions&quot;)] public Dictionary&lt;string, string&gt;? QuoteConditions { get; set; }</code> | [src/Meridian.Contracts/Schema/EventSchema.cs:206](../../../../src/Meridian.Contracts/Schema/EventSchema.cs#L206) | Gets or sets the quote condition code mappings (code to description). |

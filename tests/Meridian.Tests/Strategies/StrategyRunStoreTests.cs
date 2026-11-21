@@ -236,6 +236,7 @@ public sealed class StrategyRunStoreTests
             };
             var removeScope = () => restarted.RecordRunAsync(removed);
             await removeScope.Should().ThrowAsync<InvalidOperationException>().WithMessage("*immutable*");
+            (await restarted.GetRunByIdAsync(retained.RunId))!.FundAccountId.Should().Be(accountId);
         }
         finally
         {
@@ -258,6 +259,7 @@ public sealed class StrategyRunStoreTests
 
             await record.Should().ThrowAsync<ArgumentException>()
                 .WithMessage("*input hash does not bind its account or strategy artifact*");
+            (await store.GetRunByIdAsync(entry.RunId)).Should().BeNull();
         }
         finally
         {

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SettlementInstruction
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SettlementInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L37).
+
+```csharp
+public sealed record SettlementInstruction(string InstructionId, string AccountId, string Currency, decimal GrossAmount, DateOnly TradeDate, DateOnly SettlementDate, DateTimeOffset CutoffAt, string Status);
+```
+
+## SourceAvailabilityWindow
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SourceAvailabilityWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:3](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L3).
+
+```csharp
+public sealed record SourceAvailabilityWindow(string SourceId, TimeOnly StartLocal, TimeOnly EndLocal, bool IsAvailable);
+```
+
 ## StartupRefusalPreflight
 
 Qualified name: <code>Meridian.Ui.Shared.Services.StartupRefusalPreflight</code>. Kind: `class`.
@@ -828,44 +848,3 @@ Declared public members:
 | <code>public int CoalesceIntervalMs { get; set; } = 250;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:16](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L16) | Maximum push cadence: dirty topics are rebuilt and fanned out at most this often. Also the floor for how quickly a change reaches subscribers. |
 | <code>public int MaxConcurrentStreamsPerSession { get; set; } = 4;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:19](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L19) | Maximum concurrent stream connections per session. |
 | <code>public int SubscriberChannelCapacity { get; set; } = 1;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamOptions.cs#L25) | Per-subscriber channel capacity. 1 means latest-snapshot-wins (drop-oldest), so a slow client can never block the broadcaster — it only drops intermediate snapshots. |
-
-## QuoteStreamSubscription
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.QuoteStreamSubscription</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:12](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L12).
-
-A live subscription to a quote topic. Read coalesced snapshots from Reader; dispose to unsubscribe and release the session&#x27;s stream slot. Disposal is idempotent.
-
-```csharp
-public sealed class QuoteStreamSubscription : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ChannelReader&lt;QuotesSnapshotResponse&gt; Reader { get; }</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:23](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L23) | Coalesced snapshot feed for this subscription&#x27;s topic. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs:25](../../../../src/Meridian.Ui.Shared/Streaming/QuoteStreamSubscription.cs#L25) |  |
-
-## ReportRunStreamBroadcaster
-
-Qualified name: <code>Meridian.Ui.Shared.Streaming.ReportRunStreamBroadcaster</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:18](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L18).
-
-Event-driven report-run fan-out. A report-run-typed configuration of StreamBroadcaster{TPayload}: implements IReportingRunNotifier so run persistence wakes it, rebuilds each watched run&#x27;s status/audit payload on the shared coalescing loop, and pushes it to every subscriber of that run. Because report-run topics are keyed by an unbounded set of run ids, empty topics are evicted on last unsubscribe so they cannot leak.
-
-```csharp
-public sealed class ReportRunStreamBroadcaster : IReportingRunNotifier, IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReportRunStreamBroadcaster(IServiceProvider services, StreamConnectionRegistry registry, QuoteStreamOptions options) : this(services, registry, options, FundStructureEndpoints.TryBuildReportRunAuditTrail);</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:22](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L22) |  |
-| <code>public void NotifyRunChanged(string runId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:51](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L51) |  |
-| <code>public void NotifyRunChanged(string tenantId, string? companyId, string runId);</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:53](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L53) |  |
-| <code>public StreamSubscription&lt;ReportingRunAuditTrailDto&gt;? TrySubscribe(StreamTopic topic, string sessionId) =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:74](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L74) | Subscribe to a report-run topic&#x27;s coalesced status feed. Returns null when the session&#x27;s concurrent-stream cap is exceeded. Dispose to unsubscribe and release the session&#x27;s slot. |
-| <code>public ValueTask DisposeAsync() =&gt; …;</code> | [src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs:80](../../../../src/Meridian.Ui.Shared/Streaming/ReportRunStreamBroadcaster.cs#L80) |  |

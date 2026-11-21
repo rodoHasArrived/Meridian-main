@@ -11,11 +11,66 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui/dashboard
 
+## Asset Detail
+
+Asset Detail separates reference data, holdings/local lots, event evidence, trading parameters,
+governed Passport editing, and cash-flow scenarios. The selected tab is URL-backed; the legacy
+`tab=details-lots` selects Holdings & Lots. Same-asset form inputs remain mounted across visited
+tabs; switching assets resets inputs, aborts supported reads, and rejects stale responses. Search and bounded, clearable recent
+history keep the tab and route scope. Security Master links carry the exact security ID.
+
+The Instrument Dossier embeds the same asset panel with path-owned instrument identity. Its
+outer tab remains in `tab`; embedded asset tabs use `assetTab` and retain book/account/date scope.
+The dossier owns instrument switching and recovery navigation. Delayed reads for an earlier
+instrument cannot replace the current panel, and each embedded resource retains its retry path.
+
+The overview exposes retained Passport trust/readiness and source timestamps, and exact-security
+Asset Operations book positions. Multiple positions require a choice; quantities and amounts are
+not aggregated across accounts/books. Currency, position/source-event identity, and explicit
+book/account/date filters must match. Fund-account scope cannot be mapped by this contract and
+withholds holdings. Quote snapshots remain symbol-level observations with missing currency
+explicit; they do not establish book valuations. Market valuation now comes from the exact-security `market-valuation` endpoint, with position,
+book, account, date and economic-state identity/version. It returns exact decimal text, selected
+price/receipt evidence, registered-model provenance, freshness and metric-specific blockers.
+Unrealized P/L is labelled as an unposted market-value-minus-carrying comparison, not realized,
+tax-cost, or total-return P/L. Unit/share positions without a multiplier can use typed quoted
+prices; original-face DCF market values retain their dirty-value basis and withhold the comparison
+when carrying accrual basis is unknown. Unsupported or stale evidence does not supply amounts.
+
+Canonical instrument terms load from `/api/security-master/{securityId}/instrument-terms` in the
+overview and Reference data. Complete raw common/asset-specific JSON and schema-guided nested
+fields remain inspectable, including schedules and unknown retained fields. Numeric lexemes stay
+exact strings; units are displayed only when explicitly declared. Missing, null, invalid and
+ambiguous values remain distinct. Terms bind to the loaded economic-definition version; Reload
+asset refreshes that identity and clears unsaved form inputs. These read models grant no edit,
+valuation approval or posting authority.
+
+Sections load and retry independently, distinguishing empty, unavailable, and HTTP-404 states.
+Corporate actions group remaining dates separately from retained lifecycle state; past payment
+dates never imply payment/posting. Reference field inspectors compare loaded source, operator
+override, and effective panel value with override-set attribution. Local lots remain browser-only;
+manual-price P/L is an estimate, separate from retained positions and ledger amounts.
+
+Focused tests: `asset-detail-screen`, `asset-detail-events`, `asset-financial-summary`,
+`asset-passport-summary`, `asset-switcher`, `asset-market-valuation`, `security-instrument-terms`,
+`security-details-tracker`, and Security Master
+route-identity regressions in `accounting-screen.test.tsx`.
+
+## Workstation workflows
+
 Record identity panels retain internal record IDs in the expandable Technical identity details;
 operator identifiers remain visible. Cash Ladder keeps its engine version in Projection details.
 Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
 and groups missing comparison context into one explicit notice. Screenshot readiness checks
 exercise the current Match Workbench's retained case evidence.
+
+`FinancialValue.conditionContextId` links unavailable data conditions to one visible shared
+notice in Trial Balance, case comparisons, and instrument positions. Each value keeps its exact
+amount, currency/unit, individual reason, and scoped proof control; the focused proof control
+references the notice through `aria-describedby`. Other conditions remain visible inline.
+Primary summaries use business labels while immutable IDs stay in technical disclosures and
+continue to drive requests, record identity, and evidence links. Reporting review and income
+comparison panels use distinct per-run keys so form updates retain stable review evidence.
 
 Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
 The same dialog queues, schedules, or previews a provider administrator-approved equivalent.

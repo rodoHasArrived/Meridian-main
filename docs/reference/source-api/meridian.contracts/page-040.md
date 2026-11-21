@@ -6,6 +6,57 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerPeriodSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:335](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L335).
+
+```csharp
+public sealed record LedgerPeriodSummaryDto(Guid PeriodId, Guid LedgerBookId, int FiscalYear, int PeriodNo, string Label, IReadOnlyList<LedgerPeriodTrialBalanceLineDto> TrialBalance, decimal TotalDebits, decimal TotalCredits, decimal NetIncome, decimal? PeriodOnPeriodVariance, int OpenBreakCount, LedgerPeriodSignoffStatusDto SignoffStatus, DateTimeOffset CompletedAt, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1");
+```
+
+## LedgerPeriodTrialBalanceLineDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerPeriodTrialBalanceLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:306](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L306).
+
+```csharp
+public sealed record LedgerPeriodTrialBalanceLineDto(string AccountName, string AccountType, string? Symbol, string? FinancialAccountId, decimal DebitTotal, decimal CreditTotal, decimal Balance, int EntryCount, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, string? SourceEventId = null, Guid? SourceJournalEntryId = null, LedgerDimensionSetDto? Dimensions = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string BalanceExact =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:325](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L325) |  |
+| <code>public string DebitTotalExact =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:326](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L326) |  |
+| <code>public string CreditTotalExact =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:327](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L327) |  |
+| <code>public IReadOnlyList&lt;Guid&gt; JournalEntryIds { get; init; } = [];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:328](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L328) |  |
+| <code>public IReadOnlyList&lt;Guid&gt; LedgerEntryIds { get; init; } = [];</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:329](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L329) |  |
+| <code>public string? BalanceProofSubjectId { get; init; }</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:330](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L330) |  |
+| <code>public LedgerAmountScopeDto? BalanceProofScope { get; init; }</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:331](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L331) |  |
+| <code>public string? BalanceProofCurrency { get; init; }</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:332](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L332) |  |
+
+## LedgerPostingKindDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.LedgerPostingKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L42).
+
+```csharp
+public enum LedgerPostingKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Originating = 0</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:44](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L44) |  |
+| <code>Adjustment = 1</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:45](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L45) |  |
+| <code>ClosingEntry = 2</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:53](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L53) | Period-close closing entries. Produced only by the governed period-close workflow after human approval, these are the sanctioned exception to the closed-period posting bar: they finalize the period being closed by zeroing temporary accounts and rolling net income to retained earnings, so the posting guard permits them into soft- and hard-closed periods. |
+
 ## LedgerReportSignatureDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.LedgerReportSignatureDto</code>. Kind: `record`.
@@ -743,38 +794,4 @@ Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:723](../..
 
 ```csharp
 public sealed record PreviewJournalTemplateRequest(string FundProfileId, string TemplateId, string Actor, Guid? LedgerBookId = null, string? CorrelationId = null, string? TenantId = null, string? CompanyId = null);
-```
-
-## PreviewPrivateCapitalCallRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.PreviewPrivateCapitalCallRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs:140](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalLifecycleDtos.cs#L140).
-
-Choose approved commitments; monetary source terms always resolve on the server.
-
-```csharp
-public sealed record PreviewPrivateCapitalCallRequest(string CallId, decimal AmountToCall, DateOnly NoticeDate, DateOnly DueDate, string PeriodId, IReadOnlyList<string> CommitmentIds, string? Purpose = null);
-```
-
-## PreviewPrivateCapitalUnitRegisterRequest
-
-Qualified name: <code>Meridian.Contracts.Ledger.PreviewPrivateCapitalUnitRegisterRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PrivateCapitalUnitRegisterDtos.cs:4](../../../../src/Meridian.Contracts/Ledger/PrivateCapitalUnitRegisterDtos.cs#L4).
-
-Exact reviewed source bytes and a retained hard-close period for one entity-owned book.
-
-```csharp
-public sealed record PreviewPrivateCapitalUnitRegisterRequest(Guid PeriodId, string EvidenceLink, string DocumentId);
-```
-
-## PriorPeriodAdjustmentCorrectionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.PriorPeriodAdjustmentCorrectionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs:25](../../../../src/Meridian.Contracts/Ledger/PriorPeriodAdjustmentDtos.cs#L25).
-
-```csharp
-public sealed record PriorPeriodAdjustmentCorrectionDto(Guid JournalEntryId, bool ReverseSides, string Reason);
 ```
