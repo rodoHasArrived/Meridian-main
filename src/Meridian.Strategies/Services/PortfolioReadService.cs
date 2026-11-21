@@ -141,6 +141,7 @@ public sealed class PortfolioReadService
             VehicleScopeDisplayName: scope.VehicleDisplayName)
         {
             AccountingPositions = BuildAccountingPositions(latestSnapshot),
+            HasRetainedAccountingPositionPopulation = latestSnapshot.AccountingPositions is not null,
             FinancingCoverageStatus = result.EngineMetadata?.FinancingCoverageStatus,
             RunAttributedMarginInterest = result.EngineMetadata?.RunAttributedMarginInterest
         };
@@ -207,6 +208,13 @@ public sealed class PortfolioReadService
                 static symbol => symbol,
                 symbol =>
                 {
+                    var retainedIds = summary.AccountingPositions.Where(position =>
+                            string.Equals(position.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
+                        .Select(static position => position.SecurityId).Where(static id => id.HasValue && id != Guid.Empty)
+                        .Distinct().ToArray();
+                    if (retainedIds.Length > 0)
+                        return new SecurityReferenceLookupRequest(SecurityId: retainedIds.Length == 1 ? retainedIds[0] : null,
+                            Symbol: symbol, Source: retainedIds.Length == 1 ? "native-accounting-security-id" : "native-accounting-identity-conflict");
                     var resolvedSecurityId = symbolsToSecurityId.GetValueOrDefault(symbol);
                     var source = resolvedSecurityId is null ? "portfolio-position-symbol" : "ledger-metadata-security-id";
                     return new SecurityReferenceLookupRequest(
@@ -231,8 +239,16 @@ public sealed class PortfolioReadService
 
         foreach (var (symbol, request) in requests)
         {
-            var resolved = await _securityReferenceLookup.GetByCanonicalAsync(request, ct).ConfigureAwait(false)
-                ?? await _securityReferenceLookup.GetBySymbolAsync(symbol, ct).ConfigureAwait(false);
+            if (request.Source == "native-accounting-identity-conflict")
+            {
+                lookup[symbol] = null;
+                continue;
+            }
+            var resolved = await _securityReferenceLookup.GetByCanonicalAsync(request, ct).ConfigureAwait(false);
+            if (request.Source == "native-accounting-security-id")
+                resolved = resolved?.SecurityId == request.SecurityId ? resolved : null;
+            else
+                resolved ??= await _securityReferenceLookup.GetBySymbolAsync(symbol, ct).ConfigureAwait(false);
 
             lookup[symbol] = resolved is null
                 ? null

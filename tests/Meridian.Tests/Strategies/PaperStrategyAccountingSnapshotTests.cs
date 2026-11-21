@@ -176,6 +176,31 @@ public sealed class PaperStrategyAccountingSnapshotTests
         JsonSerializer.Serialize(snapshot).Should().NotContain("AccountingPositions");
     }
 
+    [Fact]
+    public async Task DisplayLookupCannotRelabelRetainedPaperIdentityWithTheCurrentTickerOwner()
+    {
+        var retainedId = Guid.NewGuid();
+        var tracker = new LiveRunMetricsTracker(1000m, Cutoff.AddDays(-1));
+        tracker.RecordDayEnd(DateOnly.FromDateTime(Cutoff.UtcDateTime), 1000m, 1000m,
+            new Dictionary<string, Position>(), new Dictionary<string, FinancialAccountSnapshot>(),
+            new PositionAccountingEvidenceSnapshot(Cutoff,
+            [new("TEST", Account, retainedId, false, 10, 1000, "Shares", 1, "USD") { StrategyRunId = RunId }]));
+        var result = tracker.Build("BrokerPaper", new HashSet<string> { "TEST" }, 1000m, new Meridian.Ledger.Ledger(), Cutoff);
+        var entry = StrategyRunEntry.Start("synthetic", "Synthetic", RunType.Paper) with { RunId = RunId, Metrics = result };
+        var lookup = new Mock<ISecurityReferenceLookup>();
+        lookup.Setup(item => item.GetByCanonicalAsync(It.Is<SecurityReferenceLookupRequest>(request => request.SecurityId == retainedId),
+                It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new WorkstationSecurityReference(Guid.NewGuid(), "Current ticker owner", "Equity", "USD",
+                Meridian.Contracts.SecurityMaster.SecurityStatusDto.Active, "TEST"));
+
+        var summary = await new PortfolioReadService(lookup.Object).BuildSummaryAsync(entry);
+
+        summary!.AccountingPositions.Should().ContainSingle().Which.SecurityId.Should().Be(retainedId);
+        summary.SecurityResolvedCount.Should().Be(0);
+        summary.SecurityMissingCount.Should().Be(1);
+        lookup.Verify(item => item.GetBySymbolAsync(It.IsAny<string>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
     private static Mock<IPortfolioState> CreateSource(IReadOnlyList<StrategyPositionAccountingEvidence> positions,
         IReadOnlyList<string>? coveredAccounts = null)
     {
