@@ -240,8 +240,8 @@ public static partial class WorkstationEndpoints
                 return StrategyDesignerUnavailable(jsonOptions);
             }
 
-            if (context.RequestServices.GetService<ScopedStrategyDesignStore>() is { } scoped)
-                return await RunScopedDesignerAsync(request, evidenceLoop!, scoped, service, context, jsonOptions, ct)
+            if (context.RequestServices.GetService<ScopedStrategyDesignStore>() is { } scopedStore)
+                return await RunScopedDesignerAsync(request, evidenceLoop!, scopedStore, service, context, jsonOptions, ct)
                     .ConfigureAwait(false);
 
             if (request.FundAccountId is { } account &&
