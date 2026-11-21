@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationAccountingRunReconciliationPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunReconciliationPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:812](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L812).
+
+```csharp
+public sealed record WorkstationAccountingRunReconciliationPayload(string? ReconciliationRunId, int BreakCount, int OpenBreakCount, int MatchCount, bool HasTimingDrift, int SecurityIssueCount, bool HasSecurityCoverageIssues, string? LastUpdated, string Tone);
+```
+
+## WorkstationAccountingRunRecord
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingRunRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:844](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L844).
+
+```csharp
+public sealed record WorkstationAccountingRunRecord(string RunId, string StrategyName, string Mode, string Status, string LastUpdated, string? AuditReference, string? LedgerReference, string? PortfolioId, int BreakCount, int OpenBreakCount, string ReconciliationStatus, WorkstationAccountingRunGovernancePayload Governance, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationAccountingRunCashFlowPayload CashFlow, WorkstationAccountingRunReconciliationPayload? LatestReconciliation, WorkstationKernelObservabilityPayload? KernelObservability = null);
+```
+
+## WorkstationAccountingSeverityCountPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingSeverityCountPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:862](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L862).
+
+```csharp
+public sealed record WorkstationAccountingSeverityCountPayload(string Severity, int Count);
+```
+
 ## WorkstationAccountingTrendSnapshotPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationAccountingTrendSnapshotPayload</code>. Kind: `record`.
@@ -540,38 +570,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:1003](..
 
 ```csharp
 public sealed record WorkstationPortfolioSummaryPayload(string FundAccountId, string StrategyId, string Entity, IReadOnlyList<WorkstationMetricCard> ConsolidatedCards, IReadOnlyList<WorkstationTradingPositionRow> Positions, WorkstationTradingRiskState Risk, WorkstationPortfolioSummaryTelemetry Telemetry, IReadOnlyDictionary<string, string> DrillThroughRoutes);
-```
-
-## WorkstationPortfolioSummaryTelemetry
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPortfolioSummaryTelemetry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:996](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L996).
-
-```csharp
-public sealed record WorkstationPortfolioSummaryTelemetry(long RefreshLatencyMs, int PayloadSizeBytes, bool IsStale, string? StaleReason, string AsOfUtc);
-```
-
-## WorkstationProviderHealthCount
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationProviderHealthCount</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/CrossScreenCountsDtos.cs#L19).
-
-Healthy providers out of every provider the Data workspace lists.
-
-```csharp
-public sealed record WorkstationProviderHealthCount(int Healthy, int Total, string Definition);
-```
-
-## WorkstationRecordSearchHit
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationRecordSearchHit</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/WorkstationRecordSearchDtos.cs#L4).
-
-A navigation projection of an authorized record. Financial values stay in the detail view.
-
-```csharp
-public sealed record WorkstationRecordSearchHit(string RecordType, string RecordId, string Label, string Scope, string AsOfPosture, string Status, string Href);
 ```

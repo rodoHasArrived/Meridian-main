@@ -772,7 +772,7 @@ public sealed record BackfillVendorTierDto(string Id, string Label, int? RateLim
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplyEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:38](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L38).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:41](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L41).
 
 One runtime-apply outcome. Detail is a fixed explanation and may name provider or rule IDs; it never contains configuration or credential values.
 
@@ -800,12 +800,13 @@ Enum declarations:
 | <code>ProviderReconfigured</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:25](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L25) | A streaming provider was excluded from or re-included in failover in-process. |
 | <code>NoRuntimeEffect</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:28](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L28) | The value was saved; it has no runtime effect in the current host mode. |
 | <code>Deferred</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:31](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L31) | The value was saved but the running host could not apply it; a restart is required. |
+| <code>Failed</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:34](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L34) | The running host attempted to apply the saved setting and reported a failure. |
 
 ## ConfigurationApplySummary
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationApplySummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:41](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L41).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:44](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L44).
 
 Outcome of the most recent save&#x27;s runtime apply, reported by the host component that applied it.
 
@@ -817,7 +818,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool AnyDeferred =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:45](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L45) |  |
+| <code>public bool AnyDeferred =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:48](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L48) |  |
 
 ## ConfigurationChangeImpact
 
@@ -843,20 +844,20 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationChangeStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:49](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L49).
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:72](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L72).
 
 Shared by browser and desktop clients. Pending means saved, but not confirmed applied.
 
 ```csharp
-public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null)
+public sealed record ConfigurationChangeStatus(ConfigurationChangeImpact Impact, IReadOnlyList<ConfigurationFieldChange> Changes, IReadOnlyList<ConfigurationFieldChange> PendingChanges, DateTimeOffset? SavedAtUtc, bool CanReconnectInProcess = false, ConfigurationApplySummary? LastApply = null, ConfigurationRevision? Revision = null, ConfigurationRuntimeState? RuntimeState = null, ConfigurationRuntimeAcknowledgement? CollectorAcknowledgement = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:57](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L57) |  |
-| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:59](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L59) |  |
+| <code>public bool RequiresRestart =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:83](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L83) |  |
+| <code>public bool RequiresReconnect =&gt; …;</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:85](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L85) |  |
 
 ## ConfigurationFieldChange
 
@@ -869,6 +870,50 @@ Contains setting names only; configuration and credential values are never expor
 ```csharp
 public sealed record ConfigurationFieldChange(string Path, ConfigurationChangeImpact Impact);
 ```
+
+## ConfigurationRevision
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRevision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:52](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L52).
+
+Identity and SHA-256 digest of one committed configuration document.
+
+```csharp
+public sealed record ConfigurationRevision(Guid Id, string ContentHash);
+```
+
+## ConfigurationRuntimeAcknowledgement
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:55](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L55).
+
+Collector observations are bound to an exact saved revision and collector lifetime.
+
+```csharp
+public sealed record ConfigurationRuntimeAcknowledgement(ConfigurationRevision Revision, Guid CollectorInstanceId, DateTimeOffset AppliedAtUtc, IReadOnlyList<ConfigurationApplyEntry> Entries);
+```
+
+## ConfigurationRuntimeState
+
+Qualified name: <code>Meridian.Contracts.Configuration.ConfigurationRuntimeState</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:62](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L62).
+
+```csharp
+public enum ConfigurationRuntimeState
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Saved</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:64](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L64) |  |
+| <code>AppliedLive</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:65](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L65) |  |
+| <code>Deferred</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:66](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L66) |  |
+| <code>Failed</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:67](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L67) |  |
+| <code>Unknown</code> | [src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs:68](../../../../src/Meridian.Contracts/Configuration/ConfigurationChangeStatus.cs#L68) |  |
 
 ## ConnectivityProbeOptions
 
@@ -993,74 +1038,3 @@ Declared public members:
 | <code>public static bool IsDemoModeRequested(IReadOnlyList&lt;string&gt; args);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:90](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L90) | True when the serving host should redirect its data root to the isolated demo root. This is requested explicitly with --demo / --seed-demo, or ambiently via the MERIDIAN_DEMO environment variable. |
 | <code>public static string EnsureIsolatedDemoRoot(string candidate, string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:123](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L123) | Validates that candidate is the isolated demo root derived from baseDataRoot — a distinct, correctly-named direct child. Throws DemoWorkspaceIsolationException otherwise. This is the structural half of the teardown guard and never touches the filesystem, so it is safe to call before the directory exists. |
 | <code>public static string EnsureSafeToDelete(string candidate, string baseDataRoot);</code> | [src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs:172](../../../../src/Meridian.Contracts/Configuration/DemoWorkspaceLayout.cs#L172) | Validates that candidate is safe to delete: it must pass EnsureIsolatedDemoRoot and carry the demo sentinel marker. Returns the validated absolute path. Throws DemoWorkspaceIsolationException if the guard fails. |
-
-## DerivativesConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.DerivativesConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:8](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L8).
-
-Configuration for derivatives (options and futures) data collection.
-
-```csharp
-public sealed class DerivativesConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:14](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L14) | Whether derivatives tracking is enabled. |
-| <code>[JsonPropertyName(&quot;underlyings&quot;)] public string[]? Underlyings { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:20](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L20) | Underlying symbols to track options for (e.g., &#91;&quot;SPX&quot;, &quot;SPY&quot;, &quot;QQQ&quot;, &quot;AAPL&quot;&#93;). |
-| <code>[JsonPropertyName(&quot;maxDaysToExpiration&quot;)] public int MaxDaysToExpiration { get; set; } = 90;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:27](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L27) | Maximum days to expiration for tracked contracts (0 = no limit). Default: 90 (only track near-term options). |
-| <code>[JsonPropertyName(&quot;strikeRange&quot;)] public int StrikeRange { get; set; } = 20;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:34](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L34) | Number of strikes above and below ATM to track (0 = all strikes). Default: 20 (±20 strikes from at-the-money). |
-| <code>[JsonPropertyName(&quot;captureGreeks&quot;)] public bool CaptureGreeks { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:40](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L40) | Whether to capture greeks (delta, gamma, theta, vega, rho, IV). |
-| <code>[JsonPropertyName(&quot;captureChainSnapshots&quot;)] public bool CaptureChainSnapshots { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:46](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L46) | Whether to capture periodic chain snapshots. |
-| <code>[JsonPropertyName(&quot;chainSnapshotIntervalSeconds&quot;)] public int ChainSnapshotIntervalSeconds { get; set; } = 300;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:52](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L52) | Interval in seconds between chain snapshots (default: 300 = 5 minutes). |
-| <code>[JsonPropertyName(&quot;captureOpenInterest&quot;)] public bool CaptureOpenInterest { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:58](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L58) | Whether to capture open interest updates (typically daily). |
-| <code>[JsonPropertyName(&quot;expirationFilter&quot;)] public string[]? ExpirationFilter { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:66](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L66) | Filter for expiration types to track. Values: &quot;Weekly&quot;, &quot;Monthly&quot;, &quot;Quarterly&quot;, &quot;LEAPS&quot;, &quot;All&quot;. Default: &#91;&quot;Weekly&quot;, &quot;Monthly&quot;&#93; — skip quarterlies and LEAPS unless needed. |
-| <code>[JsonPropertyName(&quot;indexOptions&quot;)] public IndexOptionsConfigDto? IndexOptions { get; set; }</code> | [src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs:73](../../../../src/Meridian.Contracts/Configuration/DerivativesConfigDto.cs#L73) | Index options configuration (SPX, NDX, RUT, VIX). These are European-style and cash-settled. |
-
-## ExtendedSymbolConfigDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.ExtendedSymbolConfigDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:735](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L735).
-
-Extended symbol configuration with group membership and status.
-
-```csharp
-public sealed class ExtendedSymbolConfigDto : SymbolConfigDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;groupIds&quot;)] public string[]? GroupIds { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:738](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L738) |  |
-| <code>[JsonPropertyName(&quot;tags&quot;)] public string[]? Tags { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:741](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L741) |  |
-| <code>[JsonPropertyName(&quot;notes&quot;)] public string? Notes { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:744](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L744) |  |
-| <code>[JsonPropertyName(&quot;addedAt&quot;)] public DateTime AddedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:747](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L747) |  |
-| <code>[JsonPropertyName(&quot;lastModified&quot;)] public DateTime LastModified { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:750](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L750) |  |
-| <code>[JsonPropertyName(&quot;isFavorite&quot;)] public bool IsFavorite { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:753](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L753) |  |
-| <code>[JsonPropertyName(&quot;customColor&quot;)] public string? CustomColor { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:756](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L756) |  |
-
-## IBClientPortalOptionsDto
-
-Qualified name: <code>Meridian.Contracts.Configuration.IBClientPortalOptionsDto</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Configuration/AppConfigDto.cs:630](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L630).
-
-Interactive Brokers Client Portal HTTP configuration.
-
-```csharp
-public sealed class IBClientPortalOptionsDto
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;enabled&quot;)] public bool Enabled { get; set; }</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:633](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L633) |  |
-| <code>[JsonPropertyName(&quot;baseUrl&quot;)] public string BaseUrl { get; set; } = ApiEndpointDefaults.IbClientPortalBaseUrl;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:636](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L636) |  |
-| <code>[JsonPropertyName(&quot;allowSelfSignedCertificates&quot;)] public bool AllowSelfSignedCertificates { get; set; } = true;</code> | [src/Meridian.Contracts/Configuration/AppConfigDto.cs:639](../../../../src/Meridian.Contracts/Configuration/AppConfigDto.cs#L639) |  |

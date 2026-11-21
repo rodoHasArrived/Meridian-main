@@ -6,6 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityUnderlyingRole
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L10).
+
+What an underlying link says the target is to the instrument.
+
+```csharp
+public enum SecurityUnderlyingRole
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Underlying</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L13) | The instrument&#x27;s underlying: an option&#x27;s or warrant&#x27;s stock, a CFD&#x27;s or note&#x27;s reference asset. |
+| <code>ReferenceEntity</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L16) | The entity whose credit the instrument references (a CDS reference entity). |
+| <code>ReferenceObligation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L19) | The obligation delivered or valued on a credit event (a CDS reference obligation). |
+| <code>Index</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L22) | A rate, inflation or credit index the instrument&#x27;s payments read (a floating index, an inflation index, a CDS index). |
+| <code>BasketConstituent</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L25) | One member of a basket the instrument references, carrying its weight. |
+| <code>Collateral</code> | [src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/SecurityUnderlyingGraph.cs#L28) | An asset pledged under the instrument (collateral). |
+
+## SecurityValidationGateResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationGateResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:69](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L69).
+
+```csharp
+public sealed record SecurityValidationGateResultDto(SecurityValidationWorkflowDto Workflow, string? Symbol, Guid? SecurityId, bool IsResolved, bool IsBlocked, SecurityValidationReportDto Report, SecurityValidationSnapshotDto? Snapshot);
+```
+
+## SecurityValidationIssueDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationIssueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityValidationDtos.cs#L20).
+
+```csharp
+public sealed record SecurityValidationIssueDto(SecurityValidationSeverityDto Severity, string Code, string Title, string Message, IReadOnlyList<string> AffectedFields, string SuggestedAction, IReadOnlyList<SecurityEvidenceLinkDto> EvidenceLinks);
+```
+
 ## SecurityValidationReportDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityValidationReportDto</code>. Kind: `record`.
@@ -757,40 +800,4 @@ Records (BalanceId null) or amends a collateral balance. The haircut and the val
 
 ```csharp
 public sealed record UpsertOtcCollateralBalanceRequest(Guid? BalanceId, Guid CollateralAgreementId, OtcCollateralDirection Direction, OtcCollateralKind Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, DateOnly ValuedAsOf, string? Reference = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertOtcContractRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcContractRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L184).
-
-Creates (ContractId null) or amends a bilateral contract.
-
-```csharp
-public sealed record UpsertOtcContractRequest(Guid? ContractId, Guid SecurityId, Guid NettingSetId, string? ExternalTradeId, OtcContractDirection Direction, decimal Notional, string NotionalCurrency, DateOnly TradeDate, DateOnly EffectiveDate, DateOnly? TerminationDate, OtcContractStatus Status, string? ConfirmationReference = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertOtcMasterAgreementRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcMasterAgreementRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:145](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L145).
-
-Creates (AgreementId null) or amends a master agreement.
-
-```csharp
-public sealed record UpsertOtcMasterAgreementRequest(Guid? AgreementId, string Counterparty, string? CounterpartyLei, string OurEntity, Guid? OurEntityId, OtcMasterAgreementType AgreementType, DateOnly AgreementDate, string? GoverningLaw = null, string? Notes = null, string? UpdatedBy = null);
-```
-
-## UpsertOtcNettingSetRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.UpsertOtcNettingSetRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L175).
-
-Creates (NettingSetId null) or amends a netting set.
-
-```csharp
-public sealed record UpsertOtcNettingSetRequest(Guid? NettingSetId, Guid MasterAgreementId, Guid? CollateralAgreementId, string Name, string? Notes = null, string? UpdatedBy = null);
 ```

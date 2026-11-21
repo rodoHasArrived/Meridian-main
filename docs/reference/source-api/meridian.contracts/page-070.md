@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PrivateCapitalCloseCockpitApprovalDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitApprovalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1424](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1424).
+
+```csharp
+public sealed record PrivateCapitalCloseCockpitApprovalDto(string ApprovalId, Guid WorkflowId, Guid FundAccountId, string PeriodId, OperationsApprovalStateDto Status, string? Operator, string? Reviewer, string? Rationale, DateTimeOffset? SubmittedAtUtc, DateTimeOffset? DecidedAtUtc, string WorkflowRoute, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, bool IsCurrentDecision = true);
+```
+
+## PrivateCapitalCloseCockpitDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1487](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1487).
+
+```csharp
+public sealed record PrivateCapitalCloseCockpitDto(string? FundProfileId, Guid? LedgerBookId, Guid? FundAccountId, string? PeriodId, string? EntityId, DateTimeOffset ProjectedAtUtc, string CockpitRoute, EvidenceStatusDto OverallStatus, bool IsReadyToClose, int ReadinessScore, int WorkflowCount, int FundEventCount, int CapitalAccountCount, int ReportOutputCount, int DeliveredReportOutputCount, int ReadyLaneCount, int BlockedLaneCount, IReadOnlyList<PrivateCapitalCloseCockpitLaneDto> Lanes, IReadOnlyList<PrivateCapitalCloseCockpitWorkflowDto> Workflows, IReadOnlyList<OperationsCloseReadinessBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions, IReadOnlyList<string> LiveCapabilities, IReadOnlyList<string> PlannedCapabilities, IReadOnlyList<PrivateCapitalCloseCockpitApprovalDto>? ApprovalHistory = null, IReadOnlyList<PrivateCapitalNavSupportPackageDto>? NavSupportPackages = null, IReadOnlyList<OperationsEvidencePackageSummaryDto>? EvidencePackages = null, DailyValuationScheduleStatusDto? DailyValuationStatus = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;PrivateCapitalCloseCockpitApprovalDto&gt; ApprovalHistory { get; init; } = ApprovalHistory??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1516](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1516) |  |
+| <code>public IReadOnlyList&lt;PrivateCapitalNavSupportPackageDto&gt; NavSupportPackages { get; init; } = NavSupportPackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1519](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1519) |  |
+| <code>public IReadOnlyList&lt;OperationsEvidencePackageSummaryDto&gt; EvidencePackages { get; init; } = EvidencePackages??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1522](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1522) |  |
+
+## PrivateCapitalCloseCockpitLaneDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitLaneDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1408](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1408).
+
+```csharp
+public sealed record PrivateCapitalCloseCockpitLaneDto(string LaneId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? Route, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null, bool RequiredForClose = true)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1420](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1420) |  |
+
 ## PrivateCapitalCloseCockpitWorkflowDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.PrivateCapitalCloseCockpitWorkflowDto</code>. Kind: `record`.
@@ -683,60 +727,4 @@ Per-profile rollup for reconciliation tolerance calibration and exception routin
 
 ```csharp
 public sealed record ReconciliationCalibrationProfileSummaryDto(string ToleranceProfileId, string ExceptionRoute, ReconciliationBreakSeverity HighestSeverity, decimal? MaxToleranceBand, int TotalBreakCount, int OpenBreakCount, int InReviewBreakCount, int ResolvedBreakCount, int DismissedBreakCount, int PendingSignoffCount, int SignedOffCount, DateTimeOffset LastUpdatedAt);
-```
-
-## ReconciliationCalibrationStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:478](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L478).
-
-Aggregate readiness state for reconciliation tolerance calibration and governance sign-off.
-
-```csharp
-public enum ReconciliationCalibrationStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:480](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L480) |  |
-| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:481](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L481) |  |
-| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:482](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L482) |  |
-
-## ReconciliationCalibrationSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1039](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1039).
-
-Operator-facing calibration summary for the reconciliation break queue.
-
-```csharp
-public sealed record ReconciliationCalibrationSummaryDto(DateTimeOffset AsOf, ReconciliationCalibrationStatusDto Status, string Summary, int TotalBreakCount, int ActiveBreakCount, int OpenBreakCount, int InReviewBreakCount, int ResolvedBreakCount, int DismissedBreakCount, int CriticalOpenBreakCount, int PendingSignoffCount, int SignedOffCount, int MissingCalibrationMetadataCount, IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int BreakCountTrend { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1055](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1055) |  |
-| <code>public decimal AutoMatchRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1056](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1056) |  |
-| <code>public decimal T0ClosureRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1057](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1057) |  |
-| <code>public int BreakCountAlertThreshold { get; init; } = 25;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1058](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1058) |  |
-| <code>public decimal AutoMatchRateAlertThreshold { get; init; } = 0.85m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1059](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1059) |  |
-| <code>public decimal T0ClosureRateAlertThreshold { get; init; } = 0.90m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1060](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1060) |  |
-| <code>public bool BreakCountAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1061](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1061) |  |
-| <code>public bool AutoMatchRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1062](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1062) |  |
-| <code>public bool T0ClosureRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1063](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1063) |  |
-
-## ReconciliationCaseComment
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseComment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:647](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L647).
-
-```csharp
-public sealed record ReconciliationCaseComment(string CommentId, string? ParentCommentId, string AuthorId, string AuthorDisplayName, ReconciliationCaseCommentVisibility Visibility, string Body, IReadOnlyList<string> EvidenceLinks, DateTimeOffset CreatedAt, DateTimeOffset? EditedAt = null, DateTimeOffset? DeletedAt = null, string? DeletedBy = null, IReadOnlyList<string>? Mentions = null, IReadOnlyList<string>? LinkedEvidenceIds = null, string? PreviousTextHash = null, string? EditReason = null, string? DeleteReason = null, ReconciliationCaseLifecycleState? StatusTransition = null);
 ```

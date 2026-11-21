@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportAccessPrincipalDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessPrincipalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1663](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1663).
+
+```csharp
+public sealed record ReportAccessPrincipalDto(ReportAccessPrincipalKindDto Kind, string PrincipalId, string? DisplayName = null);
+```
+
+## ReportAccessPrincipalKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessPrincipalKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1656](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1656).
+
+```csharp
+public enum ReportAccessPrincipalKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>User = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1658](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1658) |  |
+| <code>Group = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1659](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1659) |  |
+| <code>Company = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1660](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1660) |  |
+
+## ReportBrandingThemeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportBrandingThemeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L138).
+
+Branding and styling options applied to governed report-pack documents.
+
+```csharp
+public sealed record ReportBrandingThemeDto(string ThemeId, string Name, string FirmName, string PrimaryColor, string AccentColor, string TextColor, string BackgroundColor, string? LogoUri = null, string? FooterText = null, string? Disclaimer = null, bool IsBuiltIn = true);
+```
+
 ## ReportingAccountingBasisDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportingAccountingBasisDto</code>. Kind: `enum`.
@@ -592,44 +632,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:905](
 
 ```csharp
 public sealed record ReportPackDeliveryRecipientDto(string DistributionId, string Recipient, string RecipientRole, string Channel);
-```
-
-## ReportPackDeliveryRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1011](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1011).
-
-```csharp
-public sealed record ReportPackDeliveryRequestDto(string DistributionId, string? Actor = null, string? DeliveryReference = null, string? Note = null, IReadOnlyList<ReportPackEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<GovernanceReportArtifactFormatDto>? Formats = null, ReportPackDeliveryModeDto? DeliveryMode = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator);
-```
-
-## ReportPackDeliveryStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryStateDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:854](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L854).
-
-```csharp
-public enum ReportPackDeliveryStateDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Queued = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:856](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L856) |  |
-| <code>Delivered = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:857](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L857) |  |
-| <code>Failed = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:858](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L858) |  |
-| <code>Retried = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:859](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L859) |  |
-| <code>Blocked = 4</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:860](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L860) |  |
-
-## ReportPackEvidenceLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportPackEvidenceLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1757](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1757).
-
-```csharp
-public sealed record ReportPackEvidenceLinkDto(string EvidenceId, string Label, string? Route, string Source, DateTimeOffset? CapturedAtUtc = null);
 ```

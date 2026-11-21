@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FinancialRecordExplorerDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L15).
+
+```csharp
+public sealed record FinancialRecordExplorerDto(string ExplorerId, string Title, string Description, string SourceState, bool IsBlocked, string BlockedReason, IReadOnlyList<FinancialRecordExplorerScopeItemDto> ScopeItems, IReadOnlyList<FinancialRecordExplorerSavedViewDto> SavedViews, IReadOnlyList<FinancialRecordExplorerSummaryItemDto> SummaryItems, IReadOnlyList<FinancialRecordExplorerFilterDto> Filters, IReadOnlyList<FinancialRecordExplorerColumnDto> Columns, IReadOnlyList<FinancialRecordExplorerRowDto> Rows, FinancialRecordExplorerSelectedRecordDto? SelectedRecord, IReadOnlyList<FinancialRecordExplorerProofActionDto> ProofActions, FinancialRecordExplorerRecordGraphDto RecordGraph);
+```
+
+## FinancialRecordExplorerFilterDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerFilterDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:60](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L60).
+
+```csharp
+public sealed record FinancialRecordExplorerFilterDto(string FilterId, string Label, string Value, string Operator = "equals", FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
+## FinancialRecordExplorerGraphEdgeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerGraphEdgeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs:133](../../../../src/Meridian.Contracts/Workstation/FinancialRecordExplorerDtos.cs#L133).
+
+```csharp
+public sealed record FinancialRecordExplorerGraphEdgeDto(string SourceNodeId, string TargetNodeId, string Label, FinancialRecordExplorerTone Tone = FinancialRecordExplorerTone.Default);
+```
+
 ## FinancialRecordExplorerGraphNodeDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.FinancialRecordExplorerGraphNodeDto</code>. Kind: `record`.
@@ -586,40 +616,4 @@ Shared Accounting workspace payload combining ledger, banking, cash, reconciliat
 
 ```csharp
 public sealed record FundOperationsWorkspaceDto(string FundProfileId, string DisplayName, string BaseCurrency, DateTimeOffset AsOf, int RecordedRunCount, IReadOnlyList<string> RelatedRunIds, FundWorkspaceSummary Workspace, FundLedgerSummary Ledger, FundLedgerReconciliationSnapshot LedgerReconciliationSnapshot, IReadOnlyList<FundAccountSummary> Accounts, IReadOnlyList<BankAccountSnapshot> BankSnapshots, CashFinancingSummary CashFinancing, ReconciliationSummary Reconciliation, FundNavAttributionSummaryDto Nav, FundReportingSummaryDto Reporting, GovernanceLifecycleProjectionDto? Governance = null, DirectLendingOperationsReadModelDto? DirectLendingOperations = null);
-```
-
-## FundOperationsWorkspaceQuery
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundOperationsWorkspaceQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L96).
-
-Query for the shared Accounting and fund-operations workspace projection.
-
-```csharp
-public sealed record FundOperationsWorkspaceQuery(string FundProfileId, DateTimeOffset? AsOf = null, string? Currency = null, FundLedgerScope ScopeKind = FundLedgerScope.Consolidated, string? ScopeId = null, IReadOnlyList<string>? SelectedLedgerIds = null);
-```
-
-## FundPortfolioPosition
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundPortfolioPosition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:119](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L119).
-
-Fund-level position row aggregated across strategy-run portfolio summaries.
-
-```csharp
-public sealed record FundPortfolioPosition(string Symbol, long NetQuantity, decimal WeightedAverageCostBasis, decimal RealizedPnl, decimal UnrealizedPnl, int ContributingRuns, int LinkedAccounts, Guid? SecurityId = null, string? SecurityDisplayName = null, string? AssetClass = null, string? SecuritySubType = null, string? PrimaryIdentifier = null, bool HasSecurityCoverage = false, string CoverageLabel = "Unresolved", IReadOnlyList<string>? ContributingRunIds = null, int SecurityResolvedContributions = 0, int SecurityMissingContributions = 0, MarkFreshnessAssessmentDto? MarkFreshness = null);
-```
-
-## FundReconciliationItem
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundReconciliationItem</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:167](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L167).
-
-Reconciliation row shown in Accounting operator queues.
-
-```csharp
-public sealed record FundReconciliationItem(Guid ReconciliationRunId, Guid AccountId, string AccountDisplayName, DateOnly AsOfDate, string Status, int TotalChecks, int TotalMatched, int TotalBreaks, decimal BreakAmountTotal, DateTimeOffset RequestedAt, DateTimeOffset? CompletedAt, string ScopeLabel = "Account", string? StrategyName = null, string? RunId = null, int SecurityIssueCount = 0, bool HasSecurityCoverageIssues = false, string CoverageLabel = "n/a");
 ```

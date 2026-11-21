@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationCalibrationStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:478](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L478).
+
+Aggregate readiness state for reconciliation tolerance calibration and governance sign-off.
+
+```csharp
+public enum ReconciliationCalibrationStatusDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:480](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L480) |  |
+| <code>ReviewRequired = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:481](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L481) |  |
+| <code>Blocked = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:482](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L482) |  |
+
+## ReconciliationCalibrationSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCalibrationSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1039](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1039).
+
+Operator-facing calibration summary for the reconciliation break queue.
+
+```csharp
+public sealed record ReconciliationCalibrationSummaryDto(DateTimeOffset AsOf, ReconciliationCalibrationStatusDto Status, string Summary, int TotalBreakCount, int ActiveBreakCount, int OpenBreakCount, int InReviewBreakCount, int ResolvedBreakCount, int DismissedBreakCount, int CriticalOpenBreakCount, int PendingSignoffCount, int SignedOffCount, int MissingCalibrationMetadataCount, IReadOnlyList<ReconciliationCalibrationProfileSummaryDto> Profiles)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int BreakCountTrend { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1055](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1055) |  |
+| <code>public decimal AutoMatchRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1056](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1056) |  |
+| <code>public decimal T0ClosureRate { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1057](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1057) |  |
+| <code>public int BreakCountAlertThreshold { get; init; } = 25;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1058](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1058) |  |
+| <code>public decimal AutoMatchRateAlertThreshold { get; init; } = 0.85m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1059](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1059) |  |
+| <code>public decimal T0ClosureRateAlertThreshold { get; init; } = 0.90m;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1060](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1060) |  |
+| <code>public bool BreakCountAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1061](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1061) |  |
+| <code>public bool AutoMatchRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1062](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1062) |  |
+| <code>public bool T0ClosureRateAlertTriggered =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1063](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1063) |  |
+
+## ReconciliationCaseComment
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseComment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:647](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L647).
+
+```csharp
+public sealed record ReconciliationCaseComment(string CommentId, string? ParentCommentId, string AuthorId, string AuthorDisplayName, ReconciliationCaseCommentVisibility Visibility, string Body, IReadOnlyList<string> EvidenceLinks, DateTimeOffset CreatedAt, DateTimeOffset? EditedAt = null, DateTimeOffset? DeletedAt = null, string? DeletedBy = null, IReadOnlyList<string>? Mentions = null, IReadOnlyList<string>? LinkedEvidenceIds = null, string? PreviousTextHash = null, string? EditReason = null, string? DeleteReason = null, ReconciliationCaseLifecycleState? StatusTransition = null);
+```
+
 ## ReconciliationCaseCommentVisibility
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationCaseCommentVisibility</code>. Kind: `enum`.
@@ -653,44 +709,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1668]
 
 ```csharp
 public sealed record ReportAccessPolicyDto(ReportAccessModeDto Mode = ReportAccessModeDto.CompanyWide, string? OwnerPrincipalId = null, IReadOnlyList<ReportAccessPrincipalDto>? Principals = null, string? CompanyId = null, bool AllowOwnerAccess = true);
-```
-
-## ReportAccessPrincipalDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessPrincipalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1663](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1663).
-
-```csharp
-public sealed record ReportAccessPrincipalDto(ReportAccessPrincipalKindDto Kind, string PrincipalId, string? DisplayName = null);
-```
-
-## ReportAccessPrincipalKindDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportAccessPrincipalKindDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1656](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1656).
-
-```csharp
-public enum ReportAccessPrincipalKindDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>User = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1658](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1658) |  |
-| <code>Group = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1659](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1659) |  |
-| <code>Company = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1660](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1660) |  |
-
-## ReportBrandingThemeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportBrandingThemeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L138).
-
-Branding and styling options applied to governed report-pack documents.
-
-```csharp
-public sealed record ReportBrandingThemeDto(string ThemeId, string Name, string FirmName, string PrimaryColor, string AccentColor, string TextColor, string BackgroundColor, string? LogoUri = null, string? FooterText = null, string? Disclaimer = null, bool IsBuiltIn = true);
 ```

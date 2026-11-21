@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ResearchBriefingWorkspaceSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchBriefingWorkspaceSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:118](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L118).
+
+Workspace-level summary used to drive the Research shell header.
+
+```csharp
+public sealed record ResearchBriefingWorkspaceSummary(int TotalRuns, int ActiveRuns, int PromotionCandidates, int PositivePnlRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, string Summary);
+```
+
+## ResearchRunDrillInLinks
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchRunDrillInLinks</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L42).
+
+Drill-in links attached to research run cards and comparisons.
+
+```csharp
+public sealed record ResearchRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string? Continuity);
+```
+
+## ResearchSavedComparison
+
+Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparison</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs:84](../../../../src/Meridian.Contracts/Workstation/ResearchBriefingDtos.cs#L84).
+
+Saved comparison summary surfaced from the briefing home.
+
+```csharp
+public sealed record ResearchSavedComparison(string ComparisonId, string StrategyName, string ModeSummary, string Summary, string? AnchorRunId, IReadOnlyList<ResearchSavedComparisonMode> Modes);
+```
+
 ## ResearchSavedComparisonMode
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResearchSavedComparisonMode</code>. Kind: `record`.
@@ -586,36 +622,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record SecurityMasterFactorPointDto(string PointId, DateOnly EffectiveDate, decimal Factor, decimal? PreviousFactor, string SourceSystem, string? SourceRecordId, DateTimeOffset? SourceAsOfUtc, string? SourceUpdatedBy, string? SourceReason, bool IsCurrentFactor);
-```
-
-## SecurityMasterGovernanceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterGovernanceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L80).
-
-Read-only governance evidence from the same requirements seam that enforces edits.
-
-```csharp
-public sealed record SecurityMasterGovernanceDto(string Profile, string ProfileSource, bool IsProfileLatched, bool RequireGovernedTermAmendments, bool RequireIndependentReviewer, bool RequireIndependentProfileApprover, IReadOnlyList<string> ContradictedKeys);
-```
-
-## SecurityMasterIdentifierSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterIdentifierSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L175).
-
-```csharp
-public sealed record SecurityMasterIdentifierSummaryDto(string? PrimaryIdentifierKind, string? PrimaryIdentifierValue, int ActiveIdentifierCount, int ActiveAliasCount, int ProviderMappingCount, int DistinctProviderCount, bool HasPrimaryIdentifier, bool HasProviderMappings, string Summary, IReadOnlyList<SecurityMasterProviderSymbolMappingDto> ProviderMappings);
-```
-
-## SecurityMasterImpactLinkDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterImpactLinkDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:419](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L419).
-
-```csharp
-public sealed record SecurityMasterImpactLinkDto(string Target, string Label, string Summary, SecurityMasterImpactSeverity Severity, bool IsActive);
 ```

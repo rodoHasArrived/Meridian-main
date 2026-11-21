@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditTrailSourceAvailabilityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceAvailabilityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:68](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L68).
+
+Distinguishes an empty retained trail from a source that is not configured.
+
+```csharp
+public sealed record AuditTrailSourceAvailabilityDto(bool ExecutionAudit, bool OperationsContinuity);
+```
+
+## AuditTrailSourceStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailSourceStatusDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L73).
+
+Source availability is independent of the number of matching records.
+
+```csharp
+public sealed record AuditTrailSourceStatusDto(string Source, string State);
+```
+
+## AuditTrailTimelineEntryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AuditTrailTimelineEntryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/AuditTrailExplorerDtos.cs#L28).
+
+Normalized timeline row used by shared audit explorer surfaces.
+
+```csharp
+public sealed record AuditTrailTimelineEntryDto(string AuditId, DateTimeOffset OccurredAt, string ObjectKind, string ObjectId, string Category, string Action, string Outcome, string? Actor = null, string? RunId = null, string? Symbol = null, string? CorrelationId = null, string? Reason = null, string? Scope = null, string? Message = null, IReadOnlyDictionary<string, string>? Metadata = null, IReadOnlyList<string>? RelatedObjectIds = null, string? EvidenceRoute = null, string? ActionLedgerSource = null, int? ActionLedgerSequence = null, string? PreviousActionHash = null, string? CurrentActionHash = null, string? ActionLedgerStatus = null, string? OrderId = null, string? BrokerName = null);
+```
+
 ## AutomatedJournalCapitalAccountReconciliationDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AutomatedJournalCapitalAccountReconciliationDto</code>. Kind: `record`.
@@ -582,34 +618,4 @@ One event in an effective corporate action&#x27;s supersede chain. LifecycleStat
 
 ```csharp
 public sealed record CorporateActionTimelineEntryDto(Guid CorpActId, string LifecycleState, DateOnly ExDate, DateOnly? PayDate, bool IsAmendment);
-```
-
-## CounterpartyExposureDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CounterpartyExposureDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:11](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L11).
-
-```csharp
-public sealed record CounterpartyExposureDto(string Counterparty, decimal NetExposure, decimal GrossExposure, decimal CollateralBalance, decimal HaircutAdjustedCollateral, MarginRequirementDto MarginRequirement, bool CollateralSufficient, IReadOnlyList<ProductExposureDto> Products);
-```
-
-## CouponEvent
-
-Qualified name: <code>Meridian.Contracts.Workstation.CouponEvent</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L20).
-
-```csharp
-public sealed record CouponEvent(Guid EventId, Guid AccountId, string SecurityId, string Currency, decimal CouponAmount, DateOnly ExDate, DateOnly PayDate);
-```
-
-## CreateOnboardingWorkspaceRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CreateOnboardingWorkspaceRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L21).
-
-```csharp
-public sealed record CreateOnboardingWorkspaceRequestDto(string Name, OnboardingScopeDto Scope, OnboardingCriteriaDto Criteria);
 ```

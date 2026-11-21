@@ -23,7 +23,9 @@ internal sealed class ConfigurationChangeTracker
         get { lock (_gate) return _status; }
     }
 
-    internal void Record(AppConfig previous, AppConfig next, IReadOnlyList<ConfigurationApplyEntry>? applied = null)
+    internal void Record(
+        AppConfig previous, AppConfig next, IReadOnlyList<ConfigurationApplyEntry>? applied = null,
+        ConfigurationRevision? revision = null)
     {
         var before = Fingerprints(previous);
         var after = Fingerprints(next);
@@ -43,7 +45,7 @@ internal sealed class ConfigurationChangeTracker
                 // A confirmed runtime apply is the host's new baseline for that path, so it is not pending.
                 foreach (var (path, entry) in appliedByPath)
                 {
-                    if (entry.Kind == ConfigurationApplyKind.Deferred)
+                    if (!ConfigurationRevisionJournal.HasTakenEffect(entry.Kind))
                         continue;
                     if (after.TryGetValue(path, out var hash))
                         _baseline[path] = hash;
@@ -56,13 +58,26 @@ internal sealed class ConfigurationChangeTracker
             var pending = Diff(_baseline, after).Where(change => change.Impact != ConfigurationChangeImpact.Live).ToArray();
             var summary = applied is { Count: > 0 } ? new ConfigurationApplySummary(applied, DateTimeOffset.UtcNow) : null;
             _status = new(changes.Count == 0 ? ConfigurationChangeImpact.Live : changes.Max(change => change.Impact),
-                changes, pending, DateTimeOffset.UtcNow, LastApply: summary);
+                changes, pending, DateTimeOffset.UtcNow, LastApply: summary, Revision: revision);
         }
     }
 
     /// <summary>Flattened setting paths whose values differ; values themselves are never retained.</summary>
     internal static IReadOnlyList<string> ChangedPaths(AppConfig previous, AppConfig next)
-        => Diff(Fingerprints(previous), Fingerprints(next)).Select(change => change.Path).ToArray();
+        => Changes(previous, next).Select(change => change.Path).ToArray();
+
+    internal static IReadOnlyList<ConfigurationFieldChange> Changes(AppConfig previous, AppConfig next)
+        => Diff(Fingerprints(previous), Fingerprints(next));
+
+    internal static IReadOnlyList<ConfigurationFieldChange> CollectorChanges(AppConfig previous, AppConfig next)
+        => Diff(CollectorFingerprints(previous.DataSources), CollectorFingerprints(next.DataSources));
+
+    private static Dictionary<string, string> CollectorFingerprints(DataSourcesConfig? settings)
+    {
+        var fields = new Dictionary<string, string>(StringComparer.Ordinal);
+        Flatten(JsonSerializer.SerializeToNode(settings, AppConfigJsonOptions.Write), "dataSources", fields);
+        return fields;
+    }
 
     private static ConfigurationChangeImpact ImpactAfterApply(ConfigurationChangeImpact impact, ConfigurationApplyKind kind)
         => kind switch
@@ -136,7 +151,13 @@ internal sealed class ConfigurationChangeTracker
 
     private static void Flatten(JsonNode? node, string path, Dictionary<string, string> fields)
     {
-        if (node is JsonObject obj && obj.Count > 0)
+        // The provider override map accepts arbitrary keys. Report its typed container, not
+        // operator-controlled values masquerading as setting paths in the status contract.
+        if (path.Equals("dataSources.symbolMappings.providerResolutionModes", StringComparison.OrdinalIgnoreCase))
+        {
+            fields[path] = Sha256Digest.ComputeUtf8(node?.ToJsonString() ?? "null");
+        }
+        else if (node is JsonObject obj && obj.Count > 0)
         {
             foreach (var (key, value) in obj)
                 Flatten(value, path.Length == 0 ? key : path + "." + key, fields);

@@ -4438,6 +4438,24 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Configuration.ConnectivityProbeOptions"
     },
     {
@@ -39285,8 +39303,38 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationChangeStatus",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
       "target": "contract:Meridian.Contracts.Configuration.ConfigurationChangeImpact"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationApplyEntry"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
+      "target": "contract:Meridian.Contracts.Configuration.ConfigurationRevision"
     },
     {
       "kind": "contract-reference",
@@ -71896,7 +71944,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "196ed5af496a8f5c93d9e28b3a102e1f759f62630f03de6fbd857ef624dec223",
+  "fingerprint": "7d68c3715fb52f3aed1b1d3108d52ce3e446769ae1c2c63af8dc52ca52ebd2f9",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -76382,6 +76430,24 @@
       "id": "contract:Meridian.Contracts.Configuration.ConfigurationFieldChange",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Configuration.ConfigurationFieldChange"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRevision",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationRevision"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationRuntimeAcknowledgement"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Configuration.ConfigurationRuntimeState",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Configuration.ConfigurationRuntimeState"
     },
     {
       "classification": "configuration",
@@ -105665,11 +105731,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4405,
-    "contract_set_memberships": 5795,
-    "edges": 11943,
+    "contract_references": 4410,
+    "contract_set_memberships": 5798,
+    "edges": 11951,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5873
+    "nodes": 5876
   }
 }

@@ -67,7 +67,8 @@ public static class CrossProviderToleranceEndpoints
                 request.Policy.Validate();
                 if (request.Reason?.Length > 2000)
                     throw new ArgumentException("The change reason cannot exceed 2000 characters.");
-                var audit = await store.UpdateAsync(config => ApplyPolicy(config, request, actor), ct).ConfigureAwait(false);
+                var (audit, changeImpact) = await store.UpdateWithChangeStatusAsync(
+                    config => ApplyPolicy(config, request, actor), ct).ConfigureAwait(false);
                 loggerFactory.CreateLogger(nameof(CrossProviderToleranceEndpoints)).LogInformation(
                     "Cross-provider tolerances changed {AuditId} {Actor} {Loosened} {Reason} {PricePercent} {QuotePercent} {VolumePercent} {VolumeMode} {BackfillBars} {BackfillClosePercent} {OverrideCount}",
                     audit.Id, LogSanitizer.Sanitize(audit.Actor), audit.Loosened, LogSanitizer.Sanitize(audit.Reason), audit.After.PriceTolerancePercent,
@@ -75,7 +76,7 @@ public static class CrossProviderToleranceEndpoints
                     audit.After.BackfillBarsToCompare, audit.After.BackfillCloseTolerancePercent,
                     audit.After.AssetClassOverrides?.Count ?? 0);
                 return Results.Json(new CrossProviderTolerancePolicySaveResponse(
-                    audit.After, audit, store.GetChangeStatus()), jsonOptions);
+                    audit.After, audit, changeImpact), jsonOptions);
             }
             catch (ArgumentException exception)
             {

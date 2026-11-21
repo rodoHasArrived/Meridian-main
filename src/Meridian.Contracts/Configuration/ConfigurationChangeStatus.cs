@@ -28,7 +28,10 @@ public enum ConfigurationApplyKind
     NoRuntimeEffect,
 
     /// <summary>The value was saved but the running host could not apply it; a restart is required.</summary>
-    Deferred
+    Deferred,
+
+    /// <summary>The running host attempted to apply the saved setting and reported a failure.</summary>
+    Failed
 }
 
 /// <summary>
@@ -45,6 +48,26 @@ public sealed record ConfigurationApplySummary(
     public bool AnyDeferred => Entries.Any(entry => entry.Kind == ConfigurationApplyKind.Deferred);
 }
 
+/// <summary>Identity and SHA-256 digest of one committed configuration document.</summary>
+public sealed record ConfigurationRevision(Guid Id, string ContentHash);
+
+/// <summary>Collector observations are bound to an exact saved revision and collector lifetime.</summary>
+public sealed record ConfigurationRuntimeAcknowledgement(
+    ConfigurationRevision Revision,
+    Guid CollectorInstanceId,
+    DateTimeOffset AppliedAtUtc,
+    IReadOnlyList<ConfigurationApplyEntry> Entries);
+
+[JsonConverter(typeof(JsonStringEnumConverter<ConfigurationRuntimeState>))]
+public enum ConfigurationRuntimeState
+{
+    Saved,
+    AppliedLive,
+    Deferred,
+    Failed,
+    Unknown
+}
+
 /// <summary>Shared by browser and desktop clients. Pending means saved, but not confirmed applied.</summary>
 public sealed record ConfigurationChangeStatus(
     ConfigurationChangeImpact Impact,
@@ -52,7 +75,10 @@ public sealed record ConfigurationChangeStatus(
     IReadOnlyList<ConfigurationFieldChange> PendingChanges,
     DateTimeOffset? SavedAtUtc,
     bool CanReconnectInProcess = false,
-    ConfigurationApplySummary? LastApply = null)
+    ConfigurationApplySummary? LastApply = null,
+    ConfigurationRevision? Revision = null,
+    ConfigurationRuntimeState? RuntimeState = null,
+    ConfigurationRuntimeAcknowledgement? CollectorAcknowledgement = null)
 {
     public bool RequiresRestart => PendingChanges.Any(change => change.Impact == ConfigurationChangeImpact.RestartHost
         || !CanReconnectInProcess && change.Impact == ConfigurationChangeImpact.ReconnectProvider);
