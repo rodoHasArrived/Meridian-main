@@ -500,7 +500,7 @@ export function ReportRunGovernanceScreen() {
         />
       ) : null}
 
-      <ReportReviewPanel key={run.runId} runId={run.runId} version={run.version} onReview={setReview} />
+      <ReportReviewPanel key={`review:${run.runId}`} runId={run.runId} version={run.version} onReview={setReview} />
 
       <LifecyclePanel
         run={run}

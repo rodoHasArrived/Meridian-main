@@ -295,13 +295,15 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
       <header><div className="flex flex-wrap items-start justify-between gap-2"><h3 className="text-base font-semibold">{item.reason || item.strategyName}</h3><Badge>{item.status}</Badge></div>
         {item.recommendedAction ? <p className="mt-2 text-sm">{item.recommendedAction}</p> : null}
         <dl className="mt-3 grid gap-2 sm:grid-cols-2"><Fact label="Owner" value={item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"} />
-          <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Case" value={item.breakId} /><Fact label="Version" value={String(item.version ?? "Not recorded")} />
+          <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Version" value={String(item.version ?? "Not recorded")} />
           <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Period" value={item.accountingPeriodId ?? "Not recorded"} /></dl></header>
+      <TechnicalDetails label="Case identifiers"><dl><Fact label="Case ID" value={item.breakId} /></dl></TechnicalDetails>
       <section aria-label="Comparison" className="rounded border border-border p-3">
         {item.statementEvidence ? <ReconciliationCaseEvidence item={item} relatedRows={relatedCases} onOpenCase={onOpenCase}
           comparisonBreakId={comparisonBreakId} onComparisonChange={onComparisonChange} /> : <>
         <h4 className="text-sm font-semibold">Disagreement</h4>
         {!hasComparison ? <p className="my-2 text-sm">Comparison unavailable: {missingComparison}</p> : null}
+        <p className="mt-2 text-xs text-muted-foreground">{dataReason}</p>
         <dl className="mt-3 grid gap-3 sm:grid-cols-2">
           <ValueFact label="Expected" value={expected} unit={measure?.unit} reason={dataReason} />
           <ValueFact label="Actual" value={actual} unit={measure?.unit} reason={dataReason} />
@@ -374,7 +376,7 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
 
 function Fact({ label, value }: { label: string; value: string }) { return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd className="text-sm">{value}</dd></div>; }
 function ValueFact({ label, value, unit, reason, signed }: { label: string; value?: string | number | null; unit?: string; reason: string; signed?: boolean }) {
-  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd><FinancialValue value={value} currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={unit || "Unit unavailable"} reason={reason} signed={signed} /></dd></div>;
+  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd><FinancialValue value={value} currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={unit || "Unit unavailable"} summarizeUnavailableCondition reason={reason} signed={signed} /></dd></div>;
 }
 
 export function CaseVariance({ item }: { item: ReconciliationBreakQueueItem }) {

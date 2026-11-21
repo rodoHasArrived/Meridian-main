@@ -292,7 +292,7 @@
       "waitForSelectors": [
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -327,7 +327,7 @@
         "#reconciliation-break-queue tr[data-dense-row-id=\"run-42:cash\"][aria-selected=\"true\"]",
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
       ],
       "waitForAbsentTexts": [
         "Loading reconciliation break queue...",
@@ -512,7 +512,7 @@
         "1 operations continuity workflow loaded.",
         "Workflows",
         "Ledger Posting Draft",
-        "3/7 lanes ready across 1 close workflow.",
+        "3/7 checks ready across 1 close workflow.",
         "Board",
         "Blockers",
         "Checklist",
@@ -658,17 +658,17 @@
       "waitForTexts": [
         "Cash variance over tolerance.",
         "Open reconciliation casework",
-        "Review retained evidence",
-        "Source lineage",
+        "Retained evidence",
+        "Retained comparison and lineage",
         "Disagreement",
         "Resolve",
         "Timeline and discussion"
       ],
       "waitForSelectors": [
-        "a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]",
+        "[aria-label=\"Case inspector\"] a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]:visible",
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1063,6 +1063,7 @@
       ],
       "requiredApiRoutes": [
         "/api/fund-structure/reporting/runs/report-run-investor-202605",
+        "/api/fund-structure/reporting/runs/report-run-investor-202605/review",
         "/api/fund-structure/reporting/runs/series/report-series-investor-monthly-statement",
         "/api/fund-structure/reporting/distribution/transports",
         "/api/fund-structure/reporting/distribution/packages/report-run-investor-202605/deliveries",
@@ -1070,6 +1071,8 @@
       ],
       "waitForTexts": [
         "Report lifecycle",
+        "Changes since prior approved run",
+        "Materiality not assessed",
         "Immutable release artifacts",
         "Immutable audit trail",
         "Authenticated transport catalog"
@@ -1753,7 +1756,7 @@
       "waitForSelectors": [
         "[aria-label=\"Case inspector\"][aria-busy=\"false\"]",
         "[aria-label=\"Case inspector\"] [aria-label=\"Case decisions\"] button:not([disabled])",
-        "[aria-label=\"Case inspector\"] dd:has-text(\"run-42:cash\")"
+        "[aria-label=\"Case inspector\"] details:has(summary:has-text(\"Case identifiers\")):has(dd:has-text(\"run-42:cash\"))"
       ],
       "waitForAbsentTexts": [
         "Failed to parse URL",
@@ -1840,12 +1843,13 @@
         "/api/fund-structure/reporting/runs/report-run-investor-202605/review"
       ],
       "waitForTexts": [
-        "report-run-investor-202605",
+        "Current run",
         "No prior approved comparable run.",
         "Materiality not assessed"
       ],
       "waitForSelectors": [
-        "#tab-panel-changes:not([hidden])"
+        "[role=\"tab\"][data-tab-id=\"changes\"][aria-selected=\"true\"]",
+        "[role=\"tabpanel\"]:not([hidden]) details:has(summary:has-text(\"Run identifiers\")):has(dd:has-text(\"report-run-investor-202605\"))"
       ],
       "waitForAbsentTexts": [
         "Loading retained review evidence",
@@ -1949,7 +1953,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 lanes ready across 1 close workflow.",
+        "3/7 checks ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [
@@ -2003,13 +2007,14 @@
       ],
       "waitForTexts": [
         "Positions by account",
-        "sec-dev-001",
+        "Brokerage household",
         "alpaca-roth",
         "38 units"
       ],
       "waitForSelectors": [
         "[role=\"tab\"][data-tab-id=\"positions\"][aria-selected=\"true\"]",
-        "[role=\"tabpanel\"]:not([hidden]) tbody tr:has-text(\"alpaca-roth\")"
+        "[role=\"tabpanel\"]:not([hidden]) [data-position-source=\"brokerage-household\"] tbody tr:has-text(\"alpaca-roth\")",
+        "details:has(summary:has-text(\"Technical identity\")):has(dd:has-text(\"sec-dev-001\"))"
       ],
       "waitForAbsentTexts": [
         "Loading instrument dossier…",
@@ -2065,7 +2070,7 @@
         "Checklist",
         "Approvals",
         "Evidence",
-        "3/7 lanes ready across 1 close workflow.",
+        "3/7 checks ready across 1 close workflow.",
         "Balanced journal preview must be validated before posting."
       ],
       "waitForAbsentTexts": [

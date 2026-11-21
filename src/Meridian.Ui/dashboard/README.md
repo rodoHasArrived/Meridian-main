@@ -3795,6 +3795,7 @@ Checklist, Approvals and Evidence. The selected workflow and tab round-trip thro
 The previous continuity route redirects with its complete query and hash. Close publication
 requires a reviewed reason and confirmation; period reopening confirms the entered incident
 metadata. Both retain server version guards. Break cases open the shared case inspector.
+Close records expose workflow, account and approval IDs in their scope or record disclosures.
 
 The Accounting case landing links to Close instead of repeating its summary panels. Specialized
 valuation schedules, retained batch posting and period commands remain available at
@@ -3813,6 +3814,9 @@ unverified Record passport; eligible immutable amounts open the shared Amount pa
 Trial-balance rows bind exact contributor identities and a content-addressed immutable journal
 checkpoint. Mutable live Holdings cells have no owner-scoped position/mark checkpoint and do not
 claim amount provenance. They retain exact fractional quantities and derivative multipliers.
+The instrument dossier names the source of its positions and retains each mark policy version in
+the corresponding row. Trial balance and case comparisons can explain a shared unavailable data
+condition once while each value retains its accessible status.
 
 `CaseInspector` owns one selected case's read, server-permitted commands, in-place rationale,
 root cause/resolution, timeline, receipt and conflict review. Scope changes discard pending reads

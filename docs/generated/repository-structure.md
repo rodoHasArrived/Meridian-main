@@ -10475,6 +10475,7 @@ Meridian-main
 │   │   │   │   │   ├── market-data-screen.tsx
 │   │   │   │   │   ├── nav-comparison-screen.tsx
 │   │   │   │   │   ├── operations-continuity-reviewed-automation.view-model.ts
+│   │   │   │   │   ├── operations-continuity-screen.close-calendar-columns.tsx
 │   │   │   │   │   ├── operations-continuity-screen.close-test-fixtures.ts
 │   │   │   │   │   ├── operations-continuity-screen.command-state.ts
 │   │   │   │   │   ├── operations-continuity-screen.date-format.ts
@@ -10581,6 +10582,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.production-surface.test.ts
 │   │   │   │   │   ├── reporting-screen.production-surface.ts
+│   │   │   │   │   ├── reporting-screen.report-writer-datasets.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-filters.tsx
 │   │   │   │   │   ├── reporting-screen.report-writer-formula-references.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.test.ts
@@ -10721,6 +10723,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
 │   │   │   │   │   ├── trading-screen.order-authority.test.tsx
 │   │   │   │   │   ├── trading-screen.order-authority.ts
+│   │   │   │   │   ├── trading-screen.order-preview-panel.tsx
 │   │   │   │   │   ├── trading-screen.order-ticket-form.tsx
 │   │   │   │   │   ├── trading-screen.order-ticket-state.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts

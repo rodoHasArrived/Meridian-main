@@ -19,6 +19,8 @@ export interface FinancialValueProps {
   currency?: string;
   unit?: string;
   condition?: FinancialDataCondition;
+  /** The surrounding comparison or table already explains the unavailable source condition. */
+  summarizeUnavailableCondition?: boolean;
   reason?: string;
   basis?: string;
   freshness?: string;
@@ -33,7 +35,7 @@ export interface FinancialValueProps {
 }
 
 /** A source value's condition and scoped proof are independent; presence alone proves neither. */
-export function FinancialValue({ value, currency, unit, condition = "unavailable", reason, basis, freshness, passport, amountPassport, decimals, signed, absolute = false, className }: FinancialValueProps) {
+export function FinancialValue({ value, currency, unit, condition = "unavailable", summarizeUnavailableCondition = false, reason, basis, freshness, passport, amountPassport, decimals, signed, absolute = false, className }: FinancialValueProps) {
   const [open, setOpen] = useState(false);
   const parsed = absolute ? parseExactDecimal(value) : null;
   const displayValue = parsed ? exactDecimalText({ ...parsed, coefficient: parsed.coefficient < 0n ? -parsed.coefficient : parsed.coefficient }) : value;
@@ -50,9 +52,11 @@ export function FinancialValue({ value, currency, unit, condition = "unavailable
   const text = formatted === null ? missingLabel : `${formatted}${currency || unit ? ` ${currency ?? unit}` : ""}`;
   const accessibleValue = effectiveCondition === "confirmed" || formatted === null
     ? text : `${text} · ${CONDITION_LABELS[effectiveCondition]}`;
-  const content = <span className={cn("inline-flex max-w-full flex-col items-end gap-0.5 align-top", className)} title={detail || undefined}>
+  const summarized = formatted !== null && effectiveCondition === "unavailable" && summarizeUnavailableCondition;
+  const content = <span className={cn("inline-flex max-w-full flex-col items-end gap-0.5 align-top", className)} title={detail || undefined}
+    role={summarized ? "group" : undefined} aria-label={summarized ? CONDITION_LABELS.unavailable : undefined}>
     <span className="font-mono tabular-nums">{text}</span>
-    {effectiveCondition !== "confirmed" && formatted !== null ? <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><span aria-hidden="true">•</span>{CONDITION_LABELS[effectiveCondition]}</span> : null}
+    {effectiveCondition !== "confirmed" && formatted !== null && !summarized ? <span className="inline-flex items-center gap-1 text-xs text-muted-foreground"><span aria-hidden="true">•</span>{CONDITION_LABELS[effectiveCondition]}</span> : null}
     {formatted === null && detail ? <span className="max-w-64 whitespace-normal text-xs text-muted-foreground">{detail}</span> : null}
     {formatted !== null && detail ? <span className="sr-only">{detail}</span> : null}
     {!passportMatches ? <span className="text-xs text-muted-foreground">Amount passport unavailable</span> : null}

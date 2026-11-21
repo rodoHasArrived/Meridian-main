@@ -421,12 +421,12 @@ const detail: OperationsContinuityWorkflow = {
       {
         metricId: "match-records",
         label: "Match Records",
-        value: "6/7 lanes ready",
+        value: "6/7 reconciliation checks ready",
         status: "ReviewRequired",
-        detail: "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+        detail: "The selected workflow tracks cash, position, trade, income, MBS factor, bank, and GL reconciliation checks.",
         routeHint: "/workstation/accounting/reconciliation",
         evidenceLinks: [],
-        requiredActions: ["Complete source-backed reconciliation lanes before approval."]
+        requiredActions: ["Complete source-backed reconciliation checks before approval."]
       },
       {
         metricId: "resolve-exceptions",
@@ -1152,7 +1152,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(breakCases).getByText("Expected workflow version 4")).toBeInTheDocument();
     expect(within(breakCases).getByRole("link", { name: "Open exception casework for break recon-break-42" }))
       .toHaveAttribute("href", `/accounting/reconciliation?workflowId=${workflowId}&reconciliationBreak=recon-break-42`);
-    const reconciliationLaneCoverage = screen.getByRole("table", { name: "Operations continuity reconciliation lane coverage" });
+    const reconciliationLaneCoverage = screen.getByRole("table", { name: "Operations continuity reconciliation coverage" });
     expect(within(reconciliationLaneCoverage).getByText("Cash reconciliation")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("Position reconciliation")).toBeInTheDocument();
     expect(within(reconciliationLaneCoverage).getByText("Trade reconciliation")).toBeInTheDocument();
@@ -1199,8 +1199,8 @@ describe("OperationsContinuityScreen", () => {
     );
     const cockpitSummary = screen.getByRole("list", { name: "Private-capital close cockpit summary" });
     expect(within(cockpitSummary).getByText("Shared close readiness confirmed")).toBeInTheDocument();
-    expect(within(cockpitSummary).getByText("2 ready / 1 blocked lanes")).toBeInTheDocument();
-    expect(within(cockpitSummary).getByText("2/5 proof lanes ready; review NAV support, evidence package, period lock")).toBeInTheDocument();
+    expect(within(cockpitSummary).getByText("2 ready / 1 blocked checks")).toBeInTheDocument();
+    expect(within(cockpitSummary).getByText("2/5 evidence checks ready; review NAV support, evidence package, period lock")).toBeInTheDocument();
     expect(within(cockpitSummary).getByText("3 fund events")).toBeInTheDocument();
     expect(within(cockpitSummary).getByText("1/2 report outputs delivered")).toBeInTheDocument();
     const dashboardSummary = screen.getByRole("list", { name: "Financial Operations dashboard summary" });
@@ -1221,14 +1221,15 @@ describe("OperationsContinuityScreen", () => {
       expect.objectContaining({ signal: expect.any(AbortSignal) })
     );
     const closeCalendarSummary = screen.getByRole("list", { name: "Operations close calendar summary" });
-    expect(within(closeCalendarSummary).getByText(`Selected 2026-05 / ${fundAccountId}`)).toBeInTheDocument();
+    expect(within(closeCalendarSummary).getByText("Selected period 2026-05")).toBeInTheDocument();
     expect(within(closeCalendarSummary).getByText("Next due May 12, 2026: Ledger posting controller check")).toBeInTheDocument();
     expect(within(closeCalendarSummary).getByText("1/2 approvals complete")).toBeInTheDocument();
     const closeCalendarTable = screen.getByRole("table", { name: "Operations continuity close calendar" });
-    expect(within(closeCalendarTable).getByText(`2026-05 / ${fundAccountId}`)).toBeInTheDocument();
+    expect(within(closeCalendarTable).getByText("2026-05")).toBeVisible();
+    expect(within(closeCalendarTable).getByText(fundAccountId)).not.toBeVisible();
     expect(within(closeCalendarTable).getByText("Ledger posting controller check")).toBeInTheDocument();
     expect(within(closeCalendarTable).getByText("fund-controller")).toBeInTheDocument();
-    expect(within(closeCalendarTable).getByRole("link", { name: `Open close calendar workflow 2026-05 / ${fundAccountId}` }))
+    expect(within(closeCalendarTable).getByRole("link", { name: "Open close calendar workflow 2026-05" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
     const commandSpine = screen.getByRole("table", { name: "Financial Operations command spine" });
     expect(within(commandSpine).getByText("Start/import/normalize activity")).toBeInTheDocument();
@@ -1254,10 +1255,12 @@ describe("OperationsContinuityScreen", () => {
     expect(within(reviewedAutomationQueue).getByText("84% confidence")).toBeInTheDocument();
     expect(within(reviewedAutomationQueue).getByText("Cannot publish reports or release support packages.")).toBeInTheDocument();
     const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
-    expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
-    expect(within(operatorQueue).getAllByText("approval-close-2026-05")).toHaveLength(2);
+    expect(within(operatorQueue).getByText("recon-break-42")).not.toBeVisible();
+    const approvalIds = within(operatorQueue).getAllByText("approval-close-2026-05");
+    expect(approvalIds).toHaveLength(2);
+    approvalIds.forEach((id) => expect(id).not.toBeVisible());
     expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("Reconciliation lane")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Reconciliation check")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("1 open break; MBS factor reconciliation has 1 open break requiring controller review.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Workflow blocker")).toBeInTheDocument();
@@ -1267,9 +1270,9 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Resolve Ledger Posting blocker and retain evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Ledger posting controller check")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Close calendar")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Ledger posting controller check`)).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("2026-05: Ledger posting controller check")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Calendar status: Ledger Posting Draft")).toBeInTheDocument();
-    expect(within(operatorQueue).getAllByText("Private-capital proof lane")).toHaveLength(3);
+    expect(within(operatorQueue).getAllByText("Private-capital evidence check")).toHaveLength(3);
     expect(within(operatorQueue).getByText("NAV support")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Shadow NAV support package still needs retained positions, cash, and pricing evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Retain NAV support for positions, cash, and pricing")).toBeInTheDocument();
@@ -1284,7 +1287,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Close approval and audit evidence still need checklist-control approval and close-package manifest support.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Retain checklist-control approval and close-package manifest evidence before sign-off.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Private-capital approval")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText(`2026-05 / ${fundAccountId}: Pending final ledger validation before close sign-off.`)).toBeInTheDocument();
+    const closeApprovalLink = within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: 2026-05 close approval" });
+    expect(within(closeApprovalLink.closest("tr")!).getByText("Pending final ledger validation before close sign-off.")).toBeVisible();
     expect(within(operatorQueue).getByText("Complete private-capital close approval")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Reviewed automation")).toHaveLength(3);
     expect(within(operatorQueue).getByText("Report commentary draft")).toBeInTheDocument();
@@ -1302,18 +1306,17 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
     expect(within(operatorQueue).getByText("Match Records")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("Run reconciliation and refresh status; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("Complete source-backed reconciliation lanes before approval.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Run reconciliation and refresh status; The selected workflow tracks cash, position, trade, income, MBS factor, bank, and GL reconciliation checks.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Complete source-backed reconciliation checks before approval.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Close Support")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Review checklist and close readiness; Close checklist, period lock, and reopen evidence are governed by the shared workflow.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Clear close readiness blockers and retain period-lock or reopen evidence.")).toBeInTheDocument();
-    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: recon-break-42" }))
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Cash Balance" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
-    const approvalQueueLinks = within(operatorQueue).getAllByRole("link", { name: "Open Financial Operations queue item: approval-close-2026-05" });
-    expect(approvalQueueLinks).toHaveLength(2);
-    approvalQueueLinks.forEach((link) => {
-      expect(link).toHaveAttribute("href", "/accounting/approvals");
-    });
+    for (const label of ["Close sign-off", "2026-05 close approval"]) {
+      expect(within(operatorQueue).getByRole("link", { name: `Open Financial Operations queue item: ${label}` }))
+        .toHaveAttribute("href", "/accounting/approvals");
+    }
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: MBS factor reconciliation" }))
       .toHaveAttribute("href", "/accounting/reconciliation");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Ledger validation required" }))
@@ -1322,7 +1325,7 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/accounting/ledger");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: Journal and ledger evidence" }))
       .toHaveAttribute("href", "/accounting/ledger");
-    expect(within(operatorQueue).getByRole("link", { name: `Open Financial Operations queue item: 2026-05 / ${fundAccountId}: Ledger posting controller check` }))
+    expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: 2026-05: Ledger posting controller check" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
     expect(within(operatorQueue).getByRole("link", { name: "Open Financial Operations queue item: NAV support" }))
       .toHaveAttribute("href", "/portfolio/nav");
@@ -1364,7 +1367,7 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/reporting/evidence");
     expect(within(evidencePackages).getByRole("link", { name: "Open evidence package Period lock and reopen evidence" }))
       .toHaveAttribute("href", "/accounting/operations-continuity");
-    const cockpitLanes = screen.getByRole("table", { name: "Private-capital close cockpit lanes" });
+    const cockpitLanes = screen.getByRole("table", { name: "Private-capital close checks" });
     expect(within(cockpitLanes).getByText("Partner capital account tie-outs")).toBeInTheDocument();
     expect(within(cockpitLanes).getByText("Expense, fee, and allocation review")).toBeInTheDocument();
     expect(within(cockpitLanes).getByText("NAV support")).toBeInTheDocument();
@@ -1372,7 +1375,8 @@ describe("OperationsContinuityScreen", () => {
     expect(within(cockpitLanes).getByText("Publish the close package manifest")).toBeInTheDocument();
     expect(within(cockpitLanes).getByText("Close the workflow and retain period-lock evidence")).toBeInTheDocument();
     const cockpitWorkflows = screen.getByRole("table", { name: "Private-capital close cockpit workflows" });
-    expect(within(cockpitWorkflows).getByText(`${summary.periodId} / ${fundAccountId}`)).toBeInTheDocument();
+    expect(within(cockpitWorkflows).getByText(summary.periodId)).toBeVisible();
+    expect(within(cockpitWorkflows).getByText(fundAccountId)).not.toBeVisible();
     expect(within(cockpitWorkflows).getByText("72% ready")).toBeInTheDocument();
     const cockpitEvidencePackages = screen.getByRole("table", { name: "Private-capital close cockpit evidence packages" });
     expect(within(cockpitEvidencePackages).getByText("Fund-event accounting evidence")).toBeInTheDocument();
@@ -2242,12 +2246,12 @@ describe("OperationsContinuityScreen fund narrowing", () => {
     const { rerender } = render(tree({ structure, loading: false, entityId: null, fundId: null, names: {} }));
 
     const calendar = await screen.findByRole("table", { name: "Operations continuity close calendar" });
-    await waitFor(() => expect(within(calendar).getByText(`2026-05 / ${fundAccountId}`)).toBeInTheDocument());
+    await waitFor(() => expect(within(calendar).getByText(fundAccountId)).toBeInTheDocument());
 
     rerender(tree({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } }));
 
     expect(await screen.findByRole("alert")).toHaveTextContent(`Workflow ${workflowId} is outside the chosen fund or entity.`);
-    await waitFor(() => expect(screen.queryByText(`2026-05 / ${fundAccountId}`)).not.toBeInTheDocument());
+    await waitFor(() => expect(within(calendar).queryByText(fundAccountId)).not.toBeInTheDocument());
   });
 
   it("lists every workflow, with an honest note, when the organization graph is unavailable", async () => {

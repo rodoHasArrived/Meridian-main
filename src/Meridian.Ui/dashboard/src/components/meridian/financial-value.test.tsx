@@ -48,6 +48,16 @@ describe("FinancialValue", () => {
     expect(screen.getByTitle("Mark observation is old")).toBeInTheDocument();
   });
 
+  it("keeps the unavailable condition accessible when the table explains it once", () => {
+    render(<>
+      <FinancialValue value="10" currency="USD" summarizeUnavailableCondition />
+      <FinancialValue value="20" currency="USD" condition="stale" summarizeUnavailableCondition />
+    </>);
+    expect(screen.getByRole("group", { name: "Data condition unavailable" })).toHaveTextContent("10.00 USD");
+    expect(screen.queryByText("Data condition unavailable")).not.toBeInTheDocument();
+    expect(screen.getByText("Stale")).toBeVisible();
+  });
+
   it("opens only matching amount and currency proof subjects", async () => {
     const passport: LedgerAmountSelection = { subjectId: "entry:line:debit", ledgerBookId: "book", periodId: "period", fundProfileId: "fund", amount: 25, currency: "USD", label: "Cash debit" };
     const { rerender } = render(<FinancialValue value="25.00" currency="USD" condition="confirmed" passport={passport} />);

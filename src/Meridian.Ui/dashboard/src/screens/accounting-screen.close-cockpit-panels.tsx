@@ -11,6 +11,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { Input } from "@/components/ui/input";
 import { SkeletonCardRow, SkeletonGrid, SkeletonTimeline } from "@/components/ui/skeleton";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { isOpaqueIdentifier } from "@/lib/identifiers";
+import { useFundAccountScopeSelection } from "@/lib/operating-scope/scope-picker-context";
 import { cn } from "@/lib/utils";
 import { AccountingChip } from "@/screens/accounting-screen.workbench-context";
 import type {
@@ -167,7 +170,7 @@ export function CloseCommandCenterPanel({
               <CardDescription className="mt-2">{view.summary}</CardDescription>
             </div>
             <div className="grid gap-2 text-sm">
-              <CloseCommandCenterValue label="Fund account" value={view.fundAccountLabel} />
+              <CloseCommandCenterValue label="Fund account" value={view.fundAccountLabel} showScopeIdentifier />
               <CloseCommandCenterValue label="Updated" value={view.updatedLabel} />
               <FreshnessChip
                 className="w-fit"
@@ -446,7 +449,7 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               <CardDescription className="mt-2">{view.materialityLabel}</CardDescription>
             </div>
             <div className="grid gap-2 text-sm">
-              <CloseCommandCenterValue label="Fund" value={view.fundLabel} />
+              <CloseCommandCenterValue label="Fund" value={view.fundLabel} showScopeIdentifier />
               <CloseCommandCenterValue label="Period lock" value={view.lockLabel} />
             </div>
           </div>
@@ -1475,11 +1478,19 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
 }
 
 
-function CloseCommandCenterValue({ label, value }: { label: string; value: string }) {
+function CloseCommandCenterValue({ label, value, showScopeIdentifier = false }: { label: string; value: string; showScopeIdentifier?: boolean }) {
+  const accountScope = useFundAccountScopeSelection();
+  const technical = showScopeIdentifier && isOpaqueIdentifier(value);
+  const account = technical ? accountScope?.options.find((option) => option.id === value && option.label !== value) : null;
   return (
     <div className="data-grid-surface flex items-center justify-between gap-4 px-3 py-2">
       <span className="text-muted-foreground">{label}</span>
-      <span className="font-mono tabular-nums text-foreground">{value}</span>
+      {technical ? <div className="min-w-0">
+        {account ? <span className="text-foreground">{account.label}</span> : null}
+        <TechnicalDetails label={`${label} identifier`} contentClassName="py-2">
+          <span className="break-all font-mono text-xs">{value}</span>
+        </TechnicalDetails>
+      </div> : <span className="font-mono tabular-nums text-foreground">{value}</span>}
     </div>
   );
 }

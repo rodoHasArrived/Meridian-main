@@ -26,7 +26,8 @@ describe("ReportReviewPanel", () => {
     expect(await screen.findByText("0.01")).toBeInTheDocument();
     expect(screen.getByText("0.1%")).toBeInTheDocument();
     expect(screen.getByText("Materiality not assessed")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "approved" })).toHaveAttribute("href", "/reporting/runs/detail?runId=approved");
+    expect(screen.getByRole("link", { name: "Prior approved run" })).toHaveAttribute("href", "/reporting/runs/detail?runId=approved");
+    expect(screen.getByText("approved", { selector: "dd" })).not.toBeVisible();
     expect(onReview).toHaveBeenLastCalledWith(review);
     expect((await axe(container)).violations).toEqual([]);
   });

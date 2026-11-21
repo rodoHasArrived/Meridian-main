@@ -683,7 +683,7 @@ export function buildPortfolioScreenViewModel({
   });
   const positionKeys = positions.map((position, index) => ({
     position,
-    id: positionId(position.symbol, position.side, index),
+    id: `${position.symbol.toLowerCase()}-${position.side.toLowerCase()}-${index}`,
     ref: positionReference(position)
   }));
   const selectedPositionKey = positionKeys.find((row) => row.id === selectedPositionId) ?? (requestedPositionRef
@@ -2293,10 +2293,6 @@ function buildPortfolioBackendLink(id: string, label: string, href: string): Por
 function normalizePathname(pathname: string): string {
   const normalized = pathname.trim().toLowerCase().replace(/\/+$/, "");
   return normalized === "" ? "/" : normalized;
-}
-
-function positionId(symbol: string, side: string, index: number): string {
-  return `${symbol.toLowerCase()}-${side.toLowerCase()}-${index}`;
 }
 
 function parseNumericValue(value: string): number | null {

@@ -3325,7 +3325,7 @@ public sealed partial class OperationsContinuityWorkflowServiceTests
         matchRecordsMetric.RequiredActions.Should().Contain(action =>
             action.Contains("Bank reconciliation support", StringComparison.OrdinalIgnoreCase));
         matchRecordsMetric.RequiredActions.Should()
-            .NotContain("Complete source-backed reconciliation lanes before approval.");
+            .NotContain("Complete source-backed reconciliation checks before approval.");
         reconciled.Workflow.DashboardSummary.RequiredActions.Should().Contain(action =>
             action.Contains("Retain payment confirmation and return evidence", StringComparison.OrdinalIgnoreCase));
 

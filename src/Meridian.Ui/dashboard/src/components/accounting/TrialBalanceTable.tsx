@@ -83,7 +83,7 @@ function BalanceSide({ row, value, currency, side }: { row: AccountingTrialBalan
   const active = parseExactDecimal(value)?.coefficient !== 0n || parseExactDecimal(source)?.coefficient === 0n;
   const passport = active ? trialBalanceAmountPassport(row) : null;
   return <FinancialValue value={passport ? source : value} absolute currency={currency}
-    passport={passport} condition="unavailable" reason={conditionReason}
+    passport={passport} condition="unavailable" summarizeUnavailableCondition reason={conditionReason}
     basis={`Net account balance shown on the ${side} side; the passport retains its original sign.`} />;
 }
 
@@ -111,6 +111,9 @@ export function TrialBalanceTable({
   return (
     <div className="tbl-wrap" tabIndex={0} role="region" aria-label={caption || "Trial balance"}>
       <table className="tbl">
+        <caption className="px-3 py-2 text-left font-sans text-xs text-muted-foreground">
+          Source reconciliation status is unavailable for these balances and totals.
+        </caption>
         <thead>
           <tr>
             <th scope="col">Account</th>
@@ -171,10 +174,10 @@ export function TrialBalanceTable({
                 <tr className="tbl__sub">
                   <td colSpan={3}>{group.section} subtotal</td>
                   <td className="tbl--r">
-                    <FinancialValue value={sumSide(group.rows, "debit")} currency={currency} condition="unavailable" reason={conditionReason} />
+                    <FinancialValue value={sumSide(group.rows, "debit")} currency={currency} summarizeUnavailableCondition reason={conditionReason} />
                   </td>
                   <td className="tbl--r">
-                    <FinancialValue value={sumSide(group.rows, "credit")} currency={currency} condition="unavailable" reason={conditionReason} />
+                    <FinancialValue value={sumSide(group.rows, "credit")} currency={currency} summarizeUnavailableCondition reason={conditionReason} />
                   </td>
                   <td />
                 </tr>
@@ -189,15 +192,15 @@ export function TrialBalanceTable({
               {!balanced ? (
                 <span className="tbl__foot-note text-danger">
                   out of balance by{" "}
-                  <FinancialValue value={variance} currency={currency} decimals={Math.max(2, parseExactDecimal(variance)?.scale ?? 2)} condition="unavailable" reason={conditionReason} signed />
+                  <FinancialValue value={variance} currency={currency} decimals={Math.max(2, parseExactDecimal(variance)?.scale ?? 2)} summarizeUnavailableCondition reason={conditionReason} signed />
                 </span>
               ) : null}
             </td>
             <td className="tbl--r">
-              <FinancialValue value={totalDebits} currency={currency} condition="unavailable" reason={conditionReason} />
+              <FinancialValue value={totalDebits} currency={currency} summarizeUnavailableCondition reason={conditionReason} />
             </td>
             <td className="tbl--r">
-              <FinancialValue value={totalCredits} currency={currency} condition="unavailable" reason={conditionReason} />
+              <FinancialValue value={totalCredits} currency={currency} summarizeUnavailableCondition reason={conditionReason} />
             </td>
             <td />
           </tr>

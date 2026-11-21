@@ -111,8 +111,10 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
     ? templates.find((candidate) => candidate.templateName === runTemplateId || candidate.id === runTemplateId) ?? null
     : null;
   const hasPreviewSubject = Boolean(run || selectedTemplate);
-  const reportName = readString(run, "reportName", selectedTemplate?.name ?? (runTemplateId || "No report selected"));
   const runId = readString(run, "runId", "No run selected");
+  const retainedName = readString(run, "reportName", "");
+  const reportName = retainedName && retainedName !== runId ? retainedName : selectedTemplate?.name
+    ?? presentReportingIdentifier(runTemplateId, run ? "Retained report run" : "No report selected");
   const templateId = selectedTemplate?.id ?? "";
   const runStatus = readString(run, "status", "Draft");
   const validationWarnings = readStringArray(run, "validationWarnings");
@@ -154,10 +156,16 @@ export function ReportPreviewValidationScreen({ data }: ReportingStandardScreenP
           setSearchParams(next);
         }}>
           <option value="">Choose a report run</option>
-          {requestedRunId && !run ? <option value={requestedRunId}>{requestedRunId} — unavailable</option> : null}
+          {requestedRunId && !run ? <option value={requestedRunId}>Requested run unavailable</option> : null}
           {runs.map((candidate) => {
             const id = readString(candidate, "runId", "");
-            return <option key={id} value={id}>{readString(candidate, "reportName", id)} · {id}</option>;
+            const candidateTemplate = readString(candidate, "templateId", "");
+            const name = readString(candidate, "reportName", "");
+            const templateLabel = templates.find((item) => item.templateName === candidateTemplate || item.id === candidateTemplate)?.name;
+            const label = name && name !== id ? name : templateLabel ?? presentReportingIdentifier(candidateTemplate, "Retained report run");
+            const asOf = readString(candidate, "asOfDate", "");
+            const status = presentReportingStatusLabel(readString(candidate, "status", ""));
+            return <option key={id} value={id}>{[label, asOf && presentFinanceDate(asOf), status].filter(Boolean).join(" · ")}</option>;
           })}
         </Select>
       </FormRow>
@@ -956,7 +964,7 @@ export function ReconciliationMatchWorkbenchScreen({ data }: FinanceStandardScre
               setSearchParams(next);
             }}>
               {!selectedBreak ? <option value="">Select a case</option> : null}
-              {breaks.map((item) => <option key={item.breakId} value={item.breakId}>{item.reason || item.strategyName} · {item.breakId}</option>)}
+              {breaks.map((item) => <option key={item.breakId} value={item.breakId}>{item.reason || item.strategyName} · {presentFinanceDate(item.detectedAt)}</option>)}
             </Select>
           </FormRow>
           {selectedBreak ? (

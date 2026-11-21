@@ -5928,13 +5928,13 @@
           {
             "metricId": "match-records",
             "label": "Match Records",
-            "value": "6/7 lanes ready",
+            "value": "6/7 reconciliation checks ready",
             "status": "ReviewRequired",
-            "detail": "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+            "detail": "The selected workflow tracks cash, position, trade, income, MBS factor, bank, and GL reconciliation checks.",
             "routeHint": "/workstation/accounting/reconciliation",
             "evidenceLinks": [],
             "requiredActions": [
-              "Complete source-backed reconciliation lanes before approval."
+              "Complete source-backed reconciliation checks before approval."
             ]
           },
           {
@@ -6697,13 +6697,13 @@
             {
               "metricId": "match-records",
               "label": "Match Records",
-              "value": "6/7 lanes ready",
+              "value": "6/7 reconciliation checks ready",
               "status": "ReviewRequired",
-              "detail": "Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.",
+              "detail": "The selected workflow tracks cash, position, trade, income, MBS factor, bank, and GL reconciliation checks.",
               "routeHint": "/workstation/accounting/reconciliation",
               "evidenceLinks": [],
               "requiredActions": [
-                "Complete source-backed reconciliation lanes before approval."
+                "Complete source-backed reconciliation checks before approval."
               ]
             },
             {
