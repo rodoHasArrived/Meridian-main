@@ -4,10 +4,10 @@ import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
 import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart-evidence";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { MetricTile, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -215,7 +215,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
       }
     ],
     proof: { href: "#cash-ladder-contributing-flows", label: "Open contributing flows", onOpen: () => setSelectedBucket(bar.index) },
-    sourceDetail: `Projection through ${bar.bucketEnd} · ${activeScenario?.displayName ?? ladder.scenarioId} · engine ${ladder.engineVersion}${bar.breachesMinimumBalance ? " · below minimum balance" : ""}.`
+    sourceDetail: `Projection through ${bar.bucketEnd} · ${activeScenario?.displayName ?? ladder.scenarioId}${bar.breachesMinimumBalance ? " · below minimum balance" : ""}.`
   })) : [];
   if (chart?.thresholdY != null && ladder) {
     chartEvidence.push({
@@ -250,7 +250,11 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {ladder ? <Badge variant="outline">{ladder.engineVersion}</Badge> : null}
+          {ladder ? (
+            <TechnicalDetails label="Projection details">
+              <dl><div><dt className="font-semibold">Engine version</dt><dd className="font-mono">{ladder.engineVersion}</dd></div></dl>
+            </TechnicalDetails>
+          ) : null}
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Scenario
             <Select
