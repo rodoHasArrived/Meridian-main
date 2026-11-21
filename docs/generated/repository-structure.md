@@ -2009,6 +2009,7 @@ Meridian-main
 │   ├── operators
 │   │   ├── account-oversight.md
 │   │   ├── bond-workflows.md
+│   │   ├── book-receipt-queue.md
 │   │   ├── browser-workstation-installer.md
 │   │   ├── business-day-calendar-files.md
 │   │   ├── deployment-packaging.md
@@ -2193,7 +2194,8 @@ Meridian-main
 │   │   │   │   ├── page-077.md
 │   │   │   │   ├── page-078.md
 │   │   │   │   ├── page-079.md
-│   │   │   │   └── page-080.md
+│   │   │   │   ├── page-080.md
+│   │   │   │   └── page-081.md
 │   │   │   ├── meridian.core
 │   │   │   │   ├── page-001.md
 │   │   │   │   ├── page-002.md
@@ -2643,6 +2645,9 @@ Meridian-main
 │   │   │   ├── wpf-welcome.png
 │   │   │   ├── wpf-workflow-library.png
 │   │   │   └── wpf-workspaces.png
+│   │   ├── provenance
+│   │   │   ├── web-2026-11-21-manifest.json
+│   │   │   └── web-2026-11-21-runtime.json
 │   │   ├── web
 │   │   │   ├── web-accounting-account-detail.png
 │   │   │   ├── web-accounting-approval-inbox.png
@@ -5170,6 +5175,7 @@ Meridian-main
 │   │   │   ├── BackfillQuotaActivity.cs
 │   │   │   ├── BackfillQuotaPlanner.cs
 │   │   │   ├── BackfillRequest.cs
+│   │   │   ├── BackfillRoutingRuntime.cs
 │   │   │   ├── BackfillSymbolNormalizer.cs
 │   │   │   ├── CrossSourceBackfillReconciliationService.cs
 │   │   │   ├── GapBackfillService.cs
@@ -5219,6 +5225,7 @@ Meridian-main
 │   │   │   │   ├── LedgerFeatureRegistration.cs
 │   │   │   │   ├── MaintenanceFeatureRegistration.cs
 │   │   │   │   ├── PipelineFeatureRegistration.cs
+│   │   │   │   ├── ProcessSymbolRegistries.cs
 │   │   │   │   ├── ProviderFeatureRegistration.cs
 │   │   │   │   ├── ProviderRoutingFeatureRegistration.cs
 │   │   │   │   ├── StorageFeatureRegistration.cs
@@ -5247,8 +5254,10 @@ Meridian-main
 │   │   │   │   ├── RuntimeShutdownSequence.cs
 │   │   │   │   ├── SharedStartupBootstrapper.cs
 │   │   │   │   ├── SharedStartupHelpers.cs
+│   │   │   │   ├── SingleSourceProviderConfigApplier.cs
 │   │   │   │   ├── StartupOrchestrator.cs
-│   │   │   │   └── StartupValidationRunner.cs
+│   │   │   │   ├── StartupValidationRunner.cs
+│   │   │   │   └── StreamingProviderActivation.cs
 │   │   │   ├── AssetOperationsStartup.cs
 │   │   │   ├── BankingStartup.cs
 │   │   │   ├── CompositionConfiguration.cs
@@ -5419,6 +5428,8 @@ Meridian-main
 │   │   │   ├── ProviderBindingService.cs
 │   │   │   ├── ProviderConfigurationCredentialGuard.cs
 │   │   │   ├── ProviderConnectionService.cs
+│   │   │   ├── ProviderConnectionTemplateCatalog.cs
+│   │   │   ├── ProviderConnectionTemplateService.cs
 │   │   │   ├── ProviderCredentialOwnershipPolicy.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrixService.cs
 │   │   │   ├── ProviderOperationsSupportServices.cs
@@ -5819,8 +5830,10 @@ Meridian-main
 │   │   │   ├── OptionsModels.cs
 │   │   │   ├── PositionLotModels.cs
 │   │   │   ├── ProviderCatalog.cs
+│   │   │   ├── ProviderConnectionTemplateDtos.cs
 │   │   │   ├── ProviderCredentialOwnershipApiModels.cs
 │   │   │   ├── ProviderInstrumentCapabilityMatrix.cs
+│   │   │   ├── ProviderQuota.cs
 │   │   │   ├── ProviderRateLimits.cs
 │   │   │   ├── ProviderReadinessModels.cs
 │   │   │   ├── ProviderRoutingApiModels.cs
@@ -5843,6 +5856,7 @@ Meridian-main
 │   │   │   ├── AssetAcquisitionTermsCompletionDto.cs
 │   │   │   ├── AssetOperationsDtos.cs
 │   │   │   ├── AssetOperationsReferenceDtos.cs
+│   │   │   ├── BookReceiptDtos.cs
 │   │   │   ├── CorporateActionAccountingDtos.cs
 │   │   │   ├── FactorPaydownProjectionIdentity.cs
 │   │   │   ├── ICorporateActionRuleProfile.cs
@@ -5854,6 +5868,7 @@ Meridian-main
 │   │   │   ├── BackfillProgress.cs
 │   │   │   ├── BackfillQuota.cs
 │   │   │   ├── BackfillResult.cs
+│   │   │   ├── BackfillRoutingEvidence.cs
 │   │   │   └── SymbolValidationSignal.cs
 │   │   ├── Backtesting
 │   │   │   └── BacktestPreflightDtos.cs
@@ -5896,6 +5911,7 @@ Meridian-main
 │   │   │   ├── DemoWorkspaceLayout.cs
 │   │   │   ├── DerivativesConfigDto.cs
 │   │   │   ├── MeridianPathDefaults.cs
+│   │   │   ├── ProviderActivationResponse.cs
 │   │   │   ├── ProviderConnectionDtos.cs
 │   │   │   ├── ProviderConnectionsConfigDto.cs
 │   │   │   ├── ProviderVerificationHistoryDtos.cs
@@ -6451,6 +6467,7 @@ Meridian-main
 │   │   │   ├── IConfigValidator.cs
 │   │   │   ├── ProviderConnectionsConfig.cs
 │   │   │   ├── ProviderModulesConfig.cs
+│   │   │   ├── ProviderQuotaCatalog.cs
 │   │   │   ├── ProviderQuotasConfig.cs
 │   │   │   ├── ProviderValidationProfile.cs
 │   │   │   ├── SensitiveKeyRegistry.cs
@@ -6763,6 +6780,7 @@ Meridian-main
 │   │   │   ├── BrokerOrderSweep.cs
 │   │   │   ├── ExecutionFailureState.cs
 │   │   │   ├── ExecutionReportHub.cs
+│   │   │   ├── ILiveStrategyOrderAuthorization.cs
 │   │   │   ├── OrderAdmissionPolicy.cs
 │   │   │   ├── OrderAmendmentBook.cs
 │   │   │   ├── OrderApprovalReservations.cs
@@ -6924,7 +6942,8 @@ Meridian-main
 │   │   │   ├── AccountingClosePreparationService.Persistence.cs
 │   │   │   ├── AccountingClosePreparationService.Recovery.cs
 │   │   │   ├── AccountingCloseServices.cs
-│   │   │   └── AccountingReportPackageService.cs
+│   │   │   ├── AccountingReportPackageService.cs
+│   │   │   └── AccountingReportPackageService.Dimensions.cs
 │   │   ├── AccountingSystem
 │   │   │   ├── AccountingSystemIntegrationService.cs
 │   │   │   ├── AccountingSystemIntegrationService.Onboarding.cs
@@ -7334,6 +7353,7 @@ Meridian-main
 │   │   │   │   │   ├── BackfillJobManager.cs
 │   │   │   │   │   ├── BackfillProvenanceCapture.cs
 │   │   │   │   │   ├── BackfillRequestQueue.cs
+│   │   │   │   │   ├── BackfillRoutingSnapshot.cs
 │   │   │   │   │   ├── BackfillWorkerService.cs
 │   │   │   │   │   ├── MarketDataTracing.cs
 │   │   │   │   │   └── PriorityBackfillQueue.cs
@@ -7370,6 +7390,7 @@ Meridian-main
 │   │   │   │   ├── ProviderFactory.Runtime.cs
 │   │   │   │   ├── ProviderHealthTracker.cs
 │   │   │   │   ├── ProviderRateLimitHistory.cs
+│   │   │   │   ├── ProviderRateLimitRollupStore.cs
 │   │   │   │   ├── ProviderRegistry.cs
 │   │   │   │   ├── ProviderRotationStrategy.cs
 │   │   │   │   ├── ProviderServiceExtensions.Catalog.cs
@@ -8513,6 +8534,7 @@ Meridian-main
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotHoldingPeriodEvidence.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLotReplacementClaims.cs
 │   │   │   ├── PostgresLedgerJournalStore.TaxLots.cs
+│   │   │   ├── PostgresLedgerJournalStore.TenantReads.cs
 │   │   │   ├── PostgresLedgerJournalStore.TenantWrites.cs
 │   │   │   ├── PostgresLedgerJournalStore.Validation.cs
 │   │   │   ├── PostgresLedgerJournalStore.WashSale.cs
@@ -8795,6 +8817,7 @@ Meridian-main
 │   │   │   ├── StorageSearchService.cs
 │   │   │   ├── SymbolRegistryService.cs
 │   │   │   ├── SymbolRegistryService.LegacyIdentifierCleanup.cs
+│   │   │   ├── SymbolRegistryService.OperatorMappings.cs
 │   │   │   ├── SymbolRegistryService.SecurityMaster.cs
 │   │   │   └── TierMigrationService.cs
 │   │   ├── Sinks
@@ -8834,6 +8857,9 @@ Meridian-main
 │   │   ├── Meridian.Storage.Accounting.csproj
 │   │   └── README.md
 │   ├── Meridian.Strategies
+│   │   ├── Artifacts
+│   │   │   ├── StrategyArtifact.cs
+│   │   │   └── StrategyArtifactRegistry.cs
 │   │   ├── Interfaces
 │   │   │   ├── ILiveStrategy.cs
 │   │   │   ├── IPromotedRunLauncher.cs
@@ -8877,7 +8903,8 @@ Meridian-main
 │   │   ├── Promotions
 │   │   │   ├── BacktestToLivePromoter.cs
 │   │   │   ├── PromotionApprovalChecklist.cs
-│   │   │   └── PromotionRecordService.cs
+│   │   │   ├── PromotionRecordService.cs
+│   │   │   └── StrategyLiveAuthorization.cs
 │   │   ├── Serialization
 │   │   │   ├── FSharpInteropJsonContext.cs
 │   │   │   ├── PromotionRecordJsonContext.cs
@@ -8893,6 +8920,7 @@ Meridian-main
 │   │   │   ├── FileReconciliationBreakQueueRepository.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.Lineage.cs
 │   │   │   ├── FileReconciliationBreakQueueRepository.Persistence.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.ReceiptReversals.cs
 │   │   │   ├── FileReconciliationRunRepository.cs
 │   │   │   ├── GovernanceExceptionService.cs
 │   │   │   ├── IAggregatePortfolioService.cs
@@ -8922,6 +8950,7 @@ Meridian-main
 │   │   │   ├── StrategyEngineRegistry.cs
 │   │   │   ├── StrategyEngineValidationService.cs
 │   │   │   ├── StrategyLifecycleManager.cs
+│   │   │   ├── StrategyLiveAuthorizationService.cs
 │   │   │   ├── StrategyRunAuthoritySource.cs
 │   │   │   ├── StrategyRunContinuityService.cs
 │   │   │   ├── StrategyRunReadService.AttributionComparison.cs
@@ -9168,7 +9197,10 @@ Meridian-main
 │   │   │   │   │   │   ├── optimistic-ledger.ts
 │   │   │   │   │   │   ├── pagination.concrete.test.tsx
 │   │   │   │   │   │   ├── pagination.tsx
+│   │   │   │   │   │   ├── provider-activation-panel.test.tsx
+│   │   │   │   │   │   ├── provider-activation-panel.tsx
 │   │   │   │   │   │   ├── provider-capability-badges.tsx
+│   │   │   │   │   │   ├── provider-connection-templates-dialog.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.test.tsx
 │   │   │   │   │   │   ├── provider-identity-evidence.tsx
 │   │   │   │   │   │   ├── provider-setup-panel.integration.test.tsx
@@ -9689,6 +9721,8 @@ Meridian-main
 │   │   │   │   │   │   ├── fund-structure-setup.api.ts
 │   │   │   │   │   │   ├── fund-structure-setup.contracts.ts
 │   │   │   │   │   │   ├── http-client.ts
+│   │   │   │   │   │   ├── income-receipt-queue.api.test.ts
+│   │   │   │   │   │   ├── income-receipt-queue.api.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.test.ts
 │   │   │   │   │   │   ├── intercompany-agreements.api.ts
 │   │   │   │   │   │   ├── mark-freshness.api.ts
@@ -9707,6 +9741,7 @@ Meridian-main
 │   │   │   │   │   │   ├── private-capital.api.test.ts
 │   │   │   │   │   │   ├── private-capital.api.ts
 │   │   │   │   │   │   ├── promotion.contracts.ts
+│   │   │   │   │   │   ├── provider-connection-templates.api.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.test.ts
 │   │   │   │   │   │   ├── provider-integration-identity.api.ts
 │   │   │   │   │   │   ├── provider-management.api.ts
@@ -10173,6 +10208,7 @@ Meridian-main
 │   │   │   │   │   ├── accounting-screen.journal-intercompany-dimensions.tsx
 │   │   │   │   │   ├── accounting-screen.journal-lifecycle.ts
 │   │   │   │   │   ├── accounting-screen.linked-context.ts
+│   │   │   │   │   ├── accounting-screen.loading-panel.tsx
 │   │   │   │   │   ├── accounting-screen.manual-journal-panel.tsx
 │   │   │   │   │   ├── accounting-screen.mark-preview.test.tsx
 │   │   │   │   │   ├── accounting-screen.mark-preview.tsx
@@ -10279,16 +10315,25 @@ Meridian-main
 │   │   │   │   │   ├── data-quality-watch.view-model.test.ts
 │   │   │   │   │   ├── data-quality-watch.view-model.ts
 │   │   │   │   │   ├── data-screen-navigation-panels.tsx
+│   │   │   │   │   ├── data-screen.alpaca-feed.test.tsx
+│   │   │   │   │   ├── data-screen.alpaca-feed.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.test.tsx
 │   │   │   │   │   ├── data-screen.analytics-status.tsx
+│   │   │   │   │   ├── data-screen.backfill-attribution.test.tsx
+│   │   │   │   │   ├── data-screen.backfill-attribution.tsx
 │   │   │   │   │   ├── data-screen.backfill-batch-receipts.tsx
+│   │   │   │   │   ├── data-screen.backfill-progress.ts
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.test.tsx
 │   │   │   │   │   ├── data-screen.backfill-provider-editor.tsx
 │   │   │   │   │   ├── data-screen.backfill-quota.tsx
+│   │   │   │   │   ├── data-screen.backfill-routing.ts
+│   │   │   │   │   ├── data-screen.backfill-schedules.test.tsx
+│   │   │   │   │   ├── data-screen.backfill-schedules.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.test.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.tsx
 │   │   │   │   │   ├── data-screen.canonical-symbols.view-model.test.ts
 │   │   │   │   │   ├── data-screen.canonical-symbols.view-model.ts
+│   │   │   │   │   ├── data-screen.capability-matrix.tsx
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.test.ts
 │   │   │   │   │   ├── data-screen.capability-matrix.view-model.ts
 │   │   │   │   │   ├── data-screen.cell-actions.test.tsx
@@ -10302,6 +10347,7 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.data-quality.view-model.test.ts
 │   │   │   │   │   ├── data-screen.data-quality.view-model.ts
 │   │   │   │   │   ├── data-screen.data-regions.tsx
+│   │   │   │   │   ├── data-screen.draft-verification.ts
 │   │   │   │   │   ├── data-screen.evidence-timeline.ts
 │   │   │   │   │   ├── data-screen.failover.test.tsx
 │   │   │   │   │   ├── data-screen.failover.tsx
@@ -10316,6 +10362,9 @@ Meridian-main
 │   │   │   │   │   ├── data-screen.provider-accounting.tsx
 │   │   │   │   │   ├── data-screen.provider-accounting.view-model.test.ts
 │   │   │   │   │   ├── data-screen.provider-accounting.view-model.ts
+│   │   │   │   │   ├── data-screen.provider-quota-editor.test.tsx
+│   │   │   │   │   ├── data-screen.provider-quota-editor.tsx
+│   │   │   │   │   ├── data-screen.provider-setup.catalog.ts
 │   │   │   │   │   ├── data-screen.provider-setup.types.ts
 │   │   │   │   │   ├── data-screen.provider-validation.test.tsx
 │   │   │   │   │   ├── data-screen.provider-validation.tsx
@@ -10364,6 +10413,9 @@ Meridian-main
 │   │   │   │   │   ├── family-ownership-graph.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.test.tsx
 │   │   │   │   │   ├── finance-standard-pages-screen.tsx
+│   │   │   │   │   ├── income-receipt-queue-panel.test.tsx
+│   │   │   │   │   ├── income-receipt-queue-panel.tsx
+│   │   │   │   │   ├── income-receipt-queue.details.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.test.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.tsx
 │   │   │   │   │   ├── journal-entry-detail-screen.view-model.ts
@@ -10501,6 +10553,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.report-writer-formula-references.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.ts
+│   │   │   │   │   ├── reporting-screen.report-writer-samples.ts
 │   │   │   │   │   ├── reporting-screen.report-writer.tsx
 │   │   │   │   │   ├── reporting-screen.run-status-modules.tsx
 │   │   │   │   │   ├── reporting-screen.schedule-management.tsx
@@ -10593,6 +10646,7 @@ Meridian-main
 │   │   │   │   │   ├── strategy-screen.formatters.ts
 │   │   │   │   │   ├── strategy-screen.operator-focus.ts
 │   │   │   │   │   ├── strategy-screen.parity.tsx
+│   │   │   │   │   ├── strategy-screen.replay-provenance.tsx
 │   │   │   │   │   ├── strategy-screen.status-announcement.ts
 │   │   │   │   │   ├── strategy-screen.test.tsx
 │   │   │   │   │   ├── strategy-screen.tsx
@@ -10687,6 +10741,7 @@ Meridian-main
 │   │   │   │   │   │   └── security-asset-term-form-parity.json
 │   │   │   │   │   ├── amount-passport-fixtures.ts
 │   │   │   │   │   ├── asset-approval-fixtures.ts
+│   │   │   │   │   ├── book-receipt-fixture.ts
 │   │   │   │   │   ├── cash-dividend-attestation-fixtures.ts
 │   │   │   │   │   ├── fixtures.ts
 │   │   │   │   │   ├── ledger-amount-proof-fixtures.ts
@@ -10728,6 +10783,7 @@ Meridian-main
 │   │   │   │   │   ├── execution-blotter.types.ts
 │   │   │   │   │   ├── factor-paydown.ts
 │   │   │   │   │   ├── family-office.types.ts
+│   │   │   │   │   ├── income-receipt-queue.types.ts
 │   │   │   │   │   ├── instrument-accounting.test.ts
 │   │   │   │   │   ├── instrument-accounting.ts
 │   │   │   │   │   ├── intercompany-accrual-schedules.ts
@@ -10894,7 +10950,9 @@ Meridian-main
 │   │   │   │   ├── OmsIntegrationApiHandler.cs
 │   │   │   │   └── OmsIntegrationServiceCollectionExtensions.cs
 │   │   │   ├── ProviderDiagnostics
-│   │   │   │   └── ProviderDiagnosticsApiClient.cs
+│   │   │   │   ├── ProviderConfigurationApiClient.cs
+│   │   │   │   ├── ProviderDiagnosticsApiClient.cs
+│   │   │   │   └── ProviderQuotaApiClient.cs
 │   │   │   ├── Reporting
 │   │   │   │   └── ReportingStatusProjectionService.cs
 │   │   │   ├── ActivityFeedService.cs
@@ -10976,6 +11034,7 @@ Meridian-main
 │   │   │   ├── SchemaServiceBase.cs
 │   │   │   ├── SearchService.cs
 │   │   │   ├── SettingsConfigurationService.cs
+│   │   │   ├── SettingsConfigurationService.ProviderTemplates.cs
 │   │   │   ├── SetupWizardService.cs
 │   │   │   ├── SmartRecommendationsService.cs
 │   │   │   ├── StatusServiceBase.cs
@@ -10985,6 +11044,7 @@ Meridian-main
 │   │   │   ├── StorageServiceBase.cs
 │   │   │   ├── SymbolGroupService.cs
 │   │   │   ├── SymbolManagementService.cs
+│   │   │   ├── SymbolMappingApiClient.cs
 │   │   │   ├── SymbolMappingService.cs
 │   │   │   ├── SystemHealthService.cs
 │   │   │   ├── ThemeServiceBase.cs
@@ -11157,15 +11217,18 @@ Meridian-main
 │   │   │   ├── PortfolioImportEndpoints.cs
 │   │   │   ├── PrivateCapitalRecordEndpoints.cs
 │   │   │   ├── PromotionEndpoints.cs
+│   │   │   ├── ProviderActivationProjection.cs
 │   │   │   ├── ProviderConfigurationCredentialFilter.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjection.cs
 │   │   │   ├── ProviderConnectionEndpoints.cs
+│   │   │   ├── ProviderConnectionTemplateEndpoints.cs
 │   │   │   ├── ProviderCredentialEndpoints.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpoints.cs
 │   │   │   ├── ProviderDataProjectionEndpoints.cs
 │   │   │   ├── ProviderEndpoints.cs
 │   │   │   ├── ProviderExtendedEndpoints.cs
 │   │   │   ├── ProviderModuleEndpoints.cs
+│   │   │   ├── ProviderQuotaEndpoints.cs
 │   │   │   ├── ProviderRoutingEndpoints.cs
 │   │   │   ├── ProviderValidationEndpoints.cs
 │   │   │   ├── QuantLabEndpoints.cs
@@ -11204,6 +11267,7 @@ Meridian-main
 │   │   │   ├── WorkstationEndpoints.AccountingWorkspace.cs
 │   │   │   ├── WorkstationEndpoints.ApprovalCollaboration.cs
 │   │   │   ├── WorkstationEndpoints.AuditTableExport.cs
+│   │   │   ├── WorkstationEndpoints.BookReceipts.cs
 │   │   │   ├── WorkstationEndpoints.ChartEvidence.cs
 │   │   │   ├── WorkstationEndpoints.CloseChecklistHistory.cs
 │   │   │   ├── WorkstationEndpoints.CloseReadiness.cs
@@ -11350,6 +11414,7 @@ Meridian-main
 │   │   │   ├── AccountingWorkspaceReadScope.cs
 │   │   │   ├── AggregatePortfolioExposureProvider.cs
 │   │   │   ├── AlpacaBrokerageConnectionService.cs
+│   │   │   ├── AlpacaFeedConfiguration.cs
 │   │   │   ├── AmountPassportFacts.cs
 │   │   │   ├── AuditTrailExplorerService.cs
 │   │   │   ├── AuditTrailHttpAuthority.cs
@@ -11374,6 +11439,15 @@ Meridian-main
 │   │   │   ├── BondProviderIntakeService.cs
 │   │   │   ├── BondWorkflowConnectionReadinessService.cs
 │   │   │   ├── BondWorkflowServiceRegistration.cs
+│   │   │   ├── BookReceiptEvidenceSource.cs
+│   │   │   ├── BookReceiptEvidenceSource.Postings.cs
+│   │   │   ├── BookReceiptQueueService.Allocations.cs
+│   │   │   ├── BookReceiptQueueService.cs
+│   │   │   ├── BookReceiptQueueService.History.cs
+│   │   │   ├── BookReceiptQueueService.ProjectionIdentities.cs
+│   │   │   ├── BookReceiptServiceCollectionExtensions.cs
+│   │   │   ├── BookReceiptSource.cs
+│   │   │   ├── BookReceiptSource.Rules.cs
 │   │   │   ├── BrokerageConnectionService.cs
 │   │   │   ├── BrokeragePortfolioState.cs
 │   │   │   ├── BrokeragePortfolioSyncService.AmountPassport.cs
@@ -11416,6 +11490,7 @@ Meridian-main
 │   │   │   ├── FamilyOfficeReadService.cs
 │   │   │   ├── FeatureCapabilitySettingsService.cs
 │   │   │   ├── FileAccountingAuditPendingMarkerStore.cs
+│   │   │   ├── FileBookReceiptRunStore.cs
 │   │   │   ├── FileFundProfileTenancyRegistry.cs
 │   │   │   ├── FileOnboardingWorkspaceStore.cs
 │   │   │   ├── FileReconciliationSlaCalendarResolver.cs
@@ -11544,10 +11619,14 @@ Meridian-main
 │   │   │   ├── PrivateCapitalRecordServiceCollectionExtensions.cs
 │   │   │   ├── PrivateCapitalUnitRegisterPreview.cs
 │   │   │   ├── PromotionTrustEvidenceServiceCollectionExtensions.cs
+│   │   │   ├── ProviderConnectionLifecycleService.AlpacaFeed.cs
 │   │   │   ├── ProviderConnectionLifecycleService.cs
+│   │   │   ├── ProviderConnectionLifecycleService.DraftVerification.cs
 │   │   │   ├── ProviderConnectionLifecycleService.ExternalGl.cs
 │   │   │   ├── ProviderConnectionLifecycleService.Ownership.cs
+│   │   │   ├── ProviderConnectionLifecycleService.TemplateProbes.cs
 │   │   │   ├── ProviderConnectionLifecycleService.VerificationHistory.cs
+│   │   │   ├── ProviderCredentialProbe.cs
 │   │   │   ├── ProviderCredentialStore.cs
 │   │   │   ├── ProviderDataReadModelService.cs
 │   │   │   ├── ProviderLedgerDailyReconciliationWorker.cs
@@ -11831,6 +11910,8 @@ Meridian-main
 │   │   │   ├── PeriodComparisonPanel.xaml.cs
 │   │   │   ├── PreparerDraftCheckPanel.xaml
 │   │   │   ├── PreparerDraftCheckPanel.xaml.cs
+│   │   │   ├── ProviderActivationPanel.xaml
+│   │   │   ├── ProviderActivationPanel.xaml.cs
 │   │   │   ├── SectionHeaderBar.xaml
 │   │   │   ├── SectionHeaderBar.xaml.cs
 │   │   │   ├── ToneBadge.xaml
@@ -12244,10 +12325,12 @@ Meridian-main
 │   │   │   ├── PostedLedgerViewModel.AmountProof.cs
 │   │   │   ├── PostedLedgerViewModel.cs
 │   │   │   ├── ProviderAccountingViewModel.cs
+│   │   │   ├── ProviderActivationViewModel.cs
 │   │   │   ├── ProviderDataProjectionViewModel.cs
 │   │   │   ├── ProviderHealthViewModel.cs
 │   │   │   ├── ProviderHealthViewModel.Sections.cs
 │   │   │   ├── ProviderPageModels.cs
+│   │   │   ├── ProviderQuotaEditorViewModel.cs
 │   │   │   ├── ProviderViewModel.cs
 │   │   │   ├── QualityArchiveViewModel.cs
 │   │   │   ├── QuantScriptViewModel.cs
@@ -12320,6 +12403,7 @@ Meridian-main
 │   │   │   ├── ActivityLogPage.xaml
 │   │   │   ├── ActivityLogPage.xaml.cs
 │   │   │   ├── AddProviderWizardPage.OwnedConnections.cs
+│   │   │   ├── AddProviderWizardPage.Templates.cs
 │   │   │   ├── AddProviderWizardPage.xaml
 │   │   │   ├── AddProviderWizardPage.xaml.cs
 │   │   │   ├── AdminMaintenancePage.xaml
@@ -12590,6 +12674,8 @@ Meridian-main
 │   │   │   │   ├── InspectorPanelControl.xaml.cs
 │   │   │   │   ├── MetricTileControl.xaml
 │   │   │   │   ├── MetricTileControl.xaml.cs
+│   │   │   │   ├── ProviderQuotaEditorControl.xaml
+│   │   │   │   ├── ProviderQuotaEditorControl.xaml.cs
 │   │   │   │   ├── RoutingMatrixControl.xaml
 │   │   │   │   ├── RoutingMatrixControl.xaml.cs
 │   │   │   │   ├── WorkstationCommandBarControl.xaml
@@ -13025,6 +13111,7 @@ Meridian-main
 │   │   │   │   ├── BackfillJobProgressAndGranularityTests.cs
 │   │   │   │   ├── BackfillProviderProvenanceTests.cs
 │   │   │   │   ├── BackfillRequestTraceContextTests.cs
+│   │   │   │   ├── BackfillRoutingRuntimeTests.cs
 │   │   │   │   ├── BackfillScheduleManagerDurabilityTests.cs
 │   │   │   │   ├── BackfillSourceAttributionTests.cs
 │   │   │   │   ├── BackfillWorkerServiceLifecycleTests.cs
@@ -13383,6 +13470,7 @@ Meridian-main
 │   │   │   ├── AssetOperationsMigrationRunnerTests.cs
 │   │   │   ├── AssetOperationsReadServiceTests.cs
 │   │   │   ├── AssetOperationsReferenceProjectionServiceTests.cs
+│   │   │   ├── BookReceiptSourceTests.cs
 │   │   │   ├── CanonicalLotCorporateActionServiceTests.CapitalReturn.cs
 │   │   │   ├── CanonicalLotCorporateActionServiceTests.cs
 │   │   │   ├── ClearwaterCorporateActionRuleProfileV1Tests.cs
@@ -13983,6 +14071,7 @@ Meridian-main
 │   │   │   │   ├── ProviderFactoryCredentialIsolationTests.cs
 │   │   │   │   ├── ProviderHealthTrackerTests.cs
 │   │   │   │   ├── ProviderMarketDataCapabilityTests.cs
+│   │   │   │   ├── ProviderQuotaEditorTests.cs
 │   │   │   │   ├── ProviderRateLimitHistoryTests.cs
 │   │   │   │   ├── ProviderRateLimitTrackerTests.cs
 │   │   │   │   ├── ProviderRegistryCapabilityFactoryTests.cs
@@ -14266,6 +14355,7 @@ Meridian-main
 │   │   │   │   ├── AlpacaActivityStatementConnectorTests.cs
 │   │   │   │   ├── Bai2StatementConnectorTests.cs
 │   │   │   │   ├── BankStatementCurrencyEvidenceTests.cs
+│   │   │   │   ├── BookReceiptCanonicalIntakeTests.cs
 │   │   │   │   ├── Camt053StatementConnectorTests.cs
 │   │   │   │   ├── CsvLineSplitterTests.cs
 │   │   │   │   ├── CsvStatementConnectorTests.cs
@@ -14941,6 +15031,7 @@ Meridian-main
 │   │   │   ├── DesignerExpressionTests.cs
 │   │   │   ├── Dk1PromotionTrustEvidenceProviderTests.cs
 │   │   │   ├── FileReconciliationBreakQueueLineageTests.cs
+│   │   │   ├── FileReconciliationBreakQueueRepository.BookReceiptReversalTests.cs
 │   │   │   ├── GovernanceExceptionServiceTests.cs
 │   │   │   ├── LedgerReadServiceTests.cs
 │   │   │   ├── LiveRunMetricsTrackerTests.cs
@@ -14952,6 +15043,7 @@ Meridian-main
 │   │   │   ├── LiveTradingEngineTests.AuditCancellation.cs
 │   │   │   ├── LiveTradingEngineTests.cs
 │   │   │   ├── LiveTradingEngineTests.FinancingCoverage.cs
+│   │   │   ├── LiveTradingEngineTests.GovernedRehearsal.cs
 │   │   │   ├── LiveTradingEngineTests.PromotionLedgerPosting.cs
 │   │   │   ├── LiveTradingEngineTests.StopFillDrain.cs
 │   │   │   ├── MovingAverageParityTests.cs
@@ -14969,6 +15061,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterAccountingEventSourceRateUnitTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
 │   │   │   ├── StoppedRunPromotionTests.cs
+│   │   │   ├── StrategyArtifactAndLiveAuthorizationTests.cs
 │   │   │   ├── StrategyDesignRepositoryTests.cs
 │   │   │   ├── StrategyDesignServiceTests.cs
 │   │   │   ├── StrategyEngineValidationServiceTests.cs
@@ -15132,6 +15225,10 @@ Meridian-main
 │   │   │   ├── BondReferenceEndpointsTests.cs
 │   │   │   ├── BondWorkflowConnectionReadinessTests.cs
 │   │   │   ├── BondWorkflowEndpointsTests.cs
+│   │   │   ├── BookReceiptEvidenceSourceTests.cs
+│   │   │   ├── BookReceiptQueueExceptionVarianceTests.cs
+│   │   │   ├── BookReceiptQueueProjectionIdentityTests.cs
+│   │   │   ├── BookReceiptQueueServiceTests.cs
 │   │   │   ├── BrokerageConnectionEndpointsTests.cs
 │   │   │   ├── BrokerageConnectionIsolationTests.cs
 │   │   │   ├── BrokerageContractMultiplierTests.cs
@@ -15299,9 +15396,11 @@ Meridian-main
 │   │   │   ├── PrivateCapitalUnitRegisterPreviewTests.cs
 │   │   │   ├── ProductionStartupPolicySmokeTests.cs
 │   │   │   ├── PromotionDecisionChainScenarioTests.cs
+│   │   │   ├── ProviderActivationEndpointTests.cs
 │   │   │   ├── ProviderConfigurationCredentialGuardTests.cs
 │   │   │   ├── ProviderConnectionDiagnosticsProjectionTests.cs
 │   │   │   ├── ProviderConnectionEndpointsTests.cs
+│   │   │   ├── ProviderConnectionTemplateEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipEndpointsTests.cs
 │   │   │   ├── ProviderCredentialOwnershipRaceTests.cs
 │   │   │   ├── ProviderDataProjectionEndpointsTests.cs
@@ -15408,6 +15507,7 @@ Meridian-main
 │   │   │   ├── StrategyDesignerWorkstationEndpointsTests.cs
 │   │   │   ├── StrategyLifecycleEndpointsTests.cs
 │   │   │   ├── SupportedPostureStartupIntegrationTests.cs
+│   │   │   ├── SymbolMappingOverrideEndpointTests.cs
 │   │   │   ├── SymbolMappingRolloutEndpointTests.cs
 │   │   │   ├── TenantScopeRefusalProblemDetailsTests.cs
 │   │   │   ├── ThreeWayAdjustmentDraftTests.cs
@@ -15426,6 +15526,7 @@ Meridian-main
 │   │   │   ├── WorkflowLibraryEndpointTests.cs
 │   │   │   ├── WorkstationAuditTableExportTests.cs
 │   │   │   ├── WorkstationBondCandidateStagingTests.cs
+│   │   │   ├── WorkstationBookReceiptEndpointTests.cs
 │   │   │   ├── WorkstationCloseTenantContextCompositionTests.cs
 │   │   │   ├── WorkstationCollateralExposureEndpointsTests.cs
 │   │   │   ├── WorkstationContractSnapshotTests.cs
@@ -15607,6 +15708,7 @@ Meridian-main
 │   │   │   ├── OrderBookVisualizationServiceTests.cs
 │   │   │   ├── PortfolioImportServiceTests.cs
 │   │   │   ├── PostedLedgerProjectionTests.cs
+│   │   │   ├── ProviderConfigurationApiClientTests.cs
 │   │   │   ├── ProviderHealthServiceTests.cs
 │   │   │   ├── ProviderManagementServiceTests.cs
 │   │   │   ├── QuietHoursTests.cs
@@ -15848,9 +15950,11 @@ Meridian-main
 │   │   │   ├── PostedLedgerViewModelTests.cs
 │   │   │   ├── PreparerDraftCheckViewModelTests.cs
 │   │   │   ├── ProviderAccountingViewModelTests.cs
+│   │   │   ├── ProviderActivationViewModelTests.cs
 │   │   │   ├── ProviderDataProjectionViewModelTests.cs
 │   │   │   ├── ProviderHealthViewModelTests.cs
 │   │   │   ├── ProviderOwnershipAdministrationViewModelTests.cs
+│   │   │   ├── ProviderQuotaEditorViewModelTests.cs
 │   │   │   ├── ProviderViewModelTests.cs
 │   │   │   ├── QuantScriptViewModelTests.cs
 │   │   │   ├── RecurringJournalQueueViewModelTests.cs

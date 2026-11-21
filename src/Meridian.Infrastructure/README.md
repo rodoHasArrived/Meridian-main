@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
+`DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual
+observations in memory. Durable history records route observations independently of the shared
+admission budget and its vendor reset policy.
+
 NYSE direct data sources and unified streaming refuse activation in production, packaged and
 customer builds until their provider-wide credential path supports retained tenant/account
 ownership. Final host posture and direct-construction environment flags are checked before
@@ -72,6 +77,10 @@ The queued backfill worker fetches and stores daily bars only. A request for any
 
 `BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.
 
+The active backfill route shares per-vendor admission, cooldown, and health across direct and queued jobs.
+The worker records a vendor attempt when it calls that adapter, retains provider attribution and fixed
+fallback codes, and counts a session as filled after its canonical-symbol bars reach storage.
+
 Alpaca streaming trade deduplication keys on trade id and venue as well as symbol, price, size and timestamp, so distinct prints with identical content are kept while a re-delivered message is still suppressed.
 
 The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
@@ -85,10 +94,11 @@ FRED's `GetRateObservationsAsync` series metadata and observation requests and
 attempt timeout starts after quota acquisition, so waiting for pacing or a cooldown does not
 consume the request's network timeout. Throttling
 responses publish a cooldown even when returned to the caller, and `Retry-After` delays subsequent
-attempts. Historical adapters record each HTTP 429 in the shared, bounded provider quota history.
-Composite routing retains the original observation when an adapter translates it to a typed
-failure, and records the next provider as a separate rotation. Vendor body-level quota denials
-have no HTTP 429 status. This evidence is synthetic-verified and live-untested.
+attempts. Historical adapters record each HTTP 429 in the bounded quota history for their request.
+Pinned and composite routes retain the original observation when an adapter translates it to a
+typed failure. Composite routing also records the next provider as a distinct rotation. A host's
+data root retains daily throttle and rotation totals across restarts. Vendor body-level quota
+denials have no HTTP 429 status. This evidence is synthetic-verified and live-untested.
 Twelve Data history, symbol search and corporate actions share the `api-requests` budget
 for the same API credential; different credentials and vendor quota groups retain separate budgets.
 Provider disposal does not discard a shared budget. Credential values are hashed in registry keys.

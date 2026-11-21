@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RevokeStrategyLiveAuthorizationRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RevokeStrategyLiveAuthorizationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs:262](../../../../src/Meridian.Ui.Shared/Endpoints/PromotionEndpoints.cs#L262).
+
+```csharp
+public sealed record RevokeStrategyLiveAuthorizationRequest(string Reason);
+```
+
+## RiskEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:76](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L76).
+
+Exposes runtime risk rule status, operator-managed rule configuration, and the governed-approval queue for escalated orders.
+
+```csharp
+public static class RiskEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapRiskEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs:78](../../../../src/Meridian.Ui.Shared/Endpoints/RiskEndpoints.cs#L78) |  |
+
 ## RiskEscalationApprovalResponse
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RiskEscalationApprovalResponse</code>. Kind: `record`.
@@ -371,8 +399,8 @@ Declared public members:
 | <code>public StrategyRunComparisonService(StrategyRunReadService readService);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:13](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L13) |  |
 | <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:18](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L18) |  |
 | <code>public Task&lt;IReadOnlyList&lt;StrategyRunComparison&gt;&gt; CompareRunsAsync(RunComparisonRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:23](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L23) |  |
-| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:66](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L66) |  |
-| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:71](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L71) |  |
+| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:72](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L72) |  |
+| <code>public Task&lt;StrategyRunDiff?&gt; BuildDiffAsync(RunDiffRequest request, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs:77](../../../../src/Meridian.Ui.Shared/Services/StrategyRunComparisonService.cs#L77) |  |
 
 ## StrategyStatusDto
 
@@ -445,7 +473,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.SymbolMappingEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L17).
+Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:19](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L19).
 
 Registry-backed symbol mapping endpoints shared by browser and desktop hosts. Legacy configuration remains a migration/rollback input but is not a second write model.
 
@@ -457,7 +485,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L21) |  |
+| <code>public static void MapSymbolMappingEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs:35](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.cs#L35) |  |
 
 Source: [src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/SymbolMappingEndpoints.Rollout.cs#L15).
 
@@ -605,6 +633,12 @@ public static partial class WorkstationEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.AuditTableExport.cs#L14).
+
+```csharp
+public static partial class WorkstationEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:15](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L15).
 
 ```csharp
 public static partial class WorkstationEndpoints
@@ -994,6 +1028,16 @@ Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationRiskEndpoints.cs:8](../../.
 public static partial class WorkstationEndpoints
 ```
 
+## BookReceiptRunRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationEndpoints.BookReceiptRunRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.BookReceipts.cs#L17).
+
+```csharp
+public sealed record BookReceiptRunRequest(Guid LedgerBookId, DateOnly AsOfDate);
+```
+
 ## WorkstationFundScopeTenantAccessor
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationFundScopeTenantAccessor</code>. Kind: `class`.
@@ -1162,41 +1206,3 @@ Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:2
 ```csharp
 public sealed record AccountCashSourceFx(string Currency, string BaseCurrency, DateOnly ConversionDate, decimal BaseUnitsPerCurrencyUnit);
 ```
-
-## AccountCashSourceReceiptRevision
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceReceiptRevision</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:27](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L27).
-
-```csharp
-public sealed record AccountCashSourceReceiptRevision(string ExpectedFlowId, DateOnly ReceiptDate);
-```
-
-## AccountCashSourceWatchObservation
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceWatchObservation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:28](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L28).
-
-```csharp
-public sealed record AccountCashSourceWatchObservation(string ObservationId, Guid SecurityId, string Kind, DateOnly EffectiveDate, string Value, string? Agency, string? SupersedesObservationId);
-```
-
-## BondCouponRecognitionEvidenceVerifier
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.BondCouponRecognitionEvidenceVerifier</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L8).
-
-Rechecks exact observed bank cash and independently reviewed deductions before recognition.
-
-```csharp
-public sealed class BondCouponRecognitionEvidenceVerifier(IEvidenceArtifactStore vault, TimeProvider? clock = null) : IBondCouponRecognitionEvidenceVerifier
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public Task VerifyAsync(AccountCashForecastScopeDto scope, IReadOnlyList&lt;BondCouponRecognizedCashDto&gt; cash, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/BondCouponRecognitionEvidenceVerifier.cs#L13) |  |

@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerIntegrityBreak
+
+Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityBreak</code>. Kind: `record`.
+
+Source: [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:9](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L9).
+
+An accounting difference observed against a simulation&#x27;s day-end books.
+
+```csharp
+public sealed record LedgerIntegrityBreak(DateTimeOffset AsOf, string Check, string? FinancialAccountId, string? Symbol, decimal Expected, decimal Actual, string Message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public decimal Difference =&gt; …;</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:18](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L18) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? Currency { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:21](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L21) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public SecurityLotUnitKind? UnitKind { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:24](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L24) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public decimal? UnitMultiplier { get; init; }</code> | [src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs:27](../../../../src/Meridian.Backtesting.Sdk/LedgerIntegrity.cs#L27) |  |
+
 ## LedgerIntegrityException
 
 Qualified name: <code>Meridian.Backtesting.Sdk.LedgerIntegrityException</code>. Kind: `class`.
@@ -249,8 +270,14 @@ Source: [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:20](../../../../sr
 Identity and provenance for a research-originated backtest, supplied by whichever surface produced it.
 
 ```csharp
-public sealed record ResearchRunDescriptor(string StrategyId, string StrategyName, string? CorrelationId = null, string? DatasetReference = null, IReadOnlyDictionary<string, string>? ParameterSet = null, ExecutionRealismDescriptor? ExecutionRealism = null);
+public sealed record ResearchRunDescriptor(string StrategyId, string StrategyName, string? CorrelationId = null, string? DatasetReference = null, IReadOnlyDictionary<string, string>? ParameterSet = null, ExecutionRealismDescriptor? ExecutionRealism = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs:28](../../../../src/Meridian.Backtesting.Sdk/IResearchRunRecorder.cs#L28) |  |
 
 ## ShortRebateCashFlow
 
@@ -872,26 +899,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Basic</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs:11](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs#L11) | Score by bid price × multiplier (conservative executable premium dollar amount). |
 | <code>Relative</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs:17](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteParams.cs#L17) | Score by vega-dollar IV residual penalised by spread and boosted by market depth. Selects relatively expensive volatility versus an estimated IV surface. |
-
-## ShortCallExitReason
-
-Qualified name: <code>Meridian.Backtesting.Sdk.Strategies.OptionsOverwrite.ShortCallExitReason</code>. Kind: `enum`.
-
-Source: [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:154](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L154).
-
-Outcome of a completed short-call cycle (entry → exit).
-
-```csharp
-public enum ShortCallExitReason
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ExpiredWorthless</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:157](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L157) | Option expired worthless. |
-| <code>Assigned</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:159](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L159) | Option was exercised (assignment). |
-| <code>TakeProfitRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:161](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L161) | Take-profit trigger reached; position was closed / rolled. |
-| <code>RiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:163](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L163) | Delta-risk trigger reached; position was rolled. |
-| <code>DividendRiskRoll</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:165](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L165) | Dividend-assignment risk trigger; position was closed / rolled. |
-| <code>ForcedClose</code> | [src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs:167](../../../../src/Meridian.Backtesting.Sdk/Strategies/OptionsOverwrite/OptionsOverwriteModels.cs#L167) | Strategy ended while position was still open (backtest ran out of data). |

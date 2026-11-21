@@ -13,6 +13,25 @@ public sealed partial class InMemoryAssetOperationsProjectionStore
     private Dictionary<Guid, ProjectionLineageDto> _projectionLineages = [];
     private Dictionary<Guid, AssetOperationsWriteApprovalDto> _projectionApprovals = [];
 
+    public Task<IReadOnlyList<InstrumentPositionProjectionSnapshot>> GetBookAsync(
+        Guid ledgerBookId, DateOnly asOfDate, CancellationToken ct = default)
+    {
+        if (ledgerBookId == Guid.Empty || asOfDate == default)
+            throw new ArgumentException("A ledger book and observation date are required.");
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            IReadOnlyList<InstrumentPositionProjectionSnapshot> snapshots = _bookPositions.Values
+                .Where(position => position.BookContext.LedgerBookId == ledgerBookId)
+                .Select(static position => position.SecurityId).Distinct().Order()
+                .Select(securityId => InstrumentPositionProjectionRules.FilterBookHistoryAsOf(
+                    BuildSnapshot(securityId, ledgerBookId, null), asOfDate))
+                .Where(static snapshot => snapshot.BookPositions.Count > 0)
+                .Select(ClonePayload).ToArray();
+            return Task.FromResult(snapshots);
+        }
+    }
+
     public Task<InstrumentPositionProjectionSnapshot> GetSecurityAsync(
         Guid securityId,
         CancellationToken ct = default)

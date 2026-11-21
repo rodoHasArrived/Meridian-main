@@ -1,9 +1,11 @@
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Meridian.Application.Backfill;
 using Meridian.Application.Scheduling;
 using Meridian.Contracts.Api;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.ProviderSdk;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -22,6 +24,40 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// </summary>
 public static class BackfillScheduleEndpoints
 {
+    private static IReadOnlyList<string> ValidatePreferredProviders(
+        IReadOnlyList<string>? preferredProviders,
+        DataGranularity granularity,
+        BackfillRoutingSnapshot? routing)
+    {
+        if (preferredProviders is null)
+            throw new ArgumentException("Supply an ordered provider list. Use an empty list for the global order.");
+        if (preferredProviders.Count == 0)
+            return [];
+        if (granularity != DataGranularity.Daily)
+            throw new ArgumentException("Preferred providers are available for daily backfill schedules.");
+
+        var available = routing?.Providers.Select(entry => entry.ProviderId)
+            .ToHashSet(StringComparer.Ordinal);
+        if (available is null || preferredProviders.Count > available.Count)
+            throw new ArgumentException("Preferred providers must be enabled and available for daily backfill.");
+        var selected = new HashSet<string>(StringComparer.Ordinal);
+        var result = new List<string>(preferredProviders.Count);
+        foreach (var value in preferredProviders)
+        {
+            if (string.IsNullOrWhiteSpace(value) || !available.Contains(ProviderIdentity.NormalizeId(value)))
+                throw new ArgumentException("Preferred providers must be enabled and available for daily backfill.");
+            var providerId = ProviderIdentity.NormalizeId(value);
+            if (!selected.Add(providerId))
+                throw new ArgumentException("Select each preferred provider once.");
+            result.Add(providerId);
+        }
+
+        return result;
+    }
+
+    [JsonUnmappedMemberHandling(JsonUnmappedMemberHandling.Disallow)]
+    private sealed record PreferredProvidersUpdate(string[]? PreferredProviders);
+
     public static void MapBackfillScheduleEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         var group = app.MapGroup("").WithTags("Backfill");
@@ -237,7 +273,8 @@ public static class BackfillScheduleEndpoints
         // List backfill schedules
         group.MapGet(UiApiRoutes.BackfillSchedules, (
             HttpContext context,
-            [FromServices] BackfillScheduleManager? schedMgr) =>
+            [FromServices] BackfillScheduleManager? schedMgr,
+            [FromServices] ScheduledBackfillService? scheduledBackfill) =>
         {
             if (schedMgr is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill schedule manager");
@@ -247,6 +284,7 @@ public static class BackfillScheduleEndpoints
             {
                 schedules,
                 total = schedules.Count,
+                runtimeAvailable = scheduledBackfill?.IsRunning == true,
                 timestamp = DateTimeOffset.UtcNow
             }, jsonOptions);
         })
@@ -260,15 +298,21 @@ public static class BackfillScheduleEndpoints
         group.MapPost(UiApiRoutes.BackfillSchedules, async (
             HttpContext context,
             [FromServices] BackfillScheduleManager? schedMgr,
+            [FromServices] BackfillRoutingRuntime? routing,
             [FromServices] ILoggerFactory loggerFactory,
             BackfillSchedule schedule,
             CancellationToken ct) =>
         {
             if (schedMgr is null)
                 return ApiProblemDetails.ServiceUnavailable(context, "backfill schedule manager");
+            if (schedule.PreferredProviders?.Count > 0 && routing?.Current is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill routing runtime");
 
             try
             {
+                var preferences = ValidatePreferredProviders(schedule.PreferredProviders, schedule.Granularity, routing?.Current);
+                schedule.PreferredProviders!.Clear();
+                schedule.PreferredProviders.AddRange(preferences);
                 var created = await schedMgr.CreateScheduleAsync(schedule, ct).ConfigureAwait(false);
                 return Results.Json(created, jsonOptions);
             }
@@ -294,6 +338,41 @@ public static class BackfillScheduleEndpoints
         .Produces(200)
         .ProducesValidationProblem()
         .ProducesProblem(StatusCodes.Status500InternalServerError)
+        .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
+        .RequirePermission(UserPermission.TriggerBackfill);
+
+        group.MapPut(UiApiRoutes.BackfillSchedulesById + "/preferred-providers", async (
+            HttpContext context, string id, PreferredProvidersUpdate update,
+            [FromServices] BackfillScheduleManager? schedMgr,
+            [FromServices] BackfillRoutingRuntime? routing,
+            CancellationToken ct) =>
+        {
+            if (schedMgr is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill schedule manager");
+            if (schedMgr.GetSchedule(id) is not { } schedule)
+                return ApiProblemDetails.NotFound(context, "The requested backfill schedule was not found.");
+            if (update.PreferredProviders?.Length > 0 && routing?.Current is null)
+                return ApiProblemDetails.ServiceUnavailable(context, "backfill routing runtime");
+
+            try
+            {
+                var preferences = ValidatePreferredProviders(update.PreferredProviders, schedule.Granularity, routing?.Current);
+                var updated = await schedMgr.SetPreferredProvidersAsync(id, preferences, ct).ConfigureAwait(false);
+                return updated is null
+                    ? ApiProblemDetails.NotFound(context, "The requested backfill schedule was not found.")
+                    : Results.Json(updated, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return ApiProblemDetails.Validation(context, "preferredProviders", ex.Message);
+            }
+        })
+        .WithName("SetBackfillSchedulePreferredProviders")
+        .WithDescription("Sets the preferred provider order for future executions of a backfill schedule.")
+        .Produces(200)
+        .ProducesValidationProblem()
+        .ProducesProblem(StatusCodes.Status404NotFound)
         .ProducesProblem(StatusCodes.Status503ServiceUnavailable)
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .RequirePermission(UserPermission.TriggerBackfill);

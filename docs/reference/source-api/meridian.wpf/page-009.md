@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PendingOperationQuarantineRecord
+
+Qualified name: <code>Meridian.Wpf.Services.PendingOperationQuarantineRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:82](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L82).
+
+Payload-free audit record for a pending operation that cannot safely be replayed. The original payload is intentionally omitted because retired reconciliation mutations may contain operator notes or other sensitive casework data.
+
+```csharp
+public sealed record PendingOperationQuarantineRecord(string OperationId, string OperationType, DateTime CreatedAt, int RetryCount, int MaxRetries, DateTimeOffset QuarantinedAtUtc, int SourceEnvelopeVersion, string ReasonCode, string Reason);
+```
+
 ## PendingOperationsQueueService
 
 Qualified name: <code>Meridian.Wpf.Services.PendingOperationsQueueService</code>. Kind: `class`.
@@ -1034,24 +1046,3 @@ Declared public members:
 | <code>public static ThemeService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ThemeService.cs:27](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L27) | Gets the singleton instance of the ThemeService. |
 | <code>public event EventHandler&lt;ThemeChangedEventArgs&gt;? ThemeChanged;</code> | [src/Meridian.Wpf/Services/ThemeService.cs:32](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L32) | Occurs when the theme is changed. Provides detailed event args with previous/new theme. |
 | <code>public void Initialize(Window window);</code> | [src/Meridian.Wpf/Services/ThemeService.cs:43](../../../../src/Meridian.Wpf/Services/ThemeService.cs#L43) | Initializes the theme service with the main application window. |
-
-## TickerStripService
-
-Qualified name: <code>Meridian.Wpf.Services.TickerStripService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/TickerStripService.cs:12](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L12).
-
-Manages the single always-on-top TickerStripWindow instance. Call Toggle to open/close the strip from any part of the shell.
-
-```csharp
-public static class TickerStripService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void Toggle();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:17](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L17) | Opens the strip if it is closed; closes it if it is open. |
-| <code>public static void Open();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:26](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L26) | Opens and shows the ticker strip (no-op if already visible). |
-| <code>public static void Close();</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:41](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L41) | Closes the ticker strip (no-op if already closed). |
-| <code>public static bool IsOpen =&gt; …;</code> | [src/Meridian.Wpf/Services/TickerStripService.cs:48](../../../../src/Meridian.Wpf/Services/TickerStripService.cs#L48) | Returns true while the strip window is open. |

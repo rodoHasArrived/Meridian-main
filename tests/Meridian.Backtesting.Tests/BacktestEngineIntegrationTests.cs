@@ -59,6 +59,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.TotalEventsProcessed.Should().Be(0);
         result.Universe.Should().BeEmpty();
         result.Fills.Should().BeEmpty();
+        result.ToResolvedRealismDescriptor().SourceMixHash.Should().BeNull();
     }
 
     // ------------------------------------------------------------------ //
@@ -218,6 +219,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         spy.MissingSessions.Should().Equal(missing);
         coverage.Instruments.Should().Contain(item => item.Instrument == "MISSING" && item.Status == "Unknown");
         coverage.Revisions.Should().ContainSingle().Which.RevisionId.Should().Be(retained.Receipt.RevisionId);
+        coverage.SourceMix.Should().Equal(new BacktestSourceCount("SPY", "FIXTURE", 2));
         result.BiasDisclosure!.Items.Select(static item => item.Title).Should().Contain(["Data incomplete", "Coverage unknown"]);
         result.Ledger.Journal.SelectMany(static item => item.Metadata.EvidenceReferences)
             .Should().Contain(evidence => evidence.EvidenceId == retained.Receipt.RevisionId &&
@@ -226,6 +228,29 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         var normalized = CanonicalBacktestResultNormalizer.FromNative(result);
         var json = JsonSerializer.Serialize(normalized.EngineMetadata);
         JsonSerializer.Deserialize<BacktestEngineMetadata>(json)!.InputCoverage.Should().BeEquivalentTo(coverage);
+    }
+
+    [Fact]
+    public async Task RunAsync_SourceMixCountsOnlyReplayedBarsAndResolvesTheCompletedFingerprint()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var to = from.AddDays(2);
+        WriteBarJsonl("SPY", from.AddDays(-1), from.AddDays(-1), 100m, source: "unused");
+        WriteBarJsonl("SPY", from, from, 100m, source: "alpaca");
+        WriteBarJsonl("SPY", from.AddDays(1), from.AddDays(1), 100m, source: "ALPACA");
+        WriteBarJsonl("SPY", to, to, 100m, source: "polygon");
+        var request = new BacktestRequest(from, to, Symbols: ["SPY"], DataRoot: _dataRoot,
+            AdjustForCorporateActions: false);
+
+        var result = await _engine.RunAsync(request, new NoOpStrategy());
+
+        var coverage = result.EngineMetadata!.InputCoverage!;
+        coverage.SourceMix.Should().Equal(new BacktestSourceCount("SPY", "ALPACA", 2),
+            new BacktestSourceCount("SPY", "POLYGON", 1));
+        var reordered = coverage with { SourceMix = coverage.SourceMix!.Reverse().ToArray() };
+        reordered.SourceMixHash.Should().Be(coverage.SourceMixHash);
+        request.ToRealismDescriptor().SourceMixHash.Should().BeNull();
+        result.ToResolvedRealismDescriptor().SourceMixHash.Should().Be(coverage.SourceMixHash).And.NotBeNull();
     }
 
     private sealed class ListingLookup : ISecurityIdentityQueryService
@@ -876,7 +901,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     /// Writes one <see cref="HistoricalBar"/> per day (from → to inclusive) to a JSONL file
     /// in a per-symbol sub-directory, named in the pattern the UniverseDiscovery scanner expects.
     /// </summary>
-    private void WriteBarJsonl(string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m)
+    private void WriteBarJsonl(string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m,
+        string source = "test")
     {
         var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
         Directory.CreateDirectory(symbolDir);
@@ -900,11 +926,11 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 Low: low,
                 Close: close,
                 Volume: 1_000_000L,
-                Source: "test",
+                Source: source,
                 SequenceNumber: seq++);
 
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, "test", seq);
+            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, source, seq);
 
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
             date = date.AddDays(1);

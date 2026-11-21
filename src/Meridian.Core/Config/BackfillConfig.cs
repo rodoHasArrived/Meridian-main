@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Catalog;
 
 namespace Meridian.Core.Config;
@@ -14,7 +15,7 @@ namespace Meridian.Core.Config;
 /// <param name="EnableFallback">When true and using composite provider, automatically try alternative providers on failure.</param>
 /// <param name="PreferAdjustedPrices">Prefer providers that return adjusted prices (for splits/dividends).</param>
 /// <param name="EnableSymbolResolution">Use OpenFIGI to normalize symbols across providers.</param>
-/// <param name="ProviderPriority">Custom provider priority order for fallback (overrides defaults).</param>
+/// <param name="ProviderPriority">Deprecated. Accepted when reading existing files. Routing uses the priority on each provider.</param>
 /// <param name="EnableRateLimitRotation">Automatically rotate to next provider when approaching rate limits.</param>
 /// <param name="RateLimitRotationThreshold">Usage threshold (0.0-1.0) at which to start rotating providers.</param>
 /// <param name="SkipExistingData">Check existing archives and skip dates that already have data.</param>
@@ -272,14 +273,19 @@ public sealed record PolygonConfig(
 /// <param name="ApiKey">API key (falls back to ALPHA_VANTAGE_API_KEY env var).</param>
 /// <param name="Priority">Priority in fallback chain (lower = tried first).</param>
 /// <param name="RateLimitPerMinute">Maximum requests per minute.</param>
-/// <param name="RateLimitPerDay">Maximum requests per day (free tier is very limited).</param>
+/// <param name="RateLimitPerDay">Deprecated compatibility field. Daily limits are configured in ProviderQuotas.AlphaVantage.</param>
 public sealed record AlphaVantageConfig(
     bool Enabled = true,
     string? ApiKey = null,
     int Priority = BackfillProviderCatalog.AlphaVantagePriority,
     int RateLimitPerMinute = BackfillProviderCatalog.AlphaVantagePerMinute,
-    int RateLimitPerDay = 25
-);
+    int RateLimitPerDay = BackfillProviderCatalog.AlphaVantageFreeDailyRequests
+)
+{
+    /// <summary>Declared vendor tier used to validate physical request pacing.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? TierId { get; init; }
+}
 
 /// <summary>
 /// Finnhub provider configuration.
@@ -305,7 +311,7 @@ public sealed record FinnhubConfig(
 /// <param name="Enabled">Enable this provider.</param>
 /// <param name="ApiKey">API key (falls back to FRED_API_KEY env var).</param>
 /// <param name="Priority">Priority in fallback chain (lower = tried first).</param>
-/// <param name="RateLimitPerMinute">Maximum requests per minute.</param>
+/// <param name="RateLimitPerMinute">Deprecated compatibility field. The adapter owns its request pacing.</param>
 public sealed record FredConfig(
     bool Enabled = true,
     string? ApiKey = null,

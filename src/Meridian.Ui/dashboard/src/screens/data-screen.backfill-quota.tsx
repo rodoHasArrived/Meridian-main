@@ -1,7 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { TimeText } from "@/components/ui/time-text";
 import { formatCount, formatNumber, pluralizeCount } from "@/lib/format";
-import type { ReactNode } from "react";
+import type { ReactNode, RefObject } from "react";
+import { Input } from "@/components/ui/input";
+import type { useDataViewModel } from "./data-screen.view-model";
 import type { BackfillExecutionHistoryRow, BackfillPreviewResult, BackfillProviderAlternative, BackfillQuotaEstimate, BackfillQuotaReceipt } from "@/types";
 import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
 
@@ -153,10 +155,60 @@ export function WorkstationBackfillReceipts({ rows, error }: { rows: BackfillExe
               </p>
             )}
             {row.errorMessage && <p className="text-xs text-muted-foreground">{row.errorMessage}</p>}
-            {row.batchReceipts?.length ? <BackfillBatchReceipts receipts={row.batchReceipts} /> : null}
+            {row.batchReceipts?.length || row.routingAttempts?.length ? (
+              <BackfillBatchReceipts receipts={row.batchReceipts ?? []} attempts={row.routingAttempts ?? []} />
+            ) : null}
           </div>
         </details>
       ))}
     </section>
+  );
+}
+
+export function BackfillSubmissionPanel({ vm, providerField }: {
+  vm: Pick<ReturnType<typeof useDataViewModel>,
+    "preview" | "submission" | "busy" | "scheduleForLater" | "setScheduleForLater" |
+    "scheduledStart" | "setScheduledStart" | "selectBackfillAlternative" | "queuedBackfills">;
+  providerField: RefObject<HTMLSelectElement | null>;
+}) {
+  const quota = vm.preview?.quota;
+  const latestSubmission = vm.queuedBackfills.find((row) => row.executionId === vm.submission?.executionId);
+  const submissionStatus = latestSubmission?.status ?? vm.submission?.status;
+  return (
+    <>
+      {vm.preview && <BackfillQuotaPanel preview={vm.preview} submissionEstimate={vm.submission?.quota} busy={vm.busy}
+        selectAlternative={(alternative) => {
+          providerField.current?.focus();
+          vm.selectBackfillAlternative(alternative);
+        }} />}
+      {quota && !vm.submission && (
+        <div className="mt-3 space-y-2 text-sm">
+          <label className="flex w-fit items-center gap-2">
+            <input type="checkbox" checked={vm.scheduleForLater} disabled={vm.busy}
+              onChange={(event) => vm.setScheduleForLater(event.target.checked)} />
+            Schedule for later
+          </label>
+          {vm.scheduleForLater && (
+            <label className="grid max-w-xs gap-1">
+              Earliest start (UTC)
+              <Input type="datetime-local" value={vm.scheduledStart} disabled={vm.busy}
+                onChange={(event) => vm.setScheduledStart(event.target.value)} />
+            </label>
+          )}
+        </div>
+      )}
+      {vm.submission && (
+        <div className="mt-4 space-y-2 rounded-md border border-border/70 p-3" role="status">
+          <p className="text-sm font-medium">{submissionStatus} · {vm.submission.provider}</p>
+          <p className="break-all font-mono text-xs text-muted-foreground">Job {vm.submission.executionId}</p>
+          {submissionStatus === "Scheduled" && <p className="text-xs">Eligible from <TimeText value={vm.submission.scheduledAt} />.</p>}
+          {vm.submission.quota.exceedsBudget && <p className="text-xs">Requests are paced to the shared provider budget.</p>}
+          {latestSubmission?.quotaReceipt && <BackfillReceiptEvidence receipt={latestSubmission.quotaReceipt} />}
+        </div>
+      )}
+      {latestSubmission && (latestSubmission.batchReceipts?.length || latestSubmission.routingAttempts?.length) ? (
+        <BackfillBatchReceipts receipts={latestSubmission.batchReceipts ?? []} attempts={latestSubmission.routingAttempts ?? []} />
+      ) : null}
+    </>
   );
 }

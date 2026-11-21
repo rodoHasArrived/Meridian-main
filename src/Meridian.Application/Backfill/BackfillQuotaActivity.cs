@@ -17,7 +17,8 @@ internal sealed class BackfillQuotaActivity(
     private bool _partialRequestCount;
 
     public HistoricalBackfillRequestScope Observe(bool retryRateLimited) =>
-        new(GetHeadroomPercent, BeforeUnmeteredFetchAsync, RecordRequest, RecordBarsPublished, RecordThrottle, retryRateLimited);
+        new(GetHeadroomPercent, BeforeUnmeteredFetchAsync, RecordRequest, RecordBarsPublished, RecordThrottle,
+            retryRateLimited, RecordUnmeteredFetchStarted);
 
     public BackfillQuotaReceipt BuildReceipt(BackfillQuotaEstimate estimate, TimeSpan elapsed)
     {
@@ -57,11 +58,14 @@ internal sealed class BackfillQuotaActivity(
             await limiter.WaitForUnitsAsync(1, 0, wait => RecordThrottle(provider.Name, "quota-admission", wait), ct)
                 .ConfigureAwait(false);
         }
+    }
 
+    private void RecordUnmeteredFetchStarted(string provider)
+    {
         lock (_sync)
         {
             _partialRequestCount = true;
-            _providers.Add(provider.Name);
+            _providers.Add(provider);
         }
     }
 
@@ -76,7 +80,8 @@ internal sealed class BackfillQuotaActivity(
 
     private void RecordBarsPublished(string provider)
     {
-        if (provider.Equals("composite", StringComparison.OrdinalIgnoreCase)) return;
+        if (provider.Equals("composite", StringComparison.OrdinalIgnoreCase))
+            return;
         lock (_sync)
             _providersThatReturnedBars.Add(provider);
     }

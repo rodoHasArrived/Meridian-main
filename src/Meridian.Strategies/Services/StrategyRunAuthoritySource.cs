@@ -50,10 +50,8 @@ public sealed class StrategyRunAuthoritySource : IStrategyRunAuthoritySource
             PromotionId: promotion?.PromotionId,
             PromotionTargetRunId: promotion?.TargetRunId,
             PromotionAuditReference: promotion?.AuditReference,
-            // Strategy-artifact identity is not retained on runs or promotions yet
-            // (strategy-artifact-identity blueprint); the resolver skips the comparison when null.
-            RunStrategyArtifactId: null,
-            PromotedStrategyArtifactId: null);
+            RunStrategyArtifactId: run.StrategyArtifactId,
+            PromotedStrategyArtifactId: promotion?.StrategyArtifactId);
     }
 
     /// <summary>

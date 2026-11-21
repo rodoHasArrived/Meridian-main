@@ -25,6 +25,8 @@ namespace Meridian.Tests.Ui;
 
 public sealed class RiskEndpointsTests
 {
+    private static readonly Guid PaperTicketAccountId = Guid.Parse("53bf0251-17f6-4fb7-8dbe-6fb4966e2749");
+
     [Fact]
     public async Task RiskRuleStatus_WithoutTradeRead_IsForbidden()
     {
@@ -132,6 +134,7 @@ public sealed class RiskEndpointsTests
     {
         await using var app = await CreateAppAsync(services =>
         {
+            RegisterPaperTicketAccount(services);
             services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
             services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
@@ -185,7 +188,8 @@ public sealed class RiskEndpointsTests
                 timeInForce = 0,
                 quantity = 200,
                 limitPrice = 100m,
-                strategyId = "escalation-check"
+                strategyId = "escalation-check",
+                fundAccountId = PaperTicketAccountId
             }));
         parkedResponse.StatusCode.Should().Be(
             HttpStatusCode.Accepted,
@@ -252,6 +256,7 @@ public sealed class RiskEndpointsTests
     {
         await using var app = await CreateAppAsync(services =>
         {
+            RegisterPaperTicketAccount(services);
             services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
             services.AddSingleton<IExecutionGateway>(_ => new Meridian.Execution.PaperTradingGateway(
@@ -285,7 +290,8 @@ public sealed class RiskEndpointsTests
                 type = 1,
                 timeInForce = 0,
                 quantity = 10,
-                limitPrice = 100m
+                limitPrice = 100m,
+                fundAccountId = PaperTicketAccountId
             })
         };
         submit.Headers.Add("X-Test-User", "submitter");
@@ -448,6 +454,7 @@ public sealed class RiskEndpointsTests
         // gates orders through the visible risk library.
         await using var app = await CreateAppAsync(services =>
         {
+            RegisterPaperTicketAccount(services);
             services.AddSingleton(new RiskRuleRuntimeOptions(Path.Combine(Path.GetTempPath(), $"risk-rules-{Guid.NewGuid():N}.json")));
             services.AddSingleton<PaperTradingPortfolio>(_ => new PaperTradingPortfolio(100_000m));
             services.AddSingleton<IPortfolioState>(sp => sp.GetRequiredService<PaperTradingPortfolio>());
@@ -493,7 +500,8 @@ public sealed class RiskEndpointsTests
                 type = 0,
                 timeInForce = 0,
                 quantity = 1,
-                strategyId = "risk-check"
+                strategyId = "risk-check",
+                fundAccountId = PaperTicketAccountId
             }));
         firstResponse.StatusCode.Should().Be(HttpStatusCode.Created);
 
@@ -507,7 +515,8 @@ public sealed class RiskEndpointsTests
                 type = 0,
                 timeInForce = 0,
                 quantity = 1,
-                strategyId = "risk-check"
+                strategyId = "risk-check",
+                fundAccountId = PaperTicketAccountId
             }));
 
         secondResponse.StatusCode.Should().Be(HttpStatusCode.BadRequest);
@@ -835,6 +844,12 @@ public sealed class RiskEndpointsTests
         // the whole book.
         WithoutClockTimestamps(await ReadRulesBodyAsync(app, "/api/risk/rules"))
             .Should().NotContain(RedactionLeakQuantity);
+    }
+
+    private static void RegisterPaperTicketAccount(IServiceCollection services)
+    {
+        services.AddSingleton<IAccountQueryService>(new StubAccountQueryService(PaperTicketAccountId));
+        services.AddSingleton<IScopedAuthorizationService>(new AccountScopedAuthorizationService(PaperTicketAccountId));
     }
 
     private static async Task<WebApplication> CreateAppAsync(

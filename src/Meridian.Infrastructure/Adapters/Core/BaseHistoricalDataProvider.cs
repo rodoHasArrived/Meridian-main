@@ -402,11 +402,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
             RecordRateLimitHit(retryAfter);
             quota = GetRateLimitInfo();
-            if (response.StatusCode == HttpStatusCode.TooManyRequests)
-                ProviderRateLimitHistory.Shared.RecordHttpThrottle(response, Name, quota);
             _responsesWithCooldown.Add(response, new object());
         }
 
+        if (response.StatusCode == HttpStatusCode.TooManyRequests)
+            ProviderRateLimitHistory.Current.RecordHttpThrottle(response, Name, quota);
         RaiseRateLimitHit(quota);
     }
 
@@ -419,7 +419,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         if (response is not null)
             ProviderRateLimitHistory.LinkHttpThrottle(response, exception);
         else
-            ProviderRateLimitHistory.Shared.RecordProviderThrottle(exception, GetRateLimitInfo());
+            ProviderRateLimitHistory.Current.RecordProviderThrottle(exception, GetRateLimitInfo());
         return exception;
     }
 

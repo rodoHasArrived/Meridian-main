@@ -6,10 +6,17 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Strategies
+
+Book receipt observations reuse `IReconciliationBreakQueueRepository` for assignment and disposition.
+Its dedicated reversal command reopens only a closed `BookReceipt` exception in the exact scope and
+book, with retained source identities, version/idempotency checks and audit evidence. Backdated
+observations and retained close freezes cannot bypass governed casework; ordinary operator-only
+approval, resolution and sign-off rules remain unchanged. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
@@ -186,6 +193,11 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+Completed native backtests expose replayed bar counts, verified backfill revisions, and a source-bound
+completion fingerprint in Strategy run detail. Research completion records bind the mix in their input
+hash. Runs admitted before replay keep their lifecycle input hash and derive the completion fingerprint
+from retained results. Run comparison discloses different mixes and unavailable evidence.
 
 Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
 `DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal

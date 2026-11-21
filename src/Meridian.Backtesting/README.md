@@ -161,6 +161,11 @@ same-day transformations are refused under the existing source policy. The snaps
 source evidence, not transaction-time proof of the announcements known historically. No live or durable accounting
 book is posted by this simulation mode.
 
+Native replay counts the historical and aggregate bars it consumes by effective symbol and stamped
+source after filtering inputs and deduplicating verified rows. The input coverage retains counts and
+verified batch revisions. The resolved realism descriptor includes a stable digest of the source
+counts when bars were replayed.
+
 Portfolio asset events fan out to every brokerage account holding the source symbol. Whole-unit
 transformations apportion successor shares through exact FIFO entitlements. Fractional entitlements
 carry their own basis across lot boundaries, and a combined whole share receives a deterministic

@@ -4,10 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { isBlankFilterOperator } from "@/screens/reporting-screen.report-writer";
 import type { ReportWriterFilterDraft, ReportWriterFilterDraftField } from "@/screens/reporting-screen.report-writer";
-import type { ReportingWriterGridRow } from "@/screens/reporting-screen.view-model";
+import type { ReportingWriterGridRow, ReportingWriterToken } from "@/screens/reporting-screen.view-model";
 
 interface ReportWriterExtraFiltersProps {
   grid: ReportingWriterGridRow;
+  sourceFields: ReportingWriterToken[];
   filters: ReportWriterFilterDraft[];
   onFilterAdd: (grid: ReportingWriterGridRow) => void;
   onFilterRemove: (grid: ReportingWriterGridRow, filterId: string) => void;
@@ -15,7 +16,7 @@ interface ReportWriterExtraFiltersProps {
 }
 
 /** Filter rows after the first, plus the Add filter control, for one report-writer grid. */
-export function ReportWriterExtraFilters({ grid, filters, onFilterAdd, onFilterRemove, onFilterChange }: ReportWriterExtraFiltersProps) {
+export function ReportWriterExtraFilters({ grid, sourceFields, filters, onFilterAdd, onFilterRemove, onFilterChange }: ReportWriterExtraFiltersProps) {
   return (
     <>
       {filters.map((filter, index) => {
@@ -28,10 +29,10 @@ export function ReportWriterExtraFilters({ grid, filters, onFilterAdd, onFilterR
               aria-label={`${grid.title} filter ${position} field`}
             >
               <option value="">Choose a field</option>
-              {grid.sourceFields.some((field) => (field.fieldName ?? field.label) === filter.field) || !filter.field ? null : (
+              {sourceFields.some((field) => (field.fieldName ?? field.label) === filter.field) || !filter.field ? null : (
                 <option value={filter.field}>{filter.field}</option>
               )}
-              {grid.sourceFields.map((field) => (
+              {sourceFields.map((field) => (
                 <option key={field.id} value={field.fieldName ?? field.label}>{field.label}</option>
               ))}
             </Select>

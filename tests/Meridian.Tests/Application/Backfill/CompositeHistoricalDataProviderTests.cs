@@ -5,6 +5,7 @@ using Meridian.Core.Exceptions;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Storage.Archival;
 using Meridian.Tests.TestHelpers;
 using Moq;
 using Xunit;
@@ -621,6 +622,56 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         rotation.HttpStatus.Should().BeNull();
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task RoutedHttp429_PersistsOneThrottleInTheSelectedDataRoot(bool compositeRoute)
+    {
+        var directory = Directory.CreateTempSubdirectory("meridian-routed-http-quota-");
+        try
+        {
+            var writer = new AtomicFileWriterAdapter();
+            var history = ProviderRateLimitHistory.ForDataRoot(directory.FullName, writer);
+            using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.TooManyRequests)
+            {
+                Headers = { RetryAfter = new RetryConditionHeaderValue(TimeSpan.FromSeconds(30)) }
+            });
+            using var provider = new ThrottledHttpProvider(new HttpClient(handler, disposeHandler: false));
+            var unscopedEvents = ProviderRateLimitHistory.Shared.Read(provider.Name, 1).Count;
+            if (compositeRoute)
+            {
+                var fallback = CreateMockProvider("fallback", priority: 2);
+                fallback.Setup(p => p.GetDailyBarsAsync("SPY", null, null, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(CreateBars("SPY", 2));
+                using var composite = new CompositeHistoricalDataProvider([provider, fallback.Object]);
+                using var historyScope = history.BeginScope();
+                (await composite.GetDailyBarsAsync("SPY", null, null)).Should().HaveCount(2);
+            }
+            else
+            {
+                using var admission = new BackfillRoutingAdmission([provider], 1, history);
+                var error = await Assert.ThrowsAsync<RateLimitException>(() => admission.FetchPinnedAsync(
+                    provider, "SPY", ct => provider.GetDailyBarsAsync("SPY", null, null, ct), null, CancellationToken.None));
+                error.RetryAfter.Should().Be(TimeSpan.FromSeconds(30));
+            }
+
+            handler.CallCount.Should().Be(1);
+            ProviderRateLimitHistory.Shared.Read(provider.Name, 1).Should().HaveCount(unscopedEvents);
+            var rateLimit = history.Read(provider.Name, 1).Should().ContainSingle(entry => entry.EventType == "rate-limited").Which;
+            rateLimit.HttpStatus.Should().Be(429);
+            rateLimit.RequestsUsed.Should().Be(1);
+            var reopenedHistory = new ProviderRateLimitHistory(directory.FullName, writer);
+            reopenedHistory.TryReadDailyRollups(provider.Name, out var rollups).Should().BeTrue();
+            var day = rollups.Should().ContainSingle().Which;
+            day.ThrottleCount.Should().Be(1);
+            day.RotationCount.Should().Be(compositeRoute ? 1 : 0);
+        }
+        finally
+        {
+            directory.Delete(recursive: true);
+        }
+    }
+
     [Fact]
     public async Task GetDailyBarsAsync_ThreeProviderCascade_P1DataException_P2RateLimit_P3Succeeds()
     {
@@ -740,6 +791,30 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
             Times.Once, "cross-validation must query the validation provider with its resolved symbol");
         p2.Verify(p => p.GetDailyBarsAsync("SPY", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()),
             Times.Never, "the unresolved symbol would compare against the wrong data");
+    }
+
+    [Fact]
+    public async Task GetBars_RebindsMappedAliasesAndRetainsActualServingProvider()
+    {
+        var date = new DateOnly(2026, 7, 1);
+        var start = new DateTimeOffset(2026, 7, 1, 14, 30, 0, TimeSpan.Zero);
+        var provider = CreateMockProvider("serving", priority: 1);
+        provider.Setup(p => p.GetDailyBarsAsync("spy.us", date, date, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new HistoricalBar("SPY.US", date, 100, 101, 99, 100, 1_000, "composite")]);
+        var aggregate = provider.As<IHistoricalAggregateBarProvider>();
+        aggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute1]);
+        aggregate.Setup(p => p.GetAggregateBarsAsync("spy.us", DataGranularity.Minute1, date, date, It.IsAny<CancellationToken>()))
+            .ReturnsAsync([new AggregateBar("SPY.US", start, start.AddMinutes(1), 100, 101, 99, 100, 100, Source: "")]);
+        var resolver = new Mock<Meridian.Infrastructure.Adapters.Core.SymbolResolution.ISymbolResolver>();
+        resolver.Setup(r => r.MapSymbolAsync("SPY", "input", "serving", It.IsAny<CancellationToken>()))
+            .ReturnsAsync("spy.us");
+        using var composite = new CompositeHistoricalDataProvider([provider.Object], resolver.Object);
+
+        var daily = await composite.GetDailyBarsAsync("SPY", date, date);
+        var intraday = await composite.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, date, date);
+
+        daily.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "serving");
+        intraday.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "serving");
     }
 
     [Fact]

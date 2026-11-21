@@ -770,7 +770,12 @@ public sealed class StatementImportService(
     internal static string RenderCanonicalArtifact(IReadOnlyList<StatementCanonicalRecord> records)
     {
         var builder = new StringBuilder();
-        builder.Append(string.Join(',', CanonicalArtifactHeader)).Append('\n');
+        var receiptMetadata = records.Any(record => record.SecurityId.HasValue || record.ReceiptAllocations is not null
+            || record.ObligationKey is not null || record.ProjectedCashFlowId.HasValue);
+        builder.Append(string.Join(',', CanonicalArtifactHeader));
+        if (receiptMetadata)
+            builder.Append(",marketValue,accruedInterest,securityId,receiptAllocations,obligationKey,projectedCashFlowId");
+        builder.Append('\n');
         foreach (var record in records)
         {
             builder
@@ -790,7 +795,13 @@ public sealed class StatementImportService(
                 .Append(EncodeArtifactValue(record.ProviderActivityCode)).Append(',')
                 .Append(EncodeArtifactValue(record.RelatedTransactionId)).Append(',')
                 .Append(EncodeArtifactValue(record.OrderId)).Append(',')
-                .Append(EncodeArtifactValue(record.Description)).Append('\n');
+                .Append(EncodeArtifactValue(record.Description));
+            if (receiptMetadata)
+                builder.Append(",,,").Append(record.SecurityId?.ToString("D")).Append(',')
+                    .Append(EncodeArtifactValue(record.ReceiptAllocations)).Append(',')
+                    .Append(EncodeArtifactValue(record.ObligationKey)).Append(',')
+                    .Append(record.ProjectedCashFlowId?.ToString("D"));
+            builder.Append('\n');
         }
 
         return builder.ToString();

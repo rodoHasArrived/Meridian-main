@@ -130,6 +130,28 @@ public sealed class ConfigStore
     internal Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
         => UpdateCoreAsync(LoadRequired, update, ct);
 
+    // Vault checks and template publication share the same ownership lease as credential writes.
+    internal async Task<T> UpdateRequiredWithLeaseAsync<T>(
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update, CancellationToken ct)
+    {
+        using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+        var current = LoadRequired();
+        var (next, result) = await update(current, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        if (!ReferenceEquals(current, next))
+            await SaveCoreAsync(next, ct).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>
+    /// Applies a checked update to persisted configuration. The callback may read local evidence
+    /// under the same lock as the commit. It must not perform network I/O or reenter configuration writes.
+    /// </summary>
+    public Task<T> UpdateRequiredCheckedAsync<T>(
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update,
+        CancellationToken ct = default)
+        => UpdateCoreAsync(LoadRequired, update, ct);
+
     /// <summary>
     /// Read-modify-write of the configuration document under the cross-process configuration lock
     /// (PRD-002: concurrent configuration writes). The current document is loaded <em>inside</em> the
@@ -153,15 +175,24 @@ public sealed class ConfigStore
         return UpdateCoreAsync<object?>(LoadForUpdate, current => (update(current), null), ct);
     }
 
-    private async Task<T> UpdateCoreAsync<T>(
+    private Task<T> UpdateCoreAsync<T>(
         Func<AppConfig> load,
         Func<AppConfig, (AppConfig Config, T Result)> update,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(update);
+        return UpdateCoreAsync(load, (current, _) => Task.FromResult(update(current)), ct);
+    }
+
+    private async Task<T> UpdateCoreAsync<T>(
+        Func<AppConfig> load,
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(update);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
         var current = load();
-        var (next, result) = update(current);
+        var (next, result) = await update(current, ct).ConfigureAwait(false);
         ct.ThrowIfCancellationRequested();
         if (!ReferenceEquals(current, next))
         {
@@ -238,6 +269,11 @@ public sealed class ConfigStore
             var handled = changedPaths.Where(applier.Handles).ToArray();
             if (handled.Length == 0)
                 continue;
+            if (applier.ReconcilePendingPaths)
+            {
+                handled = handled.Concat(GetChangeStatus().PendingChanges.Select(change => change.Path).Where(applier.Handles))
+                    .Distinct(StringComparer.Ordinal).ToArray();
+            }
 
             try
             {

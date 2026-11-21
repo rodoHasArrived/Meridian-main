@@ -95,8 +95,7 @@ function reportChartEvidence(grid: ReportWriterGridRender, bar: ChartBar, catego
     : formula ? `Grid formula ${formula.expression}.`
       : metric && grid.kind !== "Detail" ? `${metric.function}(${metric.sourceField}) for the rendered group.`
         : `Rendered grid field ${field?.sourceField || metric?.sourceField || bar.seriesKey}.`;
-  const conversion = bar.value === null ? " No value supplied for this point."
-    : bar.value === 0 ? " The chart engine uses 0 for missing or nonnumeric cells." : "";
+  const conversion = bar.value === null ? " No value supplied for this point." : "";
   return {
     id: `${grid.gridId}:${row?.rowKey ?? category}:${rowIndex}:${bar.seriesKey}`,
     label: `${category} · grid row ${rowIndex + 1}`,

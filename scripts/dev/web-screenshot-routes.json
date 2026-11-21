@@ -616,10 +616,14 @@
         "/api/workstation/accounting"
       ],
       "waitForTexts": [
-        "Open breaks",
+        "Cash variance over tolerance.",
+        "Observed and expected",
         "Open reconciliation casework",
         "Review retained evidence",
-        "Record match decision"
+        "Source lineage"
+      ],
+      "waitForSelectors": [
+        "a[href=\"/workstation/reporting/evidence?subjectKind=reconciliation-break&subjectId=run-42%3Acash\"]"
       ]
     },
     {

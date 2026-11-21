@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionCashDividendPostingLease
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:13](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L13).
+
+Server-created, invocation-bound authority for one exact native candidate. Its internal constructor and sealed type prevent HTTP inputs from manufacturing a posting capability.
+
+```csharp
+public sealed class CorporateActionCashDividendPostingLease
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionCashDividendAttestationDto Attestation { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:44](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L44) |  |
+| <code>public CorporateActionCaseAccountingProjectionDto Projection { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:45](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L45) |  |
+| <code>public CashDividendAttestationDeclarationDto Declaration { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:46](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L46) |  |
+| <code>public async Task EnsureCurrentAsync(string actor, Guid ledgerBookId, Guid periodId, string draftedCandidateFingerprint, string postingIntentHash, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:50](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L50) | Checks the exact candidate and rereads native authority within the held transaction. |
+| <code>public Task EnsureCanonicalInstrumentAsync(string? symbol, Guid securityId, long expectedSecurityVersion, DateTimeOffset accountingTimestamp, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:80](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L80) |  |
+| <code>public async Task AppendJournalAsync(ITransactionalLedgerJournalStore store, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:92](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L92) |  |
+| <code>public async Task&lt;LedgerJournalEntryRecord?&gt; GetJournalAsync(ITransactionalLedgerJournalStore store, Guid journalEntryId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:101](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L101) |  |
+| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:113](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L113) |  |
+| <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:126](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L126) |  |
+
 ## CorporateActionInboxExportSource
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionInboxExportSource</code>. Kind: `record`.
@@ -922,24 +948,3 @@ Source: [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjection
 ```csharp
 public sealed record MoneyMarketFundProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifierValue, long Version);
 ```
-
-## OperatorOverrideCanonicalVersionConflictException
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OperatorOverrideCanonicalVersionConflictException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:101](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L101).
-
-Thrown when an overlay patch was submitted for a canonical Security Master version that no longer matches the stream version observed while the patch transaction held the stream lock.
-
-```csharp
-public sealed class OperatorOverrideCanonicalVersionConflictException : InvalidOperationException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperatorOverrideCanonicalVersionConflictException(Guid securityId, long expectedVersion, long currentVersion) : base($&quot;Security stream version conflict for {securityId}. Expected {expectedVersion}, actual {currentVersion}.&quot;);</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:103](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L103) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:111](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L111) |  |
-| <code>public long ExpectedVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:112](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L112) |  |
-| <code>public long CurrentVersion { get; }</code> | [src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs:113](../../../../src/Meridian.Storage/SecurityMaster/IOperatorOverridesStore.cs#L113) |  |

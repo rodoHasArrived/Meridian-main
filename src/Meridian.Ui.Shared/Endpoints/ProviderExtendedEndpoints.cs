@@ -1,15 +1,19 @@
 using System.Globalization;
 using System.Linq;
 using System.Text.Json;
+using Meridian.Application.Backfill;
 using Meridian.Application.ProviderRouting;
 using Meridian.Contracts.Api;
 using Meridian.Core.Config;
+using Meridian.Core.IO;
 using Meridian.DataIntegration.Monitoring;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Failover;
 using Meridian.Infrastructure.DataSources;
 using Meridian.ProviderSdk;
+using Meridian.Storage;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -26,6 +30,7 @@ public static class ProviderExtendedEndpoints
     public static void MapProviderExtendedEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions)
     {
         app.MapProviderValidationEndpoints(jsonOptions);
+        app.MapProviderQuotaEndpoints(jsonOptions);
         var group = app.MapGroup("").WithTags("Providers");
 
         // Get provider by name
@@ -116,10 +121,11 @@ public static class ProviderExtendedEndpoints
         // Rate limits
         group.MapGet(UiApiRoutes.ProviderRateLimits, (
             [FromServices] ProviderRegistry? registry,
+            [FromServices] BackfillRoutingRuntime? routing,
             [FromServices] IEnumerable<IDataSource> dataSources) =>
         {
             return Results.Json(
-                CreateRateLimitsResponse(registry, dataSources, DateTimeOffset.UtcNow),
+                CreateRateLimitsResponse(registry, dataSources, DateTimeOffset.UtcNow, routing),
                 jsonOptions);
         })
         .WithName("GetProviderRateLimits").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
@@ -127,20 +133,31 @@ public static class ProviderExtendedEndpoints
         .Produces<ProviderRateLimitsResponse>(200);
 
         // Rate limit history
-        group.MapGet(UiApiRoutes.ProviderRateLimitHistory, (string providerName, int? hours) =>
+        group.MapGet(UiApiRoutes.ProviderRateLimitHistory, (string providerName, int? hours,
+            [FromServices] ConfigStore store, [FromServices] StorageOptions? storageOptions,
+            [FromServices] IAtomicFileWriter? writer) =>
         {
+            var history = ProviderRateLimitHistory.ForDataRoot(storageOptions?.RootPath ?? store.GetDataRoot(),
+                writer ?? new AtomicFileWriterAdapter());
+            var rollupsAvailable = history.TryReadDailyRollups(providerName, out var rollups);
             return Results.Json(
                 new ProviderRateLimitHistoryResponse(
                     providerName,
                     Math.Clamp(hours ?? 24, 1, 168),
-                    ProviderRateLimitHistory.Shared.Read(providerName, hours ?? 24),
+                    history.Read(providerName, hours ?? 24),
                     DateTimeOffset.UtcNow,
                     IsAvailable: true,
-                    Message: "Process-lifetime history, bounded to the latest 1024 observations across providers. Cleared on host restart; older observations may be evicted."),
+                    Message: rollupsAvailable
+                        ? "Recent events are held in memory. Daily totals retain the last seven UTC dates across host restarts."
+                        : "Recent events are available. Durable daily totals may be incomplete.")
+                {
+                    DailyRollups = rollups,
+                    DailyRollupsAvailable = rollupsAvailable
+                },
                 jsonOptions);
         })
         .WithName("GetProviderRateLimitHistory").RequireAnyPermission(UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance)
-        .WithDescription("Returns bounded process-lifetime rate-limit and provider-rotation observations.")
+        .WithDescription("Returns recent rate-limit events and durable UTC daily throttle and rotation totals.")
         .Produces<ProviderRateLimitHistoryResponse>(200);
 
         // Provider capabilities
@@ -426,15 +443,20 @@ public static class ProviderExtendedEndpoints
     internal static ProviderRateLimitsResponse CreateRateLimitsResponse(
         ProviderRegistry? registry,
         IEnumerable<IDataSource> dataSources,
-        DateTimeOffset observedAt)
+        DateTimeOffset observedAt,
+        BackfillRoutingRuntime? routing = null)
     {
         ArgumentNullException.ThrowIfNull(dataSources);
         var providers = new List<ProviderRateLimitSnapshotDto>();
         var keys = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
 
-        foreach (var provider in registry?.GetBackfillProviders() ?? Array.Empty<IHistoricalDataProvider>())
+        var historical = routing?.Current?.Providers ?? registry?.GetBackfillProviders()
+            .Select(provider => new BackfillRoutingProvider(provider, provider.Priority)).ToArray() ?? [];
+        foreach (var entry in historical)
         {
+            var provider = entry.Provider;
             var snapshot = (provider as IProviderRateLimitDiagnosticsSource)?.GetRateLimitDiagnosticsSnapshot();
+            var attempts = routing?.Admission?.GetStatus(provider.Name);
             var surface = snapshot?.Surface ?? ProviderRateLimitSurfaces.Historical;
             if (!keys.Add($"{provider.Name}:{surface}"))
                 continue;
@@ -443,7 +465,7 @@ public static class ProviderExtendedEndpoints
                 Provider: provider.Name,
                 Name: provider.Name,
                 DisplayName: provider.DisplayName,
-                Priority: provider.Priority,
+                Priority: entry.Priority,
                 Capabilities: MapCapabilities(provider.Capabilities),
                 Surface: surface,
                 StateAvailable: snapshot?.StateAvailable == true,
@@ -461,7 +483,9 @@ public static class ProviderExtendedEndpoints
                 DailyUnitsUsed = snapshot?.DailyUnitsUsed,
                 DailyMaximum = snapshot?.DailyMaximum,
                 DailyResetsAt = snapshot?.DailyResetsAt,
-                DailyResetPolicy = snapshot?.DailyResetPolicy
+                DailyResetPolicy = snapshot?.DailyResetPolicy,
+                BackfillAttemptsInWindow = attempts?.RequestsInWindow,
+                BackfillAttemptWindowSeconds = attempts?.Window.TotalSeconds
             });
         }
 

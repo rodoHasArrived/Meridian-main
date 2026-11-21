@@ -46,7 +46,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "historical daily bars", symbol, ProviderRateLimitHistory.Shared);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "historical daily bars", symbol, ProviderRateLimitHistory.Current);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -118,7 +118,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "historical intraday bars", symbol, ProviderRateLimitHistory.Shared);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "historical intraday bars", symbol, ProviderRateLimitHistory.Current);
         response.EnsureSuccessStatusCode();
 
         var json = await response.Content.ReadAsStringAsync(token).ConfigureAwait(false);
@@ -162,7 +162,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "dividends", symbol, ProviderRateLimitHistory.Shared);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "dividends", symbol, ProviderRateLimitHistory.Current);
 
         if (!response.IsSuccessStatusCode)
         {
@@ -220,7 +220,7 @@ internal sealed class NyseHistoricalDataProvider
 
         using var httpClient = _auth.CreateHttpClient();
         using var response = await httpClient.SendAsync(request, token).ConfigureAwait(false);
-        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "splits", symbol, ProviderRateLimitHistory.Shared);
+        NyseHttpResponseGuard.ThrowIfRateLimited(response, _sourceId, "splits", symbol, ProviderRateLimitHistory.Current);
 
         if (!response.IsSuccessStatusCode)
         {

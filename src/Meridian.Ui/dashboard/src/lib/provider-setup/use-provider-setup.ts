@@ -13,7 +13,6 @@ import {
   deleteProviderModule,
   setProviderModuleEnabled,
   testProviderModule,
-  restartProviderHost,
 } from "@/lib/api";
 import { isApiError } from "@/lib/api-errors";
 
@@ -89,7 +88,7 @@ export interface UseProviderSetupReturn {
   removeModule: (moduleId: string) => Promise<boolean>;
   toggleEnabled: (moduleId: string, enabled: boolean) => Promise<boolean>;
   testModule: (moduleId: string) => Promise<ProviderModuleTestResult | null>;
-  triggerRestart: () => Promise<boolean>;
+  restartObserved: (pendingPaths: readonly string[]) => void;
 }
 
 export function useProviderSetup(): UseProviderSetupReturn {
@@ -219,6 +218,7 @@ export function useProviderSetup(): UseProviderSetupReturn {
       );
       modulesRef.current = next;
       setModules(next);
+      if (result.changeStatus?.requiresRestart ?? true) setPendingRestart(true);
     }
     return result.success;
   }, []);
@@ -231,15 +231,10 @@ export function useProviderSetup(): UseProviderSetupReturn {
     }
   }, []);
 
-  const triggerRestart = useCallback(async (): Promise<boolean> => {
-    try {
-      await restartProviderHost();
-      setPendingRestart(false);
-      return true;
-    } catch {
-      return false;
-    }
-  }, []);
+  const restartObserved = useCallback((pendingPaths: readonly string[]) => {
+    setPendingRestart(pendingPaths.some(path => /^providerModules(?:\.|$)/i.test(path)));
+    void refresh();
+  }, [refresh]);
 
   return {
     modules,
@@ -254,6 +249,6 @@ export function useProviderSetup(): UseProviderSetupReturn {
     removeModule,
     toggleEnabled,
     testModule,
-    triggerRestart,
+    restartObserved,
   };
 }

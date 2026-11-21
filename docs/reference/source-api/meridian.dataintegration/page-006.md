@@ -263,8 +263,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;BrokerStatementValidationResult&gt; ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:379](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L379) |  |
-| <code>public async Task&lt;BrokerStatementImportResult&gt; ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:412](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L412) |  |
+| <code>public async Task&lt;BrokerStatementValidationResult&gt; ValidateAsync(BrokerStatementImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:377](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L377) |  |
+| <code>public async Task&lt;BrokerStatementImportResult&gt; ImportAsync(BrokerStatementImportRequest request, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:410](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L410) |  |
 
 ## FileStatementCaseworkCommitStore
 
@@ -380,7 +380,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Reconciliation.IReconciliationBreakStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:773](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L773).
+Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:848](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L848).
 
 Retains reconciliation breaks and materializes their run and casework projections.
 
@@ -392,15 +392,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task WriteAsync(IReadOnlyList&lt;ReconciliationBreakRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:775](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L775) |  |
-| <code>Task&lt;IReadOnlyList&lt;ReconciliationBreakRecord&gt;&gt; ListOpenAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:776](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L776) |  |
-| <code>Task&lt;ReconciliationBreakRecord?&gt; GetAsync(string breakId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:778](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L778) |  |
-| <code>Task&lt;ReconciliationBreakRecord&gt; ApplyCaseworkAsync(StatementBreakCaseworkUpdate update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:781](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L781) |  |
-| <code>Task MaterializeRunProjectionAsync(ReconciliationBreakRecord initialRecord, StatementRunProjectionAudit audit, IReadOnlyList&lt;ReconciliationBreakRecord&gt; authorizedImages, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:787](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L787) |  |
-| <code>Task&lt;StatementRunProjectionAudit?&gt; GetRunProjectionAuditAsync(string runId, string breakId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:795](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L795) |  |
-| <code>Task MaterializeCaseworkBreakAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:801](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L801) |  |
-| <code>Task MaterializeCaseworkAuditAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:809](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L809) |  |
-| <code>Task&lt;StatementBreakCaseworkAuditEvent?&gt; GetCaseworkAuditAsync(string breakId, string commandId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:817](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L817) |  |
+| <code>Task WriteAsync(IReadOnlyList&lt;ReconciliationBreakRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:850](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L850) |  |
+| <code>Task&lt;IReadOnlyList&lt;ReconciliationBreakRecord&gt;&gt; ListOpenAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:851](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L851) |  |
+| <code>Task&lt;ReconciliationBreakRecord?&gt; GetAsync(string breakId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:853](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L853) |  |
+| <code>Task&lt;ReconciliationBreakRecord&gt; ApplyCaseworkAsync(StatementBreakCaseworkUpdate update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:856](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L856) |  |
+| <code>Task MaterializeRunProjectionAsync(ReconciliationBreakRecord initialRecord, StatementRunProjectionAudit audit, IReadOnlyList&lt;ReconciliationBreakRecord&gt; authorizedImages, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:862](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L862) |  |
+| <code>Task&lt;StatementRunProjectionAudit?&gt; GetRunProjectionAuditAsync(string runId, string breakId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:870](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L870) |  |
+| <code>Task MaterializeCaseworkBreakAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:876](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L876) |  |
+| <code>Task MaterializeCaseworkAuditAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:884](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L884) |  |
+| <code>Task&lt;StatementBreakCaseworkAuditEvent?&gt; GetCaseworkAuditAsync(string breakId, string commandId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:892](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L892) |  |
 
 ## IReconciliationCaseStore
 
@@ -510,7 +510,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Reconciliation.JsonReconciliationBreakStore</code>. Kind: `class`.
 
-Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:862](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L862).
+Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:937](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L937).
 
 Persists reconciliation breaks and casework projections in JSON files.
 
@@ -522,16 +522,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public JsonReconciliationBreakStore(string dataRoot, IAtomicFileWriter atomicFileWriter);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:868](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L868) |  |
-| <code>public async Task WriteAsync(IReadOnlyList&lt;ReconciliationBreakRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:875](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L875) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakRecord&gt;&gt; ListOpenAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:900](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L900) |  |
-| <code>public async Task&lt;ReconciliationBreakRecord?&gt; GetAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:935](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L935) |  |
-| <code>public Task&lt;ReconciliationBreakRecord&gt; ApplyCaseworkAsync(StatementBreakCaseworkUpdate update, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:949](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L949) |  |
-| <code>public async Task MaterializeRunProjectionAsync(ReconciliationBreakRecord initialRecord, StatementRunProjectionAudit audit, IReadOnlyList&lt;ReconciliationBreakRecord&gt; authorizedImages, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:960](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L960) |  |
-| <code>public async Task&lt;StatementRunProjectionAudit?&gt; GetRunProjectionAuditAsync(string runId, string breakId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1018](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1018) |  |
-| <code>public async Task MaterializeCaseworkBreakAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1039](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1039) |  |
-| <code>public async Task MaterializeCaseworkAuditAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1089](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1089) |  |
-| <code>public async Task&lt;StatementBreakCaseworkAuditEvent?&gt; GetCaseworkAuditAsync(string breakId, string commandId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1139](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1139) |  |
+| <code>public JsonReconciliationBreakStore(string dataRoot, IAtomicFileWriter atomicFileWriter);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:943](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L943) |  |
+| <code>public async Task WriteAsync(IReadOnlyList&lt;ReconciliationBreakRecord&gt; records, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:950](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L950) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;ReconciliationBreakRecord&gt;&gt; ListOpenAsync(CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:975](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L975) |  |
+| <code>public async Task&lt;ReconciliationBreakRecord?&gt; GetAsync(string breakId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1010](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1010) |  |
+| <code>public Task&lt;ReconciliationBreakRecord&gt; ApplyCaseworkAsync(StatementBreakCaseworkUpdate update, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1024](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1024) |  |
+| <code>public async Task MaterializeRunProjectionAsync(ReconciliationBreakRecord initialRecord, StatementRunProjectionAudit audit, IReadOnlyList&lt;ReconciliationBreakRecord&gt; authorizedImages, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1035](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1035) |  |
+| <code>public async Task&lt;StatementRunProjectionAudit?&gt; GetRunProjectionAuditAsync(string runId, string breakId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1093](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1093) |  |
+| <code>public async Task MaterializeCaseworkBreakAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1114](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1114) |  |
+| <code>public async Task MaterializeCaseworkAuditAsync(IStatementCaseworkCommitStore commitStore, string commandId, string inputHashSha256, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1164](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1164) |  |
+| <code>public async Task&lt;StatementBreakCaseworkAuditEvent?&gt; GetCaseworkAuditAsync(string breakId, string commandId, CancellationToken ct = default);</code> | [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:1214](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L1214) |  |
 
 ## JsonReconciliationCaseStore
 
@@ -605,7 +605,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Reconciliation.StatementBreakCaseworkAuditEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:840](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L840).
+Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:915](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L915).
 
 ```csharp
 public sealed record StatementBreakCaseworkAuditEvent(string EventId, string BreakId, string ImportId, string PreviousStatus, string NewStatus, string Actor, string Action, string CommandId, string CorrelationId, string? Reason, string? Disposition, string? ApprovalActor, string? ApprovalReference, string? SupersedingBreakId, IReadOnlyList<string> EvidenceLinks, DateTimeOffset OccurredAtUtc, string InputHashSha256);
@@ -633,7 +633,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.DataIntegration.Reconciliation.StatementBreakCaseworkUpdate</code>. Kind: `record`.
 
-Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:824](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L824).
+Source: [src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs:899](../../../../src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs#L899).
 
 ```csharp
 public sealed record StatementBreakCaseworkUpdate(string BreakId, string ImportId, string Status, string Actor, string Action, string CommandId, string CorrelationId, string? Reason, string? Disposition, string? ApprovalActor, string? ApprovalReference, string? SupersedingBreakId, IReadOnlyList<string> EvidenceLinks, DateTimeOffset OccurredAtUtc);

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILifecycleControlClient
+
+Qualified name: <code>Meridian.Wpf.Services.ILifecycleControlClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/LifecycleControlClient.cs:13](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L13).
+
+Defines startup and authenticated lifecycle queries and governed shutdown requests for the desktop workstation.
+
+```csharp
+public interface ILifecycleControlClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetStartupSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:15](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L15) |  |
+| <code>Task&lt;bool&gt; AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:17](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L17) |  |
+| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:22](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L22) |  |
+| <code>Task&lt;LifecycleShutdownReceiptDto?&gt; GetLatestReceiptAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:24](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L24) |  |
+| <code>Task&lt;LifecycleShutdownAcceptedDto?&gt; RequestShutdownAsync(LifecycleShutdownRequestDto request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:26](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L26) |  |
+
 ## InfoBarNotificationEventArgs
 
 Qualified name: <code>Meridian.Wpf.Services.InfoBarNotificationEventArgs</code>. Kind: `class`.
@@ -1055,15 +1077,3 @@ Declared public members:
 | <code>public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:40](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L40) | Gets or sets when the operation was created. |
 | <code>public int RetryCount { get; set; }</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:45](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L45) | Gets or sets the number of retry attempts. |
 | <code>public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:50](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L50) | Gets or sets the maximum number of retries before discarding. |
-
-## PendingOperationQuarantineRecord
-
-Qualified name: <code>Meridian.Wpf.Services.PendingOperationQuarantineRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:82](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L82).
-
-Payload-free audit record for a pending operation that cannot safely be replayed. The original payload is intentionally omitted because retired reconciliation mutations may contain operator notes or other sensitive casework data.
-
-```csharp
-public sealed record PendingOperationQuarantineRecord(string OperationId, string OperationType, DateTime CreatedAt, int RetryCount, int MaxRetries, DateTimeOffset QuarantinedAtUtc, int SourceEnvelopeVersion, string ReasonCode, string Reason);
-```

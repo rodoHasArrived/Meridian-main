@@ -20,6 +20,9 @@ internal sealed class OrderApprovalReservations(RiskEscalationQueueService? queu
     internal void Reserve(string orderId, string escalationId) => _reservations[orderId] = escalationId;
     internal void Release(string orderId) => _reservations.TryRemove(orderId, out _);
     internal bool Contains(string orderId) => _reservations.ContainsKey(orderId);
+    internal string? FindParkedEscalationId(string orderId) =>
+        _reservations.TryGetValue(orderId, out var id) &&
+        _queue?.TryGet(id)?.Status is RiskEscalationStatus.PendingApproval or RiskEscalationStatus.Approved ? id : null;
     internal string[] SnapshotOrderIds() => _reservations.Keys.ToArray();
 
     internal void RehydrateParkedOrderReservations()
