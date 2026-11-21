@@ -20,14 +20,14 @@ export function buildReviewedAutomationViewModel(
       statusLabel: loading ? "Loading" : "Missing",
       statusTone: loading ? "neutral" : "review",
       stageLabel: loading ? "Loading review stage" : "Review stage unavailable",
-      reviewLabel: loading ? "Review state pending" : "No reviewed automation posture returned",
+      reviewLabel: loading ? "Review state pending" : "No reviewed automation status returned",
       summaryLabel: loading
-        ? "Loading reviewed automation posture from the shared operations API."
-        : "The shared operations API did not return reviewed automation posture.",
+        ? "Loading reviewed automation status from the shared operations API."
+        : "The shared operations API did not return reviewed automation status.",
       allowedUseCasesLabel: loading ? "Loading allowed uses" : "No allowed use cases returned",
       prohibitedActionsLabel: loading ? "Loading prohibited actions" : "No prohibited actions returned",
       evidenceLabel: "No retained review evidence",
-      requiredActionsLabel: loading ? "Loading required actions" : "Return reviewed automation posture before relying on local automation state.",
+      requiredActionsLabel: loading ? "Loading required actions" : "Return reviewed automation status before relying on local automation state.",
       artifactsEmptyText: loading ? "Loading reviewed automation output queue..." : "No reviewed automation output queue returned.",
       artifacts: []
     };
@@ -104,7 +104,7 @@ function buildReviewedAutomationArtifactRows(
       sourceSummary: artifact.sourceSummary?.trim() || "No source summary returned.",
       evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
       evidenceHref,
-      evidenceRouteLabel: evidenceHref ? "Open reviewed automation evidence" : "No local evidence route",
+      evidenceRouteLabel: evidenceHref ? "Open reviewed automation evidence" : "No local supporting record link",
       suggestedActionLabel: artifact.suggestedOperatorAction?.trim() || "No suggested operator action returned.",
       blockedActionLabel: artifact.blockedMaterialAction?.trim() || "No blocked material action returned.",
       checklistLabel: checklist.length === 0 ? "No review checklist returned" : checklist.join("; "),

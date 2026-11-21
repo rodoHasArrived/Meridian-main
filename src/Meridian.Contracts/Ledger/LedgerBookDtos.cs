@@ -350,7 +350,56 @@ public sealed record LedgerJournalEntryLineDto(
     decimal Debit,
     decimal Credit,
     string Description,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? Memo { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerJournalLineChartAccountDto? ChartAccount { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerJournalLineCurrencyDto? Currency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AmountPassportReferenceDto? AmountPassport { get; init; }
+}
+
+public sealed record LedgerJournalLineChartAccountDto(string NodeId, string Revision, string? AccountCode);
+
+public sealed record LedgerJournalLineCurrencyDto(string TransactionCurrency, string FunctionalCurrency,
+    decimal TransactionDebit, decimal TransactionCredit, decimal FxRateToFunctional);
+
+/// <summary>One posting to an account with the account balance after it.</summary>
+public sealed record LedgerAccountRunningBalancePointDto(
+    Guid JournalEntryId,
+    Guid EntryId,
+    long GlobalSequence,
+    DateTimeOffset Timestamp,
+    string Description,
+    decimal Debit,
+    decimal Credit,
+    decimal Balance);
+
+/// <summary>
+/// Posting history of one account inside an accounting period, with a running balance in the
+/// account's normal-balance sign (debit-normal for assets and expenses, credit-normal otherwise).
+/// The balance starts at zero at the first posting of the period.
+/// </summary>
+public sealed record LedgerAccountRunningBalanceDto(
+    Guid PeriodId,
+    Guid LedgerBookId,
+    string AccountName,
+    string? AccountType,
+    string? Symbol,
+    string? FinancialAccountId,
+    decimal TotalDebits,
+    decimal TotalCredits,
+    decimal EndingBalance,
+    IReadOnlyList<LedgerAccountRunningBalancePointDto> Points)
+{
+    public IReadOnlyList<LedgerAccountRunningBalancePointDto> Points { get; init; } = Points ?? [];
+}
 
 public sealed record LedgerJournalEntryDto(
     Guid JournalEntryId,
@@ -375,10 +424,18 @@ public sealed record LedgerJournalEntryDto(
     Guid? SourceEventId = null,
     Guid? SourceJournalEntryId = null,
     LedgerPostingKindDto PostingKind = LedgerPostingKindDto.Originating,
-    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null)
+    LedgerAdjustmentApprovalMetadataDto? AdjustmentApproval = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] LedgerJournalExecutionLineageDto? Execution = null)
 {
     public IReadOnlyList<LedgerJournalEntryLineDto> Lines { get; init; } = Lines ?? [];
 }
+
+/// <summary>
+/// The execution a journal entry was posted from, exactly as its retained metadata recorded it:
+/// the order identifier the execution journal uses, the fill, and the strategy run. Absent when the
+/// entry was not posted from an execution; never inferred from symbol, amount or time.
+/// </summary>
+public sealed record LedgerJournalExecutionLineageDto(string? OrderId, Guid? FillId, string? StrategyRunId);
 
 public sealed record LedgerReportSignatureDto(
     string Algorithm,

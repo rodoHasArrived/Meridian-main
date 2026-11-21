@@ -2,7 +2,7 @@ using System.Text.Json;
 using Meridian.FinancialOperations.OperationsContinuity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Services;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.DependencyInjection;
@@ -97,7 +97,7 @@ public static partial class WorkstationEndpoints
             return Results.BadRequest(new { error = "Idempotency key is required." });
         }
 
-        if (request.BreakIds.Count > request.MaxCaseCount)
+        if (request.BreakIds is null || request.BreakIds.Count > request.MaxCaseCount)
         {
             return Results.BadRequest(new { error = $"Bulk action exceeds max case count {request.MaxCaseCount}." });
         }
@@ -119,6 +119,12 @@ public static partial class WorkstationEndpoints
         {
             Actor = currentUser,
             Source = "workstation-reconciliation-bulk-casework",
+            // "Assign to me" names the authenticated operator, as the single-case review route does.
+            Assignee = request.AssignToCurrentOperator && request.Action == ReconciliationCaseworkAction.Assign
+                ? currentUser
+                : request.Assignee,
+            AssignToCurrentOperator = false,
+            RequireReviewedPreview = !request.DryRun,
             // Derived from the principal -- see the single-case handler above (#2673).
             ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context),
             ApprovalActor = NormalizeOptional(request.ApprovalActor),

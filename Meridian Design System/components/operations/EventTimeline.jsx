@@ -12,26 +12,26 @@ function inject() {
   const css = `
 .mds-evtl{font-family:var(--font-body);display:flex;flex-direction:column;}
 .mds-evtl__day{font-family:var(--font-data);font-size:10px;font-weight:700;letter-spacing:.05em;
-  color:var(--text-muted,#5E666F);padding:10px 0 6px 0;}
+  color:var(--text-muted,#606870);padding:10px 0 6px 0;}
 .mds-evtl__day:first-child{padding-top:0;}
 .mds-evtl__row{display:flex;gap:10px;position:relative;}
-.mds-evtl__time{flex:0 0 66px;text-align:right;font-size:11px;padding-top:1px;color:var(--text-muted,#5E666F);}
+.mds-evtl__time{flex:0 0 66px;text-align:right;font-size:11px;padding-top:1px;color:var(--text-muted,#606870);}
 .mds-evtl__rail{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;width:9px;}
 .mds-evtl__dot{width:9px;height:9px;border-radius:50%;flex:0 0 auto;margin-top:4px;
-  background:var(--bg-light,#FBFAF8);border:2px solid var(--border-strong,#AFABA1);box-sizing:border-box;}
-.mds-evtl__dot--success{border-color:var(--green,#3A7A56);}
-.mds-evtl__dot--warning{border-color:var(--orange,#8A5C12);}
-.mds-evtl__dot--danger{border-color:var(--red,#A8443C);background:var(--red-a10,rgba(168,68,60,.1));}
-.mds-evtl__dot--accent{border-color:var(--accent,#A85436);}
-.mds-evtl__stem{flex:1;width:1px;background:var(--border,#E4E3DE);min-height:8px;}
+  background:var(--bg-light,#F8F7F3);border:2px solid var(--border-strong,#AAA49A);box-sizing:border-box;}
+.mds-evtl__dot--success{border-color:var(--green,#2E7655);}
+.mds-evtl__dot--warning{border-color:var(--orange,#986717);}
+.mds-evtl__dot--danger{border-color:var(--red,#B54B42);background:var(--red-a10,rgba(181,75,66,.1));}
+.mds-evtl__dot--accent{border-color:var(--brand-signal,#C56343);}
+.mds-evtl__stem{flex:1;width:1px;background:var(--border,#D2CDC3);min-height:8px;}
 .mds-evtl__row:last-child .mds-evtl__stem{background:transparent;}
 .mds-evtl__body{flex:1;min-width:0;padding-bottom:14px;}
 .mds-evtl--dense .mds-evtl__body{padding-bottom:8px;}
-.mds-evtl__action{font-size:13px;font-weight:600;color:var(--text-primary,#22252A);line-height:1.4;}
-.mds-evtl__actor{font-family:var(--font-data);font-size:10.5px;color:var(--text-secondary,#4E5258);
-  border:1px solid var(--border,#E4E3DE);border-radius:var(--radius-chip,2px);padding:0 5px;margin-left:7px;
+.mds-evtl__action{font-size:13px;font-weight:600;color:var(--text-primary,#20252B);line-height:1.4;}
+.mds-evtl__actor{font-family:var(--font-data);font-size:10.5px;color:var(--text-secondary,#535C65);
+  border:1px solid var(--border,#D2CDC3);border-radius:var(--radius-chip,2px);padding:0 5px;margin-left:7px;
   vertical-align:1px;white-space:nowrap;}
-.mds-evtl__detail{font-size:12px;color:var(--text-secondary,#4E5258);line-height:1.5;margin-top:2px;}
+.mds-evtl__detail{font-size:12px;color:var(--text-secondary,#535C65);line-height:1.5;margin-top:2px;}
 .mds-evtl__evidence{margin-top:4px;font-size:11.5px;}
 `;
   const el = document.createElement("style");
@@ -40,10 +40,12 @@ function inject() {
   document.head.appendChild(el);
 }
 
+// Group by the OPERATOR's day, not the UTC day: toISOString() would file a 7pm New York event
+// under tomorrow's heading. See core/localDate.js.
 function dayKey(v) {
   const d = v instanceof Date ? v : new Date(v);
   if (isNaN(d.getTime())) return "—";
-  return d.toISOString().slice(0, 10);
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 }
 
 export function EventTimeline({
@@ -68,7 +70,7 @@ export function EventTimeline({
     <div className={`mds-evtl${dense ? " mds-evtl--dense" : ""}${className ? " " + className : ""}`}
       role="list" aria-label="Event timeline" {...rest}>
       {rows.length === 0 && (
-        <div style={{ font: "12px var(--font-body)", color: "var(--text-muted,#5E666F)" }}>No events recorded.</div>
+        <div style={{ font: "12px var(--font-body)", color: "var(--text-muted,#606870)" }}>No events recorded.</div>
       )}
       {rows.map((r) =>
         r.type === "day" ? (

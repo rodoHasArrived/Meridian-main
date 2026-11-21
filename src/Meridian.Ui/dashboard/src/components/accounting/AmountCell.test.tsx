@@ -19,10 +19,10 @@ describe("AmountCell", () => {
 
   it("colors P&L mode: negative red, positive green", () => {
     const { rerender } = render(<AmountCell value={-5} mode="pnl" />);
-    expect(screen.getByText("−5.00")).toHaveStyle({ color: "var(--red-dim, #7E332D)" });
+    expect(screen.getByText("−5.00")).toHaveStyle({ color: "var(--red-dim, #883832)" });
 
     rerender(<AmountCell value={5} mode="pnl" signed />);
-    expect(screen.getByText("+5.00")).toHaveStyle({ color: "var(--green-dim, #2C5C40)" });
+    expect(screen.getByText("+5.00")).toHaveStyle({ color: "var(--green-dim, #225840)" });
   });
 
   it("renders through an alternate element tag", () => {

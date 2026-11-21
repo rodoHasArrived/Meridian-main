@@ -18,6 +18,47 @@ import type {
   ReconciliationCaseworkAction,
 } from "../types";
 
+export interface StatementMatchAllocation {
+  recordId: string;
+  evidenceReference: string;
+  instrument: string | null;
+  recordDate: string | null;
+  settlementDate: string | null;
+  quantity: string | null;
+  amount: string | null;
+  currency: string | null;
+  unitPrice?: string | null;
+  transactionType?: string | null;
+  externalTransactionId?: string | null;
+}
+
+export interface StatementMatchResidual {
+  measure: string;
+  unit: string;
+  sourceTotal: string;
+  ledgerTotal: string;
+  residual: string;
+  tolerance: string | null;
+}
+
+export interface RetainedStatementMatchEvidence {
+  tier: "Exact" | "Tolerance" | "Candidate" | "Unmatched";
+  explanation: string;
+  confidence: string | null;
+  amountMeasure: string | null;
+  ruleIds: string[];
+  sourceAllocations: StatementMatchAllocation[];
+  ledgerAllocations: StatementMatchAllocation[];
+  residuals: StatementMatchResidual[];
+}
+
+export interface RetainedStatementCaseEvidence {
+  runId: string;
+  matchArtifactSha256: string;
+  tolerancePolicy: { profileId: string; version: number; effectiveDate: string; comparisonPolicyFingerprint: string };
+  match: RetainedStatementMatchEvidence;
+}
+
 export interface ReconciliationBreakLineage {
   identityScopeId?: string | null;
   lineageId: string;
@@ -31,14 +72,26 @@ export interface ReconciliationBreakLineage {
   lastObservedRunId: string;
   clearedAt?: string | null;
   clearedByRunId?: string | null;
+  regrouping?: {
+    kind: "Split" | "Merged";
+    priorRunId: string;
+    priorBreakIds: string[];
+    group: {
+      matchGroupId: string;
+      sourceSubjects: { evidenceReference: string; sourceSubjectId: string }[];
+      evidence: RetainedStatementCaseEvidence;
+    };
+  } | null;
 }
 
 export interface ReconciliationBreakQueueItem {
   lineage?: ReconciliationBreakLineage | null;
+  statementEvidence?: RetainedStatementCaseEvidence | null;
   breakId: string;
   runId: string;
   strategyName: string;
   category: string;
+  severity?: "Info" | "Low" | "Medium" | "High" | "Critical";
   status: ReconciliationBreakQueueStatus;
   variance: number;
   reason: string;
@@ -106,8 +159,32 @@ export interface ReconciliationBreakQueueItem {
   dispositionEvidenceHash?: string | null;
   disposedAt?: string | null;
   blockedOutputs?: string[] | null;
+  ledgerBookId?: string | null;
   accountingPeriodId?: string | null;
   asOfDate?: string | null;
+  /** Case lifecycle the server checks before waive, sign-off and reopen. Older payloads omit it. */
+  lifecycleState?: ReconciliationCaseLifecycleState | null;
+}
+
+/** One append-only entry from `GET .../break-queue/{breakId}/audit`, in sequence order. */
+export interface ReconciliationBreakQueueAuditEvent {
+  eventId: string;
+  breakId: string;
+  eventType: string;
+  previousStatus?: ReconciliationBreakQueueStatus | null;
+  newStatus?: ReconciliationBreakQueueStatus | null;
+  previousLifecycleState?: ReconciliationCaseLifecycleState | null;
+  newLifecycleState?: ReconciliationCaseLifecycleState | null;
+  occurredAt: string;
+  actor?: string | null;
+  reason?: string | null;
+  note?: string | null;
+  commandId?: string | null;
+  correlationId?: string | null;
+  causationId?: string | null;
+  source?: string | null;
+  afterPayload?: string | null;
+  sequence?: number;
 }
 
 export interface ReconciliationCaseComment {
@@ -191,12 +268,16 @@ export interface ReconciliationBulkCaseworkRequest {
   approvalActor?: string | null;
   approvalReference?: string | null;
   supersedingBreakId?: string | null;
+  /** Bulk "assign to me": the server names the authenticated operator as the assignee. */
+  assignToCurrentOperator?: boolean;
+  previewBulkActionId?: string;
 }
 
 export interface ReconciliationBulkCaseworkResult {
   bulkActionId: string;
   idempotencyKey: string;
   dryRun: boolean;
+  reviewProtocol?: number | null;
   requestedCount: number;
   succeededCount: number;
   failedCount: number;
@@ -1123,10 +1204,12 @@ export interface ChartOfAccountsNode {
   path: string;
   accountName: string;
   accountType: string;
+  accountCode?: string | null;
   parentPath?: string | null;
   symbol?: string | null;
   financialAccountId?: string | null;
   isArchived: boolean;
+  intercompanyRole?: "Receivable" | "Payable" | "Revenue" | "Expense" | "TranslationReserve" | null;
 }
 
 export interface JournalEntryTemplateLine {
@@ -1603,6 +1686,8 @@ export interface ManualJournalEntryLine {
   evidenceLink?: string | null;
   ledgerAccountSymbol?: string | null;
   ledgerAccountFinancialAccountId?: string | null;
+  dimensions?: LedgerDimensionSet | null;
+  transactionCurrency?: { currency: string; amount: string | number; fxRateToFunctional: string | number } | null;
 }
 
 export interface ManualJournalEntryEvidenceAttachment {
@@ -1645,6 +1730,8 @@ export interface TreasuryLedgerContext {
 }
 
 export interface ManualJournalEntryDraft {
+  intercompanyFx?: { amount: string | number; currency: string; rate: string | number; rateId: string | null;
+    rateSetId: string; rateSetRevision: number; policyId: string; policyRevision: string; configurationHash: string } | null;
   /** Opaque server-retained asset candidate authority; the browser never authors it. */
   assetAccountingDraft?: unknown | null;
   assetAccountingPostIntent?: unknown | null;

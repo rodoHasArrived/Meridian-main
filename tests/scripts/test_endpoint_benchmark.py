@@ -37,18 +37,18 @@ class EndpointBenchmarkTests(unittest.TestCase):
         return path
 
     def test_serial_class_timestamps_do_not_count_as_concurrency(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             evidence = benchmark.timing_evidence(self.make_trx(Path(directory), concurrent=False))
         self.assertEqual(1, evidence["overlappingClasses"])
         self.assertEqual(20, evidence["testSeconds"])
 
     def test_concurrent_class_timestamps_prove_overlap(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             evidence = benchmark.timing_evidence(self.make_trx(Path(directory), concurrent=True))
         self.assertEqual(2, evidence["overlappingClasses"])
 
     def test_missing_selected_class_invalidates_benchmark(self):
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             with self.assertRaisesRegex(ValueError, "Unexpected benchmark classes"):
                 benchmark.timing_evidence(self.make_trx(Path(directory), concurrent=True, omit_last=True))
 

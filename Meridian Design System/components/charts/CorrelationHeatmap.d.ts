@@ -21,4 +21,4 @@ export interface CorrelationHeatmapProps {
   /** Hover callback with { row, col, value }. */
   onCellHover?: ((cell: { row: number; col: number; value: number }) => void) | null;
 }
-export declare function CorrelationHeatmap(props: CorrelationHeatmapProps): JSX.Element;
+export declare function CorrelationHeatmap(props: CorrelationHeatmapProps): React.JSX.Element;

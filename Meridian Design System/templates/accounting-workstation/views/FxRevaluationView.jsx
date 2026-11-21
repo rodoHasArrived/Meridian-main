@@ -1,7 +1,7 @@
 // FX revaluation view — foreign balances at booked vs current rates. The net unrealized G/L
 // becomes a prefilled revaluation journal entry (onPostReval → journal drawer).
 function AcctFxRevalView(props) {
-  const { FxRevaluationTable, Eyebrow, Callout, Button, Money } = window.MeridianDesignSystem_4f61be;
+  const { FxRevaluationTable, Eyebrow, Callout, Button, Money } = window.MeridianDesignSystem_205d17;
   const net = props.netGl || 0;
   const fmt = (v) => Money.formatMoney(v, { currency: "USD", signed: true });
 
@@ -9,11 +9,17 @@ function AcctFxRevalView(props) {
     <section data-screen-label="FX revaluation" style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 980 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
         <Eyebrow>FX revaluation</Eyebrow>
+        {props.scopeLine && <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-primary)" }}>{props.scopeLine}</span>}
         <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
           Base USD · booked vs 2026-06-30 rates · rates are USD per 1 local unit
         </span>
       </div>
 
+      {props.noExposure ? (
+        <Callout tone="success" title="No FX exposure">
+          USD-only book — no foreign-currency balances at 2026-06-30. The FX close gate passes with no revaluation required.
+        </Callout>
+      ) : (<>
       <FxRevaluationTable base="USD" rows={props.rows || []} />
 
       {props.fxPosted ? (
@@ -29,13 +35,19 @@ function AcctFxRevalView(props) {
                 ? " Dr 1400 · FX translation adjustment / Cr 4300 · Unrealized FX gain/loss."
                 : " Dr 4300 · Unrealized FX gain/loss / Cr 1400 · FX translation adjustment."}
             </span>
-            <Button variant="primary" size="sm" disabled={props.locked}
+            <Button variant="primary" size="sm" disabled={props.locked || props.postScopeLocked}
               onClick={() => props.onPostReval && props.onPostReval()}>
               Post revaluation entry
             </Button>
+            {props.postScopeLocked && !props.locked && (
+              <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
+                Posting is per-entity — switch scope to MER-FUND-I to post.
+              </span>
+            )}
           </div>
         </Callout>
       )}
+      </>)}
     </section>
   );
 }

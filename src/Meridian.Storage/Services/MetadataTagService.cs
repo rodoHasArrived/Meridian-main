@@ -1,3 +1,4 @@
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Meridian.Storage.Archival;
@@ -15,6 +16,7 @@ public sealed class MetadataTagService : IMetadataTagService
     private readonly SemaphoreSlim _saveLock = new(1, 1);
     private readonly Action<string, string> _writeFile;
     private readonly Func<string, string, CancellationToken, Task> _writeFileAsync;
+    private bool _hasRetainedSnapshot;
     private MetadataState _state = MetadataState.CreateEmpty();
 
     public MetadataTagService(string metadataStorePath)
@@ -30,7 +32,7 @@ public sealed class MetadataTagService : IMetadataTagService
         Action<string, string> writeFile,
         Func<string, string, CancellationToken, Task> writeFileAsync)
     {
-        _metadataStorePath = metadataStorePath ?? throw new ArgumentNullException(nameof(metadataStorePath));
+        _metadataStorePath = Path.GetFullPath(metadataStorePath ?? throw new ArgumentNullException(nameof(metadataStorePath)));
         _writeFile = writeFile ?? throw new ArgumentNullException(nameof(writeFile));
         _writeFileAsync = writeFileAsync ?? throw new ArgumentNullException(nameof(writeFileAsync));
         Volatile.Write(ref _state, Load());
@@ -290,7 +292,8 @@ public sealed class MetadataTagService : IMetadataTagService
         await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var candidate = CloneState(Volatile.Read(ref _state));
+            using var processLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            var candidate = Load();
             await SaveToDiskAsync(candidate, ct).ConfigureAwait(false);
             Volatile.Write(ref _state, candidate);
         }
@@ -313,31 +316,41 @@ public sealed class MetadataTagService : IMetadataTagService
     private MetadataState Load()
     {
         var state = MetadataState.CreateEmpty();
-
         try
         {
-            if (!File.Exists(_metadataStorePath))
-                return state;
-
-            var json = File.ReadAllText(_metadataStorePath);
+            var bytes = File.ReadAllBytes(_metadataStorePath);
+            var offset = bytes.Length >= 3 && bytes[0] == 0xef && bytes[1] == 0xbb && bytes[2] == 0xbf ? 3 : 0;
+            var json = new UTF8Encoding(false, true).GetString(bytes, offset, bytes.Length - offset);
             var data = JsonSerializer.Deserialize(json, MetadataTagServiceJsonContext.Default.MetadataStore);
+            if (data is null || data.Version != "1.0.0" || data.Records is null)
+                throw new InvalidDataException("The retained metadata snapshot has an unsupported or incomplete format.");
 
-            if (data?.Records != null)
+            foreach (var entry in data.Records)
             {
-                foreach (var kvp in data.Records)
-                {
-                    state.Records[kvp.Key] = CloneRecord(kvp.Value);
-                }
+                if (entry.Value is null || string.IsNullOrWhiteSpace(entry.Key) ||
+                    !StringComparer.OrdinalIgnoreCase.Equals(entry.Key, entry.Value.FilePath) || entry.Value.Tags is null || entry.Value.Lineage is null || entry.Value.Insights is null)
+                    throw new InvalidDataException("The retained metadata snapshot contains an inconsistent file identity.");
+                state.Records.Add(entry.Key, CloneRecord(entry.Value));
             }
+            _hasRetainedSnapshot = true;
+            return state;
         }
-        catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
+        catch (Exception exception) when ((exception is FileNotFoundException or DirectoryNotFoundException) && !_hasRetainedSnapshot)
         {
-            // Expected I/O or parse errors on load - start fresh with empty in-memory state.
-            System.Diagnostics.Trace.TraceWarning(
-                "MetadataTagService: failed to load metadata from {0}: {1}", _metadataStorePath, ex.Message);
+            return state;
         }
+        catch (Exception exception) when (exception is JsonException or DecoderFallbackException)
+        {
+            throw new InvalidDataException("The retained metadata snapshot is malformed; restore it before writing new history.", exception);
+        }
+    }
 
-        return state;
+    private Task<FileStream> AcquireMutationLeaseAsync(CancellationToken ct)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(_metadataStorePath)!);
+        // The persistent handle fences the complete read-modify-replace across instances and
+        // processes. Never remove the lock file: replacement could split ownership by inode.
+        return ArchiveAppendLock.AcquireAsync(_metadataStorePath, TimeSpan.FromSeconds(10), ct);
     }
 
     private void PersistChange(Func<MetadataState, bool> mutate)
@@ -348,9 +361,11 @@ public sealed class MetadataTagService : IMetadataTagService
 
         try
         {
-            var candidate = CloneState(Volatile.Read(ref _state));
+            using var processLease = AcquireMutationLeaseAsync(CancellationToken.None).GetAwaiter().GetResult();
+            var candidate = Load();
             if (!mutate(candidate))
             {
+                Volatile.Write(ref _state, candidate);
                 return;
             }
 
@@ -368,9 +383,11 @@ public sealed class MetadataTagService : IMetadataTagService
         await _saveLock.WaitAsync(ct).ConfigureAwait(false);
         try
         {
-            var candidate = CloneState(Volatile.Read(ref _state));
+            using var processLease = await AcquireMutationLeaseAsync(ct).ConfigureAwait(false);
+            var candidate = Load();
             if (!mutate(candidate))
             {
+                Volatile.Write(ref _state, candidate);
                 return;
             }
 
@@ -418,6 +435,7 @@ public sealed class MetadataTagService : IMetadataTagService
 
         var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), MetadataTagServiceJsonContext.Default.MetadataStore);
         _writeFile(_metadataStorePath, json);
+        _hasRetainedSnapshot = true;
     }
 
     private async Task SaveToDiskAsync(MetadataState state, CancellationToken ct)
@@ -428,6 +446,7 @@ public sealed class MetadataTagService : IMetadataTagService
 
         var json = JsonSerializer.Serialize(CreateStoreSnapshot(state), MetadataTagServiceJsonContext.Default.MetadataStore);
         await _writeFileAsync(_metadataStorePath, json, ct).ConfigureAwait(false);
+        _hasRetainedSnapshot = true;
     }
 
     private static FileMetadataRecord GetOrAddRecord(MetadataState state, string filePath)
@@ -439,17 +458,6 @@ public sealed class MetadataTagService : IMetadataTagService
         }
 
         return record;
-    }
-
-    private static MetadataState CloneState(MetadataState state)
-    {
-        var clone = MetadataState.CreateEmpty();
-        foreach (var record in state.Records)
-        {
-            clone.Records[record.Key] = CloneRecord(record.Value);
-        }
-
-        return clone;
     }
 
     private static FileMetadataRecord CloneRecord(FileMetadataRecord record)
@@ -523,8 +531,10 @@ public sealed class MetadataTagService : IMetadataTagService
 
     internal sealed class MetadataStore
     {
+        [JsonRequired]
         public string Version { get; set; } = "1.0.0";
         public DateTime UpdatedAtUtc { get; set; }
+        [JsonRequired]
         public Dictionary<string, FileMetadataRecord> Records { get; set; } = new();
     }
 }
@@ -567,11 +577,15 @@ public sealed record QualityAssessmentMetadataUpdate(
 /// </summary>
 public sealed class FileMetadataRecord
 {
+    [JsonRequired]
     public string FilePath { get; set; } = string.Empty;
     public DateTime CreatedUtc { get; set; }
     public DateTime LastModifiedUtc { get; set; }
+    [JsonRequired]
     public Dictionary<string, string> Tags { get; set; } = new();
+    [JsonRequired]
     public List<LineageEntry> Lineage { get; set; } = new();
+    [JsonRequired]
     public Dictionary<string, DataInsight> Insights { get; set; } = new();
     public double QualityScore { get; set; } = 1.0;
     public string? QualityScoredBy { get; set; }

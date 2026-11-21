@@ -1,3 +1,4 @@
+using Meridian.Contracts.Calendars;
 using System.Globalization;
 using System.Text;
 using System.Text.Json;
@@ -17,12 +18,20 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderIntegrationManifestStore store;
+    private readonly IBusinessDayCalendarSource? calendars;
     private readonly ILogger<ProviderIntegrationQuarantineReplayService> logger;
 
     public ProviderIntegrationQuarantineReplayService(
         IProviderIntegrationManifestStore store,
         ILogger<ProviderIntegrationQuarantineReplayService>? logger = null)
+        : this(store, logger, null) { }
+
+    public ProviderIntegrationQuarantineReplayService(
+        IProviderIntegrationManifestStore store,
+        ILogger<ProviderIntegrationQuarantineReplayService>? logger,
+        IBusinessDayCalendarSource? calendars = null)
     {
+        this.calendars = calendars;
         this.store = store ?? throw new ArgumentNullException(nameof(store));
         this.logger = logger ?? NullLogger<ProviderIntegrationQuarantineReplayService>.Instance;
     }
@@ -216,7 +225,7 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
                 }
             }
 
-            ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues);
+            ProviderIntegrationMappedRecordValidation.AddValidationIssues(request.Capability, mappedRecord, rowIssues, calendars);
             allIssues.AddRange(rowIssues);
             var mappedElement = ToJsonElement(mappedRecord);
             var sourceRecordId = ProviderIntegrationMappedRecordIdentity.ResolveSourceRecordId(request.Capability, mappedRecord);
@@ -299,6 +308,12 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
         ProviderIntegrationSyncRunDto sourceSyncRun,
         CancellationToken ct)
     {
+        if (sourceSyncRun.CompletedAt is null || sourceSyncRun.CompletedAt < sourceSyncRun.StartedAt ||
+            sourceSyncRun.Status is ProviderIntegrationProcessingStatusDto.Received or ProviderIntegrationProcessingStatusDto.Parsed or
+                ProviderIntegrationProcessingStatusDto.Mapped or ProviderIntegrationProcessingStatusDto.Blocked)
+        {
+            throw new InvalidOperationException("The retained provider response is incomplete; fetch complete source evidence before replay.");
+        }
         if (sourceSyncRun.ManifestReference is not { } applied ||
             sourceSyncRun.OriginalManifestReference is not { } original ||
             string.IsNullOrWhiteSpace(sourceSyncRun.RawPayloadId))
@@ -327,6 +342,12 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
             throw new InvalidOperationException("The source raw payload and sync run have inconsistent manifest provenance or replay scope.");
         }
 
+        if (ProviderIntegrationHttpCompleteness.IsRetainedIncomplete(payload.RequestMetadata) ||
+            sourceSyncRun.Issues.Any(issue => issue.Code is "http.response.incomplete" or "http.status.failed"))
+        {
+            throw new InvalidOperationException("The retained provider response is incomplete; fetch complete source evidence before replay.");
+        }
+
         var appliedOriginal = ProviderIntegrationManifestIdentity.Matches(applied, original);
         var validLineage = sourceSyncRun.ReplayMode switch
         {
@@ -345,6 +366,9 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
         var originalManifest = appliedOriginal
             ? appliedManifest
             : await ResolveManifestAsync(scopedStore, original, ct).ConfigureAwait(false);
+        if (!await ProviderIntegrationRunCompleteness.HasCompletePageChainAsync(scopedStore, sourceSyncRun,
+                appliedManifest, payload, [payload.PayloadId], ct).ConfigureAwait(false))
+            throw new InvalidOperationException("The retained provider response is incomplete; fetch complete source evidence before replay.");
         if (!StringComparer.Ordinal.Equals(appliedManifest.ProviderId, sourceSyncRun.ProviderId) ||
             !StringComparer.Ordinal.Equals(originalManifest.ProviderId, sourceSyncRun.ProviderId))
         {
@@ -557,6 +581,8 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
             "uppercase" or "trimuppercase" => value.Trim().ToUpperInvariant(),
             "lowercase" or "trimlowercase" => value.Trim().ToLowerInvariant(),
             "decimal" or "decimalparsing" => ParseDecimal(value, mapping.TargetField, issues),
+            "boolean" => ProviderIntegrationFieldTransforms.ParseBoolean(value, mapping.TargetField, issues),
+            "json" => ProviderIntegrationFieldTransforms.ParseJson(value, mapping.TargetField, issues),
             "signedamount" => ParseSignedAmount(
                 value,
                 mapping,
@@ -652,6 +678,7 @@ public sealed partial class ProviderIntegrationQuarantineReplayService
         {
             decimal decimalValue => JsonValue.Create(decimalValue),
             bool boolValue => JsonValue.Create(boolValue),
+            JsonNode nodeValue => nodeValue.DeepClone(),
             _ => JsonValue.Create(value.ToString())
         };
     }

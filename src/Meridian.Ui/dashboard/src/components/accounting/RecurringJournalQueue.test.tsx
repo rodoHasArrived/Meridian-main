@@ -37,7 +37,7 @@ it("shows definition changes and locked period ownership and governed reopen wit
   expect(await screen.findByText(/DefinitionChanged · Approval: Not submitted/)).toBeInTheDocument();
   expect(screen.getByText(/Template version no longer matches/)).toBeInTheDocument();
   expect(screen.getByText("Period lock owner: controller-a")).toBeInTheDocument();
-  expect(screen.getByText(/Governed reopen: Accounting/)).toBeInTheDocument();
+  expect(screen.getByText(/Period reopen: Accounting/)).toBeInTheDocument();
   expect(screen.queryByRole("button", { name: "Review retained draft" })).not.toBeInTheDocument();
 });
 
@@ -46,7 +46,7 @@ it("refuses unavailable evidence as an empty queue and retries the shared read",
   render(<RecurringJournalQueue scope={scope} availableDraftIds={[]} onSelectDraft={vi.fn()} />);
   expect(await screen.findByRole("alert")).toHaveTextContent("Durable occurrence store unavailable");
   expect(screen.queryByText(/No retained recurring occurrences/)).not.toBeInTheDocument();
-  await userEvent.click(screen.getByRole("button", { name: "Retry recurring queue" }));
+  await userEvent.click(screen.getByRole("button", { name: "Retry loading recurring queue" }));
   expect(await screen.findByText("rent · v3")).toBeInTheDocument();
 });
 
@@ -65,4 +65,17 @@ it("does not request unscoped data", async () => {
   render(<RecurringJournalQueue scope={null} availableDraftIds={[]} onSelectDraft={vi.fn()} />);
   await waitFor(() => expect(screen.getByText(/Select a fund, ledger book and entity/)).toBeInTheDocument());
   expect(getRecurringJournalQueue).not.toHaveBeenCalled();
+});
+
+it("shows a calculated occurrence with nothing to post as a note, not a blocker", async () => {
+  vi.mocked(getRecurringJournalQueue).mockResolvedValue({ ...queue, occurrences: [{ ...queue.occurrences[0],
+    state: "NoDraftRequired", journalEntryId: null, approvalStatus: null,
+    blockers: ["Cumulative performance fee 0.00 needs no further accrual."]
+  }] });
+  render(<RecurringJournalQueue scope={scope} availableDraftIds={[]} onSelectDraft={vi.fn()} />);
+  expect(await screen.findByText("Nothing to post")).toBeInTheDocument();
+  const note = screen.getByText(/needs no further accrual/);
+  expect(note.closest("ul")).toHaveClass("text-muted-foreground");
+  expect(note.closest("ul")).not.toHaveClass("text-danger");
+  expect(screen.queryByText(/Draft /)).not.toBeInTheDocument();
 });

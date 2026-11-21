@@ -42,7 +42,7 @@ class DocumentationWorkflowTests(unittest.TestCase):
 
     def gate_result(self, result: str | None) -> subprocess.CompletedProcess:
         step, = self.gate["steps"]
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             env = {**os.environ, "GITHUB_STEP_SUMMARY": str(Path(directory) / "summary.md")}
             env.pop("DOCS_RESULT", None)
             if result is not None:
@@ -52,18 +52,11 @@ class DocumentationWorkflowTests(unittest.TestCase):
                 env=env, capture_output=True, text=True, timeout=10, check=False,
             )
 
-    def test_existing_check_names_and_events_are_retained(self):
+    def test_manual_refresh_retains_check_names(self):
         self.assertEqual(set(self.jobs), {"validate-docs", "regenerate-docs"})
         for name, job in self.jobs.items():
             self.assertEqual(job.get("name", name), name)
-        events = self.workflow["on"]
-        self.assertEqual(set(events), {"pull_request", "push", "merge_group", "workflow_dispatch"})
-        self.assertEqual(events["pull_request"]["types"], ["opened", "synchronize", "reopened"])
-        self.assertEqual(events["push"]["branches"], ["main"])
-        for event in events.values():
-            if isinstance(event, dict):
-                self.assertNotIn("paths", event)
-                self.assertNotIn("paths-ignore", event)
+        self.assertEqual(set(self.workflow["on"]), {"workflow_dispatch"})
 
     def test_same_run_gate_always_evaluates_the_producer(self):
         self.assertEqual(self.gate["needs"], "regenerate-docs")
@@ -118,14 +111,15 @@ class DocumentationWorkflowTests(unittest.TestCase):
             self.assertNotIn("continue-on-error", job)
             for step in job["steps"]:
                 self.assertNotIn("continue-on-error", step)
+
+    def test_manual_refresh_runs_every_producer_unconditionally(self):
+        self.assertNotIn("env", self.producer)
         for step in self.producer["steps"]:
             if "run" in step:
                 self.assertNotIn("if", step)
 
     def test_dashboard_regression_and_repair_artifact_are_retained(self):
-        delta = next(c for c in self.commands if "baseline_available" in c)
-        self.assertIn("delta < -10.0", delta)
-        self.assertIn("raise SystemExit", delta)
+        self.assertIn("python3 build/scripts/ci/check-doc-health-delta.py", self.commands)
         upload, = [s for s in self.producer["steps"] if s.get("uses", "").startswith("actions/upload-artifact@")]
         self.assertEqual(upload["if"], "always()")
         self.assertEqual(upload["with"]["name"], "documentation-repair-${{ github.run_id }}-${{ github.run_attempt }}")

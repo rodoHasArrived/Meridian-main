@@ -11,6 +11,25 @@ namespace Meridian.Ui.Tests.Services;
 public sealed class BackfillProviderConfigServiceTests
 {
     [Fact]
+    public async Task SharedMetadataUsesAuthoritativeVendorCeilings()
+    {
+        var metadata = await CreateService().GetProviderMetadataAsync();
+        metadata.Single(provider => provider.ProviderId == "tiingo").DefaultRateLimitPerHour.Should().Be(50);
+        metadata.Single(provider => provider.ProviderId == "polygon").Tiers
+            .Should().Contain(tier => tier.Id == "starter" && tier.RateLimitPerMinute == 100);
+        metadata.Should().Contain(provider => provider.ProviderId == "twelvedata");
+        metadata.Should().Contain(provider => provider.ProviderId == "openfigi");
+    }
+
+    [Fact]
+    public void SharedOptionValidationRefusesAnIncreaseAboveTheDeclaredTier()
+    {
+        var validate = () => Meridian.Ui.Services.Services.ConfigServiceBase.ValidateProviderOptions("polygon",
+            new BackfillProviderOptionsDto { TierId = "free", Priority = 3, RateLimitPerMinute = 6 });
+        validate.Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public void Instance_ReturnsNonNullSingleton()
     {
         var instance = BackfillProviderConfigService.Instance;
@@ -183,12 +202,26 @@ public sealed class BackfillProviderConfigServiceTests
             Yahoo = new BackfillProviderOptionsDto { Enabled = false },
             AlphaVantage = new BackfillProviderOptionsDto { Enabled = false },
             NasdaqDataLink = new BackfillProviderOptionsDto { Enabled = false },
+            TwelveData = new BackfillProviderOptionsDto { Enabled = false },
+            OpenFigi = new BackfillProviderOptionsDto { Enabled = false },
         };
 
         var plan = await service.GenerateDryRunPlanAsync(config, ["SPY"]);
 
         plan.ValidationErrors.Should().NotBeEmpty();
         plan.ValidationErrors.Should().Contain(e => e.Contains("No enabled providers"));
+    }
+
+    [Fact]
+    public async Task FallbackChainNeverIncludesReferenceOnlyOpenFigi()
+    {
+        var service = CreateService();
+        var chain = await service.GetFallbackChainAsync(new BackfillProvidersConfigDto
+        {
+            OpenFigi = new BackfillProviderOptionsDto { Enabled = true, Priority = 0 }
+        });
+        chain.Should().NotBeEmpty();
+        chain.Should().NotContain(provider => provider.Metadata.ProviderId == "openfigi");
     }
 
     [Fact]

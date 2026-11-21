@@ -37,7 +37,10 @@ public sealed class SecurityValidationService : ISecurityValidationService
         SecurityIdentifierKind.Wkn,
         SecurityIdentifierKind.Valoren,
         SecurityIdentifierKind.PermTicker,
-        SecurityIdentifierKind.Ric
+        SecurityIdentifierKind.Ric,
+        // A UTI names exactly one reported trade. UPI and RED codes are shared reference data and
+        // deliberately stay out (SecurityIdentifierNormalizer.IsSharedReferenceKind).
+        SecurityIdentifierKind.Uti
     ];
 
     private readonly ISecurityMasterStore _store;
@@ -245,9 +248,10 @@ public sealed class SecurityValidationService : ISecurityValidationService
 
     /// <summary>
     /// Every terms payload must declare its family (<see cref="SecurityTermsEnvelope.FormatKey"/>) so
-    /// readers never classify it by shape (ADR-024). A missing tag is a warning while the stored
-    /// backlog is being backfilled; a declared tag this node does not know is an error, because the
-    /// projection store refuses to persist it.
+    /// readers never classify it by shape (ADR-024). A missing tag is an error: live readers refuse an
+    /// untagged payload, the projection store refuses to persist it, and migration 068's constraint
+    /// refuses it in storage (amendment 2026-11-13 step 5). A declared tag this node does not know is
+    /// an error, because the projection store refuses to persist it.
     /// </summary>
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateTermsFormat(SecurityProjectionRecord record)
     {
@@ -259,16 +263,15 @@ public sealed class SecurityValidationService : ISecurityValidationService
         var declared = SecurityTermsEnvelope.GetDeclaredFormat(record.AssetSpecificTerms);
         if (declared is null)
         {
-            var inferred = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
             return
             [
                 SecurityValidationIssueFactory.Create(
-                    SecurityValidationSeverityDto.Warning,
+                    SecurityValidationSeverityDto.Error,
                     "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING",
                     "Asset-specific terms format is missing",
-                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} is absent, so the payload family is inferred by shape as '{inferred}'; every stored payload should declare its family explicitly.",
+                    $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} is absent; this node no longer infers the payload family by shape, so readers and the projection store refuse the payload.",
                     [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
-                    $"Re-persist the payload through a writer that stamps {SecurityTermsEnvelope.FormatKey} = '{inferred}' (SecurityTermsEnvelope.StampFlat for flat terms).")
+                    $"Re-persist the payload through a writer that declares {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' (SecurityTermsEnvelope.StampDeclaredFormat or StampFlat; '{SecurityTermsFormats.Economic}' is not accepted on writes), or apply migration 068 to stored rows.")
             ];
         }
 
@@ -282,7 +285,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     "Asset-specific terms format is unknown",
                     $"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey} '{declared}' is not a terms format this node understands; the projection store refuses to persist it.",
                     [$"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}"],
-                    $"Declare one of {string.Join(", ", SecurityTermsFormats.All)} or upgrade this node before the record is used downstream.")
+                    $"Declare {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' (SecurityTermsEnvelope.StampDeclaredFormat or StampFlat; '{SecurityTermsFormats.Economic}' is not accepted on writes), or upgrade this node before the record is used downstream.")
             ];
         }
 
@@ -445,6 +448,28 @@ public sealed class SecurityValidationService : ISecurityValidationService
                     $"Identifier '{identifier.Value}' uses OCC option syntax but the record asset class is '{record.AssetClass}'.",
                     [$"identifiers.{identifier.Kind}", "assetClass"],
                     "Move the OCC symbol to the listed option or warrant contract, or replace it with the canonical identifier for this asset class."));
+            }
+
+            if (!SecurityAssetClassCatalog.MayCarryIdentifierKind(record.AssetClass, identifier.Kind))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Warning,
+                    "SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH",
+                    "Regulatory derivatives identifier is attached to an asset class that does not report it",
+                    $"{identifier.Kind} '{identifier.Value}' is a regulatory derivatives-reporting identifier, but the record asset class is '{record.AssetClass}'. Permitted classes: {string.Join(", ", (SecurityAssetClassCatalog.GetPermittedAssetClasses(identifier.Kind) ?? new HashSet<string>()).Order(StringComparer.Ordinal))}.",
+                    [$"identifiers.{identifier.Kind}", "assetClass"],
+                    "Move the identifier to the OTC derivative contract it reports, or record it as an alias with an explanatory reason."));
+            }
+
+            if (identifier.IsPrimary && SecurityIdentifierNormalizer.IsSharedReferenceKind(identifier.Kind))
+            {
+                issues.Add(SecurityValidationIssueFactory.Create(
+                    SecurityValidationSeverityDto.Error,
+                    "SM_SHARED_IDENTIFIER_NOT_PRIMARY",
+                    "Shared reference identifier cannot be the primary identifier",
+                    $"{identifier.Kind} '{identifier.Value}' names a product or reference entity shared by many contracts, so it cannot identify this record uniquely.",
+                    [$"identifiers.{identifier.Kind}", "identifiers.isPrimary"],
+                    "Mark a contract-level identifier (UTI, internal code or provider symbol) as primary and keep the UPI/RED code as a secondary identifier."));
             }
 
             if (!SecurityIdentifierNormalizer.TryValidateFormat(identifier.Kind, identifier.Value, out var formatMessage))
@@ -809,7 +834,11 @@ public sealed class SecurityValidationService : ISecurityValidationService
             or SecurityIdentifierKind.Valoren
             or SecurityIdentifierKind.Cik
             or SecurityIdentifierKind.LoanX
-            or SecurityIdentifierKind.Clip;
+            or SecurityIdentifierKind.Clip
+            or SecurityIdentifierKind.Uti
+            or SecurityIdentifierKind.Upi
+            or SecurityIdentifierKind.MarkitRedEntity
+            or SecurityIdentifierKind.MarkitRedPair;
 
     private static SecurityValidationReportDto BuildReport(
         Guid? securityId,

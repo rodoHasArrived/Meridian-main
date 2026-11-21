@@ -10,7 +10,7 @@ from PIL import Image
 
 class ScreenshotDiffReportTests(unittest.TestCase):
     def test_classifies_noise_review_and_blocking(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             current_root = root / "current"
             baseline_root = root / "baseline"
@@ -81,7 +81,7 @@ class ScreenshotDiffReportTests(unittest.TestCase):
             self.assertEqual(0, payload["counts"]["non-blocking-noise"])
 
     def test_allows_new_screenshot_files_without_baseline(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             current_root = root / "current"
             baseline_root = root / "baseline"

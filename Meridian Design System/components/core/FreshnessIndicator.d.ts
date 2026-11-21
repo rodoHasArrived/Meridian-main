@@ -27,7 +27,7 @@ export interface FreshnessIndicatorProps {
   tickMs?: number;
   className?: string;
 }
-export declare function FreshnessIndicator(props: FreshnessIndicatorProps): JSX.Element;
+export declare function FreshnessIndicator(props: FreshnessIndicatorProps): React.JSX.Element;
 
 export interface ConnectionDotProps {
   /** @default "live" */
@@ -37,4 +37,4 @@ export interface ConnectionDotProps {
   /** Hover title (falls back to the status word). */
   title?: string;
 }
-export declare function ConnectionDot(props: ConnectionDotProps): JSX.Element;
+export declare function ConnectionDot(props: ConnectionDotProps): React.JSX.Element;

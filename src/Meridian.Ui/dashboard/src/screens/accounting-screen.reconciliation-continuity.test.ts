@@ -150,6 +150,24 @@ describe("reconciliation selection continuity", () => {
     expect(result.current.rows[0].ownerLabel).not.toBe("old-owner");
   });
 
+  it("drops a bulk update that lands after the operator changed scope (C2)", async () => {
+    const api = services();
+    const otherItem = { ...item, breakId: "break-b", runId: "run-b" } as ReconciliationBreakQueueItem;
+    api.getBreakQueue = vi.fn().mockResolvedValueOnce([item]).mockResolvedValueOnce([otherItem]);
+    const { result, rerender } = renderHook(({ scope }) => useAccountingReconciliationViewModel(data, "exceptions", api, null, null, selection(scope)), { initialProps: { scope: "scope-a" } });
+    await waitFor(() => expect(result.current.rows.map((row) => row.breakId)).toEqual(["break-a"]));
+
+    const applyBulk = result.current.beginBreakQueueUpdate();
+    rerender({ scope: "scope-b" });
+    await waitFor(() => expect(result.current.rows.map((row) => row.breakId)).toEqual(["break-b"]));
+    act(() => applyBulk([{ ...item, assignedTo: "bulk-owner" }]));
+    expect(result.current.rows.map((row) => row.breakId)).toEqual(["break-b"]);
+
+    // In the scope it started in, the same update applies.
+    act(() => result.current.beginBreakQueueUpdate()([{ ...otherItem, assignedTo: "bulk-owner" }]));
+    expect(result.current.rows[0].ownerLabel).toContain("bulk-owner");
+  });
+
   it("disables actions on retained rows after a same-scope refresh fails", async () => {
     const api = services();
     api.getBreakQueue = vi.fn().mockResolvedValueOnce([item]).mockRejectedValueOnce(new Error("unavailable"));

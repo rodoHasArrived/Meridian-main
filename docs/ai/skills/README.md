@@ -100,7 +100,10 @@ Shared grounding files:
 
 Portable packages are mirrored under [`.agents/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.agents/skills)
 for Agent Skills-compatible hosts and [`.claude/skills/`](https://github.com/rodoHasArrived/Meridian-main/blob/main/.claude/skills)
-for Claude-compatible hosts. Keep both mirrors aligned when shared skill behavior changes, but keep Codex-only package evals, scripts, profile wiring, and route rules in `.codex/skills/`.
+for Claude-compatible hosts. `.claude/skills/` is canonical: edit it, then run
+`python build/scripts/ai/generate-guidance.py --write` to regenerate `.agents/skills/` byte-for-byte
+(only the shared-context host header and `skills_provider.py` differ). `check-ai-inventory.py` reports
+any mirror drift. Keep Codex-only package evals, scripts, profile wiring, and route rules in `.codex/skills/`.
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |

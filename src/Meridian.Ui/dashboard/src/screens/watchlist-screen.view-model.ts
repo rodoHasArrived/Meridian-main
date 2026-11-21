@@ -2,9 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import type { ApiRequestOptions } from "@/lib/api";
 import { describeApiError, isAbortError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { formatRelativeAge as formatRelative } from "@/lib/time";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import type { MetricSnapshot, QuotesSnapshotItem, QuotesSnapshotResponse, SymbolRecord, SymbolStatistics } from "@/types";
+import { formatCount as formatCountValue, formatDecimal, formatNumber } from "@/lib/format";
 
 export type WatchlistBadgeVariant = "default" | "outline" | "success" | "warning" | "danger" | "paper" | "live" | "research";
 export type WatchlistListState = "loading" | "error" | "empty" | "ready";
@@ -214,9 +216,6 @@ export interface WatchlistScreenViewModel {
   addButtonAriaLabel: string;
   addDisabled: boolean;
   addDisabledReason: string | null;
-  refreshButtonLabel: string;
-  refreshButtonAriaLabel: string;
-  refreshDisabled: boolean;
   toolbarItems: Array<{ id: string; label: string; value: string; active?: boolean }>;
   quoteStatusLabel: string;
   quoteStatusTone: WatchlistQuoteStatusTone;
@@ -331,6 +330,8 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
   useEffect(() => {
     void refresh();
   }, [refresh]);
+  // The header Refresh re-reads the symbol list; the list error state keeps its own Retry.
+  useOnGlobalRefresh(refresh);
 
   const addPendingSymbol = useCallback(async (event?: { preventDefault: () => void }) => {
     event?.preventDefault();
@@ -684,9 +685,6 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
         : `Add ${pendingSymbols[0]} to watchlist`,
     addDisabled: submitting || addValidation !== null,
     addDisabledReason: submitting ? "Symbol add request is already running." : addValidation,
-    refreshButtonLabel: refreshing ? "Refreshing…" : "Refresh",
-    refreshButtonAriaLabel: refreshing ? "Refreshing watchlist" : "Refresh watchlist",
-    refreshDisabled: refreshing,
     toolbarItems: buildToolbarItems(stats, rows.length, listState),
     quoteStatusLabel: quoteStatus.label,
     quoteStatusTone: quoteStatus.tone,
@@ -704,7 +702,7 @@ export function useWatchlistScreenViewModel(api: WatchlistApi): WatchlistScreenV
     selectedDetail: buildWatchlistSelectedDetail(selectedRow),
     detailPanelId: "watchlist-selected-symbol-detail",
     detailPanelTitle: "Selected symbol inspector",
-    detailPanelDescription: "Inspect the active watchlist row without leaving the Data lane.",
+    detailPanelDescription: "Inspect the active watchlist row without leaving Data.",
     detailPanelEmptyText: "No symbol is selected. Add a symbol or wait for the watchlist to load.",
     detailPanelAriaLabel: "Selected watchlist symbol detail",
     selectSymbol,
@@ -900,8 +898,8 @@ export function buildWatchlistSelectedDetail(
   const description = !row.hasQuote
     ? "No live quote has been returned for this symbol yet. Check provider setup or refresh prices after the subscription settles."
     : row.quoteStale
-      ? "The latest quote is stale. Refresh prices or verify provider connectivity before using this row as current evidence."
-      : "Live quote, provider posture, and collection evidence are ready for operator review.";
+      ? "The latest quote is stale. Fetch latest prices or verify provider connectivity before using this row as current evidence."
+      : "Live quote, provider health, and collection evidence are ready for operator review.";
 
   return {
     symbol: row.symbol,
@@ -1265,14 +1263,15 @@ export function buildQuoteRefreshCommand(
   rowCount: number,
   refreshing: boolean
 ): WatchlistQuoteRefreshCommandState {
-  const label = refreshing ? "Refreshing prices…" : "Refresh prices";
+  // Asks the market-data provider for new quotes on demand, so it is named for that work.
+  const label = refreshing ? "Fetching prices…" : "Fetch latest prices";
 
   if (refreshing) {
     return {
       label,
-      ariaLabel: "Refreshing live prices",
+      ariaLabel: "Fetching latest live prices",
       disabled: true,
-      disabledReason: "Live price refresh is already running.",
+      disabledReason: "Live prices are already being fetched.",
       busy: true
     };
   }
@@ -1280,9 +1279,9 @@ export function buildQuoteRefreshCommand(
   if (listState === "loading") {
     return {
       label,
-      ariaLabel: "Refresh live prices",
+      ariaLabel: "Fetch latest live prices",
       disabled: true,
-      disabledReason: "Wait for symbols to load before refreshing live prices.",
+      disabledReason: "Wait for symbols to load before fetching live prices.",
       busy: false
     };
   }
@@ -1290,9 +1289,9 @@ export function buildQuoteRefreshCommand(
   if (listState === "error") {
     return {
       label,
-      ariaLabel: "Refresh live prices",
+      ariaLabel: "Fetch latest live prices",
       disabled: true,
-      disabledReason: "Resolve the symbol list error before refreshing live prices.",
+      disabledReason: "Resolve the symbol list error before fetching live prices.",
       busy: false
     };
   }
@@ -1300,16 +1299,16 @@ export function buildQuoteRefreshCommand(
   if (listState === "empty" || rowCount === 0) {
     return {
       label,
-      ariaLabel: "Refresh live prices",
+      ariaLabel: "Fetch latest live prices",
       disabled: true,
-      disabledReason: "Add a symbol before refreshing live prices.",
+      disabledReason: "Add a symbol before fetching live prices.",
       busy: false
     };
   }
 
   return {
     label,
-    ariaLabel: "Refresh live prices",
+    ariaLabel: "Fetch latest live prices",
     disabled: false,
     disabledReason: null,
     busy: false
@@ -1354,7 +1353,7 @@ function stableSymbolId(value: string): string {
 }
 
 function formatCount(value: number): string {
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatPrice(value: number | null | undefined): string {
@@ -1362,10 +1361,7 @@ function formatPrice(value: number | null | undefined): string {
     return WATCHLIST_EMPTY_VALUE;
   }
 
-  return value.toLocaleString(undefined, {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4
-  });
+  return formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 });
 }
 
 function formatSize(value: number | null | undefined): string {
@@ -1373,7 +1369,7 @@ function formatSize(value: number | null | undefined): string {
     return WATCHLIST_EMPTY_VALUE;
   }
 
-  return value.toLocaleString();
+  return formatCountValue(value);
 }
 
 function formatPriceSize(price: number | null | undefined, size: number | null | undefined): string {
@@ -1387,10 +1383,10 @@ function formatSpread(spread: number | null | undefined, mid: number | null | un
 
   if (mid && mid > 0) {
     const basisPoints = (spread / mid) * 10_000;
-    return `${spread.toFixed(2)} (${basisPoints.toFixed(1)} bps)`;
+    return `${formatDecimal(spread, 2)} (${formatDecimal(basisPoints, 1)} bps)`;
   }
 
-  return spread.toFixed(2);
+  return formatDecimal(spread, 2);
 }
 
 function formatChange(value: number | null | undefined): string {
@@ -1399,7 +1395,7 @@ function formatChange(value: number | null | undefined): string {
   }
 
   const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 4 })}`;
 }
 
 function formatChangePercent(value: number | null | undefined): string {
@@ -1408,7 +1404,7 @@ function formatChangePercent(value: number | null | undefined): string {
   }
 
   const sign = value > 0 ? "+" : "";
-  return `${sign}${value.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
+  return `${sign}${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}%`;
 }
 
 function formatDayRange(high: number | null | undefined, low: number | null | undefined): string {

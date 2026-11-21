@@ -6,6 +6,38 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class DataBrowserViewModelTests
 {
     [Fact]
+    public void BuildCsv_QuotesSpecialCharactersAndUsesInvariantNumbers()
+    {
+        // Unescaped fields let a venue with a comma or quote shift every later column, and a
+        // culture with a comma decimal separator split the price across two columns.
+        var previous = System.Globalization.CultureInfo.CurrentCulture;
+        System.Globalization.CultureInfo.CurrentCulture = new System.Globalization.CultureInfo("de-DE");
+        try
+        {
+            var csv = DataBrowserViewModel.BuildCsv(
+            [
+                new DataBrowserRecord
+                {
+                    Timestamp = new DateTime(2026, 11, 9, 14, 30, 0, DateTimeKind.Utc),
+                    Symbol = "BRK.B",
+                    DataType = "Trades",
+                    Venue = "Venue, \"A\"",
+                    Price = 412.5,
+                    Size = 100,
+                },
+            ]);
+
+            var lines = csv.Split(Environment.NewLine, StringSplitOptions.RemoveEmptyEntries);
+            lines.Should().HaveCount(2);
+            lines[1].Should().Be("2026-11-09T14:30:00.0000000Z,BRK.B,Trades,\"Venue, \"\"A\"\"\",412.5,100");
+        }
+        finally
+        {
+            System.Globalization.CultureInfo.CurrentCulture = previous;
+        }
+    }
+
+    [Fact]
     public void SearchMiss_ShowsRecoveryStateAndResetRestoresRows()
     {
         WpfTestThread.Run(() =>

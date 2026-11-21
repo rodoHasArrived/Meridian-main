@@ -119,7 +119,7 @@ describe("trading shell loading state", () => {
       routeLabel: "Risk guardrails",
       chips: [
         { label: "Route", value: "/trading/risk" },
-        { label: "Workstream", value: "Risk guardrails" },
+        { label: "Area", value: "Risk guardrails" },
         { label: "Snapshots", value: "Pending" }
       ]
     });
@@ -420,7 +420,7 @@ describe("trading blotter view model", () => {
     expect(state.hasFills).toBe(true);
     expect(state.cancelAllDisabled).toBe(false);
     expect(state.cancelAllDisabledReason).toBeNull();
-    expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open orders");
+    expect(state.cancelAllAriaLabel).toBe("Cancel all 1 open order");
     expect(state.positionRows[1]).toMatchObject({
       id: "tsla-short-1",
       isSelected: true,
@@ -437,10 +437,15 @@ describe("trading blotter view model", () => {
     expect(state.fillRows[0]).toMatchObject({
       id: "FL-1",
       isSelected: true,
-      detailPanelId: "trading-fill-detail",
-      ariaExpanded: true,
+      detailPanelId: "trading-execution-detail",
+      // Orders and fills share one pane; it shows the open order until a fill is selected.
+      ariaExpanded: false,
       selectAriaLabel: "Inspect fill FL-1"
     });
+    expect(state.orderRows[0]).toMatchObject({ detailPanelId: "trading-execution-detail", ariaExpanded: true });
+    expect(state.selectedExecutionKind).toBe("order");
+    expect(state.selectedExecution).toBe(state.selectedOrder);
+    expect(state.executionDetailId).toBe("trading-execution-detail");
     expect(state.selectedPosition).toEqual(expect.objectContaining({
       title: "TSLA",
       statusLabel: "Review required",
@@ -461,7 +466,30 @@ describe("trading blotter view model", () => {
       ariaLabel: "Fill detail for FL-1"
     }));
     expect(state.selectedFill?.fields).toContainEqual({ label: "Provider", value: "Interactive Brokers", tone: "muted" });
+    expect(state.selectedPosition).toMatchObject({ objectType: "Position", shownInRow: ["Side", "Mark readiness"] });
+    expect(state.selectedOrder).toMatchObject({ objectType: "Order", shownInRow: ["Symbol", "Side", "Type", "Status", "Submitted"] });
+    expect(state.selectedFill).toMatchObject({ objectType: "Fill" });
     expect(state.fillRows[0].cells).toEqual(["FL-1", "PO-0", "NVDA", "Sell", "10", "948.20", "NASDAQ", "09:40:10 ET"]);
+  });
+
+  it("keys the shared order and fill pane to the table selected last", () => {
+    const fillSelected = buildTradingBlotterViewModel({ data: tradingWorkspace, lastExecutionKind: "fill" });
+
+    expect(fillSelected.selectedExecutionKind).toBe("fill");
+    expect(fillSelected.selectedExecution).toBe(fillSelected.selectedFill);
+    expect(fillSelected.fillRows[0]?.ariaExpanded).toBe(true);
+    expect(fillSelected.orderRows[0]?.ariaExpanded).toBe(false);
+
+    // With no open orders the pane falls back to the latest fill, and the reverse.
+    const fillsOnly = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, openOrders: [] }, lastExecutionKind: "order" });
+    expect(fillsOnly.selectedExecutionKind).toBe("fill");
+    expect(fillsOnly.selectedExecution?.objectType).toBe("Fill");
+    const ordersOnly = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, fills: [] }, lastExecutionKind: "fill" });
+    expect(ordersOnly.selectedExecutionKind).toBe("order");
+
+    const empty = buildTradingBlotterViewModel({ data: { ...tradingWorkspace, openOrders: [], fills: [] } });
+    expect(empty.selectedExecution).toBeNull();
+    expect(empty.executionEmptyText).toBe("No open orders or recent fills in this session.");
   });
 
   it("keeps unavailable and empty states in the view model", () => {
@@ -500,11 +528,11 @@ describe("execution evidence view model", () => {
       errorText: null
     });
 
-    expect(state.controlsPanel?.statusLabel).toBe("Breaker Closed");
+    expect(state.controlsPanel?.statusLabel).toBe("Trading allowed · breaker closed");
     expect(state.controlsPanel?.ariaLabel).toContain("1 symbol limit");
     expect(state.controlsPanel?.rows).toContainEqual({ id: "default-limit", label: "Default limit", value: "5000" });
     expect(state.controlsPanel?.rows).toContainEqual({ id: "symbol-limits", label: "Symbol limits", value: "AAPL=2500" });
-    expect(state.controlsPanel?.rows).toContainEqual({ id: "active-overrides", label: "Active overrides", value: "BypassOrderControls (AAPL)" });
+    expect(state.controlsPanel?.rows).toContainEqual({ id: "active-overrides", label: "Active overrides", value: "Bypass order controls (AAPL)" });
     expect(state.auditRows[0]).toMatchObject({
       id: "audit-1",
       action: "Paper session replay",
@@ -514,7 +542,7 @@ describe("execution evidence view model", () => {
       technicalMetadataText: "2026-01-01T00:20:00Z · session sess-1"
     });
     expect(state.auditRows[0].ariaLabel).toContain("Replay matched current state");
-    expect(state.statusAnnouncement).toBe("Breaker Closed. 1 audit entry loaded.");
+    expect(state.statusAnnouncement).toBe("Trading allowed · breaker closed. 1 audit entry loaded.");
   });
 
   it("derives loading, empty, and error copy without raw component branching", () => {
@@ -527,7 +555,7 @@ describe("execution evidence view model", () => {
 
     expect(loading.auditEmptyText).toBe("Loading execution audit entries...");
     expect(loading.controlsEmptyText).toBe("Loading execution controls snapshot...");
-    expect(loading.refreshButtonLabel).toBe("Refreshing...");
+    expect(loading.refreshButtonLabel).toBe("Retrying...");
     expect(loading.refreshBusyLabel).toBe("Refreshing evidence...");
     expect(loading.refreshDisabled).toBe(true);
     expect(loading.refreshDisabledReason).toBe("Execution evidence refresh is already running.");
@@ -833,7 +861,7 @@ describe("trading readiness view model", () => {
       expect.objectContaining({ id: "paper", label: "Paper", value: "Not paper ready", level: "review" }),
       expect.objectContaining({ id: "live", label: "Live", value: "Not live ready", level: "review", ariaLabel: "Live operation readiness: Not live ready" }),
       expect.objectContaining({ id: "brokerage", label: "Brokerage", value: "Failed stale", level: "atRisk" }),
-      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 16:05 UTC" })
+      expect.objectContaining({ id: "as-of", label: "As of", value: "Apr 26, 2026, 16:05 UTC", level: "review", ariaLabel: "Readiness snapshot timestamp: Apr 26, 2026, 16:05 UTC" })
     ]);
     expect(state.workItems).toHaveLength(1);
     expect(state.warnings).toEqual(["Portfolio snapshot failed."]);
@@ -868,7 +896,7 @@ describe("trading readiness view model", () => {
         ariaLabel: "Trading readiness warning: Portfolio snapshot failed."
       }
     ]);
-    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 16:05 UTC.");
+    expect(state.statusAnnouncement).toBe("Trading readiness blocked as of Apr 26, 2026, 16:05 UTC.");
   });
 
   it("surfaces explicit live-readiness blockers in summary rows", () => {
@@ -993,8 +1021,8 @@ describe("trading readiness view model", () => {
       errorText: null
     });
 
-    expect(refreshing.refreshButtonLabel).toBe("Refreshing...");
-    expect(refreshing.refreshAriaLabel).toBe("Refreshing trading readiness");
+    expect(refreshing.refreshButtonLabel).toBe("Retrying...");
+    expect(refreshing.refreshAriaLabel).toBe("Retrying trading readiness");
     expect(refreshing.refreshBusyLabel).toBe("Refreshing readiness...");
     expect(refreshing.refreshDisabled).toBe(true);
     expect(refreshing.refreshDisabledReason).toBe("Trading readiness refresh is already running.");
@@ -1052,7 +1080,7 @@ describe("trading readiness view model", () => {
     });
 
     expect(result.current.readiness?.asOf).toBe("2026-04-26T16:10:00Z");
-    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 16:10 UTC.");
+    expect(result.current.statusAnnouncement).toBe("Trading readiness review required as of Apr 26, 2026, 16:10 UTC.");
   });
 
   it("aborts and discards old account recovery when scope changes without a new workspace payload", async () => {
@@ -1371,6 +1399,23 @@ describe("trading confirmation view model", () => {
 });
 
 describe("trading order ticket view model", () => {
+  it("rejects exponent, hex, signed, and separated numeric text for quantity and price", () => {
+    const base = { ...emptyOrderTicketForm, symbol: "AAPL", type: "Limit" as const, quantity: 10, limitPrice: 189.44 };
+
+    for (const malformed of ["1e3", "0x10", "+5", "-5", "1,000", "Infinity", "NaN", "0", ""]) {
+      const quantityForm = updateOrderTicketForm(base, "quantity", malformed);
+      expect(quantityForm.quantity).toBe(0);
+      expect(validateOrderTicketForm(quantityForm)).toBe("Enter an order quantity greater than zero.");
+
+      const priceForm = updateOrderTicketForm(base, "limitPrice", malformed);
+      expect(priceForm.limitPrice).toBeNull();
+      expect(validateOrderTicketForm(priceForm)).toBe("Enter a limit price greater than zero.");
+    }
+
+    expect(updateOrderTicketForm(base, "quantity", " 250 ").quantity).toBe(250);
+    expect(updateOrderTicketForm(base, "limitPrice", "190.25").limitPrice).toBe(190.25);
+  });
+
   it("normalizes order input and clears price for market orders", () => {
     const form = updateOrderTicketForm(
       {
@@ -1562,6 +1607,120 @@ describe("trading order ticket view model", () => {
     expect(result.current.successText).toBe("Order submitted - ord-42.");
   });
 
+  it("retains numeric editor text while applying strict validation and programmatic draft changes", async () => {
+    const services: OrderTicketServices = { submitOrder: vi.fn() };
+    const { result } = renderHook(() => useOrderTicketViewModel({ services }));
+
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", " aapl ");
+      result.current.updateField("type", "Limit");
+      result.current.updateField("quantity", "25.0");
+      result.current.updateField("limitPrice", "188.0");
+      result.current.setAcknowledged(true);
+    });
+    expect(result.current.form).toMatchObject({ quantity: 25, limitPrice: 188 });
+    expect(result.current.controls.quantity.value).toBe("25.0");
+    expect(result.current.controls.limitPrice?.value).toBe("188.0");
+
+    act(() => result.current.normalizeSymbol());
+    expect(result.current.form.symbol).toBe("AAPL");
+    expect(result.current.controls.limitPrice?.value).toBe("188.0");
+
+    act(() => result.current.updateField("limitPrice", "1e3"));
+    expect(result.current.form.limitPrice).toBeNull();
+    expect(result.current.validationError).toBe("Enter a limit price greater than zero.");
+    expect(result.current.acknowledgement.checked).toBe(false);
+    expect(result.current.acknowledgement.disabled).toBe(true);
+    await act(async () => { await result.current.submitOrder(); });
+    expect(services.submitOrder).not.toHaveBeenCalled();
+
+    act(() => result.current.updateField("limitPrice", "190.50"));
+    expect(result.current.form.limitPrice).toBe(190.5);
+    expect(result.current.controls.limitPrice?.value).toBe("190.50");
+    act(() => result.current.updateField("symbol", "MSFT"));
+    expect(result.current.controls.quantity.value).toBe("25");
+    expect(result.current.controls.limitPrice?.value).toBe("190.5");
+
+    act(() => result.current.updateField("limitPrice", "200.0"));
+    act(() => result.current.updateField("type", "Stop"));
+    expect(result.current.controls.limitPrice?.value).toBe("200");
+    act(() => result.current.updateField("type", "Market"));
+    expect(result.current.form.limitPrice).toBeNull();
+    expect(result.current.controls.limitPrice).toBeNull();
+    act(() => result.current.updateField("type", "Limit"));
+    expect(result.current.controls.limitPrice?.value).toBe("");
+
+    act(() => result.current.updateField("limitPrice", "205.0"));
+    act(() => result.current.closeTicket());
+    act(() => result.current.openTicket());
+    expect(result.current.controls.limitPrice?.value).toBe("205");
+    expect(result.current.acknowledgement.checked).toBe(false);
+  });
+
+  it("withholds prior numeric editor text and review in the first render of another account scope", () => {
+    const accountA = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+    const accountB = "7a4c2251-17f6-4fb7-8dbe-6fb4966e2749";
+    const services: OrderTicketServices = { submitOrder: vi.fn() };
+    const rendered: Array<{ scope: string; price: string | undefined; acknowledged: boolean }> = [];
+    const { result, rerender } = renderHook(({ fundAccountId }) => {
+      const ticket = useOrderTicketViewModel({ fundAccountId, services });
+      rendered.push({ scope: fundAccountId, price: ticket.controls.limitPrice?.value, acknowledged: ticket.acknowledgement.checked });
+      return ticket;
+    }, { initialProps: { fundAccountId: accountA } });
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "AAPL");
+      result.current.updateField("type", "Limit");
+      result.current.updateField("quantity", "25.0");
+      result.current.updateField("limitPrice", "188.0");
+      result.current.setAcknowledged(true);
+    });
+    expect(result.current.canSubmit).toBe(true);
+
+    const firstNewScopeRender = rendered.length;
+    rerender({ fundAccountId: accountB });
+    expect(rendered[firstNewScopeRender]).toEqual({ scope: accountB, price: "188", acknowledged: false });
+    expect(rendered.slice(firstNewScopeRender).every((state) => state.price === "188" && !state.acknowledged)).toBe(true);
+    expect(result.current.form).toMatchObject({ quantity: 25, limitPrice: 188 });
+    expect(result.current.controls.quantity.value).toBe("25");
+    expect(result.current.canSubmit).toBe(false);
+
+    act(() => result.current.setAcknowledged(true));
+    expect(result.current.canSubmit).toBe(true);
+    rerender({ fundAccountId: accountA });
+    expect(result.current.controls.limitPrice?.value).toBe("188");
+    expect(result.current.acknowledgement.checked).toBe(false);
+    expect(result.current.canSubmit).toBe(false);
+  });
+
+  it.each(["accepted", "parked"] as const)("clears numeric editor text after an %s order outcome", async (outcome) => {
+    const services: OrderTicketServices = {
+      submitOrder: vi.fn().mockResolvedValue({
+        success: outcome === "accepted",
+        requiresApproval: outcome === "parked",
+        orderId: "ord-editor-reset",
+        escalationId: outcome === "parked" ? "esc-editor-reset" : null
+      })
+    };
+    const { result } = renderHook(() => useOrderTicketViewModel({ services }));
+    act(() => {
+      result.current.openTicket();
+      result.current.updateField("symbol", "AAPL");
+      result.current.updateField("type", "Limit");
+      result.current.updateField("quantity", "25.0");
+      result.current.updateField("limitPrice", "188.05");
+      result.current.setAcknowledged(true);
+    });
+    await act(async () => { await result.current.submitOrder(); });
+    expect(services.submitOrder).toHaveBeenCalledWith({ symbol: "AAPL", side: "Buy", type: "Limit", quantity: 25, limitPrice: 188.05 });
+    expect(result.current.controls.quantity.value).toBe("");
+    act(() => result.current.openTicket());
+    act(() => result.current.updateField("type", "Limit"));
+    expect(result.current.controls.limitPrice?.value).toBe("");
+    expect(result.current.acknowledgement.checked).toBe(false);
+  });
+
   it("reports a governed-approval park as parked rather than as a submission failure", async () => {
     const services: OrderTicketServices = {
       submitOrder: vi.fn().mockResolvedValue({
@@ -1594,9 +1753,9 @@ describe("trading order ticket view model", () => {
     expect(result.current.phase).toBe("parked");
     expect(result.current.errorText).toBeNull();
     expect(result.current.escalationId).toBe("esc-9001");
-    expect(result.current.parkedText).toContain("parked for governed risk approval");
+    expect(result.current.parkedText).toContain("parked for risk approval");
     expect(result.current.parkedText).toContain("esc-9001");
-    expect(result.current.statusAnnouncement).toContain("parked for governed risk approval");
+    expect(result.current.statusAnnouncement).toContain("parked for risk approval");
   });
 
   it("keeps non-blocking risk warnings visible on an approved order", async () => {
@@ -2237,7 +2396,7 @@ describe("trading promotion gate view model", () => {
         "Reconciliation evidence",
         "Broker order parity",
         "Accounting records",
-        "Governed reporting",
+        "Reporting",
         "Governance sign-off",
         "Exception handling",
         "Rollback/kill-switch",
@@ -2855,7 +3014,8 @@ describe("promotion approval checklist", () => {
     expect(error).toContain("LIVE_OVERRIDE_REVIEWED must reference active manual override override-9");
   });
 
-  it("allows live approval when all live evidence references are attached", () => {
+  it("binds live approval to the reviewed artifact and an explicit mandate", () => {
+    const evaluation = { ...liveEligibleEvaluation, strategyArtifactId: "sa1-" + "a".repeat(64) };
     const form = {
       ...emptyPromotionGateForm,
       runId: "run-live-source",
@@ -2863,10 +3023,22 @@ describe("promotion approval checklist", () => {
       approvalReason: "Live readiness evidence reviewed",
       manualOverrideId: "override-9",
       evidenceReferences: livePromotionEvidenceReferences.join("\n"),
-      approvalChecklist: livePromotionApprovalChecklist
+      approvalChecklist: livePromotionApprovalChecklist,
+      liveSymbols: "aapl, MSFT aapl",
+      liveNotional: "1200",
+      liveExpiry: "2099-01-01T12:00"
     };
 
-    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toBeNull();
+    expect(validatePromotionApproval(form, liveEligibleEvaluation)).toContain("retained strategy revision");
+    expect(validatePromotionApproval({ ...form, liveNotional: "0" }, evaluation)).toContain("positive USD");
+    expect(validatePromotionApproval(form, evaluation)).toBeNull();
+    expect(buildPromotionApprovalRequest(form, evaluation).liveAuthorization).toEqual({
+      expectedStrategyArtifactId: evaluation.strategyArtifactId,
+      allowedSymbols: ["AAPL", "MSFT"],
+      maxOrderNotional: 1200,
+      currency: "USD",
+      expiresAt: new Date(form.liveExpiry).toISOString()
+    });
   });
 
   it("omits approvalChecklist from the request when the form list is empty", () => {
@@ -3427,7 +3599,7 @@ describe("execution circuit breaker control", () => {
     });
 
     expect(closed.controlsPanel?.breakerAction).toEqual({ kind: "open-circuit-breaker" });
-    expect(closed.controlsPanel?.breakerActionLabel).toBe("Open breaker");
+    expect(closed.controlsPanel?.breakerActionLabel).toBe("Halt trading (open breaker)");
     expect(closed.controlsPanel?.breakerActionDisabled).toBe(false);
     expect(closed.controlsPanel?.breakerActionAriaLabel).toContain("halt submission and cancel all open orders");
 
@@ -3442,7 +3614,7 @@ describe("execution circuit breaker control", () => {
     });
 
     expect(open.controlsPanel?.breakerAction).toEqual({ kind: "close-circuit-breaker" });
-    expect(open.controlsPanel?.breakerActionLabel).toBe("Reset breaker");
+    expect(open.controlsPanel?.breakerActionLabel).toBe("Resume trading (reset breaker)");
     expect(open.controlsPanel?.breakerActionAriaLabel).toContain("allow order submission to resume");
   });
 

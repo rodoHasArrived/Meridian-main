@@ -192,6 +192,8 @@ namespace Meridian.Core.Serialization;
 [JsonSerializable(typeof(List<SecurityMasterChangeHistoryItemDto>))]
 [JsonSerializable(typeof(SecurityMasterScheduleSummaryDto))]
 [JsonSerializable(typeof(SecurityMasterScheduleBookDto))]
+[JsonSerializable(typeof(SecurityMasterDeclaredExerciseOutcomeDto))]
+[JsonSerializable(typeof(SecurityMasterScheduleBlockerDto))]
 [JsonSerializable(typeof(SecurityMasterScheduleEventDto))]
 [JsonSerializable(typeof(SecurityMasterScheduleEventDto[]))]
 [JsonSerializable(typeof(List<SecurityMasterScheduleEventDto>))]

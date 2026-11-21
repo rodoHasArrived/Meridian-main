@@ -96,6 +96,14 @@ documents:
       - W10-RECON-004
       - W10-PERF-001
       - W10-CONSOL-001
+  - id: DOC-INVESTOR-PERFORMANCE-PACK
+    path: docs/engineering/blueprints/investor-performance-pack-blueprint.md
+    title: Investor performance and capital-statement pack blueprint
+    role: planning_interpretation
+    owner_lane: Accounting and Ledger
+    roadmap_items:
+      - W10-PERF-001
+      - W11-STAKE-001
   - id: DOC-OPEN-LOT-CONVERGENCE
     path: docs/engineering/blueprints/security-lot-convergence-blueprint.md
     title: Security-identified open-lot convergence blueprint
@@ -103,3 +111,15 @@ documents:
     owner_lane: Accounting and Ledger
     roadmap_items:
       - W10-LOT-002
+
+  - id: DOC-INTERCOMPANY-ENTITY-CONTROLS
+    path: docs/engineering/plans/intercompany-entity-controls.md
+    title: Intercompany contracts and entity controls staged implementation
+    role: planning_interpretation
+    owner_lane: Accounting and Ledger
+    roadmap_items:
+      - W10-CONSOL-001
+      - W12-ICAGREE-001
+      - W12-ENTITY-001
+      - W12-ICPAIR-001
+      - W12-ICINCOME-001

@@ -1,11 +1,9 @@
 // Meridian backtest-builder — template screen. Mounted by the DC via <x-import>; reads design-system
 // components from the compiled bundle.
 
-const {
-  WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  Select, Input, MetricCard, ChartCard, EquityCurve, DrawdownChart, Histogram,
-  DenseDataTable, StatusBanner, SegmentedControl
-} = window.MeridianDesignSystem_4f61be;
+// The DC loads screen source and the bundle concurrently. Bind the shared
+// component names at mount, after the entry has resolved the namespace.
+let DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Select, Input, MetricCard, ChartCard, EquityCurve, DrawdownChart, Histogram, DataGrid, StatusBanner, SegmentedControl;
 const { useState } = React;
 
 const NAV = [
@@ -57,24 +55,26 @@ const TRADES = [
 const pnl = (v) => <span style={{ color: v.startsWith("-") ? "var(--red-dim)" : "var(--green-dim)" }}>{v}</span>;
 const sideBadge = (s) => <Badge variant={s === "BUY" ? "success" : "danger"}>{s}</Badge>;
 
-function BacktestBuilderScreen() {
+function BacktestBuilderScreen({ environment = "FIXTURE", state: dataState = "ready" } = {}) {
+  ({ DataStateSwitch, WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge, Select, Input, MetricCard, ChartCard, EquityCurve, DrawdownChart, Histogram, DataGrid, StatusBanner, SegmentedControl } = window.MeridianDesignSystem_205d17);
   const [ds, setDs] = useState("hy-corp");
   const [tf, setTf] = useState("all");
 
   return (
     <React.Fragment>
-      <WorkstationTopbar moduleLabel="Backtest" environment="FIXTURE" clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
+      <WorkstationTopbar moduleLabel="Backtest" environment={environment} clock="14:32:08 UTC" brandSrc="../../assets/brand/meridian-mark-light.svg" />
       <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
         <NavRail activeId="backtest" sections={NAV} onSelect={(id) => { const r = ROUTES[id]; if (r) window.location.href = r; }} />
         <main style={{ flex: 1, minWidth: 0, overflowY: "auto", padding: 16, display: "flex", flexDirection: "column", gap: 12 }}>
 
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <h1 style={{ font: "600 22px var(--font-display)", margin: 0, color: "var(--text-primary)", whiteSpace: "nowrap" }}>Backtest — Bond Carry &amp; Roll</h1>
-            <Badge variant="fixture" dot>FIXTURE</Badge>
+            <Badge variant={environment.toLowerCase()} dot>{environment}</Badge>
             <div style={{ flex: 1 }}></div>
-            <Button variant="ghost" size="sm">Export run</Button>
-            <Button variant="primary" size="sm">Run backtest</Button>
+            <Button disabled={dataState !== "ready"} variant="ghost" size="sm">Export run</Button>
+            <Button disabled={dataState !== "ready"} variant="primary" size="sm">Run backtest</Button>
           </div>
+          <DataStateSwitch state={dataState} label="Backtest results">
 
           {/* Config */}
           <PanelSurface flat style={{ padding: 12, display: "grid", gridTemplateColumns: "1.4fr 1fr 1fr 1fr", gap: 12, alignItems: "end" }}>
@@ -131,19 +131,20 @@ function BacktestBuilderScreen() {
             <div style={{ padding: "10px 14px", borderBottom: "1px solid var(--border)", display: "flex", alignItems: "center", gap: 8 }}>
               <Eyebrow>Trade blotter</Eyebrow><div style={{ flex: 1 }}></div><Badge variant="neutral">6 of 1,284</Badge>
             </div>
-            <DenseDataTable
+            <DataGrid
               columns={[
                 { key: "date", label: "Date" },
                 { key: "sym", label: "CUSIP" },
-                { key: "side", label: "Side", render: (r) => sideBadge(r.side) },
+                { key: "side", label: "Side", cell: (r) => sideBadge(r.side) },
                 { key: "qty", label: "Qty", align: "right" },
                 { key: "px", label: "Fill", align: "right" },
-                { key: "pnl", label: "Realized P&L", align: "right", render: (r) => pnl(r.pnl) },
+                { key: "pnl", label: "Realized P&L", align: "right", cell: (r) => pnl(r.pnl) },
               ]}
               rows={TRADES} />
           </PanelSurface>
 
           <StatusBanner tone="success" title="Backtest complete" detail="HY Corp · 1,284 sessions · 1,284 trades · 0 data gaps · ran in 1.84s · proof recorded 14:12:04Z" />
+                  </DataStateSwitch>
         </main>
       </div>
       <StatusBar items={[

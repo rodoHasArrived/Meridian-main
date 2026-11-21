@@ -12,6 +12,7 @@ import {
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
+  PortfolioWorkspaceResponse,
   OperationsApprovalPolicyMatrix,
   OperationsCloseCalendar,
   ProviderConnectionRow,
@@ -418,8 +419,31 @@ describe("buildSettingsScreenViewModel", () => {
     expect(vm.systemItems.some((i) => i.label === "Status" && i.value === "Healthy")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Active runs" && i.value === "2")).toBe(true);
     expect(vm.systemItems.some((i) => i.label === "Symbols monitored" && i.value === "120")).toBe(true);
-    expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "Stale · May 1, 00:00 UTC" && i.tone === "danger")).toBe(true);
+    expect(vm.systemItems.some((i) => i.label === "Last heartbeat" && i.value === "Stale · May 1, 2026, 00:00 UTC" && i.tone === "danger")).toBe(true);
     expect(vm.systemTone).toBe("warning");
+  });
+
+  it("uses the loaded portfolio population for system position facts", () => {
+    const portfolio: PortfolioWorkspaceResponse = {
+      metrics: [],
+      positions: [{
+        symbol: "AAPL", side: "Long", quantity: "10", averagePrice: "$100",
+        markPrice: "$110", dayPnl: "$0", unrealizedPnl: "$100", exposure: "$1,100"
+      }],
+      risk: {
+        state: "Healthy", summary: "Ready", netExposure: "$1,100", grossExposure: "$1,100",
+        var95: "$0", maxDrawdown: "0%", buyingPowerUsed: "0%", activeGuardrails: []
+      },
+      brokerage: {
+        provider: "Synthetic", account: "synthetic-account", environment: "paper", connection: "Connected",
+        lastHeartbeat: "2026-05-01T00:00:00Z", orderIngress: "healthy", fillFeed: "healthy", notes: "Synthetic"
+      },
+      runs: [], cashFlow: null
+    };
+    const loaded = buildSettingsScreenViewModel({ session, overview, portfolio });
+    expect(loaded.systemItems.find((item) => item.label === "Open positions")?.value).toBe("1");
+    const unavailable = buildSettingsScreenViewModel({ session, overview });
+    expect(unavailable.systemItems.find((item) => item.label === "Open positions")?.value).toBe("Unavailable");
   });
 
   it("classifies freshness evidence without presenting old timestamps as current", () => {
@@ -428,7 +452,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(buildSettingsFreshnessViewModel("2026-07-13T11:50:00Z", evaluatedAt)).toMatchObject({
       status: "current",
       tone: "success",
-      label: "Current · Jul 13, 11:50 UTC"
+      label: "Current · Jul 13, 2026, 11:50 UTC"
     });
     expect(buildSettingsFreshnessViewModel("2026-07-13T02:00:00Z", evaluatedAt)).toMatchObject({
       status: "delayed",
@@ -472,7 +496,7 @@ describe("buildSettingsScreenViewModel", () => {
       endpointHref: "/api/auth/roles"
     });
     expect(vm.operationsControlCenter.cards.find((card) => card.id === "approval-policy")).toMatchObject({
-      statusLabel: "1 rules",
+      statusLabel: "1 rule",
       endpointHref: "/api/workstation/operations/continuity/approval-policy-matrix"
     });
     expect(vm.operationsControlCenter.cards.find((card) => card.id === "close-calendar")).toMatchObject({
@@ -624,11 +648,12 @@ describe("buildSettingsScreenViewModel", () => {
     });
 
     expect(vm.providerConnectionCenter.statusLabel).toBe("Refreshing");
-    expect(vm.providerConnectionCenter.refreshAction).toMatchObject({
-      label: "Refreshing...",
-      busy: true,
-      disabled: true
-    });
+    // Loaded evidence is re-read by the header Refresh; the local control exists only as Retry after a failed load.
+    expect(vm.providerConnectionCenter.refreshAction).toBeNull();
+    expect(buildSettingsScreenViewModel({ session, overview, providerConnections: [], workspaceErrors: { settings: "Provider-routing connection refresh failed." } }).providerConnectionCenter.refreshAction)
+      .toMatchObject({ label: "Retry", ariaLabel: "Retry loading Provider Connection Center routing data", busy: false, disabled: false });
+    expect(buildSettingsScreenViewModel({ session, overview, providerConnections: null, providerRoutingRefreshing: true }).providerConnectionCenter.refreshAction)
+      .toMatchObject({ label: "Retrying...", busy: true, disabled: true });
     expect(vm.providerConnectionCenter.routingSummaryLabel).toBe("2 routing connections · 2 bindings · 2 trust snapshots");
 
     const dataRows = vm.providerConnectionCenter.groups.find((group) => group.id === "data")?.rows ?? [];
@@ -689,8 +714,8 @@ describe("buildSettingsScreenViewModel", () => {
       statusCode: "INFO",
       badgeVariant: "default",
       tone: "default",
-      timestamp: "May 1, 00:00 UTC",
-      ariaLabel: "INFO event from DataPipeline at May 1, 00:00 UTC. Backfill completed."
+      timestamp: "May 1, 2026, 00:00 UTC",
+      ariaLabel: "INFO event from DataPipeline at May 1, 2026, 00:00 UTC. Backfill completed."
     });
   });
 
@@ -710,7 +735,7 @@ describe("buildSettingsScreenViewModel", () => {
     expect(eventsVm.rows[1]).toMatchObject({
       detailPanelId: "settings-recent-event-detail",
       expanded: true,
-      selectAriaLabel: "Select event e1. CRIT event from Storage at May 1, 00:05 UTC. Storage heartbeat missed."
+      selectAriaLabel: "Select event e1. CRIT event from Storage at May 1, 2026, 00:05 UTC. Storage heartbeat missed."
     });
     expect(eventsVm.selectedDetail).toMatchObject({
       title: "Storage heartbeat missed.",
@@ -803,7 +828,7 @@ describe("buildSettingsScreenViewModel", () => {
       { label: "Environment", value: "PAPER" },
       { label: "Workspace", value: "settings" },
       { label: "Diagnostics", value: "All reachable" },
-      { label: "Heartbeat", value: "Current · May 1, 00:00 UTC" }
+      { label: "Heartbeat", value: "Current · May 1, 2026, 00:00 UTC" }
     ]);
     expect(vm.diagnosticCounts).toMatchObject({
       loaded: 7,
@@ -868,8 +893,8 @@ describe("buildSettingsScreenViewModel", () => {
       canConnect: false,
       canDisconnect: true
     });
-    expect(vm.robinhoodConnectionPanel.connectedAtLabel).toBe("May 7, 11:50 UTC");
-    expect(vm.robinhoodConnectionPanel.expiresAtLabel).toBe("Jun 7, 11:50 UTC");
+    expect(vm.robinhoodConnectionPanel.connectedAtLabel).toBe("May 7, 2026, 11:50 UTC");
+    expect(vm.robinhoodConnectionPanel.expiresAtLabel).toBe("Jun 7, 2026, 11:50 UTC");
     expect(vm.robinhoodConnectionPanel.statusDetail).toContain("Robinhood account RH-987");
     expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("Alpaca");
     expect(vm.robinhoodConnectionPanel.statusDetail).not.toContain("/v2/account");
@@ -966,8 +991,8 @@ describe("buildSettingsScreenViewModel", () => {
     });
 
     expect(vm.profileAuthenticationPanel).toMatchObject({
-      regionLabel: "Profile and authentication posture",
-      title: "Profile and access posture",
+      regionLabel: "Profile and authentication status",
+      title: "Profile and access status",
       statusLabel: "Access ready",
       statusTone: "success",
       avatarInitials: "AR",
@@ -977,7 +1002,7 @@ describe("buildSettingsScreenViewModel", () => {
       workspaceLabel: "Settings",
       commandCountLabel: "42 commands issued",
       authorityLabel: "Brokerage verified",
-      authorityDetail: "Alpaca account PA123 is verified for readiness handoffs.",
+      authorityDetail: "Alpaca account PA123 is verified for readiness reviews.",
       notice: null
     });
     expect(vm.profileAuthenticationPanel.facts).toEqual(expect.arrayContaining([
@@ -990,7 +1015,7 @@ describe("buildSettingsScreenViewModel", () => {
         id: "brokerage-authority",
         statusLabel: "Verified",
         actionHref: "/trading/readiness",
-        actionAriaLabel: "Open Trading readiness from verified profile authentication posture"
+        actionAriaLabel: "Open Trading readiness from verified profile authentication status"
       }),
       expect.objectContaining({
         id: "audit-diagnostics",
@@ -1025,7 +1050,7 @@ describe("buildSettingsScreenViewModel", () => {
       tone: "warning",
       actionLabel: "Review provider setup",
       actionHref: "/settings#alpaca-provider-setup",
-      actionAriaLabel: "Review Alpaca provider setup from profile authentication posture"
+      actionAriaLabel: "Review Alpaca provider setup from profile authentication status"
     });
     expect(delayedVm.profileAuthenticationPanel.steps.find((step) => step.id === "brokerage-authority")?.actionHref).not.toBe("/trading/readiness");
     expect(delayedVm.alpacaConnectionPanel.warnings[0]).toBe(
@@ -1541,7 +1566,49 @@ describe("buildSettingsScreenViewModel", () => {
   it("builds system summary label", () => {
     const vm = buildSettingsScreenViewModel(null, overview);
     expect(vm.systemSummary).toContain("Healthy");
-    expect(vm.systemSummary).toContain("3/3");
+    // Provider health comes from the shared cross-screen counts (A3), not the overview's own
+    // "online" tally; without them Settings says so instead of showing a second number.
+    expect(vm.systemSummary).toContain("provider health unavailable");
+  });
+
+  it("states the same provider health as Data from the shared cross-screen counts", () => {
+    const vm = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      crossScreenCounts: {
+        asOf: "2026-03-21T14:30:00Z",
+        openOrders: null,
+        providers: { healthy: 2, total: 3, definition: "Providers whose status is Healthy." },
+        openBreaks: null
+      }
+    });
+    expect(vm.systemSummary).toContain("2 of 3 providers healthy");
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("2 of 3 providers");
+  });
+
+  it("keeps the refreshed shared provider count over retained Data rows", () => {
+    // Settings does not refresh the Data payload; a provider that degraded since it loaded must not
+    // read as healthy because the old rows say so.
+    const vm = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      crossScreenCounts: {
+        asOf: "2026-03-21T14:30:00Z",
+        openOrders: null,
+        providers: { healthy: 1, total: 2, definition: "Providers whose status is Healthy." },
+        openBreaks: null
+      },
+      data: { providers: [{ status: "Healthy" }, { status: "Healthy" }] } as never
+    });
+    expect(vm.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 of 2 providers");
+
+    const withoutShared = buildSettingsScreenViewModel({
+      session: null,
+      overview,
+      crossScreenCounts: null,
+      data: { providers: [{ status: "Healthy" }, { status: "Degraded" }] } as never
+    });
+    expect(withoutShared.systemItems.find((item) => item.label === "Providers healthy")?.value).toBe("1 of 2 providers");
   });
 
   it("points system overview diagnostics at the mapped status endpoint", () => {

@@ -19,7 +19,8 @@ public static class LedgerReportPackBuilder
         ChartOfAccounts? chart = null,
         string? financialAccountId = null,
         IReadOnlyList<LedgerTaxLotReliefProjection>? taxLotReliefProjections = null,
-        IReadOnlyList<CanonicalCorporateActionLotReport>? corporateActionLotReports = null)
+        IReadOnlyList<CanonicalCorporateActionLotReport>? corporateActionLotReports = null,
+        LedgerStatementControlPack? priorStatementControl = null)
     {
         ArgumentNullException.ThrowIfNull(ledger);
         ArgumentNullException.ThrowIfNull(request);
@@ -30,20 +31,47 @@ public static class LedgerReportPackBuilder
             request.AsOf,
             chart,
             financialAccountId,
-            request.LineDimensions);
+            request.LineDimensions,
+            request.StatementControl);
+        var statementControl = request.StatementControl is null ? null
+            : LedgerStatementControlPackBuilder.Build(ledger, request, statements, financialAccountId, priorStatementControl);
+        var preparerAttestations = ledger.GetJournalEntries(to: request.AsOf)
+            .Where(entry => entry.Lines.Any(line => (string.IsNullOrWhiteSpace(financialAccountId)
+                || string.Equals(line.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+                && MatchesLineDimensions(line.Dimensions, request.LineDimensions)))
+            .Select(entry => LedgerReportPreparerAttestation.Read(entry, request)).Where(item => item is not null)
+            .Select(item => item!).OrderBy(item => item.JournalEntryId).ToArray();
 
         var artifacts = new List<LedgerReportPackArtifact>
         {
             CreateCsvArtifact("trial-balance.csv", statements.TrialBalanceRows),
-            CreateCsvArtifact("income-statement.csv", statements.IncomeStatementRows),
+            CreateCsvArtifact("income-statement.csv", statements.PeriodIncome?.Rows ?? statements.IncomeStatementRows),
             CreateCsvArtifact("balance-sheet.csv", statements.BalanceSheetRows),
             CreateCashFlowArtifact("cash-flow-statement.csv", statements.CashFlow),
             CreatePartnersCapitalArtifact("partners-capital-statement.csv", statements.PartnersCapital),
-            CreateFinancialStatementsJsonArtifact(request, statements),
+            CreateFinancialStatementsJsonArtifact(request, statements, preparerAttestations),
             CreateTaxLotRealizedGainsArtifact(taxLotReliefProjections ?? []),
         };
         var provenance = BuildLineProvenance(ledger, request, statements, financialAccountId);
         artifacts.Add(CreateLineProvenanceArtifact(provenance));
+        if (statementControl is not null)
+        {
+            var content = statementControl.Serialize();
+            artifacts.Add(new(LedgerStatementControlPack.ArtifactName, "application/json", content, Sha256Digest.ComputeUtf8(content)));
+        }
+
+        var generalLedgerLines = SelectGeneralLedgerLines(ledger, request, financialAccountId);
+        if (preparerAttestations.Length > 0)
+        {
+            var content = JsonSerializer.Serialize(preparerAttestations, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+            artifacts.Add(new("accounting-preparer-attestations.json", "application/json", content, Sha256Digest.ComputeUtf8(content)));
+        }
+        artifacts.Add(CreateGeneralLedgerDetailArtifact(generalLedgerLines));
+        artifacts.Add(CreateProfitAndLossAttributionArtifact(
+            generalLedgerLines
+                .Where(item => !LedgerFinancialStatementBuilder.IsClosingTransfer(
+                    item.Entry, financialAccountId, request.LineDimensions))
+                .ToArray()));
 
         var canonicalEvidence = (taxLotReliefProjections ?? [])
             .Where(static projection => projection.CanonicalOpenLots.Count > 0)
@@ -73,7 +101,7 @@ public static class LedgerReportPackBuilder
                 content, Sha256Digest.ComputeUtf8(content)));
         }
 
-        artifacts.Add(CreateManifestArtifact(request, statements, artifacts));
+        artifacts.Add(CreateManifestArtifact(request, statements, artifacts, generalLedgerLines));
 
         var payload = string.Join(
             "\n",
@@ -89,7 +117,9 @@ public static class LedgerReportPackBuilder
 
         return new LedgerFinancialReportPack(request, statements, artifacts, signature)
         {
-            LineProvenance = provenance
+            LineProvenance = provenance,
+            StatementControl = statementControl,
+            PreparerAttestations = preparerAttestations.Length == 0 ? null : preparerAttestations
         };
     }
 
@@ -242,6 +272,8 @@ public static class LedgerReportPackBuilder
             AppendCashFlowTotal(builder, "Financing cash flow", cashFlow.FinancingCashFlow);
             AppendCashFlowTotal(builder, "Net change in cash", cashFlow.NetCashFlow);
             AppendCashFlowTotal(builder, "Beginning cash", cashFlow.BeginningCash);
+            if (cashFlow.ExchangeRateEffects != 0m)
+                AppendCashFlowTotal(builder, "Exchange-rate effects", cashFlow.ExchangeRateEffects);
             AppendCashFlowTotal(builder, "Ending cash", cashFlow.EndingCash);
         }
 
@@ -317,7 +349,8 @@ public static class LedgerReportPackBuilder
 
     private static LedgerReportPackArtifact CreateFinancialStatementsJsonArtifact(
         LedgerReportPackRequest request,
-        LedgerFinancialStatements statements)
+        LedgerFinancialStatements statements,
+        IReadOnlyList<LedgerReportPreparerAttestation> preparerAttestations)
     {
         var builder = new StringBuilder();
         builder.AppendLine("{");
@@ -335,15 +368,19 @@ public static class LedgerReportPackBuilder
         builder.AppendLine(CultureInfo.InvariantCulture, $"    \"assets\": {FormatDecimal(statements.TotalAssets)},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"    \"liabilities\": {FormatDecimal(statements.TotalLiabilities)},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"    \"equity\": {FormatDecimal(statements.TotalEquity)},");
-        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"revenue\": {FormatDecimal(statements.TotalRevenue)},");
-        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"expenses\": {FormatDecimal(statements.TotalExpenses)},");
-        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"netIncome\": {FormatDecimal(statements.NetIncome)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"revenue\": {FormatDecimal(statements.PeriodIncome?.TotalRevenue ?? statements.TotalRevenue)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"expenses\": {FormatDecimal(statements.PeriodIncome?.TotalExpenses ?? statements.TotalExpenses)},");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"    \"netIncome\": {FormatDecimal(statements.PeriodIncome?.NetIncome ?? statements.NetIncome)},");
+        if (statements.PeriodIncome is not null)
+            builder.AppendLine(CultureInfo.InvariantCulture, $"    \"undistributedIncome\": {FormatDecimal(statements.NetIncome)},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"    \"endingEquity\": {FormatDecimal(statements.EndingEquity)},");
         builder.AppendLine(CultureInfo.InvariantCulture, $"    \"accountingEquationVariance\": {FormatDecimal(statements.AccountingEquationVariance)}");
         builder.AppendLine("  },");
         AppendRows(builder, "trialBalanceRows", statements.TrialBalanceRows, trailingComma: true);
-        AppendRows(builder, "incomeStatementRows", statements.IncomeStatementRows, trailingComma: true);
-        AppendRows(builder, "balanceSheetRows", statements.BalanceSheetRows, trailingComma: false);
+        AppendRows(builder, "incomeStatementRows", statements.PeriodIncome?.Rows ?? statements.IncomeStatementRows, trailingComma: true);
+        AppendRows(builder, "balanceSheetRows", statements.BalanceSheetRows, trailingComma: preparerAttestations.Count > 0);
+        if (preparerAttestations.Count > 0)
+            builder.AppendLine($"  \"preparerAttestations\": {JsonSerializer.Serialize(preparerAttestations, new JsonSerializerOptions(JsonSerializerDefaults.Web))}");
         builder.AppendLine("}");
 
         var content = builder.ToString();
@@ -381,7 +418,8 @@ public static class LedgerReportPackBuilder
     private static LedgerReportPackArtifact CreateManifestArtifact(
         LedgerReportPackRequest request,
         LedgerFinancialStatements statements,
-        IReadOnlyList<LedgerReportPackArtifact> artifacts)
+        IReadOnlyList<LedgerReportPackArtifact> artifacts,
+        IReadOnlyList<GeneralLedgerLine> generalLedgerLines)
     {
         var builder = new StringBuilder();
         builder.AppendLine("ledger-report-pack-manifest-v1");
@@ -415,6 +453,15 @@ public static class LedgerReportPackBuilder
         builder.AppendLine(CultureInfo.InvariantCulture, $"total-expenses,{FormatDecimal(statements.TotalExpenses)}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"net-income,{FormatDecimal(statements.NetIncome)}");
         builder.AppendLine(CultureInfo.InvariantCulture, $"accounting-equation-variance,{FormatDecimal(statements.AccountingEquationVariance)}");
+        // Control totals over gl-detail.csv: a reader can tie the detail back to the source journal
+        // (entry and line counts) and confirm the period's activity is in balance.
+        var controlDebits = generalLedgerLines.Sum(static line => line.Line.Debit);
+        var controlCredits = generalLedgerLines.Sum(static line => line.Line.Credit);
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-journal-entry-count,{generalLedgerLines.Select(static line => line.Entry.JournalEntryId).Distinct().Count()}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-line-count,{generalLedgerLines.Count}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-total-debits,{FormatDecimal(controlDebits)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-total-credits,{FormatDecimal(controlCredits)}");
+        builder.AppendLine(CultureInfo.InvariantCulture, $"gl-detail-debit-credit-variance,{FormatDecimal(controlDebits - controlCredits)}");
         builder.AppendLine("artifact,content-type,sha256");
 
         foreach (var artifact in artifacts.OrderBy(static artifact => artifact.Name, StringComparer.Ordinal))
@@ -426,30 +473,133 @@ public static class LedgerReportPackBuilder
         return new LedgerReportPackArtifact("manifest.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
     }
 
+    private readonly record struct GeneralLedgerLine(JournalEntry Entry, LedgerEntry Line);
+
+    /// <summary>
+    /// The journal lines of the report period (after period start, through as-of) inside the pack's
+    /// financial-account and dimension scope, in a deterministic order.
+    /// </summary>
+    private static IReadOnlyList<GeneralLedgerLine> SelectGeneralLedgerLines(
+        IReadOnlyLedger ledger,
+        LedgerReportPackRequest request,
+        string? financialAccountId)
+    {
+        var opening = LedgerFinancialStatementBuilder.OpeningCutoff(request.PeriodStart, request.StatementControl);
+        return ledger.GetJournalEntries(opening, request.AsOf)
+            .Where(entry => entry.Timestamp > opening)
+            .SelectMany(static entry => entry.Lines.Select(line => new GeneralLedgerLine(entry, line)))
+            .Where(item => string.IsNullOrWhiteSpace(financialAccountId)
+                || string.Equals(item.Line.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))
+            .Where(item => MatchesLineDimensions(item.Line.Dimensions, request.LineDimensions))
+            .OrderBy(static item => item.Entry.Timestamp)
+            .ThenBy(static item => item.Entry.JournalEntryId)
+            .ThenBy(static item => item.Line.EntryId)
+            .ToArray();
+    }
+
+    private static LedgerReportPackArtifact CreateGeneralLedgerDetailArtifact(IReadOnlyList<GeneralLedgerLine> lines)
+    {
+        var builder = new StringBuilder();
+        builder.AppendLine(
+            "Timestamp,JournalEntryId,LedgerEntryId,Description,ActivityType,StrategyId," +
+            "AccountName,AccountType,Symbol,FinancialAccountId,Debit,Credit");
+        foreach (var (entry, line) in lines)
+        {
+            builder.Append(entry.Timestamp.ToString("O", CultureInfo.InvariantCulture)).Append(',');
+            builder.Append(entry.JournalEntryId.ToString("D")).Append(',');
+            builder.Append(line.EntryId.ToString("D")).Append(',');
+            builder.Append(EscapeCsv(entry.Description)).Append(',');
+            builder.Append(EscapeCsv(entry.Metadata?.ActivityType ?? string.Empty)).Append(',');
+            builder.Append(EscapeCsv(entry.Metadata?.StrategyId ?? string.Empty)).Append(',');
+            builder.Append(EscapeCsv(line.Account.Name)).Append(',');
+            builder.Append(line.Account.AccountType).Append(',');
+            builder.Append(EscapeCsv(line.Account.Symbol ?? string.Empty)).Append(',');
+            builder.Append(EscapeCsv(line.Account.FinancialAccountId ?? string.Empty)).Append(',');
+            builder.Append(FormatDecimal(line.Debit)).Append(',');
+            builder.AppendLine(FormatDecimal(line.Credit));
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("gl-detail.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
+    }
+
+    /// <summary>
+    /// Period revenue and expense attributed to the posting strategy and symbol. Lines posted
+    /// without a strategy or symbol are reported under an empty key rather than dropped. Closing
+    /// journals that only transfer revenue and expense to retained earnings are excluded (as the
+    /// partners-capital statement does), so the rows sum to the period's result from activity
+    /// rather than netting to zero once the period is closed; those journals stay in GL detail.
+    /// </summary>
+    private static LedgerReportPackArtifact CreateProfitAndLossAttributionArtifact(IReadOnlyList<GeneralLedgerLine> lines)
+    {
+        var rows = lines
+            .Where(static item => item.Line.Account.AccountType is LedgerAccountType.Revenue or LedgerAccountType.Expense)
+            .GroupBy(static item => (
+                StrategyId: item.Entry.Metadata?.StrategyId ?? string.Empty,
+                Symbol: item.Line.Account.Symbol ?? item.Entry.Metadata?.Symbol ?? string.Empty))
+            .Select(static group =>
+            {
+                var revenue = group
+                    .Where(static item => item.Line.Account.AccountType == LedgerAccountType.Revenue)
+                    .Sum(static item => item.Line.Credit - item.Line.Debit);
+                var expenses = group
+                    .Where(static item => item.Line.Account.AccountType == LedgerAccountType.Expense)
+                    .Sum(static item => item.Line.Debit - item.Line.Credit);
+                return (group.Key.StrategyId, group.Key.Symbol, Revenue: revenue, Expenses: expenses);
+            })
+            .OrderBy(static row => row.StrategyId, StringComparer.Ordinal)
+            .ThenBy(static row => row.Symbol, StringComparer.Ordinal);
+
+        var builder = new StringBuilder();
+        builder.AppendLine("StrategyId,Symbol,Revenue,Expenses,NetIncome");
+        foreach (var row in rows)
+        {
+            builder.Append(EscapeCsv(row.StrategyId)).Append(',');
+            builder.Append(EscapeCsv(row.Symbol)).Append(',');
+            builder.Append(FormatDecimal(row.Revenue)).Append(',');
+            builder.Append(FormatDecimal(row.Expenses)).Append(',');
+            builder.AppendLine(FormatDecimal(row.Revenue - row.Expenses));
+        }
+
+        var content = builder.ToString();
+        return new LedgerReportPackArtifact("pnl-by-strategy-symbol.csv", "text/csv", content, Sha256Digest.ComputeUtf8(content));
+    }
+
     private static IReadOnlyList<LedgerReportLineProvenance> BuildLineProvenance(
         IReadOnlyLedger ledger,
         LedgerReportPackRequest request,
         LedgerFinancialStatements statements,
         string? financialAccountId)
     {
-        var allRows = statements.TrialBalanceRows
-            .Concat(statements.IncomeStatementRows)
-            .Concat(statements.BalanceSheetRows)
-            .DistinctBy(static row => row.Path, StringComparer.Ordinal)
+        // Statement rows roll together accounts sharing a chart path, including different
+        // investors and symbols. Their summary account is not an actual posting identity.
+        var postedAccounts = ledger.Accounts
+            .Select(static account => new
+            {
+                Account = account,
+                Path = string.Join(':', account.Name.Split(':', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            })
             .ToArray();
 
+        var incomeJournals = statements.PeriodIncome is null ? null
+            : SelectGeneralLedgerLines(ledger, request, financialAccountId)
+                .Where(item => !LedgerFinancialStatementBuilder.IsClosingTransfer(
+                    item.Entry, financialAccountId, request.LineDimensions))
+                .Select(static item => item.Entry.JournalEntryId).ToHashSet();
         return BuildProvenanceForArtifact("trial-balance.csv", statements.TrialBalanceRows)
-            .Concat(BuildProvenanceForArtifact("income-statement.csv", statements.IncomeStatementRows))
+            .Concat(BuildProvenanceForArtifact("income-statement.csv", statements.PeriodIncome?.Rows ?? statements.IncomeStatementRows, incomeJournals))
             .Concat(BuildProvenanceForArtifact("balance-sheet.csv", statements.BalanceSheetRows))
             .ToArray();
 
-        IEnumerable<LedgerReportLineProvenance> BuildProvenanceForArtifact(string artifactName, IReadOnlyList<LedgerChartBalance> rows)
+        IEnumerable<LedgerReportLineProvenance> BuildProvenanceForArtifact(string artifactName,
+            IReadOnlyList<LedgerChartBalance> rows, IReadOnlySet<Guid>? permittedJournals = null)
         {
             foreach (var row in rows.OrderBy(static item => item.Path, StringComparer.Ordinal))
             {
-                var descendants = allRows
-                    .Where(candidate => string.Equals(candidate.Path, row.Path, StringComparison.Ordinal)
-                        || candidate.Path.StartsWith($"{row.Path}:", StringComparison.Ordinal))
+                var descendants = postedAccounts
+                    .Where(candidate => candidate.Account.AccountType == row.Account.AccountType
+                        && (string.Equals(candidate.Path, row.Path, StringComparison.OrdinalIgnoreCase)
+                            || candidate.Path.StartsWith($"{row.Path}:", StringComparison.OrdinalIgnoreCase)))
                     .Select(static candidate => candidate.Account)
                     .Distinct()
                     .ToArray();
@@ -457,6 +607,7 @@ public static class LedgerReportPackBuilder
                     // The three tables are point-in-time balances. Restricting their support to
                     // current activity silently omitted prior-period balances from retained proof.
                     .SelectMany(account => ledger.GetEntries(account, null, request.AsOf))
+                    .Where(entry => permittedJournals is null || permittedJournals.Contains(entry.JournalEntryId))
                     .Where(entry => string.IsNullOrWhiteSpace(financialAccountId)
                         || string.Equals(entry.Account.FinancialAccountId, financialAccountId.Trim(), StringComparison.OrdinalIgnoreCase))
                     .Where(entry => MatchesLineDimensions(entry.Dimensions, request.LineDimensions))
@@ -594,10 +745,5 @@ public static class LedgerReportPackBuilder
         => JsonSerializer.Serialize(value);
 
     private static string EscapeCsv(string value)
-    {
-        if (!value.Contains(',') && !value.Contains('"') && !value.Contains('\n') && !value.Contains('\r'))
-            return value;
-
-        return $"\"{value.Replace("\"", "\"\"", StringComparison.Ordinal)}\"";
-    }
+        => LedgerCsvCell.Escape(value);
 }

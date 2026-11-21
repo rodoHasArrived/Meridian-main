@@ -12,7 +12,7 @@
  * because no route on this run supplies their contents.
  */
 
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { RefreshCcw } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -49,8 +49,17 @@ export interface StatementRunDetailTabsProps {
 }
 
 export function StatementRunDetailTabs({ panelId, runId, tabs, onRunReconciled }: StatementRunDetailTabsProps) {
-  const [validation, setValidation] = useState<StatementRunValidation | null>(null);
-  const [breaks, setBreaks] = useState<StatementRunBreak[] | null>(null);
+  // Validation and breaks are only ever read for the run they were served for. The
+  // selected run can change while a read is in flight, and a verdict from the previous
+  // run must never decide whether this run's Reconcile action is enabled.
+  const currentRunId = useRef(runId);
+  currentRunId.current = runId;
+  const refreshRevision = useRef(0);
+  const [loadedRunId, setLoadedRunId] = useState<string | null>(null);
+  const [validationState, setValidation] = useState<StatementRunValidation | null>(null);
+  const [breaksState, setBreaks] = useState<StatementRunBreak[] | null>(null);
+  const validation = loadedRunId === runId ? validationState : null;
+  const breaks = loadedRunId === runId ? breaksState : null;
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [reconcileInFlight, setReconcileInFlight] = useState(false);
@@ -58,10 +67,19 @@ export function StatementRunDetailTabs({ panelId, runId, tabs, onRunReconciled }
   const [acknowledgement, setAcknowledgement] = useState<StatementRunReconcileAcknowledgement | null>(null);
 
   const refresh = useCallback(async () => {
+    // A refresh captured for a run that is no longer selected (for example the refetch
+    // that follows a reconcile pass) must not supersede the selected run's own read.
+    if (currentRunId.current !== runId) {
+      return;
+    }
+
+    const requestRevision = ++refreshRevision.current;
     if (!runId) {
+      setLoadedRunId(null);
       setValidation(null);
       setBreaks(null);
       setError(null);
+      setLoading(false);
       return;
     }
 
@@ -72,6 +90,13 @@ export function StatementRunDetailTabs({ panelId, runId, tabs, onRunReconciled }
       getStatementRunBreaks(runId)
     ]);
 
+    // Only the latest read for the selected run is applied; a late response for an
+    // earlier run, or an older read of this run, is discarded.
+    if (currentRunId.current !== runId || refreshRevision.current !== requestRevision) {
+      return;
+    }
+
+    setLoadedRunId(runId);
     // Each half is reported on its own: a run can validate cleanly and still
     // fail to return breaks, and collapsing both into one error would hide that.
     setValidation(validationResult.status === "fulfilled" ? validationResult.value : null);
@@ -113,8 +138,10 @@ export function StatementRunDetailTabs({ panelId, runId, tabs, onRunReconciled }
     setError(null);
     try {
       const result = await reconcileStatementRun(runId);
-      setAcknowledgement(result);
-      await refresh();
+      if (currentRunId.current === runId) {
+        setAcknowledgement(result);
+        await refresh();
+      }
       onRunReconciled?.(runId);
     } catch (reason) {
       if (isForbidden(reason)) {

@@ -1,4 +1,3 @@
-using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.SecurityMaster;
@@ -186,5 +185,25 @@ public sealed class QuantDataContext(
             logger.LogWarning(ex, "Corporate actions lookup failed for symbol {Symbol}", symbol);
             return [];
         }
+    }
+
+    public async Task<SecurityDetailDto> CanonicalSecurityMasterAsync(
+        string symbol, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(symbol);
+        if (securityMasterQuery is null)
+            throw new InvalidOperationException("Canonical replay requires a configured Security Master.");
+        return await securityMasterQuery.GetByIdentifierAsync(
+            SecurityIdentifierKind.Ticker, symbol, null, ct, effectiveThroughUtc).ConfigureAwait(false)
+            ?? throw new InvalidOperationException($"Canonical replay requires a mastered security for '{symbol}'.");
+    }
+
+    public async Task<IReadOnlyList<CorporateActionDto>> CanonicalCorporateActionsAsync(
+        string symbol, Guid expectedSecurityId, DateTimeOffset effectiveThroughUtc, CancellationToken ct = default)
+    {
+        var security = await CanonicalSecurityMasterAsync(symbol, effectiveThroughUtc, ct).ConfigureAwait(false);
+        if (security.SecurityId != expectedSecurityId)
+            throw new InvalidOperationException("Security identity changed while preparing canonical replay.");
+        return await securityMasterQuery!.GetCorporateActionsAsync(expectedSecurityId, ct).ConfigureAwait(false);
     }
 }

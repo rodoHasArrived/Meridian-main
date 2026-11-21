@@ -153,6 +153,92 @@ public sealed class BracketOrderTests
     }
 
     [Fact]
+    public void ReconcileOcoSiblings_PartlyFilledSibling_KeepsItsFilledSharesInTheReducedTotal()
+    {
+        // A long 100-share bracket: the take-profit has already sold 30 against the book, and
+        // that fill reduced the stop-loss to the 70 shares still held.
+        var ocoGroupId = Guid.NewGuid();
+        var parentOrderId = Guid.NewGuid();
+        var takeProfit = new Order(
+            Guid.NewGuid(),
+            "SPY",
+            OrderType.Limit,
+            -100L,
+            110m,
+            null,
+            DateTimeOffset.UtcNow,
+            TimeInForce: TimeInForce.GoodTilCancelled,
+            Status: OrderStatus.PartiallyFilled,
+            FilledQuantity: -30L,
+            ParentOrderId: parentOrderId,
+            OcoGroupId: ocoGroupId);
+        var stopLoss = new Order(
+            Guid.NewGuid(),
+            "SPY",
+            OrderType.StopMarket,
+            -70L,
+            null,
+            95m,
+            DateTimeOffset.UtcNow,
+            TimeInForce: TimeInForce.GoodTilCancelled,
+            ParentOrderId: parentOrderId,
+            OcoGroupId: ocoGroupId);
+
+        var pendingOrders = new List<Order> { takeProfit, stopLoss };
+
+        // The stop-loss now sells 20 of its 70, leaving 50 shares of the position to exit.
+        var stopFill = new FillEvent(Guid.NewGuid(), stopLoss.OrderId, "SPY", -20L, 95m, 0m, DateTimeOffset.UtcNow);
+
+        ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, stopLoss, stopFill);
+
+        // Quantity is the order total, so the take-profit keeps its 30 filled shares and works
+        // the remaining 50. Setting the total to 50 would leave only 20 after the 30 already filled.
+        var reducedTakeProfit = pendingOrders[0];
+        reducedTakeProfit.FilledQuantity.Should().Be(-30L);
+        reducedTakeProfit.Quantity.Should().Be(-80L);
+        reducedTakeProfit.RemainingQuantity.Should().Be(50L);
+        reducedTakeProfit.RemainingSignedQuantity.Should().Be(-50L);
+        reducedTakeProfit.Status.Should().Be(OrderStatus.PartiallyFilled);
+    }
+
+    [Fact]
+    public void ReconcileOcoSiblings_FillCoveringPartlyFilledSiblingRemainder_CancelsSibling()
+    {
+        var ocoGroupId = Guid.NewGuid();
+        var parentOrderId = Guid.NewGuid();
+        var takeProfit = new Order(
+            Guid.NewGuid(),
+            "SPY",
+            OrderType.Limit,
+            -100L,
+            110m,
+            null,
+            DateTimeOffset.UtcNow,
+            Status: OrderStatus.PartiallyFilled,
+            FilledQuantity: -30L,
+            ParentOrderId: parentOrderId,
+            OcoGroupId: ocoGroupId);
+        var stopLoss = new Order(
+            Guid.NewGuid(),
+            "SPY",
+            OrderType.StopMarket,
+            -70L,
+            null,
+            95m,
+            DateTimeOffset.UtcNow,
+            ParentOrderId: parentOrderId,
+            OcoGroupId: ocoGroupId);
+
+        var pendingOrders = new List<Order> { takeProfit, stopLoss };
+        var stopFill = new FillEvent(Guid.NewGuid(), stopLoss.OrderId, "SPY", -70L, 95m, 0m, DateTimeOffset.UtcNow);
+
+        ContingentOrderManager.ReconcileOcoSiblings(pendingOrders, stopLoss, stopFill);
+
+        pendingOrders[0].Status.Should().Be(OrderStatus.Cancelled);
+        pendingOrders[0].FilledQuantity.Should().Be(-30L);
+    }
+
+    [Fact]
     public void ReconcileOcoSiblings_FullFill_CancelsSibling()
     {
         var ocoGroupId = Guid.NewGuid();

@@ -1,11 +1,25 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
+import { buildWorkspaceAttentionCounts } from "@/lib/daily-control-tower";
 import { DailyControlTowerScreen } from "@/screens/daily-control-tower-screen";
 import { renderWithRouter } from "@/test/render";
 import type { DataWorkspaceResponse, TradingWorkspaceResponse } from "@/types";
+import { commandOperatorTriage, getOperatorTriageInbox, type OperatorTriageInbox, type OperatorTriageItem } from "@/lib/operator-inbox-triage";
+
+import { resetSinceLastVisitCache, type SurfaceVisitServices } from "@/lib/since-last-visit";
+vi.mock("@/lib/operator-inbox-triage", async (load) => ({ ...await load<typeof import("@/lib/operator-inbox-triage")>(), getOperatorTriageInbox: vi.fn(), commandOperatorTriage: vi.fn(), bulkAssignOperatorTriage: vi.fn() }));
+vi.mock("@/lib/table-workbench", async (load) => ({ ...await load<typeof import("@/lib/table-workbench")>(), loadTableViews: vi.fn(async () => []), saveTableView: vi.fn() }));
+
+// The shared host inbox: one blocker and one informational item, neither of which is a
+// workspace signal, so the grid interleaves them by severity with the workspace rows.
+const inboxBlocker: OperatorTriageItem = { workItemId: "cash-break", label: "Cash break triage", detail: "Cash break needs an owner.", workspace: "accounting", targetRoute: "/accounting/reconciliation", kind: "ReconciliationBreak",
+  tone: "Critical", createdAt: "2026-05-14T18:00:00Z", ownerId: null, dueAt: null, version: 2, sourceVersion: 4, acknowledgedAt: null, snoozedUntil: null,
+  capabilities: { canAssign: true, canAcknowledge: true, canSnooze: true, canUnsnooze: false, disabledReason: null }, activity: [] };
+const inboxInfo: OperatorTriageItem = { ...inboxBlocker, workItemId: "pack-note", label: "Pack reviewer note", detail: "Reviewer left a note.", workspace: "reporting", targetRoute: "/reporting/report-packs", kind: null, tone: "Info", ownerId: "operator-1" };
+const inboxResponse: OperatorTriageInbox = { asOf: "2026-05-14T21:30:00Z", actorId: "operator-1", items: [inboxBlocker, inboxInfo], persistenceAvailable: true, unavailableReason: null };
 
 // A payload that produces a multi-row finance queue so row selection is
 // observable: two trading work items plus one data-provider warning.
@@ -86,15 +100,13 @@ const payload: AppShellWorkspacePayload = {
 };
 
 function renderScreen({
-  onEditOperatingScope = vi.fn(),
-  onRefresh = vi.fn(),
   refreshing = false,
-  search = "?symbol=MSFT"
+  search = "?symbol=MSFT",
+  visitServices
 }: {
-  onEditOperatingScope?: () => void;
-  onRefresh?: () => void;
   refreshing?: boolean;
   search?: string;
+  visitServices?: Partial<SurfaceVisitServices>;
 } = {}) {
   const shell = buildAppShellViewState({
     pathname: "/",
@@ -108,60 +120,316 @@ function renderScreen({
     <DailyControlTowerScreen
       viewModel={shell.workflowContinuity}
       trustStrip={shell.trustStrip}
-      onEditOperatingScope={onEditOperatingScope}
-      onRefresh={onRefresh}
+      attention={shell.attention}
       refreshing={refreshing}
+      visitServices={visitServices}
     />
   );
 }
 
+function gridRowKeys() {
+  const grid = screen.getByRole("treegrid", { name: "Today queue" });
+  return [...grid.querySelectorAll<HTMLElement>("tbody tr[data-dense-row-id]")].map((row) => row.dataset.denseRowId);
+}
+
+async function renderLoaded(options: Parameters<typeof renderScreen>[0] = {}) {
+  const result = renderScreen(options);
+  await screen.findByRole("row", { name: "Cash break triage" });
+  return result;
+}
+
+describe("DailyControlTowerScreen new since you last looked", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+    resetSinceLastVisitCache();
+    window.sessionStorage.clear();
+  });
+
+  it("marks inbox items created or changed after the viewer's previous visit", async () => {
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue({
+      ...inboxResponse,
+      items: [
+        { ...inboxBlocker, activity: [{ commandId: "c-1", action: "Acknowledge", actorId: "operator-2", reason: "Looking", occurredAt: "2026-05-14T19:30:00Z" }] },
+        { ...inboxInfo, createdAt: "2026-05-14T20:30:00Z" }
+      ]
+    } as OperatorTriageInbox);
+    const visit = { surface: "today-queue", visitedAt: "2026-05-14T21:30:00Z", previousVisitAt: "2026-05-14T19:00:00Z" };
+    const record = vi.fn(async () => visit);
+    renderScreen({ search: "?symbol=MSFT", visitServices: { record, read: record } });
+    await screen.findByRole("row", { name: "Cash break triage" });
+    expect(record).toHaveBeenCalledWith("today-queue");
+    expect(await screen.findByTestId("today-since-last-visit")).toHaveTextContent(/2 new and 1 updated since your last visit \(May 14, 2026, 19:00 UTC\)/);
+    const blockerRow = screen.getByRole("row", { name: "Cash break triage" });
+    expect(blockerRow.querySelector("[data-since-last-visit='updated']")).not.toBeNull();
+    // The workspace signal observed at 20:00 is new as well; one observed earlier is not marked.
+    expect(document.querySelectorAll("[data-since-last-visit='new']").length).toBe(2);
+  });
+});
+
 describe("DailyControlTowerScreen", () => {
-  it("renders the ranked finance queue and defaults the evidence pane to the top row", () => {
-    renderScreen();
+  beforeEach(() => {
+    vi.clearAllMocks();
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue(inboxResponse);
+  });
+
+  it("renders the ranked queue and defaults the evidence pane to the leading decision", async () => {
+    await renderLoaded();
 
     expect(
       screen.getByRole("heading", { name: "What needs an operator decision now" })
     ).toBeInTheDocument();
 
-    // The shared dense table exposes the selected row and its controlled detail
-    // panel without adding a second, mouse-only selection control.
+    // The headline and the default evidence follow the worst queued workspace decision -- the same
+    // one the masthead attention pill names on every route -- even when an inbox blocker is older.
     expect(
-      screen.getByRole("row", { name: "Report pack approval waiting" })
+      screen.getByRole("row", { name: "Brokerage sync failed" })
     ).toHaveAttribute("aria-selected", "true");
     expect(
-      screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i })
+      screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
     ).toBeInTheDocument();
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("3 ranked items");
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("Stale update");
-    expect(screen.getByLabelText("Daily control tower confidence")).toHaveTextContent("May 14, 2026");
+    const confidence = screen.getByLabelText("Daily control tower confidence");
+    // One count, with its rule stated once: 3 workspace signals + the inbox blocker; the
+    // informational inbox note is not counted.
+    expect(screen.getByTestId("today-attention-count")).toHaveTextContent("4 need attention · blocked + action, excluding snoozed");
+    expect(confidence).not.toHaveTextContent(/workspace signals? in the queue/);
+    // No stray evidence line above the queue; the selected item says why it is ranked where it is.
+    expect(confidence).not.toHaveTextContent("Selected evidence");
+    expect(screen.getByTestId("today-rank-reason")).toHaveTextContent("Ranked 2 of 4. Sorted by severity (blocked), then oldest first: 2nd oldest of 2 blocked items.");
     expect(screen.queryByLabelText("Daily control tower decision drivers")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Daily control tower trust posture")).not.toBeInTheDocument();
     expect(screen.getByText("More evidence").closest("details")).not.toHaveAttribute("open");
   });
 
-  it("exposes connectivity, scope, and freshness remediation in their owning cards", async () => {
+  it("offers Assigned to me on every source and says why workspace signals leave the list", async () => {
+    await renderLoaded();
     const user = userEvent.setup();
-    const onEditOperatingScope = vi.fn();
-    const onRefresh = vi.fn();
-    renderScreen({ onEditOperatingScope, onRefresh, search: "" });
-
-    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    expect(within(confidence).getByText("Connectivity")).toBeInTheDocument();
-    expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
-      .toHaveAttribute("href", "/data/providers");
-
-    await user.click(within(confidence).getByRole("button", { name: "Set operating scope" }));
-    await user.click(within(confidence).getByRole("button", { name: "Refresh control tower evidence" }));
-
-    expect(onEditOperatingScope).toHaveBeenCalledTimes(1);
-    expect(onRefresh).toHaveBeenCalledTimes(1);
+    // "Assigned to me" is the Owner switch's own-items choice.
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "mine");
+    const grid = screen.getByRole("treegrid", { name: "Today queue" });
+    expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(0);
+    expect(screen.getByText("Workspace signals have no owner, so Assigned to me hides them.")).toBeInTheDocument();
   });
 
-  it("preserves compatible operating scope in connectivity recovery", () => {
+  it("keeps the seeded read-only inbox notice out of the normal view while its actions stay disabled", async () => {
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue({
+      ...inboxResponse,
+      persistenceAvailable: false,
+      unavailableReason: "Seeded read-only inbox. Use a configured shared host for durable triage actions."
+    });
+    await renderLoaded();
+
+    expect(screen.queryByText(/read-only inbox/i)).not.toBeInTheDocument();
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
+    await userEvent.setup().click(screen.getByRole("row", { name: "Cash break triage" }));
+    expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
+    expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
+  });
+
+  it("interleaves workspace signals and shared-inbox items in one grid with a Source column", async () => {
+    const shell = buildAppShellViewState({
+      pathname: "/",
+      search: "?symbol=MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload
+    });
+    const { total } = buildWorkspaceAttentionCounts(shell.workflowContinuity);
+    expect(total).toBeGreaterThan(0);
+    const { container } = await renderLoaded();
+
+    const user = userEvent.setup();
+    // One grid under the one Queue heading; the default view lists exactly the counted items.
+    const grid = screen.getByRole("treegrid", { name: "Today queue" });
+    expect(screen.getByRole("region", { name: "Queue" })).toContainElement(grid);
+    expect(screen.getAllByRole("treegrid")).toHaveLength(1);
+    expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(total);
+    expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="inbox:"]')).toHaveLength(1);
+    expect(within(grid).getByRole("columnheader", { name: "Source" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "Brokerage sync failed" })).toHaveTextContent("Workspace signal");
+    expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveTextContent("Shared inbox");
+    // No row has an owner, so the Owner column says so once instead of on every row.
+    expect(within(grid).queryByRole("columnheader", { name: "Owner" })).not.toBeInTheDocument();
+    expect(screen.getByText("Owner: no item is assigned")).toBeInTheDocument();
+
+    // Severity first (both blockers lead), then age (the older inbox blocker first), then source rank.
+    const keys = gridRowKeys();
+    expect(keys.slice(0, 2)).toEqual(["inbox:cash-break", "workspace:work-item:brokerage-sync"]);
+    expect(keys.slice(2, 4).every((key) => key?.startsWith("workspace:"))).toBe(true);
+    expect(keys).toHaveLength(total + 1);
+
+    // Source filter counts are views of the one count: they add up to the total, which is the
+    // row count on screen and the count the sidebar shows beside Today for the same inbox.
+    const source = screen.getByRole("tablist", { name: "Queue source" });
+    expect(within(source).getByRole("tab", { name: /Workspace signals/ })).toHaveTextContent(String(total));
+    expect(within(source).getByRole("tab", { name: /Shared inbox/ })).toHaveTextContent("1");
+    expect(within(source).getByRole("tab", { name: /^All/ })).toHaveTextContent(String(total + 1));
+    expect(buildWorkspaceAttentionCounts(shell.workflowContinuity, inboxResponse.items).total).toBe(total + 1);
+    expect(screen.queryByText(/sidebar badges count/)).not.toBeInTheDocument();
+    expect(container.querySelector("[data-today-inbox-state]")).toHaveAttribute("data-today-inbox-state", "ready");
+    expect(screen.getByRole("group", { name: "Inbox filters" })).toHaveTextContent("All authorized accounts");
+    expect(screen.getByRole("group", { name: "Inbox filters" })).not.toHaveTextContent(/inbox items/);
+
+    // "All items" adds the informational note after the counted rows; the counts do not move.
+    await user.selectOptions(screen.getByRole("combobox", { name: "Show" }), "all");
+    expect(gridRowKeys()[total + 1]).toBe("inbox:pack-note");
+    expect(within(source).getByRole("tab", { name: /^All/ })).toHaveTextContent(String(total + 1));
+    await user.selectOptions(screen.getByRole("combobox", { name: "Show" }), "active");
+
+    const results = await axe(container);
+    expect(results.violations).toEqual([]);
+  });
+
+  it("filters rows of the one grid by source", async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+    const source = screen.getByRole("tablist", { name: "Queue source" });
+
+    await user.click(within(source).getByRole("tab", { name: /Shared inbox/ }));
+    expect(gridRowKeys()).toEqual(["inbox:cash-break"]);
+    // The leading workspace decision is filtered out, so the first visible row is selected.
+    expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveAttribute("aria-selected", "true");
+    expect(screen.getByRole("region", { name: "Cash break triage triage detail" })).toBeInTheDocument();
+
+    await user.click(within(source).getByRole("tab", { name: /Workspace signals/ }));
+    expect(gridRowKeys().every((key) => key?.startsWith("workspace:"))).toBe(true);
+    expect(screen.queryByRole("group", { name: "Inbox filters" })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })).toBeInTheDocument();
+
+    await user.click(within(source).getByRole("tab", { name: /^All/ }));
+    expect(gridRowKeys()).toHaveLength(4);
+  });
+
+  it("keeps inbox triage on inbox rows and an unconfirmed command across source filtering", async () => {
+    const user = userEvent.setup();
+    vi.mocked(commandOperatorTriage).mockRejectedValueOnce(new Error("connection interrupted"))
+      .mockResolvedValueOnce({ status: "Applied", workItemId: inboxBlocker.workItemId, replayed: true });
+    await renderLoaded({ search: "" });
+
+    await user.click(screen.getByRole("row", { name: "Cash break triage" }));
+    const detail = screen.getByRole("region", { name: "Cash break triage triage detail" });
+    expect(screen.queryByRole("region", { name: /evidence summary/i })).not.toBeInTheDocument();
+    // Blockers are never snoozed; the route stays reachable from the grid and the rail.
+    expect(within(detail).getByRole("button", { name: "Snooze" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "Open Cash break triage in its workspace" })).toHaveAttribute("href", "/accounting/reconciliation");
+
+    await user.click(within(detail).getByRole("button", { name: "Acknowledge" }));
+    await user.type(screen.getByLabelText("Reason"), "Investigation started");
+    await user.click(screen.getByRole("button", { name: "Apply triage action" }));
+    expect(await screen.findByRole("button", { name: "Retry same command" })).toBeEnabled();
+
+    // Filtering the inbox rows out of the grid keeps the unconfirmed command and its retry.
+    const source = screen.getByRole("tablist", { name: "Queue source" });
+    await user.click(within(source).getByRole("tab", { name: /Workspace signals/ }));
+    expect(screen.queryByRole("row", { name: "Cash break triage" })).not.toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Retry same command" }));
+    await waitFor(() => expect(commandOperatorTriage).toHaveBeenCalledTimes(2));
+    expect(vi.mocked(commandOperatorTriage).mock.calls[0][0]).toBe("cash-break");
+    expect(vi.mocked(commandOperatorTriage).mock.calls[1][1]).toEqual(vi.mocked(commandOperatorTriage).mock.calls[0][1]);
+  });
+
+  it("bulk-assigns checked inbox rows and offers no checkbox on workspace rows", async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+    expect(within(screen.getByRole("row", { name: "Brokerage sync failed" })).queryByRole("checkbox")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox", { name: "Select Cash break triage for bulk actions" }));
+    await user.click(screen.getByRole("button", { name: "Assign 1 selected" }));
+    expect(screen.getByRole("dialog")).toHaveAccessibleName("Assign 1 selected items");
+  });
+
+  it("assigns the selected inbox row from the keyboard and moves j/k across both sources", async () => {
+    const user = userEvent.setup();
+    await renderLoaded();
+    screen.getByRole("row", { name: "Cash break triage" }).focus();
+    await user.keyboard("j");
+    await waitFor(() => expect(screen.getByRole("row", { name: "Brokerage sync failed" })).toHaveFocus());
+    // The evidence rail follows a workspace row; the triage rail follows an inbox row.
+    expect(screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })).toBeInTheDocument();
+    await user.keyboard("k");
+    await waitFor(() => expect(screen.getByRole("row", { name: "Cash break triage" })).toHaveFocus());
+    await user.keyboard("a");
+    expect(screen.getByRole("dialog")).toHaveAccessibleName("Assign item");
+    expect(screen.getByRole("dialog")).toHaveTextContent("Cash break triage");
+  });
+
+  it("keeps workspace signals when the shared inbox fails, and storage-unavailable actions disabled", async () => {
+    vi.mocked(getOperatorTriageInbox).mockRejectedValue(new Error("Forbidden"));
+    const { container, unmount } = renderScreen();
+    const failure = await screen.findByRole("alert");
+    expect(failure).toHaveTextContent("Inbox triage is unavailable. Workspace signals in this queue are unaffected");
+    expect(gridRowKeys()).toHaveLength(3);
+    expect(container.querySelector("[data-today-inbox-state]")).toHaveAttribute("data-today-inbox-state", "unavailable");
+    expect(screen.getByTestId("today-attention-count")).toHaveTextContent("3 need attention · blocked + action, excluding snoozed · shared inbox unavailable");
+    unmount();
+
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue({ ...inboxResponse, persistenceAvailable: false, unavailableReason: "Production triage storage is unavailable." });
+    const user = userEvent.setup();
+    await renderLoaded();
+    expect(screen.getByRole("alert")).toHaveTextContent("Production triage storage is unavailable");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Show" }), "all");
+    await user.click(screen.getByRole("row", { name: "Pack reviewer note" }));
+    expect(screen.getByRole("button", { name: "Acknowledge" })).toBeDisabled();
+    expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
+  });
+
+  it("states the workstation status in one line that names only the open issues", () => {
+    renderScreen();
+
+    const status = screen.getByRole("region", { name: "Workstation status" });
+    const line = within(status).getByTestId("status-row-issues");
+    const priority = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priority).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
+    expect(priority.querySelectorAll('[data-testid="status-row-issues"]')).toHaveLength(1);
+    expect(line).toHaveTextContent("Blocked");
+    expect(line).toHaveTextContent("Decisions:");
+    expect(line).toHaveTextContent("Brokerage sync failed · 2 more");
+    expect(line).toHaveTextContent("Providers:");
+    expect(line).toHaveTextContent("1 warning");
+    // This shell never confirmed its provenance, which is an issue in its own right.
+    expect(line).toHaveTextContent("Provenance:");
+    expect(line).toHaveTextContent("UNKNOWN");
+    // Ready signals are not listed in the line; they are behind Details.
+    expect(line).not.toHaveTextContent("Workspace data");
+    expect(status.querySelector("details")).not.toHaveAttribute("open");
+    expect(status).toHaveTextContent("Workspace data");
+  });
+
+  it("matches the masthead attention state for the same data", () => {
+    const shell = buildAppShellViewState({
+      pathname: "/",
+      search: "?symbol=MSFT",
+      loading: false,
+      error: null,
+      workspaceErrors: {},
+      payload
+    });
+    renderScreen();
+
+    expect(shell.attention.tone).toBe("blocked");
+    expect(shell.attention.title).toBe("Brokerage sync failed");
+    const headline = screen.getByRole("region", { name: "Priority decision" });
+    expect(headline).toHaveTextContent("Brokerage sync failed");
+    expect(headline).toHaveTextContent("Blocked");
+    expect(screen.getByRole("region", { name: "Workstation status" })).toHaveAttribute("data-status-tone", "blocked");
+  });
+
+  it("exposes provider remediation with the status row and leaves scope and refresh to the header", () => {
+    renderScreen({ search: "" });
+
+    const status = screen.getByRole("region", { name: "Workstation status" });
+    expect(within(status).getByRole("link", { name: "Open provider health" }))
+      .toHaveAttribute("href", "/data/providers");
+
+    // Scope is chosen in the header scope bar and refresh is the header's one button.
+    expect(screen.queryByRole("button", { name: /operating scope|scope filter/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /refresh/i })).not.toBeInTheDocument();
+  });
+
+  it("preserves compatible operating scope in provider recovery", () => {
     renderScreen({ search: "?symbol=MSFT" });
 
-    const confidence = screen.getByRole("region", { name: "Daily control tower confidence" });
-    expect(within(confidence).getByRole("link", { name: "Open provider posture" }))
+    const status = screen.getByRole("region", { name: "Workstation status" });
+    expect(within(status).getByRole("link", { name: "Open provider health" }))
       .toHaveAttribute("href", "/data/providers?symbol=MSFT");
   });
 
@@ -169,34 +437,36 @@ describe("DailyControlTowerScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const brokerageRow = screen.getByRole("row", {
-      name: "Brokerage sync failed"
+    const reportPackRow = screen.getByRole("row", {
+      name: "Report pack approval waiting"
     });
-    expect(brokerageRow).not.toHaveAttribute("aria-selected", "true");
+    expect(reportPackRow).not.toHaveAttribute("aria-selected", "true");
 
-    await user.click(brokerageRow);
+    await user.click(reportPackRow);
 
     // Selection moved without navigating away: the evidence region now reflects
     // the clicked row, and the pressed state follows it.
-    expect(brokerageRow).toHaveAttribute("aria-selected", "true");
+    expect(reportPackRow).toHaveAttribute("aria-selected", "true");
     expect(
-      screen.getByRole("region", { name: /Brokerage sync failed evidence summary/i })
+      screen.getByRole("region", { name: /Report pack approval waiting evidence summary/i })
     ).toBeInTheDocument();
     expect(
-      screen.getByRole("row", { name: "Report pack approval waiting" })
+      screen.getByRole("row", { name: "Brokerage sync failed" })
     ).not.toHaveAttribute("aria-selected", "true");
   });
 
-  it("requires an explicit scope choice before showing the combined queue", async () => {
-    const user = userEvent.setup();
-    renderScreen({ search: "" });
-
-    expect(screen.getByRole("region", { name: "Choose Control Tower scope" })).toBeInTheDocument();
-    expect(screen.queryByRole("treegrid", { name: "Daily control tower finance queue" })).not.toBeInTheDocument();
-
-    await user.click(screen.getByRole("button", { name: "Review all scopes" }));
-
-    expect(screen.getByRole("treegrid", { name: "Daily control tower finance queue" })).toBeInTheDocument();
+  it("shows the combined ranked queue without a scope selection", async () => {
+    await renderLoaded({ search: "" });
+    await userEvent.setup().selectOptions(screen.getByRole("combobox", { name: "Show" }), "all");
+    expect(screen.queryByRole("region", { name: "Choose Control Tower scope" })).not.toBeInTheDocument();
+    expect(screen.getByRole("treegrid", { name: "Today queue" })).toBeInTheDocument();
+    // The header scope bar states the scope; Today does not repeat it.
+    expect(screen.getByLabelText("Daily control tower confidence")).not.toHaveTextContent("All authorized scopes");
+    expect(screen.getByRole("columnheader", { name: "Workspace" })).toBeInTheDocument();
+    // Owner is tracked for inbox rows only; workspace signals say so rather than inventing one.
+    expect(screen.getByRole("columnheader", { name: "Owner" })).toBeInTheDocument();
+    expect(screen.getByRole("row", { name: "Brokerage sync failed" })).toHaveTextContent("Not tracked");
+    expect(screen.getByRole("row", { name: "Pack reviewer note" })).toHaveTextContent("operator-1");
   });
 
   it("supports keyboard selection and detail focus through the shared dense-row contract", async () => {
@@ -236,11 +506,8 @@ describe("DailyControlTowerScreen", () => {
   it("shows the leading action once outside the ranked queue", () => {
     renderScreen();
 
-    const priorityPanel = screen.getByText("Report pack approval waiting", {
-      selector: ".mds-rpanel__title"
-    }).closest(".mds-rpanel");
-    expect(priorityPanel).not.toBeNull();
-    expect(within(priorityPanel as HTMLElement).getAllByRole("link")).toHaveLength(1);
+    const priorityPanel = screen.getByRole("region", { name: "Priority decision" });
+    expect(within(priorityPanel as HTMLElement).getAllByRole("link").filter((link) => !link.closest("details"))).toHaveLength(1);
   });
 
   it("has no accessibility violations", async () => {

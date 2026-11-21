@@ -47,10 +47,34 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("bash scripts/ci.sh --lane verify-browser", self.workflow)
 
         ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
-        self.assertIn("Generated UI contract drift gate", ci_script)
+        self.assertIn("Generate UI contracts", ci_script)
         self.assertIn("npm --prefix src/Meridian.Ui/dashboard run lint", ci_script)
         self.assertIn("npm --prefix src/Meridian.Ui/dashboard run typecheck:strict", ci_script)
         self.assertIn("npm --prefix src/Meridian.Ui/dashboard run test", ci_script)
+
+    def test_dotnet_consumes_same_run_browser_assets_before_msbuild(self):
+        import yaml
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        dotnet = workflow["jobs"]["verify-dotnet"]
+        self.assertEqual(dotnet["needs"], ["changes", "verify-browser"])
+        steps = dotnet["steps"]
+        download = next(step for step in steps if step.get("name") == "Download same-revision workstation assets")
+        run = next(step for step in steps if step.get("name") == "Run .NET lane")
+        self.assertLess(steps.index(download), steps.index(run))
+        producer = next(step for step in workflow["jobs"]["verify-browser"]["steps"]
+                        if step.get("name") == "Upload verified workstation assets")
+        # A failed .NET job may be rerun without rerunning its successful
+        # producer. The consumer must use that producer's ID instead of the
+        # consumer's newer github.run_attempt.
+        browser = workflow["jobs"]["verify-browser"]
+        self.assertEqual(download["with"]["artifact-ids"], "${{ needs.verify-browser.outputs.workstation-artifact-id }}")
+        self.assertEqual(browser["outputs"]["workstation-artifact-id"], "${{ steps.workstation.outputs.artifact-id }}")
+        self.assertEqual(producer["id"], "workstation")
+        self.assertNotIn("name", download["with"])
+        self.assertNotIn("github.run_attempt", download["with"]["artifact-ids"])
+        self.assertIn("github.sha", producer["with"]["name"])
+        self.assertNotIn("run-id", download["with"])
+        self.assertEqual(producer["with"]["if-no-files-found"], "error")
 
     def test_docs_lane_keeps_subset_receipt_out_of_tracked_status_docs(self) -> None:
         ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")

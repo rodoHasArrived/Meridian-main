@@ -10,6 +10,49 @@ namespace Meridian.Tests.Execution;
 public sealed class PaperTradingCostModelTests
 {
     [Fact]
+    public void ContractMultiplier_ScalesNotionalBasedCharges()
+    {
+        // One contract at $10 with multiplier 100 moves $1,000 in the paper book, so a 100 bp fee
+        // is $10, not the $0.10 an unmultiplied notional would charge.
+        var model = new PaperTradingCostModel(new PaperTradingCostOptions
+        {
+            CommissionKind = PaperCommissionKind.BasisPointsOfNotional,
+            CommissionRate = 10m,
+            CommissionMinimum = 0m,
+            FeeBasisPoints = 100m,
+            SlippageBasisPoints = 5m
+        });
+
+        var costs = model.Compute(quantity: 1m, fillPrice: 10m, midPrice: 9.90m, contractMultiplier: 100m);
+
+        costs.Commission.Should().Be(1.00m, "10 bp of the $1,000 multiplied notional");
+        costs.Fees.Should().Be(10.00m, "100 bp of the $1,000 multiplied notional");
+        costs.SlippageCost.Should().Be(0.50m, "5 bp of the $1,000 multiplied notional");
+        costs.SpreadCost.Should().Be(10.00m, "$0.10 from the mid on 1 contract × 100");
+    }
+
+    [Fact]
+    public void ContractMultiplier_LeavesPerShareAndFixedChargesUnchanged()
+    {
+        var perShare = new PaperTradingCostModel(new PaperTradingCostOptions
+        {
+            CommissionRate = 0.65m,
+            CommissionMinimum = 0m
+        });
+        var fixedPerOrder = new PaperTradingCostModel(new PaperTradingCostOptions
+        {
+            CommissionKind = PaperCommissionKind.FixedPerOrder,
+            CommissionRate = 1.50m,
+            CommissionMinimum = 0m
+        });
+
+        perShare.Compute(quantity: 2m, fillPrice: 10m, midPrice: null, contractMultiplier: 100m)
+            .Commission.Should().Be(1.30m, "a per-contract rate charges per contract, not per underlying share");
+        fixedPerOrder.Compute(quantity: 2m, fillPrice: 10m, midPrice: null, contractMultiplier: 100m)
+            .Commission.Should().Be(1.50m);
+    }
+
+    [Fact]
     public void DefaultSchedule_ChargesPerShareCommissionWithMinimum()
     {
         var model = new PaperTradingCostModel();

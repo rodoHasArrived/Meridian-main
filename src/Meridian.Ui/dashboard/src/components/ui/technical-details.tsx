@@ -23,8 +23,8 @@ export function TechnicalDetails({
   ...props
 }: TechnicalDetailsProps) {
   return (
-    <details className={cn("group rounded-[2px] border border-border bg-secondary/15", className)} {...props}>
-      <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [&::-webkit-details-marker]:hidden">
+    <details className={cn("group rounded-[var(--radius-card)] border border-border bg-secondary/15", className)} {...props}>
+      <summary className="flex min-h-9 cursor-pointer list-none items-center justify-between gap-3 px-3 py-2 text-sm font-medium text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] [&::-webkit-details-marker]:hidden">
         <span>{label}</span>
         <ChevronDown
           className="h-4 w-4 shrink-0 text-muted-foreground transition-transform group-open:rotate-180"

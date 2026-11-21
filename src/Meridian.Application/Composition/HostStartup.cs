@@ -318,6 +318,35 @@ public sealed class HostStartup : IAsyncDisposable
     }
 
     /// <summary>
+    /// Asynchronously reads the credentials provider construction needs. Construct providers
+    /// inside <see cref="IPreparedProviderCredentials.Activate"/> so that construction, which is
+    /// synchronous, does not wait on credential storage.
+    /// </summary>
+    public ValueTask<IPreparedProviderCredentials> PrepareProviderCredentialsAsync(CancellationToken ct = default)
+        => GetRequiredService<ProviderFactory>().PrepareCredentialsAsync(ct);
+
+    /// <summary>
+    /// Builds the provider registry with its credentials read asynchronously first. Call this
+    /// from asynchronous startup code before resolving <see cref="ProviderRegistry"/>.
+    /// </summary>
+    public Task<ProviderCreationResult> InitializeProvidersAsync(CancellationToken ct = default)
+        => _host.Services.InitializeProvidersAsync(ct);
+
+    /// <summary>
+    /// Asynchronous counterpart of <see cref="CreateStreamingClient(AppConfig)"/>: reads the
+    /// credentials first, then resolves the registry and creates the client without waiting on
+    /// credential storage.
+    /// </summary>
+    public async Task<IMarketDataClient> CreateStreamingClientAsync(AppConfig config, CancellationToken ct = default)
+    {
+        var prepared = await PrepareProviderCredentialsAsync(ct).ConfigureAwait(false);
+        using (prepared.Activate())
+        {
+            return CreateStreamingClient(config);
+        }
+    }
+
+    /// <summary>
     /// Creates a subscription manager for managing symbol subscriptions.
     /// </summary>
     /// <param name="dataClient">The market data client.</param>
@@ -353,6 +382,13 @@ public sealed class HostStartup : IAsyncDisposable
         var factory = GetRequiredService<ProviderFactory>();
         return factory.CreateBackfillProviders();
     }
+
+    /// <summary>
+    /// Asynchronous counterpart of <see cref="CreateBackfillProviders"/>: reads the credentials
+    /// first, so construction does not wait on credential storage.
+    /// </summary>
+    public Task<IReadOnlyList<IHistoricalDataProvider>> CreateBackfillProvidersAsync(CancellationToken ct = default)
+        => GetRequiredService<ProviderFactory>().CreateBackfillProvidersAsync(ct);
 
     /// <summary>
     /// Creates a composite backfill provider with automatic failover.
@@ -563,21 +599,8 @@ public sealed class HostStartup : IAsyncDisposable
         public async Task StartAsync(CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await LedgerStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await SecurityMasterStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await DirectLendingStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await AssetOperationsStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await FundAccountsStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await FundStructureStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await BankingStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
-                .ConfigureAwait(false);
-            await MoneyMarketStartup.EnsureDatabaseReadyAsync(_serviceProvider, cancellationToken)
+            await _serviceProvider.GetRequiredService<DatabaseStartupPlan>()
+                .EnsureReadyAsync(_serviceProvider, cancellationToken)
                 .ConfigureAwait(false);
         }
 

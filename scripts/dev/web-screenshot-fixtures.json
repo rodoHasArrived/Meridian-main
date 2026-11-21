@@ -936,30 +936,30 @@
     "/api/workstation/strategy": {
       "metrics": [
         {
-          "id": "runs",
-          "label": "Runs",
-          "value": "24",
-          "delta": "+8%",
+          "id": "active-runs",
+          "label": "Active Runs",
+          "value": "1",
+          "delta": "+1",
           "tone": "success"
         },
         {
-          "id": "queued",
-          "label": "Queued",
-          "value": "3",
+          "id": "queued-runs",
+          "label": "Queued Promotions",
+          "value": "0",
           "delta": "0%",
           "tone": "default"
         },
         {
-          "id": "review",
+          "id": "review-runs",
           "label": "Needs Review",
-          "value": "2",
-          "delta": "-1%",
+          "value": "0",
+          "delta": "0%",
           "tone": "warning"
         },
         {
-          "id": "promotions",
-          "label": "Promotions",
-          "value": "5",
+          "id": "winning-runs",
+          "label": "Positive P&L",
+          "value": "2",
           "delta": "+2",
           "tone": "default"
         }
@@ -1697,6 +1697,12 @@
         }
       }
     ],
+    "/api/ledger/intercompany/capabilities": {
+      "canManageAgreements": false,
+      "canManageLifecycle": false,
+      "canManageLedger": false,
+      "canViewLedger": true
+    },
     "/api/ledger/books": [
       {
         "ledgerBookId": "00000000-0000-0000-0000-0000000000aa",
@@ -1711,6 +1717,19 @@
         "accountingBasis": "Primary",
         "accountingPolicyId": "fund-alpha-gaap",
         "accountingPolicyVersion": "2026.1"
+      },
+      {
+        "ledgerBookId": "3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+        "fundProfileId": "fund-a",
+        "fundStructureNodeId": "4f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e22",
+        "fundStructureNodeKind": "Entity",
+        "displayName": "Seeded Fund A primary book",
+        "baseCurrency": "USD",
+        "createdAt": "2026-11-01T00:00:00Z",
+        "updatedAt": "2026-11-01T00:00:00Z",
+        "accountingBasis": "Primary",
+        "accountingPolicyId": "policy-a",
+        "accountingPolicyVersion": "1"
       }
     ],
     "/api/ledger/periods": [
@@ -4637,7 +4656,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "Secure portal package",
-        "subject": "Investor Monthly Statement \u2014 May 2026",
+        "subject": "Investor Monthly Statement — May 2026",
         "state": "Delivered",
         "attemptCount": 1,
         "maxAttempts": 3,
@@ -4678,7 +4697,7 @@
         "recipient": "investor-anchor-lp",
         "recipientKind": "Company",
         "destination": "statements@anchor-lp.example",
-        "subject": "Investor Monthly Statement \u2014 May 2026",
+        "subject": "Investor Monthly Statement — May 2026",
         "state": "Retrying",
         "attemptCount": 2,
         "maxAttempts": 3,
@@ -4763,7 +4782,7 @@
       "scopeItems": [
         {
           "label": "Ledger source",
-          "value": "Strategy run (simulation) \u2014 not the posted journal",
+          "value": "Strategy run (simulation) — not the posted journal",
           "tone": "Default"
         },
         {
@@ -4827,7 +4846,7 @@
             "recordId": "ledger:run-42:acct-cash",
             "recordType": "ledger-account",
             "title": "Cash",
-            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "subtitle": "Asset · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Success",
             "fields": [
@@ -4908,7 +4927,7 @@
             "recordId": "ledger:run-42:acct-investments",
             "recordType": "ledger-account",
             "title": "Public Investments",
-            "subtitle": "Asset \u00b7 Strategy run run-42",
+            "subtitle": "Asset · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -4989,7 +5008,7 @@
             "recordId": "ledger:run-42:acct-capital",
             "recordType": "ledger-account",
             "title": "Contributed Capital",
-            "subtitle": "Equity \u00b7 Strategy run run-42",
+            "subtitle": "Equity · Strategy run run-42",
             "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
             "tone": "Default",
             "fields": [
@@ -5047,7 +5066,7 @@
         "recordId": "ledger:run-42:acct-cash",
         "recordType": "ledger-account",
         "title": "Cash",
-        "subtitle": "Asset \u00b7 Strategy run run-42",
+        "subtitle": "Asset · Strategy run run-42",
         "description": "Simulated account balance retained by the strategy run. This is a run artifact, not the posted journal.",
         "tone": "Success",
         "fields": [
@@ -5452,7 +5471,7 @@
           "fromGateStatus": "NotStarted",
           "toGateStatus": "InProgress",
           "actor": "ops-user",
-          "rationale": "Open monthly close lane.",
+          "rationale": "Open monthly close.",
           "correlationId": "dev-continuity",
           "references": [],
           "previousHash": null,
@@ -6221,7 +6240,7 @@
             "fromGateStatus": "NotStarted",
             "toGateStatus": "InProgress",
             "actor": "ops-user",
-            "rationale": "Open monthly close lane.",
+            "rationale": "Open monthly close.",
             "correlationId": "dev-continuity",
             "references": [],
             "previousHash": null,
@@ -6878,6 +6897,238 @@
           }
         ]
       }
+    },
+    "/api/ledger/private-capital/workbench": {
+      "scope": {
+        "tenantId": "tenant-a",
+        "companyId": "company-a",
+        "entityId": "4f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e22",
+        "fundProfileId": "fund-a",
+        "ledgerBookId": "3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+        "currency": "USD"
+      },
+      "commitments": [
+        {
+          "commitmentId": "commitment-a",
+          "scope": {
+            "tenantId": "tenant-a",
+            "companyId": "company-a",
+            "entityId": "4f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e22",
+            "fundProfileId": "fund-a",
+            "ledgerBookId": "3f7c8a52-1a44-4f4e-9a2b-6f0d5a7c9e11",
+            "currency": "USD"
+          },
+          "revision": 1,
+          "investorId": "investor-a",
+          "capitalAccountId": "capital-a",
+          "totalCommitment": "1000000.00",
+          "commitmentDate": "2026-01-01",
+          "effectiveFrom": "2026-01-01",
+          "investmentPeriodEndDate": null,
+          "isActive": true,
+          "approvalStatus": 1,
+          "evidenceLinks": [
+            "evidence://evidence-vault/ev-0123456789abcdef01234567"
+          ],
+          "createdBy": "preparer",
+          "createdAtUtc": "2026-11-01T00:00:00Z",
+          "approvedBy": "reviewer",
+          "approvedAtUtc": "2026-11-02T00:00:00Z",
+          "calledAmount": "0.00",
+          "fundedAmount": "0.00",
+          "uncalledAmount": "1000000.00"
+        }
+      ],
+      "calls": [],
+      "receipts": [],
+      "notices": [],
+      "generatedAtUtc": "2026-11-03T00:00:00Z"
+    },
+    "/api/workstation/operator/scope-preference": {
+      "defaultScope": null,
+      "updatedAt": null
+    },
+    "/api/fund-structure/nav-comparison": {
+      "status": "Ready",
+      "reason": null,
+      "subject": "Alpha Income Fund",
+      "currency": "USD",
+      "current": {
+        "label": "As of Jul 13, 2026",
+        "start": null,
+        "end": "2026-07-13",
+        "isPartial": true
+      },
+      "baseline": {
+        "label": "As of Jun 30, 2026",
+        "start": null,
+        "end": "2026-06-30",
+        "isPartial": false
+      },
+      "lines": [
+        {
+          "key": "total",
+          "label": "Total NAV",
+          "current": 12450000,
+          "prior": 12010000,
+          "change": 440000,
+          "percentChange": 3.6636136553,
+          "isTotal": true
+        },
+        {
+          "key": "asset-class:Cash",
+          "label": "Cash",
+          "current": 1250000,
+          "prior": 1610000,
+          "change": -360000,
+          "percentChange": -22.3602484472,
+          "isTotal": false
+        },
+        {
+          "key": "asset-class:Equity",
+          "label": "Equity",
+          "current": 8900000,
+          "prior": 8200000,
+          "change": 700000,
+          "percentChange": 8.5365853659,
+          "isTotal": false
+        },
+        {
+          "key": "asset-class:Fixed income",
+          "label": "Fixed income",
+          "current": 2300000,
+          "prior": 2200000,
+          "change": 100000,
+          "percentChange": 4.5454545455,
+          "isTotal": false
+        }
+      ],
+      "notes": [
+        "NAV is rebuilt from the posted ledger as of each date. Cash, financing and strategy cuts that do not take a date are not included.",
+        "Asset classes come from the ledger's NAV attribution; a class present on only one side is compared with zero."
+      ],
+      "generatedAt": "2026-07-13T18:55:00Z"
+    },
+    "/api/fund-structure/nav-trend": {
+      "fundProfileId": "alpha-income",
+      "subject": "Alpha Income Fund",
+      "currency": "USD",
+      "points": [
+        {
+          "asOf": "2025-08-31",
+          "totalNav": 10850000,
+          "componentCount": 6,
+          "longExposure": 7812000,
+          "shortExposure": 868000,
+          "grossExposure": 8680000,
+          "netExposure": 6944000
+        },
+        {
+          "asOf": "2025-09-30",
+          "totalNav": 10920000,
+          "componentCount": 6,
+          "longExposure": 7862000,
+          "shortExposure": 874000,
+          "grossExposure": 8736000,
+          "netExposure": 6988000
+        },
+        {
+          "asOf": "2025-10-31",
+          "totalNav": 11140000,
+          "componentCount": 6,
+          "longExposure": 8021000,
+          "shortExposure": 891000,
+          "grossExposure": 8912000,
+          "netExposure": 7130000
+        },
+        {
+          "asOf": "2025-11-30",
+          "totalNav": 11080000,
+          "componentCount": 6,
+          "longExposure": 7978000,
+          "shortExposure": 886000,
+          "grossExposure": 8864000,
+          "netExposure": 7092000
+        },
+        {
+          "asOf": "2025-12-31",
+          "totalNav": 11310000,
+          "componentCount": 6,
+          "longExposure": 8143000,
+          "shortExposure": 905000,
+          "grossExposure": 9048000,
+          "netExposure": 7238000
+        },
+        {
+          "asOf": "2026-01-31",
+          "totalNav": 11460000,
+          "componentCount": 6,
+          "longExposure": 8251000,
+          "shortExposure": 917000,
+          "grossExposure": 9168000,
+          "netExposure": 7334000
+        },
+        {
+          "asOf": "2026-02-28",
+          "totalNav": 11390000,
+          "componentCount": 6,
+          "longExposure": 8201000,
+          "shortExposure": 911000,
+          "grossExposure": 9112000,
+          "netExposure": 7290000
+        },
+        {
+          "asOf": "2026-03-31",
+          "totalNav": 11620000,
+          "componentCount": 6,
+          "longExposure": 8366000,
+          "shortExposure": 930000,
+          "grossExposure": 9296000,
+          "netExposure": 7436000
+        },
+        {
+          "asOf": "2026-04-30",
+          "totalNav": 11810000,
+          "componentCount": 6,
+          "longExposure": 8503000,
+          "shortExposure": 945000,
+          "grossExposure": 9448000,
+          "netExposure": 7558000
+        },
+        {
+          "asOf": "2026-05-31",
+          "totalNav": 11940000,
+          "componentCount": 6,
+          "longExposure": 8597000,
+          "shortExposure": 955000,
+          "grossExposure": 9552000,
+          "netExposure": 7642000
+        },
+        {
+          "asOf": "2026-06-30",
+          "totalNav": 12010000,
+          "componentCount": 6,
+          "longExposure": 8647000,
+          "shortExposure": 961000,
+          "grossExposure": 9608000,
+          "netExposure": 7686000
+        },
+        {
+          "asOf": "2026-07-13",
+          "totalNav": 12450000,
+          "componentCount": 6,
+          "longExposure": 8964000,
+          "shortExposure": 996000,
+          "grossExposure": 9960000,
+          "netExposure": 7968000
+        }
+      ],
+      "notes": [
+        "Each point is ledger NAV rebuilt as of that date, at the end of each month; the last point is NAV now.",
+        "Cash, financing and strategy cuts that do not take a date are not included.",
+        "Exposure is the ledger's securities held long and the short securities payable, at the last posted mark on or before each date."
+      ],
+      "generatedAt": "2026-07-13T18:55:00Z"
     },
     "/api/workstation/security-master/securities/sec-dev-001/passport": {
       "securityId": "sec-dev-001",

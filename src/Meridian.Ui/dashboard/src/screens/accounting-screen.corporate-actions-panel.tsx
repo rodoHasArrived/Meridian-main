@@ -15,7 +15,7 @@ const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.eventTypeLabel}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.corpActId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.corpActId}</span>
       </span>
     )
   },
@@ -92,7 +92,7 @@ export function CorporateActionsPanel({
                 />
               ) : (
                 <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Corporate action detail</div>
+                  <div className="eyebrow-label eyebrow-label--sentence">Corporate action detail</div>
                   <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                 </div>

@@ -12,7 +12,7 @@ from unittest.mock import patch
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
 SCRIPT_PATH = REPO_ROOT / "scripts" / "dev" / "desktop_screen_blueprint_checklist.py"
-CHECKLIST_PATH = REPO_ROOT / "docs" / "plans" / "desktop-workstation-screen-blueprint.checklist.json"
+CHECKLIST_PATH = REPO_ROOT / "docs" / "engineering" / "plans" / "desktop-workstation-screen-blueprint.checklist.json"
 WORKFLOWS_PATH = REPO_ROOT / "scripts" / "dev" / "desktop-workflows.json"
 
 
@@ -54,7 +54,7 @@ class DesktopScreenBlueprintChecklistTests(unittest.TestCase):
         module = _load_module()
         heading = "### 1. Security Master Workspace"
         for blueprint_text in ("", "# Archived Legacy Plan\nSee the replacement plan.\n", f"See `{heading}`.\n"):
-            with self.subTest(blueprint=blueprint_text), tempfile.TemporaryDirectory() as temp_dir:
+            with self.subTest(blueprint=blueprint_text), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                 root = Path(temp_dir)
                 (root / "blueprint.md").write_text(blueprint_text, encoding="utf-8")
                 (root / "tests").mkdir()

@@ -31,6 +31,10 @@ export interface Command {
   keywords?: string[];
   /** Styles the row as destructive (red accent + label). */
   danger?: boolean;
+  /** Right-of-label mono meta (an id, a version, a type) — typically on resolved objects. */
+  meta?: string;
+  /** Verbs on the row (open · pin · attest). Tab / → cycles, Enter runs the highlighted one; without verbs Enter calls `run`. */
+  verbs?: Array<{ id?: string; label: string; run: (command: Command) => void }>;
   /** Invoked on Enter / click. The palette closes first, then calls this. */
   run?: () => void;
 }
@@ -54,9 +58,22 @@ export interface CommandPaletteProps {
   groupOrder?: string[] | null;
   /** Show the ↑↓ / ↵ / toggle footer. @default true */
   footer?: boolean;
+  /** D-2 · object lookup. Called (debounced) with the query once it reaches `resolveMinLength`; returns
+   *  Commands for matching objects — a symbol, a case id, a report name. Sync or async. */
+  resolve?: (query: string) => Command[] | Promise<Command[]>;
+  /** @default 2 */
+  resolveMinLength?: number;
+  /** @default 120 */
+  resolveDebounceMs?: number;
+  /** Group header for resolved rows that carry none. @default "Objects" */
+  resolveGroup?: string;
+  /** Recency ranking namespace — the screen id for screen-scoped mode, "global" for shared. Session-scoped storage. @default "global" */
+  scope?: string;
+  /** Float commands run this session; show a "Recent" group on an empty query. @default true */
+  rankByRecency?: boolean;
 }
 
-export declare function CommandPalette(props: CommandPaletteProps): JSX.Element | null;
+export declare function CommandPalette(props: CommandPaletteProps): React.JSX.Element | null;
 
 export interface UseCommandPalette {
   open: boolean;

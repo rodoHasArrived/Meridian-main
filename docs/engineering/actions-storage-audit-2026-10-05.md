@@ -5,7 +5,7 @@ Status: proposed workflow correction; human governance review required before me
 ## Scope and evidence
 
 Source baseline: `600cde87be9de99c615594cb1a2b09f507cd2b2f` on `main`.
-The [machine-readable snapshot](actions-storage-audit-2026-10-05.json) records all 44 direct
+The [machine-readable snapshot](../../archive/docs/engineering/actions-storage-audit-2026-10-05.json) records all 44 direct
 `actions/upload-artifact` steps across 23 workflow files, plus a bounded sample of 26 completed
 runs and 63 non-expired artifacts observed on October 5. The sample totals **900,914,434 bytes
 (859.18 MiB)**. It includes failed runs; their retained files do not establish successful

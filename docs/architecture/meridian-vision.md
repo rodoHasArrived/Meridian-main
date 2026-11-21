@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-11-01
 
 ## What Meridian Is
 
@@ -23,13 +23,17 @@ This vision summarizes the [design charter](../product/meridian-design-document.
 architectural constraints; their inclusion does not establish implemented coverage, operator
 acceptance, or production readiness.
 
-## Product Promise: Decisions, Execution, and Numbers With Proof
+## Product Promise: Decide With Consequences, Execute Under Control, Prove the Result
 
-The product promise connects a retained strategy or order decision to its observed outcome and
-connects a financial number to its source, calculation, accounting treatment, reconciliation,
-approval, and downstream use. Operators
-and reviewers should be able to answer three questions: what changed, who approved it, and why an
-affected operation or output remains blocked.
+> Meridian shows you what a decision will do before you make it, records what actually happened,
+> and proves every number that results — and says plainly which numbers it cannot prove yet.
+
+The product promise connects a retained strategy or order decision to the consequences previewed
+before it and to its observed outcome, and connects a financial number to its source, calculation,
+accounting treatment, reconciliation, approval, and downstream use. Every number has a passport;
+every decision has a trace. A figure or decision whose support is incomplete is shown as unproven,
+never as implicitly complete. Operators and reviewers should be able to answer three questions:
+what changed, who approved it, and why an affected operation or output remains blocked.
 
 The operational proof chain connects retained source evidence, normalized and validated records,
 reconciliation and exception resolution, reviewed posting candidates, immutable journals, close
@@ -51,13 +55,23 @@ A released package retains the figures, source versions, approval, and proof ass
 release; later corrections create linked amendments or restatements. Missing, ambiguous,
 restricted, unsupported, or stale support must be visible without exposing unauthorized evidence.
 
-## Three Connected Operator Outcomes
+## Three Questions, Three Connected Operator Outcomes
 
-| Outcome | Required operator result |
-| --- | --- |
-| Formulate and validate a strategy | Retain the strategy version, rules, universe, parameters, data dependencies, assumptions, results, and review decisions; distinguish backtest, paper, and live modes. |
-| Manage orders and execute strategies | Review discretionary or strategy-originated intent, apply account authority and risk controls, submit and monitor orders, govern amendments and cancellations, and recover broker-confirmed outcomes. |
-| Reconcile, close, and report | Connect independent source and execution evidence to portfolio and accounting effects, resolve exceptions, approve results, and release reproducible reports. |
+Every surface answers one of three questions; each answer has a proof object and a test a buyer
+can run. The charter's [product promise](../product/meridian-design-document.md#12-the-product-promise)
+owns the full definitions, and the candidates named here are design proposals, not shipped
+capability.
+
+| Question | Operator outcome | Required operator result | Proof object and test |
+| --- | --- | --- | --- |
+| What happens if I do this? | Formulate and validate a strategy; preview a proposed order | Retain the strategy version, rules, universe, parameters, data dependencies, assumptions, results, and review decisions; distinguish backtest, paper, and live modes. Preview a proposed order's cash, income, exposure, limits, and projected journal lines from the engines that will book it. | Retained `Projected` preview; Preview Fidelity (candidate) |
+| What actually happened? | Manage orders and execute strategies | Review discretionary or strategy-originated intent, apply account authority and risk controls, submit and monitor orders, govern amendments and cancellations, and recover broker-confirmed outcomes. | Decision Trace (candidate) |
+| Can I prove it? | Reconcile, close, and report | Connect independent source and execution evidence to portfolio and accounting effects, resolve exceptions, approve results, and release reproducible reports. | Number Passport; Verified Coverage |
+
+**Start anywhere; every record joins the same chain.** Each outcome is adoptable on its own, and
+each entry point emits records already wired to the proof chain. Research and simulation need no
+credentials or approvals because they hold no authority; execution, posting, close, and release
+keep their full controls.
 
 Order management and strategy formulation/execution are explicit product objectives under
 `DEC-TRADING-STRATEGY-DIRECTION-001`, with planned delivery and acceptance tracked by `W13-OMS-001`
@@ -196,7 +210,13 @@ Meridian should not drift into being primarily:
 - a payment processor or live bill-pay operation;
 - a broad self-service investor portal;
 - a generic no-code workflow builder;
-- an enterprise-risk or forecasting suite detached from operational records.
+- an enterprise-risk or forecasting suite detached from operational records;
+- a research-data vendor or an investment-advice product;
+- a marketplace that distributes third-party executable strategies;
+- an execution-management system or algorithmic execution venue;
+- a retail investing application. A self-directed principal is supported only through the
+  explicitly labeled single-principal attestation direction (`W14-ATTEST-001`), never as
+  independent review.
 
 There is no mobile development lane. Responsive browser validation supports the browser
 workstation; native mobile clients and mobile-first workflows require a separate explicit roadmap

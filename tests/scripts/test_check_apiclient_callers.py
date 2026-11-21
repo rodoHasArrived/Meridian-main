@@ -26,7 +26,7 @@ class CheckApiClientCallersTests(unittest.TestCase):
         self.assertEqual(len(matches), 2, "only the legacy generic Get/PostAsync calls may match")
 
     def test_count_call_sites_scans_src_and_skips_excluded_definition_file(self):
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             caller_dir = root / "src" / "App"
             caller_dir.mkdir(parents=True)

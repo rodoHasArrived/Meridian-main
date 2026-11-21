@@ -1,4 +1,5 @@
 using Meridian.Contracts.Workstation;
+using Meridian.Wpf.Copy;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 using Meridian.Wpf.Workstation.Models;
@@ -17,8 +18,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
     private bool _isLoading;
     private bool _hasError;
     private string _errorMessage = string.Empty;
-    private string _activeFundText = "No operating context selected";
-    private string _activeFundDetailText = "Runs, allocations, and accounting posture scope to the active operating context.";
+    private string _activeFundText = WorkspaceCopyCatalog.Scope.AllAuthorized;
+    private string _activeFundDetailText = "Runs, allocations, and accounting status narrow to an operating context once one is selected.";
     private string _paperRunsText = "-";
     private string _liveRunsText = "-";
     private string _totalEquityText = "-";
@@ -73,11 +74,13 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 
     public TradingWorkspaceShellViewModel(
         TradingWorkspaceShellPresentationService? presentationService = null,
-        TradingSafetyCommandService? safetyCommands = null)
+        TradingSafetyCommandService? safetyCommands = null,
+        PaperSessionReconciliationViewModel? paperReconciliation = null)
         : base(ShellNavigationCatalog.GetWorkspaceShell("trading")!)
     {
         _presentationService = presentationService;
         _safetyCommands = safetyCommands;
+        PaperReconciliation = paperReconciliation;
         CommandGroup = TradingWorkspaceShellPresentationService.BuildCommandGroup();
     }
 
@@ -445,6 +448,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
 
     internal WorkflowNextAction? CurrentWorkflowAction => _currentWorkflowAction;
 
+    public PaperSessionReconciliationViewModel? PaperReconciliation { get; }
+
     public async Task StartAsync()
     {
         if (_isStarted)
@@ -470,6 +475,7 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         }
 
         _isStarted = false;
+        PaperReconciliation?.Clear();
         if (_presentationService is not null)
         {
             _presentationService.PresentationInvalidated -= OnPresentationInvalidated;
@@ -498,7 +504,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Refresh failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[TradingWorkspaceShell] Refresh failed: {Error}", ex,
+                ("Error", ex.Message));
             HasError = true;
             ErrorMessage = ex.Message;
             ApplyState(_presentationService.BuildDegradedState());
@@ -539,7 +546,8 @@ public sealed class TradingWorkspaceShellViewModel : WorkspaceShellViewModelBase
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[TradingWorkspaceShell] Safety command '{actionId}' failed: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[TradingWorkspaceShell] Safety command '{Action}' failed: {Error}", ex,
+                ("Action", actionId), ("Error", ex.Message));
             outcome = SafetyCommandOutcome.Failed(actionId is "Stop" ? "Stop" : "Cancel all");
         }
 

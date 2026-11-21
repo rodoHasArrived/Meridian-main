@@ -1,6 +1,7 @@
 using System.Windows;
 using System.Windows.Controls;
 using Meridian.Ui.Services.Services;
+using Meridian.Wpf.Contracts;
 using Meridian.Wpf.Models;
 using Meridian.Wpf.Services;
 
@@ -10,7 +11,7 @@ namespace Meridian.Wpf.Views;
 /// Wraps legacy deep pages in the shared workstation shell chrome so direct navigation
 /// preserves workspace context, related workflows, and trust signals.
 /// </summary>
-public partial class WorkspaceDeepPageHostPage : Page
+public partial class WorkspaceDeepPageHostPage : Page, IPageRefreshContentHost
 {
     private readonly NavigationService _navigationService;
     private readonly WorkspaceShellContextService? _shellContextService;
@@ -50,6 +51,9 @@ public partial class WorkspaceDeepPageHostPage : Page
     public Page HostedPage => _hostedPage;
 
     public object? HostedContent => HostedFrame.Content;
+
+    /// <inheritdoc />
+    public object? PageRefreshContent => _hostedPage;
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
     {
@@ -113,6 +117,9 @@ public partial class WorkspaceDeepPageHostPage : Page
     }
 
     private async void OnShellSignalsChanged(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => ShellSignalsChangedCoreAsync(sender, e), nameof(OnShellSignalsChanged)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task ShellSignalsChangedCoreAsync(object? sender, EventArgs e)
     {
         if (_presentationMode != WorkspaceChromePresentationMode.Standalone || _shellContextService is null)
         {

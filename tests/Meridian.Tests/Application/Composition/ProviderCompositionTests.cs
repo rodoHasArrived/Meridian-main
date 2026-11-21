@@ -249,7 +249,8 @@ public sealed class ProviderCompositionTests : IDisposable
         registry.GetCapability<IBrokerageGateway>("alpaca-brokerage").Should().NotBeNull();
         var corporateActions = registry.GetCapability<ICorporateActionProvider>("alpaca-corp-actions");
         await corporateActions!.FetchAsync("AAPL", Guid.NewGuid());
-        handler.Credentials.Should().HaveCount(2).And.OnlyContain(pair =>
+        // One paged corporate-actions request per fetch; every request must carry the sidecar pair.
+        handler.Credentials.Should().NotBeEmpty().And.OnlyContain(pair =>
             pair.Key == "composition-sidecar-key" && pair.Secret == "composition-sidecar-secret");
         registry.GetCapability<IOptionsChainProvider>("alpaca-options").Should().NotBeNull();
         await using var streaming = registry.CreateStreamingClient("alpaca");

@@ -199,6 +199,43 @@ public sealed class OAuthTokenRefreshFailureTests
         public override void Post(SendOrPostCallback callback, object? state) => Interlocked.Increment(ref PostCount);
     }
 
+    [Fact]
+    public async Task RefreshLoop_InitializationFailure_IsRetriedInsteadOfStoppingForGood()
+    {
+        var root = Path.Combine(Path.GetTempPath(), "meridian-oauth-retry", Guid.NewGuid().ToString("N"));
+        var vault = new FailFirstReadVault(failures: 2);
+        await using var service = new OAuthTokenRefreshService(root, vault: vault)
+        {
+            InitializationRetryDelay = TimeSpan.FromMilliseconds(10),
+            MaxInitializationRetryDelay = TimeSpan.FromMilliseconds(20),
+        };
+
+        service.Start();
+
+        var deadline = DateTime.UtcNow.AddSeconds(10);
+        while (vault.Reads < 3 && DateTime.UtcNow < deadline)
+            await Task.Delay(10);
+
+        vault.Reads.Should().BeGreaterThanOrEqualTo(3,
+            "the loop must keep retrying start-up after transient vault failures");
+        await service.InitializeAsync(); // completes: the retried initialization succeeded
+        await service.StopAsync();
+    }
+
+    private sealed class FailFirstReadVault(int failures) : IOAuthTokenVault
+    {
+        private int _reads;
+        public int Reads => Volatile.Read(ref _reads);
+        public Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
+            => Interlocked.Increment(ref _reads) <= failures
+                ? Task.FromException<IReadOnlyDictionary<string, OAuthToken>>(new IOException("vault unavailable"))
+                : Task.FromResult<IReadOnlyDictionary<string, OAuthToken>>(new Dictionary<string, OAuthToken>());
+        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
+            => Task.CompletedTask;
+        public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
+            => Task.CompletedTask;
+    }
+
     private sealed class YieldingVault : IOAuthTokenVault
     {
         public async Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)

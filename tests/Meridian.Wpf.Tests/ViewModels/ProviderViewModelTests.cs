@@ -5,6 +5,23 @@ namespace Meridian.Wpf.Tests.ViewModels;
 public sealed class ProviderViewModelTests
 {
     [Fact]
+    public void BuildProviderEdit_KeepsTheSavedTierAndRejectsAnInvalidRate()
+    {
+        var provider = BuildProvider();
+        provider.TierId = "starter";
+        provider.RateLimitPerMinute = "50";
+        provider.RateLimitPerHour = "";
+
+        var edit = ProviderViewModel.BuildProviderEdit(provider);
+
+        edit.TierId.Should().Be("starter");
+        edit.RateLimitPerMinute.Should().Be(50);
+        edit.RateLimitPerHour.Should().BeNull();
+        provider.RateLimitPerMinute = "-1";
+        FluentActions.Invoking(() => ProviderViewModel.BuildProviderEdit(provider)).Should().Throw<ArgumentException>();
+    }
+
+    [Fact]
     public void BuildSelectedProviderTooltips_ShouldExplainMissingSelectionLoadingAndReadyStates()
     {
         var selected = BuildProvider();

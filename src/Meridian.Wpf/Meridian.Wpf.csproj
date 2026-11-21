@@ -115,6 +115,7 @@
     remain in this project.
   -->
   <ItemGroup Condition="'$(IsWindows)' == 'true'">
+    <ProjectReference Include="../Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
     <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
     <ProjectReference Include="..\Meridian.Ui.Services\Meridian.Ui.Services.csproj" />
     <ProjectReference Include="..\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj" />

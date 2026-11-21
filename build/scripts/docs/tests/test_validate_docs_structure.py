@@ -4,6 +4,8 @@
 from __future__ import annotations
 
 import importlib.util
+import hashlib
+import json
 import io
 import sys
 import tempfile
@@ -11,6 +13,7 @@ import unittest
 from contextlib import redirect_stdout
 from datetime import date, timedelta
 from pathlib import Path
+from unittest.mock import patch
 
 
 MODULE_PATH = Path(__file__).resolve().parents[1] / "validate-docs-structure.py"
@@ -236,6 +239,72 @@ SCRIPT_CONFIG: dict = {
                 issues = validate_docs_structure.check_front_matter(root / "docs", False, False)
             self.assertEqual(3, len(issues))
             self.assertTrue(all("runbook.md" in issue for issue in issues))
+
+    def _evidence_packet(self, root: Path, entries: list[dict] | None = None) -> Path:
+        relative = validate_docs_structure.IMMUTABLE_EVIDENCE_MANIFESTS[0]
+        manifest = root / "docs" / relative
+        manifest.parent.mkdir(parents=True, exist_ok=True)
+        snapshot = manifest.parent / "retained.md"
+        content = b"# Historical evidence\n\nUnchanged receipt.\n"
+        snapshot.write_bytes(content)
+        if entries is None:
+            entries = [{"path": snapshot.name, "bytes": len(content),
+                        "sha256": hashlib.sha256(content).hexdigest()}]
+        raw = json.dumps({"files": entries}).encode()
+        manifest.write_bytes(raw)
+        manifest.with_suffix(".sha256").write_text(hashlib.sha256(raw).hexdigest() + "\n")
+        return manifest
+
+    def test_evidence_classification_only_excludes_verified_manifest_entries(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = self._evidence_packet(root)
+            (manifest.parent / "new-guide.md").write_text("# New guide\n")
+            output = io.StringIO()
+            with redirect_stdout(output):
+                issues = validate_docs_structure.check_front_matter(root / "docs", False, False)
+            self.assertEqual(3, len(issues))
+            self.assertTrue(all("new-guide.md" in issue for issue in issues))
+            self.assertIn("1 immutable evidence snapshot(s) excluded", output.getvalue())
+            self.assertEqual(b"# Historical evidence\n\nUnchanged receipt.\n",
+                             (manifest.parent / "retained.md").read_bytes())
+
+    def test_evidence_checksum_drift_fails_even_without_strict(self) -> None:
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            manifest = self._evidence_packet(root)
+            (manifest.parent / "retained.md").write_text("# Changed evidence\n")
+            with patch.object(sys, "argv", ["validate-docs-structure.py", "--docs-dir", str(root / "docs"),
+                                            "--top-level", "testing"]), redirect_stdout(io.StringIO()) as output:
+                status = validate_docs_structure.main()
+            self.assertEqual(1, status)
+            self.assertIn("snapshot checksum/size mismatch", output.getvalue())
+
+    def test_invalid_evidence_manifest_and_missing_snapshots_are_errors(self) -> None:
+        for change in ["manifest", "missing-file", "missing-manifest"]:
+            with self.subTest(change=change), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                manifest = self._evidence_packet(root)
+                if change == "manifest":
+                    manifest.write_text('{"files": []}')
+                elif change == "missing-file":
+                    (manifest.parent / "retained.md").unlink()
+                else:
+                    manifest.unlink()
+                with self.assertRaisesRegex(ValueError, "Invalid immutable evidence classification"):
+                    validate_docs_structure.check_front_matter(root / "docs", False, False)
+
+    def test_evidence_inventory_rejects_escaping_or_duplicate_paths(self) -> None:
+        for names in [["../elsewhere.md"], ["/outside.md"], ["sub\\outside.md"], ["same.md", "same.md"]]:
+            with self.subTest(names=names), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                entries = [{"path": name, "bytes": 0, "sha256": hashlib.sha256(b"").hexdigest()}
+                           for name in names]
+                manifest = self._evidence_packet(root, entries)
+                if names[0] == "same.md":
+                    (manifest.parent / "same.md").write_bytes(b"")
+                with self.assertRaisesRegex(ValueError, "Invalid immutable evidence classification"):
+                    validate_docs_structure.immutable_evidence_documents(root / "docs")
 
     def test_resolve_top_level_scope_reports_missing_folder(self) -> None:
         with tempfile.TemporaryDirectory() as tmp:

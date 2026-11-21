@@ -104,6 +104,28 @@ public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBo
         string? error,
         DateTimeOffset? occurredAtUtc = null,
         CancellationToken ct = default)
+        => RecordConnectionCoreAsync(success, externalCompanyId, error, null, occurredAtUtc, ct);
+
+    public Task RecordConnectionAsync(
+        bool success,
+        string? externalCompanyId,
+        string? error,
+        string? expectedCredentialGeneration,
+        DateTimeOffset? occurredAtUtc = null,
+        CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(expectedCredentialGeneration))
+            throw new ProviderCredentialConflictException();
+        return RecordConnectionCoreAsync(success, externalCompanyId, error, expectedCredentialGeneration, occurredAtUtc, ct);
+    }
+
+    private Task RecordConnectionCoreAsync(
+        bool success,
+        string? externalCompanyId,
+        string? error,
+        string? expectedCredentialGeneration,
+        DateTimeOffset? occurredAtUtc,
+        CancellationToken ct)
         => _credentialStore.RecordVerificationAsync(
             new ProviderCredentialVerificationUpdate(
                 QuickBooksOnlineAccountingProvider.Id,
@@ -111,7 +133,8 @@ public sealed class QuickBooksOnlineProviderCredentialConnectionStore : IQuickBo
                 ErrorMessage: error,
                 ExternalAccountId: externalCompanyId,
                 VerifiedAt: occurredAtUtc ?? DateTimeOffset.UtcNow,
-                Actor: "quickbooks-read-only-import"),
+                Actor: "quickbooks-read-only-import")
+            { ExpectedCredentialGeneration = expectedCredentialGeneration },
             ct);
 
     private static string NormalizeEnvironment(string? value)

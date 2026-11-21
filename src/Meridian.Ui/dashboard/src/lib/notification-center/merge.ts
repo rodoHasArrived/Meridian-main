@@ -3,6 +3,7 @@ import type { OperatorWorkItem, OperatorWorkItemTone, SystemEventRecord } from "
 import type { PriceAlertTrigger } from "@/lib/price-alerts/index";
 import type { NotificationEnvelope, NotificationSeverity, NotificationSeverityCounts } from "@/lib/notification-center/types";
 import type { NotificationReadState } from "@/lib/notification-center/read-state";
+import type { ExecutionNotification } from "@/lib/api/execution-workflows.api";
 
 const SEVERITY_RANK: Record<NotificationSeverity, number> = {
   critical: 3,
@@ -14,6 +15,7 @@ const SEVERITY_RANK: Record<NotificationSeverity, number> = {
 const PRICE_ALERTS_ROUTE = "/data/quotes?view=alerts";
 
 export interface NotificationFeeds {
+  execution?: readonly ExecutionNotification[];
   inbox: readonly OperatorWorkItem[];
   systemEvents: readonly SystemEventRecord[];
   priceTriggers: readonly PriceAlertTrigger[];
@@ -36,6 +38,14 @@ export function buildNotificationCenterModel(feeds: NotificationFeeds): Notifica
   const dismissed = new Set(feeds.readState.dismissedIds);
   const read = new Set(feeds.readState.readIds);
   const envelopes: NotificationEnvelope[] = [];
+  for (const event of feeds.execution ?? []) {
+    const id = `execution:${event.id}`;
+    if (dismissed.has(id)) continue;
+    envelopes.push({ id, source: "execution", sourceId: event.id, severity: event.severity,
+      title: event.title, detail: event.detail, timestamp: event.timestamp,
+      route: `/trading/orders?fundAccountId=${encodeURIComponent(event.accountId)}${event.orderId ? `&orderId=${encodeURIComponent(event.orderId)}` : ""}`,
+      read: read.has(id), dismissible: true });
+  }
 
   for (const item of feeds.inbox) {
     const id = `inbox:${item.workItemId}`;

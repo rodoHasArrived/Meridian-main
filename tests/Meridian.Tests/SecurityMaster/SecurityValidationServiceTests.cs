@@ -595,6 +595,100 @@ public sealed class SecurityValidationServiceTests
             && issue.Severity == SecurityValidationSeverityDto.Warning);
     }
 
+    private const string SyntheticUti = "MERIDIANSYNTH0000183TRADE20261105SWAP0001";
+
+    [Fact]
+    public void Scenario_UtiOnEquity_ProducesRegulatoryIdentifierAssetClassMismatchWarning()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Equity",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Isin, "US0378331005", isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().ContainSingle(issue =>
+            issue.Code == "SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH"
+            && issue.Severity == SecurityValidationSeverityDto.Warning
+            && issue.Message.Contains("Swap", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void Scenario_UtiAndUpiOnSwap_ProduceNoAssetClassMismatch()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Swap",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().NotContain(issue =>
+            issue.Code == "SM_REGULATORY_IDENTIFIER_ASSET_CLASS_MISMATCH"
+            || issue.Code == "SM_SHARED_IDENTIFIER_NOT_PRIMARY"
+            || issue.Code == "SM_IDENTIFIER_FORMAT_INVALID");
+    }
+
+    [Fact]
+    public void Scenario_UpiAsPrimaryIdentifier_IsRefused()
+    {
+        var record = CreateProjection(
+            Guid.NewGuid(),
+            "Swap",
+            [CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: true)]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(record, [record], Now);
+
+        report.Issues.Should().ContainSingle(issue =>
+            issue.Code == "SM_SHARED_IDENTIFIER_NOT_PRIMARY"
+            && issue.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
+    public void Scenario_TwoSwapsSharingAUpi_AreNotDuplicates_ButSharingAUtiIs()
+    {
+        var securityA = Guid.NewGuid();
+        var securityB = Guid.NewGuid();
+        var first = CreateProjection(
+            securityA,
+            "Swap",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: false)
+            ]);
+        var second = CreateProjection(
+            securityB,
+            "Swap",
+            [
+                CreateIdentifier(SecurityIdentifierKind.Uti, SyntheticUti, isPrimary: true),
+                CreateIdentifier(SecurityIdentifierKind.Upi, "QZRBG6ZTKS42", isPrimary: false)
+            ]);
+        var service = new SecurityValidationService(
+            Substitute.For<ISecurityMasterStore>(),
+            AssetClassValidatorRegistry.CreateDefault());
+
+        var report = service.ValidateRecord(first, [first, second], Now);
+
+        var duplicates = report.Issues.Where(static issue => issue.Code == "SM_DUPLICATE_CANONICAL_IDENTIFIER").ToArray();
+        duplicates.Should().ContainSingle();
+        duplicates[0].AffectedFields.Should().Contain("identifiers.Uti");
+    }
+
     [Fact]
     public void Scenario_NonCanonicalIsinFormatting_ProducesNormalizationWarning()
     {
@@ -639,7 +733,7 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
-    public void Scenario_MissingTermsFormat_ProducesWarningNamingTheInferredFamily()
+    public void Scenario_MissingTermsFormat_ProducesABlockingErrorThatInfersNoFamily()
     {
         var record = CreateProjection(
             Guid.NewGuid(),
@@ -657,12 +751,16 @@ public sealed class SecurityValidationServiceTests
 
         var report = service.ValidateRecord(record, [record], Now);
 
-        report.Issues.Should().Contain(issue =>
-            issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING"
-            && issue.Severity == SecurityValidationSeverityDto.Warning
-            && issue.AffectedFields.Contains($"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}")
-            && issue.Message.Contains($"'{SecurityTermsFormats.Flat}'", StringComparison.Ordinal));
-        report.HasBlockingIssues.Should().BeFalse("an untagged payload is a backfill item, not a blocker");
+        // ADR-024 amendment 2026-11-13 step 5: live readers and the store refuse an untagged
+        // payload, so the finding is an error and names no inferred family.
+        var issue = report.Issues.Should().ContainSingle(static issue => issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.AffectedFields.Should().Contain($"assetSpecificTerms.{SecurityTermsEnvelope.FormatKey}");
+        issue.Message.Should().Contain("no longer infers").And.NotContain($"'{SecurityTermsFormats.Flat}'");
+        issue.SuggestedAction.Should().Contain($"'{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}'")
+            .And.Contain($"'{SecurityTermsFormats.Economic}' is not accepted on writes",
+                "the remediation names only the families a write accepts");
+        report.HasBlockingIssues.Should().BeTrue("an untagged payload is refused by every live reader");
     }
 
     [Fact]
@@ -709,10 +807,13 @@ public sealed class SecurityValidationServiceTests
 
         var report = service.ValidateRecord(record, [record], Now);
 
-        report.Issues.Should().Contain(issue =>
-            issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN"
-            && issue.Severity == SecurityValidationSeverityDto.Error
-            && issue.Message.Contains("'tabular'", StringComparison.Ordinal));
+        var issue = report.Issues.Should().ContainSingle(static issue => issue.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_UNKNOWN").Subject;
+        issue.Severity.Should().Be(SecurityValidationSeverityDto.Error);
+        issue.Message.Should().Contain("'tabular'");
+        issue.SuggestedAction.Should().Contain($"'{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}'")
+            .And.Contain($"'{SecurityTermsFormats.Economic}' is not accepted on writes",
+                "the remediation names only the families a write accepts")
+            .And.NotContain($"one of {string.Join(", ", SecurityTermsFormats.All)}");
     }
 
     [Fact]
@@ -1216,6 +1317,7 @@ public sealed class SecurityValidationServiceTests
             assetSpecificTerms: JsonSerializer.SerializeToElement(new
             {
                 schemaVersion = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+                termsFormat = SecurityTermsFormats.Flat,
                 tranche = "A-1",
                 collateralType = "CLO",
                 originalFace = 1000000m,
@@ -1398,17 +1500,32 @@ public sealed class SecurityValidationServiceTests
     }
 
     [Fact]
-    public void Scenario_UnstampedStructuredCredit_ReadsAsVersionOne_AndKeepsTheFormatWarning()
+    public void Scenario_UntaggedStructuredCredit_IsRefusedForItsFormat_AndRaisesNoTermsVersionNotice()
     {
         var report = Validate(StructuredCreditTerms("StructuredCredit", new Dictionary<string, object?>
         {
             ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms
         }));
 
+        // An untagged payload is not the flat codec by declaration (ADR-024 amendment 2026-11-13
+        // step 5), so it is never read as an older terms version; its missing format blocks instead.
+        report.Issues.Should().NotContain(static item => item.Code == TermsVersionBehind);
+        report.Issues.Should().Contain(static item =>
+            item.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING" && item.Severity == SecurityValidationSeverityDto.Error);
+    }
+
+    [Fact]
+    public void Scenario_DeclaredUnversionedStructuredCredit_ReadsAsVersionOne()
+    {
+        var report = Validate(StructuredCreditTerms("StructuredCredit", new Dictionary<string, object?>
+        {
+            ["schemaVersion"] = SecurityMasterSchemaVersions.LegacyAssetSpecificTerms,
+            [SecurityTermsEnvelope.FormatKey] = SecurityTermsFormats.Flat
+        }));
+
         report.Issues.Should().ContainSingle(static item => item.Code == TermsVersionBehind)
             .Which.Message.Should().Contain("absent or not an integer");
-        report.Issues.Should().Contain(static item =>
-            item.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING" && item.Severity == SecurityValidationSeverityDto.Warning);
+        report.Issues.Should().NotContain(static item => item.Code == "SM_ASSET_SPECIFIC_TERMS_FORMAT_MISSING");
     }
 
     [Fact]

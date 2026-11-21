@@ -139,9 +139,12 @@ public sealed class ParquetStorageSink : IStorageSink
         EventSchemaValidator.Validate(evt);
 
         var bufferKey = GetBufferKey(evt);
-        var buffer = _buffers.GetOrAdd(bufferKey, _ => new MarketEventBuffer(_parquetOptions.BufferSize));
-
-        buffer.Add(evt);
+        MarketEventBuffer buffer;
+        do
+        {
+            buffer = _buffers.GetOrAdd(bufferKey, _ => new MarketEventBuffer(_parquetOptions.BufferSize));
+        }
+        while (!buffer.TryAdd(evt));
 
         // Flush if buffer is full
         if (buffer.ShouldFlush(_parquetOptions.BufferSize))
@@ -257,6 +260,8 @@ public sealed class ParquetStorageSink : IStorageSink
             }
 
             _log.Debug("Flushed {Count} events to Parquet file: {Path}", events.Count, path);
+            if (buffer.TryRetireWhenEmpty())
+                _buffers.TryRemove(new KeyValuePair<string, MarketEventBuffer>(bufferKey, buffer));
         }
         catch (Exception ex)
         {
@@ -659,9 +664,13 @@ public sealed class ParquetStorageSink : IStorageSink
 
     private string GetFilePath(MarketEvent evt)
     {
-        var date = evt.Timestamp.Date;
+        var date = evt.Timestamp.UtcDateTime.Date;
         var typeName = evt.Type.ToString().ToLowerInvariant();
-        var fileName = $"{evt.EffectiveSymbol}_{typeName}_{date:yyyyMMdd}.parquet";
+        // Encode the symbol as a single safe path segment: a raw "BRK/B" would create a
+        // subfolder and "../" could escape the storage root. Plain ASCII symbols keep their
+        // existing spelling; case is preserved so existing file names do not change.
+        var symbolSegment = StoragePathSegmentCodec.Encode(evt.EffectiveSymbol);
+        var fileName = $"{symbolSegment}_{typeName}_{date:yyyyMMdd}.parquet";
 
         // Delegate the directory layout to the shared storage policy so every naming convention is
         // honored identically to the JSONL sink. Previously only BySymbol/ByDate/ByType were handled

@@ -139,8 +139,12 @@ public static partial class PortfolioCashLadderEngine
         if (flow.AccrualStartDate != evidence.ResetDate || evidence.IsObserved != (evidence.ResetDate <= asOf)
             || !evidence.TryCoupon(0m, out var original, out var reason) || RoundCash(original) != flow.Amount)
             throw new InvalidOperationException("Declared floating cash does not reconcile to its retained reset evidence.");
-        if (!evidence.TryCoupon(shift, out var shocked, out reason))
+        if (!evidence.TryCoupon(shift, out var shocked, out reason, out var blocker))
+        {
+            if (blocker?.Code == SecurityInterestSupport.NegativeInterestUnsupported)
+                throw new NegativeInterestScenarioException();
             throw new InvalidOperationException(reason);
+        }
         return RoundCash(shocked);
     }
 

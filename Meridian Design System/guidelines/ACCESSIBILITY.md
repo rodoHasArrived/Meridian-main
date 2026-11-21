@@ -5,145 +5,74 @@ and trading operations — a domain where accessibility is frequently a procurem
 requirement, not a nicety. This guide states what the system guarantees, what it measures, and
 what the consuming application is responsible for.
 
-All contrast figures below are **measured** against the actual Programmed Institutionalism tokens (sRGB, WCAG 2.x
+All contrast figures below are **measured** against the actual Concrete tokens (sRGB, WCAG 2.x
 relative-luminance formula), not estimated. Re-run them whenever a base color token changes.
 
 ---
 
 ## 1. Color & contrast
 
-### Text — light mode (foreground on `--bg-light` #FBFAF8 panel, unless noted)
+`scripts/check_contrast.py` is the source of truth. It resolves the active token graph, CSS variables,
+alpha compositing, and Meridian’s `color-mix()` semantic washes. The unit suite checks the same
+matrix in `tests/test_contrast.py`.
 
-| Token | Hex | Ratio | Normal text | Large text |
-| --- | --- | --- | --- | --- |
-| `--text-primary` | `#22252A` | **14.7:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` | `#4E5258` | **7.5:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` on canvas `#F2F0EC` | — | **6.9:1** | ✅ AA | ✅ AAA |
-| `--text-muted` | `#5E666F` | **5.6:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on canvas `#F2F0EC` | — | **5.1:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on `--bg-medium` `#EDEAE4` | — | **4.9:1** | ✅ AA | ✅ AAA |
-| `--text-disabled` | `#94999F` | 2.8:1 | exempt¹ | exempt¹ |
-| `--accent` | `#A85436` | **5.1:1** | ✅ AA | ✅ AAA |
-| `--accent-dim` (pressed) | `#8C4429` | **6.8:1** | ✅ AAA | ✅ AAA |
-| White on `--accent` (primary button) | — | **5.3:1** | ✅ AA | ✅ AAA |
-| White on `--accent-hover` (hovered button) | — | **4.6:1** | ✅ AA | ✅ AAA |
-| White on `--accent-dim` (pressed button) | — | **7.1:1** | ✅ AAA | ✅ AAA |
-| `--red` | `#A8443C` | **5.7:1** | ✅ AA | ✅ AAA |
-| `--orange` | `#8A5C12` | **5.6:1** | ✅ AA | ✅ AAA |
-| `--purple` | `#5D5486` | **6.5:1** | ✅ AA | ✅ AAA |
-| `--green` | `#3A7A56` | **4.9:1** | ✅ AA | ✅ AAA |
-| `--topbar-text` `#F4F2ED` on `--topbar-bg` `#1F1D1A` | — | **15.0:1** | ✅ AAA | ✅ AAA |
+### Default light mode
 
-> `--accent-hover` is a **fill**, never a text colour: as text on a panel it measures 4.4:1.
->
-> **`--accent` is not a text colour on the header band either.** It is 5.05:1 on the card
-> and 4.63:1 on the canvas, but only **4.39:1** on `--bg-medium` — under AA. On the band it
-> is a borders-and-icons colour (3:1 role); band text takes `--accent-dim` (5.88:1). The
-> sticky sort arrow and multi-column rank in `DenseDataTable` sit there and were caught by
-> this rule. Both band pairs are now rows in `scripts/check_contrast.py`.
-> All three button states are checked against their white label by `scripts/check_contrast.py`,
-> which also checks every `data-brand` variant.
+| Role pair | Measured ratio | Requirement |
+| --- | ---: | ---: |
+| Primary ink `#20252B` on plate `#F8F7F3` | 14.39:1 | 4.5:1 |
+| Secondary ink `#535C65` on plate | 6.35:1 | 4.5:1 |
+| Muted ink `#606870` on plate | 5.28:1 | 4.5:1 |
+| Muted ink on canvas / recessed / hover | 4.97 / 4.62 / 4.91:1 | 4.5:1 |
+| Accent-label ink `#0D1217` on rest / hover / pressed terracotta | 4.70 / 5.93 / 5.27:1 | 4.5:1 |
+| Focus blue `#2D6FB3` on plate | 4.85:1 | 3:1 non-text |
+| Chrome text / muted / faint on graphite | 11.34 / 6.00 / 4.80:1 | 4.5:1 |
+| Paper action ink on graphite primary action | 11.75:1 | 4.5:1 |
 
-¹ WCAG 1.4.3 exempts disabled/inactive controls from contrast minimums. Disabled text is
-deliberately low-contrast to read as inactive.
+### Default dark mode
 
-> **The one rule that matters: semantic text uses the `-dim` variant, never the raw hue.**
-> Under the superseded palette raw `--green` (#16885F) was 4.45:1 — *marginally under* the 4.5:1
-> AA threshold. The restyle lifted it to 4.9:1, so it now clears AA on its own, but the rule
-> stands: the `-dim` variants carry a margin that survives a brand swap, and a white-label
-> deployment can move the raw hue anywhere. Every chip, badge, and status row renders its label in `--green-dim`
-> (the hue mixed 75% toward `--dim-mix`), which is darker and clears AA comfortably. The raw
-> hues (`--green`/`--red`/`--orange`/`--purple`) are for **borders and ≥18px/▲ icons** (the
-> trio's solid-border role), where the 3:1 non-text / large-text threshold applies and all pass.
-> The `colors-states` card encodes this trio; follow it and you are conformant by construction.
+| Role pair | Measured ratio | Requirement |
+| --- | ---: | ---: |
+| Primary ink `#F1EFEA` on plate `#171E25` | 14.63:1 | 4.5:1 |
+| Secondary ink `#BEC4CA` on plate | 9.56:1 | 4.5:1 |
+| Muted ink `#929CA6` on plate / hover | 6.03 / 4.82:1 | 4.5:1 |
+| Accent-label ink `#14100E` on rest / hover / pressed terracotta | 6.68 / 8.75 / 7.85:1 | 4.5:1 |
+| Focus blue `#5C9FE5` on plate | 6.04:1 | 3:1 non-text |
+| Graphite action ink on paper primary action | 13.43:1 | 4.5:1 |
 
-### Non-text contrast (WCAG 2.2 · 1.4.11)
+### Role rules
 
-- **Focus ring** `--border-focus` (#A85436) on a paper panel is **5.1:1** — comfortably above the
-  3:1 requirement for focus indicators. Every interactive control exposes it via `:focus-visible`.
-- **Structural borders are decorative and intentionally below 3:1** (`--border` #E4E3DE ≈ 1.2:1,
-  `--border-strong` #AFABA1 ≈ 2.2:1). This is conformant because the border is **never the sole
-  indicator** of a control or its state: inputs also change background on hover/focus and show a
-  high-contrast focus ring; selected table rows carry a 3px accent inset *plus* a background wash;
-  active nav items carry a 3px accent bar *plus* a wash. Do not rely on border color alone to
-  communicate state — pair it with the wash/inset the components already provide.
+- **Terracotta is a brand and scenario signal, not the primary-action fill.** `Button` primary uses
+  `--brand-axis` with `--ink-inverse`. Selected calendar days, checkboxes, or other accent-filled
+  controls use `--text-on-accent`.
+- **Accent and semantic fills have separate ink roles.** Light mode uses dark ink on terracotta and
+  white ink on the darker semantic solids. Dark mode uses dark ink on both lighter families.
+- **Semantic text uses the `-dim` variant.** Raw semantic hues are the ≥3:1 border/mark role; the
+  `-dim` value is the normal-text role. The checker measures `-dim` text on both `a10` and `a20`
+  composited washes.
+- **White-label states are checked as a set.** Every brand preset must keep one label color AA on
+  its rest, hover, and pressed accent fills.
+- **Structural rules may be below 3:1 only when decorative.** Focus, selection, current state, and
+  error condition always have an additional rail, wash, label, icon, or marker.
+- Disabled controls are exempt from WCAG 1.4.3, but they must remain identifiable and must not be
+  the only route to understanding why an action is unavailable.
 
-### Dark mode — measured (warm graphite tokens)
-
-Re-measured September 2026 against the current default dark tokens, with the same methodology
-as the light table. The figures below were the steel identity's until this pass; the restyle
-moved the tokens and left the table behind, which made the "measured against the actual tokens"
-claim above false for this section. Foreground on the dark panel `--bg-light` `#201D19` unless noted.
-
-| Token | Hex | Ratio | Normal text | Large text |
-| --- | --- | --- | --- | --- |
-| `--text-primary` | `#EFEBE4` | **14.1:1** | ✅ AAA | ✅ AAA |
-| `--text-primary` on canvas `#14120F` | — | **15.7:1** | ✅ AAA | ✅ AAA |
-| `--text-secondary` | `#B5AEA4` | **7.6:1** | ✅ AAA | ✅ AAA |
-| `--text-muted` | `#9A9289` | **5.5:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on header band `#292520` | — | **5.0:1** | ✅ AA | ✅ AAA |
-| `--text-muted` on hover row `#2E2A24` | — | **4.6:1** | ✅ AA | ✅ AAA |
-| `--text-disabled` | `#6A635A` | 2.8:1 | exempt¹ | exempt¹ |
-| `--accent` | `#D98A64` | **6.2:1** | ✅ AA | ✅ AAA |
-| `--accent` on canvas `#14120F` | — | **6.9:1** | ✅ AA | ✅ AAA |
-| `--accent-dim` (pressed / accent text) | `#E39A77` | **7.3:1** | ✅ AAA | ✅ AAA |
-| Dark ink `--text-on-accent` on `--accent` | — | **6.7:1** | ✅ AA | ✅ AAA |
-| Dark ink `--text-on-accent` on `--accent-dim` (pressed) | — | **7.9:1** | ✅ AAA | ✅ AAA |
-| Focus ring `--border-focus` `#D98A64` | — | **6.2:1** | (3:1 non-text) ✅ | — |
-| `--green-dim` / `--red-dim` / `--orange-dim` / `--purple-dim` | — | **7.6 / 6.9 / 8.4 / 7.2:1** | ✅ AAA | ✅ AAA |
-| Raw `--green` / `--red` / `--orange` / `--purple` (borders, ≥3:1 role) | — | **5.6 / 4.9 / 6.4 / 5.1:1** | ⚠️ see rule | ✅ AA |
-| `--text-on-fill` ink on solid green / red / orange / purple | — | **6.1 / 5.3 / 6.9 / 5.5:1** | ✅ AA | ✅ AAA |
-| `--topbar-text` / muted / faint on chrome `#1A1511` | — | **15.0 / 8.7 / 6.1:1** | ✅ AAA/AA | ✅ AAA |
-
-¹ Same WCAG 1.4.3 exemption as light mode.
-
-**The alpha-10/20 washes.** The trio pattern puts `-dim` text on translucent hue washes, so the
-effective background is the wash composited over the panel. Measured over the dark panel:
-`-dim` text on its own **a10** wash is **6.6 / 6.0 / 7.1 / 6.3:1** (green/red/orange/purple) and
-on the heavier **a20** wash **5.6 / 5.2 / 5.9 / 5.4:1** — all AA. The light-mode equivalents
-(6.6–8.1:1 on a10 over the card) pass too. These composite pairs are now locked in
-`scripts/check_contrast.py` (`WASH_PAIRS`), so a wash or hue edit that breaks a chip fails the suite.
-
-**What the July 2026 sweep changed** (dark tokens only — light mode untouched). The values
-below are the *steel* identity's, which this package now ships as `data-brand="steel"`; the
-reasoning is what carried forward, not the hexes:
-
-- **`--accent-dim` `#3C6688` → `#609BC9`.** The old value failed two ways: dark ink on the
-  pressed primary button was **3.11:1**, and `accent-dim`-as-text (Toast action, ColumnManager
-  pin tag, operator RoleBadge) was ~**2.5:1** on dark panels. Dark pressed now goes *lighter*
-  (between `--accent` and `--accent-hover`) — the standard dark-UI convention — clearing AA as
-  both a fill under dark ink (6.3:1) and as text (5.5:1).
-- **`--text-muted` `#8893A0` → `#8F9AA7`.** The old value was AA on the panel but **4.28:1** on
-  `--bg-hover` rows — muted captions inside hovered table rows dipped under. Now 4.67:1 on hover,
-  5.8:1 on the panel.
-
-The same rule as light mode holds: **semantic text uses `-dim`, never the raw hue** — raw
-`--red` is 4.4:1 in dark (borders and large glyphs only). The `dark-mode` and
-`dark-mode-validation` cards visually verify every surface/text pair in dark.
-
-**Text sitting *on* a solid fill is a separate question from text on a panel.** White text on
-the dark-mode accent measures only **2.70:1** — this is why `--text-on-accent` flips to dark
-ink `#1A1511` in dark mode. **Swept July 2026:** every
-other solid-fill + white-text pairing now routes through the same token — accent fills
-(`Pagination`, `Stepper`, `Checkbox`, `DatePicker`/`DateRangePicker`, `ColumnChooser`,
-`SelectionToolbar`, `BulkActionBar`, `Modal`'s primary button) use `--text-on-accent`; non-accent
-semantic fills (the `Badge`/topbar environment chips, `Stepper`'s complete step) use its alias
-`--text-on-fill`. Hardcoding white on a solid fill is now a defect, not a legacy pattern.
+Do not copy the hex values into components. Consume the semantic token. Any retone requires changes
+in the light and dark token files, `parity-manifest.json`, and a clean contrast run.
 
 ---
 
 ## 2. Keyboard
 
 Meridian is **keyboard-first**. Every operator task is reachable without a pointer. The full
-control-by-control key map lives in `PATTERNS.md › Keyboard navigation`; the contract:
+control-by-control key map lives in `guidelines/PATTERNS.md › Keyboard navigation`; the contract:
 
 - **`Tab` / `Shift+Tab`** move through all interactive elements in DOM order. No positive
   `tabindex` is used anywhere — DOM order is the tab order.
 - **`Ctrl/Cmd-K`** opens the `CommandPalette` from anywhere — the keyboard path to any route,
   run, symbol, or action.
-- **Overlays** (`Dialog`, `Drawer`, `Modal`, `CommandPalette`) close on **`Escape`** and trap
-  focus while open. *(Modal gained `Escape` + `role="dialog"`/`aria-modal` parity in this
-  revision — see §6.)*
+- **Overlays** (`Dialog`, `Drawer`, `CommandPalette`) close on **`Escape`** and trap
+  focus while open.
 - **Roving focus** in composite widgets: `Select`/`Combobox`/`MultiSelect`, `TreeView`,
   `Accordion`, `RadioGroup`, `SegmentedControl`, `ContextMenu`, and `Tabs` all move selection
   with the arrow keys and confirm with `Enter`/`Space`. The container is one tab stop; arrows
@@ -163,8 +92,14 @@ control-by-control key map lives in `PATTERNS.md › Keyboard navigation`; the c
     fires the price click (ticket prefill).
   - **`OptionChainTable`** (with `onSelect`) — `↑/↓` move the focused strike (starting at the
     money), `Home`/`End` jump, `Enter`/`Space` selects the strike row.
+- **Coordinated analytical components:**
+  - `AnalyticalField` uses arrow keys to move among marks and Enter/Space to commit a selection.
+  - `DurationContribution` exposes every ranked contribution as a keyboard-reachable selection.
+  - `ControlDependencyGraph` exposes nodes by keyboard and ships a structured relationship outline.
+  - `CloseCalendar` provides a dependency-list view when calendar geometry is not suitable.
+  - `ContinuityFrame` announces degraded state without removing the previously valid evidence.
 
-**Focus visible:** all interactive elements show the `--focus-ring` (2px solid accent, 1px
+**Focus visible:** all interactive elements show the `--focus-ring` (2px solid interaction blue, 1px
 offset) on keyboard focus only (`:focus-visible`), so mouse users don't see rings but keyboard
 users always do. Where internal padding would clip the ring (e.g. a close button inset in a
 header), set `outline-offset: -2px`.
@@ -226,18 +161,19 @@ sweep and shimmer stop, the caret snaps). Consumers adding new motion must gate 
 
 ## 7. What changed in this revision
 
-`Modal` previously lacked the dialog semantics its siblings had. It now matches `Dialog`/`Drawer`:
+`Modal` (the deprecated alias over `Dialog`, removed in 2.0.0) previously lacked the dialog
+semantics its siblings had. It was brought to parity with `Dialog`/`Drawer`:
 
 - `role="dialog"` + `aria-modal="true"` on the panel, `aria-labelledby` wired to the
-  `ModalHeader` title (`id="mdl-title"`).
-- **`Escape` closes** the modal (new `closeOnEsc` prop, default `true`).
+  `DialogHeader` title (the dialog's generated title id).
+- **`Escape` closes** the dialog (`closeOnEsc` prop, default `true`).
 
 No visual or layout change; existing call sites are unaffected.
 
 **July 2026 follow-up:** the focus contract in §2/§3 is now actually implemented, once.
-`Dialog`, `Drawer`, and `Modal` share `core/useOverlayFocus.js` — initial focus into the panel,
+`Dialog` and `Drawer` share `core/useOverlayFocus.js` — initial focus into the panel,
 **real Tab cycling at the boundaries** (previously documented but not implemented anywhere),
-and focus restore to the trigger on close. `Modal` previously had no focus management at all;
+and focus restore to the trigger on close.
 `CommandPalette` now also prevents Tab from escaping the palette.
 
 **July 2026 — dark sweep + data-surface keyboard pass:**
@@ -299,6 +235,41 @@ The system gives you accessible components; an accessible *screen* still needs t
 
 ---
 
-**See also:** `PATTERNS.md` (keyboard map, component decision trees) ·
+**See also:** `guidelines/PATTERNS.md` (keyboard map, component decision trees) ·
 `guidelines/TOKEN_REFERENCE.md` (which token to use when) ·
 `guidelines/dark-mode-validation.card.html` (dark surface/text verification).
+
+## 3.5 accessibility extension — keyboard additions
+
+Additive and backward-compatible; role-semantic migration notes in `docs/UPGRADING.md`.
+
+| Surface | Keys |
+| --- | --- |
+| SegmentedControl | One tab stop · ←/→/↑/↓ move AND select · Home/End |
+| WorksheetGrid | Arrows/Home/End/Ctrl+Home/End/PgUp/PgDn move the active descendant · Enter/F2 or type to edit · Enter/Tab commit (focus returns to the grid) · Esc cancels |
+| DataGrid | Enter/Space activates the focused row · on a header: Enter sorts · Alt+←/→ resizes · Ctrl+←/→ reorders · P pins |
+| Select | ↑/↓/Home/End/typeahead · Enter/Space select · Esc close — announced as a named combobox |
+| Stepper | Steps are list items announcing "Step n of m, state"; current step carries aria-current="step" |
+
+## 4.1 accessibility status — session continuity + adapters
+
+| Surface | Keys / semantics |
+| --- | --- |
+| WorkspaceLayoutGrid dividers | One tab stop each · `role="separator"` with `aria-orientation` · ←/→ (row) or ↑/↓ (column) resize in 4% steps, floored by `minSize` · `aria-valuenow` + `aria-valuetext` naming both regions and their shares |
+| LayoutRegion | Collapse and expand carry `aria-expanded` + `aria-controls` on the region body · a collapsed region is a labelled, focusable rail, never removed from the tab order · `hidden` regions are restorable from the bar's *Show N hidden* button |
+| WorkspaceLayoutBar | Named group · layout `select` labelled *Active workspace layout* · *Save* / *Reset* name the layout they act on · *Modified* is `role="status"` |
+| ObjectTrail | Disclosure with `aria-controls` (no `aria-haspopup` — it is not a menu) · Escape closes · pin toggle reports `aria-pressed` · version-moved notice is `role="status"`, never an alert |
+| HandoverBrief | Compound rows are single buttons; a row with its own action renders as a `div` so no button nests in a button · kinds are labelled groups in fixed order |
+| AdapterDiagnostics | Rows carry a composed `aria-label` naming every figure with its meaning (the column strip is `aria-hidden`) · `aria-expanded` + `aria-controls` → the detail `role="group"` · posture is always a text label, never colour alone |
+
+**Status of the 4.1 run.** A static audit was executed and is recorded in
+`tests/A11Y_STATIC_AUDIT_4.1.md` (nine defects found and fixed). The assistive-technology run
+remains **prepared, not executed** — `tests/BROWSER_TEST_PLAN.md` §4.1 lists what only that run can
+settle: announcement verbosity, live-region timing, and focus after a region collapses or a detail
+closes. Nothing in this document's conformance claims rests on the static pass.
+
+Announcements: StatusBanner and DataStateSwitch take `announce` = polite · assertive · off
+(danger/error default assertive); ready content is never wrapped in a live region. Figures:
+ChartFrame's `ariaLabel`/`ariaDescription`/`accessibleData` flow through every indexed-series
+wrapper; MetricCard's group name carries value, trend, delta, context, tone, and
+`sparklineLabel`.

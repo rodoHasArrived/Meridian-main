@@ -53,7 +53,14 @@ internal static class LedgerJournalConstruction
             VendorId: NormalizeOptional(dimensions.VendorId),
             ProjectId: NormalizeOptional(dimensions.ProjectId))
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion,
+            AccountingArrangementId = NormalizeOptional(dimensions.AccountingArrangementId),
+            AccountingArrangementRevisionId = NormalizeOptional(dimensions.AccountingArrangementRevisionId),
+            ChartAccountNodeId = NormalizeOptional(dimensions.ChartAccountNodeId),
+            AccountBindingRevisionId = NormalizeOptional(dimensions.AccountBindingRevisionId),
+            IntercompanyTransactionId = NormalizeOptional(dimensions.IntercompanyTransactionId)
         };
 
         return HasAnyDimension(mapped) ? mapped : null;
@@ -68,6 +75,8 @@ internal static class LedgerJournalConstruction
             || dimensions.CapitalAccountId is not null
             || dimensions.InstrumentId is not null
             || dimensions.PositionId is not null
+            || dimensions.IntercompanyAgreementId is not null
+            || dimensions.IntercompanyAgreementVersion is not null
             || dimensions.TaxLotId is not null
             || dimensions.CostCenterId is not null
             || dimensions.CounterpartyId is not null
@@ -78,7 +87,12 @@ internal static class LedgerJournalConstruction
             || dimensions.AccountId is not null
             || dimensions.CustomerId is not null
             || dimensions.VendorId is not null
-            || dimensions.ProjectId is not null;
+            || dimensions.ProjectId is not null
+            || dimensions.AccountingArrangementId is not null
+            || dimensions.AccountingArrangementRevisionId is not null
+            || dimensions.ChartAccountNodeId is not null
+            || dimensions.AccountBindingRevisionId is not null
+            || dimensions.IntercompanyTransactionId is not null;
 
     private static IReadOnlyDictionary<string, string> NormalizeExternalGlDimensions(
         IReadOnlyDictionary<string, string>? dimensions)

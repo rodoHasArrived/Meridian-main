@@ -15,6 +15,22 @@ namespace Meridian.Tests.Infrastructure.Providers;
 [Trait("Category", "Unit")]
 public sealed class BaseSymbolSearchProviderTests
 {
+    [Fact]
+    public async Task AuthoritativeSearch_WithoutStrictDecoder_FailsClosedInsteadOfUsingTolerantDecoder()
+    {
+        using var handler = new StubHttpMessageHandler(_ => new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new StringContent("[]")
+        });
+        using var http = new HttpClient(handler);
+        using var provider = new TestSymbolSearchProvider("test-key", http);
+
+        var action = () => provider.SearchAuthoritativeAsync("MSFT");
+
+        var exception = await action.Should().ThrowAsync<ProviderSearchException>();
+        exception.Which.Failure.Should().Be(ProviderSearchFailure.Unavailable);
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-5)]

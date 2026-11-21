@@ -1,0 +1,55 @@
+classDiagram
+    %% fund-governance-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_FundStructure_UpdateCustodianAccountDetailsRequest["UpdateCustodianAccountDetailsRequest"] {
+        +CustodianAccountDetailsDto Details
+        +string UpdatedBy
+    }
+    class Meridian_Contracts_FundStructure_UpdateLegalEntityProfileRequest["UpdateLegalEntityProfileRequest"] {
+        +string? BaseCurrency
+        +IReadOnlyList~BeneficialOwnerSummaryDto~? BeneficialOwners
+        +string? Code
+        +string? Description
+        +DateTimeOffset? EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +Guid EntityId
+        +LegalEntityTypeDto? EntityType
+        +bool? IsActive
+        +string? Jurisdiction
+        +LegalEntityFormDto? LegalForm
+        +LegalEntityLifecycleEventDto? LifecycleEvent
+    }
+    class Meridian_Contracts_FundStructure_UpdateOwnershipLinkRequest["UpdateOwnershipLinkRequest"] {
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +bool IsPrimary
+        +string? Notes
+        +Guid OwnershipLinkId
+        +decimal? OwnershipPercent
+        +OwnershipRelationshipTypeDto RelationshipType
+        +string UpdatedBy
+    }
+    class Meridian_Contracts_FundStructure_ValidateOwnershipGraphRequest["ValidateOwnershipGraphRequest"] {
+        +bool ActiveOnly
+        +DateTimeOffset? AsOf
+    }
+    class Meridian_Contracts_FundStructure_VehicleOperatingViewDto["VehicleOperatingViewDto"] {
+        +IReadOnlyList~AccountSummaryDto~ Accounts
+        +IReadOnlyList~InvestmentPortfolioSummaryDto~ InvestmentPortfolios
+        +LegalEntitySummaryDto? LegalEntity
+        +VehicleSummaryDto Vehicle
+    }
+    class Meridian_Contracts_FundStructure_VehicleSummaryDto["VehicleSummaryDto"] {
+        +IReadOnlyList~Guid~ AccountIds
+        +string BaseCurrency
+        +string Code
+        +string? Description
+        +DateTimeOffset EffectiveFrom
+        +DateTimeOffset? EffectiveTo
+        +Guid FundId
+        +IReadOnlyList~Guid~ InvestmentPortfolioIds
+        +bool IsActive
+        +Guid LegalEntityId
+        +string Name
+        +Guid VehicleId
+    }
+    Meridian_Contracts_FundStructure_VehicleOperatingViewDto --> Meridian_Contracts_FundStructure_VehicleSummaryDto

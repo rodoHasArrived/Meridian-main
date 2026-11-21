@@ -3,6 +3,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
+import { TableWorkbench } from "@/components/meridian/table-workbench";
+import { ProviderQuotaEditor } from "@/screens/data-screen.provider-quota-editor";
 import {
   useProviderAccountingPanel,
   type ProviderAccountingServices
@@ -29,7 +31,7 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
               Provider registration and rate limits
             </CardTitle>
             <CardDescription className="mt-2">
-              Current server-owned registration failures, request-window usage, reset posture, and retry guidance.
+              Current server-owned registration failures, quota usage, declared daily limits, reset status, and retry guidance.
             </CardDescription>
           </div>
           <Button
@@ -79,59 +81,41 @@ export function ProviderAccountingRegion({ services }: { services?: ProviderAcco
         <div>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
-              <h3 className="text-sm font-semibold text-foreground">Current request windows</h3>
+              <h3 className="text-sm font-semibold text-foreground">Current provider quotas</h3>
               <p className="mt-1 text-xs text-muted-foreground">{panel.rateLimitSummary}</p>
             </div>
-            <Badge variant="outline">History unavailable</Badge>
+            <Badge variant="outline">Quota history below</Badge>
           </div>
 
           {panel.rateLimits.length > 0 ? (
             <div className="mt-3 overflow-x-auto rounded-md border border-border/70">
-              <table className="w-full min-w-[920px] text-left text-xs" aria-label="Current provider rate-limit state">
-                <thead className="bg-secondary/40 text-muted-foreground">
-                  <tr>
-                    <th className="px-3 py-2 font-medium">Provider / surface</th>
-                    <th className="px-3 py-2 font-medium">Status</th>
-                    <th className="px-3 py-2 font-medium">Connection / reachability</th>
-                    <th className="px-3 py-2 font-medium">Requests</th>
-                    <th className="px-3 py-2 font-medium">Remaining</th>
-                    <th className="px-3 py-2 font-medium">Reset countdown</th>
-                    <th className="px-3 py-2 font-medium">Failure / reason</th>
-                    <th className="px-3 py-2 font-medium">Retry posture</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {panel.rateLimits.map((row) => (
-                    <tr key={row.id} className="border-t border-border/70 align-top">
-                      <td className="px-3 py-2">
-                        <span className="block font-semibold text-foreground">{row.provider}</span>
-                        <span className="text-muted-foreground">{row.surface}</span>
-                      </td>
-                      <td className="px-3 py-2">
-                        <Badge variant={row.statusTone === "danger" ? "danger" : row.statusTone === "warning" ? "warning" : "success"}>
-                          {row.status}
-                        </Badge>
-                      </td>
-                      <td className="max-w-[17rem] px-3 py-2 text-muted-foreground">{row.connectionPosture}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{row.requestUsage}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{row.remaining}</td>
-                      <td className="px-3 py-2 font-mono text-foreground">{row.resetCountdown}</td>
-                      <td className="max-w-[18rem] px-3 py-2 text-muted-foreground">{row.failureReason}</td>
-                      <td className="max-w-[18rem] px-3 py-2 text-muted-foreground">{row.retryPosture}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <TableWorkbench tableClassName={"w-full min-w-[920px] text-left text-xs"} maxVisibleRows={null}  workbenchId="data-provider-rate-limits" sourceKey={panel.rateLimits.map((row) => row.id).join("|")}
+                sourceDescription="Complete current provider rate-limit snapshot; no history is inferred." completePopulation
+                rows={panel.rateLimits} getRowId={(row) => row.id} getSearchText={(row) => `${row.provider} ${row.surface} ${row.status} ${row.failureReason}`}
+                ariaLabel="Current provider rate-limit state" emptyText="No current rate-limit evidence."
+                columns={[
+                  { id: "provider", label: "Provider / surface", render: (row) => <><strong>{row.provider}</strong><span className="block text-muted-foreground">{row.surface}</span></>, exportValue: (row) => `${row.source.provider}; ${row.source.surface}` },
+                  { id: "status", label: "Status", render: (row) => <Badge variant={row.statusTone}>{row.status}</Badge>, exportValue: (row) => row.source.status },
+                  { id: "connection", label: "Connection / reachability", render: (row) => row.connectionPosture, exportValue: (row) => row.connectionPosture },
+                  { id: "requests", label: "Quota usage", render: (row) => row.requestUsage, exportValue: (row) => row.requestUsage },
+                  { id: "backfill-attempts", label: "Backfill attempts", render: (row) => row.backfillAttempts, exportValue: (row) => row.source.backfillAttemptsInWindow },
+                  { id: "remaining", label: "Remaining", render: (row) => row.remaining, exportValue: (row) => row.source.remainingRequests },
+                  { id: "daily", label: "Daily quota", render: (row) => row.dailyUsage, exportValue: (row) => row.dailyUsage },
+                  { id: "reset", label: "Reset countdown", render: (row) => row.resetCountdown, exportValue: (row) => row.source.resetAt },
+                  { id: "reason", label: "Failure / reason", render: (row) => row.failureReason, exportValue: (row) => row.source.reason },
+                  { id: "retry", label: "Retry status", render: (row) => row.retryPosture, exportValue: (row) => row.retryPosture }
+                ]} />
             </div>
           ) : (
             <div className="mt-3 rounded-md border border-dashed border-border p-3 text-xs text-muted-foreground">
               No current provider rate-limit rows are available. Meridian will not infer request capacity from configuration alone.
             </div>
           )}
-          <p className="mt-2 text-xs text-muted-foreground" aria-label="Provider rate-limit history posture">
+          <p className="mt-2 text-xs text-muted-foreground" aria-label="Provider rate-limit history status">
             History: {panel.historyPosture}
           </p>
         </div>
+        <ProviderQuotaEditor />
       </CardContent>
     </section>
   );

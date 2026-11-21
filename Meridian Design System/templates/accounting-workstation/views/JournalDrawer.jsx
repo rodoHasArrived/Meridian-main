@@ -3,7 +3,7 @@
 // post-to-account flows; `seedKey` re-keys the form so each open starts fresh.
 function AcctJournalDrawer(props) {
   if (!props.open) return null;
-  const DS = window.MeridianDesignSystem_4f61be;
+  const DS = window.MeridianDesignSystem_205d17;
   if (!DS) return null;
   const { Drawer, DrawerBody, JournalEntryForm, FileUpload, TextArea, Callout, Eyebrow } = DS;
 

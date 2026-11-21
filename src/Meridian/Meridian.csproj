@@ -67,6 +67,7 @@
 
   <!-- Layer Assembly References -->
   <ItemGroup>
+    <ProjectReference Include="../Meridian.Storage.Accounting/Meridian.Storage.Accounting.csproj" />
     <ProjectReference Include="..\Meridian.Application\Meridian.Application.csproj" />
     <ProjectReference Include="..\Meridian.Audit\Meridian.Audit.csproj" />
     <ProjectReference Include="..\Meridian.Backtesting\Meridian.Backtesting.csproj" />

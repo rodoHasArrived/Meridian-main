@@ -58,6 +58,18 @@ public static class LedgerAccounts
     public static LedgerAccount RealizedLossOrDefault(string? financialAccountId) =>
         string.IsNullOrWhiteSpace(financialAccountId) ? RealizedLoss : RealizedLossFor(financialAccountId);
 
+    /// <summary>The commission expense account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount CommissionExpenseOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? CommissionExpense : CommissionExpenseFor(financialAccountId);
+
+    /// <summary>The realized FX gain account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount RealizedFxGainOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? RealizedFxGain : CreateScoped("Realized FX Gain", LedgerAccountType.Revenue, financialAccountId);
+
+    /// <summary>The realized FX loss account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
+    public static LedgerAccount RealizedFxLossOrDefault(string? financialAccountId) =>
+        string.IsNullOrWhiteSpace(financialAccountId) ? RealizedFxLoss : CreateScoped("Realized FX Loss", LedgerAccountType.Expense, financialAccountId);
+
     /// <summary>The stock borrow fee expense account for <paramref name="financialAccountId"/>, or the unscoped account when none is given.</summary>
     public static LedgerAccount StockBorrowFeeExpenseOrDefault(string? financialAccountId) =>
         string.IsNullOrWhiteSpace(financialAccountId) ? StockBorrowFeeExpense : StockBorrowFeeExpenseFor(financialAccountId);
@@ -304,6 +316,15 @@ public static class LedgerAccounts
     public static readonly LedgerAccount MarginLoanPayable =
         new("Margin Loan Payable", LedgerAccountType.Liability);
 
+    /// <summary>
+    /// Collateral the broker holds against open Reg T short sales — the retained short proceeds
+    /// plus the additional margin the trader posted. An asset: it returns to cash as the short
+    /// is covered. Booking it here keeps ledger cash equal to the account's free cash while the
+    /// short is open, instead of showing the retained proceeds as spendable cash.
+    /// </summary>
+    public static readonly LedgerAccount ShortSaleCollateralReceivable =
+        new("Short Sale Collateral Receivable", LedgerAccountType.Asset);
+
     /// <summary>Borrow fee expense charged daily on short-sold securities.</summary>
     public static readonly LedgerAccount StockBorrowFeeExpense =
         new("Stock Borrow Fee Expense", LedgerAccountType.Expense);
@@ -408,7 +429,7 @@ public static class LedgerAccounts
     /// is a ticker rather than a currency code, so currency inference must not read the symbol as
     /// a denomination.
     /// </summary>
-    internal static bool UsesInstrumentSymbol(LedgerAccount account)
+    public static bool UsesInstrumentSymbol(LedgerAccount account)
         => account.Symbol is not null && InstrumentSymbolAccountNames.Contains(account.Name);
 
     /// <summary>

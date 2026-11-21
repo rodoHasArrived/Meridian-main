@@ -91,5 +91,17 @@ public sealed class CanonicalBacktestResultNormalizerTests
 
         result.EngineMetadata.Should().Be(new BacktestEngineMetadata("MeridianNative", ResultKind: BacktestResultKinds.Full));
         result.Metrics.Should().BeSameAs(source.Metrics);
+
+        var measuredZero = CanonicalBacktestResultNormalizer.FromNative(source with
+        {
+            EngineMetadata = new BacktestEngineMetadata("BrokerPaper")
+            {
+                FinancingCoverageStatus = BacktestFinancingCoverageStatuses.Available,
+                RunAttributedMarginInterest = 0m
+            }
+        });
+        measuredZero.EngineMetadata!.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Available);
+        measuredZero.EngineMetadata.RunAttributedMarginInterest.Should().Be(0m);
+        result.EngineMetadata!.FinancingCoverageStatus.Should().BeNull("legacy/native coverage is not silently assessed");
     }
 }

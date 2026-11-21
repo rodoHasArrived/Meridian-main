@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Identity;
+using Meridian.Identity.Auth;
 using Meridian.Storage;
 using Meridian.Testing;
 using Microsoft.Extensions.Logging;
@@ -44,6 +45,51 @@ public sealed class GovernanceStoreDataIntegrityTests
         assignments.Should().BeEmpty();
         logger.Entries.Should().Contain(entry =>
             entry.Level == LogLevel.Error && entry.Message.Contains("Corrupt scoped-access-assignment", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public async Task ScopedAccessAssignmentStore_CreateWithCorruptFile_RefusesAndLeavesFileUntouched()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(ScopedAccessAssignmentStore_CreateWithCorruptFile_RefusesAndLeavesFileUntouched));
+        var path = Path.Combine(artifacts.RootPath, "user-access-assignments.json");
+        const string corrupt = "{ \"assignments\": [ { broken";
+        File.WriteAllText(path, corrupt);
+        var store = new FileScopedAccessAssignmentStore(path, new CapturingLogger<FileScopedAccessAssignmentStore>());
+        var now = DateTimeOffset.UtcNow;
+
+        var create = () => store.CreateAsync(new UserAccessAssignmentDto(
+            Guid.NewGuid(), "ops-user", AccessPrincipalKindDto.User, AccessScopeKindDto.Global, null,
+            "Operator", null, [nameof(UserPermission.ViewTrades)], (long)UserPermission.ViewTrades,
+            now, null, "ops-admin", "Corrupt-file regression", "corrupt-file-test", 1, now, now));
+
+        await create.Should().ThrowAsync<InvalidOperationException>().WithMessage("*corrupt*");
+        File.ReadAllText(path).Should().Be(corrupt,
+            "a write must not replace every stored assignment with the one being created");
+    }
+
+    [Fact]
+    public async Task RolePermissionProfileStore_UpsertWithCorruptFile_RefusesAndLeavesFileUntouched()
+    {
+        using var artifacts = TestArtifactDirectory.Create(nameof(RolePermissionProfileStore_UpsertWithCorruptFile_RefusesAndLeavesFileUntouched));
+        WriteGovernanceFile(artifacts.RootPath, "role-permission-profiles.json", "not-json");
+        var path = Path.Combine(artifacts.RootPath, "governance", "role-permission-profiles.json");
+        var store = new FileRolePermissionProfileStore(
+            new StorageOptions { RootPath = artifacts.RootPath },
+            new CapturingLogger<FileRolePermissionProfileStore>());
+
+        var upsert = () => store.UpsertAsync(
+            new RolePermissionProfileUpsertRequestDto(
+                ProfileName: "Close Reviewer",
+                DisplayName: "Close Reviewer",
+                Description: "Corrupt-file regression.",
+                BaseRole: nameof(UserRole.Accounting),
+                PermissionNames: [nameof(UserPermission.ViewTrades)],
+                RequestedBy: "ops-admin",
+                Rationale: "Corrupt-file regression."),
+            actor: "ops-admin");
+
+        await upsert.Should().ThrowAsync<InvalidOperationException>().WithMessage("*corrupt*");
+        File.ReadAllText(path).Should().Be("not-json");
     }
 
     private static void WriteGovernanceFile(string rootPath, string fileName, string content)

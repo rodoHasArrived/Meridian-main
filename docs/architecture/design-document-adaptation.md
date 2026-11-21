@@ -2,10 +2,10 @@
 
 **Status:** active
 **Owner:** Core Team
-**Reviewed:** 2026-10-30
+**Reviewed:** 2026-11-01
 
 This document is the executable adaptation contract for the
-[Meridian Design Document, Version 1.6](../product/meridian-design-document.md). It is broader than the physical
+[Meridian Design Document, Version 1.7](../product/meridian-design-document.md). It is broader than the physical
 module list: it covers roadmap/status evidence, bounded contexts, recommended modules, root
 workspaces, MVP screen inventory, expansion lanes, shared UI surfaces, and the modular-monolith rule.
 
@@ -93,7 +93,7 @@ The adaptation validator checks that:
 
 - the design document exists and still mentions the expected modules, contexts, root workspaces, and
   screen inventory;
-- the adaptation names Version 1.6 and its Section 22.7 direction;
+- the adaptation names Version 1.7 and its Section 22.7 direction;
 - every recommended module has a physical project and source registry entry;
 - every module descriptor exposes its bounded context and required facets;
 - the financial baseline remains bounded, the two adopted W13 contexts remain planned with exact

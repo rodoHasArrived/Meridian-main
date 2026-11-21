@@ -57,3 +57,9 @@ export function applyProviderRuntimeCredential(connectionId: string, request: Ap
   return apiPostJson<ProviderRuntimeCredentialApplicationStatus>(
     connectionRoute(UI_API_ROUTES.ProviderRoutingConnectionRuntimeCredentialApply, connectionId), request, strict(options));
 }
+
+/** Retires a verified migration: rollback ends and the provider-wide record is released; the receipt stays in audit. */
+export function finalizeProviderCredentialMigration(connectionId: string, request: ProviderCredentialMigrationRequest, options: ApiRequestOptions = {}) {
+  return apiPostJson<ProviderCredentialMigrationReceipt>(
+    connectionRoute(UI_API_ROUTES.ProviderRoutingConnectionCredentialFinalize, connectionId), request, strict(options));
+}

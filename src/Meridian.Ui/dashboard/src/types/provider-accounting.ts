@@ -57,6 +57,13 @@ export interface ProviderRateLimitSnapshot {
   resetAt: string | null;
   reason: string | null;
   status: "available" | "rate-limited" | "unavailable" | string;
+  quotaUnit?: "requests" | "credits" | string;
+  dailyUnitsUsed?: number | null;
+  dailyMaximum?: number | null;
+  dailyResetsAt?: string | null;
+  dailyResetPolicy?: "utc-midnight" | "rolling-24-hours" | string | null;
+  backfillAttemptsInWindow?: number | null;
+  backfillAttemptWindowSeconds?: number | null;
 }
 
 export interface ProviderRateLimitsResponse {

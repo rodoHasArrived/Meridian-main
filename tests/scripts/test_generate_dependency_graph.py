@@ -22,7 +22,7 @@ def write_project(path: Path, body: str) -> None:
 
 class GenerateDependencyGraphTests(unittest.TestCase):
     def test_build_dependency_graph_includes_fsproj_and_skips_temp_projects(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
             root = Path(td)
             write_project(
                 root / "src" / "Meridian.App" / "Meridian.App.csproj",
@@ -62,7 +62,7 @@ class GenerateDependencyGraphTests(unittest.TestCase):
             self.assertEqual(graph.projects["Meridian.FSharp"].referenced_by, ["Meridian.App"])
 
     def test_generate_markdown_adds_summary_diagrams(self) -> None:
-        with tempfile.TemporaryDirectory() as td:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as td:
             root = Path(td)
             write_project(
                 root / "src" / "Meridian.Contracts" / "Meridian.Contracts.csproj",

@@ -797,6 +797,7 @@ export interface BrokerageHouseholdAccount {
 }
 
 export interface BrokerageHouseholdPosition {
+  amountPassports?: Record<string, import("./amount-passport").AmountPassportReference> | null;
   markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   fundAccountId: string;
   providerId: string;
@@ -907,6 +908,8 @@ export interface ReplayStatus {
 }
 
 export interface OrderSubmitRequest {
+  clientOrderId?: string;
+  sessionIntent?: "RegularOnly" | "QueueNextSession" | "ExtendedHours";
   symbol: string;
   side: "Buy" | "Sell";
   type: "Market" | "Limit" | "Stop";
@@ -920,6 +923,7 @@ export interface OrderResult {
   orderId: string | null;
   reason: string | null;
   errorMessage?: string | null;
+  requiresOrderReconciliation?: boolean;
   /**
    * True when a risk escalation parked the order for governed approval. Nothing routed,
    * but the queue entry can still execute once an operator approves it, so this is not a
@@ -928,6 +932,28 @@ export interface OrderResult {
   requiresApproval?: boolean;
   escalationId?: string | null;
   riskWarnings?: string[] | null;
+  /** Set when order authority refused the order, and when a typed submission was admitted. */
+  authorityDecision?: AuthorityDecisionSummary | null;
+}
+
+/** Who or what originated an order (OMS `OrderCommandOrigin`, serialized by name). */
+export type OrderCommandOrigin =
+  | "Unattributed"
+  | "OperatorTicket"
+  | "PositionAction"
+  | "EscalationRelease"
+  | "StrategyRun"
+  | "KillSwitch";
+
+/** Which order authority admitted or refused a submission, and where (`preflight` or `dispatch`). */
+export interface AuthorityDecisionSummary {
+  origin: OrderCommandOrigin;
+  isAuthorized: boolean;
+  reasonCode: string | null;
+  reason: string | null;
+  checkpoint: string;
+  readinessSnapshotVersion: string | null;
+  promotionAuditReference: string | null;
 }
 
 export interface StrategyWorkspaceResponse {
@@ -1058,6 +1084,7 @@ export interface StrategyPlotToolTabPayload {
 }
 
 export interface StrategyPlotToolPayload {
+  analyticsEvidenceStatus?: "Retained" | "Illustrative" | "Unavailable" | "Unverified";
   workspace: unknown;
   statistics: unknown;
   studies: unknown[];
@@ -1105,9 +1132,10 @@ export interface DataBackfillRecord {
   jobId: string;
   scope: string;
   provider: string;
-  status: "Queued" | "Running" | "Review";
+  status: "Queued" | "Running" | "Review" | "Completed" | "Failed";
   progress: string;
   updatedAt: string;
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
 }
 
 export interface DataExportRecord {
@@ -1224,6 +1252,10 @@ export interface DataQueryResult {
   rowCount: number;
   truncated: boolean;
   elapsedMs: number;
+  /** Opaque owner-bound receipt for this exact, completely retained execution. */
+  executionId?: string | null;
+  retainedRowCount?: number | null;
+  executionExpiresAt?: string | null;
 }
 
 export interface DataWorkspaceResponse {
@@ -1242,6 +1274,11 @@ export type DataOperationsExportRecord = DataExportRecord;
 export type DataOperationsWorkspaceResponse = DataWorkspaceResponse;
 
 export interface TradingPosition {
+  /** Authoritative source values only; exposure is not a substitute for signed market value. */
+  marketValue?: string | null;
+  currency?: string | null;
+  weight?: string | null;
+  weightBasis?: string | null;
   markFreshness?: import("./mark-freshness").MarkFreshnessAssessmentDto | null;
   positionKey?: string;
   symbol: string;
@@ -1263,6 +1300,8 @@ export interface TradingOrder {
   limitPrice: string;
   status: "Working" | "Partially Filled" | "Pending Routing";
   submittedAt: string;
+  /** OMS order origin by name; absent for orders created outside order submission. */
+  origin?: OrderCommandOrigin | null;
 }
 
 export interface TradingFill {
@@ -1323,6 +1362,14 @@ export interface TradingWorkspaceResponse {
   risk: TradingRiskState;
   brokerage: BrokerageWiringStatus;
   readiness?: TradingOperatorReadiness | null;
+  /** Whether manual orders may be submitted on the active routing path; absent when no OMS is active. */
+  manualOrderEntry?: TradingManualOrderEntry | null;
+}
+
+export interface TradingManualOrderEntry {
+  available: boolean;
+  reasonCode: string | null;
+  reason: string | null;
 }
 
 export interface PortfolioRunRow {
@@ -1439,6 +1486,7 @@ export interface AssetCashFlowProjectionRun {
   generatedAt: string;
   sourceDomain: string;
   sourceEntityId: string;
+  blocker?: { code: string; reason: string } | null;
 }
 
 export interface AssetProjectedCashFlow {

@@ -3,12 +3,12 @@
 
 from __future__ import annotations
 
+import os
 from pathlib import Path
 
-# Renderer major version. `docs/roadmap/schema-versioning.md` classifies a change in generated
-# output semantics as major-or-renderer-major; 2.0.0 marks the switch from lexical identifier
-# order to shared wave-then-rank order, so an audit can tell which contract produced an artifact.
-ROADMAP_RENDERER_VERSION = "2.0.0"
+# v3 generates status narrative and references from v2 structured fields, retaining v2's
+# shared wave/rank order. See docs/roadmap/schema-versioning.md for the migration contract.
+ROADMAP_RENDERER_VERSION = "3.0.0"
 
 from common import (
     build_arg_parser,
@@ -82,7 +82,24 @@ def render_register(root: Path, program: dict, roadmap: dict, inputs: list[Path]
             )
         )
         parts.append("\n\n### Current Summary\n\n")
-        parts.append(str(item.get("current_summary", "-")))
+        if "status_note" in item:
+            parts.append(f"{item.get('id')}: {item.get('status')}; health {item.get('health')}; evidence {item.get('evidence_posture')}. ")
+            parts.append(str(item.get("status_note", "")))
+            parts.append("\n\n### Status References\n\n")
+            parts.append(f"- Decisions: {', '.join(item.get('decision_ids', [])) or 'none recorded'}\n")
+            prs = [f"[#{number}](https://github.com/rodoHasArrived/Meridian-main/pull/{number})" for number in item.get("pr_references", [])]
+            parts.append(f"- PR references (not inferred acceptance): {', '.join(prs) or 'none recorded'}\n")
+            detail = item.get("status_detail", "")
+            if detail:
+                target = Path(os.path.relpath(root / detail, root / "docs/roadmap/generated")).as_posix()
+                parts.append(f"- [Retained implementation detail and boundaries]({target})\n")
+            for evidence in item.get("evidence", []) or []:
+                target = evidence.get("path") if isinstance(evidence, dict) else None
+                if target:
+                    relative = Path(os.path.relpath(root / target, root / "docs/roadmap/generated")).as_posix()
+                    parts.append(f"- Evidence: [{target}]({relative})\n")
+        else:
+            parts.append(str(item.get("current_summary", "-")))
         parts.append("\n\n### Exit Criteria\n\n")
         for criterion in item.get("exit_criteria", []) or []:
             parts.append(f"- {criterion}\n")

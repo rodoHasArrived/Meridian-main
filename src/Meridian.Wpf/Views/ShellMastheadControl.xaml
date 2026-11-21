@@ -97,7 +97,7 @@
                     <TextBlock Text="{Binding CurrentModeName}"
                                FontSize="11"
                                FontWeight="SemiBold"
-                               Foreground="{StaticResource TopBarAccentBlueBrush}" />
+                               Foreground="{StaticResource TopBarTextBrush}" />
                 </Border>
                 <Button Style="{StaticResource IconButtonStyle}"
                         Command="{Binding ShowCommandPaletteCommand}"

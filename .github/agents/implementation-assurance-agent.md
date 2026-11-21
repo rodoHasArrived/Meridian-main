@@ -53,8 +53,9 @@ Use this lane whenever the task creates or updates an agent or skill package.
 2. **Plan mapping:** map each requirement to implementing files and intended validation artifacts. Use `doc_route.py --kind ai` to decide which catalogs need updating.
 3. **Execute & validate:** apply minimal changes in the current protected-rule-compliant workflow.
    Local work may happen on `main` when the user explicitly requests it or the checkout is
-   intentionally operating there; for PR-ready publishing, use a `codex/<short-task-name>` branch
-   unless GitHub repository rules explicitly allow the requested protected-branch flow. Run
+   intentionally operating there; for PR-ready publishing, use a `codex/<short-task-name>` or
+   `claude/<short-task-name>` branch unless GitHub repository rules explicitly allow the
+   requested protected-branch flow. Run
    required commands and capture outputs. Choose the full `bash scripts/ci.sh` by risk tier
    ([verification tiers](../../docs/ai/solo-developer-workflow.md#verification-tiers)): optional at
    Level 1, recommended at Level 2, run when practical at Level 3 or for build/CI-tooling changes;
@@ -159,3 +160,7 @@ The four-lane `Meridian CI / quality-gate` keeps its identity. The always-report
 `Meridian CI / integration-gate` companion reports service-backed PostgreSQL tests shared with
 Production Certification, including pull requests and merge groups.
 All CI governance changes require human review.
+
+Generated-file delivery: run `python build/python/cli/buildctl.py regen --fix` after merging.
+Commit reviewed views only; declared machine inventories and workstation builds are CI artifacts.
+Preserve reviewed source hashes. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).

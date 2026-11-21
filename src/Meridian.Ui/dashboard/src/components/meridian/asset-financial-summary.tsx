@@ -297,7 +297,7 @@ function positionLabel(position: BookPosition) {
 function Metric({ label, value }: { label: string; value: string }) {
   return (
     <div>
-      <dt className="text-[10px] font-semibold uppercase tracking-[0.1em] text-muted-foreground">{label}</dt>
+      <dt className="text-xs font-semibold uppercase tracking-[0.1em] text-muted-foreground">{label}</dt>
       <dd className="mt-1 font-mono text-sm font-semibold tabular-nums">{value}</dd>
     </div>
   );

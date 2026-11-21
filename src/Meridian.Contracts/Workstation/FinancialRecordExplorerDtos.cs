@@ -47,7 +47,9 @@ public sealed record FinancialRecordExplorerSavedViewDto(
     bool IsActive,
     IReadOnlyList<FinancialRecordExplorerFilterDto> Filters,
     string SearchText = "",
-    IReadOnlyList<string>? ColumnIds = null);
+    IReadOnlyList<string>? ColumnIds = null,
+    bool? IsReadOnly = false,
+    string? Origin = null);
 
 public sealed record FinancialRecordExplorerSummaryItemDto(
     string Label,

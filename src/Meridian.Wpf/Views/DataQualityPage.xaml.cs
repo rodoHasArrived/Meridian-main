@@ -83,6 +83,9 @@ public partial class DataQualityPage : Page
     }
 
     private async void CompareProviders_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => CompareProviders_ClickCoreAsync(sender, e), nameof(CompareProviders_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task CompareProviders_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is string symbol)
         {
@@ -92,6 +95,9 @@ public partial class DataQualityPage : Page
     }
 
     private async void CompareSelectedProvider_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => CompareSelectedProvider_ClickCoreAsync(sender, e), nameof(CompareSelectedProvider_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task CompareSelectedProvider_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (_viewModel.SelectedSymbolQuality is not { Symbol.Length: > 0 } selected)
         {
@@ -145,6 +151,9 @@ public partial class DataQualityPage : Page
     }
 
     private async void AcknowledgeAlert_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => AcknowledgeAlert_ClickCoreAsync(sender, e), nameof(AcknowledgeAlert_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task AcknowledgeAlert_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         if (sender is Button button && button.Tag is string alertId)
         {
@@ -152,15 +161,16 @@ public partial class DataQualityPage : Page
         }
     }
 
-    private async void AcknowledgeAll_Click(object sender, RoutedEventArgs e) => await _viewModel.AcknowledgeAllAlertsAsync();
+    private async void AcknowledgeAll_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => AcknowledgeAll_ClickCoreAsync(sender, e), nameof(AcknowledgeAll_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task AcknowledgeAll_ClickCoreAsync(object sender, RoutedEventArgs e)
+        => await _viewModel.AcknowledgeAllAlertsAsync();
 
     private void OnCommandBarCommandInvoked(object sender, WorkspaceCommandInvokedEventArgs e)
     {
         switch (e.Command.Id)
         {
-            case "Refresh":
-                _ = _viewModel.RefreshAsync();
-                break;
             case "RunQualityCheck":
                 ShowQualityCheckPanel();
                 break;
@@ -177,6 +187,9 @@ public partial class DataQualityPage : Page
     }
 
     private async void InteractionPrimaryAction_Click(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => InteractionPrimaryAction_ClickCoreAsync(sender, e), nameof(InteractionPrimaryAction_Click)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task InteractionPrimaryAction_ClickCoreAsync(object sender, RoutedEventArgs e)
     {
         switch (_interactionMode)
         {
@@ -295,7 +308,6 @@ public partial class DataQualityPage : Page
         {
             PrimaryCommands =
             [
-                new WorkspaceCommandItem { Id = "Refresh", Label = "Refresh", Description = "Refresh data quality metrics.", Glyph = "\uE72C", Tone = WorkspaceTone.Primary },
                 new WorkspaceCommandItem { Id = "RunQualityCheck", Label = "Run quality check", Description = "Run a quality check for a symbol or file path.", Glyph = "\uE9D5" }
             ],
             SecondaryCommands =

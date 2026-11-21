@@ -24,6 +24,21 @@ public sealed record BondAnalyticsRequest(
 {
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? CalculationVersion { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SelectionReceiptId { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? PriceAccountId { get; init; }
+
+    /// <summary>
+    /// The <c>SecurityTerms</c> content hash a retained receipt recorded, supplied when replaying it.
+    /// It is reported only when it equals the pre-invariant raw-text hash of exactly the terms resolved
+    /// now (<see cref="BondSecurityTermsDigest.Resolve"/>); otherwise the canonical hash is reported, so
+    /// it can never make changed terms verify.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? RetainedSecurityTermsSha256 { get; init; }
 }
 
 public sealed record BondAnalyticsBlocker(string Code, string Reason);
@@ -36,7 +51,28 @@ public sealed record BondAnalyticsCashFlow(
     DateOnly AccrualEnd,
     decimal Interest,
     decimal Principal,
-    decimal TimeInYears);
+    decimal TimeInYears)
+{
+    /// <summary>Resolved floating-coupon inputs. Omitted for fixed and zero-coupon models.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BondAnalyticsFloatingCoupon? FloatingCoupon { get; init; }
+}
+
+/// <summary>
+/// Inputs used for one floating coupon, not a separate pricing model. Index and coupon rates are
+/// annual fractions; spread is in basis points. CouponRate includes the retained cap and floor.
+/// IsObserved follows the economic cutoff, while settlement governs cash-flow entitlement.
+/// Source names the retained reset schedule, sourced current fixing, or forward curve; the result's
+/// Inputs identify the exact retained security and curve versions or content hashes.
+/// </summary>
+public sealed record BondAnalyticsFloatingCoupon(
+    DateOnly ResetDate,
+    bool IsObserved,
+    string IndexName,
+    decimal IndexRate,
+    decimal SpreadBps,
+    decimal CouponRate,
+    string Source);
 
 /// <summary>Contractual exercise scenario, not an exercise forecast or trading instruction.</summary>
 public sealed record BondExerciseYield(
@@ -48,6 +84,9 @@ public sealed record BondExerciseYield(
     DateOnly? EarliestNoticeDate = null);
 
 public sealed record BondOperationCapability(string Operation, bool Supported, string? Reason = null);
+
+/// <summary>Every tied issuer-controlled or maturity scenario determining yield to worst.</summary>
+public sealed record BondGoverningYieldScenario(string Kind, DateOnly Date, decimal Yield);
 
 /// <summary>
 /// All prices, accrued interest and DV01 are per 100 face; yields are annual fractions and
@@ -76,5 +115,21 @@ public sealed record BondAnalyticsResult(
     IReadOnlyList<BondOperationCapability> Capabilities,
     IReadOnlyList<string> Diagnostics)
 {
+    /// <summary>Explicit maturity and exercise alternatives, including all ties for the issuer-controlled worst yield.</summary>
+    public IReadOnlyList<BondExerciseYield> RedemptionScenarios { get; init; } = [];
+    public IReadOnlyList<BondExerciseYield> YieldToWorstScenarios { get; init; } = [];
     public bool IsBlocked => Blockers.Count > 0;
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public DateOnly? MaturityDate { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyList<BondGoverningYieldScenario>? GoverningYieldScenarios { get; init; }
+
+    /// <summary>
+    /// Floating-rate analytics only: the dirty-price change per 100 face for a one-basis-point increase in the
+    /// coupon spread, repriced at the unchanged projected-flow yield. Omitted for fixed and zero-coupon models.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? SpreadDv01 { get; init; }
 }

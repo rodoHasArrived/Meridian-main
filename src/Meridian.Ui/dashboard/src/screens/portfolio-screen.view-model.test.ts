@@ -5,6 +5,7 @@ import {
   buildPortfolioRunDrillInSummary,
   buildPortfolioScreenViewModel,
   buildPortfolioFallbackMetrics,
+  resolveRetainedPortfolioRunLabel,
   resolveBrokerageAccountFilterKeyCommand
 } from "@/screens/portfolio-screen.view-model";
 import type {
@@ -302,13 +303,13 @@ const selectedRunContinuity: StrategyRunContinuityDto = {
       {
         code: "missing-portfolio",
         severity: "Critical",
-        message: "Portfolio read model is missing for the selected run.",
+        message: "Portfolio data is missing for the selected run.",
         sourceSeam: "portfolio"
       },
       {
         code: "missing-ledger",
         severity: "Critical",
-        message: "Ledger read model is missing for the selected run.",
+        message: "Ledger data is missing for the selected run.",
         sourceSeam: "ledger"
       }
     ]
@@ -467,9 +468,18 @@ const portfolio: PortfolioWorkspaceResponse = {
   }
 };
 
+describe("retained run display names", () => {
+  it("uses only an exact retained run identity match", () => {
+    expect(resolveRetainedPortfolioRunLabel(portfolio.runs[0].runId, portfolio, strategy)).toBe(portfolio.runs[0].strategyName);
+    expect(resolveRetainedPortfolioRunLabel(strategy.runs[0].id, portfolio, strategy)).toBe(strategy.runs[0].strategyName);
+    expect(resolveRetainedPortfolioRunLabel("unknown-retained-run", portfolio, strategy)).toBe("Retained run");
+    expect(resolveRetainedPortfolioRunLabel("42", portfolio, strategy)).toBe("Run 42");
+  });
+});
+
 describe("buildPortfolioScreenViewModel", () => {
   it("returns position rows from trading data", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
     expect(vm.hasPositions).toBe(true);
     expect(vm.positionRows).toHaveLength(1);
     expect(vm.positionRows[0].symbol).toBe("AAPL");
@@ -481,7 +491,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("returns run rows from strategy data", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
     expect(vm.hasRuns).toBe(true);
     expect(vm.runRows).toHaveLength(1);
     expect(vm.runRows[0].strategyName).toBe("Mean Reversion");
@@ -499,7 +509,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("projects multi-asset coverage without recalculating readiness client-side", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting, multiAssetCoverage });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting, multiAssetCoverage });
     const customAssetRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "CustomAsset");
     const fixedIncomeRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "FixedIncome");
     const directLoanRow = vm.multiAssetCoveragePanel?.rows.find((row) => row.assetClass === "DirectLoan");
@@ -623,7 +633,7 @@ describe("buildPortfolioScreenViewModel", () => {
         summary: "Cash flow is balanced."
       }
     };
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting: balancedGovernance,
@@ -633,8 +643,8 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.selectedRun?.statusTitle).toBe("Mean Reversion continuity review");
     expect(vm.selectedRun?.statusTone).toBe("danger");
     expect(vm.selectedRun?.statusBadgeLabel).toBe("2 blockers");
-    expect(vm.selectedRun?.statusDetail).toContain("Portfolio read model is missing for the selected run.");
-    expect(vm.selectedRun?.statusDetail).toContain("Ledger read model is missing for the selected run.");
+    expect(vm.selectedRun?.statusDetail).toContain("Portfolio data is missing for the selected run.");
+    expect(vm.selectedRun?.statusDetail).toContain("Ledger data is missing for the selected run.");
     expect(vm.selectedRun?.fields.find((field) => field.label === "Continuity")).toEqual({
       label: "Continuity",
       value: "2 blockers",
@@ -643,7 +653,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.workflowTaskPanel).toMatchObject({
       statusLabel: "Continuity blocked",
       statusTone: "danger",
-      selectedSummary: expect.stringContaining("Resolve 2 selected-run continuity blockers before accepting the portfolio-to-ledger handoff.")
+      selectedSummary: expect.stringContaining("Resolve 2 selected-run continuity blockers before accepting the portfolio into the ledger.")
     });
     expect(vm.workflowTaskPanel?.statusRows.find((row) => row.label === "Run continuity")).toEqual({
       label: "Run continuity",
@@ -694,7 +704,7 @@ describe("buildPortfolioScreenViewModel", () => {
       ]
     };
 
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, multiRunResearch),
       trading,
       strategy: multiRunResearch,
       accounting,
@@ -729,7 +739,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("summarizes selected-run drill-in evidence across attribution drawdown cash-flow and trades", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
     const summary = buildPortfolioRunDrillInSummary(vm.runRows[0], {
       runId: "run-1",
       attribution: {
@@ -838,18 +848,18 @@ describe("buildPortfolioScreenViewModel", () => {
         quantity: "60",
         price: "$188.50",
         commission: "$3.00",
-        filledAt: "May 7, 11:50 UTC",
+        filledAt: "May 7, 2026, 11:50 UTC",
         accountId: "paper-account"
       }),
       expect.objectContaining({
         id: "fill-older",
-        filledAt: "May 7, 11:45 UTC"
+        filledAt: "May 7, 2026, 11:45 UTC"
       })
     ]);
   });
 
   it("surfaces cash-flow summary from accounting data", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
     expect(vm.cashFlowSummary).toBe("1 run needs variance review.");
     expect(vm.cashFlowTone).toBe("warning");
     expect(vm.cashVarianceLabel).toBe("$500");
@@ -883,21 +893,21 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.positionEmptyText).toContain("Import a statement");
   });
 
-  it("points an empty paper session at the trading desk instead of import", () => {
+  it("does not use Trading as a replacement for unavailable Portfolio holdings", () => {
     const emptyTrading = { ...trading, positions: [] };
     const vm = buildPortfolioScreenViewModel({ trading: emptyTrading, strategy, accounting });
 
     expect(vm.hasPositions).toBe(false);
-    expect(vm.positionEmptyAction).toEqual({ label: "Open the trading desk", route: "/trading" });
-    expect(vm.positionEmptyText).toContain("once an order fills");
+    expect(vm.positionEmptyAction).toBeNull();
+    expect(vm.positionEmptyText).toContain("unavailable");
   });
 
   it("keeps the offered step consistent with the sentence beside it", () => {
     // The button must never contradict the adjacent text, so both read the same branch.
     const emptyTrading = { ...trading, positions: [] };
-    const paper = buildPortfolioScreenViewModel({ trading: emptyTrading, strategy, accounting });
-    expect(paper.positionEmptyText).toContain("paper session");
-    expect(paper.positionEmptyAction?.route).toBe("/trading");
+    const paper = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(emptyTrading, strategy), trading: emptyTrading, strategy, accounting });
+    expect(paper.positionEmptyText).toContain("No holdings yet");
+    expect(paper.positionEmptyAction?.route).toBe("/accounting/statement-import");
 
     const emptyPortfolio = { ...portfolio, positions: [] };
     const workspace = buildPortfolioScreenViewModel({
@@ -911,10 +921,45 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("returns empty run text when strategy data is null", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy: null, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, null), trading, strategy: null, accounting });
     expect(vm.hasRuns).toBe(false);
-    expect(vm.runEmptyText).toContain("unavailable");
+    expect(vm.runEmptyText).toContain("No runs available");
     expect(vm.selectedRun).toBeNull();
+  });
+
+  it("feeds the table, the headline and the holding detail from one holdings model", () => {
+    const seeded = portfolioFromTrading({ ...trading, positions: [
+      { symbol: "AAPL", side: "Long", quantity: "38", averagePrice: "142.20", markPrice: "188.40", dayPnl: "+$190", unrealizedPnl: "+$1,756", exposure: "$7,159" },
+      { symbol: "VTI", side: "Long", quantity: "120", averagePrice: "205.00", markPrice: "254.50", dayPnl: "+$495", unrealizedPnl: "+$5,940", exposure: "$30,540" }
+    ] }, strategy);
+    const vm = buildPortfolioScreenViewModel({ portfolio: seeded, trading, strategy, accounting, pathname: "/portfolio" });
+    const headline = vm.fallbackStats.find((metric) => metric.id === "portfolio-total-exposure")?.value;
+    expect(headline).toBe("$37,699");
+    expect(vm.holdingsTotal).toMatchObject({ exposure: headline, exposureAmount: "37699", currency: "USD" });
+    expect(vm.positionRows.reduce((sum, row) => sum + Number(row.exposureAmount), 0)).toBe(37699);
+    expect(vm.positionRows.map((row) => [row.currency, row.marketValue, row.marketValueFigure.staleLabel, row.weight])).toEqual([
+      ["USD", "$7,159.20", "Stale · no price date", "19.0%"],
+      ["USD", "$30,540.00", "Stale · no price date", "81.0%"]
+    ]);
+    const detail = Object.fromEntries(vm.selectedPosition!.fields.map((field) => [field.label, field.value]));
+    expect(detail).toMatchObject({ Currency: "USD", "Market value": "$7,159.20 (Stale · no price date)", Weight: "19.0%", Exposure: "$7,159" });
+    expect(vm.positionRows.flatMap((row) => [row.marketValue, row.weight])).not.toContain("Unavailable");
+  });
+
+  it.each(["/portfolio", "/portfolio/brokerage-sync"])("keeps repeated totals on %s consistent for shorts and mixed currencies", (pathname) => {
+    const shortPortfolio = portfolioFromTrading({ ...trading, positions: [
+      { ...trading.positions[0], exposure: "$100", unrealizedPnl: "+$10" },
+      { ...trading.positions[0], side: "Short", exposure: "-$40", unrealizedPnl: "-$5" }
+    ] }, strategy);
+    const short = buildPortfolioScreenViewModel({ portfolio: shortPortfolio, trading, strategy, accounting, pathname });
+    expect(short.workflowTaskPanel?.chips.find((chip) => chip.label === "Exposure")?.value).toBe("$140");
+    expect(short.headerChips.find((chip) => chip.label === "Exposure")?.value).toBe("$140");
+    expect(short.workflowTaskPanel?.chips.find((chip) => chip.label === "Unrealized P&L")?.value).toBe("+$5");
+    const mixedPortfolio = { ...shortPortfolio, positions: [shortPortfolio.positions[0], { ...shortPortfolio.positions[1], exposure: "€40", unrealizedPnl: "€5" }] };
+    const mixed = buildPortfolioScreenViewModel({ portfolio: mixedPortfolio, trading, strategy, accounting, pathname });
+    expect(mixed.workflowTaskPanel?.chips.find((chip) => chip.label === "Exposure")?.value).toBe("Unavailable");
+    expect(mixed.workflowTaskPanel?.chips.find((chip) => chip.label === "Unrealized P&L")?.value).toBe("Unavailable");
+    expect(mixed.fallbackStats.find((metric) => metric.id === "portfolio-total-exposure")?.value).toBe("Unavailable");
   });
 
   it("computes danger pnl tone for negative values", () => {
@@ -922,18 +967,18 @@ describe("buildPortfolioScreenViewModel", () => {
       ...trading,
       positions: [{ ...trading.positions[0], unrealizedPnl: "-$200" }]
     };
-    const vm = buildPortfolioScreenViewModel({ trading: tradingWithLoss, strategy, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(tradingWithLoss, strategy), trading: tradingWithLoss, strategy, accounting });
     expect(vm.positionRows[0].pnlTone).toBe("danger");
     expect(vm.selectedPosition?.fields.find((field) => field.label === "Unrealized P&L")?.tone).toBe("danger");
   });
 
   it("provides fallback stats when trading is available", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
     expect(vm.fallbackStats).toHaveLength(4);
     expect(vm.fallbackStats.find((s) => s.id === "portfolio-open-positions")).toMatchObject({
       label: "Open positions",
       value: "1",
-      delta: "Selectable detail",
+      delta: "Live holdings · all accounts",
       tone: "success"
     });
     expect(vm.fallbackStats.find((s) => s.id === "portfolio-unrealized-pnl")).toMatchObject({
@@ -989,7 +1034,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("derives named header chips without relying on fallback stat positions", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
 
     expect(vm.headerChips).toEqual([
       { label: "Alpaca paper equity", value: "—" },
@@ -1002,11 +1047,11 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("adds a Portfolio readiness handoff on the broad portfolio route", () => {
-    const vm = buildPortfolioScreenViewModel({ trading, strategy, accounting, pathname: "/portfolio" });
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting, pathname: "/portfolio" });
 
     expect(vm.workflowTaskPanel).toMatchObject({
-      regionLabel: "Portfolio readiness handoff",
-      title: "Portfolio acceptance handoff",
+      regionLabel: "Portfolio readiness review",
+      title: "Portfolio acceptance review",
       statusLabel: "Review blockers",
       statusTone: "warning",
       actionListLabel: "Portfolio readiness next actions",
@@ -1050,7 +1095,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("builds a dedicated brokerage-sync task panel from trading posture", () => {
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting,
@@ -1139,7 +1184,7 @@ describe("buildPortfolioScreenViewModel", () => {
       label: "Repair provider setup",
       href: "/settings#alpaca-provider-setup",
       ariaLabel: "Repair provider setup from brokerage sync review",
-      detail: "Verify credentials and connection posture before accepting brokerage-sync state.",
+      detail: "Verify credentials and connection status before accepting brokerage-sync state.",
       detailId: "portfolio-brokerage-sync-provider-setup-detail",
       variant: "default"
     });
@@ -1151,9 +1196,9 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.headerChips).toEqual([
       { label: "Alpaca paper equity", value: "—" },
       { label: "Alpaca paper cash", value: "—" },
-      { label: "Open positions", value: "0" },
-      { label: "Exposure", value: "—" },
-      { label: "Unrealized P&L", value: "—" },
+      { label: "Open positions", value: "Unavailable" },
+      { label: "Exposure", value: "Unavailable" },
+      { label: "Unrealized P&L", value: "Unavailable" },
       { label: "Cash variance", value: "$500" }
     ]);
   });
@@ -1176,7 +1221,7 @@ describe("buildPortfolioScreenViewModel", () => {
       ]
     };
 
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(tradingWithTwoPositions, strategy),
       trading: tradingWithTwoPositions,
       strategy,
       accounting,
@@ -1218,7 +1263,7 @@ describe("buildPortfolioScreenViewModel", () => {
       ]
     };
 
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, researchWithTwoRuns),
       trading,
       strategy: researchWithTwoRuns,
       accounting,
@@ -1255,7 +1300,7 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("derives provider-aware account selector and filtered brokerage positions", () => {
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting,
@@ -1305,8 +1350,23 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(vm.brokerageSetupAction).toBeNull();
   });
 
-  it("keeps all-account brokerage detail as aggregate view state", () => {
+  it.each([
+    ["EUR", "€18,750", "€188.10"],
+    [null, "18,750", "188.10"]
+  ] as const)("displays the retained denomination for older brokerage positions (%s)", (currency, marketValue, averagePrice) => {
+    const snapshot = {
+      ...brokeragePortfolio,
+      positions: [{ ...brokeragePortfolio.positions[0], currency, marketValue: 18_750.125, averageEntryPrice: 188.1 }]
+    };
     const vm = buildPortfolioScreenViewModel({
+      trading, strategy, accounting, brokeragePortfolio: snapshot
+    });
+
+    expect(vm.brokeragePositionRows).toMatchObject([{ currency, marketValue, averagePrice }]);
+  });
+
+  it("keeps all-account brokerage detail as aggregate view state", () => {
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting,
@@ -1329,13 +1389,13 @@ describe("buildPortfolioScreenViewModel", () => {
       { label: "Cash", value: "$150,000", tone: "default" },
       { label: "Buying power", value: "$150,000", tone: "default" },
       { label: "Warnings", value: "0 warnings", tone: "success" },
-      { label: "Latest sync", value: "May 7, 12:00 UTC", tone: "muted" }
+      { label: "Latest sync", value: "May 7, 2026, 12:00 UTC", tone: "muted" }
     ]);
   });
 
   it("keeps selected brokerage position state in the view model", () => {
     const selectBrokeragePosition = vi.fn();
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting,
@@ -1361,14 +1421,14 @@ describe("buildPortfolioScreenViewModel", () => {
   });
 
   it("routes missing brokerage portfolio state to Settings provider setup", () => {
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting
     });
 
     expect(vm.brokerageConnectionLabel).toBe("Not configured");
-    expect(vm.brokerageEmptyText).toBe("Alpaca paper portfolio sync has not produced a household projection yet.");
+    expect(vm.brokerageEmptyText).toBe("Alpaca paper portfolio sync has not produced a household view yet.");
     expect(vm.brokerageSetupAction).toEqual({
       label: "Open provider setup",
       href: "/settings#alpaca-provider-setup",
@@ -1387,7 +1447,7 @@ describe("buildPortfolioScreenViewModel", () => {
       ]
     };
 
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting,
@@ -1430,7 +1490,7 @@ describe("buildPortfolioScreenViewModel", () => {
 
   it("keeps adjacent brokerage account selector transitions in the view model", () => {
     const selectBrokerageAccount = vi.fn();
-    const vm = buildPortfolioScreenViewModel({
+    const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy),
       trading,
       strategy,
       accounting,
@@ -1463,3 +1523,9 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(resolveBrokerageAccountFilterKeyCommand("Tab")).toBeNull();
   });
 });
+
+function portfolioFromTrading(value: TradingWorkspaceResponse, strategyWorkspace: StrategyWorkspaceResponse | null): PortfolioWorkspaceResponse;
+function portfolioFromTrading(value: null, strategyWorkspace: StrategyWorkspaceResponse | null): null;
+function portfolioFromTrading(value: TradingWorkspaceResponse | null, strategyWorkspace: StrategyWorkspaceResponse | null): PortfolioWorkspaceResponse | null {
+  return value ? { metrics: [], positions: value.positions, risk: value.risk, brokerage: value.brokerage, runs: (strategyWorkspace?.runs ?? []).map(({ id, ...run }) => ({ ...run, runId: id, promotionState: run.promotionState ?? null })), cashFlow: null } : null;
+}

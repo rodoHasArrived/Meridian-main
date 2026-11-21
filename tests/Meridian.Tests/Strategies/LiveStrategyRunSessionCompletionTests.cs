@@ -34,12 +34,19 @@ public sealed class LiveStrategyRunSessionCompletionTests
 
         outcome!.State.Should().Be(OperationTerminalState.Succeeded);
         var result = (await fixture.ReloadAsync())!.Metrics!;
+        double.IsNaN(result.Metrics.WinRate).Should().BeTrue();
+        double.IsNaN(result.Metrics.ProfitFactor).Should().BeTrue();
         double.IsNaN(result.Metrics.Xirr).Should().BeTrue("this session has no closed-trade IRR calculation");
         result.EngineMetadata!.CoverageWarnings.Should().Contain(warning => warning.Contains("XIRR", StringComparison.Ordinal));
+        result.EngineMetadata.FinancingCoverageStatus.Should().Be(BacktestFinancingCoverageStatuses.Unavailable);
+        result.EngineMetadata.RunAttributedMarginInterest.Should().BeNull();
         var history = await fixture.ReadHistoryAsync();
         using var snapshot = JsonDocument.Parse(history.Last().Data["strategyRunSnapshotJson"]);
         snapshot.RootElement.GetProperty("metrics").GetProperty("metrics").GetProperty("xirr").ValueKind
             .Should().Be(JsonValueKind.Null, "durable strategy snapshots retain unavailable XIRR as null");
+        snapshot.RootElement.GetProperty("metrics").GetProperty("engineMetadata")
+            .GetProperty("runAttributedMarginInterest").ValueKind.Should().Be(JsonValueKind.Null,
+                "source-generated history preserves unavailable financing explicitly even when nulls are otherwise omitted");
         JsonSerializer.SerializeToElement(result.Metrics).GetProperty(nameof(BacktestMetrics.Xirr)).GetString()
             .Should().Be("NaN", "the general SDK JSON contract retains its named unavailable marker");
 

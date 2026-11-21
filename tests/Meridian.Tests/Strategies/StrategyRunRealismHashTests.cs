@@ -61,6 +61,13 @@ public sealed class StrategyRunRealismHashTests
     // ── Realism participates in run identity ─────────────────────────────────
 
     [Fact]
+    public void AbsentReplaySourceMix_RetainsTheLegacyV4Fingerprint()
+    {
+        Hash(Realism()).Should().Be("860aeac6c958f970a5c2d47fe8ff7f1fdd71301b66ca629ac4ea9c200da43ac3");
+        Realism().ToCanonicalString().Should().NotContain(nameof(ExecutionRealismDescriptor.SourceMixHash));
+    }
+
+    [Fact]
     public void FillConservatism_ChangesTheHash()
     {
         // The defect this fixes: these two runs produce different P&L and previously hashed alike.
@@ -87,6 +94,17 @@ public sealed class StrategyRunRealismHashTests
     {
         Hash(Realism(slippageBasisPoints: 5m))
             .Should().NotBe(Hash(Realism(slippageBasisPoints: 25m)));
+    }
+
+    [Fact]
+    public void SecurityMasterAssetEvents_ChangeTheHash_WithoutChangingExistingDescriptors()
+    {
+        // The setting adds dividend cash and split position changes to a raw-price run, so two
+        // runs differing only in it are different experiments.
+        Hash(Realism() with { PopulateAssetEventsFromSecurityMaster = true })
+            .Should().NotBe(Hash(Realism()));
+        // Descriptors recorded before the field existed must keep their canonical form.
+        Realism().ToCanonicalString().Should().NotContain("PopulateAssetEventsFromSecurityMaster");
     }
 
     [Fact]

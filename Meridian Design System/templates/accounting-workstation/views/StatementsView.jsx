@@ -1,26 +1,30 @@
 // Statements view — statement of operations with an as-of date and a Q2-only vs
-// Q2-vs-Q1 comparison switch.
+// Q2-vs-Q1 comparison switch. With compare={false} (affiliate scopes — no Q1 comparative
+// in the seed) it renders a single-column statement titled for the scoped entity.
 const { useState } = React;
 
 function AcctStatementsView(props) {
   const { StatementTable, Eyebrow, Toolbar, ToolbarGroup, ToolbarSpacer, SegmentedControl, DatePicker, Button } =
-    window.MeridianDesignSystem_4f61be;
+    window.MeridianDesignSystem_205d17;
+  const canCompare = props.compare !== false;
   const [asOf, setAsOf] = useState("2026-06-30");
-  const [mode, setMode] = useState("compare");
+  const [mode, setMode] = useState(canCompare ? "compare" : "q2");
   const q2 = (props.total && props.total.values && props.total.values.q2) || 0;
   const q1 = (props.total && props.total.values && props.total.values.q1) || 1;
   const qoq = ((q2 - q1) / q1) * 100;
 
-  const columns = mode === "compare"
+  const columns = canCompare && mode === "compare"
     ? [{ key: "q2", label: "Q2 2026" }, { key: "q1", label: "Q1 2026" }]
     : [{ key: "q2", label: "Q2 2026" }];
 
   return (
     <section data-screen-label="Statements" style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 940 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
-        <Eyebrow>Statement of operations</Eyebrow>
+        <Eyebrow>{props.title || "Statement of operations"}</Eyebrow>
         <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
-          USD · negatives in parentheses · net income {(qoq >= 0 ? "+" : "") + qoq.toFixed(1)}% vs Q1
+          {canCompare
+            ? "USD · negatives in parentheses · net income " + (qoq >= 0 ? "+" : "") + qoq.toFixed(1) + "% vs Q1"
+            : "USD · negatives in parentheses · Q2 2026 — no Q1 comparative for this entity"}
         </span>
       </div>
 
@@ -29,8 +33,8 @@ function AcctStatementsView(props) {
           <div style={{ minWidth: 240, paddingRight: 26 }}>
             <DatePicker label="As of" value={asOf} onChange={setAsOf} />
           </div>
-          <SegmentedControl size="sm" value={mode} onChange={setMode}
-            options={[{ value: "q2", label: "Q2 only" }, { value: "compare", label: "Q2 vs Q1" }]} />
+          {canCompare && <SegmentedControl size="sm" value={mode} onChange={setMode}
+            options={[{ value: "q2", label: "Q2 only" }, { value: "compare", label: "Q2 vs Q1" }]} />}
         </ToolbarGroup>
         <ToolbarSpacer />
         <ToolbarGroup>

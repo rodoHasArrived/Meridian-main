@@ -122,19 +122,24 @@ public static partial class LedgerEndpoints
     }
 
     private static async Task<bool> CanAccessPreparationBookAsync(HttpContext context, Guid bookId)
+        => await ResolveAccessiblePreparationBookAsync(context, bookId).ConfigureAwait(false) is not null;
+
+    private static async Task<LedgerBookDto?> ResolveAccessiblePreparationBookAsync(HttpContext context, Guid bookId)
     {
         var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
         var books = context.RequestServices.GetRequiredService<ILedgerBookService>();
         var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();
         if (registry is null)
-            return false;
+            return null;
         var book = await books.GetBookAsync(bookId, context.RequestAborted).ConfigureAwait(false);
-        if (book is null)
-            return false;
+        if (book is null || book.LedgerBookId != bookId)
+            return null;
         var owner = await registry.ResolveAsync(book.FundProfileId, context.RequestAborted).ConfigureAwait(false);
-        if (owner is null || !CloseWorkflowOwnerMatches(owner, tenant))
-            return false;
+        if (owner is null || owner.FundProfileId != book.FundProfileId || !CloseWorkflowOwnerMatches(owner, tenant))
+            return null;
         var guard = context.RequestServices.GetService<IFundProfileTenantGuard>();
-        return guard is null || (await guard.EvaluateAsync(tenant, book.FundProfileId, context.RequestAborted).ConfigureAwait(false)).IsAllowed;
+        return guard is null || (await guard.EvaluateAsync(tenant, book.FundProfileId, context.RequestAborted).ConfigureAwait(false)).IsAllowed
+            ? book
+            : null;
     }
 }

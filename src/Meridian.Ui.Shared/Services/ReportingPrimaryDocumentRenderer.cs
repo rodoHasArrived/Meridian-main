@@ -36,10 +36,14 @@ internal static class ReportingCertifiedLedgerPresentationBinding
         ReportingOutputFormatDto outputFormat) =>
         IsPrimaryDocumentFormat(outputFormat)
         && (explicitlyRequired
+            || IsStatementControlTemplate(templateId)
             || string.Equals(
                 templateId,
                 CapitalAccountTemplateId,
                 StringComparison.OrdinalIgnoreCase));
+
+    internal static bool IsStatementControlTemplate(string? templateId) => string.Equals(templateId,
+        DefaultReportingTemplateCatalog.FinancialStatementControlTemplateId, StringComparison.OrdinalIgnoreCase);
 
     internal static bool IsRequired(
         ReportingAuthoritativeSourceCaptureIntent? intent,
@@ -58,7 +62,7 @@ internal static class ReportingCertifiedLedgerPresentationBinding
                 manifest.CertifiedSnapshot?.RequiresCertifiedLedgerPresentation == true,
                 parameters.OutputFormat));
 
-    private static bool IsPrimaryDocumentFormat(ReportingOutputFormatDto outputFormat) =>
+    internal static bool IsPrimaryDocumentFormat(ReportingOutputFormatDto outputFormat) =>
         outputFormat is ReportingOutputFormatDto.Pdf
             or ReportingOutputFormatDto.Xlsx
             or ReportingOutputFormatDto.ClientPackage;
@@ -185,6 +189,9 @@ public sealed class DocumentsReportingPrimaryDocumentRenderer :
     internal static ReportDocumentModel BuildModel(ReportingOutputManifest manifest)
     {
         ArgumentNullException.ThrowIfNull(manifest);
+        if (string.Equals(manifest.TemplateId, CapitalCallNoticeReportingService.TemplateId,
+                StringComparison.OrdinalIgnoreCase))
+            return CapitalCallNoticeDocument.Build(manifest);
         var template = manifest.ResolvedTemplate!;
         var rowHash = DeterministicReportingCertifiedArtifactProducer.ComputeCertifiedRowsHash(
             manifest.CertifiedDatasetRows);

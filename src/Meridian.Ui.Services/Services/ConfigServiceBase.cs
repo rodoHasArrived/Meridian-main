@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Meridian.Contracts.Configuration;
@@ -41,7 +42,8 @@ public abstract class ConfigServiceBase
         PropertyNameCaseInsensitive = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         AllowTrailingCommas = true,
-        WriteIndented = true
+        WriteIndented = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
     /// <summary>
@@ -409,6 +411,8 @@ public abstract class ConfigServiceBase
         yield return ("yahoo", providers.Yahoo);
         yield return ("alphavantage", providers.AlphaVantage);
         yield return ("nasdaqdatalink", providers.NasdaqDataLink);
+        yield return ("twelvedata", providers.TwelveData);
+        yield return ("openfigi", providers.OpenFigi);
     }
 
     internal static BackfillProviderOptionsDto? GetProviderOptions(BackfillProvidersConfigDto providers, string providerId)
@@ -423,12 +427,20 @@ public abstract class ConfigServiceBase
             "yahoo" => providers.Yahoo,
             "alphavantage" => providers.AlphaVantage,
             "nasdaqdatalink" => providers.NasdaqDataLink,
+            "twelvedata" => providers.TwelveData,
+            "openfigi" => providers.OpenFigi,
             _ => throw new ArgumentOutOfRangeException(nameof(providerId), providerId, "Unknown backfill provider id")
         };
     }
 
     internal static void SetProviderOptions(BackfillProvidersConfigDto providers, string providerId, BackfillProviderOptionsDto options)
     {
+        // Common options edits and resets cannot erase provider-specific host settings.
+        // Only the dedicated host workflows own these otherwise-unmodeled fields.
+        var previousOptions = GetProviderOptions(providers, providerId);
+        options.AdditionalProperties = previousOptions?.AdditionalProperties is { } retained
+            ? new Dictionary<string, JsonElement>(retained, StringComparer.Ordinal)
+            : null;
         switch (NormalizeProviderId(providerId))
         {
             case "alpaca":
@@ -454,6 +466,12 @@ public abstract class ConfigServiceBase
                 break;
             case "nasdaqdatalink":
                 providers.NasdaqDataLink = options;
+                break;
+            case "twelvedata":
+                providers.TwelveData = options;
+                break;
+            case "openfigi":
+                providers.OpenFigi = options;
                 break;
             default:
                 throw new ArgumentOutOfRangeException(nameof(providerId), providerId, "Unknown backfill provider id");
@@ -487,6 +505,12 @@ public abstract class ConfigServiceBase
         {
             throw new ArgumentOutOfRangeException(nameof(options), options.RateLimitPerHour, $"RateLimitPerHour for provider '{providerId}' must be > 0.");
         }
+        var normalized = NormalizeProviderId(providerId);
+        var descriptor = Meridian.Core.Config.BackfillProviderCatalog.Get(normalized);
+        Meridian.Core.Config.BackfillProviderCatalog.Apply(new(), normalized, new(
+            options.Enabled, options.Priority ?? descriptor.DefaultPriority, options.TierId,
+            options.RateLimitPerMinute, options.RateLimitPerHour));
+
     }
 
 }

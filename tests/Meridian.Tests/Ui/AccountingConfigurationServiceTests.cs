@@ -27,6 +27,32 @@ public sealed partial class AccountingConfigurationServiceTests
     private static readonly Guid DailyValuationMsftSecurityId = Guid.Parse("B2222222-2222-4222-8222-222222222222");
 
     [Fact]
+    public async Task Chart_account_codes_are_scoped_and_survive_an_update_from_a_legacy_client()
+    {
+        var store = new InMemoryAccountingConfigurationStore();
+        var service = new AccountingConfigurationService(store, new InMemoryAccountingActionAuditStore());
+        var node = new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset") { AccountCode = " 1000 " };
+        var request = new UpsertChartOfAccountsNodeRequest("fund-alpha", node, "controller", TenantId: "tenant-alpha", CompanyId: "company-alpha");
+        var stale = await service.GetWorkspaceAsync("fund-alpha", tenantId: "tenant-alpha", companyId: "company-alpha");
+        await service.UpsertChartNodeAsync(request);
+
+        var updated = await service.UpsertChartNodeAsync(request with { Node = node with { AccountCode = null, AccountName = "Operating Cash" } });
+        updated.ChartOfAccounts.Should().ContainSingle().Which.AccountCode.Should().Be("1000");
+        await FluentActions.Awaiting(() => store.SaveAsync(stale))
+            .Should().ThrowAsync<InvalidOperationException>().WithMessage("*Reload the chart*");
+        await FluentActions.Awaiting(() => service.UpsertChartNodeAsync(request with { Node = node with { AccountCode = "2000" } }))
+            .Should().ThrowAsync<ArgumentException>().WithMessage("*immutable*");
+        await FluentActions.Awaiting(() => service.UpsertChartNodeAsync(request with { Node = node with { NodeId = "other", Path = "Assets:Other" } }))
+            .Should().ThrowAsync<ArgumentException>().WithMessage("*already assigned*");
+        await FluentActions.Awaiting(() => service.UpsertChartNodeAsync(request with
+        {
+            Node = node with { NodeId = "other", Path = "1000", AccountCode = null }
+        })).Should().ThrowAsync<ArgumentException>().WithMessage("*overlap*account path*");
+        (await service.UpsertChartNodeAsync(request with { CompanyId = "company-beta" }))
+            .ChartOfAccounts.Should().ContainSingle().Which.AccountCode.Should().Be("1000");
+    }
+
+    [Fact]
     public async Task AccountingConfigurationService_IsolatesWorkspacesByTenantAndCompanyScope()
     {
         var store = new InMemoryAccountingConfigurationStore();
@@ -949,6 +975,7 @@ public sealed partial class AccountingConfigurationServiceTests
             LedgerBookId: ManualJournalLedgerBookId));
 
         saved.Status.Should().Be(ManualJournalEntryStatusDto.Draft);
+        saved.CurrencyEvidenceVersion.Should().Be(0, "ordinary drafts retain the existing native and transaction-currency materialization rules");
         saved.TotalDebits.Should().Be(100m);
         saved.TotalCredits.Should().Be(100m);
         submitted.Status.Should().Be(ManualJournalEntryStatusDto.Submitted);
@@ -965,6 +992,27 @@ public sealed partial class AccountingConfigurationServiceTests
             transition.Action == JournalEntryLifecycleActionDto.Submit &&
             transition.ToStatus == ManualJournalEntryStatusDto.Submitted);
         workbench.AuditTrail.Select(item => item.Action).Should().Contain(new[] { "manual-je.save-draft", "manual-je.submit-approval" });
+    }
+
+    [Theory]
+    [InlineData(null, 0)]
+    [InlineData(0, 0)]
+    [InlineData(1, 1)]
+    public async Task ManualJournalCurrencyVersion_PublicSaveCannotIntroduceOrReplaceServerMarker(int? retainedVersion, int expectedVersion)
+    {
+        var configuration = CreateService();
+        await SeedBalancedConfigurationAsync(configuration);
+        var store = new InMemoryManualJournalEntryDraftStore();
+        var draft = BalancedManualJournalEntry();
+        if (retainedVersion.HasValue)
+            await store.SaveAsync(draft with { CurrencyEvidenceVersion = retainedVersion.Value });
+        var service = CreateManualJournalEntryWorkbenchService(configuration, draftStore: store);
+
+        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(
+            draft with { CurrencyEvidenceVersion = 99 }, "ops-user", LedgerBookId: draft.LedgerBookId));
+
+        saved.IsAdjustingEntry.Should().BeFalse("an ordinary opening journal is not a reconciliation adjustment");
+        saved.CurrencyEvidenceVersion.Should().Be(expectedVersion);
     }
 
     [Fact]
@@ -2535,6 +2583,52 @@ public sealed partial class AccountingConfigurationServiceTests
         result.Transition.Action.Should().Be(JournalEntryLifecycleActionDto.LockAfterClose);
         result.Transition.FromStatus.Should().Be(ManualJournalEntryStatusDto.Posted);
         result.Transition.ToStatus.Should().Be(ManualJournalEntryStatusDto.CloseLocked);
+    }
+
+    [Theory]
+    [InlineData("Open", false)]
+    [InlineData("Open", true)]
+    [InlineData("SoftClosed", false)]
+    [InlineData("SoftClosed", true)]
+    [InlineData("HardClosed", false)]
+    [InlineData("HardClosed", true)]
+    public async Task ManualJournalEntryCloseLock_RetainedReplayRechecksServerAuthorityAndCannotChangeAction(
+        string periodStatus, bool callerReportsLocked)
+    {
+        var fixture = await CreateManualJournalCloseLockAuthorityFixtureAsync(ManualJournalAccountingPeriod(periodStatus));
+        var transition = new JournalEntryLifecycleTransitionDto("retained-close-transition", ManualJournalEntryStatusDto.Posted,
+            ManualJournalEntryStatusDto.CloseLocked, JournalEntryLifecycleActionDto.LockAfterClose, "controller",
+            DateTimeOffset.UtcNow, "Original retained close approval", "retained-close-correlation");
+        var retained = fixture.Posted with
+        {
+            Status = ManualJournalEntryStatusDto.CloseLocked,
+            Version = fixture.Posted.Version + 1,
+            LifecycleTransitions = [transition],
+            ClosedLockedAtUtc = transition.RecordedAtUtc,
+            CloseLockedBy = transition.Actor
+        };
+        await fixture.DraftStore.SaveAsync(retained);
+        var request = ManualJournalCloseLockRequest(fixture.Posted, callerReportsLocked) with
+        { CorrelationId = transition.CorrelationId };
+
+        if (periodStatus == "HardClosed")
+        {
+            var replay = await fixture.Service.ApplyLifecycleActionAsync(request);
+            replay.Transition.Should().Be(transition);
+            replay.JournalEntry.Version.Should().Be(retained.Version);
+        }
+        else
+        {
+            await fixture.Service.Invoking(service => service.ApplyLifecycleActionAsync(request)).Should()
+                .ThrowAsync<InvalidOperationException>().WithMessage("*exact server-owned HardClosed ledger period*");
+        }
+
+        await fixture.Service.Invoking(service => service.ApplyLifecycleActionAsync(request with
+        { Action = JournalEntryLifecycleActionDto.Validate })).Should()
+            .ThrowAsync<InvalidOperationException>().WithMessage("*draft version is stale*");
+        var unchanged = (await fixture.DraftStore.GetAsync(retained.FundProfileId, retained.JournalEntryId))!;
+        unchanged.Version.Should().Be(retained.Version);
+        unchanged.LifecycleTransitions.Should().ContainSingle().Which.Should().Be(transition);
     }
 
     [Theory]
@@ -5474,6 +5568,11 @@ public sealed partial class AccountingConfigurationServiceTests
             Notes: "Posted after approval",
             EvidenceLinks: [postingEvidence],
             LedgerBookId: approved.JournalEntry.LedgerBookId));
+        var currencyAwarePosted = (await journalStore.GetByPeriodAsync(ManualJournalPeriodId))
+            .Single(record => record.Entry.JournalEntryId == posted.JournalEntry.JournalEntryId);
+        currencyAwarePosted.Entry.Lines.Should().OnlyContain(line => line.Currency != null
+            && line.Currency.TransactionCurrency == "USD" && line.Currency.FunctionalCurrency == "USD"
+            && line.Currency.TransactionDebit == line.Debit && line.Currency.TransactionCredit == line.Credit);
         var missingCloseLockNotes = async () => await service.ApplyLifecycleActionAsync(new JournalEntryLifecycleActionRequestDto(
             posted.JournalEntry.JournalEntryId,
             posted.JournalEntry.FundProfileId,
@@ -5999,7 +6098,6 @@ public sealed partial class AccountingConfigurationServiceTests
     {
         var configuration = CreateService();
         await SeedBalancedConfigurationAsync(configuration);
-        var service = CreateManualJournalEntryWorkbenchService(configuration);
         var draft = BalancedManualJournalEntry() with
         {
             EntryType = ManualJournalEntryTypeDto.CapitalCall,
@@ -6020,7 +6118,7 @@ public sealed partial class AccountingConfigurationServiceTests
                 SettlementReference: "settlement:fund-alpha:capital-call:20260630")
         };
 
-        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var (service, saved) = await IntakeAuthorityBackedCapitalScenarioAsync(configuration, draft);
         var submitted = await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
             saved.FundProfileId,
@@ -6238,7 +6336,6 @@ public sealed partial class AccountingConfigurationServiceTests
                 new DateTimeOffset(2026, 7, 2, 13, 0, 0, TimeSpan.Zero),
                 IsVoided: false,
                 RecordedBy: "cash-ops@example.com"));
-        var service = CreateManualJournalEntryWorkbenchService(configuration, bankTransactionSource: bankSource);
         var draft = BalancedManualJournalEntry() with
         {
             JournalEntryId = journalEntryId,
@@ -6265,7 +6362,7 @@ public sealed partial class AccountingConfigurationServiceTests
                 SettlementReference: settlementReference)
         };
 
-        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var (service, saved) = await IntakeAuthorityBackedCapitalScenarioAsync(configuration, draft, bankSource);
         await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
             saved.FundProfileId,
@@ -6298,7 +6395,6 @@ public sealed partial class AccountingConfigurationServiceTests
     {
         var configuration = CreateService();
         await SeedBalancedConfigurationAsync(configuration);
-        var service = CreateManualJournalEntryWorkbenchService(configuration);
         var journalEntryId = Guid.Parse("20202020-2020-2020-2020-202020202020");
         const string paymentIntentId = "payment:fund-alpha:capital-call:scoped-evidence";
         const string settlementReference = "settlement:fund-alpha:capital-call:scoped-evidence";
@@ -6331,7 +6427,7 @@ public sealed partial class AccountingConfigurationServiceTests
                 SettlementReference: settlementReference)
         };
 
-        var saved = await service.SaveDraftAsync(new SaveManualJournalEntryDraftRequest(draft, "ops-user"));
+        var (service, saved) = await IntakeAuthorityBackedCapitalScenarioAsync(configuration, draft);
         await service.SubmitApprovalAsync(new SubmitManualJournalEntryApprovalRequest(
             saved.JournalEntryId,
             saved.FundProfileId,
@@ -7780,7 +7876,8 @@ public sealed partial class AccountingConfigurationServiceTests
         bool includeDefaultJournalStore = true,
         IGovernedLedgerPostingTarget? postingTarget = null,
         IManualJournalEntryDraftStore? draftStore = null,
-        bool includeAuthoritativeSecurityMaster = true)
+        bool includeAuthoritativeSecurityMaster = true,
+        IPrivateCapitalStore? privateCapitalStore = null)
     {
         journalStore ??= includeDefaultJournalStore
             ? WritableManualJournalLedgerJournalStore.Default()
@@ -7796,7 +7893,8 @@ public sealed partial class AccountingConfigurationServiceTests
             journalStore: journalStore,
             reportPackWorkflowService: reportPackWorkflowService,
             bankTransactionSource: bankTransactionSource,
-            postingTarget: postingTarget);
+            postingTarget: postingTarget,
+            privateCapitalStore: privateCapitalStore);
     }
 
     private static async Task<ManualJournalCloseLockAuthorityFixture> CreateManualJournalCloseLockAuthorityFixtureAsync(

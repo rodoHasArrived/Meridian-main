@@ -11,6 +11,8 @@ using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Channels;
+using Meridian.Contracts.Integrity;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Execution.Sdk;
 using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
@@ -74,8 +76,10 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             _logger.LogWarning(
                 "ROBINHOOD_ACCESS_TOKEN is not set; Robinhood brokerage gateway will be unavailable.");
 
-        _reportChannel = EventPipelinePolicy.Default.CreateChannel<ExecutionReport>(
-            singleReader: false, singleWriter: false);
+        // Execution reports carry fills and terminal order states, so they must never be
+        // evicted: wait for the consumer instead of dropping the oldest report when full.
+        _reportChannel = (EventPipelinePolicy.Default with { FullMode = BoundedChannelFullMode.Wait })
+            .CreateChannel<ExecutionReport>(singleReader: false, singleWriter: false);
     }
 
     // ── IBrokerageGateway / IExecutionGateway ─────────────────────────────
@@ -221,7 +225,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
 
         using var client = CreateHttpClient();
         boundary?.Cross();
-        var response = await client.PostAsJsonAsync(
+        using var response = await client.PostAsJsonAsync(
             $"{BaseUrl}/orders/", payload,
             RobinhoodBrokerageSerializerContext.Default.RobinhoodOrderPayload, ct)
             .ConfigureAwait(false);
@@ -625,21 +629,27 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
     public async Task<AccountInfo> GetAccountInfoAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync($"{BaseUrl}/accounts/", ct).ConfigureAwait(false);
+        using var response = await client.GetAsync($"{BaseUrl}/accounts/", ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync(
             RobinhoodBrokerageSerializerContext.Default.RobinhoodAccountListResponse, ct).ConfigureAwait(false);
 
-        var acct = result?.Results?.FirstOrDefault();
+        // An empty account list is not an active account with zero balances; reporting one
+        // would let callers size orders and reconcile against a book that does not exist.
+        var acct = result?.Results?.FirstOrDefault()
+            ?? throw new InvalidOperationException("Robinhood returned no brokerage account for these credentials.");
+        if (string.IsNullOrWhiteSpace(acct.AccountNumber))
+            throw new InvalidOperationException("Robinhood returned an account without an account number.");
+
         return new AccountInfo
         {
-            AccountId = acct?.AccountNumber ?? "unknown",
-            Equity = ParseDecimal(acct?.Equity),
-            Cash = ParseDecimal(acct?.Cash),
-            BuyingPower = ParseDecimal(acct?.BuyingPower),
+            AccountId = acct.AccountNumber,
+            Equity = ParseDecimal(acct.Equity),
+            Cash = ParseDecimal(acct.Cash),
+            BuyingPower = ParseDecimal(acct.BuyingPower),
             Currency = "USD",
-            Status = acct?.Deactivated == true ? "deactivated" : "active",
+            Status = acct.Deactivated == true ? "deactivated" : "active",
         };
     }
 
@@ -647,17 +657,98 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
     public async Task<IReadOnlyList<BrokerPosition>> GetPositionsAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
+        // Fetch options positions concurrently with equities. Whatever happens to the equity
+        // request, the options request is always awaited (or observed) and its response disposed.
         var optionsFetch = client.GetAsync(OptionsPositionsUrl, ct);
-        var response = await client.GetAsync($"{BaseUrl}/positions/?nonzero=true", ct).ConfigureAwait(false);
+        var positions = new List<BrokerPosition>();
+        try
+        {
+            await AddEquityPositionsAsync(client, positions, ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            ObserveAndDispose(optionsFetch);
+            throw;
+        }
+
+        // A position list that silently omits options reads as a complete book with no options.
+        // Fail instead, like the Alpaca gateway, and let cancellation propagate.
+        using var optResponse = await optionsFetch.ConfigureAwait(false);
+        if (!optResponse.IsSuccessStatusCode)
+        {
+            throw new HttpRequestException(
+                $"Robinhood options positions request returned {(int)optResponse.StatusCode}; positions are incomplete.",
+                null,
+                optResponse.StatusCode);
+        }
+
+        var optResult = await optResponse.Content.ReadFromJsonAsync(
+            RobinhoodBrokerageSerializerContext.Default.RobinhoodOptionPositionListResponse, ct)
+            .ConfigureAwait(false);
+
+        if (optResult?.Results is not null)
+        {
+            var optionDetails = await Task.WhenAll(optResult.Results.Select(async p => new
+            {
+                Position = p,
+                Detail = await ResolveOptionInstrumentAsync(p.Option, client, ct).ConfigureAwait(false)
+            })).ConfigureAwait(false);
+
+            foreach (var item in optionDetails)
+            {
+                var p = item.Position;
+                var detail = item.Detail;
+                var qty = ParseDecimal(p.Quantity);
+                if (qty == 0m)
+                    continue;
+
+                var underlyingSymbol = detail?.ChainSymbol ?? p.ChainSymbol ?? string.Empty;
+                var expiration = TryParseDateOnly(detail?.ExpirationDate);
+                var strike = TryParseDecimal(detail?.StrikePrice);
+                var right = NormalizeOptionRight(detail?.Type ?? p.Type);
+                positions.Add(new BrokerPosition
+                {
+                    PositionId = p.Option ?? BuildFallbackOptionPositionId(underlyingSymbol, right, expiration, strike),
+                    Symbol = underlyingSymbol,
+                    UnderlyingSymbol = underlyingSymbol,
+                    Description = BuildOptionDescription(underlyingSymbol, strike, right, expiration),
+                    Quantity = qty,
+                    AverageEntryPrice = ParseDecimal(p.AveragePrice),
+                    MarketPrice = 0m,
+                    MarketValue = 0m,
+                    UnrealizedPnl = 0m,
+                    AssetClass = "option",
+                    Expiration = expiration,
+                    Strike = strike,
+                    Right = right,
+                    Metadata = BuildOptionPositionMetadata(p.Option, underlyingSymbol, right, expiration, strike)
+                });
+            }
+        }
+
+        return positions.AsReadOnly();
+    }
+
+    private static void ObserveAndDispose(Task<HttpResponseMessage> pending)
+        => _ = pending.ContinueWith(static task =>
+        {
+            if (task.IsCompletedSuccessfully)
+                task.Result.Dispose();
+            else
+                _ = task.Exception; // Observe the fault so it is not rethrown as unobserved.
+        }, CancellationToken.None, TaskContinuationOptions.ExecuteSynchronously, TaskScheduler.Default);
+
+    private async Task AddEquityPositionsAsync(HttpClient client, List<BrokerPosition> positions, CancellationToken ct)
+    {
+        using var response = await client.GetAsync($"{BaseUrl}/positions/?nonzero=true", ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
         var result = await response.Content.ReadFromJsonAsync(
             RobinhoodBrokerageSerializerContext.Default.RobinhoodPositionListResponse, ct).ConfigureAwait(false);
 
         if (result?.Results is null)
-            return Array.Empty<BrokerPosition>();
+            return;
 
-        var positions = new List<BrokerPosition>();
         foreach (var p in result.Results)
         {
             // Resolve the instrument URL to get the symbol.
@@ -680,77 +771,13 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
                 }
             });
         }
-
-        // Harvest the options response — already in-flight from the concurrent fetch above.
-        try
-        {
-            var optResponse = await optionsFetch.ConfigureAwait(false);
-            if (optResponse.IsSuccessStatusCode)
-            {
-                var optResult = await optResponse.Content.ReadFromJsonAsync(
-                    RobinhoodBrokerageSerializerContext.Default.RobinhoodOptionPositionListResponse, ct)
-                    .ConfigureAwait(false);
-
-                if (optResult?.Results is not null)
-                {
-                    var optionDetails = await Task.WhenAll(optResult.Results.Select(async p => new
-                    {
-                        Position = p,
-                        Detail = await ResolveOptionInstrumentAsync(p.Option, client, ct).ConfigureAwait(false)
-                    })).ConfigureAwait(false);
-
-                    foreach (var item in optionDetails)
-                    {
-                        var p = item.Position;
-                        var detail = item.Detail;
-                        var qty = ParseDecimal(p.Quantity);
-                        if (qty == 0m)
-                            continue;
-
-                        var underlyingSymbol = detail?.ChainSymbol ?? p.ChainSymbol ?? string.Empty;
-                        var expiration = TryParseDateOnly(detail?.ExpirationDate);
-                        var strike = TryParseDecimal(detail?.StrikePrice);
-                        var right = NormalizeOptionRight(detail?.Type ?? p.Type);
-                        positions.Add(new BrokerPosition
-                        {
-                            PositionId = p.Option ?? BuildFallbackOptionPositionId(underlyingSymbol, right, expiration, strike),
-                            Symbol = underlyingSymbol,
-                            UnderlyingSymbol = underlyingSymbol,
-                            Description = BuildOptionDescription(underlyingSymbol, strike, right, expiration),
-                            Quantity = qty,
-                            AverageEntryPrice = ParseDecimal(p.AveragePrice),
-                            MarketPrice = 0m,
-                            MarketValue = 0m,
-                            UnrealizedPnl = 0m,
-                            AssetClass = "option",
-                            Expiration = expiration,
-                            Strike = strike,
-                            Right = right,
-                            Metadata = BuildOptionPositionMetadata(p.Option, underlyingSymbol, right, expiration, strike)
-                        });
-                    }
-                }
-            }
-            else
-            {
-                _logger.LogWarning(
-                    "Robinhood options positions request returned {StatusCode}", optResponse.StatusCode);
-            }
-        }
-        catch (Exception ex)
-        {
-            // Use the URL constant to keep exception-path logging allocation-free.
-            _logger.LogWarning(ex, "Failed to fetch Robinhood options positions from {Url}", OptionsPositionsUrl);
-        }
-
-        return positions.AsReadOnly();
     }
 
     /// <inheritdoc />
     public async Task<IReadOnlyList<BrokerOrder>> GetOpenOrdersAsync(CancellationToken ct = default)
     {
         using var client = CreateHttpClient();
-        var response = await client.GetAsync(
+        using var response = await client.GetAsync(
             $"{BaseUrl}/orders/?state=queued,unconfirmed,confirmed,partially_filled", ct).ConfigureAwait(false);
         response.EnsureSuccessStatusCode();
 
@@ -1211,7 +1238,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         try
         {
             using var client = CreateHttpClient();
-            var response = await client.GetAsync(
+            using var response = await client.GetAsync(
                 $"{BaseUrl}/instruments/?symbol={Uri.EscapeDataString(symbol)}", ct).ConfigureAwait(false);
 
             if (!response.IsSuccessStatusCode)
@@ -1234,7 +1261,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         try
         {
             using var client = CreateHttpClient();
-            var response = await client.GetAsync($"{BaseUrl}/accounts/", ct).ConfigureAwait(false);
+            using var response = await client.GetAsync($"{BaseUrl}/accounts/", ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -1243,7 +1270,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
 
             return result?.Results?.FirstOrDefault()?.Url;
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
         {
             _logger.LogWarning(ex, "Failed to resolve Robinhood account URL");
             return null;
@@ -1257,7 +1284,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
     {
         try
         {
-            var response = await client.GetAsync($"{BaseUrl}/orders/{orderId}/", ct).ConfigureAwait(false);
+            using var response = await client.GetAsync($"{BaseUrl}/orders/{orderId}/", ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -1271,7 +1298,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Robinhood failed to fetch equity order {OrderId}", orderId);
+            _logger.LogWarning("Robinhood failed to fetch equity order {OrderHash} ({FailureType}).",
+                Sha256Digest.ComputeUtf8(orderId ?? string.Empty), ex.GetType().Name);
             return null;
         }
     }
@@ -1283,7 +1311,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
     {
         try
         {
-            var response = await client.GetAsync($"{BaseUrl}/options/orders/{orderId}/", ct).ConfigureAwait(false);
+            using var response = await client.GetAsync($"{BaseUrl}/options/orders/{orderId}/", ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -1297,7 +1325,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         }
         catch (Exception ex)
         {
-            _logger.LogWarning(ex, "Robinhood failed to fetch option order {OrderId}", orderId);
+            _logger.LogWarning("Robinhood failed to fetch option order {OrderHash} ({FailureType}).",
+                Sha256Digest.ComputeUtf8(orderId ?? string.Empty), ex.GetType().Name);
             return null;
         }
     }
@@ -1334,7 +1363,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
 
         using var client = CreateHttpClient();
         boundary?.Cross();
-        var response = await client.PostAsJsonAsync(
+        using var response = await client.PostAsJsonAsync(
             $"{BaseUrl}/options/orders/",
             payload,
             RobinhoodBrokerageSerializerContext.Default.RobinhoodOptionOrderPayload,
@@ -1393,7 +1422,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
 
         try
         {
-            var resp = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
+            using var resp = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
             if (!resp.IsSuccessStatusCode)
                 return null;
             var instrument = await resp.Content.ReadFromJsonAsync(
@@ -1419,7 +1448,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
 
         try
         {
-            var response = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
+            using var response = await client.GetAsync(requestUri, ct).ConfigureAwait(false);
             if (!response.IsSuccessStatusCode)
                 return null;
 
@@ -1523,7 +1552,7 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
             ? parsed
             : null;
 
-    private static bool IsOptionOrderRequest(OrderRequest request)
+    internal static bool IsOptionOrderRequest(OrderRequest request)
     {
         if (request.Metadata is null)
             return false;
@@ -1531,7 +1560,8 @@ public sealed class RobinhoodBrokerageGateway : IBrokerageGateway, IBrokerageOrd
         return request.Metadata.TryGetValue("option_instrument_url", out var optionInstrumentUrl)
                    && !string.IsNullOrWhiteSpace(optionInstrumentUrl)
                || request.Metadata.TryGetValue("asset_class", out var assetClass)
-                   && string.Equals(assetClass, "option", StringComparison.OrdinalIgnoreCase);
+                   && ProviderAssetClassCodeCatalog.IsCodeIgnoreCase(
+                       assetClass, SecurityAssetClassNames.Option, ProviderAssetClassCodeProviders.Robinhood);
     }
 
     private static bool TryGetOptionOrderMetadata(

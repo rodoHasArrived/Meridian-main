@@ -283,7 +283,6 @@ Resources for AI agents working in this repository.
 | `CLAUDE.fsharp.md` | F# domain library and C# interop |
 | `CLAUDE.api.md` | REST API, backtesting, strategy management |
 | `CLAUDE.repo-updater.md` | `ai-repo-updater.py` audit/verify/report |
-| `CLAUDE.structure.md` | Full annotated file tree |
 | `CLAUDE.actions.md` | GitHub Actions workflows |
 | `CLAUDE.domain-naming.md` | Domain naming conventions |
 
@@ -312,7 +311,7 @@ Resources for AI agents working in this repository.
    - Use `# Example:` or `// Example:` for inline examples
 
 3. **Links:**
-   - Use relative links for internal documentation: `[text](../operations/file.md) or [text](../development/file.md)`
+   - Use relative links for internal documentation, for example [Operator documentation](../../docs/operators/README.md) and [Engineering documentation](../../docs/engineering/README.md).
    - Use descriptive link text (not "click here")
    - Verify all links work after updates
 

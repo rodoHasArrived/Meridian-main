@@ -18,7 +18,7 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             output_path = Path(temp_dir) / "dk1-operator-signoff.json"
 
             subprocess.run(
@@ -57,7 +57,7 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             signoff_path = Path(temp_dir) / "dk1-operator-signoff.json"
             signoff_path.write_text(json.dumps(_build_signed_signoff()), encoding="utf-8")
 
@@ -93,7 +93,7 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             signoff_path = Path(temp_dir) / "dk1-operator-signoff.json"
             payload = _build_signed_signoff()
             payload["approvals"] = payload["approvals"][:2]
@@ -127,7 +127,7 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             output_path = temp_path / "dk1-operator-signoff.json"
             packet_path = temp_path / "dk1-pilot-parity-packet.json"
@@ -192,7 +192,7 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             output_path = temp_path / "dk1-operator-signoff.json"
             reviewed_packet_path = temp_path / "reviewed-packet.json"
@@ -256,7 +256,7 @@ class PrepareDk1OperatorSignoffTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             output_path = temp_path / "dk1-operator-signoff.json"
             packet_path = temp_path / "dk1-pilot-parity-packet.json"

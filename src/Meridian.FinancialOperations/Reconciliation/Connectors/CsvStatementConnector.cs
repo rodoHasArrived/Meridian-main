@@ -1,4 +1,5 @@
 using System.Text;
+using System.Text.Json;
 using Meridian.Contracts.Integrity;
 
 namespace Meridian.FinancialOperations.Reconciliation.Connectors;
@@ -152,25 +153,33 @@ public sealed class CsvStatementConnector(
 
         string[] detectedColumns;
         var dataStartIndex = 0;
-        if (hasHeader)
+        try
         {
-            var headerIndex = 0;
-            while (string.IsNullOrWhiteSpace(lines[headerIndex]))
+            if (hasHeader)
             {
-                headerIndex++;
-            }
+                var headerIndex = 0;
+                while (string.IsNullOrWhiteSpace(lines[headerIndex]))
+                {
+                    headerIndex++;
+                }
 
-            detectedColumns = CsvLineSplitter.Split(lines[headerIndex], delimiter, quote)
-                .Select(static column => column.Trim())
-                .ToArray();
-            dataStartIndex = headerIndex + 1;
+                detectedColumns = CsvLineSplitter.Split(lines[headerIndex], delimiter, quote)
+                    .Select(static column => column.Trim())
+                    .ToArray();
+                dataStartIndex = headerIndex + 1;
+            }
+            else
+            {
+                // Headerless files expose synthesized positional names so profiles can map
+                // "column1", "column2", ... explicitly.
+                var width = CsvLineSplitter.Split(firstContentLine, delimiter, quote).Count;
+                detectedColumns = Enumerable.Range(1, width).Select(static index => $"column{index}").ToArray();
+            }
         }
-        else
+        catch (FormatException)
         {
-            // Headerless files expose synthesized positional names so profiles can map
-            // "column1", "column2", ... explicitly.
-            var width = CsvLineSplitter.Split(firstContentLine, delimiter, quote).Count;
-            detectedColumns = Enumerable.Range(1, width).Select(static index => $"column{index}").ToArray();
+            return EmptyResult(profileId,
+                [StatementParseIssue.Error("CSV_INVALID_SYNTAX", "The CSV header or first record contains malformed quoting or a null character.")], []);
         }
 
         var columnMappings = StatementColumnConfidenceScorer.MapColumns(detectedColumns, profile);
@@ -220,13 +229,24 @@ public sealed class CsvStatementConnector(
                 }
 
                 var rowNumber = lineIndex + 1;
-                var values = CsvLineSplitter.Split(line, delimiter, quote);
+                IReadOnlyList<string> values;
+                try
+                {
+                    values = CsvLineSplitter.Split(line, delimiter, quote);
+                }
+                catch (FormatException)
+                {
+                    issues.Add(StatementParseIssue.Error(
+                        "CSV_INVALID_SYNTAX", "The CSV row contains malformed quoting or a null character.", rowNumber));
+                    break;
+                }
                 if (values.Count != detectedColumns.Length)
                 {
-                    issues.Add(StatementParseIssue.Warning(
+                    issues.Add(StatementParseIssue.Error(
                         "COLUMN_COUNT_MISMATCH",
                         $"Row has {values.Count} values for {detectedColumns.Length} detected columns.",
                         rowNumber));
+                    break;
                 }
 
                 var mappedValues = new Dictionary<StatementCanonicalField, string>();
@@ -240,6 +260,8 @@ public sealed class CsvStatementConnector(
 
                 var record = StatementRecordMapper.MapRecord(
                     mappedValues, profile, activityCodeMap, rowNumber, issues, reportedUnknownCodes);
+                if (record is not null)
+                    record = WithReceiptMetadata(record, detectedColumns, values, rowNumber, issues);
                 if (record is not null)
                 {
                     // Stop accumulating at the bound rather than building the whole set and having the
@@ -283,6 +305,88 @@ public sealed class CsvStatementConnector(
             issues,
             fingerprint)
         { ExecutedMappingFingerprint = StatementMappingExecutionEvidence.ForProfile(ConnectorId, profile) };
+    }
+
+    private static StatementCanonicalRecord? WithReceiptMetadata(StatementCanonicalRecord record,
+        IReadOnlyList<string> columns, IReadOnlyList<string> values, int row, List<StatementParseIssue> issues)
+    {
+        try
+        {
+            string? Read(string name)
+            {
+                var matching = Enumerable.Range(0, columns.Count)
+                    .Where(index => string.Equals(columns[index], name, StringComparison.OrdinalIgnoreCase)).ToArray();
+                if (matching.Length > 1)
+                    throw new InvalidDataException("Receipt metadata columns must have unique names.");
+                return matching.Length == 0 || string.IsNullOrWhiteSpace(values[matching[0]]) ? null : values[matching[0]].Trim();
+            }
+            Guid? Identity(string name)
+            {
+                var text = Read(name);
+                if (text is null) return null;
+                if (!Guid.TryParse(text, out var value) || value == Guid.Empty)
+                    throw new InvalidDataException($"Receipt metadata '{name}' requires a nonempty GUID.");
+                return value;
+            }
+            var related = Read("relatedTransactionId");
+            var reverses = Read("reversesTransactionId");
+            if (related is not null && reverses is not null && !string.Equals(related, reverses, StringComparison.Ordinal))
+                throw new InvalidDataException("Receipt reversal identity fields disagree.");
+            var allocations = Read("receiptAllocations");
+            var obligationKey = Read("obligationKey");
+            var projectedCashFlowId = Identity("projectedCashFlowId");
+            if ((allocations is not null && (obligationKey is not null || projectedCashFlowId.HasValue))
+                || (obligationKey is not null && projectedCashFlowId.HasValue))
+                throw new InvalidDataException("Receipt allocation identities are ambiguous.");
+            if (allocations is not null)
+            {
+                using var document = JsonDocument.Parse(allocations);
+                if (document.RootElement.ValueKind != JsonValueKind.Array || document.RootElement.GetArrayLength() == 0)
+                    throw new InvalidDataException("Receipt allocations require a nonempty JSON array.");
+                var identities = new HashSet<string>(StringComparer.Ordinal);
+                var total = 0m;
+                foreach (var leg in document.RootElement.EnumerateArray())
+                {
+                    if (leg.ValueKind != JsonValueKind.Object)
+                        throw new InvalidDataException("Receipt allocation legs require objects.");
+                    var properties = leg.EnumerateObject().ToArray();
+                    if (properties.Select(property => property.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length
+                        || properties.Any(property => property.Name is not ("obligationKey" or "projectedCashFlowId" or "amount")))
+                        throw new InvalidDataException("Receipt allocation properties are duplicated or unsupported.");
+                    var hasKey = leg.TryGetProperty("obligationKey", out var key);
+                    var hasFlow = leg.TryGetProperty("projectedCashFlowId", out var flow);
+                    if (hasKey == hasFlow || !leg.TryGetProperty("amount", out var amount)
+                        || amount.ValueKind != JsonValueKind.Number || !amount.TryGetDecimal(out var value) || value <= 0m)
+                        throw new InvalidDataException("Receipt allocation requires one identity and a positive exact amount.");
+                    string identity;
+                    if (hasKey)
+                    {
+                        if (key.ValueKind != JsonValueKind.String || string.IsNullOrWhiteSpace(key.GetString()))
+                            throw new InvalidDataException("Receipt obligation identity is invalid.");
+                        identity = "obligation:" + key.GetString()!.Trim();
+                    }
+                    else
+                    {
+                        if (flow.ValueKind != JsonValueKind.String || !Guid.TryParse(flow.GetString(), out var id) || id == Guid.Empty)
+                            throw new InvalidDataException("Receipt projected flow identity is invalid.");
+                        identity = "flow:" + id.ToString("D");
+                    }
+                    if (!identities.Add(identity))
+                        throw new InvalidDataException("Receipt allocation identity is duplicated.");
+                    total += value;
+                }
+                if (total != Math.Abs(record.CashAmount))
+                    throw new InvalidDataException("Receipt allocations must conserve the entire source payment.");
+            }
+            return record with { RelatedTransactionId = related ?? reverses ?? record.RelatedTransactionId,
+                SecurityId = Identity("securityId"), ReceiptAllocations = allocations,
+                ObligationKey = obligationKey, ProjectedCashFlowId = projectedCashFlowId };
+        }
+        catch (Exception exception) when (exception is JsonException or InvalidDataException or InvalidOperationException or OverflowException)
+        {
+            issues.Add(StatementParseIssue.Error("ROW_INVALID_RECEIPT_METADATA", exception.Message, row));
+            return null;
+        }
     }
 
     private static (char Delimiter, StatementParseIssue? Issue) ResolveDelimiter(

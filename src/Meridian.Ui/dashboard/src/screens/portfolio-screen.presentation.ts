@@ -1,12 +1,7 @@
-import {
-  formatNumber as formatNumberAmount,
-  formatRatioAsPercent as formatRatioAsPercentAmount,
-  formatPrefixedCurrency,
-  formatSignedCurrency as formatSignedCurrencyAmount,
-  pluralizeCount
-} from "@/lib/format";
+import { formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatTimestamp } from "@/lib/format";
 import type { TradingWorkspaceResponse } from "@/types";
 import type {
+  PortfolioBrokerageAccountOption,
   PortfolioDetailField,
   PortfolioPositionDetail,
   PortfolioPositionRow,
@@ -73,18 +68,6 @@ export function sumNumericStrings(values: string[]): number {
   }, 0);
 }
 
-export function formatCurrency(value: number): string {
-  return formatPrefixedCurrency(value, { maximumFractionDigits: 0 });
-}
-
-export function formatSignedCurrency(value: number): string {
-  return formatSignedCurrencyAmount(value, { maximumFractionDigits: 0 });
-}
-
-export function formatCurrencyPrecise(value: number): string {
-  return formatPrefixedCurrency(value, { minimumFractionDigits: 2 });
-}
-
 /** Input is a fraction of 1 (0.425 -> "42.5%"), not percent units. */
 export function formatRatioAsPercent(value: number): string {
   return formatRatioAsPercentAmount(value);
@@ -102,11 +85,50 @@ export function formatDateTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? "—"
-    : `${UTC_MONTH_LABELS[date.getUTCMonth()]} ${date.getUTCDate()}, ${padUtc(date.getUTCHours())}:${padUtc(date.getUTCMinutes())} UTC`;
+    : formatTimestamp(date);
 }
 
-const UTC_MONTH_LABELS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+export function resolveBrokerageAccountFilterKeyCommand(
+  key: string
+): "next" | "previous" | "first" | "last" | null {
+  if (key === "ArrowRight" || key === "ArrowDown") {
+    return "next";
+  }
 
-function padUtc(value: number): string {
-  return value.toString().padStart(2, "0");
+  if (key === "ArrowLeft" || key === "ArrowUp") {
+    return "previous";
+  }
+
+  if (key === "Home") {
+    return "first";
+  }
+
+  if (key === "End") {
+    return "last";
+  }
+
+  return null;
+}
+
+export function nextBrokerageAccountKey(
+  options: PortfolioBrokerageAccountOption[],
+  selectedKey: string,
+  direction: "next" | "previous" | "first" | "last"
+): string {
+  if (options.length === 0) {
+    return selectedKey;
+  }
+
+  if (direction === "first") {
+    return options[0].key;
+  }
+
+  if (direction === "last") {
+    return options[options.length - 1].key;
+  }
+
+  const selectedIndex = Math.max(0, options.findIndex((option) => option.key === selectedKey));
+  const offset = direction === "next" ? 1 : -1;
+  const nextIndex = (selectedIndex + offset + options.length) % options.length;
+  return options[nextIndex].key;
 }

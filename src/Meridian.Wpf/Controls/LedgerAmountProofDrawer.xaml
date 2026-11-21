@@ -20,6 +20,18 @@
                 <TextBlock Text="{Binding ScopeText}" TextWrapping="Wrap" Margin="0,8,0,0"
                            Foreground="{DynamicResource ConsoleTextSecondaryBrush}"
                            AutomationProperties.AutomationId="LedgerAmountProofScope" />
+                <TextBlock Text="Accounting decision classification" FontWeight="SemiBold" Margin="0,6,0,4" />
+                <TextBlock Text="{Binding AccountingAttestationSummaryText}" TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="LedgerAmountProofAccountingAttestationSummary" />
+                <ItemsControl ItemsSource="{Binding AccountingAttestationDisclosures}" Margin="0,6,0,0">
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,8" /></DataTemplate></ItemsControl.ItemTemplate>
+                </ItemsControl>
+                <TextBlock Text="Preparer evidence assertions" FontWeight="SemiBold" Margin="0,10,0,4" />
+                <TextBlock Text="{Binding PreparerAttestationSummaryText}" TextWrapping="Wrap"
+                           AutomationProperties.AutomationId="LedgerAmountProofPreparerAttestationSummary" />
+                <ItemsControl ItemsSource="{Binding PreparerAttestationDisclosures}" Margin="0,6,0,0">
+                    <ItemsControl.ItemTemplate><DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,0,0,8" /></DataTemplate></ItemsControl.ItemTemplate>
+                </ItemsControl>
                 <ItemsControl ItemsSource="{Binding Warnings}" Margin="0,10,0,0"
                               AutomationProperties.AutomationId="LedgerAmountProofWarnings">
                     <ItemsControl.ItemTemplate>
@@ -39,7 +51,7 @@
                                     <TextBlock Text="{Binding Kind}" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding SourceSystem}" TextWrapping="Wrap" />
                                     <TextBlock Text="{Binding RetainedAt, StringFormat='Retained: {0:u}'}" TextWrapping="Wrap" />
-                                    <TextBlock Text="{Binding ContentHash}" TextWrapping="Wrap" FontFamily="Consolas" />
+                                    <TextBlock Text="{Binding ContentHash}" TextWrapping="Wrap" FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                     <TextBlock Text="{Binding Reason}" TextWrapping="Wrap" />
                                     <Button Content="Open retained manifest" Margin="0,6,0,0"
                                             Command="{Binding DataContext.OpenManifestCommand, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"

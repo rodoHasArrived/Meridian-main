@@ -90,7 +90,7 @@ public sealed partial class AssetObligationProjectionService
                 security.Version,
                 terms.PrincipalFace,
                 PaymentFrequency: terms.PaymentFrequency),
-            NormalizeCouponRatePercent(security.AssetClass, terms.CouponRate) is not { } couponRatePercent
+            NormalizeCouponRatePercent(security.AssetClass, terms.CouponRate, terms.RecordRateUnit) is not { } couponRatePercent
                 ? null
                 : new BondAccrualConventionDto(
                     security.SecurityId,

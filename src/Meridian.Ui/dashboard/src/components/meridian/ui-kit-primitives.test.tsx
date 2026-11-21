@@ -22,6 +22,17 @@ const columns: DenseDataTableColumn<TestRow>[] = [
 ];
 
 describe("DenseDataTable", () => {
+  it("keeps nonselectable and empty table scroll areas keyboard reachable", async () => {
+    const user = userEvent.setup();
+    const table = (values: TestRow[]) => <DenseDataTable columns={columns} rows={values}
+      getRowId={(row) => row.id} emptyText="No rows" ariaLabel="Read-only table" />;
+    const { rerender } = render(table(rows));
+    await user.tab();
+    expect(screen.getByRole("region", { name: "Read-only table scroll area" })).toHaveFocus();
+    rerender(table([]));
+    expect(screen.getByRole("region", { name: "Read-only table scroll area" })).toHaveAttribute("tabindex", "0");
+  });
+
   it("selects rows with click and keyboard commands", async () => {
     const user = userEvent.setup();
     const onRowSelect = vi.fn();

@@ -2,8 +2,12 @@
 // builders, scenario sheets). Letter columns + numbered rows, an optional Excel-style formula bar,
 // click / arrow-key cell selection (Home/End for row extremes, Ctrl+Home/End for the sheet
 // corners, PageUp/PageDown for 10-row jumps), accent-cornered formula cells, and tinted error cells.
-// Controlled (activeCell + onActiveCellChange) or uncontrolled (defaultActiveCell). DenseDataTable
+// Controlled (activeCell + onActiveCellChange) or uncontrolled (defaultActiveCell). DataGrid
 // is for row records; reach for this when the model is addressable cells with formulas.
+// A11y (3.5): complete grid semantics (row/columnheader/rowheader/gridcell with row+col indices),
+// aria-activedescendant navigation from the one tab stop, named cells (ref, value, formula,
+// error state), aria-invalid on error cells, and focus restoration to the grid after an edit
+// commits or cancels via the keyboard.
 import React from "react";
 
 let injected = false;
@@ -11,26 +15,26 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-ws{display:flex;flex-direction:column;border:1px solid var(--border,#E4E3DE);background:var(--card-surface,#FBFAF8);}
-.mds-ws__bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border,#E4E3DE);}
-.mds-ws__ref{width:60px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#E4E3DE);background:var(--bg-medium,#EDEAE4);font:600 13px var(--font-data);color:var(--text-primary,#22252A);}
-.mds-ws__fx{width:32px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#E4E3DE);font:italic 600 12px var(--font-display);color:var(--text-muted,#5E666F);}
-.mds-ws__formula{flex:1;display:flex;align-items:center;padding:0 10px;min-height:30px;font:13px var(--font-data);color:var(--text-primary,#22252A);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.mds-ws{display:flex;flex-direction:column;border:1px solid var(--border,#D2CDC3);background:var(--card-surface,#F8F7F3);}
+.mds-ws__bar{display:flex;align-items:stretch;border-bottom:1px solid var(--border,#D2CDC3);}
+.mds-ws__ref{width:60px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1);font:600 13px var(--font-data);color:var(--text-primary,#20252B);}
+.mds-ws__fx{width:32px;flex:none;display:flex;align-items:center;justify-content:center;border-right:1px solid var(--border,#D2CDC3);font:italic 600 12px var(--font-display);color:var(--text-muted,#606870);}
+.mds-ws__formula{flex:1;display:flex;align-items:center;padding:0 10px;min-height:30px;font:13px var(--font-data);color:var(--text-primary,#20252B);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .mds-ws__scroll{overflow:auto;}
 .mds-ws__grid{display:inline-block;min-width:100%;outline:none;}
 .mds-ws__grid:focus-visible{outline:none;}
 .mds-ws__row{display:flex;}
 .mds-ws__corner{position:sticky;top:0;z-index:3;}
-.mds-ws__cell{box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--border,#E4E3DE);border-bottom:1px solid var(--border,#E4E3DE);font:13px var(--font-data);color:var(--text-primary,#22252A);background:var(--card-surface,#FBFAF8);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;position:relative;user-select:none;transition:background-color 100ms ease;}
-.mds-ws__cell:hover{background:var(--bg-hover,#F0EEE9);}
-.mds-ws__cell--active{outline:2px solid var(--accent,#A85436);outline-offset:-2px;z-index:2;}
-.mds-ws__cell--active,.mds-ws__cell--active:hover{background:var(--card-surface,#FBFAF8);}
+.mds-ws__cell{box-sizing:border-box;display:flex;align-items:center;padding:0 8px;border-right:1px solid var(--border,#D2CDC3);border-bottom:1px solid var(--border,#D2CDC3);font:13px var(--font-data);color:var(--text-primary,#20252B);background:var(--card-surface,#F8F7F3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;cursor:cell;position:relative;user-select:none;transition:background-color 100ms ease;}
+.mds-ws__cell:hover{background:var(--bg-hover,#EDEFF0);}
+.mds-ws__cell--active{outline:2px solid var(--interaction-selected,#496C8F);outline-offset:-2px;z-index:2;}
+.mds-ws__cell--active,.mds-ws__cell--active:hover{background:var(--card-surface,#F8F7F3);}
 .mds-ws__cell--error,.mds-ws__cell--error:hover{background:var(--red-a10);color:var(--red-dim);}
-.mds-ws__hdr,.mds-ws__rownum{box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-data);color:var(--text-muted,#5E666F);background:var(--bg-medium,#EDEAE4);}
-.mds-ws__hdr{border-right:1px solid var(--border,#E4E3DE);border-bottom:1px solid var(--border-strong,#AFABA1);letter-spacing:.06em;}
-.mds-ws__rownum{border-right:1px solid var(--border-strong,#AFABA1);border-bottom:1px solid var(--border,#E4E3DE);position:sticky;left:0;z-index:2;}
-.mds-ws__fxmark{position:absolute;top:0;left:0;width:0;height:0;border-top:6px solid var(--accent,#A85436);border-right:6px solid transparent;}
-.mds-ws__input{width:100%;height:100%;box-sizing:border-box;border:none;outline:2px solid var(--accent,#A85436);outline-offset:-2px;background:var(--card-surface,#FBFAF8);color:var(--text-primary,#22252A);font:13px var(--font-data);padding:0 6px;}
+.mds-ws__hdr,.mds-ws__rownum{box-sizing:border-box;display:flex;align-items:center;justify-content:center;font:600 11px var(--font-data);color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1);}
+.mds-ws__hdr{border-right:1px solid var(--border,#D2CDC3);border-bottom:1px solid var(--border-strong,#AAA49A);letter-spacing:.06em;}
+.mds-ws__rownum{border-right:1px solid var(--border-strong,#AAA49A);border-bottom:1px solid var(--border,#D2CDC3);position:sticky;left:0;z-index:2;}
+.mds-ws__fxmark{position:absolute;top:0;left:0;width:0;height:0;border-top:6px solid var(--brand-signal,#C56343);border-right:6px solid transparent;}
+.mds-ws__input{width:100%;height:100%;box-sizing:border-box;border:none;outline:2px solid var(--brand-signal,#C56343);outline-offset:-2px;background:var(--card-surface,#F8F7F3);color:var(--text-primary,#20252B);font:13px var(--font-data);padding:0 6px;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "worksheet-grid");
@@ -58,14 +62,19 @@ export function WorksheetGrid({
   emptyFormulaText = "Empty cell",
   editable = false,
   onCellCommit,
+  label = "Worksheet",
   style = {},
 }) {
   inject();
+  const uid = React.useId();
+  const gridRef = React.useRef(null);
+  const restoreFocus = React.useRef(false);
   const cols = columns.map((c) => (typeof c === "string" ? { key: c } : c));
   const isControlled = activeCell !== undefined;
   const [internal, setInternal] = React.useState(defaultActiveCell);
   const active = isControlled ? activeCell : internal;
   const activeParsed = parseRef(active);
+  const activeValid = activeParsed && activeParsed.row >= 1 && activeParsed.row <= rows && cols.some((c) => c.key === activeParsed.col);
 
   const select = (ref) => {
     if (!isControlled) setInternal(ref);
@@ -90,6 +99,7 @@ export function WorksheetGrid({
     const ref = editing;
     if (onCellCommit) onCellCommit(ref, draft);
     setEditing(null);
+    if (restoreFocus.current) { restoreFocus.current = false; requestAnimationFrame(() => { if (gridRef.current) gridRef.current.focus(); }); }
     const p = parseRef(ref);
     if (moveDir && p) {
       let ci = cols.findIndex((c) => c.key === p.col), ri = p.row;
@@ -100,14 +110,14 @@ export function WorksheetGrid({
   };
   const onInputKeyDown = (e) => {
     e.stopPropagation();
-    if (e.key === "Enter") { e.preventDefault(); commit("down"); }
-    else if (e.key === "Tab") { e.preventDefault(); commit("right"); }
-    else if (e.key === "Escape") { e.preventDefault(); setEditing(null); }
+    if (e.key === "Enter") { e.preventDefault(); restoreFocus.current = true; commit("down"); }
+    else if (e.key === "Tab") { e.preventDefault(); restoreFocus.current = true; commit("right"); }
+    else if (e.key === "Escape") { e.preventDefault(); setEditing(null); requestAnimationFrame(() => { if (gridRef.current) gridRef.current.focus(); }); }
   };
 
   const onKeyDown = (e) => {
     if (editing != null) return;
-    if (!activeParsed) return;
+    if (!activeValid) { if (["ArrowDown", "ArrowUp", "ArrowLeft", "ArrowRight", "Home", "End"].includes(e.key) && cols[0] && rows > 0) { e.preventDefault(); select(cols[0].key + 1); } return; }
     if (editable && (e.key === "Enter" || e.key === "F2")) { e.preventDefault(); startEdit(active); return; }
     if (editable && e.key.length === 1 && !e.metaKey && !e.ctrlKey && !e.altKey) { e.preventDefault(); startEdit(active, e.key); return; }
     let ci = cols.findIndex((c) => c.key === activeParsed.col);
@@ -126,7 +136,7 @@ export function WorksheetGrid({
   };
 
   const activeObj = active ? cells[active] : null;
-  const barText = activeObj ? (activeObj.formula || activeObj.value || "") : "";
+  const barText = activeObj ? (activeObj.formula || (activeObj.value ?? "")) : "";
   const barIsError = activeObj && activeObj.type === "error";
 
   const cellInner = (c, col) => {
@@ -138,7 +148,7 @@ export function WorksheetGrid({
       width: w, minWidth: w, height: rowHeight,
       justifyContent: align === "right" ? "flex-end" : "flex-start",
     };
-    if (t === "label") { s.color = "var(--text-secondary,#4E5258)"; s.fontWeight = 600; s.fontFamily = "var(--font-body)"; }
+    if (t === "label") { s.color = "var(--text-secondary,#535C65)"; s.fontWeight = 600; s.fontFamily = "var(--font-body)"; }
     else if (t === "text") { s.fontFamily = "var(--font-body)"; }
     return s;
   };
@@ -150,22 +160,25 @@ export function WorksheetGrid({
           <div className="mds-ws__ref">{active || "—"}</div>
           <div className="mds-ws__fx">fx</div>
           <div className="mds-ws__formula" style={barIsError ? { color: "var(--red-dim)" } : undefined}>
-            {barText || <span style={{ color: "var(--text-disabled,#94999F)" }}>{emptyFormulaText}</span>}
+            {barText !== "" ? barText : <span style={{ color: "var(--text-muted,#606870)" }}>{emptyFormulaText}</span>}
           </div>
         </div>
       )}
       <div className="mds-ws__scroll">
-        <div className="mds-ws__grid" tabIndex={0} role="grid" onKeyDown={onKeyDown}>
-          <div className="mds-ws__row mds-ws__corner">
-            <div className="mds-ws__hdr" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AFABA1)", position: "sticky", left: 0, zIndex: 4 }} />
-            {cols.map((col) => {
+        <div className="mds-ws__grid" ref={gridRef} tabIndex={0} role="grid" aria-label={label}
+          aria-rowcount={rows + 1} aria-colcount={cols.length + 1} aria-readonly={!editable}
+          aria-activedescendant={activeValid ? `${uid}-cell-${active}` : undefined}
+          onKeyDown={onKeyDown}>
+          <div className="mds-ws__row mds-ws__corner" role="row" aria-rowindex={1}>
+            <div className="mds-ws__hdr" role="columnheader" aria-colindex={1} aria-label="Row number" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: headerHeight, borderRightColor: "var(--border-strong,#AAA49A)", position: "sticky", left: 0, zIndex: 4 }} />
+            {cols.map((col, ci) => {
               const on = activeParsed && activeParsed.col === col.key;
               const w = col.width || 92;
               return (
-                <div key={col.key} className="mds-ws__hdr" style={{
+                <div key={col.key} className="mds-ws__hdr" role="columnheader" aria-colindex={ci + 2} style={{
                   width: w, minWidth: w, height: headerHeight,
-                  color: on ? "var(--accent,#A85436)" : undefined,
-                  background: on ? "color-mix(in srgb, var(--accent) 12%, transparent)" : undefined,
+                  color: on ? "var(--interaction-link,var(--link,#2A5F96))" : undefined,
+                  background: on ? "color-mix(in srgb, var(--brand-signal,#C56343) 12%, transparent)" : undefined,
                 }}>{col.label != null ? col.label : col.key}</div>
               );
             })}
@@ -173,9 +186,9 @@ export function WorksheetGrid({
           {Array.from({ length: rows }, (_, i) => i + 1).map((r) => {
             const rowOn = activeParsed && activeParsed.row === r;
             return (
-              <div key={r} className="mds-ws__row">
-                <div className="mds-ws__rownum" style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--accent,#A85436)" : undefined }}>{r}</div>
-                {cols.map((col) => {
+              <div key={r} className="mds-ws__row" role="row" aria-rowindex={r + 1}>
+                <div className="mds-ws__rownum" role="rowheader" aria-colindex={1} style={{ width: rowHeaderWidth, minWidth: rowHeaderWidth, height: rowHeight, color: rowOn ? "var(--interaction-link,var(--link,#2A5F96))" : undefined }}>{r}</div>
+                {cols.map((col, ci) => {
                   const ref = col.key + r;
                   const c = cells[ref];
                   const cls = "mds-ws__cell"
@@ -183,13 +196,18 @@ export function WorksheetGrid({
                     + (c && c.type === "error" ? " mds-ws__cell--error" : "");
                   const isEditing = editing === ref;
                   const colAlign = col.align || (c && (c.type === "label" || c.type === "text") ? "left" : "right");
+                  const err = !!(c && c.type === "error");
+                  const name = ref + (c && c.value != null && c.value !== "" ? ", " + c.value : ", empty") + (c && c.formula ? ", formula " + c.formula : "") + (err ? ", error" : "");
                   return (
-                    <div key={ref} className={cls} style={cellInner(c, col)}
+                    <div key={ref} id={`${uid}-cell-${ref}`} role="gridcell" aria-colindex={ci + 2}
+                      aria-selected={active === ref || undefined} aria-invalid={err || undefined}
+                      aria-label={name} className={cls} style={cellInner(c, col)}
                       onClick={() => select(ref)}
                       onDoubleClick={() => startEdit(ref)}
                       title={c && c.formula ? c.formula : undefined}>
                       {isEditing ? (
                         <input ref={inputRef} className="mds-ws__input" value={draft}
+                          aria-label={"Edit cell " + ref}
                           style={{ textAlign: colAlign }}
                           onChange={(e) => setDraft(e.target.value)}
                           onKeyDown={onInputKeyDown}

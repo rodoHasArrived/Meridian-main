@@ -101,7 +101,7 @@ class CompareRunContractTests(unittest.TestCase):
             "workflows": [self._workflow(metric_value=99.5)],
         }
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             temp_path = Path(temp_dir)
             baseline_path = temp_path / "baseline.json"
             current_path = temp_path / "current.json"

@@ -12,14 +12,14 @@ export interface CalloutProps {
 }
 
 const toneClasses: Record<CalloutTone, string> = {
-  info: "border-l-primary bg-primary/10",
+  info: "border-l-[var(--semantic-info)] bg-[var(--blue-a10)]",
   success: "border-l-success bg-success/10",
   warning: "border-l-warning bg-warning/10",
   danger: "border-l-danger bg-danger/10"
 };
 
 const iconToneClasses: Record<CalloutTone, string> = {
-  info: "text-primary",
+  info: "text-[var(--semantic-info)]",
   success: "text-success",
   warning: "text-warning",
   danger: "text-danger"

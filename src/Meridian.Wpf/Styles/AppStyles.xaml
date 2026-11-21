@@ -298,7 +298,7 @@
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
         <Setter Property="CaretBrush" Value="{StaticResource ConsoleTextPrimaryBrush}" />
         <Setter Property="Padding" Value="10,9" />
-        <Setter Property="FontFamily" Value="Consolas, Courier New" />
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
         <Setter Property="Template">
             <Setter.Value>
                 <ControlTemplate TargetType="TextBox">
@@ -400,13 +400,13 @@
 
     <!-- Code/Mono Text Style -->
     <Style x:Key="MonoTextStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, Courier New, monospace" />
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource AccentCyanBrush}" />
     </Style>
 
     <!-- Stat Value (compact) -->
     <Style x:Key="StatValueCompactStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, monospace" />
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
         <Setter Property="FontSize" Value="18" />
         <Setter Property="FontWeight" Value="Bold" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextPrimaryBrush}" />
@@ -435,13 +435,13 @@
     </Style>
 
     <Style x:Key="TerminalPromptStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace" />
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource SuccessColorBrush}" />
         <Setter Property="FontSize" Value="13" />
     </Style>
 
     <Style x:Key="TerminalMessageStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace" />
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />
         <Setter Property="FontSize" Value="13" />
     </Style>
@@ -486,7 +486,7 @@
     </Style>
 
     <Style x:Key="InlineCodeTextStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, JetBrains Mono, Consolas, monospace" />
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
         <Setter Property="FontSize" Value="12" />
         <Setter Property="Foreground" Value="{StaticResource AccentCyanBrush}" />
     </Style>
@@ -505,7 +505,7 @@
     </Style>
 
     <Style x:Key="KeyboardKeyTextStyle" TargetType="TextBlock">
-        <Setter Property="FontFamily" Value="Cascadia Code, Consolas, monospace" />
+        <Setter Property="FontFamily" Value="{StaticResource MeridianDataFontFamily}" />
         <Setter Property="FontSize" Value="11" />
         <Setter Property="FontWeight" Value="SemiBold" />
         <Setter Property="Foreground" Value="{StaticResource ConsoleTextSecondaryBrush}" />

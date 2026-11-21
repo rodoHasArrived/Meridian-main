@@ -13,6 +13,7 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        services.AddProviderCredentialOwnershipPolicy();
         services.TryAddSingleton<IProviderConnectionHealthSource, DefaultProviderConnectionHealthSource>();
         services.TryAddSingleton<IProviderCertificationRunner, DefaultProviderCertificationRunner>();
         services.TryAddSingleton<IProviderFamilyCatalogService, ProviderFamilyCatalogService>();
@@ -20,6 +21,7 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
         services.TryAddSingleton<ProviderConnectionService>();
         services.TryAddSingleton<ProviderRuntimeCredentialApplicationTracker>();
         services.TryAddSingleton<IProviderRuntimeCredentialApplier, NoInProcessProviderRecycleApplier>();
+        services.TryAddSingleton<ProviderRuntimeCredentialMutationGuard>();
         services.TryAddSingleton<ProviderRuntimeCredentialService>();
         services.TryAddSingleton<LegacyProviderRuntimeCredentialStore>();
         services.TryAddKeyedSingleton<IProviderCredentialStore>(ProviderCredentialStoreServiceKeys.LegacyRuntime,
@@ -37,7 +39,8 @@ internal sealed class ProviderRoutingFeatureRegistration : IServiceFeatureRegist
         services.TryAddSingleton<ProviderRouteExplainabilityService>();
         services.TryAddSingleton<Contracts.Api.IProviderInstrumentCapabilityMatrixService>(sp =>
             new ProviderInstrumentCapabilityMatrixService(
-                sp.GetService<Meridian.Infrastructure.DataSources.DataSourceRegistry>()));
+                sp.GetService<Meridian.Infrastructure.DataSources.DataSourceRegistry>(),
+                sp.GetService<UI.ConfigStore>()));
         services.TryAddSingleton<ProviderCertificationService>();
         services.TryAddSingleton<ProviderTrustScoringService>();
         services.TryAddSingleton<ProviderPresetService>();

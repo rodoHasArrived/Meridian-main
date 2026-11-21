@@ -5,9 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Hi-Fi / A11y Pass — QA Harness</title>
 <link rel="stylesheet" href="../styles.css" />
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script src="../_preview_runtime.js"></script>
+<script src="../_preview_jsx.js"></script>
 <script src="../_ds_bundle.js"></script>
 <style>
   body { margin: 0; padding: 0; background: var(--bg); color: var(--text-primary); font-family: var(--font-body); }
@@ -35,9 +34,10 @@
 <div id="root"></div>
 
 <script type="text/babel">
-const MDS = window.MeridianDesignSystem_4f61be;
-const { AccountTree, TreeView, DenseDataTable, FilteredDataTable, LedgerTable,
-  ReconciliationPanel, ContextMenu, Modal, ModalHeader, ModalBody, ModalFooter, Button } = MDS;
+const MDS = window.MeridianDesignSystem_205d17;
+const { AccountTree, TreeView, DataGrid, Toolbar, ToolbarGroup, ToolbarSpacer, Input, LedgerTable,
+  ReconciliationPanel, ContextMenu, Dialog, DialogHeader, DialogBody, DialogFooter, Button } = MDS;
+const { useTableState } = MDS.TableHooks;
 const { useState } = React;
 
 // ── realistic institutional data ────────────────────────────────────────────
@@ -119,8 +119,34 @@ function SortableDDT() {
     if (!isNaN(an) && !isNaN(bn)) return (an - bn) * dir;
     return String(av).localeCompare(String(bv)) * dir;
   });
-  return <DenseDataTable columns={ddtCols} rows={rows} sortKey={sort.key} sortDir={sort.dir}
-    onSort={onSort} onRowClick={() => {}} selectedIndex={0} />;
+  // DataGrid (4.0): screen-owned order via sortKey/sortDir/onSort; selectedIndex → rowKey="index" + activeKey.
+  return <DataGrid label="Positions" columns={ddtCols} rows={rows} sortKey={sort.key} sortDir={sort.dir}
+    onSort={onSort} onRowClick={() => {}} rowKey="index" activeKey={0} />;
+}
+
+// FilteredDataTable (removed in 4.0) → the filter UI is composed above a DataGrid;
+// useTableState still owns the query + sort and persists them under the same key.
+function FilteredGrid({ data, columns, title, localStorageKey }) {
+  const state = useTableState(data, localStorageKey);
+  return (
+    <div>
+      {title && <h3 style={{ margin: "0 0 12px 0", fontSize: "15px", fontFamily: "var(--font-body)", color: "var(--text-primary)" }}>{title}</h3>}
+      <Toolbar style={{ marginBottom: 8 }}>
+        <ToolbarGroup>
+          <Input placeholder="Search all fields…" aria-label={`Search ${title}`} value={state.query} onChange={(e) => state.setQuery(e.target.value)} />
+          <span style={{ fontSize: "12px", color: "var(--text-muted)", whiteSpace: "nowrap" }}>{state.resultCount} of {state.rawData.length}</span>
+        </ToolbarGroup>
+        <ToolbarSpacer />
+        <ToolbarGroup>
+          <Button variant="primary" onClick={() => state.exportCSV()}>Export CSV</Button>
+        </ToolbarGroup>
+      </Toolbar>
+      <DataGrid label={title} columns={columns} rows={state.data}
+        emptyText={data.length > 0 ? "No results match your search" : "No data"}
+        sortKey={state.sortBy ? state.sortBy.column : undefined} sortDir={state.sortBy ? state.sortBy.direction : undefined}
+        onSort={(key) => state.toggleSort(key)} />
+    </div>
+  );
 }
 
 function ReconWrap() {
@@ -156,14 +182,14 @@ function ModalDemo() {
   return (
     <div>
       <Button variant="primary" onClick={() => setOpen(true)}>Open dialog (check scrim)</Button>
-      <Modal open={open} onClose={() => setOpen(false)}>
-        <ModalHeader title="Cancel working order?" onClose={() => setOpen(false)} />
-        <ModalBody>This cancels the remaining 4,200 shares of TSLA at market close. The scrim behind should read as a consistent near-black in both themes.</ModalBody>
-        <ModalFooter>
-          <button className="mdl-btn" onClick={() => setOpen(false)}>Keep</button>
-          <button className="mdl-btn mdl-btn--primary" onClick={() => setOpen(false)}>Cancel order</button>
-        </ModalFooter>
-      </Modal>
+      <Dialog open={open} onClose={() => setOpen(false)} size="md">
+        <DialogHeader title="Cancel working order?" onClose={() => setOpen(false)} />
+        <DialogBody>This cancels the remaining 4,200 shares of TSLA at market close. The scrim behind should read as a consistent near-black in both themes.</DialogBody>
+        <DialogFooter>
+          <Button variant="ghost" onClick={() => setOpen(false)}>Keep</Button>
+          <Button variant="primary" onClick={() => setOpen(false)}>Cancel order</Button>
+        </DialogFooter>
+      </Dialog>
     </div>
   );
 }
@@ -180,7 +206,7 @@ function App() {
         <TreeView items={tree} defaultExpanded={["strat", "mom"]} selectedId="mom-us" onSelect={() => {}} />
       </div>
       <div className="qa-cell wide">
-        <h2>DenseDataTable — keyboard-sortable headers</h2><span className="k">Tab to a header, Enter/Space to sort · aria-sort announced</span>
+        <h2>DataGrid — keyboard-sortable headers</h2><span className="k">Tab to a header, Enter/Space to sort · aria-sort announced</span>
         <SortableDDT />
       </div>
       <div className="qa-cell">
@@ -188,12 +214,12 @@ function App() {
         <CtxDemo />
       </div>
       <div className="qa-cell">
-        <h2>Modal — scrim token</h2><span className="k">--scrim, consistent across overlays</span>
+        <h2>Dialog — scrim token</h2><span className="k">--scrim, consistent across overlays</span>
         <ModalDemo />
       </div>
       <div className="qa-cell wide">
-        <h2>FilteredDataTable — keyboard-sortable headers</h2><span className="k">Tab + Enter/Space · focus ring on header</span>
-        <FilteredDataTable data={fdtRows} columns={fdtCols} title="General Ledger" localStorageKey="qa-fdt" />
+        <h2>DataGrid + Toolbar search — keyboard-sortable headers</h2><span className="k">Tab + Enter/Space · focus ring on header</span>
+        <FilteredGrid data={fdtRows} columns={fdtCols} title="General Ledger" localStorageKey="qa-fdt" />
       </div>
       <div className="qa-cell wide">
         <h2>LedgerTable + ReconciliationPanel — sort headers</h2><span className="k">both keyboard-operable now</span>

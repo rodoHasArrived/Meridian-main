@@ -123,16 +123,10 @@ internal static class ConfigurationResolutionRules
         if (envPath is null)
             return baseConfig;
 
-        try
-        {
-            log.Information("Loading environment-specific configuration: {EnvPath}", envPath);
-            return MergeConfigs(baseConfig, ConfigStore.LoadConfig(envPath));
-        }
-        catch (Exception ex)
-        {
-            log.Warning(ex, "Failed to load environment config {EnvPath}", envPath);
-            return baseConfig;
-        }
+        // Fail closed: an overlay that exists but cannot be parsed must not silently drop the
+        // environment-specific settings (e.g. production endpoints or risk limits) it carries.
+        log.Information("Loading environment-specific configuration: {EnvPath}", envPath);
+        return MergeConfigs(baseConfig, ConfigStore.LoadConfig(envPath));
     }
 
     internal static string? ResolveEnvironmentOverlayPath(string basePath)

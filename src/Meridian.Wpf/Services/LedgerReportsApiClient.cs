@@ -40,12 +40,25 @@ public interface ILedgerReportsApiClient
     Task<ApiResponse<List<LedgerJournalEntryDto>>> GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<List<LedgerJournalEntryDto>>.Fail("Posted journal detail is unavailable in this session."));
 
+    /// <summary>Posting history and running balance for one account of a ledger period.</summary>
+    Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
+        Guid periodId, string accountName, string? symbol, string? financialAccountId,
+        LedgerDimensionSetDto? dimensions, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<LedgerAccountRunningBalanceDto>.Fail("Account postings are unavailable in this session."));
+
     Task<ApiResponse<EvidencePacketDto>> GetAmountProofAsync(
         string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<EvidencePacketDto>.Fail("Amount evidence is unavailable in this session."));
 
     Task<ApiResponse<JsonDocument>> GetRetainedManifestAsync(string route, CancellationToken ct = default)
         => Task.FromResult(ApiResponse<JsonDocument>.Fail("Retained manifest is unavailable in this session."));
+
+    Task<ApiResponse<BookFxSettlementSetDto>> GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<BookFxSettlementSetDto>.Fail("Book and FX settlement evidence is unavailable."));
+
+    Task<ApiResponse<PrivateCapitalUnitRegisterPreviewDto>> PreviewUnitRegisterAsync(
+        Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default)
+        => Task.FromResult(ApiResponse<PrivateCapitalUnitRegisterPreviewDto>.Fail("Unit register reconciliation is unavailable."));
 }
 
 /// <summary>
@@ -62,6 +75,15 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
 
     public Task<ApiResponse<List<LedgerBookDto>>> GetBooksAsync(CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<List<LedgerBookDto>>(UiApiRoutes.LedgerBooks, ct);
+
+    public Task<ApiResponse<BookFxSettlementSetDto>> GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<BookFxSettlementSetDto>(
+            UiApiRoutes.LedgerBookFxSettlementSet.Replace("{setId:guid}", setId.ToString("D"), StringComparison.Ordinal), ct);
+
+    public Task<ApiResponse<PrivateCapitalUnitRegisterPreviewDto>> PreviewUnitRegisterAsync(
+        Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default)
+        => _apiClient.PostWithResponseAsync<PrivateCapitalUnitRegisterPreviewDto>(
+            $"{UiApiRoutes.LedgerPrivateCapitalUnitRegisterPreview}?ledgerBookId={bookId:D}", request, ct);
 
     public Task<ApiResponse<List<LedgerPeriodDto>>> GetPeriodsAsync(
         Guid? ledgerBookId,
@@ -94,6 +116,29 @@ public sealed class LedgerReportsApiClient : ILedgerReportsApiClient
         string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default)
         => _apiClient.GetWithResponseAsync<EvidencePacketDto>(
             BuildAmountProofRoute(subjectId, ledgerBookId, periodId, fundProfileId), ct);
+
+    public Task<ApiResponse<LedgerAccountRunningBalanceDto>> GetAccountRunningBalanceAsync(
+        Guid periodId, string accountName, string? symbol, string? financialAccountId,
+        LedgerDimensionSetDto? dimensions, CancellationToken ct = default)
+        => _apiClient.GetWithResponseAsync<LedgerAccountRunningBalanceDto>(
+            BuildAccountRunningBalanceRoute(periodId, accountName, symbol, financialAccountId, dimensions), ct);
+
+    private static readonly JsonSerializerOptions DimensionScopeJsonOptions = new(JsonSerializerDefaults.Web);
+
+    internal static string BuildAccountRunningBalanceRoute(
+        Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions)
+    {
+        var route = $"{BuildPeriodRoute(UiApiRoutes.LedgerPeriodAccountRunningBalance, periodId)}?account={Uri.EscapeDataString(accountName)}";
+        // Both scope filters are always sent. An empty value selects postings with no symbol or
+        // no financial account, so an unscoped trial-balance row does not also return the
+        // account-scoped postings of the same account name.
+        route += $"&symbol={Uri.EscapeDataString(symbol?.Trim() ?? string.Empty)}";
+        route += $"&financialAccountId={Uri.EscapeDataString(financialAccountId?.Trim() ?? string.Empty)}";
+        // The selected trial-balance row's dimension set (JSON; `null` for a row without one), so
+        // the postings are limited to that row rather than every dimension set of the account.
+        route += $"&dimensions={Uri.EscapeDataString(JsonSerializer.Serialize(dimensions, DimensionScopeJsonOptions))}";
+        return route;
+    }
 
     internal static string BuildAmountProofRoute(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId)
         => $"/api/workstation/evidence/subjects/ledger-amount/{Uri.EscapeDataString(subjectId)}/packet"

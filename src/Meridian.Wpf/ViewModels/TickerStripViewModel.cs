@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Contracts;
 using WpfServices = Meridian.Wpf.Services;
@@ -93,6 +94,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     private readonly IRemoteWorkstationClient _remoteClient;
 
     private bool _isVisible;
+    private int _pollInProgress;
 
     public ObservableCollection<TickerItemViewModel> Items { get; } = new();
 
@@ -114,7 +116,7 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         _remoteClient = remoteClient ?? throw new ArgumentNullException(nameof(remoteClient));
 
         _pollTimer = new DispatcherTimer { Interval = TimeSpan.FromMilliseconds(1500) };
-        _pollTimer.Tick += async (_, _) => await PollAllSymbolsAsync();
+        _pollTimer.Tick += OnPollTick;
 
         // Reload symbol list whenever the watchlist changes
         _watchlistSubscription = _messagingService.Subscribe(
@@ -202,14 +204,40 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
         }
     }
 
-    private async Task PollAllSymbolsAsync()
+    private async void OnPollTick(object? sender, EventArgs args)
     {
-        var symbols = System.Windows.Application.Current?.Dispatcher.Invoke(() => Items.Select(i => i.Symbol).ToList())
-                      ?? new System.Collections.Generic.List<string>();
-
-        foreach (var symbol in symbols)
+        try
         {
-            await PollSymbolAsync(symbol, _cts?.Token ?? CancellationToken.None);
+            await PollAllSymbolsAsync();
+        }
+        catch (OperationCanceledException)
+        {
+            // Stop/navigation can cancel an in-flight timer callback.
+        }
+        catch (Exception ex)
+        {
+            System.Diagnostics.Debug.WriteLine($"[TickerStripViewModel] Quote refresh failed: {ex.Message}");
+        }
+    }
+
+    internal async Task PollAllSymbolsAsync()
+    {
+        if (Interlocked.Exchange(ref _pollInProgress, 1) != 0)
+            return;
+        try
+        {
+            var ct = _cts?.Token ?? CancellationToken.None;
+            var symbols = System.Windows.Application.Current?.Dispatcher.Invoke(() => Items.Select(i => i.Symbol).ToList())
+                          ?? new System.Collections.Generic.List<string>();
+            foreach (var symbol in symbols)
+            {
+                if (ct.IsCancellationRequested) break;
+                await PollSymbolAsync(symbol, ct);
+            }
+        }
+        finally
+        {
+            Volatile.Write(ref _pollInProgress, 0);
         }
     }
 
@@ -217,18 +245,23 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     {
         try
         {
-            var endpoint = $"/api/live/{Uri.EscapeDataString(symbol)}/quote";
-            var response = await _remoteClient.GetWithResponseAsync<TickerStripQuoteDto>(endpoint, ct)
+            var endpoint = UiApiRoutes.WithParam(UiApiRoutes.DataQuotes, "symbol", symbol);
+            var response = await _remoteClient.GetWithResponseAsync<QuotesResponse>(endpoint, ct)
                 .ConfigureAwait(false);
-            if (!response.Success || response.Data is null)
+
+            // The quotes endpoint answers 200 with a null quote until the collector has a BBO.
+            if (!response.Success || response.Data?.Quote is not { } quote)
             {
                 return;
             }
 
-            // Fall back to "price" key if "last" is absent (some endpoints use this)
-            var bid = response.Data.Bid;
-            var ask = response.Data.Ask;
-            var last = response.Data.Last != 0m ? response.Data.Last : response.Data.Price;
+            // Last trade price comes from the session statistics; fall back to the quote
+            // midpoint when no trade has been observed for the symbol yet.
+            var bid = quote.BidPrice;
+            var ask = quote.AskPrice;
+            var last = quote.Session is { Last: not 0m } session
+                ? session.Last
+                : quote.MidPrice ?? 0m;
 
             var prevLast = _lastPrices.TryGetValue(symbol, out var prev) ? prev : 0m;
             var uptick = last >= prevLast;
@@ -248,15 +281,8 @@ public sealed class TickerStripViewModel : BindableBase, IDisposable
     public void Dispose()
     {
         Stop();
+        _pollTimer.Tick -= OnPollTick;
         _watchlistSubscription?.Dispose();
         _cts?.Dispose();
-    }
-
-    internal sealed class TickerStripQuoteDto
-    {
-        public decimal Bid { get; init; }
-        public decimal Ask { get; init; }
-        public decimal Last { get; init; }
-        public decimal Price { get; init; }
     }
 }

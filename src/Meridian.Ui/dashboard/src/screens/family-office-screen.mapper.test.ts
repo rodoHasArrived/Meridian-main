@@ -48,7 +48,7 @@ describe("mapFamilyOfficeOverview", () => {
 
     const vm = buildFamilyOfficeScreenViewModel(FAMILY_OFFICE_FIXTURE_IDS.llc, structure);
     expect(vm.ownershipGraph.nodes.find((node) => node.id === FAMILY_OFFICE_FIXTURE_IDS.llc)?.percentage)
-      .toBe("Unmapped");
+      .toBe("See relationships");
   });
 
   it("escalates a private mark without complete valuation evidence", () => {

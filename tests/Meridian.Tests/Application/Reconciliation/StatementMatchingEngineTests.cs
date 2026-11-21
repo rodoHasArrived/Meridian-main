@@ -99,6 +99,60 @@ public sealed class StatementMatchingEngineTests
     }
 
     [Fact]
+    public void Run_BrokerFillIdentityRetainsAmountAndTimingBreakBeforeFallback()
+    {
+        var statement = Trade("broker", "FILL-12");
+        var sameFill = Journal("retained", "FILL-12") with { NetAmount = -95m, SettlementDate = statement.SettlementDate.AddDays(1) };
+        var coincidental = Journal("coincidence", null);
+
+        var matches = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            [], [], [statement], [], [], [coincidental, sameFill], Tolerances())).Results;
+
+        var review = matches.Should().ContainSingle(match => match.BreakCode == "TRANSACTION_AMOUNT_AND_TIMING_DIFFERENCE").Subject;
+        review.MatchTier.Should().Be(StatementMatchTier.Candidate);
+        review.BrokerEvidenceReference.Should().Be(statement.EvidenceReference);
+        review.InternalEvidenceReference.Should().Be(sameFill.EvidenceReference);
+        review.Variance.Amount.Should().Be(-5m);
+        matches.Should().ContainSingle(match => match.MatchTier == StatementMatchTier.Unmatched
+            && match.InternalEvidenceReference == coincidental.EvidenceReference);
+    }
+
+    [Fact]
+    public void Run_DistinctKnownFillIdsCannotBeMatchedByAmount()
+    {
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            [], [], [Trade("broker", "FILL-1")], [], [], [Journal("retained", "FILL-2")], Tolerances()));
+
+        result.Results.Should().HaveCount(2).And.OnlyContain(match => match.MatchTier == StatementMatchTier.Unmatched);
+    }
+
+    [Fact]
+    public void Run_RepeatedAccountFillIdRetainsAllEvidenceAsOneAmbiguity()
+    {
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            [], [], [Trade("broker-a", "FILL-1"), Trade("broker-b", "FILL-1")],
+            [], [], [Journal("retained", "FILL-1")], Tolerances()));
+
+        var ambiguity = result.Results.Should().ContainSingle().Subject;
+        ambiguity.BreakCode.Should().Be("TRANSACTION_AMBIGUOUS");
+        ambiguity.AllBrokerEvidenceReferences.Should().Equal("broker-a", "broker-b");
+        ambiguity.AllInternalEvidenceReferences.Should().Equal("retained");
+    }
+
+    [Fact]
+    public void Run_EvenMatchingIdsCannotCertifyAnOutOfWindowTrade()
+    {
+        var result = new StatementMatchingEngine().Run(new StatementMatchingRequest(
+            [], [], [Trade("broker", "FILL-1")], [], [], [Journal("retained", "FILL-1")], Tolerances())
+        {
+            StatementPeriodStart = new(2026, 6, 1),
+            StatementPeriodEnd = new(2026, 6, 30)
+        });
+
+        result.Results.Should().HaveCount(2).And.OnlyContain(match => match.BreakCode == "TRANSACTION_OUTSIDE_STATEMENT_WINDOW");
+    }
+
+    [Fact]
     public void Run_WhenOnlyLooseCandidatesExist_EmitsCandidateBeforeBreaks()
     {
         var engine = new StatementMatchingEngine();
@@ -167,4 +221,10 @@ public sealed class StatementMatchingEngineTests
         TransactionQuantity: 0.05m,
         TransactionNetAmount: 1.00m,
         CandidateDateWindowDays: 2);
+
+    private static NormalizedStatementTransaction Trade(string id, string? externalId) =>
+        new(id, externalId, "A1", "SPY", "USD", new(2026, 5, 26), new(2026, 5, 27), "trade", 1m, -100m, id);
+
+    private static InternalLedgerTransaction Journal(string id, string? externalId) =>
+        new(id, externalId, "A1", "SPY", "USD", new(2026, 5, 26), new(2026, 5, 27), "trade", 1m, -100m, id);
 }

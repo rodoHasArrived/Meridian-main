@@ -503,7 +503,7 @@ public sealed class StrategyRunBrowserViewModelTests
         xaml.Should().Contain("StrategyRunsComparisonPicker");
         xaml.Should().Contain("StrategyRunsComparisonGuidanceText");
         xaml.Should().Contain("StrategyRunsActionStrip");
-        xaml.Should().Contain("StrategyRunsRefreshButton");
+        xaml.Should().NotContain("StrategyRunsRefreshButton", "the shell Refresh reloads the run browser in place");
         xaml.Should().Contain("StrategyRunsOpenDetailButton");
         xaml.Should().Contain("StrategyRunsSelectionPanel");
         xaml.Should().Contain("StrategyRunsSelectionInspector");

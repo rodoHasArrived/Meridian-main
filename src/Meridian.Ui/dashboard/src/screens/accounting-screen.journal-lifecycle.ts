@@ -1,4 +1,4 @@
-import { formatCount, formatCurrencyWithCode, formatDateTimeLabel } from "./accounting-screen.formatting";
+import { formatCount, formatDateTimeLabel } from "./accounting-screen.formatting";
 import type { AssetAccountingWorkflowViewModel } from "./accounting-screen.asset-workflow";
 import type {
   AccountingToolingTone,
@@ -8,8 +8,9 @@ import type {
   ManualJournalLifecycleTransitionViewModel,
 } from "./accounting-screen.view-model";
 import type { JournalEntryLifecycleAction, JournalEntryLifecycleTransition, ManualJournalEntryDraft } from "@/types";
+import { formatCount as formatCountValue, formatCurrencyWithCode } from "@/lib/format";
 
-export const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the governed asset workflow; generic approval, posting and corrections are unavailable.";
+export const ASSET_REVIEW_ONLY_REASON = "Asset accounting drafts require retained approval evidence through the asset workflow; generic approval, posting and corrections are unavailable.";
 
 export function lifecycleActionNotes(action: JournalEntryLifecycleAction, draft: ManualJournalEntryDraft): string {
   switch (action) {
@@ -198,7 +199,7 @@ export function buildManualJournalLifecycleChecklist(
       label: "Audit transitions",
       value: transitions.length > 0 ? formatCount(transitions.length, "transition") : "None",
       detail: transitions.length > 0
-        ? "Lifecycle transitions retain audit id, correlation id, actor, notes, and evidence routes."
+        ? "Lifecycle transitions retain audit id, correlation id, actor, notes, and supporting record links."
         : "No lifecycle transition audit rows are retained on this journal entry yet.",
       tone: transitions.length > 0 ? "success" : lifecycleState.has("Draft") ? "warning" : "default"
     }
@@ -232,12 +233,12 @@ export function formatManualJournalLifecycleTransition(
 
   return {
     id: transition.transitionId,
-    title: `${transition.action}: ${transition.fromStatus} -> ${transition.toStatus}`,
+    title: `${transition.action}: ${transition.fromStatus} → ${transition.toStatus}`,
     detail: `${transition.actor} / ${formatDateTimeLabel(transition.recordedAtUtc)}${transition.notes ? ` / ${transition.notes}` : ""}`,
     auditLabel: `Audit ${transition.transitionId}`,
     correlationLabel: transition.correlationId ? `Correlation ${transition.correlationId}` : "No correlation id retained",
     evidenceLabel: transition.evidenceLinks.length > 0
-      ? `${transition.evidenceLinks.length.toLocaleString()} evidence link(s)`
+      ? `${formatCountValue(transition.evidenceLinks.length)} evidence link(s)`
       : "No transition evidence links",
     evidenceTone: transition.evidenceLinks.length > 0 ? "success" : "outline",
     evidenceRows

@@ -89,7 +89,7 @@ public sealed partial class SettingsViewModel
 
             OperationsControlGeneratedAtText = generatedAt == DateTimeOffset.MinValue
                 ? "-"
-                : generatedAt.UtcDateTime.ToString("MMM d, HH:mm 'UTC'", CultureInfo.InvariantCulture);
+                : Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(generatedAt, "MMM d, HH:mm");
             OperationsControlStatusText = $"Loaded {OperationsApprovalPolicyRuleCount} approval rule(s) and {OperationsCloseCalendarItemCount} close item(s).";
         }
         catch (OperationCanceledException)

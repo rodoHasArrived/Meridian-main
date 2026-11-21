@@ -114,7 +114,7 @@ internal sealed class OrderBrokerIdentityIndex
             && _activeIds.TryGetValue(localId, out var workingBrokerId)
             && string.Equals(rejectedPredecessor, workingBrokerId, StringComparison.Ordinal)
             && !string.Equals(brokerId, workingBrokerId, StringComparison.Ordinal)
-            && findOrder(localId) is { } working && !IsTerminal(working.Status))
+            && findOrder(localId) is { } working && !OrderStatusFacts.IsTerminal(working.Status))
         {
             normalized = normalized with
             {
@@ -138,6 +138,4 @@ internal sealed class OrderBrokerIdentityIndex
         return normalized;
     }
 
-    private static bool IsTerminal(OrderStatus status) =>
-        status is OrderStatus.Filled or OrderStatus.Cancelled or OrderStatus.Rejected or OrderStatus.Expired;
 }

@@ -26,6 +26,11 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     {
         _strategyReadClient = fixture.CreatePermittedClient(UserPermission.ViewStrategies);
         _strategyMutationClient = fixture.CreatePermittedClient(UserPermission.ManageStrategies);
+
+        // Request-supplied Lean paths are confined to configured roots. The tests write their
+        // fixtures under the temp directory, so that is the configured results and data root.
+        fixture.Configuration["LEAN_RESULTS_PATH"] = Path.GetTempPath();
+        fixture.Configuration["LEAN_DATA_PATH"] = Path.GetTempPath();
     }
 
     public void Dispose()
@@ -290,7 +295,7 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     [Fact]
     public async Task ConfigureAutoExport_Enable_ReturnsSuccess()
     {
-        var payload = new { enabled = false, leanDataPath = "/tmp/lean-test-data", intervalSeconds = 60 };
+        var payload = new { enabled = false, leanDataPath = Path.Combine(Path.GetTempPath(), "lean-test-data"), intervalSeconds = 60 };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
         var response = await _strategyMutationClient.PostAsync("/api/lean/auto-export/configure", content);
@@ -332,14 +337,43 @@ public sealed class LeanEndpointTests : IDisposable, IClassFixture<EndpointTestF
     }
 
     [Fact]
-    public async Task IngestResults_NonExistentFile_Returns404()
+    public async Task IngestResults_NonExistentFile_Returns404WithoutEchoingPath()
     {
-        var payload = new { resultsFilePath = "/nonexistent/path/results.json" };
+        var missing = Path.Combine(Path.GetTempPath(), $"lean-missing-{Guid.NewGuid():N}.json");
+        var payload = new { resultsFilePath = missing };
         var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
 
         var response = await _strategyMutationClient.PostAsync("/api/lean/results/ingest", content);
 
         response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+        (await response.Content.ReadAsStringAsync()).Should().NotContain(Path.GetFileName(missing));
+    }
+
+    [Fact]
+    public async Task IngestResults_PathOutsideConfiguredRoot_ReturnsBadRequest()
+    {
+        // A caller-supplied path must not reach arbitrary server files (including via "..").
+        var escaping = Path.Combine(Path.GetTempPath(), "..", "etc", "passwd");
+        var payload = new { resultsFilePath = escaping };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _strategyMutationClient.PostAsync("/api/lean/results/ingest", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var body = await response.Content.ReadAsStringAsync();
+        body.Should().Contain("configured Lean results directory");
+        body.Should().NotContain("passwd");
+    }
+
+    [Fact]
+    public async Task ConfigureAutoExport_DataPathOutsideConfiguredRoot_ReturnsBadRequest()
+    {
+        var payload = new { leanDataPath = Path.Combine(Path.GetTempPath(), "..", "lean-escape") };
+        var content = new StringContent(JsonSerializer.Serialize(payload), Encoding.UTF8, "application/json");
+
+        var response = await _strategyMutationClient.PostAsync("/api/lean/auto-export/configure", content);
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
     }
 
     [Fact]

@@ -1,0 +1,26 @@
+<!-- @dsCard group="Core" viewport="1180x760" name="Temporal semantics — TimeContext" subtitle="Twelve time roles declared once, grouped by whose clock they are, with the coherence rules that catch an impossible record" -->
+<!DOCTYPE html><html lang="en"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Time context</title><link rel="stylesheet" href="../../styles.css"><script src="../../_preview_runtime.js"></script><script src="../../_preview_jsx.js"></script><script src="../../_ds_bundle.js"></script><style>body{margin:0;padding:20px;background:var(--bg);font-family:var(--font-body)}.wrap{display:grid;gap:16px;max-width:1140px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;align-items:start}.panel{border:1px solid var(--border);background:var(--bg-light);padding:12px;display:grid;gap:10px}.eyebrow{font:600 10px var(--font-data);letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}.muted{font:12px/18px var(--font-body);color:var(--text-muted);margin:0;text-wrap:pretty}.controls{display:flex;gap:8px;align-items:center;flex-wrap:wrap}.inline{display:flex;gap:22px;flex-wrap:wrap;border:1px solid var(--border);background:var(--card-surface-raised);padding:10px 12px}@media(max-width:820px){body{padding:12px}.grid{grid-template-columns:1fr}}</style></head><body><div id="root"></div><script type="text/babel">
+const {TimeContextProvider,TimeContextPanel,TimeRole,TimeHooks,SegmentedControl}=window.MeridianDesignSystem_205d17;
+const COHERENT={trade:"2026-07-30",settlement:"2026-08-02",effective:"2026-07-01",received:"2026-08-01T06:14:00Z",posting:"2026-07-31",valuation:"2026-07-31",reportingPeriod:"2026-07",fiscalPeriod:"FY2026 · P07",closeDeadline:"2026-08-05T18:00:00Z",asOf:"2026-07-31T23:59:00Z",evidenceAt:"2026-08-01T06:14:00Z",calculatedAt:"2026-08-01T09:02:00Z"};
+const BROKEN={...COHERENT,settlement:"2026-07-28",posting:"2026-08-03",calculatedAt:"2026-08-01T04:02:00Z",valuation:"2026-06-30",received:"2026-08-06T02:10:00Z"};
+const SOURCES={settlement:"Northern Trust",posting:"Core accounting",evidenceAt:"Custody feed",calculatedAt:"meridian-accrual@4.2.1",closeDeadline:"Close calendar"};
+function Demo(){
+  const [which,setWhich]=React.useState("coherent");
+  const time=which==="coherent"?COHERENT:BROKEN;
+  const issues=TimeHooks.checkTimeCoherence(time);
+  const blocking=issues.filter(i=>i.severity==="error").length;
+  return <TimeContextProvider value={time}><div className="wrap">
+    <div className="controls"><SegmentedControl size="sm" value={which} onChange={setWhich} options={[{value:"coherent",label:"Coherent record"},{value:"broken",label:"Impossible record"}]}/><span className="muted">One declaration; every surface reads roles instead of inventing a date prop.</span></div>
+    <div className="inline"><TimeRole role="trade"/><TimeRole role="settlement"/><TimeRole role="posting"/><TimeRole role="reportingPeriod"/><TimeRole role="asOf"/><TimeRole role="calculatedAt"/></div>
+    <div className="grid">
+      <div className="panel"><span className="eyebrow">Screen declaration</span><TimeContextPanel sources={SOURCES}/></div>
+      <div className="panel"><span className="eyebrow">The contract</span>
+        <p className="muted"><b>In the world</b> — trade, settlement, effective, received. <b>In the books</b> — posting, valuation, reporting period, fiscal period, close deadline. <b>In this figure</b> — as-of, evidence timestamp, calculation timestamp.</p>
+        <p className="muted">Dates render <b>2026-07-31</b>, instants render <b>2026-07-31 23:59:00Z</b>, periods render verbatim. Timezone is never implied.</p>
+        <p className="muted"><code>checkTimeCoherence</code> returns {issues.length} issue{issues.length===1?"":"s"} for this record, {blocking} of them blocking. Run it in the attestation gate as well as in the panel — a sign-off should not be available over a temporally impossible date set.</p>
+        <p className="muted">This is a declaration, not a control. <b>AccountingPeriodSelector</b> still chooses the period and <b>WorkspaceContextBar</b> still carries period and as-of in the chrome; both read the same roles.</p>
+      </div>
+    </div>
+  </div></TimeContextProvider>}
+ReactDOM.createRoot(document.getElementById("root")).render(<Demo/>);
+</script></body></html>

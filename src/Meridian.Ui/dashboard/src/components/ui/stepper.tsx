@@ -34,9 +34,9 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
             onClick={() => onStepChange?.(index)}
             className={cn(
               "flex flex-1 items-center gap-2 truncate px-4 py-2.5 text-left text-xs transition-colors",
-              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 [outline-offset:-2px]",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] [outline-offset:-2px]",
               active
-                ? "border-b-2 border-primary bg-background pb-[9px] font-semibold text-foreground"
+                ? "border-b-2 border-[var(--interaction-selected)] bg-background pb-[9px] font-semibold text-foreground"
                 : "bg-card text-muted-foreground hover:bg-[var(--ws-row-hover)] hover:text-foreground"
             )}
           >
@@ -44,11 +44,11 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
               <span
                 aria-hidden="true"
                 className={cn(
-                  "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-[10px] font-semibold",
+                  "inline-flex h-5 w-5 shrink-0 items-center justify-center rounded-full font-mono text-xs font-semibold",
                   active
-                    ? "bg-primary text-primary-foreground"
+                    ? "bg-[var(--interaction-selected)] text-[var(--text-on-fill)]"
                     : complete
-                      ? "bg-success text-primary-foreground"
+                      ? "bg-success text-[var(--text-on-fill)]"
                       : "bg-[var(--ws-surface-raised)] text-muted-foreground"
                 )}
               >
@@ -57,7 +57,7 @@ export function Stepper({ steps, activeStep = 0, onStepChange, showStepNumber = 
             ) : null}
             <span className="truncate">{step.label}</span>
             {step.badge != null ? (
-              <span className="ml-auto shrink-0 rounded-[2px] bg-[var(--ws-surface-raised)] px-1.5 py-0.5 font-mono text-[10px] text-muted-foreground">
+              <span className="ml-auto shrink-0 rounded-[2px] bg-[var(--ws-surface-raised)] px-1.5 py-0.5 font-mono text-xs text-muted-foreground">
                 {step.badge}
               </span>
             ) : null}

@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.Json.Serialization;
+using Meridian.Contracts.Backfill;
 
 namespace Meridian.Infrastructure.Adapters.Core;
 
@@ -9,6 +10,9 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </summary>
 public sealed class BackfillJob
 {
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; set; }
+    public Meridian.Contracts.Operations.ProviderProvenanceAccess? ProvenanceAccess { get; set; }
+
     /// <summary>
     /// Unique identifier for this job.
     /// </summary>
@@ -207,6 +211,9 @@ public sealed class SymbolBackfillProgress
     /// Provider that successfully provided data.
     /// </summary>
     public string? SuccessfulProvider { get; set; }
+
+    public Dictionary<string, long> ServedBy { get; init; } = new(StringComparer.OrdinalIgnoreCase);
+    public List<BackfillRoutingAttempt> RoutingAttempts { get; init; } = [];
 
     /// <summary>
     /// Last error message if any.
@@ -434,7 +441,11 @@ public static class DataGranularityExtensions
             "1d" or "1day" or "daily" or
             "1w" or "1week" or "weekly" or
             "1month" or "monthly" => true,
-            _ => Enum.TryParse<DataGranularity>(value, ignoreCase: true, out granularity)
+            // Accept enum member names only. Enum.TryParse also accepts any integer string, so
+            // "42" would succeed with an undefined granularity and "1" would silently mean Minute5.
+            _ => char.IsAsciiLetter(normalized[0])
+                && Enum.TryParse<DataGranularity>(value.Trim(), ignoreCase: true, out granularity)
+                && Enum.IsDefined(granularity)
         };
     }
 

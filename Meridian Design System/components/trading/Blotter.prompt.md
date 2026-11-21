@@ -1,4 +1,4 @@
-Blotter — orders blotter preset over `DenseDataTable`. Desk conventions encoded once: side as washed green/red text (never fills), mono right-aligned qty/price, order status through `SeverityBadge` normalization, UTC time-of-day via `Timestamp`.
+Blotter — orders blotter preset over `DataGrid`. Desk conventions encoded once: side as washed green/red text (never fills), mono right-aligned qty/price, order status through `SeverityBadge` normalization, UTC time-of-day via `Timestamp`.
 
 ```jsx
 <Blotter orders={[

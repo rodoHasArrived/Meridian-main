@@ -22,4 +22,4 @@ const [menu, setMenu] = React.useState(null);
 )}
 ```
 
-Manage the anchor point yourself (as above) and pass it as `x`/`y` — same ownership model as `Modal`'s `open`. Arrow keys move between items, Escape closes, and the first enabled item takes focus on open.
+Manage the anchor point yourself (as above) and pass it as `x`/`y` — same ownership model as `Dialog`'s `open`. Arrow keys move between items, Escape closes, and the first enabled item takes focus on open.

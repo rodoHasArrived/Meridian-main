@@ -13,6 +13,8 @@ export type ReportingTaskModeId =
 export interface ReportingTaskModeViewModel {
   id: ReportingTaskModeId;
   label: string;
+  /** Task title for the route body heading; the breadcrumb already shows the page name. */
+  title: string;
   description: string;
   routeLabel: string;
   ariaLabel: string;
@@ -22,56 +24,64 @@ const reportingTaskModeDefinitions: Record<ReportingTaskModeId, ReportingTaskMod
   "daily-reporting-cockpit": {
     id: "daily-reporting-cockpit",
     label: "Daily Reporting Cockpit",
-    description: "Reporting opens on the daily decision queue: blocked output, owner, affected report, next action, and retained proof.",
+    title: "Daily Reporting Cockpit",
+    description: "See which reports are blocked today, who owns each one, and the next action.",
     routeLabel: "Daily Reporting Cockpit",
     ariaLabel: "Reporting task mode daily reporting cockpit"
   },
   "report-builder": {
     id: "report-builder",
     label: "Report Builder",
-    description: "Design governed output, report-writer grids, branding, and reusable templates without mixing in run or schedule operations.",
+    title: "Report design workspace",
+    description: "Design report layouts, branding, and reusable templates.",
     routeLabel: "Report Builder",
     ariaLabel: "Reporting task mode report builder"
   },
   schedules: {
     id: "schedules",
     label: "Scheduled Reports",
-    description: "Create, pause, resume, and run governed report schedules with their recipient delivery plans.",
+    title: "Scheduled report delivery",
+    description: "Create, pause, resume, and run report schedules and their recipient lists.",
     routeLabel: "Scheduled Reports",
     ariaLabel: "Reporting task mode scheduled reports"
   },
   "run-status": {
     id: "run-status",
     label: "Run Status",
-    description: "Reporting owns report-run readiness, queue posture, schedule state, and publication blockers.",
+    title: "Report run readiness",
+    description: "Track report runs and see what is blocking publication.",
     routeLabel: "Run Status",
     ariaLabel: "Reporting task mode run status"
   },
   "delivery-evidence": {
     id: "delivery-evidence",
     label: "Delivery Evidence",
-    description: "Reporting owns retained evidence packets, report-line provenance, recipient support, and audit-ready delivery proof.",
+    title: "Delivery Evidence",
+    description: "See the records behind each report line and proof of delivery.",
     routeLabel: "Delivery Evidence",
     ariaLabel: "Reporting task mode delivery evidence"
   },
   exports: {
     id: "exports",
     label: "Exports",
-    description: "Reporting owns governed export previews, generated artifacts, warnings, and retained manifest support.",
+    title: "Exports",
+    description: "Preview exports and review the files and warnings each one produced.",
     routeLabel: "Exports",
     ariaLabel: "Reporting task mode exports"
   },
   governance: {
     id: "governance",
     label: "Governance",
-    description: "Reporting owns access scope, template approval posture, lifecycle decisions, and audit-ready controls.",
+    title: "Reporting controls",
+    description: "Manage who can use each template and approve template changes.",
     routeLabel: "Governance",
     ariaLabel: "Reporting task mode governance"
   },
   "report-pack-approval": {
     id: "report-pack-approval",
     label: "Report packs",
-    description: "Review governed report packs, resolve recipient blockers, and complete server-authorized approval or publication actions.",
+    title: "Report packs awaiting approval",
+    description: "Review report packs, clear recipient blockers, and approve or publish them.",
     routeLabel: "Report packs",
     ariaLabel: "Reporting task mode report packs"
   }

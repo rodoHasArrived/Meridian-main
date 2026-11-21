@@ -136,11 +136,23 @@ public sealed class AssetPositionMarketValuationService(
                 || selection.KnowledgeAsOf is null || selection.KnowledgeAsOf != value.KnowledgeAsOf
                 || selection.PriceAsOf > selection.KnowledgeAsOf || receipts[0].Reference != selection.SelectedSource)
             { Block("PriceReceiptMismatch", "The retained price receipt is absent or does not replay the valuation's exact scope, unit, price and observation."); return Result(); }
+            if (selection.Quotation is { } quotation)
+            {
+                if (quotation.Basis == SecurityPriceBasis.Unspecified || !Enum.IsDefined(quotation.Basis)
+                    || quotation.Convention == SecurityQuotationConvention.Unspecified || !Enum.IsDefined(quotation.Convention)
+                    || quotation.Status == SecurityQuoteStatus.Unspecified || !Enum.IsDefined(quotation.Status)
+                    || quotation.SettlementDate == default || string.IsNullOrWhiteSpace(quotation.SettlementBasis)
+                    || (quotation.Convention == SecurityQuotationConvention.Per100Face) != (selection.Unit == SecurityPriceUnit.PercentOfPar))
+                { Block("QuotationEvidenceMismatch", "The retained quotation basis, convention, status or settlement facts are incomplete or conflict with the selected price unit."); return Result(); }
+                if (quotation.Basis == SecurityPriceBasis.Dirty)
+                { Block("PriceBasisRequiresNormalization", "The retained dirty quotation requires settlement-aware clean/dirty normalization before this position valuation can be shown."); return Result(); }
+                diagnostics.Add($"Retained quotation: {quotation.Basis}; {quotation.Convention}; {quotation.Status}; settlement {quotation.SettlementDate:yyyy-MM-dd} ({quotation.SettlementBasis}).");
+            }
             freshness = selection.IsStaleFallback ? "Stale" : "Within pricing hierarchy allowance";
             if (selection.IsStaleFallback)
             { Block("StalePrice", "The retained source selection exceeds its pricing hierarchy freshness allowance; no financial amount is substituted."); return Result(); }
             if (face)
-            { Block("AccrualConventionUnavailable", "Percent-of-par source quotes do not declare clean/dirty basis in this contract; no ambiguous bond value is presented."); return Result(); }
+            { Block("AccrualConventionUnavailable", "This adapter has no settlement-aware normalization for a percent-of-par source quote, even when its quotation basis is declared; inspect the instrument valuation workbench."); return Result(); }
             basis = "Registered quoted-price model: retained units × account-scoped currency-per-unit golden-copy price.";
         }
         else

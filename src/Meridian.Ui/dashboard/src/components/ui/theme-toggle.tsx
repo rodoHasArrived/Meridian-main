@@ -10,6 +10,7 @@ import {
   type Appearance
 } from "@/lib/theme";
 import { broadcastCompanionState } from "@/lib/companion-pane/opener-broadcast";
+import { onOperatorPreferencesApplied } from "@/lib/operator-preference-events";
 import { cn } from "@/lib/utils";
 
 export interface ThemeToggleProps {
@@ -67,6 +68,15 @@ export function ThemeToggle({
     }
   }, [apply, value]);
 
+  // The workstation appearance can change under a mounted control when the operator's preferences
+  // load from the host; re-read the store so the selection matches what is applied.
+  useEffect(() => {
+    if (isControlled || persist !== APPEARANCE_STORAGE_KEY) {
+      return undefined;
+    }
+    return onOperatorPreferencesApplied(() => setInternal(readStoredAppearance()));
+  }, [isControlled, persist]);
+
   const select = (next: Appearance) => {
     if (!isControlled) {
       setInternal(next);
@@ -86,7 +96,7 @@ export function ThemeToggle({
       role="radiogroup"
       aria-label="Appearance"
       className={cn(
-        "inline-flex items-stretch gap-0.5 rounded-[2px] border border-border bg-card p-0.5",
+        "inline-flex items-stretch gap-0.5 rounded-[var(--radius-button)] border border-border bg-card p-0.5",
         fullWidth && "flex w-full",
         className
       )}
@@ -102,9 +112,9 @@ export function ThemeToggle({
             title={label}
             onClick={() => select(optionValue)}
             className={cn(
-              "inline-flex flex-1 items-center justify-center gap-1.5 rounded-[2px] font-medium leading-none transition-colors",
-              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40",
-              size === "sm" ? "px-2.5 py-1 text-[11px]" : "px-3 py-1.5 text-xs",
+              "inline-flex flex-1 items-center justify-center gap-1.5 rounded-[var(--radius-button)] font-medium leading-none transition-colors",
+              "focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)]",
+              size === "sm" ? "px-2.5 py-1 text-xs" : "px-3 py-1.5 text-xs",
               active
                 ? "bg-background font-semibold text-foreground shadow-[inset_0_0_0_1px_hsl(var(--border))]"
                 : "bg-transparent text-muted-foreground hover:bg-secondary hover:text-foreground"

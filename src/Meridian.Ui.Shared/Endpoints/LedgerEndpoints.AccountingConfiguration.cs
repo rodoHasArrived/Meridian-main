@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Ledger;
 using Meridian.Identity.Auth;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 
@@ -441,6 +442,17 @@ public static partial class LedgerEndpoints
                     return EndpointHelpers.Forbidden();
                 }
 
+                ManualJournalEntryWorkbenchService? bondReview = null;
+                if (request.EventKind == AssetAccountingEventKindDto.Acquisition &&
+                    request.LotMutation?.Acquisition?.SettlementConsideration is not null)
+                {
+                    if (!ManualJournalEntryWorkbenchService.IsSupportedBondAcquisitionIntake(request.LotMutation))
+                        return Results.BadRequest(new { error = "Bond acquisition review supports Long face-value same-currency settlements only." });
+                    bondReview = ResolveManualJournalEntryWorkbenchService(context) as ManualJournalEntryWorkbenchService;
+                    if (bondReview is null)
+                        return ServiceUnavailable("The governed bond acquisition review workflow is unavailable.");
+                }
+
                 var result = await service
                     .BuildPostingCandidateAsync(request with
                     {
@@ -455,6 +467,9 @@ public static partial class LedgerEndpoints
                             : request.LotMutation
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
+                if (bondReview is not null)
+                    await bondReview.SaveAssetAccountingDraftAsync(result, ResolveMutationActor(context, request.Actor),
+                        context.RequestAborted).ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
             catch (ArgumentException ex)
@@ -506,12 +521,19 @@ public static partial class LedgerEndpoints
                 }
 
                 var result = await service
-                    .PostCandidateAsync(request with
+                    .PostCandidateAsync(new PostPostingRuleJournalCandidateRequestDto(
+                        Candidate: request.Candidate,
+                        Actor: actor,
+                        ApprovalId: request.ApprovalId,
+                        ApprovalNotes: request.ApprovalNotes,
+                        EvidenceLinks: request.EvidenceLinks,
+                        CorrelationId: request.CorrelationId,
+                        ActionOrigin: EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin),
+                        TenantId: tenantContext.TenantId,
+                        CompanyId: tenantContext.CompanyId)
                     {
-                        Actor = actor,
-                        TenantId = tenantContext.TenantId,
-                        CompanyId = tenantContext.CompanyId,
-                        ActionOrigin = EndpointAuthorization.ResolveTrustedActionOrigin(context, request.ActionOrigin)
+                        ApprovalEvidence = request.ApprovalEvidence,
+                        AcquisitionTermsCompletion = request.AcquisitionTermsCompletion
                     }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
@@ -520,7 +542,8 @@ public static partial class LedgerEndpoints
             {
                 return Results.BadRequest(new { error = ex.Message });
             }
-            catch (InvalidOperationException ex)
+            // A terms capability floor refusal is the shared handler's 503, never this route's 409 (ADR-025).
+            catch (InvalidOperationException ex) when (ex is not Meridian.Application.SecurityMaster.SecurityMasterTermsCapabilityRefusedException)
             {
                 return Results.Conflict(new { error = ex.Message });
             }
@@ -682,6 +705,7 @@ public static partial class LedgerEndpoints
         .Produces(StatusCodes.Status501NotImplemented);
 
         MapFactorPaydownEndpoints(app, jsonOptions);
+        MapCanonicalAmortizationEndpoints(app, jsonOptions);
         MapAuditIntegrityEndpoint(app, jsonOptions);
     }
 

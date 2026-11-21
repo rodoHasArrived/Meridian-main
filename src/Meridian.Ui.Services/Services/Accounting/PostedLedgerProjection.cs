@@ -184,6 +184,8 @@ public static class PostedLedgerProjection
         AppendDimension(parts, "Tax lot", dimensions.TaxLotId);
         AppendDimension(parts, "Cost center", dimensions.CostCenterId);
         AppendDimension(parts, "Counterparty", dimensions.CounterpartyId);
+        AppendDimension(parts, "Agreement", dimensions.IntercompanyAgreementId?.ToString("D"));
+        AppendDimension(parts, "Agreement version", dimensions.IntercompanyAgreementVersion?.ToString(System.Globalization.CultureInfo.InvariantCulture));
 
         // External GL dimensions are operator-defined, so they carry the operator's own key.
         if (dimensions.ExternalGlDimensions is { Count: > 0 })

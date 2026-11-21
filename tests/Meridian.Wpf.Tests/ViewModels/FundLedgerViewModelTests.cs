@@ -32,6 +32,156 @@ namespace Meridian.Wpf.Tests.ViewModels;
 
 public sealed class FundLedgerViewModelTests
 {
+    /// <summary>
+    /// A counterpart-journal deep link opens the Journal tab with the requested entry selected, and says plainly
+    /// when this fund's loaded ledger view does not hold that journal.
+    /// </summary>
+    [Fact]
+    public void LoadAsync_WithJournalDeepLink_SelectsTheRequestedEntryOrExplainsItIsAbsent()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var storagePath = Path.Combine(
+                Path.GetTempPath(),
+                "meridian-fund-ledger-tests",
+                $"{Guid.NewGuid():N}.json");
+
+            try
+            {
+                var navigation = NavigationService.Instance;
+                navigation.ResetForTests();
+                navigation.Initialize(new Frame());
+
+                var fundContext = new FundContextService(storagePath);
+                await fundContext.UpsertProfileAsync(new FundProfileDetail(
+                    FundProfileId: "alpha-fund",
+                    DisplayName: "Alpha Fund",
+                    LegalEntityName: "Alpha Fund LP",
+                    BaseCurrency: "USD",
+                    DefaultWorkspaceId: "governance",
+                    DefaultLandingPageTag: "FundLedger",
+                    DefaultLedgerScope: FundLedgerScope.Consolidated,
+                    EntityIds: ["entity-alpha"],
+                    SleeveIds: ["sleeve-credit"],
+                    VehicleIds: ["vehicle-master"],
+                    IsDefault: true));
+                await fundContext.SelectFundProfileAsync("alpha-fund");
+
+                var lookup = new StubSecurityReferenceLookup();
+                lookup.Register("AAPL", new WorkstationSecurityReference(
+                    SecurityId: Guid.Parse("aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"),
+                    DisplayName: "Apple Inc.",
+                    AssetClass: "Equity",
+                    Currency: "USD",
+                    Status: SecurityStatusDto.Active,
+                    PrimaryIdentifier: "AAPL"));
+
+                var store = new StrategyRunStore();
+                await store.RecordRunAsync(BuildFundScopedRun("run-fund-ops"));
+
+                var portfolioReadService = new PortfolioReadService(lookup);
+                var ledgerReadService = new LedgerReadService(lookup);
+                var runReadService = new StrategyRunReadService(store, portfolioReadService, ledgerReadService);
+                var workspaceService = new StrategyRunWorkspaceService(store, runReadService, fundContext);
+                var fakeApiClient = new FakeWorkstationReconciliationApiClient(
+                [
+                    BuildBreakQueueItem("run-fund-ops")
+                ],
+                [
+                    BuildStrategyDetail("run-fund-ops")
+                ]);
+
+                var fundAccountService = new InMemoryFundAccountService();
+                var fundId = ToFundId("alpha-fund");
+                var entityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
+                var sleeveId = Guid.Parse("22222222-2222-2222-2222-222222222222");
+                var vehicleId = Guid.Parse("33333333-3333-3333-3333-333333333333");
+                var accountId = Guid.Parse("44444444-4444-4444-4444-444444444444");
+
+                await fundAccountService.CreateAccountAsync(new CreateAccountRequest(
+                    AccountId: accountId,
+                    AccountType: AccountTypeDto.Custody,
+                    AccountCode: "CUST-001",
+                    DisplayName: "Primary Custody",
+                    BaseCurrency: "USD",
+                    EffectiveFrom: DateTimeOffset.UtcNow.AddDays(-10),
+                    CreatedBy: "test",
+                    EntityId: entityId,
+                    FundId: fundId,
+                    SleeveId: sleeveId,
+                    VehicleId: vehicleId,
+                    Institution: "Northern Trust"));
+                await fundAccountService.RecordBalanceSnapshotAsync(new RecordAccountBalanceSnapshotRequest(
+                    AccountId: accountId,
+                    AsOfDate: new DateOnly(2026, 3, 21),
+                    Currency: "USD",
+                    CashBalance: 750m,
+                    Source: "test",
+                    RecordedBy: "test",
+                    SecuritiesMarketValue: 250m));
+
+                var fundAccountReadService = new FundAccountReadService(fundAccountService);
+                var cashFinancingReadService = new CashFinancingReadService(workspaceService, fundAccountReadService);
+                var reconciliationRepository = new InMemoryReconciliationRunRepository();
+                var strategyReconciliationService = new ReconciliationRunService(
+                    runReadService: runReadService,
+                    projectionService: new ReconciliationProjectionService(),
+                    repository: reconciliationRepository);
+                var reconciliationReadService = new ReconciliationReadService(
+                    workspaceService,
+                    fakeApiClient);
+                var workbenchService = new FundReconciliationWorkbenchService(
+                    reconciliationReadService,
+                    fundAccountService,
+                    workspaceService,
+                    fakeApiClient);
+                var fundLedgerReadService = new FundLedgerReadService(workspaceService, fundContext, fundAccountReadService);
+                var fundOperationsWorkspaceReadService = CreateFundOperationsWorkspaceReadService(
+                    fundAccountService,
+                    store,
+                    portfolioReadService,
+                    strategyReconciliationService);
+
+                using var viewModel = new FundLedgerViewModel(
+                    fundLedgerReadService,
+                    fundContext,
+                    navigation,
+                    fundAccountReadService,
+                    cashFinancingReadService,
+                    workbenchService,
+                    fundOperationsWorkspaceReadService,
+                    workspaceService);
+
+                await viewModel.LoadAsync();
+                viewModel.Journal.Should().NotBeEmpty();
+                var requested = viewModel.Journal[^1].JournalEntryId;
+
+                await viewModel.LoadAsync(new FundOperationsNavigationContext(
+                    Tab: FundOperationsTab.Journal,
+                    FundProfileId: "alpha-fund",
+                    JournalEntryId: requested));
+
+                viewModel.SelectedTabIndex.Should().Be((int)FundOperationsTab.Journal);
+                viewModel.SelectedJournalEntry!.JournalEntryId.Should().Be(requested);
+                viewModel.StatusText.Should().Contain("is selected on the Journal tab");
+
+                var absent = Guid.Parse("99999999-8888-7777-6666-555555555555");
+                await viewModel.LoadAsync(new FundOperationsNavigationContext(
+                    Tab: FundOperationsTab.Journal,
+                    FundProfileId: "alpha-fund",
+                    JournalEntryId: absent));
+                viewModel.StatusText.Should().Contain($"Journal {absent:D} is not in this fund's loaded ledger view");
+            }
+            finally
+            {
+                if (File.Exists(storagePath))
+                {
+                    File.Delete(storagePath);
+                }
+            }
+        });
+    }
+
     [Fact]
     [Trait("Category", "W4Acceptance")]
     public void LoadAsync_PopulatesStructureLabels_SecurityCoverage_AndStrategyLevelReconciliation()
@@ -1966,7 +2116,7 @@ public sealed class FundLedgerViewModelTests
                 var consolidatedView = viewModel.LedgerDimensions.Single(view => view.Key == "consolidated");
                 viewModel.SelectedLedgerDimension = consolidatedView;
 
-                viewModel.SelectedLedgerDimensionDisplayText.Should().Be("Consolidated Fund View");
+                viewModel.SelectedLedgerDimensionDisplayText.Should().Be("Gross Fund View");
                 viewModel.VisibleTrialBalance.Should().HaveCount(viewModel.TrialBalance.Count);
                 viewModel.VisibleJournal.Should().HaveCount(viewModel.Journal.Count);
 

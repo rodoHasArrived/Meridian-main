@@ -201,7 +201,8 @@ public sealed class StrategyWorkspaceShellPresentationService : IWorkspaceScoped
         }
         catch (Exception ex)
         {
-            WpfLoggingService.Instance.LogError($"[StrategyWorkspaceShell] Failed to promote active run: {ex.Message}");
+            WpfLoggingService.Instance.LogError("[StrategyWorkspaceShell] Failed to promote active run: {Error}", ex,
+                ("Error", ex.Message));
             return CreateActionRequest("RunDetail", activeRun);
         }
     }

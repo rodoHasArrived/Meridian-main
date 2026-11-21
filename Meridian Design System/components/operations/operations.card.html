@@ -5,10 +5,9 @@
 <meta charset="UTF-8">
 <title>Operations — operator readiness</title>
 <link rel="stylesheet" href="../../styles.css">
-<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
-<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
-<script src="../../_ds_bundle.js"></script>
+
+
+
 <style>
   body { margin: 0; padding: 18px; background: var(--bg); }
   .wrap { display: grid; gap: 16px; max-width: 940px; }
@@ -17,19 +16,20 @@
   .panel { border: 1px solid var(--border); border-radius: var(--radius-card, 8px); background: var(--bg-light); padding: 14px 16px; }
   .row { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
   .two { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; align-items: start; }
-  .btn { font-family: var(--font-body); font-size: 12px; font-weight: 600; padding: 5px 11px;
-    border-radius: var(--radius-button, 6px); border: 1px solid var(--border); background: var(--bg-light); color: var(--text-secondary); cursor: pointer; }
-  .btn--primary { background: var(--accent); border-color: var(--accent); color: #fff; }
 </style>
+<script src="../../_preview_runtime.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 </head>
 <body class="meridian">
 <div id="root"></div>
 <script type="text/babel">
 const {
-  SeverityBadge, GateRail, ReadinessPanel, ValidationIssueList, EvidenceLink, TrustStrip, WorkspaceSection
-} = window.MeridianDesignSystem_4f61be;
+  SeverityBadge, GateRail, ReadinessPanel, ValidationIssueList, EvidenceLink, TrustStrip, WorkspaceSection, Button
+} = window.MeridianDesignSystem_205d17;
 
 function Demo() {
+  const [message, setMessage] = React.useState("");
   return (
     <div className="wrap">
       <TrustStrip items={[
@@ -68,7 +68,7 @@ function Demo() {
           score="86 / 100"
           title="Reconciliation"
           detail="3 open exceptions above tolerance in the custody cash lane. Investigate before approval."
-          actions={<><button className="btn">Investigate</button><button className="btn btn--primary">Approve</button></>}
+          actions={<><Button size="sm" variant="ghost" onClick={() => setMessage("Investigation opened for this synthetic fixture.")}>Investigate</Button><Button size="sm" onClick={() => setMessage("Approval review opened; no approval was submitted.")}>Review approval</Button></>}
         />
         <div>
           <p className="lbl">Validation issues — Info / Warning / Critical</p>
@@ -80,6 +80,7 @@ function Demo() {
         </div>
       </div>
 
+      <p role="status" style={{margin:0,fontSize:12,color:"var(--text-secondary)"}}>{message}</p>
       <WorkspaceSection
         id="evidence"
         title="Evidence"

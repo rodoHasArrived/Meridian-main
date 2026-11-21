@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>Investigate · Reconciliation — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Reconciliation" description="The reconciliation chain in one screen — SLA break queue with case detail, custodian-vs-ledger split-pane matcher with cross-highlight and break drawer, and the nine-step exception resolution, connected as workflow stages." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_scaffold/template-actions.js"></script>
+<meta name="dc-template" content="reconciliation">
+<style>html,body{margin:0;padding:0;height:100%}
+[data-rw-show="off"]{display:none!important}
+tr[data-rw-state] td:first-child{position:relative;padding-left:13px}
+tr[data-rw-state] td:first-child::before{content:"";position:absolute;left:0;top:0;bottom:0;width:3px;border-radius:0 2px 2px 0}
+tr[data-rw-state="matched"] td:first-child::before{background:var(--green,#2E7655)}
+tr[data-rw-state="timing"] td:first-child::before{background:var(--orange,#986717)}
+tr[data-rw-state="break"] td:first-child::before{background:var(--red,#B54B42)}
+tr[data-rw-state="timing"] td{background:rgba(183,121,31,.05)}
+tr[data-rw-state="break"] td{background:var(--red-a10,rgba(181,75,66,.07))}
+tr[data-rw-state]:hover td{background:var(--bg-hover,#EDEFF0)}
+tr[data-rw-sel="on"] td{background:var(--blue-a10,rgba(47,100,138,.10))}
+tr[data-rw-cross="on"] td{background:var(--blue-a10,rgba(47,100,138,.06));outline:1px dashed var(--brand-signal,#C56343);outline-offset:-1px}
+tr[data-rw-sel="on"] td:first-child::before,tr[data-rw-cross="on"] td:first-child::before{background:var(--brand-signal,#C56343)}
+[data-rw-dot="matched"]{background:var(--green,#2E7655)}[data-rw-dot="timing"]{background:var(--orange,#986717)}[data-rw-dot="break"]{background:var(--red,#B54B42)}
+[data-rw-warn="on"]{color:var(--severity-action-fg,#724D11)}
+@keyframes rw-fade{from{opacity:0}}
+@keyframes rw-slide{from{transform:translateX(24px);opacity:.6}}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Reconciliation" action-label="Retry example" on-action="{{ onPreviewRetry }}" hint-size="100%,860px">
+<div data-rw-show="{{ queueShow }}" data-screen-label="Reconciliation — Break queue" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Reconciliation" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="reconciliation" on-select="{{ onQueueNav }}" sections="{{ qNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Statement Reconciliation</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="70px,18px">June close</x-import>
+<div style="flex:1"></div>
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Depth</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ detail }}" on-change="{{ onDetail }}" options="{{ detailOptions }}" hint-size="140px,26px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ goMatcher }}" hint-size="90px,28px">Run matcher</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="120px,28px" disabled="{{ true }}" title="Statement import requires an application import transport; this example uses fixed synthetic statements." aria-description="Statement import requires an application import transport; this example uses fixed synthetic statements.">Import statement</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TrustStrip" items="{{ trustItems }}" hint-size="100%,44px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DisclosureProvider" screen-id="reconciliation" detail="{{ detail }}" hint-size="100%,560px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Tabs" tabs="{{ qTabs }}" hint-size="100%,560px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,520px">
+<div style="display:grid;grid-template-columns:1fr 380px;gap:12px;align-items:start;padding-top:10px">
+<div style="display:flex;flex-direction:column;gap:8px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ qFilter }}" on-change="{{ onQFilter }}" options="{{ qFilterOptions }}" hint-size="280px,26px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.CaseQueue" items="{{ caseList }}" selected-id="{{ selId }}" on-select="{{ onSelCase }}" now="{{ nowIso }}" empty-label="No cases match this filter" hint-size="100%,420px"></x-import>
+</div>
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="70px,14px">{{ selId }}</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SlaChip" now="{{ nowIso }}" dc-props="{{ selSla }}" hint-size="80px,18px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ selStatus }}" hint-size="70px,18px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ selItems }}" detail="{{ detail }}" on-reveal="{{ onDetail }}" hint-size="100%,140px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Callout" tone="{{ selTone }}" title="Matcher rationale" hint-size="100%,70px">{{ selRationale }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ReturnPath" loops="{{ selLoops }}" label="Back to" hint-size="100%,24px"></x-import>
+<div style="display:flex;flex-wrap:wrap;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceLink" label="{{ selImportLabel }}" status="Ready" route="{{ selImportRoute }}" href="#evidence" hint-size="120px,24px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceLink" label="{{ selRunLabel }}" status="Ready" route="{{ selRunRoute }}" href="#evidence" hint-size="120px,24px"></x-import>
+</div>
+<div style="display:flex;gap:8px;align-items:center">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="90px,26px" disabled="{{ true }}" title="Assignment requires the application case instruction and operator directory." aria-description="Assignment requires the application case instruction and operator directory.">{{ selAssignLabel }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="70px,26px" disabled="{{ true }}" title="Queue resolution requires an application case instruction; inspect the synthetic matcher instead." aria-description="Queue resolution requires an application case instruction; inspect the synthetic matcher instead.">Resolve</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="70px,26px" disabled="{{ true }}" title="Sign-off requires an authorized application attestation instruction and current evidence." aria-description="Sign-off requires an authorized application attestation instruction and current evidence.">Sign off</x-import>
+</div>
+<span data-rw-show="{{ selGateShow }}" style="font-size:10.5px;color:var(--text-muted);font-family:var(--font-data)">Sign-off is gated on resolution · version {{ selVersion }} must match server</span>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,400px">
+<div style="display:flex;flex-direction:column;gap:12px;padding-top:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DisclosureRegion" id="runs" title="Statement runs" count="{{ runCount }}" count-label="runs" severity="{{ runSeverity }}" severity-label="{{ runSeverityLabel }}" freshness="05:02Z" bare="{{ true }}" hint-size="100%,220px">
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Run</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Custodian</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Account</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Period</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Validation</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Match summary</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Status</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{ runRows }}" as="r" hint-placeholder-count="3">
+<tr>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ r.runId }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ r.custodian }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ r.account }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted)">{{ r.period }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ r.validation }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ r.match }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ r.status }}" hint-size="90px,18px"></x-import></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DisclosureRegion" id="imports" title="Statement imports" kicker="normalization" secondary="{{ true }}" count="{{ importCount }}" count-label="imports" severity="{{ importSeverity }}" severity-label="{{ importSeverityLabel }}" freshness="05:02Z" bare="{{ true }}" hint-size="100%,200px">
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Import</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Broker / source</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Statement date</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Imported</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Raw rows</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Normalized</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{ importRows }}" as="i" hint-placeholder-count="3">
+<tr>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ i.importId }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ i.broker }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ i.statementDate }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-muted)">{{ i.importedAtUtc }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ i.raw }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px"><span data-rw-warn="{{ i.warn }}" style="color:var(--text-secondary)">{{ i.normalized }}</span></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</x-import>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.TabPanel" hint-size="100%,300px">
+<div style="padding-top:10px">
+<div style="background:var(--card-surface,#F8F7F3);border:1px solid var(--border-strong);overflow-x:auto">
+<table style="width:100%;border-collapse:collapse;font-size:12.5px">
+<thead><tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Account</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Queue state</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Unresolved</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Sign-off</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Next best action</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Blocker</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{ signoffRows }}" as="q" hint-placeholder-count="3">
+<tr>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-primary)">{{ q.accountCode }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ q.queueState }}" hint-size="90px,18px"></x-import></td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary)">{{ q.unresolvedBreakCount }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ q.signVariant }}" hint-size="60px,18px">{{ q.signLabel }}</x-import></td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-secondary)">{{ q.nextBestAction }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);color:var(--text-muted)">{{ q.blockerReason }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</x-import>
+</x-import>
+</x-import>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ qStatusItems }}" hint-size="100%,28px"></x-import>
+</div>
+<div data-rw-show="{{ matcherShow }}" data-screen-label="Reconciliation — Split-pane matcher" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Reconciliation" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="reconciliation" on-select="{{ onQueueNav }}" sections="{{ mNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Reconciliation</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ envVariant }}" dot="{{ true }}" hint-size="60px,18px">{{ envLabel }}</x-import>
+<span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);margin-left:2px">Statement vs. Ledger · {{ period }}</span>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="60px,28px" on-click="{{ onExport }}">Export example</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="90px,28px" on-click="{{ onPrint }}">Print report</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="{{ autoMatchVariant }}" size="sm" on-click="{{ onAutoMatch }}" hint-size="120px,28px">{{ autoMatchLabel }}</x-import>
+</div>
+<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">
+<span style="font-size:11px;color:var(--text-muted);font-variant:all-small-caps;font-weight:600;letter-spacing:.03em;white-space:nowrap">Period</span>
+<div style="width:160px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" aria-label="Reconciliation period" options="{{ periodOptions }}" value="{{ period }}" on-change="{{ onPeriod }}" hint-size="160px,30px"></x-import></div>
+<span style="font-size:11px;color:var(--text-muted);font-variant:all-small-caps;font-weight:600;letter-spacing:.03em;white-space:nowrap;margin-left:4px">Account</span>
+<div style="width:160px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" aria-label="Reconciliation account" options="{{ accountOptions }}" value="{{ account }}" on-change="{{ onAccount }}" hint-size="160px,30px"></x-import></div>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ mFilter }}" on-change="{{ onMFilter }}" options="{{ mFilterOptions }}" hint-size="200px,26px"></x-import>
+</div>
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="Matched pairs" value="{{ mMatchedVal }}" delta="{{ mMatchedDelta }}" tone="ok" hint-size="100%,70px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="Open breaks" value="{{ mBreaksVal }}" delta="{{ mBreaksDelta }}" tone="{{ mBreaksTone }}" hint-size="100%,70px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="Statement total" value="{{ mStmtTotalVal }}" delta="{{ mStmtTotalDelta }}" tone="neutral" envelope="{{ stmtTotalEnv }}" hint-size="100%,70px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.MetricCard" label="Difference" value="{{ mDiffVal }}" delta="{{ mDiffDelta }}" tone="{{ mDiffTone }}" envelope="{{ diffEnv }}" hint-size="100%,70px"></x-import>
+</div>
+<div style="display:flex;flex-direction:column;flex:1;min-height:420px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationProvider" object-id="REC-2026-07-CASH" object-version="{{ recVersion }}" author="you" hint-size="100%,420px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkspaceLayout" screen-id="reconciliation-matcher" regions="{{ mLayoutRegions }}" layouts="{{ mLayoutPresets }}" slots="{{ mLayoutSlots }}" gap="{{ 0 }}" style="flex:1;min-height:0;border:1px solid var(--border);border-radius:var(--radius-card,8px) var(--radius-card,8px) 0 0;overflow:hidden;background:var(--bg-light);box-shadow:var(--shadow-card,0 1px 1px rgba(0,0,0,.08))" hint-size="100%,420px">
+<div style="display:flex;flex-direction:column;min-width:0;overflow:hidden;height:100%">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border);flex-shrink:0">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted)">Custodian Statement</span>
+<span style="display:flex;gap:5px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--green,#2E7655);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--green-a10,rgba(46,118,85,.10));color:var(--green-dim,#225840)">{{ stmtMatchedChip }}</span>
+<span data-rw-show="{{ stmtTimingChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--orange,#986717);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--orange-a10,rgba(152,103,23,.10));color:var(--orange-dim,#724D11)">{{ stmtTimingChip }}</span>
+<span data-rw-show="{{ stmtBreakChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--red,#B54B42);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--red-a10,rgba(181,75,66,.10));color:var(--red-dim,#883832)">{{ stmtBreakChip }}</span>
+</span>
+</div>
+<div style="overflow-y:auto;flex:1;min-height:0">
+<table style="width:100%;border-collapse:collapse">
+<thead><tr>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left">Date</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left">Reference</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;width:99%">Memo</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left">Category</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right">Amount</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{ stmtRows }}" as="it" hint-placeholder-count="6">
+<tr data-rw-state="{{ it.state }}" data-rw-sel="{{ it.sel }}" data-rw-cross="{{ it.cross }}" onClick="{{ it.select }}" style="cursor:pointer">
+<td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.date }}</td>
+<td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.ref }}</td>
+<td style="font-size:12px;color:var(--text-primary);padding:6px 10px;border-top:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationAnchor" anchor="{{ it.anchor }}" hint-size="100%,16px">{{ it.memo }}</x-import></td>
+<td style="padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap"><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#EBE8E1);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ it.category }}</span></td>
+<td style="padding:6px 10px;border-top:1px solid var(--border);text-align:right;white-space:nowrap"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ it.amount }}" currency="USD" parens="{{ true }}" hint-size="80px,16px"></x-import></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+<div style="display:flex;flex-direction:column;min-width:0;overflow:hidden;height:100%;border-left:1px solid var(--border)">
+<div style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 13px;background:var(--bg-medium,#EBE8E1);border-bottom:1px solid var(--border);flex-shrink:0">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted)">Internal Ledger</span>
+<span style="display:flex;gap:5px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--green,#2E7655);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--green-a10,rgba(46,118,85,.10));color:var(--green-dim,#225840)">{{ ldgrMatchedChip }}</span>
+<span data-rw-show="{{ ldgrTimingChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--orange,#986717);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--orange-a10,rgba(152,103,23,.10));color:var(--orange-dim,#724D11)">{{ ldgrTimingChip }}</span>
+<span data-rw-show="{{ ldgrBreakChipShow }}" style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;border:1px solid var(--red,#B54B42);border-radius:var(--radius-chip,4px);padding:1px 7px;line-height:1.5;white-space:nowrap;background:var(--red-a10,rgba(181,75,66,.10));color:var(--red-dim,#883832)">{{ ldgrBreakChip }}</span>
+</span>
+</div>
+<div style="overflow-y:auto;flex:1;min-height:0">
+<table style="width:100%;border-collapse:collapse">
+<thead><tr>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left">Date</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left">Reference</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);text-align:left;width:99%">Memo</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:left">Category</th>
+<th style="position:sticky;top:0;z-index:1;background:var(--bg-light);font-size:9px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);padding:6px 10px;border-bottom:1px solid var(--border);white-space:nowrap;text-align:right">Amount</th>
+</tr></thead>
+<tbody>
+<sc-for list="{{ ldgrRows }}" as="it" hint-placeholder-count="6">
+<tr data-rw-state="{{ it.state }}" data-rw-sel="{{ it.sel }}" data-rw-cross="{{ it.cross }}" onClick="{{ it.select }}" style="cursor:pointer">
+<td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.date }}</td>
+<td style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap">{{ it.ref }}</td>
+<td style="font-size:12px;color:var(--text-primary);padding:6px 10px;border-top:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationAnchor" anchor="{{ it.anchor }}" hint-size="100%,16px">{{ it.memo }}</x-import></td>
+<td style="padding:6px 10px;border-top:1px solid var(--border);white-space:nowrap"><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#EBE8E1);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ it.category }}</span></td>
+<td style="padding:6px 10px;border-top:1px solid var(--border);text-align:right;white-space:nowrap"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ it.amount }}" currency="USD" parens="{{ true }}" hint-size="80px,16px"></x-import></td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+</div>
+</x-import>
+<div style="display:grid;grid-template-columns:1fr 1fr auto;border:1px solid var(--border);border-top:2px solid var(--border-strong,#AAA49A);border-radius:0 0 var(--radius-card,8px) var(--radius-card,8px);background:var(--bg-medium,#EBE8E1)">
+<div style="padding:10px 14px;display:flex;flex-direction:column;gap:3px">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Statement balance</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ stmtTotal }}" currency="USD" parens="{{ true }}" strong="{{ true }}" hint-size="90px,18px"></x-import>
+</div>
+<div style="padding:10px 14px;display:flex;flex-direction:column;gap:3px;border-left:1px solid var(--border)">
+<span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Ledger balance</span>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ ldgrTotal }}" currency="USD" parens="{{ true }}" strong="{{ true }}" hint-size="90px,18px"></x-import>
+</div>
+<div data-rw-show="{{ reconciledShow }}" style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border-left:1px solid var(--border);padding:10px 16px;white-space:nowrap;color:var(--green-dim,#225840)"><span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0"></span>Reconciled</div>
+<div data-rw-show="{{ outShow }}" style="display:flex;align-items:center;gap:7px;font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;border-left:1px solid var(--border);padding:10px 16px;white-space:nowrap;color:var(--red-dim,#883832)"><span style="width:8px;height:8px;border-radius:50%;background:currentColor;flex-shrink:0"></span>Out by {{ outAmount }}</div>
+</div>
+<div style="margin-top:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.AnnotationPanel" title="Notes on lines" empty-text="Hover a memo and press ¶ to annotate that line. Follow-notes go stale when a match changes the reconciliation; pinned notes keep their version." hint-size="100%,60px"></x-import>
+</div>
+</x-import>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ mStatusItems }}" hint-size="100%,28px"></x-import>
+<sc-if value="{{ drawerOpen }}" hint-placeholder-val="{{ false }}">
+<div onClick="{{ onOverlayClick }}" style="position:fixed;inset:0;background:rgba(23,26,31,.32);z-index:50;display:flex;justify-content:flex-end;animation:rw-fade .14s ease">
+<div role="dialog" aria-label="Break details" style="width:460px;max-width:92vw;height:100%;background:var(--bg);display:flex;flex-direction:column;box-shadow:-12px 0 40px rgba(23,26,31,.2);animation:rw-slide .18s cubic-bezier(.2,.7,.3,1)">
+<div style="display:flex;align-items:flex-start;justify-content:space-between;padding:16px 18px;border-bottom:1px solid var(--border);background:var(--bg-light);gap:12px">
+<div style="display:flex;flex-direction:column;gap:3px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="100px,14px">{{ drawerKind }}</x-import>
+<span style="font:600 15px var(--font-display);color:var(--text-primary)">{{ drawerTitle }}</span>
+<span style="font-size:11px;color:var(--text-muted);margin-top:1px">{{ drawerSub }}</span>
+</div>
+<button aria-label="Close" onClick="{{ onDrawerClose }}" style="appearance:none;border:1px solid var(--border);background:var(--bg-light);width:28px;height:28px;border-radius:var(--radius-button,6px);cursor:pointer;color:var(--text-muted);font-size:16px;line-height:1;flex-shrink:0;display:inline-flex;align-items:center;justify-content:center" style-hover="background:var(--bg-hover);color:var(--text-secondary)">×</button>
+</div>
+<div style="flex:1;overflow-y:auto;padding:18px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="80px,14px">Item details</x-import>
+<div style="margin-top:10px;display:grid;grid-template-columns:140px 1fr;gap:6px 12px;align-items:baseline">
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Reference</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dRef }}</span>
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Date</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">2026-{{ dDate }}</span>
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Memo</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dMemo }}</span>
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Category</span><span><span style="display:inline-block;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.02em;color:var(--text-muted);background:var(--bg-medium,#EBE8E1);border:1px solid var(--border);border-radius:var(--radius-chip,4px);padding:1px 6px">{{ dCategory }}</span></span>
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Amount</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dAmountEnv }}</span>
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Source</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ dSource }}</span>
+<span style="font-size:11px;color:var(--text-muted);font-weight:500">Match status</span><span style="display:flex;align-items:center;gap:6px;font-family:var(--font-data);font-size:12px;color:var(--text-primary)"><span data-rw-dot="{{ dState }}" style="display:inline-block;width:7px;height:7px;border-radius:50%;flex-shrink:0"></span>{{ dStateLabel }}</span>
+</div>
+<div data-rw-show="{{ hasCounter }}">
+<div style="height:1px;background:var(--border);margin:14px 0"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="140px,14px">{{ counterHeading }}</x-import>
+<div style="margin-top:10px;border:1px solid var(--border);border-radius:var(--radius-card,8px);padding:10px 12px;background:var(--bg-light);display:flex;flex-direction:column;gap:4px">
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">{{ counterSideLabel }}</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">{{ cRef }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Memo</span><span style="font-family:var(--font-data);font-size:11px;color:var(--text-primary)">{{ cMemo }}</span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Date</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary)">2026-{{ cDate }}<span data-rw-show="{{ cDateDiffShow }}" style="font-family:var(--font-data);font-size:11px;color:var(--orange,#986717)"> {{ cDateDiff }}</span></span></div>
+<div style="display:flex;justify-content:space-between;align-items:baseline;gap:8px"><span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted)">Amount</span><span style="font-family:var(--font-data);font-size:12px;color:var(--text-primary);display:inline-flex;align-items:baseline;gap:4px"><x-import component-from-global-scope="MeridianDesignSystem_205d17.AmountCell" value="{{ cAmount }}" currency="USD" parens="{{ true }}" hint-size="70px,16px"></x-import><span data-rw-show="{{ cAmtDiffShow }}" style="font-size:11px;color:var(--orange,#986717)">{{ cAmtDiff }}</span></span></div>
+</div>
+</div>
+<div data-rw-show="{{ noMatchShow }}">
+<div style="height:1px;background:var(--border);margin:14px 0"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="100px,14px">No match found</x-import>
+<div style="margin-top:10px;font-size:12px;color:var(--text-muted);line-height:1.6">This item has no corresponding entry on the {{ otherSideLabel }} side. Common causes: timing difference beyond the period window, misclassified transaction, or missing journal entry.</div>
+</div>
+<div style="height:1px;background:var(--border);margin:14px 0"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="120px,14px">Resolution options</x-import>
+<div style="margin-top:10px;display:flex;flex-direction:column;gap:8px;font-size:12px;color:var(--text-secondary)">
+<div data-rw-show="{{ timingOptShow }}" style="padding:10px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-light)"><strong style="color:var(--text-primary);display:block;margin-bottom:4px">Accept timing difference</strong>Mark as a known accrual timing difference and accept as reconciled for this period.</div>
+<div data-rw-show="{{ hardOptShow }}" style="padding:10px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-light)"><strong style="color:var(--text-primary);display:block;margin-bottom:4px">Create adjustment entry</strong>Post a journal entry to record the item in the ledger and clear the break.</div>
+<div style="padding:10px 12px;border:1px solid var(--border);border-radius:6px;background:var(--bg-light)"><strong style="color:var(--text-primary);display:block;margin-bottom:4px">Mark as permanent break</strong>Record as a known reconciliation exception with commentary for the audit trail.</div>
+</div>
+</div>
+<div style="padding:14px 18px;border-top:1px solid var(--border);background:var(--bg-light);display:flex;gap:8px;flex-wrap:wrap">
+<div data-rw-show="{{ timingOptShow }}"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onAcceptTiming }}" hint-size="140px,28px">Accept timing match</x-import></div>
+<div data-rw-show="{{ hardOptShow }}"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onCreateJe }}" hint-size="140px,28px">Create journal entry</x-import></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onMarkException }}" hint-size="110px,28px">Mark exception</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onDrawerClose }}" hint-size="60px,28px">Cancel</x-import>
+</div>
+</div>
+</div>
+</sc-if>
+</div>
+<div data-rw-show="{{ exceptionShow }}" style="height:100vh"><dc-import name="ReconciliationException" theme="{{ themeProp }}" density="{{ densityProp }}" environment="{{ envLabel }}" data-state="{{ dataState }}" hint-size="100%,100vh"></dc-import></div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;queue&quot;,&quot;options&quot;:[&quot;queue&quot;,&quot;matcher&quot;,&quot;exception&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;View&quot;},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;full&quot;,&quot;summary&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;View&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    this._untick = window.MeridianWorld && window.MeridianWorld.tick(this);
+    // Arrive on the break someone linked to, not on whichever one is first.
+    const fromUrl = this.caseFromUrl();
+    if (fromUrl) this.setState({ selId: fromUrl });
+    this.nameCrumb(fromUrl);
+  }
+  componentWillUnmount() { this._untick && this._untick(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
+  noop = () => {};
+  NOW = "2026-07-05T14:32:00Z";
+
+  cases = [
+    { id: "CASE-4181", summary: "Custody cash break exceeds tolerance band", category: "QuantityMismatch",
+      status: "Open", priority: "Critical", assignee: "D. Chen", openedAtUtc: "07-04 06:10Z",
+      sla: { state: "Breached", dueAtUtc: "2026-07-05T09:00:00Z" },
+      confidence: 0.94, rationale: "Statement shows $82,440.00 settlement; ledger has $81,940.00 — matcher found no candidate within $5 / 1 day.",
+      rootCauseCode: null, importId: "IMP-0619", runId: "SRUN-1042", version: 3, stmt: "$82,440.00", book: "$81,940.00", diff: "$500.00",
+      // Return loops (app-map.js › LOOPS.break) — only links this case really has.
+      accountId: "1100", postedEntry: "JE-1042" },
+    { id: "CASE-4184", summary: "Dividend accrual unmatched — MSFT 06-12", category: "MissingCounterpart",
+      status: "InProgress", priority: "High", assignee: null, openedAtUtc: "07-04 11:40Z",
+      sla: { state: "Warning", dueAtUtc: "2026-07-05T17:00:00Z" },
+      confidence: 0.71, rationale: "Broker statement carries a $1,290.00 dividend receipt with no ledger accrual in the window.",
+      rootCauseCode: null, importId: "IMP-0619", runId: "SRUN-1042", version: 1, stmt: "$1,290.00", book: "—", diff: "$1,290.00",
+      accountId: "1200", postedEntry: "JE-1060" },
+    { id: "CASE-4188", summary: "FX rate variance on EUR settlement", category: "PriceTolerance",
+      status: "InProgress", priority: "Normal", assignee: "S. Patel", openedAtUtc: "07-05 08:02Z",
+      sla: { state: "OnTrack", dueAtUtc: "2026-07-07T09:00:00Z" },
+      confidence: 0.88, rationale: "EURUSD applied 1.0842 vs. custodian 1.0851 — €120k notional, $108 variance, above the $50 band.",
+      rootCauseCode: "FX-RATE-SOURCE", importId: "IMP-0621", runId: "SRUN-1044", version: 2, stmt: "$130,212.00", book: "$130,104.00", diff: "$108.00",
+      accountId: "1100" },
+    { id: "CASE-4173", summary: "Statement row failed canonicalization", category: "MappingError",
+      status: "Resolved", priority: "Normal", assignee: "D. Chen", openedAtUtc: "07-02 15:21Z",
+      sla: { state: "OnTrack", ageBand: "2–3 days" },
+      confidence: 0.99, rationale: "Unknown transaction code 'CDIVX' — mapped to Dividend after profile update (mapping profile v12 → v13).",
+      rootCauseCode: "MAPPING-PROFILE", importId: "IMP-0611", runId: "SRUN-1038", version: 5, resolutionCode: "ProfileUpdated", stmt: "$96.40", book: "$96.40", diff: "$0.00",
+      accountId: "1100", exceptionId: "CASE-4173" },
+  ];
+  imports = [
+    { importId: "IMP-0621", broker: "Northern Trust", statementDate: "2026-06-30", importedAtUtc: "07-05 05:02Z", rawRowCount: 1418, normalizedRowCount: 1412 },
+    { importId: "IMP-0619", broker: "IBKR", statementDate: "2026-06-30", importedAtUtc: "07-04 05:01Z", rawRowCount: 2204, normalizedRowCount: 2204 },
+    { importId: "IMP-0611", broker: "Plaid · FNB Operating", statementDate: "2026-06-30", importedAtUtc: "07-02 05:00Z", rawRowCount: 312, normalizedRowCount: 311 },
+  ];
+  runs = [
+    { runId: "SRUN-1044", custodian: "Northern Trust", account: "NT-4417", period: "06-01 → 06-30", validation: "1,412 rows · 0 errors", match: "1,409 matched · 3 breaks", status: "BreaksDetected" },
+    { runId: "SRUN-1042", custodian: "IBKR", account: "IB-9021", period: "06-01 → 06-30", validation: "2,204 rows · 0 errors", match: "2,202 matched · 2 breaks", status: "BreaksDetected" },
+    { runId: "SRUN-1038", custodian: "Plaid · FNB", account: "FNB-0334", period: "06-01 → 06-30", validation: "311 rows · 1 warning", match: "311 matched · 0 breaks", status: "Matched" },
+  ];
+  signoffQueue = [
+    { accountCode: "NT-4417", queueState: "BreaksDetected", unresolvedBreakCount: 2, signOffReady: false, nextBestAction: "Resolve CASE-4181 (breached SLA)", blockerReason: "Custody cash break above tolerance" },
+    { accountCode: "IB-9021", queueState: "BreaksDetected", unresolvedBreakCount: 1, signOffReady: false, nextBestAction: "Assign CASE-4184", blockerReason: "Unassigned break aging toward SLA" },
+    { accountCode: "FNB-0334", queueState: "Matched", unresolvedBreakCount: 0, signOffReady: true, nextBestAction: "Record sign-off", blockerReason: "—" },
+  ];
+  stmtSeed = [
+    { id: "S01", date: "06-02", ref: "DTC-88421", memo: "Settlement credit — AAPL block", category: "Settlement", amount: 82440, matchId: "L01", matchStatus: "matched" },
+    { id: "S02", date: "06-03", ref: "FEE-0093", memo: "Commission & exchange fees", category: "Fee", amount: -318.5, matchId: "L02", matchStatus: "matched" },
+    { id: "S03", date: "06-05", ref: "WIRE-5510", memo: "Wire transfer to custodian", category: "Transfer", amount: -40000, matchId: "L03", matchStatus: "matched" },
+    { id: "S04", date: "06-06", ref: "INT-0210", memo: "Interest accrual on margin balance", category: "Interest", amount: 142.18, matchId: null, matchStatus: "break" },
+    { id: "S05", date: "06-09", ref: "DIV-7741", memo: "Dividend credit — MSFT", category: "Dividend", amount: 1290, matchId: "L05", matchStatus: "matched" },
+    { id: "S06", date: "06-11", ref: "DTC-88580", memo: "Settlement credit — TSLA short cover", category: "Settlement", amount: 24180, matchId: "L06", matchStatus: "matched" },
+    { id: "S07", date: "06-14", ref: "FEE-0094", memo: "Annual custody charge", category: "Fee", amount: -850, matchId: "L07", matchStatus: "timing" },
+    { id: "S08", date: "06-17", ref: "DIV-7788", memo: "Dividend credit — TLT ETF", category: "Dividend", amount: 346.5, matchId: "L08", matchStatus: "matched" },
+    { id: "S09", date: "06-20", ref: "CORP-3301", memo: "Corporate action — NVDA 10:1 split", category: "Corporate", amount: 0, matchId: null, matchStatus: "break" },
+    { id: "S10", date: "06-24", ref: "WIRE-5598", memo: "Wire receipt from custodian", category: "Transfer", amount: 15000, matchId: "L10", matchStatus: "matched" },
+  ];
+  ldgrSeed = [
+    { id: "L01", date: "06-02", ref: "JE-1042", memo: "Client settlement — AAPL block", category: "Settlement", amount: 82440, matchId: "S01", matchStatus: "matched" },
+    { id: "L02", date: "06-03", ref: "JE-1043", memo: "Commission & exchange fees", category: "Fee", amount: -318.5, matchId: "S02", matchStatus: "matched" },
+    { id: "L03", date: "06-05", ref: "JE-1051", memo: "Wire to custodian", category: "Transfer", amount: -40000, matchId: "S03", matchStatus: "matched" },
+    { id: "L05", date: "06-09", ref: "JE-1060", memo: "Dividend receivable — MSFT", category: "Dividend", amount: 1290, matchId: "S05", matchStatus: "matched" },
+    { id: "L06", date: "06-11", ref: "JE-1072", memo: "TSLA short settlement", category: "Settlement", amount: 24180, matchId: "S06", matchStatus: "matched" },
+    { id: "L07", date: "06-16", ref: "JE-1078", memo: "Custody fee accrual", category: "Fee", amount: -850, matchId: "S07", matchStatus: "timing" },
+    { id: "L08", date: "06-17", ref: "JE-1081", memo: "Dividend income — TLT ETF", category: "Dividend", amount: 346.5, matchId: "S08", matchStatus: "matched" },
+    { id: "L10", date: "06-24", ref: "JE-1095", memo: "Wire receipt from custodian", category: "Transfer", amount: 15000, matchId: "S10", matchStatus: "matched" },
+    { id: "L11", date: "06-24", ref: "JE-1096", memo: "Management fee payable Q2", category: "Fee", amount: -2500, matchId: null, matchStatus: "break" },
+  ];
+  stateLabels = { matched: "Matched", timing: "Timing break", break: "Break" };
+
+  state = {
+    stage: null, detail: null, qFilter: "all", selId: "CASE-4181",
+    period: "Jun 2026", account: "All accounts", mFilter: "all",
+    stmtItems: this.stmtSeed, ldgrItems: this.ldgrSeed,
+    selStmtId: null, selLdgrId: null, drawer: null,
+  };
+
+  fmtUsd(n) { return window.MeridianDesignSystem_205d17.Format.money(Math.abs(n), { currency: "USD" }); }
+
+  // The selected break is the screen's primary selection, so it lives in the URL (4.4 · E-3):
+  // an entry that links back to CASE-4181 arrives here with that break already open, and the
+  // operator's deep link, new tab and Back button all keep their place.
+  selectCase(id) {
+    if (!id) return;
+    this.setState({ selId: id });
+    try {
+      const u = new URL(window.location.href);
+      u.searchParams.set("break", id);
+      window.history.replaceState(null, "", u);
+    } catch (e) {}
+    this.nameCrumb(id);
+  }
+  // The masthead crumb says which break you are on, not "Break CASE-4181" (4.4 · E-1).
+  nameCrumb(id) {
+    const c = this.cases.find((x) => x.id === (id || this.state.selId));
+    const M = window.MeridianAppMap;
+    if (c && M && M.nameObject) M.nameObject("break", c.id, c.id + " · " + c.summary);
+  }
+  caseFromUrl() {
+    try {
+      const id = new URLSearchParams(window.location.search).get("break");
+      return id && this.cases.some((c) => c.id === id) ? id : null;
+    } catch (e) { return null; }
+  }
+
+  pick(side, item) {
+    const s = this.state;
+    if (side === "stmt") {
+      const sel = s.selStmtId === item.id ? null : item.id;
+      const counter = item.matchId ? s.ldgrItems.find((l) => l.id === item.matchId) : null;
+      this.setState({ selStmtId: sel, selLdgrId: null, drawer: item.matchStatus !== "matched" ? { id: item.id, side, counterId: counter ? counter.id : null } : null });
+    } else {
+      const sel = s.selLdgrId === item.id ? null : item.id;
+      const counter = item.matchId ? s.stmtItems.find((x) => x.id === item.matchId) : null;
+      this.setState({ selLdgrId: sel, selStmtId: null, drawer: item.matchStatus !== "matched" ? { id: item.id, side, counterId: counter ? counter.id : null } : null });
+    }
+  }
+  closeDrawer() { this.setState({ drawer: null, selStmtId: null, selLdgrId: null }); }
+  resolve(action) {
+    const d = this.state.drawer;
+    if (!d) return;
+    if (action === "accept-timing" || action === "create-je") {
+      const list = d.side === "stmt" ? "stmtItems" : "ldgrItems";
+      const other = d.side === "stmt" ? "ldgrItems" : "stmtItems";
+      const item = this.state[list].find((i) => i.id === d.id);
+      this.setState((p) => ({
+        [list]: p[list].map((i) => i.id === d.id ? { ...i, matchStatus: "matched" } : i),
+        [other]: item.matchId ? p[other].map((i) => i.id === item.matchId ? { ...i, matchStatus: "matched" } : i) : p[other],
+      }));
+    }
+    this.closeDrawer();
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const el = React.createElement;
+    const VE = (this.ds && this.ds().ValueEnvelope) || (window.MeridianDesignSystem_205d17 || {}).ValueEnvelope;
+    // Stated tie-out figures ship as ValueEnvelopes — value, condition, authority together.
+    const env = (value, cond, label, authority) => VE
+      ? el(VE, { value, condition: cond, authority: authority || "sourced", label, align: "right", clocks: { asOf: "2026-07-05 14:32Z" } })
+      : value;
+    const view = s.stage ?? this.props.view ?? "queue";
+    // Reading depth (4.1): the screen owns it and hands it down; nothing reads the context.
+    const detail = s.detail ?? this.props.detail ?? "full";
+    const runsWithBreaks = this.runs.filter((r) => r.status !== "Matched").length;
+    const importsShort = this.imports.filter((i) => i.normalizedRowCount < i.rawRowCount).length;
+    const caseList = this.cases.filter((c) =>
+      s.qFilter === "all" ? true : s.qFilter === "breached" ? c.sla.state === "Breached" : s.qFilter === "unassigned" ? !c.assignee : c.status !== "Resolved");
+    const sel = this.cases.find((c) => c.id === s.selId) || this.cases[0];
+    const breached = this.cases.filter((c) => c.sla.state === "Breached").length;
+    const open = this.cases.filter((c) => c.status !== "Resolved").length;
+    const canSignOff = sel.status === "Resolved";
+    const applyF = (items) => s.mFilter === "matched" ? items.filter((i) => i.matchStatus === "matched") : s.mFilter === "open" ? items.filter((i) => i.matchStatus !== "matched") : items;
+    const fStmt = applyF(s.stmtItems), fLdgr = applyF(s.ldgrItems);
+    const crossLdgr = s.selStmtId ? (s.stmtItems.find((i) => i.id === s.selStmtId) || {}).matchId : null;
+    const crossStmt = s.selLdgrId ? (s.ldgrItems.find((i) => i.id === s.selLdgrId) || {}).matchId : null;
+    const count = (arr, st) => arr.filter((i) => i.matchStatus === st).length;
+    const stmtMatched = count(s.stmtItems, "matched"), stmtBreaks = count(s.stmtItems, "break"), stmtTiming = count(s.stmtItems, "timing");
+    const ldgrBreaks = count(s.ldgrItems, "break"), ldgrTiming = count(s.ldgrItems, "timing");
+    const totalBreaks = stmtBreaks + ldgrBreaks + stmtTiming + ldgrTiming;
+    const stmtTotal = s.stmtItems.reduce((x, i) => x + i.amount, 0);
+    const ldgrTotal = s.ldgrItems.reduce((x, i) => x + i.amount, 0);
+    const diff = stmtTotal - ldgrTotal;
+    const zero = Math.abs(diff) < 0.005;
+    const reconciled = zero && totalBreaks === 0;
+    const mapRows = (items, side, selId, crossId) => items.map((it) => ({
+      ...it, state: it.matchStatus,
+      sel: selId === it.id ? "on" : "off", cross: crossId === it.id ? "on" : "off",
+      select: () => this.pick(side, it),
+      // 4.2 · E-1: every statement and ledger line is an annotation anchor.
+      anchor: { kind: "line", ref: side + ":" + it.id, label: it.ref + " · " + it.memo },
+    }));
+    const d = s.drawer;
+    const dItem = d ? (d.side === "stmt" ? s.stmtItems : s.ldgrItems).find((i) => i.id === d.id) : null;
+    const cItem = d && d.counterId ? (d.side === "stmt" ? s.ldgrItems : s.stmtItems).find((i) => i.id === d.counterId) : null;
+    const isTiming = dItem && dItem.matchStatus === "timing";
+    const isHard = dItem && dItem.matchStatus === "break";
+    const dAmtDiff = dItem && cItem ? Math.abs(dItem.amount - cItem.amount) : 0;
+    const dDayDiff = dItem && cItem && isTiming ? Math.abs(parseInt(dItem.date.slice(3), 10) - parseInt(cItem.date.slice(3), 10)) : 0;
+    return {
+      onPreviewRetry: () => this.setState({ previewReady: true }),
+      noop: this.noop,
+      onExport: () => window.MeridianTemplateActions.downloadJson("reconciliation-example.json", { period: s.period, account: s.account, statements: s.stmtItems, ledger: s.ldgrItems }),
+      onPrint: () => window.print(),
+
+      // 4.2 · the matcher's two panes are persisted regions (mds.workspace-layout.reconciliation-matcher);
+      // period, account and the selected pair are never part of a layout.
+      mLayoutRegions: [{ id: "statement", size: 1 }, { id: "ledger", size: 1 }],
+      mLayoutPresets: [{ name: "Statement wide", regions: { statement: { size: 1.6 }, ledger: { size: 1 } } }, { name: "Ledger wide", regions: { statement: { size: 1 }, ledger: { size: 1.6 } } }],
+      mLayoutSlots: [{ id: "statement", label: "Custodian statement", chrome: false, minSize: 0.25 }, { id: "ledger", label: "Internal ledger", chrome: false, minSize: 0.25 }],
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
+      envVariant: String(this.props.environment ?? "PAPER").toLowerCase(),
+      queueShow: view === "queue" ? "on" : "off",
+      matcherShow: view === "matcher" ? "on" : "off",
+      exceptionShow: view === "exception" ? "on" : "off",
+      themeProp: this.props.theme ?? "light",
+      densityProp: this.props.density ?? "default",
+      goMatcher: () => this.setState({ stage: "matcher" }),
+      nowIso: this.NOW,
+      // The rail is the suite app map (app-map.js) — same destinations everywhere. This screen's
+      // own views (break queue / statement runs / sign-off) are tabs in the work plane, not rail
+      // entries, so "Reconciliation" means one thing across the suite.
+      qNav: (window.MeridianAppMap ? window.MeridianAppMap.sections("reconciliation") : []),
+      onQueueNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      trustItems: [
+        { label: "Imports", value: this.imports.length + " this cycle", state: "ready" },
+        { label: "Runs", value: "1 matched / 3", state: "review" },
+        { label: "Open cases", value: String(open), state: open ? "review" : "ready" },
+        { label: "SLA", value: breached ? breached + " breached" : "on track", state: breached ? "blocked" : "ready" },
+      ],
+      qTabs: [{ label: "Break queue", count: open }, "Statement runs", "Sign-off queue"],
+      qFilter: s.qFilter, onQFilter: (v) => this.setState({ qFilter: v }),
+      qFilterOptions: [{ value: "all", label: "All" }, { value: "open", label: "Open" }, { value: "breached", label: "Breached" }, { value: "unassigned", label: "Unassigned" }],
+      caseList, selId: sel.id, onSelCase: (id) => this.selectCase(id),
+      // The return half of the handoff (4.4 · E-2): a break that was resolved by an entry can
+      // open it, and every break can open the account sheet it lives on. Only the links this
+      // case actually carries appear.
+      selLoops: (window.MeridianAppMap ? window.MeridianAppMap.loops("break", sel) : []),
+      selSla: sel.sla, selStatus: sel.status,
+      selItems: [
+        { label: "Category", value: sel.category },
+        { label: "Confidence", value: (sel.confidence * 100).toFixed(0) + "%" },
+        { label: "Statement", value: env(sel.stmt, "confirmed", sel.id + " · statement side") },
+        { label: "Ledger", value: sel.book === "—" ? "—" : env(sel.book, "confirmed", sel.id + " · ledger side", "derived") },
+        { label: "Difference", value: el("span", { style: { color: sel.diff === "$0.00" ? "var(--green-dim)" : "var(--red-dim)" } }, env(sel.diff, sel.status === "Resolved" ? "confirmed" : "disputed", sel.id + " · statement − ledger", "derived")) },
+        { label: "Root cause", value: sel.rootCauseCode || "—", tier: "full" },
+        { label: "Opened", value: sel.openedAtUtc, tier: "full" },
+        { label: "Version", value: "v" + sel.version, tier: "full" },
+      ],
+      selTone: sel.status === "Resolved" ? "success" : "info", selRationale: sel.rationale,
+      selImportLabel: "Import " + sel.importId, selImportRoute: "evidence://imports/" + sel.importId,
+      selRunLabel: "Run " + sel.runId, selRunRoute: "evidence://recon/" + sel.runId,
+      selAssignLabel: sel.assignee ? "Reassign" : "Assign to me",
+      selResolveDisabled: sel.status === "Resolved",
+      selSignOffDisabled: !canSignOff,
+      selSignOffTitle: canSignOff ? "Record sign-off" : "Sign-off requires a resolution code on this case",
+      selGateShow: canSignOff ? "off" : "on", selVersion: "v" + sel.version,
+      detail, onDetail: (v) => this.setState({ detail: v }),
+      detailOptions: [{ value: "summary", label: "Summary" }, { value: "full", label: "Full" }],
+      runCount: this.runs.length, runSeverity: runsWithBreaks ? "warning" : "none",
+      runSeverityLabel: runsWithBreaks + " with breaks",
+      importCount: this.imports.length, importSeverity: importsShort ? "warning" : "none",
+      importSeverityLabel: importsShort ? importsShort + " dropped rows" : "clean",
+      runRows: this.runs,
+      importRows: this.imports.map((i) => ({ ...i, raw: i.rawRowCount.toLocaleString(), normalized: i.normalizedRowCount.toLocaleString(), warn: i.normalizedRowCount < i.rawRowCount ? "on" : "off" })),
+      signoffRows: this.signoffQueue.map((q) => ({ ...q, signVariant: q.signOffReady ? "success" : "warning", signLabel: q.signOffReady ? "Ready" : "Blocked" })),
+      qStatusItems: [
+        { status: breached ? "err" : "ok", label: "Cases", value: open + " open · " + breached + " breached" },
+        { label: "Selected", value: sel.id },
+        { label: "Cycle", value: "2026-06 close" },
+        { status: "ok", label: "Matcher", value: "idle · last run 05:02Z", push: true },
+      ],
+      mNav: (window.MeridianAppMap ? window.MeridianAppMap.sections("reconciliation") : []),
+      period: s.period, onPeriod: (v) => this.setState({ period: v }), periodOptions: ["Jun 2026", "May 2026", "Apr 2026", "Q2 2026"],
+      account: s.account, onAccount: (v) => this.setState({ account: v }), accountOptions: ["All accounts", "1100 · Cash", "1500 · Custody"],
+      mFilter: s.mFilter, onMFilter: (v) => this.setState({ mFilter: v }),
+      mFilterOptions: [{ value: "all", label: "All" }, { value: "matched", label: "Matched" }, { value: "open", label: "Open" }],
+      autoMatchVariant: totalBreaks > 0 ? "primary" : "ghost",
+      autoMatchLabel: "Auto-match" + (totalBreaks > 0 ? " (" + (stmtTiming + ldgrTiming) + " timing)" : ""),
+      onAutoMatch: () => this.setState((p) => ({
+        stmtItems: p.stmtItems.map((i) => ({ ...i, matchStatus: i.matchId ? "matched" : i.matchStatus })),
+        ldgrItems: p.ldgrItems.map((i) => ({ ...i, matchStatus: i.matchId ? "matched" : i.matchStatus })),
+      })),
+      mMatchedVal: String(stmtMatched),
+      mMatchedDelta: stmtMatched === s.stmtItems.filter((i) => i.matchId).length ? "All eligible" : (s.stmtItems.length - stmtMatched) + " pending",
+      mBreaksVal: String(totalBreaks),
+      mBreaksDelta: totalBreaks === 0 ? "No breaks" : (stmtTiming + ldgrTiming) + " timing · " + (stmtBreaks + ldgrBreaks) + " hard",
+      mBreaksTone: totalBreaks > 0 ? "warn" : "ok",
+      mStmtTotalVal: this.fmtUsd(stmtTotal), mStmtTotalDelta: s.stmtItems.length + " items · USD",
+      mDiffVal: zero ? "$0.00" : (diff < 0 ? "−" : "+") + "$" + Math.abs(diff).toFixed(2),
+      mDiffDelta: reconciled ? "Fully reconciled" : "Statement − Ledger", mDiffTone: zero ? "ok" : "warn",
+      stmtMatchedChip: count(fStmt, "matched") + " matched",
+      stmtTimingChipShow: count(fStmt, "timing") > 0 ? "on" : "off", stmtTimingChip: count(fStmt, "timing") + " timing",
+      stmtBreakChipShow: count(fStmt, "break") > 0 ? "on" : "off", stmtBreakChip: count(fStmt, "break") + (count(fStmt, "break") > 1 ? " breaks" : " break"),
+      ldgrMatchedChip: count(fLdgr, "matched") + " matched",
+      ldgrTimingChipShow: count(fLdgr, "timing") > 0 ? "on" : "off", ldgrTimingChip: count(fLdgr, "timing") + " timing",
+      ldgrBreakChipShow: count(fLdgr, "break") > 0 ? "on" : "off", ldgrBreakChip: count(fLdgr, "break") + (count(fLdgr, "break") > 1 ? " breaks" : " break"),
+      stmtRows: mapRows(fStmt, "stmt", s.selStmtId, crossStmt),
+      ldgrRows: mapRows(fLdgr, "ldgr", s.selLdgrId, crossLdgr),
+      recVersion: 14 + s.stmtItems.filter((i) => i.matchStatus === "matched").length + s.ldgrItems.filter((i) => i.matchStatus === "matched").length,
+      stmtTotal, ldgrTotal,
+      reconciledShow: reconciled ? "on" : "off", outShow: reconciled ? "off" : "on",
+      outAmount: this.fmtUsd(Math.abs(diff)),
+      mStatusItems: [
+        { label: "Statement", value: s.stmtItems.length + " items", status: "ok" },
+        { label: "Ledger", value: s.ldgrItems.length + " items", status: "ok" },
+        { label: "Matched", value: stmtMatched + " pairs", status: stmtMatched > 0 ? "ok" : "warn" },
+        { label: "Breaks", value: totalBreaks > 0 ? totalBreaks + " open" : "clear", status: totalBreaks > 0 ? "warn" : "ok" },
+        { label: "Difference", value: zero ? "zero" : "$" + Math.abs(diff).toFixed(2), status: zero ? "ok" : "warn", push: true },
+        { label: "Period", value: s.period + " · open" },
+      ],
+      drawerOpen: !!dItem,
+      onOverlayClick: (e) => { if (e.target === e.currentTarget) this.closeDrawer(); },
+      onDrawerClose: () => this.closeDrawer(),
+      drawerKind: isTiming ? "Timing Break" : isHard ? "Unmatched Item" : "Reconciliation Break",
+      drawerTitle: dItem ? dItem.ref + " · " + (dItem.memo.length > 46 ? dItem.memo.slice(0, 43) + "…" : dItem.memo) : "",
+      drawerSub: dItem ? (d.side === "stmt" ? "Custodian statement" : "Internal ledger") + " · " + dItem.date : "",
+      dRef: dItem ? dItem.ref : "", dDate: dItem ? dItem.date : "", dMemo: dItem ? dItem.memo : "",
+      dCategory: dItem ? dItem.category : "", dAmount: dItem ? dItem.amount : 0,
+      dSource: d ? (d.side === "stmt" ? "Custodian (DTC / prime)" : "Fund accountant ledger") : "",
+      dState: dItem ? dItem.matchStatus : "break", dStateLabel: dItem ? this.stateLabels[dItem.matchStatus] : "",
+      hasCounter: cItem ? "on" : "off",
+      counterHeading: isTiming ? "Timing match candidate" : "Near-match candidate",
+      counterSideLabel: d && d.side === "stmt" ? "Ledger entry" : "Statement entry",
+      cRef: cItem ? cItem.ref : "", cMemo: cItem ? cItem.memo : "", cDate: cItem ? cItem.date : "",
+      cDateDiffShow: dDayDiff > 0 ? "on" : "off", cDateDiff: "(+" + dDayDiff + "d vs statement)",
+      cAmount: cItem ? cItem.amount : 0,
+      cAmtDiffShow: dAmtDiff > 0 ? "on" : "off", cAmtDiff: "(Δ " + this.fmtUsd(dAmtDiff) + ")",
+      noMatchShow: isHard && !cItem ? "on" : "off",
+      otherSideLabel: d && d.side === "stmt" ? "ledger" : "custodian statement",
+      timingOptShow: isTiming ? "on" : "off", hardOptShow: isHard ? "on" : "off",
+      onAcceptTiming: () => this.resolve("accept-timing"),
+      onCreateJe: () => this.resolve("create-je"),
+      onMarkException: () => { this.resolve("mark-exception"); this.setState({ stage: "exception" }); },
+    };
+  }
+}
+</script>
+</body>
+</html>

@@ -184,10 +184,13 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             request.SourceFormat,
             request.Lines.Count,
             DateTimeOffset.UtcNow,
-            request.LoadedBy);
+            request.LoadedBy,
+            request.Authority,
+            BondHoldingNormalization.ContentHash(request));
 
         await _store.InsertCustodianStatementBatchAsync(batch, request.Lines, ct).ConfigureAwait(false);
-        return batch;
+        var retained = await _store.GetCustodianStatementBatchesAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false);
+        return retained.Single(b => b.BatchId == batch.BatchId);
     }
 
     public async Task<BankStatementBatchDto> IngestBankStatementAsync(
@@ -214,9 +217,19 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
         return batch;
     }
 
-    public Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
+    public async Task<IReadOnlyList<CustodianPositionLineDto>> GetCustodianPositionsAsync(
         Guid accountId, DateOnly asOfDate, CancellationToken ct = default)
-        => _store.GetCustodianPositionsAsync(accountId, asOfDate, ct);
+    {
+        var positions = await _store.GetCustodianPositionsAsync(accountId, asOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<CustodianPositionLineDto>();
+        var batches = await _store.GetCustodianStatementBatchesAsync(accountId, asOfDate, ct).ConfigureAwait(false)
+            ?? Array.Empty<CustodianStatementBatchDto>();
+        return AccountReconciliationChecks.SelectCustodianState(accountId, asOfDate, positions, batches).Positions;
+    }
+
+    public Task<CustodianHoldingSnapshotDto?> GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf,
+        DateTimeOffset? knownAt = null, CancellationToken ct = default)
+        => _store.GetCustodianSnapshotAsync(accountId, asOf, knownAt, ct);
 
     public Task<IReadOnlyList<BankStatementLineDto>> GetBankStatementLinesAsync(
         Guid accountId, DateOnly? fromDate = null, DateOnly? toDate = null, CancellationToken ct = default)
@@ -238,6 +251,8 @@ public sealed class PostgresFundAccountService : IFundAccountService, IAccountMa
             ?? Array.Empty<CustodianPositionLineDto>();
         var custodianBatches = await _store.GetCustodianStatementBatchesAsync(request.AccountId, request.AsOfDate, ct).ConfigureAwait(false)
             ?? Array.Empty<CustodianStatementBatchDto>();
+        (positions, custodianBatches) = AccountReconciliationChecks.SelectCustodianState(request.AccountId,
+            request.AsOfDate, positions, custodianBatches);
         var bankLines = BankStatementClosingBalanceAuthority.ForStatementDate(
             await _store.GetBankStatementLinesAsync(request.AccountId, null, null, ct).ConfigureAwait(false)
                 ?? Array.Empty<BankStatementLineDto>(), request.AsOfDate).ToArray();

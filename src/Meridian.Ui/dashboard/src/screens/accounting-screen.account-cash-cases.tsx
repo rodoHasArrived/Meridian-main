@@ -1,6 +1,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { FormGrid, FormRow } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
@@ -53,6 +54,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
   const active = useRef<AbortController | null>(null);
   const mutation = useRef(false);
   const fileSequence = useRef(0);
+  const clearNoticesOnLoad = useRef(false);
   const dirty = preview !== null || assignmentDirty || busy || readingFile;
   useEffect(() => { onDirtyChange?.(dirty); }, [dirty, onDirtyChange]);
   useEffect(() => () => onDirtyChange?.(false), [onDirtyChange]);
@@ -69,6 +71,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
       if (next.some(item => !scopeMatches(item.scope, scope))) throw new Error("Cash cases belong to a different account or ledger book. Refresh the selected scope.");
       setCases(next);
       setHistoryUnavailable(false);
+      if (clearNoticesOnLoad.current) { clearNoticesOnLoad.current = false; setError(""); setMessage(""); }
       setSelectedId(current => next.some(item => item.caseId === current) ? current : "");
       setAssignmentConflict(false);
       setLoading(false);
@@ -84,7 +87,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
           if (!controller.signal.aborted) setRunErrors(current => ({ ...current, [runId]: errorMessage(reason) }));
         }
       }));
-    }).catch(reason => { if (!controller.signal.aborted) { setHistoryUnavailable(true); setError(errorMessage(reason)); } })
+    }).catch(reason => { if (!controller.signal.aborted) { clearNoticesOnLoad.current = false; setHistoryUnavailable(true); setError(errorMessage(reason)); } })
       .finally(() => { if (!controller.signal.aborted) setLoading(false); });
     return () => controller.abort();
   }, [scope, reload]);
@@ -95,8 +98,8 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
     const signal = active.current!.signal;
     setReadingFile(true); setError(""); setMessage(""); setPreview(null); setFileName("");
     try {
-      if (!file.name.toLowerCase().endsWith(".json")) throw new Error("Select a typed reconciliation handoff .json file.");
-      if (file.size > 1024 * 1024) throw new Error("The reconciliation handoff must be no larger than 1 MiB.");
+      if (!file.name.toLowerCase().endsWith(".json")) throw new Error("Select a typed reconciliation source .json file.");
+      if (file.size > 1024 * 1024) throw new Error("The reconciliation source file must be no larger than 1 MiB.");
       const text = await readFile(file, signal);
       const request = api.parseCashComparisonImport(text, scope);
       if (signal.aborted || sequence !== fileSequence.current) return;
@@ -120,7 +123,7 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
       setMessage(`Comparison ${run.input.runId} retained. Cash cases are refreshing.`);
       setReload(value => value + 1);
     } catch (reason) {
-      if (!signal.aborted) setError(`${errorMessage(reason)} The imported run identity is retained for a retry; check the retained history before replacing this handoff.`);
+      if (!signal.aborted) setError(`${errorMessage(reason)} The imported run identity is retained for a retry; check the retained history before replacing this source file.`);
     } finally { if (!signal.aborted) { mutation.current = false; setBusy(false); } }
   }
 
@@ -162,20 +165,20 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
 
   const selected = cases.find(item => item.caseId === selectedId);
   return <Card className="panel-surface min-w-0" role="region" aria-label="Account cash reconciliation cases" aria-busy={loading || busy}>
-    <CardHeader><CardTitle>Cash reconciliation continuity</CardTitle><CardDescription>Retain one cash-balance case per native currency and independent source pair. A corrected source updates the same case; source clearance remains separate from governed close sign-off.</CardDescription></CardHeader>
+    <CardHeader><CardTitle>Cash reconciliation continuity</CardTitle><CardDescription>Each native currency and independent source pair keeps one cash-balance case that a corrected source updates, and source clearance stays separate from close sign-off.</CardDescription></CardHeader>
     <CardContent className="space-y-4">
       {!context.canWrite ? <StatusBanner title={<span className="text-foreground">Read-only cash oversight</span>} detail="You can inspect retained history and reproduce comparisons. Capturing comparisons and assigning owners require ledger management permission." /> : null}
       {error ? <StatusBanner role="alert" tone="danger" title={<span className="text-foreground">Cash oversight needs attention</span>} detail={error} /> : null}
       {message ? <StatusBanner role="status" tone="success" title={<span className="text-foreground">{message}</span>} /> : null}
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <p className="text-sm text-muted-foreground">{loading ? "Loading authoritative retained cases…" : historyUnavailable ? "Retained cash history is unavailable. Refresh to retry; previously loaded cases remain visible." : `${cases.length} retained cash ${cases.length === 1 ? "case" : "cases"}`}</p>
-        <Button variant="outline" disabled={loading || busy || readingFile} onClick={() => { setError(""); setMessage(""); setReload(value => value + 1); }}>Refresh retained cases</Button>
+        <p className="text-sm text-muted-foreground">{loading ? "Loading authoritative retained cases…" : historyUnavailable ? "Retained cash history is unavailable. Retry the load; previously loaded cases remain visible." : `${cases.length} retained cash ${cases.length === 1 ? "case" : "cases"}`}</p>
+        <PanelReload reload={() => { if (loading || busy || readingFile || (assignmentDirty && !assignmentConflict && !historyUnavailable)) return; clearNoticesOnLoad.current = true; setReload(value => value + 1); }} failed={historyUnavailable} busy={loading || busy || readingFile} what="retained cash cases" />
       </div>
       <DenseDataTable<AccountCashReconciliationCase>
         ariaLabel="Retained account cash cases" rows={cases} getRowId={item => item.caseId}
         selectedRowId={selectedId} onRowSelect={item => { if (!busy && !assignmentDirty) setSelectedId(item.caseId); }}
         getRowAriaLabel={item => `${item.currency} cash case ${item.caseId}, ${item.state}, owner ${item.owner}`}
-        emptyText={loading ? "Loading retained cash cases…" : historyUnavailable ? "Retained cash cases could not be loaded. Refresh retained cases to retry." : "No retained cash cases for this account and book. Import a validated source handoff to capture the first comparison."}
+        emptyText={loading ? "Loading retained cash cases…" : historyUnavailable ? "Retained cash cases could not be loaded. Retry the load." : "No retained cash cases for this account and book. Import a validated source file to capture the first comparison."}
         columns={[
           { id: "case", label: "Stable case", render: item => <span className="break-all font-mono">{item.caseId}</span> },
           { id: "currency", label: "Native currency", render: item => item.currency },
@@ -193,20 +196,20 @@ function AccountCashCasesScopePanel({ scope: incomingScope, context, onDirtyChan
       {selected ? <CashCaseDetail key={`${selected.caseId}:${selected.version}`} item={selected} runs={runs} runErrors={runErrors} busy={busy} canWrite={context.canWrite} conflict={assignmentConflict} onAssign={(owner, reason) => void assign(selected, owner, reason)} onReplay={runId => void replay(runId)} onDirtyChange={setAssignmentDirty} /> : null}
       <TechnicalDetails label="Import next cash comparison" open={preview !== null}>
         <div className="space-y-4">
-          <p className="text-sm text-muted-foreground">Import a typed handoff with two complete independent cash-balance sources, original row payloads, source versions, evidence references and the executed tolerance profile. Decimal amounts must be strings. The authenticated server binds tenant, company and actor; the selected account and book must match every row.</p>
-          <FormRow label="Reconciliation handoff (.json)" labelFor={`${id}-file`} hint="Preview validates the handoff locally. Capture submits it to the authoritative service; no case changes before capture.">
+          <p className="text-sm text-muted-foreground">Import a typed source file with two complete independent cash-balance sources, original row payloads, source versions, evidence references and the executed tolerance profile. Decimal amounts must be strings. The authenticated server binds tenant, company and actor; the selected account and book must match every row.</p>
+          <FormRow label="Reconciliation source file (.json)" labelFor={`${id}-file`} hint="Preview validates the file locally. Capture submits it to the authoritative service; no case changes before capture.">
             <Input id={`${id}-file`} type="file" accept=".json,application/json" disabled={!context.canWrite || busy || readingFile} onChange={event => { const file = event.target.files?.[0]; event.target.value = ""; void importHandoff(file); }} />
           </FormRow>
-          {readingFile ? <p role="status" className="text-sm">Validating the reconciliation handoff…</p> : null}
+          {readingFile ? <p role="status" className="text-sm">Validating the reconciliation source file…</p> : null}
           {preview ? <section aria-label="Cash comparison preview" className="space-y-4">
-            <p className="text-sm font-semibold">Validated handoff: {fileName}</p>
+            <p className="text-sm font-semibold">Validated source file: {fileName}</p>
             <dl className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
               <Fact label="Run identity" value={preview.runId} /><Fact label="Business date" value={preview.businessDate} /><Fact label="Observed at (UTC)" value={preview.observedAtUtc} />
               <Fact label="Initial owner" value={preview.initialOwner} /><Fact label="Tolerance" value={`${preview.tolerance.profileId} · v${preview.tolerance.version}`} /><Fact label="Account / book" value={`${scope.accountId} / ${scope.ledgerBookId}`} />
             </dl>
             <CashSource source={preview.left} side="Left" /><CashSource source={preview.right} side="Right" />
             <Tolerance run={preview} />
-            <div className="flex flex-wrap gap-2"><Button disabled={!context.canWrite || busy || readingFile || loading || assignmentDirty} onClick={() => void capture()}>{busy ? "Capturing comparison…" : "Capture cash comparison"}</Button><Button variant="outline" disabled={busy} onClick={() => { setPreview(null); setFileName(""); }}>Discard handoff</Button></div>
+            <div className="flex flex-wrap gap-2"><Button disabled={!context.canWrite || busy || readingFile || loading || assignmentDirty} onClick={() => void capture()}>{busy ? "Capturing comparison…" : "Capture cash comparison"}</Button><Button variant="outline" disabled={busy} onClick={() => { setPreview(null); setFileName(""); }}>Discard source file</Button></div>
           </section> : null}
         </div>
       </TechnicalDetails>
@@ -307,7 +310,7 @@ function readFile(file: File, signal: AbortSignal): Promise<string> {
     const abort = () => { reader.abort(); reject(new DOMException("File import aborted.", "AbortError")); };
     signal.addEventListener("abort", abort, { once: true });
     reader.onload = () => { signal.removeEventListener("abort", abort); resolve(String(reader.result ?? "")); };
-    reader.onerror = () => { signal.removeEventListener("abort", abort); reject(new Error("The reconciliation handoff could not be read.")); };
+    reader.onerror = () => { signal.removeEventListener("abort", abort); reject(new Error("The reconciliation source file could not be read.")); };
     reader.onabort = () => signal.removeEventListener("abort", abort);
     reader.readAsText(file);
   });

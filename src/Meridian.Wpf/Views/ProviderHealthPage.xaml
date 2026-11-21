@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.ProviderHealthPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -39,16 +40,6 @@
                         </Style>
                     </TextBlock.Style>
                 </TextBlock>
-                <Button DockPanel.Dock="Right"
-                        Click="Refresh_Click"
-                        Style="{StaticResource GhostButtonStyle}"
-                        ToolTip="Refresh provider health"
-                        AutomationProperties.AutomationId="ProviderHealthInlineRefreshButton"
-                        AutomationProperties.Name="Refresh Provider Health">
-                    <TextBlock Text="{StaticResource IconRefresh}"
-                               FontFamily="{StaticResource SymbolThemeFontFamily}"
-                               FontSize="14" />
-                </Button>
             </DockPanel>
 
             <ItemsControl ItemsSource="{Binding ProviderMetricTiles}" Margin="0,0,0,16"

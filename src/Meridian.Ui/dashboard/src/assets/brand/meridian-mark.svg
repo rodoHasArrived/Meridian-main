@@ -1,19 +1,44 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" role="img" aria-labelledby="title desc">
-  <title id="title">Meridian brand mark</title>
-  <desc id="desc">A meridian glyph: vertical axis bisecting a celestial circle, with a cyan latitude tick.</desc>
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="240" viewBox="0 0 240 240" role="img" aria-label="Meridian symbol">
+      <title>Meridian symbol</title>
 
-
-  <circle cx="128" cy="128" r="88" fill="none" stroke="#EDE9E2" stroke-width="10"></circle>
-
-
-  <line x1="40" y1="128" x2="216" y2="128" stroke="#EDE9E2" stroke-width="10" stroke-linecap="square"></line>
-
-
-  <line x1="128" y1="28" x2="128" y2="228" stroke="#EDE9E2" stroke-width="10" stroke-linecap="square"></line>
-
-
-  <line x1="96" y1="88" x2="160" y2="88" stroke="#D98A64" stroke-width="10" stroke-linecap="square"></line>
-
-
-  <circle cx="128" cy="128" r="8" fill="#D98A64"></circle>
-</svg>
+      <path d="M 60.00 112.00 A 60.00 60.00 0 0 1 180.00 112.00" fill="none" stroke="#B8B3A8" stroke-width="1.35" stroke-linecap="round"></path>
+<path d="M 38.00 112.00 A 82.00 82.00 0 0 1 202.00 112.00" fill="none" stroke="#B8B3A8" stroke-width="1.35" stroke-linecap="round"></path>
+<path d="M 16.00 112.00 A 104.00 104.00 0 0 1 224.00 112.00" fill="none" stroke="#B8B3A8" stroke-width="1.35" stroke-linecap="round"></path>
+<circle cx="24.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="52.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="80.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="108.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="136.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="164.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="192.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="220.00" cy="108.00" r="4.40" fill="#29323A"></circle>
+<circle cx="24.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="52.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="80.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="108.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="136.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="164.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="192.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="220.00" cy="136.00" r="4.40" fill="#29323A"></circle>
+<circle cx="24.00" cy="164.00" r="4.40" fill="#29323A"></circle>
+<circle cx="52.00" cy="164.00" r="4.40" fill="#29323A"></circle>
+<circle cx="80.00" cy="164.00" r="4.40" fill="#29323A"></circle>
+<circle cx="108.00" cy="164.00" r="4.40" fill="#29323A"></circle>
+<circle cx="136.00" cy="164.00" r="4.40" fill="#29323A"></circle>
+<circle cx="164.00" cy="164.00" r="4.40" fill="#29323A"></circle>
+<circle cx="192.00" cy="164.00" r="4.40" fill="#29323A"></circle>
+<circle cx="52.00" cy="192.00" r="4.40" fill="#29323A"></circle>
+<circle cx="80.00" cy="192.00" r="4.40" fill="#29323A"></circle>
+<circle cx="108.00" cy="192.00" r="4.40" fill="#29323A"></circle>
+<circle cx="136.00" cy="192.00" r="4.40" fill="#29323A"></circle>
+<circle cx="164.00" cy="192.00" r="4.40" fill="#29323A"></circle>
+<circle cx="192.00" cy="192.00" r="4.40" fill="#29323A"></circle>
+<circle cx="80.00" cy="220.00" r="4.40" fill="#29323A"></circle>
+<circle cx="108.00" cy="220.00" r="4.40" fill="#29323A"></circle>
+<circle cx="136.00" cy="220.00" r="4.40" fill="#29323A"></circle>
+<circle cx="164.00" cy="220.00" r="4.40" fill="#29323A"></circle>
+<line x1="120.00" y1="16.00" x2="120.00" y2="226.00" stroke="#29323A" stroke-width="2.00" stroke-linecap="round"></line>
+<circle cx="120.00" cy="16.00" r="4.20" fill="#29323A"></circle>
+<circle cx="120.00" cy="226.00" r="4.20" fill="#29323A"></circle>
+<circle cx="220.00" cy="164.00" r="5.30" fill="#C56343"></circle>
+    </svg>

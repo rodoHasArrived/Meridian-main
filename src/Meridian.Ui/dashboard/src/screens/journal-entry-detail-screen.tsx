@@ -1,6 +1,8 @@
+import { JournalExecutionLineage } from "@/components/meridian/journal-execution-lineage";
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { useEffect, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatUtcDate } from "@/lib/format";
 import { LedgerTable, type LedgerRow } from "@/components/accounting/LedgerTable";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -19,10 +21,12 @@ import {
   type JournalEntryDetailSourceKind
 } from "@/screens/journal-entry-detail-screen.view-model";
 import type { LedgerJournalLine, LedgerPostedJournalEntry, ManualJournalEntryDraft } from "@/types";
+import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const JOURNAL_ENTRY_SOURCE_LABELS: Record<JournalEntryDetailSourceKind, string> = {
   "manual-draft": "Manual journal workbench",
-  "posted-journal": "Governed posted journal",
+  "posted-journal": "Posted journal",
   "run-summary": "Run ledger summary",
   none: "Unknown"
 };
@@ -35,6 +39,8 @@ export function JournalEntryDetailScreen() {
   // in the manual workbench and not in any strategy run, so without this the fund's own postings
   // were the one kind of entry this screen could not open.
   const periodId = searchParams.get("periodId");
+  const fundProfileId = searchParams.get("fundProfileId");
+  const ledgerBookId = searchParams.get("ledgerBookId");
 
   const [draft, setDraft] = useState<ManualJournalEntryDraft | null>(null);
   const [journalLine, setJournalLine] = useState<LedgerJournalLine | null>(null);
@@ -120,7 +126,7 @@ export function JournalEntryDetailScreen() {
     // for a run journal they could in fact read.
     let workbenchUnavailable = false;
 
-    getManualJournalEntryWorkbench({})
+    getManualJournalEntryWorkbench(fundProfileId && ledgerBookId ? { fundProfileId, ledgerBookId, journalEntryId } : {})
       .then((workbench) => workbench.drafts.find((candidate) => candidate.journalEntryId === journalEntryId) ?? null)
       .catch(() => {
         workbenchUnavailable = true;
@@ -162,7 +168,7 @@ export function JournalEntryDetailScreen() {
         if (workbenchUnavailable) {
           setJournalLine(null);
           setPostedEntry(null);
-          setErrorText("The journal-entry record could not be loaded from the governed workbench. No posting detail is shown until the source responds.");
+          setErrorText("The journal-entry record could not be loaded from the workbench. No posting detail is shown until the source responds.");
         }
 
         setLoading(false);
@@ -171,7 +177,7 @@ export function JournalEntryDetailScreen() {
     return () => {
       cancelled = true;
     };
-  }, [journalEntryId, periodId, reloadVersion, runId]);
+  }, [journalEntryId, periodId, fundProfileId, ledgerBookId, reloadVersion, runId]);
 
   if (!journalEntryId) {
     return (
@@ -233,6 +239,7 @@ export function JournalEntryDetailScreen() {
   const technicalSummaryFields = view.summaryFields.filter((field) => ["Journal entry", "Fund", "Ledger book"].includes(field.label));
   const operationalSummaryFields = view.summaryFields.filter((field) => !technicalSummaryFields.includes(field));
 
+  const postedPassports = new Map(postedEntry?.lines.map(line => [line.entryId, line.amountPassport]));
   const lineRows: LedgerRow[] = view.lines.map((line) => ({
     date: line.date ?? draft?.accountingDate ?? "",
     ref: "Current entry",
@@ -240,6 +247,7 @@ export function JournalEntryDetailScreen() {
     account: line.account,
     debit: line.debit,
     credit: line.credit,
+    amountPassport: postedEntry ? postedPassports.get(line.lineId) ?? null : undefined,
     evidenceSubject: draft ? { subjectKind: "journal-entry", subjectId: draft.journalEntryId, ledgerBookId: draft.ledgerBookId } : undefined
   }));
 
@@ -267,7 +275,7 @@ export function JournalEntryDetailScreen() {
               <dl className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {operationalSummaryFields.map((field) => (
                   <div key={field.label}>
-                    <dt className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
+                    <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(field.label) && "uppercase tracking-[0.08em]")}>{field.label}</dt>
                     <dd className="mt-1 text-sm text-foreground">{field.label === "Accounting date" ? presentJournalDate(field.value) : field.label === "Posted at" ? formatDateTimeLabel(field.value) : field.value}</dd>
                   </div>
                 ))}
@@ -285,6 +293,14 @@ export function JournalEntryDetailScreen() {
           )}
         </CardContent>
       </Card>
+
+      {postedEntry?.execution ? (
+        <Card className="panel-surface">
+          <CardContent className="pt-4">
+            <JournalExecutionLineage lineage={postedEntry.execution} journalEntryId={journalEntryId} />
+          </CardContent>
+        </Card>
+      ) : null}
 
       {view.dataCompleteness === "summary-only" ? (
         <Card className="panel-surface">
@@ -314,6 +330,29 @@ export function JournalEntryDetailScreen() {
           </CardHeader>
           <CardContent>
             <LedgerTable rows={lineRows} currency={view.currency} showAccount caption={`Lines for journal entry ${view.journalEntryId}`} />
+            {postedEntry?.lines.some(line => line.memo || line.chartAccount || line.currency) ? (
+              <TechnicalDetails label="Posting line evidence" className="mt-3">
+                <ul className="divide-y divide-border text-sm">
+                  {postedEntry.lines.filter(line => line.memo || line.chartAccount || line.currency).map(line => (
+                    <li key={line.entryId} className="space-y-1 py-2">
+                      <div className="font-medium">
+                        {[line.chartAccount?.accountCode, line.accountName, line.symbol].filter(Boolean).join(" · ")}
+                      </div>
+                      {line.memo ? <div>{line.memo}</div> : null}
+                      {line.chartAccount ? <div className="break-all text-xs text-muted-foreground">
+                        Chart node {line.chartAccount.nodeId} · revision {line.chartAccount.revision}
+                      </div> : null}
+                      {line.currency ? <div className="text-xs text-muted-foreground">
+                        {line.currency.transactionDebit ? "Debit" : "Credit"} {line.currency.transactionDebit || line.currency.transactionCredit} {line.currency.transactionCurrency}
+                        {line.currency.transactionCurrency !== line.currency.functionalCurrency
+                          ? ` · rate ${line.currency.fxRateToFunctional} to ${line.currency.functionalCurrency}` : ""}
+                      </div> : null}
+                      <div className="break-all font-mono text-xs text-muted-foreground">{line.entryId}</div>
+                    </li>
+                  ))}
+                </ul>
+              </TechnicalDetails>
+            ) : null}
           </CardContent>
         </Card>
       ) : null}
@@ -466,10 +505,7 @@ export function JournalEntryDetailScreen() {
 
 function JournalEntryFact({ label, value }: { label: string; value: string }) {
   return (
-    <div className="grid grid-cols-[minmax(0,0.65fr)_minmax(0,1fr)] items-start gap-3 rounded-md border border-border/70 bg-secondary/15 px-3 py-2">
-      <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{label}</dt>
-      <dd className="break-words text-right text-sm text-foreground">{value}</dd>
-    </div>
+    <DetailFieldItem label={label} value={value} />
   );
 }
 
@@ -481,5 +517,5 @@ function presentJournalDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }

@@ -68,7 +68,7 @@ def _run_git(cwd: Path, *args: str) -> None:
 
 def _classify(changed_files: list[str]) -> dict:
     """Run the router over a temp repo where `changed_files` are added on HEAD."""
-    with tempfile.TemporaryDirectory() as tmp:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
         root = Path(tmp)
         _run_git(root, "init", "-q")
         _run_git(root, "config", "user.email", "test@example.com")

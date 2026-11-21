@@ -35,6 +35,7 @@ import {
   presentReportingAsOfDate
 } from "@/screens/reporting-screen.schedule-view-model";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
+import { formatCount, formatNumber } from "@/lib/format";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -394,6 +395,13 @@ export interface ReportingWriterGridRow {
   sortLabel: string;
   filterSummary: string;
   ariaLabel: string;
+  /** True for a blank grid started in the browser that no saved template backs yet. */
+  isNew?: boolean;
+  /**
+   * Approved template a new grid's preview renders against. The render endpoint needs an
+   * approved template for access checks; the grid itself is always sent inline.
+   */
+  previewHost?: { templateId: string; templateVersion: string } | null;
 }
 
 export interface ReportingRunStatusRow {
@@ -494,6 +502,7 @@ export interface ReportingScheduleRow {
   releaseHandoffs: ReportingScheduledReleaseHandoffRow[];
   canPause: boolean;
   canResume: boolean;
+  canDisable: boolean;
   ariaLabel: string;
 }
 
@@ -939,7 +948,7 @@ export function useReportingScreenViewModel(
       workflowTaskPanel: null,
       loadingState: buildLoadingState(pathname),
       loadingTitle: "Loading Reporting",
-      loadingDetail: "Waiting for governed report-pack and export evidence.",
+      loadingDetail: "Waiting for report-pack and export evidence.",
       exportStatus,
       runningProfileId,
       runExport: runExportCommand,
@@ -1053,7 +1062,7 @@ export function useReportingScreenViewModel(
     hasRows: rows.length > 0,
     rows,
     emptyText:
-      "No export profiles are configured. Add a governed profile to restore reporting evidence.",
+      "No export profiles are configured. Add a profile to restore reporting evidence.",
     listLabel,
     visibleCountLabel,
     workbenchActions: buildWorkbenchActions(selectedProfileData),
@@ -1097,7 +1106,7 @@ export function useReportingScreenViewModel(
     workflowTaskPanel,
     loadingState: buildLoadingState(pathname),
     loadingTitle: "Loading Reporting",
-    loadingDetail: "Waiting for governed report-pack and export evidence.",
+    loadingDetail: "Waiting for report-pack and export evidence.",
     exportStatus,
     runningProfileId,
     runExport: runExportCommand,
@@ -1214,7 +1223,7 @@ function buildRestatementChangedLineRow(line: ReportingWorkflowChangedLine, inde
   return {
     id: `${line.lineKey || "line"}-${index}`,
     lineKey: line.lineKey,
-    valueBridge: `${line.previousValue} -> ${line.currentValue}`,
+    valueBridge: `${line.previousValue} → ${line.currentValue}`,
     evidenceLabel: `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref: firstEvidence?.route ?? null,
     ariaLabel: `${line.lineKey} changed from ${line.previousValue} to ${line.currentValue} with ${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
@@ -1669,7 +1678,24 @@ function buildFilterRows(grid: ReportingTemplateGridMetadata): ReportingWriterFi
   });
 }
 
-function buildSourceFieldTokens(
+export function buildReportWriterCatalogTokens(fields: NonNullable<ReportingTemplateGridMetadata["sourceFields"]>): ReportingWriterToken[] {
+  return fields.map((field) => ({
+    id: `source:${field.name}`,
+    label: field.label || field.name,
+    detail: `${field.dataset} · ${field.role} · ${field.dataType}${field.description ? ` · ${field.description}` : ""}`,
+    kind: field.role?.toLowerCase() === "generated" ? "formula" : field.role?.toLowerCase() === "metric" ? "metric" : "field",
+    fieldName: field.name,
+    sourceField: field.name,
+    name: field.name,
+    function: field.role?.toLowerCase() === "metric" ? "Sum" : null,
+    expression: field.role?.toLowerCase() === "generated" ? `{${field.name}}` : null,
+    dataType: field.dataType,
+    dataset: field.dataset,
+    role: field.role
+  }));
+}
+
+export function buildSourceFieldTokens(
   grid: ReportingTemplateGridMetadata,
   rowFields: ReportingWriterToken[],
   columnFields: ReportingWriterToken[],
@@ -1677,20 +1703,7 @@ function buildSourceFieldTokens(
   formulas: ReportingWriterToken[]
 ): ReportingWriterToken[] {
   if (grid.sourceFields && grid.sourceFields.length > 0) {
-    return grid.sourceFields.map((field) => ({
-      id: `source:${field.name}`,
-      label: field.label || field.name,
-      detail: `${field.dataset} · ${field.role} · ${field.dataType}${field.description ? ` · ${field.description}` : ""}`,
-      kind: field.role?.toLowerCase() === "generated" ? "formula" : field.role?.toLowerCase() === "metric" ? "metric" : "field",
-      fieldName: field.name,
-      sourceField: field.name,
-      name: field.name,
-      function: field.role?.toLowerCase() === "metric" ? "Sum" : null,
-      expression: field.role?.toLowerCase() === "generated" ? `{${field.name}}` : null,
-      dataType: field.dataType,
-      dataset: field.dataset,
-      role: field.role
-    }));
+    return buildReportWriterCatalogTokens(grid.sourceFields);
   }
 
   const names = new Set<string>();
@@ -2154,7 +2167,7 @@ function buildLoadingState(pathname: string): ReportingLoadingState {
     titleId: "reporting-loading-title",
     detailId: "reporting-loading-detail",
     title,
-    detail: "Waiting for governed report-pack and export evidence.",
+    detail: "Waiting for report-pack and export evidence.",
     badgeLabel: "Loading",
     routeLabel: taskMode.routeLabel
   };
@@ -2326,7 +2339,7 @@ function buildWorkflowTaskPanel({
     eyebrow: "Workflow task",
     title: "Report-pack approval",
     description:
-      "Review report-pack recipients, pick the export profile that carries the packet evidence, then preview or run the governed export before approval.",
+      "Review report-pack recipients, pick the export profile that carries the packet evidence, then preview or run the export before approval.",
     statusLabel,
     statusTone,
     statusVariant: workflowStatusVariant(statusTone),
@@ -2376,7 +2389,7 @@ function buildWorkflowTaskPanel({
       };
     }),
     hasProfiles: rows.length > 0,
-    profilesEmptyText: "No export profiles are configured. Add a governed profile before report-pack approval.",
+    profilesEmptyText: "No export profiles are configured. Add a profile before report-pack approval.",
     profilesEmptyAriaLabel: "No report-pack export profiles",
     selectedSummary: selectedProfile
       ? `${selectedProfile.name} is selected for report-pack approval using ${selectedProfile.format} output to ${selectedProfile.targetTool}.`
@@ -2529,7 +2542,7 @@ function reportPackProfileScore(profile: GovernanceReportingProfile, recommended
 
 function buildProfileReadinessSummary(profile: GovernanceReportingProfile): string {
   if (profile.loaderScript && profile.dataDictionary) {
-    return "Loader and dictionary evidence are ready for governed packet generation.";
+    return "Loader and dictionary evidence are ready for packet generation.";
   }
 
   if (profile.loaderScript) {
@@ -2556,7 +2569,7 @@ function buildProfileActions(
     ? `${profile.name} export is running. Wait for the result before starting another export.`
     : evidenceDisabledReason
       ? evidenceDisabledReason
-      : "Runs the governed export service and reports generated artifacts here.";
+      : "Runs the export service and reports generated artifacts here.";
 
   return [
     {
@@ -2631,7 +2644,7 @@ function buildProfileExportEvidenceDisabledReason(profile: GovernanceReportingPr
   const missingLabel = missing.length === 1
     ? missing[0]
     : `${missing.slice(0, -1).join(", ")} and ${missing[missing.length - 1]}`;
-  return `${profile.name} export requires ${missingLabel} evidence before running governed export analysis. Preview remains available.`;
+  return `${profile.name} export requires ${missingLabel} evidence before running export analysis. Preview remains available.`;
 }
 
 export function buildExportStatusStarting(profileName: string): ReportingExportStatusState {
@@ -2689,7 +2702,7 @@ export function buildExportStatusFailure(profileName: string, error: unknown): R
 
 function buildExportResultFields(requestedProfileId: string, result: ExportAnalysisResult): ReportingDetailField[] {
   const byteLabel = formatBytes(result.totalBytes);
-  const durationLabel = `${result.durationSeconds.toLocaleString(undefined, { maximumFractionDigits: 2 })}s`;
+  const durationLabel = `${formatNumber(result.durationSeconds, { maximumFractionDigits: 2 })}s`;
   const symbolsLabel = result.symbols?.length ? result.symbols.join(", ") : "All configured symbols";
 
   return [
@@ -2700,7 +2713,7 @@ function buildExportResultFields(requestedProfileId: string, result: ExportAnaly
     buildReportingDetailField("Symbols", symbolsLabel, result.symbols?.length ? "default" : "muted"),
     buildReportingDetailField("Output", result.outputDirectory ?? "Unavailable", result.outputDirectory ? "default" : "muted"),
     buildReportingDetailField("Files", String(result.filesGenerated), result.filesGenerated > 0 ? "success" : "warning"),
-    buildReportingDetailField("Records", result.totalRecords.toLocaleString(), result.totalRecords > 0 ? "default" : "muted"),
+    buildReportingDetailField("Records", formatCount(result.totalRecords), result.totalRecords > 0 ? "default" : "muted"),
     buildReportingDetailField("Bytes", byteLabel, result.totalBytes > 0 ? "default" : "muted"),
     buildReportingDetailField("Duration", durationLabel, "muted"),
     buildReportingDetailField("Timestamp", result.timestamp, "muted")
@@ -2720,7 +2733,7 @@ function buildExportArtifactFields(result: ExportAnalysisResult): ReportingDetai
   return (result.files ?? []).map((file) =>
     buildReportingDetailField(
       file.symbol ? `${file.symbol} ${file.format ?? "file"}` : file.format ?? "File",
-      `${file.path} · ${file.recordCount.toLocaleString()} records · ${formatBytes(file.sizeBytes)}`,
+      `${file.path} · ${formatCount(file.recordCount)} records · ${formatBytes(file.sizeBytes)}`,
       file.recordCount > 0 ? "default" : "warning"
     )
   );

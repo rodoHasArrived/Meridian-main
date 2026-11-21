@@ -1,3 +1,4 @@
+import { DesignSystemStatus } from "@/design-system/status";
 import { Link, useSearchParams } from "react-router-dom";
 import {
   AlertCircle,
@@ -6,7 +7,6 @@ import {
   ArrowUp,
   BellPlus,
   CheckCircle2,
-  FileSpreadsheet,
   ListPlus,
   LineChart,
   Pause,
@@ -28,12 +28,13 @@ import { FreshnessChip } from "@/components/ui/freshness-chip";
 import { freshnessInputFromLifecycle } from "@/components/ui/freshness-chip.view-model";
 import { EmptyState } from "@/components/data/empty-state";
 import { HistoricalChartCard } from "@/components/meridian/historical-chart";
-import { DepthChart } from "@/components/charts";
+import { DepthQuantityIllustration } from "@/screens/depth-quantity-illustration";
+import { ChartEvidenceMark, ChartEvidenceView } from "@/components/charts/chart-evidence";
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { denseTableVirtualization } from "@/lib/dense-table-virtualization";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
-import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, submitOrder } from "@/lib/api";
+import { getLiveOrderbook, getLiveQuote, getLiveQuotesSnapshot, getLiveTrades, getSymbols, submitOrder } from "@/lib/api";
 import { cn } from "@/lib/utils";
 import {
   computeIntradayMetrics,
@@ -52,13 +53,14 @@ import {
   type LiveQuotesTradeRowViewModel,
   type QuickTradeTicketViewModel
 } from "@/screens/live-quotes-screen.view-model";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
 
 export { computeIntradayMetrics };
 
 export function LiveQuotesScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const vm = useLiveQuotesScreenViewModel(
-    { getLiveQuote, getLiveTrades, getLiveOrderbook, getLiveQuotesSnapshot, submitOrder },
+    { getLiveQuote, getLiveTrades, getLiveOrderbook, getLiveQuotesSnapshot, submitOrder, getWatchlistSymbols: getSymbols },
     {
       routeSymbol: searchParams.get("symbol") ?? "",
       routeSymbols: searchParams.get("symbols") ?? undefined,
@@ -86,7 +88,6 @@ export function LiveQuotesScreen() {
           {workspaceVm.title}
         </span>
       }
-      scope="Data Lane"
       description={`${workspaceVm.description} Refreshes every ${vm.pollIntervalSecondsLabel}s unless paused.`}
     >
       <Card>
@@ -172,7 +173,7 @@ export function LiveQuotesScreen() {
                   disabled={vm.refreshCommand.disabled}
                   disabledReason={vm.refreshCommand.disabledReason}
                   busy={vm.refreshCommand.busy}
-                  busyLabel="Refreshing..."
+                  busyLabel="Fetching..."
                 >
                   <RefreshCw className={`h-4 w-4 ${vm.refreshCommand.busy ? "animate-spin" : ""}`} aria-hidden="true" />
                   <span className="ml-1.5">{vm.refreshCommand.label}</span>
@@ -194,26 +195,50 @@ export function LiveQuotesScreen() {
                 {badge.label}: {badge.value}
               </Badge>
             ))}
-            <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span>
+            {workspaceVm.hasSymbols ? <span className="font-semibold text-foreground">{workspaceVm.symbolSetLabel}</span> : null}
             {marketVm.venueLabel ? <Badge variant="outline">{marketVm.venueLabel}</Badge> : null}
-            {marketVm.stale ? <Badge variant="warning">Stale</Badge> : null}
+            {marketVm.stale ? <DesignSystemStatus status="stale">Stale</DesignSystemStatus> : null}
             <FreshnessChip
               {...freshnessInputFromLifecycle(vm.requestStatus.market, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Market panels")}
+              showLabel
             />
             <FreshnessChip
               {...freshnessInputFromLifecycle(vm.requestStatus.snapshot, LIVE_QUOTES_FRESHNESS_BUDGET_MS, "Quote matrix")}
               live={vm.quoteStreamHealthy}
+              showLabel
             />
             {activeSymbol ? <span>Selected {activeSymbol}; last update {marketVm.lastUpdateLabel}</span> : null}
           </div>
         </CardContent>
       </Card>
 
+      {!workspaceVm.hasSymbols && !activeSymbol ? (
+        // One explanation and one next step for an empty quote list, instead of "No symbols"
+        // repeated in the status strip, the matrix description, the panel message and the table.
+        <Card>
+          <CardContent className="pt-6">
+            <EmptyState
+              icon="search"
+              title="Start a quote list"
+              detail="Add symbols to monitor quotes, spreads, provider health and latency here. Detail, order book, replay and ticket workflows open once a symbol is selected."
+              action="Add starter symbols"
+              onAction={workspaceVm.loadStarterSet}
+            />
+            <p className="mt-2 text-center text-xs text-muted-foreground">
+              Or{" "}
+              <Link className="text-primary underline underline-offset-2" to={marketDataDeskPath("watchlist")} aria-label="Import symbols from watchlist">
+                import your watchlist
+              </Link>
+              , or enter a symbol above.
+            </p>
+          </CardContent>
+        </Card>
+      ) : (
       <div className="grid gap-4 xl:grid-cols-[minmax(0,1.25fr)_minmax(20rem,0.75fr)]">
         <Card>
           <CardHeader>
             <CardTitle className="text-base">Quote matrix</CardTitle>
-            <CardDescription>{workspaceVm.selectedSymbolSummary}</CardDescription>
+            {workspaceVm.selectedSymbolSummary ? <CardDescription>{workspaceVm.selectedSymbolSummary}</CardDescription> : null}
           </CardHeader>
           <CardContent>
             <PanelStateMessage state={workspaceVm.snapshotState} />
@@ -243,42 +268,22 @@ export function LiveQuotesScreen() {
         </Card>
         ) : (
         <Card>
-          <CardContent className="space-y-3 pt-6">
+          <CardContent className="pt-6">
             <EmptyState
               icon="search"
-              title="Start a quote list"
-              detail="Add symbols before opening detail, order book, replay, or ticket workflows."
+              title="Select a symbol"
+              detail="Select a row in the quote matrix to open its detail, order book, replay and ticket workflows."
               compact
             />
-            <div className="grid gap-2 sm:grid-cols-3">
-              <Button type="button" variant="default" size="sm" onClick={workspaceVm.loadStarterSet}>
-                <ListPlus className="h-4 w-4" aria-hidden="true" />
-                Add starter symbols
-              </Button>
-              <Button asChild variant="outline" size="sm">
-                <Link to={marketDataDeskPath("watchlist")} aria-label="Import symbols from watchlist">
-                  <FileSpreadsheet className="h-4 w-4" aria-hidden="true" />
-                  Import watchlist
-                </Link>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => document.getElementById(symbolLookupVm.inputId)?.focus()}
-              >
-                <Search className="h-4 w-4" aria-hidden="true" />
-                Search symbol
-              </Button>
-            </div>
           </CardContent>
         </Card>
         )}
       </div>
+      )}
 
       {activeSymbol ? (
         <>
-        <HistoricalChartCard symbol={activeSymbol} />
+        <HistoricalChartCard key={activeSymbol} symbol={activeSymbol} />
         <PriceChartCard
           viewModel={marketVm.priceChart}
         />
@@ -330,17 +335,7 @@ export function LiveQuotesScreen() {
                 <div className="space-y-3">
                   <PanelStateMessage state={marketVm.orderbookState} />
                   {marketVm.orderbook.bids.length > 0 || marketVm.orderbook.asks.length > 0 ? (
-                    <div
-                      className="overflow-hidden rounded-[var(--radius-card,2px)] border border-border/70 bg-background/40"
-                      role="img"
-                      aria-label={`Order-book depth profile for ${activeSymbol}: cumulative bid and ask size around the mid price.`}
-                    >
-                      <DepthChart
-                        bids={marketVm.orderbook.bids.map((level) => ({ price: level.price, size: level.size }))}
-                        asks={marketVm.orderbook.asks.map((level) => ({ price: level.price, size: level.size }))}
-                        mid={marketVm.orderbook.midPrice ?? null}
-                      />
-                    </div>
+                    <DepthQuantityIllustration key={activeSymbol} book={marketVm.orderbook} />
                   ) : null}
                   <DepthLadder
                     ladder={marketVm.depthLadder}
@@ -587,10 +582,10 @@ function SessionStatsBanner({ session }: { session: LiveQuotesSessionStatsViewMo
     >
       <div className="flex flex-wrap items-baseline justify-between gap-x-4 gap-y-1">
         <div className="flex items-baseline gap-3">
-          <span className="text-xs uppercase tracking-wide text-muted-foreground">{session.periodLabel}</span>
+          <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(session.periodLabel) && "uppercase tracking-wide")}>{session.periodLabel}</span>
           <span className={`font-mono text-base ${tone}`} aria-label={session.changeAriaLabel}>{session.changeLabel}</span>
         </div>
-        <span className="text-[11px] text-muted-foreground">{session.dateLabel}</span>
+        <span className="text-xs text-muted-foreground">{session.dateLabel}</span>
       </div>
       <p id={session.descriptionId} className="sr-only">{session.description}</p>
       <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 font-mono text-xs sm:grid-cols-5">
@@ -611,7 +606,7 @@ const sessionStatsChangeClass = {
 function SessionStatCell({ label, value }: { label: string; value: string }) {
   return (
     <div className="flex items-baseline justify-between sm:flex-col sm:items-start">
-      <span className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</span>
+      <span className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</span>
       <span className="text-foreground">{value}</span>
     </div>
   );
@@ -670,7 +665,7 @@ interface DepthLadderProps {
 
 function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
   return (
-    <div className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,0.58fr)]">
+    <div id="live-quotes-depth-ladder" tabIndex={-1} className="grid gap-3 xl:grid-cols-[minmax(0,1fr)_minmax(17rem,0.58fr)]">
       <div className="grid grid-cols-2 gap-2 font-mono text-xs" role="group" aria-label={ladder.tableLabel}>
         <DepthLadderSide
           label="Bid size"
@@ -693,7 +688,7 @@ function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
           }}
         />
       </div>
-      <div id={ladder.detailPanelId} aria-live="polite">
+      <div id={ladder.detailPanelId} tabIndex={-1} aria-live="polite">
         {ladder.selectedDetail ? (
           <EntitySummary
             eyebrow={ladder.selectedDetail.eyebrow}
@@ -714,7 +709,7 @@ function DepthLadder({ ladder, onSeedBuy, onSeedSell }: DepthLadderProps) {
             className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
             aria-label={ladder.detailEmptyTitle}
           >
-            <div className="eyebrow-label">{ladder.detailEmptyTitle}</div>
+            <div className={eyebrowClassName(ladder.detailEmptyTitle)}>{ladder.detailEmptyTitle}</div>
             <p className="mt-2">{ladder.detailEmptyText}</p>
           </section>
         )}
@@ -816,7 +811,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
         <form onSubmit={vm.submitTicket} className="space-y-3" aria-label={vm.formLabel} aria-describedby={status.id}>
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.side.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.side.label}</label>
+              <label htmlFor={fields.side.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.side.label) && "uppercase tracking-wide")}>{fields.side.label}</label>
               <Select
                 id={fields.side.id}
                 value={ticket.side}
@@ -835,7 +830,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.type.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.type.label}</label>
+              <label htmlFor={fields.type.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.type.label) && "uppercase tracking-wide")}>{fields.type.label}</label>
               <Select
                 id={fields.type.id}
                 value={ticket.type}
@@ -856,7 +851,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
 
           <div className="grid gap-2 sm:grid-cols-2">
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.quantity.id} className="text-xs uppercase tracking-wide text-muted-foreground">{fields.quantity.label}</label>
+              <label htmlFor={fields.quantity.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.quantity.label) && "uppercase tracking-wide")}>{fields.quantity.label}</label>
               <Input
                 id={fields.quantity.id}
                 type="number"
@@ -879,7 +874,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
               />
             </div>
             <div className="flex flex-col gap-1">
-              <label htmlFor={fields.limitPrice.id} className="text-xs uppercase tracking-wide text-muted-foreground">
+              <label htmlFor={fields.limitPrice.id} className={cn("text-xs text-muted-foreground", usesTrackedCaps(fields.limitPrice.label) && "uppercase tracking-wide")}>
                 {fields.limitPrice.label}
               </label>
               <Input
@@ -957,7 +952,7 @@ function QuickTradeCard({ symbol, vm }: QuickTradeCardProps) {
             <div className="min-w-0">
               <div>{status.message}</div>
               {status.details.length > 0 ? (
-                <ul className="mt-2 list-disc space-y-1 pl-5 text-[11px] leading-5">
+                <ul className="mt-2 list-disc space-y-1 pl-5 text-xs leading-5">
                   {status.details.map((detail) => (
                     <li key={detail}>{detail}</li>
                   ))}
@@ -1044,7 +1039,7 @@ function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
         caption={market.tradesTableCaption}
         virtualization={denseTableVirtualization(market.tradeDisplayRows.length)}
       />
-      <div id={market.tradesDetailPanelId} aria-live="polite">
+      <div id={market.tradesDetailPanelId} tabIndex={-1} aria-live="polite">
         {market.selectedTradeDetail ? (
           <EntitySummary
             eyebrow={market.selectedTradeDetail.eyebrow}
@@ -1065,7 +1060,7 @@ function TradesTable({ market }: { market: LiveQuotesMarketDataViewModel }) {
             className="panel-surface h-full min-h-40 rounded-lg border-border/70 p-4 text-sm text-muted-foreground"
             aria-label={market.tradesDetailEmptyTitle}
           >
-            <div className="eyebrow-label">{market.tradesDetailEmptyTitle}</div>
+            <div className={eyebrowClassName(market.tradesDetailEmptyTitle)}>{market.tradesDetailEmptyTitle}</div>
             <p className="mt-2">{market.tradesDetailEmptyText}</p>
           </section>
         )}
@@ -1092,7 +1087,7 @@ function PriceChartCard({ viewModel }: PriceChartCardProps) {
       <CardHeader>
         <div className="flex flex-col gap-1 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <div className="eyebrow-label">Recent price action</div>
+            <div className="eyebrow-label eyebrow-label--sentence">Recent price action</div>
             <CardTitle className="flex items-center gap-2 text-base">
               <LineChart className="h-4 w-4 text-primary" aria-hidden="true" />
               {viewModel.title}
@@ -1140,7 +1135,7 @@ const chartChangeToneClass = {
 function ChartStat({ label, value }: { label: string; value: string }) {
   return (
     <div className="rounded-md border border-border/60 bg-secondary/25 px-2.5 py-1.5">
-      <div className="text-[10px] uppercase tracking-wide text-muted-foreground">{label}</div>
+      <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-wide")}>{label}</div>
       <div className="mt-0.5 font-mono text-sm text-foreground">{value}</div>
     </div>
   );
@@ -1148,71 +1143,84 @@ function ChartStat({ label, value }: { label: string; value: string }) {
 
 function PriceSparkline({ sparkline }: { sparkline: LiveQuotesSparklineViewModel }) {
   return (
-    <svg
-      viewBox={sparkline.viewBox}
-      preserveAspectRatio="none"
-      className="block h-44 w-full overflow-visible"
-      role="img"
-      aria-label={sparkline.ariaLabel}
-    >
-      <line
-        x1={sparkline.guideStartX}
-        x2={sparkline.guideEndX}
-        y1={sparkline.highGuideY}
-        y2={sparkline.highGuideY}
-        stroke="currentColor"
-        strokeOpacity="0.15"
-        strokeDasharray="4 4"
-      />
-      <line
-        x1={sparkline.guideStartX}
-        x2={sparkline.guideEndX}
-        y1={sparkline.lowGuideY}
-        y2={sparkline.lowGuideY}
-        stroke="currentColor"
-        strokeOpacity="0.15"
-        strokeDasharray="4 4"
-      />
-      <path d={sparkline.areaPath} fill={sparkline.strokeToken} fillOpacity="0.12" stroke="none" />
-      <polyline
-        fill="none"
-        stroke={sparkline.strokeToken}
-        strokeWidth="1.75"
-        strokeLinejoin="round"
-        strokeLinecap="round"
-        points={sparkline.points}
-      />
-      <circle
-        cx={sparkline.lastPoint.x}
-        cy={sparkline.lastPoint.y}
-        r="3.25"
-        fill={sparkline.strokeToken}
-        stroke="currentColor"
-        strokeOpacity="0.4"
-        strokeWidth="1"
-      />
-      <text
-        x={sparkline.labelX}
-        y={sparkline.highLabelY}
-        textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {sparkline.highLabel}
-      </text>
-      <text
-        x={sparkline.labelX}
-        y={sparkline.lowLabelY}
-        textAnchor="end"
-        fontFamily="Cascadia Mono, JetBrains Mono, ui-monospace"
-        fontSize="10"
-        fill="currentColor"
-        fillOpacity="0.55"
-      >
-        {sparkline.lowLabel}
-      </text>
-    </svg>
+    <ChartEvidenceView label="Recent trade prices" evidence={sparkline.observations} initialIndex={sparkline.latestIndex}>
+      {(inspection) => (
+        <svg
+          viewBox={sparkline.viewBox}
+          preserveAspectRatio="none"
+          className="block h-44 w-full overflow-visible"
+          role="group"
+          aria-label={sparkline.ariaLabel}
+          aria-describedby={inspection.hintId}
+        >
+          <line
+            x1={sparkline.guideStartX}
+            x2={sparkline.guideEndX}
+            y1={sparkline.highGuideY}
+            y2={sparkline.highGuideY}
+            stroke="currentColor"
+            strokeOpacity="0.15"
+            strokeDasharray="4 4"
+          />
+          <line
+            x1={sparkline.guideStartX}
+            x2={sparkline.guideEndX}
+            y1={sparkline.lowGuideY}
+            y2={sparkline.lowGuideY}
+            stroke="currentColor"
+            strokeOpacity="0.15"
+            strokeDasharray="4 4"
+          />
+          <path d={sparkline.areaPath} fill={sparkline.strokeToken} fillOpacity="0.12" stroke="none" />
+          <polyline
+            fill="none"
+            stroke={sparkline.strokeToken}
+            strokeWidth="1.75"
+            strokeLinejoin="round"
+            strokeLinecap="round"
+            points={sparkline.points}
+          />
+          <circle
+            cx={sparkline.lastPoint.x}
+            cy={sparkline.lastPoint.y}
+            r="3.25"
+            fill={sparkline.strokeToken}
+            stroke="currentColor"
+            strokeOpacity="0.4"
+            strokeWidth="1"
+          />
+          <text
+            x={sparkline.labelX}
+            y={sparkline.highLabelY}
+            textAnchor="end"
+            fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
+            fontSize="10"
+            fill="currentColor"
+            fillOpacity="0.55"
+          >
+            {sparkline.highLabel}
+          </text>
+          <text
+            x={sparkline.labelX}
+            y={sparkline.lowLabelY}
+            textAnchor="end"
+            fontFamily="var(--font-data, IBM Plex Mono, ui-monospace, Consolas, monospace)"
+            fontSize="10"
+            fill="currentColor"
+            fillOpacity="0.55"
+          >
+            {sparkline.lowLabel}
+          </text>
+          {sparkline.observations.map((point, index) => (
+            <ChartEvidenceMark
+              key={point.id}
+              inspection={inspection}
+              index={index}
+              geometry={{ x: Number(point.x), y: Number(point.y) }}
+            />
+          ))}
+        </svg>
+      )}
+    </ChartEvidenceView>
   );
 }

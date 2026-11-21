@@ -279,7 +279,7 @@ class ActionsCollectorTests(unittest.TestCase):
 
     def test_checkout_saved_log_digest_is_checked_against_actual_bytes(self):
         routes, evidence = self.checkout_fixture()
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             log_path = Path(directory) / "checkout.log"
             log_path.write_text(routes[PREFIX + "/actions/jobs/88/logs"], encoding="utf-8")
             evidence["logPath"] = str(log_path)

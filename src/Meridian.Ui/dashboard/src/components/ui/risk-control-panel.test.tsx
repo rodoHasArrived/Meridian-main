@@ -1,8 +1,10 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
+import { MemoryRouter } from "react-router-dom";
 import { StrictMode } from "react";
 import { RiskControlPanel } from "@/components/ui/risk-control-panel";
 import * as api from "@/lib/api";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { createApiErrorFromResponseBody } from "@/lib/api-errors";
 
 vi.mock("@/lib/api", async () => {
@@ -76,9 +78,9 @@ describe("RiskControlPanel", () => {
     const user = userEvent.setup();
     render(<RiskControlPanel />);
 
-    await screen.findByText("PositionLimit");
+    await screen.findByText("Position limit");
     expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
-    expect(screen.getByText("OrderRateThrottle")).toBeInTheDocument();
+    expect(screen.getByText("Order rate throttle")).toBeInTheDocument();
     expect(screen.getByText(/Rule violation timeline/i)).toBeInTheDocument();
 
     expect(screen.getByText("Fat-finger limits")).toBeInTheDocument();
@@ -104,6 +106,35 @@ describe("RiskControlPanel", () => {
     expect(document.getElementById("risk-control-status")).toHaveTextContent("Drawdown threshold saved.");
   });
 
+  it("reloads on the header refresh without a refresh button of its own", async () => {
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><RiskControlPanel /></GlobalRefreshProvider>);
+    await screen.findByText("Position limit");
+    expect(screen.queryByRole("button", { name: /Refresh|Retry/ })).not.toBeInTheDocument();
+    expect(api.getRiskRules).toHaveBeenCalledTimes(1);
+    rerender(<GlobalRefreshProvider sequence={1}><RiskControlPanel /></GlobalRefreshProvider>);
+    await waitFor(() => expect(api.getRiskRules).toHaveBeenCalledTimes(2));
+  });
+
+  it("keeps a typed, unsaved threshold when the header refresh fires and reads again once it is saved", async () => {
+    const user = userEvent.setup();
+    const { rerender } = render(<GlobalRefreshProvider sequence={0}><RiskControlPanel /></GlobalRefreshProvider>);
+    await screen.findByText("Position limit");
+    const input = screen.getByLabelText("Drawdown threshold percent");
+    await user.clear(input);
+    await user.type(input, "7.5");
+    rerender(<GlobalRefreshProvider sequence={1}><RiskControlPanel /></GlobalRefreshProvider>);
+    await new Promise((resolve) => setTimeout(resolve, 20));
+    expect(input).toHaveValue("7.5");
+    expect(api.getRiskRules).toHaveBeenCalledTimes(1);
+    expect(api.getRiskRuleConfig).toHaveBeenCalledTimes(3);
+
+    await user.click(screen.getByRole("button", { name: "Save drawdown threshold" }));
+    expect(await screen.findByRole("status")).toHaveTextContent("Drawdown threshold saved.");
+    expect(api.getRiskRules).toHaveBeenCalledTimes(2);
+    rerender(<GlobalRefreshProvider sequence={2}><RiskControlPanel /></GlobalRefreshProvider>);
+    await waitFor(() => expect(api.getRiskRules).toHaveBeenCalledTimes(3));
+  });
+
   it("settles on loaded risk controls under React StrictMode", async () => {
     render(
       <StrictMode>
@@ -111,7 +142,7 @@ describe("RiskControlPanel", () => {
       </StrictMode>
     );
 
-    expect(await screen.findByText("PositionLimit")).toBeInTheDocument();
+    expect(await screen.findByText("Position limit")).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Trading risk controls" })).toHaveAttribute("aria-busy", "false");
     expect(screen.queryByText("Loading risk rules...")).not.toBeInTheDocument();
     expect(screen.queryByText("Loading rule violations...")).not.toBeInTheDocument();
@@ -135,7 +166,7 @@ describe("RiskControlPanel", () => {
 
     render(<RiskControlPanel />);
 
-    await screen.findByText("PositionLimit");
+    await screen.findByText("Position limit");
 
     const input = screen.getByLabelText("Drawdown threshold percent");
     await user.clear(input);
@@ -149,11 +180,24 @@ describe("RiskControlPanel", () => {
     expect(within(alert).getByText("maxDrawdownPercent: Lower the threshold or obtain approval before retrying.")).toBeInTheDocument();
   });
 
+  it("explains a missing risk service instead of leaking an empty response body", async () => {
+    vi.mocked(api.getRiskRules).mockRejectedValueOnce(createApiErrorFromResponseBody("/api/risk/rules", 404, "{}"));
+
+    render(<MemoryRouter><RiskControlPanel /></MemoryRouter>);
+
+    const alert = await screen.findByRole("alert");
+    expect(within(alert).getByText("Risk controls aren't available on this host")).toBeInTheDocument();
+    expect(within(alert).getByRole("link", { name: "What enables this" })).toHaveAttribute("href", "/settings/diagnostics");
+    expect(within(alert).getByRole("button", { name: "Retry" })).toBeInTheDocument();
+    expect(alert).not.toHaveTextContent("{}");
+    expect(within(alert).queryByRole("listitem")).not.toBeInTheDocument();
+  });
+
   it("keeps save disabled with a reason when the drawdown value is empty", async () => {
     const user = userEvent.setup();
     render(<RiskControlPanel />);
 
-    await screen.findByText("PositionLimit");
+    await screen.findByText("Position limit");
 
     const input = screen.getByLabelText("Drawdown threshold percent");
     await user.clear(input);
@@ -177,11 +221,12 @@ describe("RiskControlPanel", () => {
       )
     );
 
-    render(<RiskControlPanel />);
+    render(<MemoryRouter><RiskControlPanel /></MemoryRouter>);
 
     expect(await screen.findByRole("alert")).toHaveTextContent("The risk service is restarting.");
     expect(screen.getByText("Risk runtime unavailable")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh risk controls" })).toBeEnabled();
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Retry" })).toBeEnabled();
     expect(screen.getByText("No risk rules are currently available.")).toBeInTheDocument();
   });
 });

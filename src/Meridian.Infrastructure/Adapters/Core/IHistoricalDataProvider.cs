@@ -61,6 +61,14 @@ public interface IHistoricalDataProvider : IProviderMetadata, IDisposable
     bool IsSimulated => false;
 
     /// <summary>
+    /// Identifies the dataset this instance serves beyond its <see cref="Name"/>, such as the
+    /// market-data feed and price adjustment. Backfill resume only treats dates as already
+    /// covered when they were written from the same provider and the same value here.
+    /// Default: <c>"default"</c> for providers with a single dataset.
+    /// </summary>
+    string CoverageFeed => "default";
+
+    /// <summary>
     /// Priority for fallback ordering (lower = higher priority, tried first).
     /// Default: 100 for basic providers.
     /// </summary>

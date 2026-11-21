@@ -1,0 +1,9 @@
+import * as React from "react";
+export type AttestationState="not-ready"|"blocked"|"ready"|"awaiting"|"approved"|"rejected"|"changes-requested"|"reopened"|"superseded"|"expired";
+/** A finding from `DecisionSnapshot.verify(snapshot, current)`. A `void` finding expires the pending signature. */
+export interface AttestationSnapshotFinding{field:string;was?:unknown;now?:unknown;effect:"void"|"review";note?:string;}
+export interface AttestationGate{id?:string;label:React.ReactNode;status?:"complete"|"reconciled"|"review"|"pending"|"blocked"|string;detail?:React.ReactNode;blocking?:boolean;}
+export interface AttestationSignatory{role:string;name?:string;at?:string;status?:string;}
+export interface AttestationEvent{id?:string;at:string;actor:string;action:string;note?:string;}
+export interface AttestationPanelProps extends Omit<React.HTMLAttributes<HTMLElement>, "title">{title?:React.ReactNode;scope?:React.ReactNode;period?:React.ReactNode;objectId?:string;snapshot?:string;version?:number|string;role?:string;signatoryRole?:string;gates?:AttestationGate[];evidence?:{attached?:number;required?:number;label?:string};history?:AttestationEvent[];signatories?:AttestationSignatory[];currentUser?:string;segregation?:boolean;certification?:React.ReactNode;requireComment?:boolean;comment?:string;onCommentChange?:(value:string)=>void;state?:AttestationState;supersededBy?:React.ReactNode;expiredReason?:React.ReactNode;snapshotFindings?:AttestationSnapshotFinding[];onApprove?:(comment:string)=>void;onReject?:(comment:string)=>void;onRequestChanges?:(comment:string)=>void;onReopen?:()=>void;}
+export declare function AttestationPanel(props:AttestationPanelProps):React.JSX.Element;

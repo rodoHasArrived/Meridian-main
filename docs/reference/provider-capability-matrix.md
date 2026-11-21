@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-31
+**Reviewed:** 2026-11-11
 
 Use this reference to identify the shared provider contracts implemented in Meridian and the
 boundaries of their runtime exposure. The matrix covers all 22 direct folders under
@@ -96,6 +96,10 @@ currently enabled.
   codes. Use [Provider Backfill Operations](../operators/provider-backfill-operations.md) for
   ordering, checkpoints, fallback, and coverage evidence. An empty result alone does not establish
   complete historical coverage or the absence of corporate actions.
+- TwelveData daily history splits long ranges into bounded overlapping date windows and merges
+  identical boundary observations. Conflicting observations or a later-window failure refuse the
+  accumulated result. Vendor error bodies distinguish credential/entitlement and quota failures
+  from supported no-data or unknown-symbol responses; an HTTP 200 alone does not establish success.
 
 ### Interfaces outside the six shared contracts
 
@@ -119,8 +123,7 @@ Their declared release statuses are:
 
 | Provider(s) | `CorporateActionProviderReleaseStatusDto` | Acceptance implication |
 | --- | --- | --- |
-| Alpaca | `AcceptanceEligible` | Eligible for the acceptance path when the required source evidence and workflow controls are satisfied; the label is not acceptance of an individual event. |
-| AlphaVantage, Finnhub, NasdaqDataLink, Tiingo, TwelveData | `ReviewOnly` | Observations remain staged for review; cross-provider agreement does not promote the provider or authorize automatic application. |
+| Alpaca, AlphaVantage, Finnhub, NasdaqDataLink, Tiingo, TwelveData | `ReviewOnly` | Observations remain staged for review; cross-provider agreement does not promote the provider or authorize automatic application. |
 
 [`CorporateActionIngestOrchestratorTests`](../../tests/Meridian.Tests/SecurityMaster/CorporateActionIngestOrchestratorTests.cs)
 checks review-only consensus staging, evidence requirements, and rejection of provider attempts to
@@ -128,6 +131,17 @@ raise their release status through command content.
 [`CorporateActionOperationsServiceTests`](../../tests/Meridian.Tests/SecurityMaster/CorporateActionOperationsServiceTests.cs)
 checks that acceptance fails closed for a review-only provider release. Missing credentials,
 endpoint failures, or partial responses must not be interpreted as verified absence of actions.
+
+Use `ICorporateActionProvider.FetchWithOutcomeAsync` when coverage matters. The six adapters return
+`Complete`, `Partial` or `Failed` within their supported endpoint/dataset scope, with usable
+observations and safe failure codes, actual HTTP status and retry metadata when available. Ingest
+and inbox read models expose per-provider `FetchOutcomes` and warnings for incomplete coverage.
+Legacy providers implementing only the collection API have `Unknown` coverage; an empty
+`FetchAsync` result never establishes absence of actions. Caller cancellation propagates, while
+internal timeouts remain explicit failures. These outcomes do not change release status or
+establish live verification. Synthetic regression cases are in
+[`CorporateActionFetchOutcomeTests`](../../tests/Meridian.Tests/Infrastructure/Providers/CorporateActionFetchOutcomeTests.cs)
+and [`AlpacaCorporateActionProviderTests`](../../tests/Meridian.Tests/Infrastructure/Providers/AlpacaCorporateActionProviderTests.cs).
 
 ### Brokerage and Interactive Brokers runtime
 

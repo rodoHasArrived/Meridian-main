@@ -14,7 +14,7 @@ from tools.schema_control.migrations import git_base_file_reader, resolve_git_co
 
 class SchemaControlBaselineTests(unittest.TestCase):
     def setUp(self) -> None:
-        directory = tempfile.TemporaryDirectory()
+        directory = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(directory.cleanup)
         self.root = Path(directory.name)
         self.git("init", "--quiet")

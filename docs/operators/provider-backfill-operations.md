@@ -37,9 +37,71 @@ Use this sequence for controlled backfill execution:
 4. Monitor status/progress APIs until completion or bounded retries.
 5. Run quality check and gap report before archival or downstream promotion.
 
+### Workstation quota and receipts
+
+In **Data → Backfills → Trigger backfill**, enter the provider, symbols, and date range, then
+select **Preview**. Blank daily dates use a one-year lookback ending today when no end date is
+entered. The preview shows the effective range that a queued or scheduled job will use.
+
+The quota panel reports the historical adapter's known limit and window, the expected requests
+and duration, and the observed remaining budget when available. It also displays daily limits
+and distinguishes provider credits from HTTP requests. Local observations
+can miss usage from other clients sharing the same account. Pagination, retries, and provider
+latency can change usage and timing. The duration excludes time spent waiting in the job queue
+or waiting for a scheduled start. Providers without usable quota diagnostics show **Limit unavailable**.
+When resuming from retained coverage, the estimate counts requests for each uncovered date range.
+Coverage can change before a queued job starts.
+
+For an over-budget plan, narrow the dates or symbols and preview again, schedule the job, choose
+an administrator-approved equivalent and preview it, or **Queue with throttling**. Enter the
+earliest eligible start in UTC. Queued and scheduled jobs both follow the provider budget.
+The workstation keeps an execution receipt with the submission estimate, observed providers,
+throttling events, and request and duration variance where measured. Expand the job under
+**Workstation backfill receipts**. Live waits appear as **Throttled**.
+Completed jobs also show retained batch revisions with provider and session counts. Each revision
+identifies the full evidence retained under the host's data root.
+
+The workstation queue is retained on the single host that owns the data root. Pending jobs survive
+a restart. Jobs interrupted during execution are marked failed so operators can inspect partial
+coverage before submitting again. Provider request counts cover observed adapter attempts.
+Receipts show unavailable counts when an adapter cannot expose its individual requests.
+
+### Provider administrator budgets
+
+Provider administrators can set `Backfill.OperationalBudgets` in the host's `appsettings.json`.
+Policies apply across workstation jobs. The dialog displays the policy and researchers submit
+jobs within it. Keys are runtime historical provider IDs.
+
+```json
+{
+  "Backfill": {
+    "OperationalBudgets": {
+      "provider-id": {
+        "ReserveHeadroomPercent": 20,
+        "MaxConcurrentRequests": 2,
+        "ApprovedEquivalentProviders": ["alternative-provider-id"]
+      }
+    }
+  }
+}
+```
+
+`ReserveHeadroomPercent` accepts 0–99. The host rounds the backfill allowance down to whole
+units with a minimum of one historical request per window. Headroom applies to both the short
+window and the daily limit when reported by the adapter.
+`MaxConcurrentRequests` is an optional positive cap on the provider's parallel backfill work.
+Approve equivalent providers only after checking instrument coverage, entitlements, intervals,
+and price adjustment conventions. The host checks approval and runtime compatibility again when
+the job is dispatched. In-progress runs keep the policy loaded when they started.
+
 ## Key endpoints
 
 - `GET /api/backfill/providers`
+- `GET /api/backfill/providers/effective-order`
+- `GET /api/backfill/schedules`
+- `POST /api/backfill/schedules`
+- `PUT /api/backfill/schedules/{id}/preferred-providers`
+- `GET /api/backfill/schedules/{id}/history`
 - `GET /api/backfill/status`
 - `GET /api/backfill/progress`
 - `POST /api/backfill/run/preview`
@@ -50,9 +112,26 @@ Use this sequence for controlled backfill execution:
 
 Use [preflight authentication](preflight-checklist.md#authenticated-evidence-collection) for API
 reads. Workstation submissions use the signed-in operator session and its mutation protections.
-`/api/backfill/progress` describes the host's coordinator activity; it does not monitor a separate
-CLI process. `/api/backfill/status` reads the most recent completed result from the configured data
-root and returns `404` when none exists.
+`/api/backfill/progress` describes the host's coordinator activity. `/api/backfill/status` reads
+the last retained immediate or CLI result from the configured data root and returns `404` when
+none exists. `/api/backfill/executions` includes queued and scheduled workstation receipts for
+the authenticated tenant.
+
+## Inspect and reproduce a result
+
+Open **Data → Backfill queue** and select a completed result. Expand **Provider provenance** to see
+which providers supplied data, whether fallback occurred, the requested scope, and the effective
+validation profile. Use **Load older backfill results** to page through retained runs. Research run
+details and completed Quant Lab and Covered Call results use the same receipt panel.
+
+**Export JSON sidecar** downloads the versioned receipt. **Export report** downloads its plain-text
+form. A scoped connection has an opaque receipt ID. The receipt records the feed and entitlement
+labels reported by the runtime and marks unavailable provenance explicitly.
+
+**Clone this run** restores the saved request and checks the provider route before presenting a run
+confirmation. Confirm again if provider availability changes during review. A missing or changed
+historical route, an unretained checkpoint, or an unversioned research dataset leaves reproduction
+unavailable and the original receipt inspectable.
 
 ## Provider configuration posture
 
@@ -61,6 +140,18 @@ Use explicit provider priority and fallback policy matching current run intent:
 - Configure provider enablement and `Priority` in backfill settings.
 - Enable fallback only where temporary provider failures are acceptable.
 - Validate credentials for key-backed providers before production backfill.
+
+In **Data → Providers**, open **Edit provider priorities and limits**. The effective order shows
+the providers built for new jobs. The save receipt tells you which routing changes apply to the
+next job and which pacing or tier changes require a restart. Running jobs retain their routing
+snapshot through retries. A failed runtime apply leaves the previous routing order available.
+
+In **Data → Backfills → Manage schedules**, set **Preferred providers** in the order they should
+be tried. An empty list uses the global order. Choices are restricted to available providers that
+can serve daily bars. When fallback is enabled, the job may use other eligible providers after
+trying its preferences. When fallback is disabled, an unavailable first choice produces a failed
+job with a reason. The schedule history shows the retained bars and provider attempts for each
+execution. Automatic execution requires `Backfill.Jobs.Scheduling.Enabled` in the host configuration.
 
 Keep provider lookup details in Reference lane files:
 - [provider-capability-matrix.md](../reference/provider-capability-matrix.md)
@@ -81,10 +172,19 @@ mode:
   provider calls or validation rows.
 - When concurrency is greater than `1`, completion order is not a stable ordering contract. Use
   per-symbol validation signals and checkpoints rather than task completion order as evidence.
-- `ResumeFromCheckpoint=true` skips fully covered symbols, advances partial symbols to the day after
-  the recorded checkpoint, and emits warning signals when checkpoint bar-count evidence is missing.
-- Fresh runs without the resume flag clear matching-granularity checkpoints before writing new
-  checkpoint evidence; they do not clear checkpoints recorded for another granularity.
+- `ResumeFromCheckpoint=true` skips only dates recorded as durably written by the same provider and
+  feed (`_status/backfill-symbol-coverage.json`, written after the pipeline flush succeeds). It
+  fetches every uncovered part of the requested range: dates before the recorded coverage, gaps
+  inside it, and dates after it. A symbol is skipped only when the whole requested range is
+  covered; a warning signal is emitted when that coverage has no bar-count evidence.
+- Coverage is recorded per symbol, granularity, provider and feed (for Alpaca, the feed and price
+  adjustment). Changing the provider or feed fetches the range again. Coverage ends at the newest
+  bar written, so later sessions are still requested.
+- Date-only checkpoints (`_status/backfill-symbol-checkpoints.json`) are still written for status
+  surfaces, but they are never used to skip or advance. After upgrading, the first resume of a
+  range that only has such a checkpoint fetches the range again once.
+- Fresh runs without the resume flag clear matching-granularity checkpoints and coverage before
+  writing new evidence; they do not clear another granularity's.
 - Automatic gap-analyzer remediation batches same-provider, same-window scan gaps into one
   deterministic request with symbols normalized to uppercase and sorted lexically before execution
   history is retained. Data-quality and quality-alert triggers remain single-symbol remediation
@@ -121,6 +221,9 @@ exact symbols and dates, and `--help backfill` for supported CLI options.
 - The result's provider, symbols, dates, and timestamps match the approved request. Inspect
   `Success`, `BarsWritten`, `SkippedSymbols`, `SymbolValidationSignals`, and `Error`; successful
   process completion alone does not establish complete or correct historical coverage.
+- The **Served by** table counts rows in unique retained batch revisions by symbol and provider.
+  It can include bars already present in storage. Inspect **Provider attempts** for rate limits,
+  stale data, empty responses, or other reasons the run tried an alternate provider.
 - Retain the result before a later run replaces the last-run file, then complete the quality
   checks below and the [mandatory evidence](#mandatory-evidence) packet.
 

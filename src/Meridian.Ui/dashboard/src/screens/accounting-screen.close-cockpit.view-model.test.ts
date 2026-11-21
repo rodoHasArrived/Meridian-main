@@ -993,7 +993,7 @@ describe("accounting-screen close-cockpit view model", () => {
       statusLabel: "Ready for sign-off",
       dependencyLabel: expect.stringContaining("task-reconciliation"),
       signOffLabel: "1/1 required sign-offs approved",
-      signOffDetailLabel: "Approved by ops-user on Jun 2, 05:00 UTC | Controller retained NAV package sign-off.",
+      signOffDetailLabel: "Approved by ops-user on Jun 2, 2026, 05:00 UTC | Controller retained NAV package sign-off.",
       signOffRequirementLabel: "controller: 1/1",
       evidenceLabel: "2 evidence links",
       blockerLabel: "Controller sign-off pending."
@@ -1021,7 +1021,7 @@ describe("accounting-screen close-cockpit view model", () => {
         statusLabel: "Satisfied",
         statusTone: "success",
         evidenceRequirementLabel: "Controller NAV sign-off evidence",
-        latestSignOffLabel: "Approved by ops-user on Jun 2, 05:00 UTC | Controller retained NAV package sign-off."
+        latestSignOffLabel: "Approved by ops-user on Jun 2, 2026, 05:00 UTC | Controller retained NAV package sign-off."
       })
     ]);
     expect(result.current.operatingCoverageRows).toHaveLength(6);
@@ -1138,7 +1138,7 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(result.current.lateAdjustments[0]).toMatchObject({
       journalEntryId: "manual-je-late-1",
       reason: "Late custodian fee accrual.",
-      decisionLabel: "Approved by ops-user on Jun 2, 04:00 UTC",
+      decisionLabel: "Approved by ops-user on Jun 2, 2026, 04:00 UTC",
       evidenceLabel: "2 evidence links",
       materialityLabel: "Within materiality: at or below $2,500 USD; controller review policy",
       materialityTone: "success"
@@ -1166,7 +1166,7 @@ describe("accounting-screen close-cockpit view model", () => {
       expect.objectContaining({
         id: "checklist-signoff",
         label: "Checklist sign-off",
-        value: "0/1",
+        value: "0 of 1 close task",
         detail: "1 close task still requires retained sign-off evidence.",
         tone: "warning"
       }),
@@ -1187,7 +1187,7 @@ describe("accounting-screen close-cockpit view model", () => {
       expect.objectContaining({
         id: "export-certification",
         label: "Export certification",
-        value: "1/2",
+        value: "1 of 2 exports",
         detail: "1 export artifact remains ready for review.",
         tone: "warning"
       }),
@@ -2188,7 +2188,7 @@ describe("accounting-screen close-cockpit view model", () => {
         statusLabel: "Review retained",
         statusTone: "success",
         evidenceLabel: "2 review evidence links retained",
-        latestReviewLabel: "browser-accounting-controller on Jun 3, 13:15 UTC | Reviewed close blocker CLOSE_TASK_PENDING for task-nav from the Accounting close cockpit.",
+        latestReviewLabel: "browser-accounting-controller on Jun 3, 2026, 13:15 UTC | Reviewed close blocker CLOSE_TASK_PENDING for task-nav from the Accounting close cockpit.",
         reviewDisabledReason: "Close evidence review is already retained for this issue."
       })
     ]));
@@ -2281,7 +2281,7 @@ describe("accounting-screen close-cockpit view model", () => {
     expect(result.current.reviewLateAdjustmentStatusTone).toBe("success");
     expect(result.current.lateAdjustments[0]).toMatchObject({
       statusLabel: "Approved",
-      decisionLabel: "Approved by browser-accounting-controller on Jun 3, 12:45 UTC",
+      decisionLabel: "Approved by browser-accounting-controller on Jun 3, 2026, 12:45 UTC",
       reviewDisabledReason: "Late adjustment is already approved."
     });
     expect(result.current.closeWorkflowSteps).toEqual(expect.arrayContaining([
@@ -2502,7 +2502,7 @@ describe("accounting-screen close-cockpit view model", () => {
       ])
     }));
     expect(result.current.signOffStatusText).toBe("Rejected sign-off retained for Finalize NAV package.");
-    expect(result.current.tasks[0].signOffDetailLabel).toBe("Rejected by browser-accounting-controller on Jun 3, 12:30 UTC | Controller rejected NAV package pending retained evidence.");
+    expect(result.current.tasks[0].signOffDetailLabel).toBe("Rejected by browser-accounting-controller on Jun 3, 2026, 12:30 UTC | Controller rejected NAV package pending retained evidence.");
   });
 
   it("blocks browser close task sign-off when the selected role is not retained", async () => {
@@ -2574,7 +2574,8 @@ describe("accounting-screen close-cockpit view model", () => {
       fundAccountLabel: "fund-alpha"
     });
     expect(state.metricRows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "breaks", value: "2", tone: "warning" }),
+      // Counted once from the break queue (A3); the workflow's own break case is named in the detail, not added.
+      expect.objectContaining({ id: "breaks", value: "1", tone: "warning", detail: expect.stringContaining("also tracks 1 break case") }),
       expect.objectContaining({ id: "source-files", value: "2", tone: "warning" }),
       expect.objectContaining({ id: "adjustments", value: "2", tone: "warning" }),
       expect.objectContaining({ id: "valuations", value: "1", tone: "warning" }),
@@ -3130,10 +3131,34 @@ describe("accounting-screen close-cockpit view model", () => {
       } };
       const blockedView = buildCloseCommandCenterViewState({ ...input, commandCenter: blocked });
       expect(blockedView.status).toBe("blocked");
+      // Raw identifiers stay out of the operator-facing label and evidence text; they are kept
+      // for the audit-details disclosure only.
       expect(blockedView.blockerRows[0]).toMatchObject({ ownerLabel: "Controller",
-        evidenceLabel: "evidence-1, evidence-2", detail: expect.stringContaining("Count: 2") });
+        label: `Close plan - ${type}`, evidenceLabel: "2 source records",
+        sourceRecordIds: ["evidence-1", "evidence-2"], detail: expect.stringContaining("Count: 2") });
       expect(buildCloseCommandCenterViewState(input).status).toBe("ready");
     }
+  });
+  it("routes a shadow-agreement blocker to the onboarding workspace under External GL evidence", () => {
+    const commandCenter: FinancialOperationsCommandCenter = {
+      generatedAtUtc: new Date().toISOString(), fundProfileId: "fund-alpha", ledgerBookId: "book",
+      fundAccountId: "account", periodId: "period", status: "Blocked", isReadyToComplete: false,
+      summary: "Shadow book.", activeItemCount: 0, blockedItemCount: 1, reviewItemCount: 0,
+      metrics: [], queueRows: [], closeReadiness: {
+        scope: { fundProfileId: "fund-alpha", ledgerBookId: "book", fundAccountId: "account", entityId: "entity", periodId: "period" },
+        evaluatedAtUtc: new Date().toISOString(), status: "Blocked", isComplete: true, isReadyToClose: false,
+        contributors: [],
+        blockers: [{ code: "close.shadow-agreement.blocked", contributorId: "shadow-agreement", type: "Blocked", count: 1,
+          severity: "Critical", owner: "Onboarding",
+          message: "The ledger book is a shadow book in parallel run: 1 of 2 required period(s) reconcile cleanly.",
+          recordIds: ["workspace-1"] }]
+      }
+    };
+    const view = buildCloseCommandCenterViewState({ data: accountingWorkspace, commandCenter, workflow: closeWorkflow,
+      workflowLoading: false, workflowError: null, accountingSystemProviders: [], accountingSystemImport: null,
+      accountingSystemReconciliation: null, multiAssetCoverage: null });
+    expect(view.status).toBe("blocked");
+    expect(view.blockerRows[0]).toMatchObject({ ownerLabel: "Onboarding", href: "/accounting/reconciliation/external-gl" });
   });
 
 });

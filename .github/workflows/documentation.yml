@@ -7,15 +7,6 @@ on:
         description: "Force a full documentation and diagram refresh"
         required: false
         default: "false"
-  pull_request:
-    types:
-      - opened
-      - synchronize
-      - reopened
-  push:
-    branches:
-      - main
-  merge_group:
 
 permissions:
   contents: read
@@ -28,9 +19,8 @@ env:
   PYTHONUNBUFFERED: "1"
 
 jobs:
-  # Keep the existing check identity, but do not start a second checkout/toolchain.
-  # The same-run producer below owns every validation purpose. No cross-run cache,
-  # privileged event, polling runner, or successful-skip shortcut is involved.
+  # Manual refresh only. Meridian CI verify-docs owns automatic documentation
+  # validation, generation, dashboard regression checks and freshness.
   validate-docs:
     needs: regenerate-docs
     if: always()
@@ -100,70 +90,7 @@ jobs:
         run: python3 build/scripts/run-maintained-generation.py --docs-only --report artifacts/docs/generation.json
 
       - name: Compare dashboard readiness deltas vs previous commit
-        shell: python
-        run: |
-          import json
-          import subprocess
-          from pathlib import Path
-
-          current_path = Path("docs/status/doc-health-dashboard.json")
-          current = json.loads(current_path.read_text(encoding="utf-8")) if current_path.exists() else {}
-
-          previous = ""
-          try:
-              previous = subprocess.run(
-                  ["git", "show", "HEAD~1:docs/status/doc-health-dashboard.json"],
-                  check=True,
-                  capture_output=True,
-                  text=True,
-              ).stdout
-          except subprocess.CalledProcessError:
-              previous = ""
-
-          baseline_available = bool(previous.strip())
-          missing_previous = []
-          previous_dashboard = {}
-
-          if baseline_available:
-              previous_dashboard = json.loads(previous)
-          else:
-              missing_previous.append("docs/status/doc-health-dashboard.json")
-
-          def extract_score(payload):
-              if isinstance(payload.get("healthScore"), (int, float)):
-                  return float(payload["healthScore"])
-              summary = payload.get("summary")
-              if isinstance(summary, dict) and isinstance(summary.get("healthScore"), (int, float)):
-                  return float(summary["healthScore"])
-              return 0.0
-
-          current_score = extract_score(current)
-          previous_score = extract_score(previous_dashboard) if baseline_available else current_score
-          delta = current_score - previous_score
-          severe = baseline_available and (delta < -10.0)
-
-          payload = {
-              'baseline_available': baseline_available,
-              'current_score': current_score,
-              'previous_score': previous_score,
-              'delta': delta,
-              'missing_previous_files': missing_previous,
-              'severe': severe,
-          }
-
-          artifact_dir = Path("artifacts/docs")
-          artifact_dir.mkdir(parents=True, exist_ok=True)
-          (artifact_dir / "dashboard-delta.json").write_text(json.dumps(payload, indent=2), encoding="utf-8")
-
-          if severe:
-              raise SystemExit(
-                  f"Severe dashboard readiness regression detected ({previous_score:.1f} -> {current_score:.1f})."
-              )
-
-          if not baseline_available:
-              print("Baseline dashboard source was unavailable; severe regression gating was skipped")
-
-          print(json.dumps(payload, indent=2))
+        run: python3 build/scripts/ci/check-doc-health-delta.py
 
       - name: Check generated docs are current
         run: python3 build/scripts/ci/check-generated-output.py

@@ -1,49 +1,49 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-10-21T15:53:39Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-13T09:16:45Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs` | Host and Composition | 2026-10-21T05:33:44Z | `468399d31` | feat(security-master): one lot model keyed on the lot unit, with a notional lot | 10 |
-| `src/Meridian.FinancialOperations/Ledger/AccountingPostingCandidateService.cs` | Unmapped | 2026-10-21T05:33:44Z | `468399d31` | feat(security-master): one lot model keyed on the lot unit, with a notional lot | 5 |
-| `src/Meridian.Application/SecurityMaster/AlternativeAssetLotExtensions.cs` | Host and Composition | 2026-10-21T05:33:44Z | `468399d31` | feat(security-master): one lot model keyed on the lot unit, with a notional lot | 2 |
-| `src/Meridian.Contracts/SecurityMaster/NotionalLot.cs` | Host and Composition | 2026-10-21T05:33:44Z | `468399d31` | feat(security-master): one lot model keyed on the lot unit, with a notional lot | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityLotModel.cs` | Host and Composition | 2026-10-21T05:33:44Z | `468399d31` | feat(security-master): one lot model keyed on the lot unit, with a notional lot | 1 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetClassCatalog.cs` | Host and Composition | 2026-10-20T20:28:18Z | `0bd7b0bc4` | Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate | 16 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs` | Host and Composition | 2026-10-20T20:28:18Z | `0bd7b0bc4` | Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate | 7 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.cs` | Desktop and UI Workflows | 2026-10-20T20:28:18Z | `0bd7b0bc4` | Fifth review round: mapper-faithful term reads, multi-word labels, late capability gate | 3 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.CorporateActions.cs` | Desktop and UI Workflows | 2026-10-20T20:14:06Z | `7d276fc6d` | Fourth review round: exact term keys, deposit rate units, reconciliation-time classes | 5 |
-| `src/Meridian.Instruments/AssetOperations/AssetObligationProjectionService.cs` | Unmapped | 2026-10-20T20:14:06Z | `7d276fc6d` | Fourth review round: exact term keys, deposit rate units, reconciliation-time classes | 2 |
-| `src/Meridian.Contracts/Workstation/BrokerageSyncDtos.cs` | Host and Composition | 2026-10-20T20:14:06Z | `7d276fc6d` | Fourth review round: exact term keys, deposit rate units, reconciliation-time classes | 1 |
-| `src/Meridian.Ui.Shared/Services/ProviderLedgerReconciliationService.SecurityCoverage.cs` | Desktop and UI Workflows | 2026-10-20T20:14:06Z | `7d276fc6d` | Fourth review round: exact term keys, deposit rate units, reconciliation-time classes | 1 |
-| `src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs` | Host and Composition | 2026-10-20T19:34:19Z | `53223bf3b` | Tighten the registry-lookup rules on the second review round | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.tsx` | Desktop and UI Workflows | 2026-10-20T19:26:20Z | `0aa3eeb19` | Count and label the aggregate profile projection figures as declared | 3 |
-| `src/Meridian.Ui/dashboard/src/screens/settings-screen.operations-control.ts` | Desktop and UI Workflows | 2026-10-20T19:26:20Z | `0aa3eeb19` | Count and label the aggregate profile projection figures as declared | 2 |
-| `src/Meridian.Wpf/Views/SettingsPage.xaml` | Desktop and UI Workflows | 2026-10-20T19:26:20Z | `0aa3eeb19` | Count and label the aggregate profile projection figures as declared | 1 |
-| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.cs` | Providers and Storage | 2026-10-20T17:45:32Z | `07233cb6e` | Move the Bond projection onto SecurityTermsProjectionRegistry satellites | 15 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterService.cs` | Host and Composition | 2026-10-20T17:45:32Z | `07233cb6e` | Move the Bond projection onto SecurityTermsProjectionRegistry satellites | 13 |
-| `src/Meridian.Storage/SecurityMaster/SecurityTermsProjectionRegistry.cs` | Providers and Storage | 2026-10-20T17:45:32Z | `07233cb6e` | Move the Bond projection onto SecurityTermsProjectionRegistry satellites | 9 |
-| `src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterStore.TermsProjection.cs` | Providers and Storage | 2026-10-20T17:45:32Z | `07233cb6e` | Move the Bond projection onto SecurityTermsProjectionRegistry satellites | 5 |
-| `src/Meridian.Storage/SecurityMaster/PostgresBondReferenceProjectionStore.cs` | Providers and Storage | 2026-10-20T17:45:32Z | `07233cb6e` | Move the Bond projection onto SecurityTermsProjectionRegistry satellites | 2 |
-| `src/Meridian.Application/SecurityMaster/SecurityAssetProfileGovernanceService.cs` | Host and Composition | 2026-10-20T17:34:25Z | `ae83757a3` | Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4) | 2 |
-| `src/Meridian.Contracts/SecurityMaster/SecurityAssetProfiles.cs` | Host and Composition | 2026-10-20T17:34:25Z | `ae83757a3` | Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4) | 1 |
-| `src/Meridian.ReferenceData/SecurityMaster/SecurityAssetProfileCatalog.cs` | Unmapped | 2026-10-20T17:34:25Z | `ae83757a3` | Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4) | 1 |
-| `src/Meridian.Wpf/ViewModels/SettingsViewModel.AssetProfiles.cs` | Desktop and UI Workflows | 2026-10-20T17:34:25Z | `ae83757a3` | Mark custom-profile IsProjected/IsSearchable as promotion intent, not live (A4) | 1 |
-| `src/Meridian.Strategies/Services/SecurityMasterAccountingEventService.cs` | Execution, Risk, and Strategies | 2026-10-20T17:20:11Z | `408bf146f` | Replace asset-class name and substring checks with registry lookups (E5/E6) | 1 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-10-20T16:05:10-07:00 | `2ed48d5db` | refactor(storage): partition account cash continuity stores per scope (#3201) | 60 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | 2026-10-20T16:05:10-07:00 | `2ed48d5db` | refactor(storage): partition account cash continuity stores per scope (#3201) | 22 |
-| `src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationService.cs` | Unmapped | 2026-10-20T16:05:10-07:00 | `2ed48d5db` | refactor(storage): partition account cash continuity stores per scope (#3201) | 4 |
-| `src/Meridian.FinancialOperations/Reconciliation/FileAccountCashReconciliationStore.cs` | Unmapped | 2026-10-20T16:05:10-07:00 | `2ed48d5db` | refactor(storage): partition account cash continuity stores per scope (#3201) | 3 |
-| `src/Meridian.Storage/AssetOperations/FileAccountCashForecastStore.cs` | Providers and Storage | 2026-10-20T16:05:10-07:00 | `2ed48d5db` | refactor(storage): partition account cash continuity stores per scope (#3201) | 3 |
-| `src/Meridian.FinancialOperations/Reconciliation/AccountCashReconciliationModels.cs` | Unmapped | 2026-10-20T16:05:10-07:00 | `2ed48d5db` | refactor(storage): partition account cash continuity stores per scope (#3201) | 2 |
-| `src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.cs` | Desktop and UI Workflows | 2026-10-20T15:38:53Z | `3b3e24a81` | Reject stale patch bases on Security Master term amends (E1) | 10 |
-| `src/Meridian.Application/README.md` | Host and Composition | 2026-10-20T08:15:36Z | `ebe59f45d` | Extract shared fund-structure query projections | 21 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-10-20T08:15:36Z | `19d59dd7b` | Give OMS report intake and shutdown an explicit lifecycle | 12 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-10-20T08:15:36Z | `19d59dd7b` | Give OMS report intake and shutdown an explicit lifecycle | 8 |
-| `src/Meridian.Execution/OrderManagementSystem.cs` | Execution, Risk, and Strategies | 2026-10-20T08:15:36Z | `19d59dd7b` | Give OMS report intake and shutdown an explicit lifecycle | 4 |
-| `src/Meridian.Strategies/Live/LiveTradingEngine.cs` | Execution, Risk, and Strategies | 2026-10-20T08:15:36Z | `19d59dd7b` | Give OMS report intake and shutdown an explicit lifecycle | 4 |
-| `src/Meridian.Execution/BrokerageServiceRegistration.cs` | Execution, Risk, and Strategies | 2026-10-20T08:15:36Z | `19d59dd7b` | Give OMS report intake and shutdown an explicit lifecycle | 1 |
-| `src/Meridian.Execution/IOrderManagementLifecycle.cs` | Execution, Risk, and Strategies | 2026-10-20T08:15:36Z | `19d59dd7b` | Give OMS report intake and shutdown an explicit lifecycle | 1 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 88 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 83 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 35 |
+| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 12 |
+| `src/Meridian.Execution.Sdk/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 7 |
+| `src/Meridian.Risk/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 6 |
+| `src/Meridian.Strategies/Live/BacktestStrategyLiveAdapter.cs` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 2 |
+| `src/Meridian.Infrastructure/README.md` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 26 |
+| `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 3 |
+| `src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 3 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 8 |
+| `src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs` | Desktop and UI Workflows | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 2 |
+| `src/Meridian.Strategies/Storage/StrategyRunStore.cs` | Execution, Risk, and Strategies | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 1 |
+| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 62 |
+| `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 12 |
+| `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 9 |
+| `src/Meridian.DataIntegration/README.md` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 6 |
+| `src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 4 |
+| `src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 2 |
+| `src/Meridian.DataIntegration/Reconciliation/IbFlexStatementService.cs` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 2 |
+| `src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs` | Host and Composition | 2026-11-13T01:11:48Z | `e658268173` | Format pool accrual codec and refresh reviewed source fingerprint | 3 |
+| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 35 |
+| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 10 |
+| `src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs` | Desktop and UI Workflows | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 2 |
+| `src/Meridian.Storage/Services/TierMigrationService.cs` | Providers and Storage | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 1 |
+| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | 2026-11-13T00:11:14Z | `7798dc2b18` | Persist backup access descriptor before Windows publication | 4 |
+| `src/Meridian.FinancialOperations/README.md` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 22 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 3 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ChecklistControls.cs` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 1 |
+| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowReadModelBuilder.cs` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 1 |
+| `src/Meridian.QuantScript/Api/QuantDataContext.cs` | Backtesting and Strategy Analytics | 2026-11-12T23:09:28Z | `a96b31b03c` | refactor(quantscript): depend on shared contracts without Application | 1 |
+| `src/Meridian.QuantScript/Meridian.QuantScript.csproj` | Backtesting and Strategy Analytics | 2026-11-12T23:09:28Z | `a96b31b03c` | refactor(quantscript): depend on shared contracts without Application | 1 |
+| `src/Meridian.QuantScript/README.md` | Backtesting and Strategy Analytics | 2026-11-12T23:09:28Z | `a96b31b03c` | refactor(quantscript): depend on shared contracts without Application | 1 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx` | Desktop and UI Workflows | 2026-11-12T23:05:56Z | `acc807325b` | perf: speed up web screenshot capture | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx` | Desktop and UI Workflows | 2026-11-12T23:05:56Z | `acc807325b` | perf: speed up web screenshot capture | 2 |
+| `src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs` | Host and Composition | 2026-11-12T22:58:20Z | `c3e4f76b55` | Refresh current public API references for typed pool accrual | 9 |
+| `src/Meridian.Application/GlobalUsings.cs` | Host and Composition | 2026-11-12T22:56:27Z | `a8f11418cd` | Isolate demo smoke tests and reuse CLI build outputs | 2 |
+| `src/Meridian/GlobalUsings.cs` | Host and Composition | 2026-11-12T22:56:27Z | `a8f11418cd` | Isolate demo smoke tests and reuse CLI build outputs | 2 |
+| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 20 |
+| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 15 |
 

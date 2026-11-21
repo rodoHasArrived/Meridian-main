@@ -32,6 +32,31 @@ export interface LedgerAmountProof {
   status: EvidenceStatus;
   evidence: LedgerAmountProofEvidence[];
   warnings: string[];
+  accountingPreparerAttestations?: AccountingPreparerAttestationDisclosure[] | null;
+  ordinaryRecordedApprovalSatisfied?: boolean | null;
+}
+
+/** Compact native accounting decisions, separate from source-evidence task acknowledgments. */
+export interface AccountingPreparerAttestationDisclosure {
+  schemaVersion: number;
+  classification: string;
+  disclosure: string;
+  sourceScope: LedgerAmountScope;
+  journalEntryIds: string[];
+  validationIssues: string[];
+  attestationId?: string | null;
+  caseId?: string | null;
+  projectionId?: string | null;
+  eventId?: string | null;
+  eventVersion?: number | null;
+  actor?: string | null;
+  recordedAt?: string | null;
+  policyVersion?: string | null;
+  policyHash?: string | null;
+  declarationId?: string | null;
+  declarationRevision?: number | null;
+  draftedCandidateFingerprint?: string | null;
+  postingIntentHash?: string | null;
 }
 
 /** A selected immutable posting line or retained report amount, never a name or symbol lookup. */

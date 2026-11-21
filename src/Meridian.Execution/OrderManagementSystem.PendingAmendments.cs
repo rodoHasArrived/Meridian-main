@@ -36,7 +36,7 @@ public sealed partial class OrderManagementSystem
             _orders[orderId] = ApplyAmendmentTerms(current, original);
             try
             {
-                if (IsTerminal(current.Status))
+                if (OrderStatusFacts.IsTerminal(current.Status))
                     throw new InvalidOperationException("Order became terminal before amendment dispatch.");
                 SavePendingAmendment(orderId);
             }
@@ -126,6 +126,6 @@ public sealed partial class OrderManagementSystem
         return transition.ResolvedAmendment;
     }
 
-    private IReadOnlyList<OrderState> GetAmendmentExposureReservations() =>
-        _amendmentBook.GetExposureReservations();
+    private IReadOnlyList<OrderState> GetAmendmentExposureReservations(bool largestQuantity = false) =>
+        _amendmentBook.GetExposureReservations(largestQuantity);
 }

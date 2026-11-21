@@ -483,6 +483,7 @@ public sealed class ContainedProcess : IAsyncDisposable, IDisposable
             pending.Push(rootProcessId);
             long memory = 0;
             long cpuTicks = 0;
+            var liveProcesses = 0;
 
             while (pending.Count > 0)
             {
@@ -492,6 +493,7 @@ public sealed class ContainedProcess : IAsyncDisposable, IDisposable
 
                 if (TryReadStat(processId, out var residentPages, out var processCpuTicks))
                 {
+                    liveProcesses++;
                     memory = SaturatingAdd(memory, SaturatingMultiply(residentPages, Environment.SystemPageSize));
                     cpuTicks = SaturatingAdd(cpuTicks, processCpuTicks);
                 }
@@ -515,7 +517,9 @@ public sealed class ContainedProcess : IAsyncDisposable, IDisposable
                 }
             }
 
-            if (visited.Count == 0)
+            // The root is always visited, so count only processes /proc still describes. When none
+            // remain, report failure so the caller falls back to Process.HasExited (count 0).
+            if (liveProcesses == 0)
                 return false;
 
             var seconds = cpuTicks / (double)ClockTicksPerSecond;
@@ -523,7 +527,7 @@ public sealed class ContainedProcess : IAsyncDisposable, IDisposable
                 memory,
                 memory,
                 TimeSpan.FromSeconds(seconds),
-                visited.Count,
+                liveProcesses,
                 HardLimitsApplied: false);
             return true;
         }

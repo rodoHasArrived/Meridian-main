@@ -118,7 +118,7 @@ public sealed class AccountingWorkspaceShellPageTests
                 Tone: "Primary"),
             PrimaryBlocker: new WorkflowBlockerSummary(
                 Code: "choose-context",
-                Label: "No operating context selected",
+                Label: "No scope selected",
                 Detail: "Accounting and reconciliation review scope to the active operating context.",
                 Tone: "Warning",
                 IsBlocking: true),
@@ -152,7 +152,7 @@ public sealed class AccountingWorkspaceShellPageTests
             StatusDetail: "Accounting review cannot start until a fund-linked operating context is selected.",
             StatusTone: "Warning",
             NextAction: new WorkflowNextAction("Choose Context", "Select context.", "AccountingShell", "Primary"),
-            PrimaryBlocker: new WorkflowBlockerSummary("choose-context", "No operating context selected", "Choose context.", "Warning", true),
+            PrimaryBlocker: new WorkflowBlockerSummary("choose-context", "No scope selected", "Choose context.", "Warning", true),
             Evidence: []);
 
         var steps = AccountingWorkspacePresentationService.BuildFinancialOperationsWorkflowSteps(

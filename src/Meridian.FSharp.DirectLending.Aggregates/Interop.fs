@@ -25,6 +25,12 @@ module DirectLendingAggregateInterop =
     let ApplyMixedPayment (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: ApplyMixedPaymentRequest) =
         ServicingAggregate.applyMixedPayment servicing terms request.Amount request.Breakdown request.EffectiveDate
 
+    let ApplyUnappliedCash (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: ApplyUnappliedCashRequest) =
+        ServicingAggregate.applyUnappliedCash servicing terms request.Amount request.Breakdown request.EffectiveDate
+
+    let RefundUnappliedCash (servicing: LoanServicingStateDto) (request: RefundUnappliedCashRequest) =
+        ServicingAggregate.refundUnappliedCash servicing request.Amount request.EffectiveDate
+
     let AssessFee (servicing: LoanServicingStateDto) (request: AssessFeeRequest) =
         ServicingAggregate.assessFee servicing request.Amount request.EffectiveDate
 
@@ -36,3 +42,29 @@ module DirectLendingAggregateInterop =
 
     let ChargePrepaymentPenalty (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: ChargePrepaymentPenaltyRequest) =
         ServicingAggregate.chargePrepaymentPenalty servicing terms request.OutstandingPrincipal request.EffectiveDate
+
+    let ApplyScheduledRateReset (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (resetDate: DateOnly) (fixingObservationDate: DateOnly) (fixingRate: decimal) (sourceRef: string) =
+        ServicingAggregate.applyScheduledRateReset
+            servicing
+            terms
+            resetDate
+            { ObservationDate = fixingObservationDate
+              RateFraction = fixingRate
+              SourceRef = sourceRef
+              FixingId = Nullable()
+              FixingRevision = Nullable() }
+
+    /// Applies a scheduled reset from a stored fixing, retaining the fixing's identity and revision.
+    let ApplyScheduledRateResetFromFixing (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (resetDate: DateOnly) (fixing: DirectLendingIndexFixingDto) (sourceRef: string) =
+        ServicingAggregate.applyScheduledRateReset
+            servicing
+            terms
+            resetDate
+            { ObservationDate = fixing.ObservationDate
+              RateFraction = fixing.RateFraction
+              SourceRef = sourceRef
+              FixingId = Nullable fixing.FixingId
+              FixingRevision = Nullable fixing.Revision }
+
+    let CapitalizePik (servicing: LoanServicingStateDto) (terms: DirectLendingTermsDto) (request: CapitalizePikRequest) =
+        ServicingAggregate.capitalizePik servicing terms request.CapitalizationDate

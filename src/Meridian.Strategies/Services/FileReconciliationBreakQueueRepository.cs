@@ -24,6 +24,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
     private readonly ILogger<FileReconciliationBreakQueueRepository> _logger;
     private readonly IReconciliationSlaPolicyProvider? _slaPolicyProvider;
     private readonly IReconciliationSlaCalendarResolver? _slaCalendarResolver;
+    private readonly IPreparerAttestationReferenceClassifier? _preparerAttestationReferences;
     private readonly Func<string, string, CancellationToken, Task> _stateWriter;
     private readonly SemaphoreSlim _gate = new(1, 1);
     private static readonly JsonSerializerOptions AuditValidationJsonOptions = CreateJsonOptions();
@@ -44,12 +45,14 @@ public sealed partial class FileReconciliationBreakQueueRepository :
         ILogger<FileReconciliationBreakQueueRepository> logger,
         IReconciliationSlaPolicyProvider? slaPolicyProvider = null,
         Func<string, string, CancellationToken, Task>? stateWriter = null,
-        IReconciliationSlaCalendarResolver? slaCalendarResolver = null)
+        IReconciliationSlaCalendarResolver? slaCalendarResolver = null,
+        IPreparerAttestationReferenceClassifier? preparerAttestationReferences = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(dataDirectory);
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _slaPolicyProvider = slaPolicyProvider;
         _slaCalendarResolver = slaCalendarResolver;
+        _preparerAttestationReferences = preparerAttestationReferences;
         _stateWriter = stateWriter ?? ((path, content, ct) => AtomicFileWriter.WriteAsync(path, content, ct));
 
         Directory.CreateDirectory(dataDirectory);
@@ -1217,7 +1220,8 @@ public sealed partial class FileReconciliationBreakQueueRepository :
             }
 
             var validation = ValidateCloseScopeMutation(item, command)
-                ?? ValidateCaseworkCommand(item, command);
+                ?? ValidateCaseworkCommand(item, command)
+                ?? await ValidatePreparerApprovalReferenceAsync(item, command, ct).ConfigureAwait(false);
             if (validation is not null)
             {
                 try
@@ -1395,6 +1399,18 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     ct).ConfigureAwait(false);
             }
 
+            ReviewedBulkVersions? reviewedVersions = null;
+            if (!request.DryRun && (request.RequireReviewedPreview || request.PreviewBulkActionId is not null))
+            {
+                reviewedVersions = ReadReviewedBulkVersions(request, scope, inputHash);
+                if (reviewedVersions is null)
+                    return CreateRejectedBulkResult(request, inputHash, startedAt,
+                        "Run a fresh bulk preview for this exact action and execute its eligible cases together.",
+                        ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
+            }
+
+            var successorChanged = reviewedVersions?.SuccessorVersion is { } successorVersion
+                && (!_items!.TryGetValue(request.SupersedingBreakId!.Trim(), out var successor) || successor.Version != successorVersion);
             var originalItems = new Dictionary<string, ReconciliationBreakQueueItem>(_items!, StringComparer.OrdinalIgnoreCase);
             var auditCount = _auditEvents.Count;
             var beforeBulkPayload = JsonSerializer.Serialize(request, _jsonOptions);
@@ -1447,7 +1463,7 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     CommandId: $"{bulkActionId}:{breakId}",
                     CorrelationId: request.CorrelationId,
                     Source: request.Source,
-                    ExpectedVersion: item.Version,
+                    ExpectedVersion: reviewedVersions is null ? item.Version : reviewedVersions.Cases[breakId],
                     Reason: request.Reason,
                     Assignee: request.Assignee,
                     Priority: request.Priority,
@@ -1460,13 +1476,17 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                     ApprovalActor: request.ApprovalActor,
                     ApprovalReference: request.ApprovalReference,
                     SupersedingBreakId: request.SupersedingBreakId);
-                var validation = ValidateCloseScopeMutation(item, command)
+                var validation = successorChanged
+                    ? new ReconciliationBreakQueueTransitionResult(ReconciliationBreakQueueTransitionStatus.Conflict, item,
+                        "The superseding case version changed since preview.", ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict)
+                    : ValidateCloseScopeMutation(item, command)
                     ?? ValidateSupersessionSuccessor(
                         item,
                         command,
                         _items,
                         pendingSupersessionEdges)
-                    ?? ValidateCaseworkCommand(item, command);
+                    ?? ValidateCaseworkCommand(item, command)
+                    ?? await ValidatePreparerApprovalReferenceAsync(item, command, ct).ConfigureAwait(false);
                 if (validation is null &&
                     command.Action == ReconciliationCaseworkAction.Supersede &&
                     !string.IsNullOrWhiteSpace(command.SupersedingBreakId))
@@ -1544,6 +1564,20 @@ public sealed partial class FileReconciliationBreakQueueRepository :
 
             var successCount = results.Count(result => request.DryRun ? result.WouldSucceed : result.Succeeded);
             var failureCount = results.Count - successCount;
+            ReconciliationBulkReviewedCaseVersion? reviewedSuccessor = null;
+            if (request.DryRun && request.Action == ReconciliationCaseworkAction.Supersede
+                && results.Any(static result => result.WouldSucceed && result.Error is null)
+                && _items!.TryGetValue(request.SupersedingBreakId!.Trim(), out var target))
+            {
+                reviewedSuccessor = new ReconciliationBulkReviewedCaseVersion(target.BreakId, target.Version);
+                await AppendAuditAsync(CreateAudit(prepared.First(static entry => entry.Validation is null).Command!, target, target,
+                    DateTimeOffset.UtcNow) with
+                {
+                    BreakId = target.BreakId,
+                    CommandId = bulkActionId,
+                    EventType = "BulkActionSuccessorReviewed"
+                }, ct).ConfigureAwait(false);
+            }
             var outcome = CreateBulkOutcome(
                 request,
                 inputHash,
@@ -1561,7 +1595,9 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                 results.ToArray())
             {
                 InputHashSha256 = inputHash,
-                Outcome = outcome
+                Outcome = outcome,
+                ReviewProtocol = request.DryRun ? 1 : null,
+                ReviewedSuccessor = reviewedSuccessor
             };
             _bulkResults[bulkActionId] = result;
             _bulkResultIdsByIdempotencyKey[request.IdempotencyKey] = bulkActionId;
@@ -1571,7 +1607,10 @@ public sealed partial class FileReconciliationBreakQueueRepository :
                 request.IdempotencyKey,
                 inputHash,
                 result,
-                AccessScope: scope);
+                AccessScope: scope)
+            {
+                PreviewBulkActionId = reviewedVersions is null ? null : request.PreviewBulkActionId
+            };
             try
             {
                 await PersistSnapshotAsync(ct).ConfigureAwait(false);

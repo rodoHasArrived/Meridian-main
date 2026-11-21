@@ -1,0 +1,750 @@
+{
+  "acl": [
+    {
+      "grantable": false,
+      "grantee": "meridian",
+      "grantor": "meridian",
+      "privilege": "create"
+    },
+    {
+      "grantable": false,
+      "grantee": "meridian",
+      "grantor": "meridian",
+      "privilege": "usage"
+    }
+  ],
+  "comment": null,
+  "comments": [],
+  "composite_types": [],
+  "dependencies": [],
+  "domains": [],
+  "enums": [],
+  "exists": true,
+  "extensions": [],
+  "fingerprint": "48b74e6e5f438d535ad957bc2fcfa516eddf2970bc461afaa95f6e540d7335c8",
+  "foreign_tables": [],
+  "functions": [],
+  "logical_modules": [
+    "operator-triage"
+  ],
+  "materialized_views": [],
+  "name": "operator_triage",
+  "owner": "meridian",
+  "partitions": [],
+  "policies": [],
+  "procedures": [],
+  "relations": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "work_item_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "state",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "tenant_id",
+            "company_id",
+            "work_item_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+          "delete_action": null,
+          "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "item_metadata_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+          "expression": null,
+          "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "work_item_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "item_metadata_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "item_metadata",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "operator_triage",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "filename",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "checksum",
+          "nullable": true,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "filename"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (filename)",
+          "delete_action": null,
+          "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "operator_triage_schema_migrations_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+          "expression": null,
+          "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "filename"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "operator_triage_schema_migrations_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "operator_triage_schema_migrations",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "operator_triage",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    }
+  ],
+  "row_level_security": [
+    {
+      "enabled": false,
+      "fingerprint": "24bfc40a9eafafa31bf1bad334f90e0adc1900af81fa601410a5b7cb39a103ee",
+      "forced": false,
+      "policies": [],
+      "relation": "item_metadata",
+      "schema": "operator_triage"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "4e56d0a436163d5b30a9df7d87682dfdfd4da1cd689a0b15491e1d52d5d2475e",
+      "forced": false,
+      "policies": [],
+      "relation": "operator_triage_schema_migrations",
+      "schema": "operator_triage"
+    }
+  ],
+  "security_labels": [],
+  "sequences": [],
+  "tables": [
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "7f116867eb8f0e94c2a8158c8dbdea62560a5b0abd172634361af79a970ebe4c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "900f8e8670dd269b5c0a80be9c4799201d07a69d1f9e3c30c7e907a13da2d1c3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "b3e43a63f2775a29d02610780732d0ec620bf509f2cea432d6e9c564e3867ed1",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "work_item_id",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "jsonb",
+          "default": null,
+          "fingerprint": "ff1b480d42be49025f49c149f1d89fb0552c4b5988c25e5cb54d99f6ada97611",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "state",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "jsonb",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "tenant_id",
+            "company_id",
+            "work_item_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (tenant_id, company_id, work_item_id)",
+          "delete_action": null,
+          "fingerprint": "6065f3e1c9099515a2741ef91ff240cd47162f689467fdb48ce1645b440806d4",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "item_metadata_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "d6d9d84fad6c8a62dd19b87132bff6963bc99f6ba75b9727743d6e6d7c50f5fc",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX item_metadata_pkey ON operator_triage.item_metadata USING btree (tenant_id, company_id, work_item_id)",
+          "expression": null,
+          "fingerprint": "b3fd9185461dbc707bfba4494dbe06b5d63f16431074f632db37692d56bbc5aa",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "tenant_id",
+            "company_id",
+            "work_item_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "item_metadata_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "item_metadata",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "operator_triage",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "eac765c0589ab65b791dfccfe7c6f882f6bc7ac5c7a5e04d44a380d227c50ba3",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "filename",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "f6ea2a5d58978e4a6687c049cc534b4e5ca17bcb78e9fea009f02fcc7ac18f4e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "checksum",
+          "nullable": true,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "29facb20b76133be943985242d7b19bcaa7d0cb23f86d5af8406b658c7d7426c",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "applied_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "filename"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (filename)",
+          "delete_action": null,
+          "fingerprint": "8507e7b933006009f08ce2de9de0be0cb169107a29d7df059eea20012e6fae0b",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "operator_triage_schema_migrations_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "29e06f390d8a02f9163123142832d92ae3293b2b20f8051d26cf7178043bc009",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX operator_triage_schema_migrations_pkey ON operator_triage.operator_triage_schema_migrations USING btree (filename)",
+          "expression": null,
+          "fingerprint": "66499493967e9daff72002a283d2ed6eee29a969d5530a28bff4b05b2b3bf7d9",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "filename"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "operator_triage_schema_migrations_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "operator_triage_schema_migrations",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "operator_triage",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    }
+  ],
+  "triggers": [],
+  "views": []
+}

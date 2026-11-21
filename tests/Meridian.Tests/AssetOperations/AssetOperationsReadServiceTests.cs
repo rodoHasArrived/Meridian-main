@@ -431,6 +431,40 @@ public sealed class AssetOperationsReadServiceTests
     }
 
     [Fact]
+    public void FromDirectLending_RefundOnAReceiptDueDate_IsNotEvidenceOfTheReceipt()
+    {
+        // PRD-115: a refund of unapplied cash is paid out. Matching it to an expected receipt of the
+        // same amount and date would show the receipt as collected when no payment arrived.
+        var securityId = Guid.Parse("27272727-2727-2727-2727-272727272727");
+        var loanId = Guid.Parse("28282828-2828-2828-2828-282828282828");
+        var projectionRunId = Guid.Parse("29292929-2929-2929-2929-292929292929");
+        var contract = BuildLoanContract(loanId, securityId);
+        var projectionRun = new ProjectionRunDto(
+            projectionRunId, loanId, 1, 2, new DateOnly(2026, 6, 30), null, Guid.NewGuid(), "unit-test",
+            contract.TermsVersions[0].TermsHash, "dl-engine-v1", ProjectionRunStatus.Completed, null, DateTimeOffset.UtcNow);
+        var juneFlow = new ProjectedCashFlowDto(
+            Guid.NewGuid(), projectionRunId, loanId, 1, "Interest", new DateOnly(2026, 6, 30), new DateOnly(2026, 6, 1),
+            new DateOnly(2026, 6, 30), 1_000m, CurrencyCode.USD, 500_000m, 0.08m,
+            JsonSerializer.Serialize(new { type = "interest" }), DateTimeOffset.UtcNow);
+        var refund = new CashTransactionDto(
+            Guid.NewGuid(), loanId, "UnappliedCashRefund", new DateOnly(2026, 6, 30), new DateOnly(2026, 6, 30),
+            new DateOnly(2026, 6, 30), 1_000m, CurrencyCode.USD, "wire-out-1", Guid.NewGuid(), DateTimeOffset.UtcNow, false);
+
+        var projection = AssetOperationsProjectionBuilder.FromDirectLending(
+            contract,
+            [projectionRun],
+            new Dictionary<Guid, IReadOnlyList<ProjectedCashFlowDto>> { [projectionRunId] = [juneFlow] },
+            [refund],
+            [],
+            new Dictionary<Guid, IReadOnlyList<ReconciliationResultDto>>());
+
+        var juneEvent = projection.TermsObligationsTimeline!.Events.Single(static timelineEvent =>
+            timelineEvent.EventKind == "Interest" && timelineEvent.EffectiveDate == new DateOnly(2026, 6, 30));
+        juneEvent.ActualAmount.Should().BeNull();
+        juneEvent.EvidenceLink.Should().BeNull();
+    }
+
+    [Fact]
     public async Task GetOperationsAsync_ForPrivateFundInterest_ShouldGenerateNonCashObligationTimelineFromTerms()
     {
         var securityId = Guid.Parse("cccccccc-cccc-cccc-cccc-cccccccccccc");

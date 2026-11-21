@@ -12,3 +12,5 @@ General-ledger grid — Debit/Credit columns plus a running Balance, with a tota
 ```
 
 Set `showAccount` when the table spans multiple accounts (a journal view) rather than one account's history. Non-obvious: `status: "void"` rows are struck through and **excluded** from totals and the running balance (the footer notes how many); the running balance is computed in source (chronological) order and does not re-derive when the operator sorts a column. Headers sort in place — pass `onSort` only when the data source sorts server-side.
+
+Unknown supplied amounts propagate through totals. A running balance stays unknown until an explicit known balance restores its provenance; a later known balance never legitimizes earlier unknown rows. Void entries remain excluded and readable.

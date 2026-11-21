@@ -419,7 +419,7 @@ public sealed class StorageOptimizationViewModel : BindableBase
     internal static string FormatTierStatistics(TierStatisticsApiResult stats)
     {
         var text = new StringBuilder();
-        text.AppendLine($"Tier Statistics (as of {stats.GeneratedAt:yyyy-MM-dd HH:mm} UTC)");
+        text.AppendLine($"Tier Statistics (as of {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(stats.GeneratedAt)})");
         text.AppendLine(new string('-', 50));
         text.AppendLine($"Total: {FormatHelpers.FormatBytes(stats.TotalBytes)} across {stats.TotalFiles} files");
         text.AppendLine();

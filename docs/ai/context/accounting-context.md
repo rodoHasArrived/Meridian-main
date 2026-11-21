@@ -2,7 +2,7 @@
 
 **Status:** active AI context pack  
 **Owner:** core-team  
-**Reviewed:** 2026-10-07
+**Reviewed:** 2026-11-12
 
 ## Meridian Accounting Rules
 
@@ -27,13 +27,24 @@
 External GL provider work also follows [External GL Providers](../../operators/external-gl-providers.md).
 Xero and NetSuite credentialed imports remain external evidence. Their provider-owned
 export checks require current connection/import scope and exact retained human control
-references; a certified review artifact still cannot post externally.
+references. Use the exact journal export workflow for provider posting. It freezes the certified
+mapping, source checkpoint and journal line IDs, then commits approval and the outbox together.
+Recover ambiguous submissions by querying the retained provider key. Keep Meridian authoritative
+and gate final close and reports only on a book's explicit confirmation policy.
 
 Load this context before generating or reviewing code for ledgers, journal entries, capital accounts, close workflows, reconciliation postings, reports with accounting balances, or audit evidence involving accounting records.
 
 Consolidation work loads [Intercompany Consolidation](../../domain/intercompany-consolidation.md).
-The first slice uses two direct 100% entities in one currency; only posted reviewed eliminations
-enter actual consolidated figures. The existing summed ledger/WPF views remain gross.
+The exact book policy retains v1 behavior or selects v2 stable-role/N-entity matching, v3 governed
+whole-trial-balance FX translation, or v4 separately enabled income elimination. Only posted reviewed
+eliminations enter actual consolidated figures. Legacy summed views remain gross. New book controls
+are enforced immediately; existing books warn until audited migration activation. Missing historical
+lifecycle, agreement, account or currency evidence is unresolved, never inferred from current state.
+Load [Intercompany Agreements and Entity Lifecycle](../../domain/intercompany-agreements-and-entity-lifecycle.md)
+and the [implementation sequence](../../engineering/plans/intercompany-entity-controls.md) before
+changing these shared seams. Preserve independently reviewed legacy-attribution sidecars, exact
+source digests and retained v1 evidence. File-based local/demo state does not establish PostgreSQL
+transactional authority or Windows desktop verification.
 
 ## Review Checklist
 

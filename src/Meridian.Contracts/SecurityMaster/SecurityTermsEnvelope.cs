@@ -33,12 +33,14 @@ public static class SecurityTermsFormats
 /// place that decides which payload family a stored document belongs to.
 /// <para>
 /// The asset-specific-terms slot historically held two payload families behind one integer
-/// <c>schemaVersion</c> key, so the reader had to guess the family from the integer plus the
-/// presence of module keys — which is why flat version 2 was permanently reserved. Every payload
-/// now states its family in <see cref="FormatKey"/> and, for flat payloads, the asset-class terms
-/// contract version it was written against in <see cref="AssetClassTermsVersionKey"/>. Readers that
-/// see an explicit format dispatch on it; payloads written before the tag existed fall back to the
-/// historical shape heuristic, which stays correct for every document already stored.
+/// <c>schemaVersion</c> key, so readers had to guess the family from the integer plus the presence
+/// of module keys. Every payload now states its family in <see cref="FormatKey"/> and, for flat
+/// payloads, the asset-class terms contract version it was written against in
+/// <see cref="AssetClassTermsVersionKey"/>. Live readers dispatch on the declared tag alone and refuse
+/// an untagged payload with a precise error (ADR-024 decision 5, amendment 2026-11-13 step 5):
+/// migration 068 declared the family on every current-state row and its check constraint refuses new
+/// untagged rows. Untagged retained terms in append-only event history are classified only by
+/// <see cref="SecurityTermsLegacyEventClassifier"/>, during event and snapshot decoding.
 /// </para>
 /// </summary>
 public static class SecurityTermsEnvelope
@@ -97,31 +99,212 @@ public static class SecurityTermsEnvelope
             : null;
 
     /// <summary>
-    /// Resolves the payload family. An explicit <see cref="FormatKey"/> wins; an untagged payload is
-    /// classified by the historical shape rules: a profile envelope is
-    /// <see cref="SecurityTermsFormats.CustomProfile"/>, a version-2 document carrying economic
-    /// module keys is <see cref="SecurityTermsFormats.Economic"/>, and anything else is
-    /// <see cref="SecurityTermsFormats.Flat"/>.
+    /// The declared payload family. Live code never infers a family from a payload's shape: a payload
+    /// without a string <see cref="FormatKey"/> (or a non-object) is refused with
+    /// <see cref="SecurityTermsFormatUndeclaredException"/>, which names the remedy. A declared family
+    /// this node does not know is returned as declared, so the caller can refuse it with its own
+    /// context. Untagged retained terms from event history are classified by
+    /// <see cref="SecurityTermsLegacyEventClassifier.Classify"/> instead.
     /// </summary>
     public static string ResolveFormat(JsonElement payload)
+        => GetDeclaredFormat(payload) ?? throw new SecurityTermsFormatUndeclaredException(payload.ValueKind);
+
+    /// <summary>
+    /// Whether a terms object is a custom-asset profile envelope as a writer submits it: a string
+    /// <c>customProfileId</c> and a <c>profileFields</c> object. Stricter than
+    /// <see cref="CarriesProfileEnvelope"/>, which accepts either signal on its own.
+    /// </summary>
+    public static bool IsProfileEnvelopeDocument(JsonElement payload)
+        => payload.ValueKind == JsonValueKind.Object
+           && payload.TryGetProperty("customProfileId", out var profileId)
+           && profileId.ValueKind == JsonValueKind.String
+           && payload.TryGetProperty("profileFields", out var profileFields)
+           && profileFields.ValueKind == JsonValueKind.Object;
+
+    /// <summary>
+    /// The family a writer declares on untagged asset-specific terms it is about to persist:
+    /// <see cref="SecurityTermsFormats.CustomProfile"/> for a profile envelope
+    /// (<see cref="IsProfileEnvelopeDocument"/>), otherwise <see cref="SecurityTermsFormats.Flat"/>.
+    /// A write accepts only those two families (<see cref="EnsureWritableAsAssetSpecificTerms"/>), so
+    /// the profile envelope is the write contract's only discriminator; this never decides
+    /// <see cref="SecurityTermsFormats.Economic"/> and never consults <c>schemaVersion</c>. A flat
+    /// declaration on a document stamped with a codec version the flat family does not accept is read
+    /// as flat and refused by the schema-version guard, never routed into the economic bridge.
+    /// <see langword="null"/> for a payload that already declares a family, or a non-object.
+    /// </summary>
+    public static string? GetStampableFormat(JsonElement payload)
     {
-        if (GetDeclaredFormat(payload) is { } declared)
+        if (payload.ValueKind != JsonValueKind.Object || GetDeclaredFormat(payload) is not null)
         {
-            return declared;
+            return null;
         }
 
-        if (payload.ValueKind == JsonValueKind.Object
-            && payload.TryGetProperty("customProfileId", out var profileId)
-            && profileId.ValueKind == JsonValueKind.String
-            && payload.TryGetProperty("profileFields", out var profileFields)
-            && profileFields.ValueKind == JsonValueKind.Object)
+        return IsProfileEnvelopeDocument(payload) ? SecurityTermsFormats.CustomProfile : SecurityTermsFormats.Flat;
+    }
+
+    /// <summary>
+    /// Declares <see cref="FormatKey"/> on untagged asset-specific terms a writer is about to persist, as
+    /// <see cref="GetStampableFormat"/> decides (ADR-024 decision 1, amendment 2026-11-13). Only
+    /// <see cref="FormatKey"/> is added: an absent <see cref="AssetClassTermsVersionKey"/> keeps meaning
+    /// version 1, and every other member is copied byte for byte, except that a non-string
+    /// <see cref="FormatKey"/> member (which declares nothing) is replaced. The key goes immediately
+    /// after <c>schemaVersion</c>, or last when the document carries none. A payload that already
+    /// declares a family and a non-object are returned unchanged, so stamping is idempotent. Replay of
+    /// untagged event history uses <see cref="SecurityTermsLegacyEventClassifier.StampDeclaredFormat"/>.
+    /// </summary>
+    public static JsonElement StampDeclaredFormat(JsonElement payload)
+        => GetStampableFormat(payload) is { } format ? DeclareFormat(payload, format) : payload;
+
+    /// <summary>Text form of <see cref="StampDeclaredFormat(JsonElement)"/>; non-JSON text is returned unchanged.</summary>
+    public static string StampDeclaredFormat(string json)
+    {
+        ArgumentNullException.ThrowIfNull(json);
+        JsonDocument document;
+        try
         {
-            return SecurityTermsFormats.CustomProfile;
+            document = JsonDocument.Parse(json);
+        }
+        catch (JsonException)
+        {
+            return json;
         }
 
-        return SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.IsEconomicTermsShape(payload)
-            ? SecurityTermsFormats.Economic
-            : SecurityTermsFormats.Flat;
+        using (document)
+        {
+            return GetStampableFormat(document.RootElement) is { } format
+                ? BuildStamped(document.RootElement, format)
+                : json;
+        }
+    }
+
+    /// <summary>
+    /// Adds <paramref name="format"/> as <see cref="FormatKey"/> to an object, keeping every other
+    /// member byte for byte (see <see cref="StampDeclaredFormat(JsonElement)"/> for placement).
+    /// </summary>
+    internal static JsonElement DeclareFormat(JsonElement payload, string format)
+    {
+        using var document = JsonDocument.Parse(BuildStamped(payload, format));
+        return document.RootElement.Clone();
+    }
+
+    private static string BuildStamped(JsonElement payload, string format)
+    {
+        // A text splice, not a rebuild: the declaration is inserted into the payload's own bytes and
+        // every other byte (including the payload's own whitespace and separators) is kept, so
+        // RemoveRedundantDeclaredFormat is its exact inverse and a hash taken over the stamp-free text
+        // equals the hash of the same terms before they were stamped.
+        var utf8 = System.Text.Encoding.UTF8.GetBytes(payload.GetRawText());
+
+        // A non-string termsFormat member (for example null) declares nothing; it is replaced,
+        // never kept, so the stamped document carries exactly one termsFormat key.
+        while (ReadTopLevelMembers(utf8, out _) is var members
+               && members.FindIndex(static member => member.IsFormat) is var index and >= 0)
+        {
+            utf8 = RemoveMember(utf8, members, index);
+        }
+
+        var remaining = ReadTopLevelMembers(utf8, out var openEnd);
+        var schemaVersion = remaining.FindIndex(static member => member.IsSchemaVersion);
+        var anchor = schemaVersion >= 0 ? remaining[schemaVersion].ValueEnd
+            : remaining.Count > 0 ? remaining[^1].ValueEnd
+            : openEnd;
+        var declaration = (remaining.Count > 0 ? "," : string.Empty) + "\"" + FormatKey + "\":\"" + format + "\"";
+        return System.Text.Encoding.UTF8.GetString(utf8, 0, anchor)
+            + declaration
+            + System.Text.Encoding.UTF8.GetString(utf8, anchor, utf8.Length - anchor);
+    }
+
+    /// <summary>
+    /// The raw text of asset-specific terms without a top-level <see cref="FormatKey"/> member that
+    /// only restates the family the frozen shape rule infers for the rest of the document
+    /// (<see cref="SecurityTermsLegacyEventClassifier.GetStampableFormat"/>) — exactly the declaration a
+    /// writer stamp, a replay stamp or migration 068 adds to untagged terms. The member is cut out of
+    /// the payload's own text together with one adjacent separator, so every other byte is kept and the
+    /// result is the text the same terms had before they were stamped (by <see cref="StampDeclaredFormat(JsonElement)"/>,
+    /// or by <c>jsonb_set</c> in PostgreSQL's canonical <c>jsonb</c> text form). Any other payload —
+    /// untagged, a non-object, a duplicate or non-string <see cref="FormatKey"/>, or a declaration that
+    /// differs from what the shape rule infers (for example <see cref="SecurityTermsFormats.Economic"/>) —
+    /// is returned as its raw text unchanged, so a declaration that could change what the terms decode
+    /// to always stays in the text.
+    /// </summary>
+    public static string RemoveRedundantDeclaredFormat(JsonElement payload)
+    {
+        var raw = payload.GetRawText();
+        if (payload.ValueKind != JsonValueKind.Object || GetDeclaredFormat(payload) is not { } declared)
+        {
+            return raw;
+        }
+
+        var utf8 = System.Text.Encoding.UTF8.GetBytes(raw);
+        var members = ReadTopLevelMembers(utf8, out _);
+        var formatMembers = members.FindAll(static member => member.IsFormat);
+        if (formatMembers.Count != 1)
+        {
+            return raw;
+        }
+
+        var stripped = System.Text.Encoding.UTF8.GetString(RemoveMember(utf8, members, members.IndexOf(formatMembers[0])));
+        using var document = JsonDocument.Parse(stripped);
+        return string.Equals(SecurityTermsLegacyEventClassifier.GetStampableFormat(document.RootElement), declared, StringComparison.Ordinal)
+            ? stripped
+            : raw;
+    }
+
+    /// <summary>
+    /// <see cref="RemoveRedundantDeclaredFormat"/> as an element: the same payload when it carries no
+    /// redundant declaration, otherwise a detached element over the stamp-free text.
+    /// </summary>
+    public static JsonElement WithoutRedundantDeclaredFormat(JsonElement payload)
+    {
+        if (payload.ValueKind != JsonValueKind.Object || GetDeclaredFormat(payload) is null)
+        {
+            return payload;
+        }
+
+        var stripped = RemoveRedundantDeclaredFormat(payload);
+        if (string.Equals(stripped, payload.GetRawText(), StringComparison.Ordinal))
+        {
+            return payload;
+        }
+
+        using var document = JsonDocument.Parse(stripped);
+        return document.RootElement.Clone();
+    }
+
+    private readonly record struct TopLevelMember(int NameStart, int ValueEnd, bool IsFormat, bool IsSchemaVersion);
+
+    private static List<TopLevelMember> ReadTopLevelMembers(byte[] utf8, out int openEnd)
+    {
+        var reader = new Utf8JsonReader(utf8);
+        reader.Read();
+        openEnd = checked((int)reader.BytesConsumed);
+        var members = new List<TopLevelMember>();
+        while (reader.Read() && reader.TokenType == JsonTokenType.PropertyName)
+        {
+            var nameStart = checked((int)reader.TokenStartIndex);
+            var isFormat = reader.ValueTextEquals(FormatKey);
+            var isSchemaVersion = reader.ValueTextEquals(SchemaVersionKey);
+            reader.Read();
+            reader.Skip();
+            members.Add(new(nameStart, checked((int)reader.BytesConsumed), isFormat, isSchemaVersion));
+        }
+
+        return members;
+    }
+
+    /// <summary>
+    /// Cuts one top-level member out of an object's text with one adjacent separator: the separator
+    /// before it when it has a predecessor, otherwise the separator (and whitespace) after it.
+    /// </summary>
+    private static byte[] RemoveMember(byte[] utf8, List<TopLevelMember> members, int index)
+    {
+        var (start, end) = index > 0 ? (members[index - 1].ValueEnd, members[index].ValueEnd)
+            : members.Count > 1 ? (members[0].NameStart, members[1].NameStart)
+            : (members[0].NameStart, members[0].ValueEnd);
+        var result = new byte[utf8.Length - (end - start)];
+        utf8.AsSpan(0, start).CopyTo(result);
+        utf8.AsSpan(end).CopyTo(result.AsSpan(start));
+        return result;
     }
 
     /// <summary>
@@ -327,16 +510,24 @@ public static class SecurityTermsEnvelope
         reason = null;
         var writes = SecurityAssetClassCatalog.GetTermsVersion(assetClass);
         var reads = SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass);
-        if (reads == writes)
-        {
-            return false;
-        }
-
         var declaredVersion = ResolveAssetClassTermsVersion(payload);
         if (declaredVersion > reads)
         {
             return false;
         }
+
+        if (!IsProfileGovernedPayload(assetClass, payload))
+        {
+            var unavailable = SecurityAssetTermsSchema.PopulatedTermsAbove(assetClass, payload, 1)
+                .FirstOrDefault(term => !term.Field.AuthoringEnabled);
+            if (unavailable.Field is not null)
+            {
+                reason = DescribeAuthoringDisabled(unavailable.Path);
+                return true;
+            }
+        }
+        if (reads == writes)
+            return false;
 
         if (declaredVersion > writes)
         {
@@ -377,6 +568,9 @@ public static class SecurityTermsEnvelope
     /// The shared reason a term this node reads cannot be set by it: the refusal every write path,
     /// term-block amend and field edit gives for a term introduced above the class's write version.
     /// </summary>
+    public static string DescribeAuthoringDisabled(string path)
+        => $"'{path}' is readable but authoring is not enabled on this node; a rate-unit declaration does not activate calculation-only terms.";
+
     public static string DescribeNotYetWritable(string assetClass, string path, int sinceTermsVersion)
         => $"'{path}' is an asset-class terms version {sinceTermsVersion} term of '{assetClass}'. This node reads it but writes " +
            $"{AssetClassTermsVersionKey} {SecurityAssetClassCatalog.GetTermsVersion(assetClass)}, so a create, amend, import or field edit " +
@@ -459,8 +653,20 @@ public static class SecurityTermsEnvelope
     /// null or absent, or a schedule it has as an empty array. Envelope keys of the retained document
     /// are never folded. The result is the economic record the original economic event described,
     /// updated by whatever the flat revision changed.
+    /// <para>
+    /// <paramref name="flatAuthoritativeFields"/> names the module fields the flat row carries
+    /// exactly (<see cref="SecurityEconomicTermsV2ToAssetSpecificTermsUpcaster.FlatAuthoritativeFields"/>).
+    /// The retained document never fills one of those: the row could carry it, so an empty value in
+    /// the rebuild means the flat revision cleared it — covenants removed, a principal schedule
+    /// dropped — and putting the old value back would make the economic record contradict its
+    /// flat terms and resurrect the cleared value on the next replay. A retained module that
+    /// holds nothing else is not folded at all.
+    /// </para>
     /// </summary>
-    public static JsonElement FoldRetainedEconomicTerms(JsonElement rebuiltEconomicTerms, JsonElement retainedEconomicTerms)
+    public static JsonElement FoldRetainedEconomicTerms(
+        JsonElement rebuiltEconomicTerms,
+        JsonElement retainedEconomicTerms,
+        IReadOnlyCollection<(string Module, string Field)>? flatAuthoritativeFields = null)
     {
         if (rebuiltEconomicTerms.ValueKind != JsonValueKind.Object
             || retainedEconomicTerms.ValueKind != JsonValueKind.Object
@@ -476,34 +682,54 @@ public static class SecurityTermsEnvelope
                 continue;
             }
 
+            var retainedModule = JsonNode.Parse(module.Value.GetRawText());
+            if (retainedModule is JsonObject retainedFields && flatAuthoritativeFields is { Count: > 0 })
+            {
+                var cleared = false;
+                foreach (var (authoritativeModule, authoritativeField) in flatAuthoritativeFields)
+                {
+                    if (string.Equals(authoritativeModule, module.Name, StringComparison.Ordinal)
+                        && retainedFields.TryGetPropertyValue(authoritativeField, out var held)
+                        && held is not null)
+                    {
+                        retainedFields[authoritativeField] = held is JsonArray ? new JsonArray() : null;
+                        cleared = true;
+                    }
+                }
+
+                if (cleared && HoldsNothing(retainedFields))
+                {
+                    continue;
+                }
+            }
+
             var existing = rebuilt[module.Name];
             if (existing is null)
             {
-                rebuilt[module.Name] = JsonNode.Parse(module.Value.GetRawText());
+                rebuilt[module.Name] = retainedModule;
                 continue;
             }
 
-            if (existing is not JsonObject rebuiltModule || module.Value.ValueKind != JsonValueKind.Object)
+            if (existing is not JsonObject rebuiltModule || retainedModule is not JsonObject retainedObject)
             {
                 continue;
             }
 
-            foreach (var field in module.Value.EnumerateObject())
+            foreach (var field in retainedObject.ToArray())
             {
-                if (field.Value.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined)
+                if (field.Value is null)
                 {
                     continue;
                 }
 
-                var current = rebuiltModule[field.Name];
+                var current = rebuiltModule[field.Key];
                 var fill = current is null
                            || (current is JsonArray currentArray
                                && currentArray.Count == 0
-                               && field.Value.ValueKind == JsonValueKind.Array
-                               && field.Value.GetArrayLength() > 0);
+                               && field.Value is JsonArray { Count: > 0 });
                 if (fill)
                 {
-                    rebuiltModule[field.Name] = JsonNode.Parse(field.Value.GetRawText());
+                    rebuiltModule[field.Key] = field.Value.DeepClone();
                 }
             }
         }
@@ -511,4 +737,53 @@ public static class SecurityTermsEnvelope
         using var document = JsonDocument.Parse(rebuilt.ToJsonString());
         return document.RootElement.Clone();
     }
+
+    /// <summary>
+    /// Whether a retained module is left with no content once its flat-authoritative fields are
+    /// set aside: every member null, false, an empty array or an empty object.
+    /// </summary>
+    private static bool HoldsNothing(JsonObject module)
+    {
+        foreach (var (_, value) in module)
+        {
+            switch (value)
+            {
+                case null:
+                case JsonArray { Count: 0 }:
+                case JsonObject { Count: 0 }:
+                    continue;
+                case JsonValue scalar when scalar.GetValueKind() == JsonValueKind.False:
+                    continue;
+                default:
+                    return false;
+            }
+        }
+
+        return true;
+    }
+}
+
+/// <summary>
+/// Raised when live code meets an asset-specific-terms payload that declares no
+/// <see cref="SecurityTermsEnvelope.FormatKey"/>. Live readers and writers dispatch on the declared
+/// family alone (ADR-024 decision 5, amendment 2026-11-13 step 5); an untagged payload is refused
+/// instead of being classified by shape.
+/// </summary>
+public sealed class SecurityTermsFormatUndeclaredException : InvalidOperationException
+{
+    /// <summary>Creates the refusal for a payload of the given JSON kind.</summary>
+    public SecurityTermsFormatUndeclaredException(JsonValueKind payloadKind)
+        : base(
+            payloadKind == JsonValueKind.Object
+                ? $"Asset-specific terms declare no {SecurityTermsEnvelope.FormatKey}; this node no longer infers the payload " +
+                  $"family by shape. Declare {SecurityTermsEnvelope.FormatKey} as '{SecurityTermsFormats.Flat}' or '{SecurityTermsFormats.CustomProfile}' " +
+                  $"('{SecurityTermsFormats.Economic}' is not accepted on writes) " +
+                  "(writers stamp it through SecurityTermsEnvelope.StampDeclaredFormat or StampFlat), or run migration 068 on stored rows."
+                : $"Asset-specific terms are a JSON {payloadKind}, not an object, so they cannot declare {SecurityTermsEnvelope.FormatKey}.")
+    {
+        PayloadKind = payloadKind;
+    }
+
+    /// <summary>The JSON kind of the refused payload.</summary>
+    public JsonValueKind PayloadKind { get; }
 }

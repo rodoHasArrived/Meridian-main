@@ -51,6 +51,26 @@ public sealed class MarketImpactFillModelTests
     // =========================================================================
 
     [Fact]
+    public void TryFill_AllOrNoneLimit_WhenLaterSlicesCrossLimit_FillsNothing()
+    {
+        // A large limit buy is sliced; impact grows per slice, so later slices price above the
+        // limit and are dropped. With partial fills disallowed, the order must not fill at all.
+        var model = new MarketImpactFillModel(new FixedCommissionModel(0m), impactCoefficient: 0.1m, slippageBasisPoints: 0m);
+        var allOrNone = new Order(Guid.NewGuid(), "SPY", OrderType.Limit, 40_000L,
+            LimitPrice: 410m, StopPrice: null, DateTimeOffset.UtcNow, AllowPartialFills: false);
+        var partialAllowed = allOrNone with { OrderId = Guid.NewGuid(), AllowPartialFills = true };
+        var evt = MakeBarEvent("SPY", 400m, 402m, 399m, 400m, volume: 100_000L);
+
+        var partial = model.TryFill(partialAllowed, evt);
+        var aon = model.TryFill(allOrNone, evt);
+
+        partial.Fills.Sum(f => f.FilledQuantity).Should().BeInRange(1L, 39_999L,
+            "the scenario must drop some slices at the limit for the all-or-none case to matter");
+        aon.Fills.Should().BeEmpty("an all-or-none order fills completely or not at all");
+        aon.UpdatedOrder.FilledQuantity.Should().Be(0);
+    }
+
+    [Fact]
     public void TryFill_SmallMarketBuy_ProducesSingleFillAboveMidpoint()
     {
         // Order is tiny relative to bar volume → single fill
@@ -235,9 +255,9 @@ public sealed class MarketImpactFillModelTests
     // =========================================================================
 
     [Fact]
-    public void TryFill_FixedCommission_AppliedPerSlice()
+    public void TryFill_FixedCommission_AppliedOnceAcrossAllSlices()
     {
-        // Fixed $2 per-order commission → each slice carries its share
+        // Splitting execution must not multiply a fixed per-order commission.
         var model = new MarketImpactFillModel(new FixedCommissionModel(2m), impactCoefficient: 0.1m, maxPartialFills: 5);
         var order = MakeMarketOrder("SPY", 50_000L);
         var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 100_000L);
@@ -245,7 +265,8 @@ public sealed class MarketImpactFillModelTests
         var result = model.TryFill(order, evt);
 
         result.Fills.Should().NotBeEmpty();
-        result.Fills.All(f => f.Commission > 0m).Should().BeTrue("every fill slice should carry commission");
+        result.Fills.Sum(f => f.Commission).Should().Be(2m);
+        result.UpdatedOrder.CommissionCharged.Should().Be(2m);
     }
 
     // =========================================================================
@@ -317,16 +338,37 @@ public sealed class MarketImpactFillModelTests
     }
 
     [Fact]
-    public void TryFill_ZeroVolumeBar_TreatsVolumeAsOne()
+    public void TryFill_ZeroVolumeBar_LeavesOrderWorking()
     {
-        // Edge case: bar with Volume = 0 should not cause divide-by-zero
+        // A zero-volume bar has no liquidity. It used to be treated as volume 1, which made a
+        // 200-share market sell take ~141% impact and fill at a negative price.
         var model = new MarketImpactFillModel(new FixedCommissionModel(0m));
-        var order = MakeMarketOrder("SPY", 1L);
+        var order = MakeMarketOrder("SPY", -200L);
         var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 0L);
 
-        var act = () => model.TryFill(order, evt);
+        var result = model.TryFill(order, evt);
 
-        act.Should().NotThrow("zero-volume bar must be handled gracefully");
+        result.Fills.Should().BeEmpty();
+        result.UpdatedOrder.Status.Should().Be(OrderStatus.Pending);
+        result.RemoveOrder.Should().BeFalse();
+    }
+
+    [Theory]
+    [InlineData(-200L)]
+    [InlineData(-10_000L)]
+    public void TryFill_ThinBarSell_ImpactIsBoundedAndPriceStaysPositive(long quantity)
+    {
+        var model = new MarketImpactFillModel(new FixedCommissionModel(0m), impactCoefficient: 0.1m, slippageBasisPoints: 0m);
+        var order = MakeMarketOrder("SPY", quantity);
+        var evt = MakeBarEvent("SPY", 400m, 410m, 390m, 405m, volume: 1L);
+
+        var result = model.TryFill(order, evt);
+
+        result.Fills.Should().NotBeEmpty();
+        // The base price can be no lower than the bar low (390); impact is capped below that.
+        result.Fills.Should().OnlyContain(
+            fill => fill.FillPrice >= 390m * (1m - MarketImpactFillModel.MaxImpactFraction),
+            "impact is capped at MaxImpactFraction, so a sell can never fill at or below zero");
     }
 
     // =========================================================================

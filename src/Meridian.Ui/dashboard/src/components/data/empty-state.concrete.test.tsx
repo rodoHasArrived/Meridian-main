@@ -20,6 +20,19 @@ describe("EmptyState (Concrete)", () => {
     expect(onAction).toHaveBeenCalledOnce();
   });
 
+  it("paints the action with full-color structural roles and blue focus", () => {
+    render(<EmptyState title="Empty" action="Add row" onAction={() => undefined} />);
+    const css = [...document.head.querySelectorAll("style[data-mds]")].map((style) => style.textContent ?? "").join("\n");
+    const action = css.match(/\.mds-empty__action\{[^}]*\}/)?.[0] ?? "";
+    expect(action).toContain("background:var(--brand-axis,");
+    expect(action).toContain("color:var(--ink-inverse,");
+    expect(css).toContain("background:var(--ws-primary-hover,");
+    expect(css).toContain("outline:2px solid var(--interaction-focus,");
+    // --accent remains a Tailwind HSL channel triple, so native color declarations
+    // must resolve full colors instead of rendering as invalid CSS.
+    expect(css).not.toMatch(/(background|border|color):var\(--accent[,)]/);
+  });
+
   it("can be named as a status region for screen placeholders", () => {
     render(<EmptyState title="No rows" role="status" ariaLabel="Provider rows empty state" compact />);
     expect(screen.getByRole("status", { name: "Provider rows empty state" })).toHaveClass("mds-empty--compact");

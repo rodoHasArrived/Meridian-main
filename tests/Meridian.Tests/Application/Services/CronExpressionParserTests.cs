@@ -312,6 +312,52 @@ public sealed class CronExpressionParserTests
         nextEt.Minute.Should().Be(0);
     }
 
+    [Theory]
+    [InlineData(2025, 1, 15, 2025, 1, 31)]
+    [InlineData(2025, 2, 1, 2025, 2, 28)]
+    [InlineData(2024, 2, 1, 2024, 2, 29)]
+    [InlineData(2025, 4, 30, 2025, 5, 31)]
+    [InlineData(2025, 12, 31, 2026, 1, 31)]
+    public void GetNextOccurrence_LastDayOfMonth_ReturnsCalendarMonthEnd(
+        int fromYear, int fromMonth, int fromDay, int expectedYear, int expectedMonth, int expectedDay)
+    {
+        var from = new DateTimeOffset(fromYear, fromMonth, fromDay, 12, 0, 0, TimeSpan.Zero);
+
+        var next = CronExpressionParser.GetNextOccurrence("0 8 L * *", TimeZoneInfo.Utc, from);
+
+        next.Should().Be(new DateTimeOffset(expectedYear, expectedMonth, expectedDay, 8, 0, 0, TimeSpan.Zero));
+    }
+
+    [Fact]
+    public void GetNextOccurrence_LastDayOfMonth_IsEvaluatedInTheScheduleTimeZone()
+    {
+        var timeZone = CreateEasternTestTimeZone();
+        // 31 March 2025 23:30 Eastern (daylight time) is already 1 April in UTC.
+        var from = new DateTimeOffset(2025, 3, 31, 12, 0, 0, TimeSpan.FromHours(-4));
+
+        var next = CronExpressionParser.GetNextOccurrence("30 23 L * *", timeZone, from);
+
+        next.Should().Be(new DateTimeOffset(2025, 3, 31, 23, 30, 0, TimeSpan.FromHours(-4)));
+    }
+
+    [Theory]
+    [InlineData("0 8 L * *", true)]
+    [InlineData("0 8 l * *", true)]
+    [InlineData("0 8 L-1 * *", false)]
+    [InlineData("0 8 1,L * *", false)]
+    [InlineData("0 8 * * L", false)]
+    [InlineData("L 8 * * *", false)]
+    public void IsValid_LastDayOfMonth_IsAcceptedOnlyAsALoneDayOfMonthField(string expression, bool expected)
+    {
+        CronExpressionParser.IsValid(expression).Should().Be(expected);
+    }
+
+    [Fact]
+    public void GetDescription_LastDayOfMonth_DescribesMonthEnd()
+    {
+        CronExpressionParser.GetDescription("0 8 L * *").Should().Be("at 08:00 on the last day of the month");
+    }
+
     [Fact]
     public void GetNextOccurrence_DstFold_ReturnsSecondAmbiguousOccurrenceWhenItIsStillFuture()
     {

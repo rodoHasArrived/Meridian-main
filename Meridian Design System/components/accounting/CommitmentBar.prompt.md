@@ -5,4 +5,4 @@ Funding state for a private-capital commitment — a hairline bar (called share 
   commitment={5_000_000} called={3_100_000} distributed={1_240_000} nav={2_900_000} />
 ```
 
-Omit `distributed` / `nav` and those figures (and DPI/TVPI) disappear rather than showing 0. Stack several in a `PanelSurface` for a commitments panel, or render one per row inside `ExpandableDataTable` detail. For a single headline number use `MetricCard`; this is for the called/unfunded/returned decomposition.
+Omit `distributed` / `nav` and those figures (and DPI/TVPI) disappear rather than showing 0. Stack several in a `PanelSurface` for a commitments panel, or render one per row inside a `DataGrid` `expand` detail. For a single headline number use `MetricCard`; this is for the called/unfunded/returned decomposition.

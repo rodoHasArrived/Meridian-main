@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Configuration;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.SecurityMaster;
@@ -21,8 +22,25 @@ public sealed record WorkstationMetricCard(
     string Id,
     string Label,
     string Value,
-    string Delta = "0%",
-    string Tone = "default");
+    string Delta = "",
+    string Tone = "default",
+    string? ComparisonPeriod = null,
+    string? Basis = null,
+    string? AsOf = null,
+    string? Source = null,
+    NumberPassportReferenceDto? NumberPassport = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<WorkstationMetricHistoryPointDto>? History = null,
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? HistoryBasis = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AmountPassportReferenceDto? AmountPassport { get; init; }
+}
+
+/// <summary>
+/// One point of a metric's history, oldest first. <see cref="Value"/> is null when the retained source
+/// cannot establish the figure for that date; a consumer shows a gap, never an interpolated value.
+/// </summary>
+public sealed record WorkstationMetricHistoryPointDto(DateOnly Date, decimal? Value);
 /// <summary>
 /// Shared drill-in links attached to strategy, trading, and accounting run records.
 /// </summary>
@@ -89,7 +107,11 @@ public sealed record WorkstationStrategyRunCard(
     decimal? FinalEquity,
     WorkstationSecurityCoveragePayload SecurityCoverage,
     WorkstationRunDrillInLinks DrillIn,
-    BiasDisclosureDto? BiasDisclosure = null);
+    BiasDisclosureDto? BiasDisclosure = null,
+    decimal? MaxDrawdown = null,
+    IReadOnlyList<decimal>? TrendValues = null,
+    IReadOnlyList<string>? TrendDates = null,
+    string? SearchText = null);
 
 public sealed record WorkstationModeComparisonRun(
     string RunId,
@@ -303,7 +325,8 @@ public sealed record WorkstationPlotToolPayload(
     WorkstationPlotToolStatisticsPayload Statistics,
     IReadOnlyList<WorkstationPlotToolStudyPayload> Studies,
     IReadOnlyList<WorkstationPlotToolTabState> Tabs,
-    string ActiveView = "workspace");
+    string ActiveView = "workspace",
+    string AnalyticsEvidenceStatus = "Unavailable");
 
 /// <summary>
 /// Typed payload returned by <c>GET /api/workstation/strategy</c>.
@@ -333,7 +356,11 @@ public sealed record WorkstationTradingPositionRow(
     string DayPnl,
     string UnrealizedPnl,
     string Exposure,
-    MarkFreshnessAssessmentDto? MarkFreshness = null);
+    MarkFreshnessAssessmentDto? MarkFreshness = null,
+    string? MarketValue = null,
+    string? Currency = null,
+    string? Weight = null,
+    string? WeightBasis = null);
 
 /// <summary>
 /// A single open-order row shown in the trading workstation orders table.
@@ -346,7 +373,19 @@ public sealed record WorkstationTradingOrderRow(
     string Quantity,
     string LimitPrice,
     string Status,
-    string SubmittedAt);
+    string SubmittedAt,
+    string? Origin = null);
+
+/// <summary>
+/// Whether the workstation may submit manual orders (tickets and position actions) on the active
+/// routing path, and if not, why. Live manual orders require a reviewed manual-intent authority
+/// contract, which does not exist yet, so the OMS refuses them; the order ticket shows this reason
+/// up front instead of after a refused submission.
+/// </summary>
+public sealed record WorkstationManualOrderEntry(
+    bool Available,
+    string? ReasonCode,
+    string? Reason);
 
 /// <summary>
 /// A single fill row shown in the trading workstation fills table.
@@ -422,7 +461,8 @@ public sealed record WorkstationTradingPayload(
     WorkstationTradingBrokerageState Brokerage,
     TradingOperatorReadinessDto Readiness,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
-    WorkstationRunDrillInLinks? DrillIn);
+    WorkstationRunDrillInLinks? DrillIn,
+    WorkstationManualOrderEntry? ManualOrderEntry = null);
 
 // ---------------------------------------------------------------------------
 // /api/workstation/accounting and /api/workstation/reporting (legacy alias: /api/workstation/governance)
@@ -1117,7 +1157,10 @@ public sealed record WorkstationDataBackfillRecord(
     string Provider,
     string Status,
     string Progress,
-    string UpdatedAt);
+    string UpdatedAt)
+{
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
+}
 
 /// <summary>
 /// Export row returned by the Data workspace bootstrap payload.

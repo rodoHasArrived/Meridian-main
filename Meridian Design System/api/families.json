@@ -1,0 +1,2833 @@
+{
+  "generated": "scripts/generate_families.py",
+  "note": "The public contract. Physical folders under components/ are an implementation detail; this file is the family assignment every barrel, doc count and future ESM subpath is generated from. Never hand-edit.",
+  "namespace": "MeridianDesignSystem_205d17",
+  "totals": {
+    "exports": 351,
+    "families": 9,
+    "unclassified": 0,
+    "releaseCandidate": 28
+  },
+  "counts": {
+    "accounting": 31,
+    "analytics": 49,
+    "coordination": 41,
+    "data": 40,
+    "decision": 33,
+    "evidence": 49,
+    "primitives": 84,
+    "shell": 18,
+    "trading": 6
+  },
+  "unclassified": [],
+  "exports": [
+    {
+      "name": "ACTION_STATES",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionEnvelope",
+      "source": "components/operations/ActionEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ADAPTER_POSTURES",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AdapterDiagnostics",
+      "source": "components/operations/AdapterDiagnostics.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ANALYTICAL_SCOPES",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ARCHETYPES",
+      "family": "shell",
+      "domain": "shell",
+      "module": "ScreenComposition",
+      "source": "components/shell/ScreenComposition.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ASSURANCE_STAGES",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "Assurance",
+      "source": "components/accounting/Assurance.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AUTHORITIES",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ValueEnvelope",
+      "source": "components/operations/ValueEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AXIS_FONT",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ChartFrame",
+      "source": "components/charts/ChartFrame.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Accordion",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Accordion",
+      "source": "components/core/Accordion.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AccountTree",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "AccountTree",
+      "source": "components/accounting/AccountTree.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AccountingPeriodSelector",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "AccountingPeriodSelector",
+      "source": "components/accounting/AccountingPeriodSelector.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionAvailability",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionGuard",
+      "source": "components/operations/ActionGuard.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionEnvelope",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionEnvelope",
+      "source": "components/operations/ActionEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionEnvelopeProvider",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionEnvelope",
+      "source": "components/operations/ActionEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionGuard",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionGuard",
+      "source": "components/operations/ActionGuard.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionGuardList",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionGuard",
+      "source": "components/operations/ActionGuard.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionHooks",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionEnvelope",
+      "source": "components/operations/ActionEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionQueue",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionQueue",
+      "source": "components/operations/ActionQueue.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionQueueChip",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionQueue",
+      "source": "components/operations/ActionQueue.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ActionStateChip",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionEnvelope",
+      "source": "components/operations/ActionEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AdapterDiagnostics",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AdapterDiagnostics",
+      "source": "components/operations/AdapterDiagnostics.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AdapterHooks",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AdapterDiagnostics",
+      "source": "components/operations/AdapterDiagnostics.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AdapterPostureChip",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AdapterDiagnostics",
+      "source": "components/operations/AdapterDiagnostics.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AgingTable",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "AgingTable",
+      "source": "components/accounting/AgingTable.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AllocationEditor",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "AllocationEditor",
+      "source": "components/accounting/AllocationEditor.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AmountCell",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "AmountCell",
+      "source": "components/accounting/AmountCell.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AnalyticalField",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "AnalyticalField",
+      "source": "components/charts/AnalyticalField.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AnalyticalFigure",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "AnalyticalFigure",
+      "source": "components/charts/AnalyticalFigure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AnalyticalFigureGrid",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "AnalyticalFigure",
+      "source": "components/charts/AnalyticalFigure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AnnotationAnchor",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AnnotationLayer",
+      "source": "components/operations/AnnotationLayer.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AnnotationHooks",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AnnotationLayer",
+      "source": "components/operations/AnnotationLayer.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AnnotationLayer",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AnnotationLayer",
+      "source": "components/operations/AnnotationLayer.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AnnotationPanel",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AnnotationLayer",
+      "source": "components/operations/AnnotationLayer.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AnnotationProvider",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "AnnotationLayer",
+      "source": "components/operations/AnnotationLayer.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AsOfControl",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "TimeframeSwitcher",
+      "source": "components/charts/TimeframeSwitcher.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Assurance",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "Assurance",
+      "source": "components/accounting/Assurance.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AssuranceChip",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "Assurance",
+      "source": "components/accounting/Assurance.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "AsyncCombobox",
+      "family": "primitives",
+      "domain": "core",
+      "module": "AsyncCombobox",
+      "source": "components/core/AsyncCombobox.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AttestationPanel",
+      "family": "decision",
+      "domain": "operations",
+      "module": "AttestationPanel",
+      "source": "components/operations/AttestationPanel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AuthorityChip",
+      "family": "evidence",
+      "domain": "core",
+      "module": "ValueAuthority",
+      "source": "components/core/ValueAuthority.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AuthorityPanel",
+      "family": "evidence",
+      "domain": "core",
+      "module": "ValueAuthority",
+      "source": "components/core/ValueAuthority.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AuthorityStack",
+      "family": "evidence",
+      "domain": "core",
+      "module": "ValueAuthority",
+      "source": "components/core/ValueAuthority.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "AxisChip",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ChartFrame",
+      "source": "components/charts/ChartFrame.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Badge",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Badge",
+      "source": "components/core/Badge.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "BarChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "BarChart",
+      "source": "components/charts/BarChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "BasisBridge",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "BasisBridge",
+      "source": "components/accounting/BasisBridge.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "BasisComparisonMatrix",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "BasisComparisonMatrix",
+      "source": "components/accounting/BasisComparisonMatrix.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Blotter",
+      "family": "trading",
+      "domain": "trading",
+      "module": "Blotter",
+      "source": "components/trading/Blotter.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Breadcrumb",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Breadcrumb",
+      "source": "components/core/Breadcrumb.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "BulkActionBar",
+      "family": "data",
+      "domain": "data",
+      "module": "BulkActionBar",
+      "source": "components/data/BulkActionBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "BulkSelectCheckbox",
+      "family": "data",
+      "domain": "data",
+      "module": "BulkActionBar",
+      "source": "components/data/BulkActionBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Button",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Button",
+      "source": "components/core/Button.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CELL_FORMATS",
+      "family": "data",
+      "domain": "data",
+      "module": "DataGrid",
+      "source": "components/data/DataGrid.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CONSEQUENCE_KINDS",
+      "family": "decision",
+      "domain": "decision",
+      "module": "ConsequenceRail",
+      "source": "components/decision/ConsequenceRail.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "CalculationTrace",
+      "family": "evidence",
+      "domain": "accounting",
+      "module": "CalculationTrace",
+      "source": "components/accounting/CalculationTrace.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Callout",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Callout",
+      "source": "components/core/Callout.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CandleChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "CandleChart",
+      "source": "components/charts/CandleChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Capsule",
+      "family": "coordination",
+      "domain": "core",
+      "module": "Capsule",
+      "source": "components/core/Capsule.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CapsuleBody",
+      "family": "coordination",
+      "domain": "core",
+      "module": "Capsule",
+      "source": "components/core/Capsule.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CapsuleFooter",
+      "family": "coordination",
+      "domain": "core",
+      "module": "Capsule",
+      "source": "components/core/Capsule.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CapsuleHeader",
+      "family": "coordination",
+      "domain": "core",
+      "module": "Capsule",
+      "source": "components/core/Capsule.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CaseQueue",
+      "family": "decision",
+      "domain": "operations",
+      "module": "CaseQueue",
+      "source": "components/operations/CaseQueue.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CashFlowLadder",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "CashFlowLadder",
+      "source": "components/charts/CashFlowLadder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CertificationMatrix",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "Assurance",
+      "source": "components/accounting/Assurance.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "ChangeReviewBar",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ChangeSetReview",
+      "source": "components/operations/ChangeSetReview.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChangeSetDiff",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ChangeSetReview",
+      "source": "components/operations/ChangeSetReview.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChangeSetHooks",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ChangeSetReview",
+      "source": "components/operations/ChangeSetReview.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChangeSetProvider",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ChangeSetReview",
+      "source": "components/operations/ChangeSetReview.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChangeSetReview",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ChangeSetReview",
+      "source": "components/operations/ChangeSetReview.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChartAnnotations",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ChartAnnotations",
+      "source": "components/charts/ChartAnnotations.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChartCard",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ChartCard",
+      "source": "components/charts/ChartCard.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChartCursor",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "useChartCrosshair",
+      "source": "components/charts/useChartCrosshair.js",
+      "stability": "stable"
+    },
+    {
+      "name": "ChartCursorSync",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "useChartCrosshair",
+      "source": "components/charts/useChartCrosshair.js",
+      "stability": "stable"
+    },
+    {
+      "name": "ChartFrame",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ChartFrame",
+      "source": "components/charts/ChartFrame.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ChartTooltip",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ChartTooltip",
+      "source": "components/charts/ChartTooltip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Checkbox",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Checkbox",
+      "source": "components/core/Checkbox.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ClaimHeader",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ClaimHeader",
+      "source": "components/operations/ClaimHeader.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CloseCalendar",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "CloseCalendar",
+      "source": "components/accounting/CloseCalendar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ColumnChooser",
+      "family": "data",
+      "domain": "data",
+      "module": "ColumnChooser",
+      "source": "components/data/ColumnChooser.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ColumnManager",
+      "family": "data",
+      "domain": "data",
+      "module": "ColumnManager",
+      "source": "components/data/ColumnManager.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Combobox",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Combobox",
+      "source": "components/core/Combobox.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CommandPalette",
+      "family": "primitives",
+      "domain": "core",
+      "module": "CommandPalette",
+      "source": "components/core/CommandPalette.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CommitmentBar",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "CommitmentBar",
+      "source": "components/accounting/CommitmentBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CompareSheet",
+      "family": "data",
+      "domain": "data",
+      "module": "SelectionCompare",
+      "source": "components/data/SelectionCompare.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "CompareToggle",
+      "family": "data",
+      "domain": "data",
+      "module": "SelectionCompare",
+      "source": "components/data/SelectionCompare.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "CompareTray",
+      "family": "data",
+      "domain": "data",
+      "module": "SelectionCompare",
+      "source": "components/data/SelectionCompare.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "ComparisonPlate",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ComparisonPlate",
+      "source": "components/charts/ComparisonPlate.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ConnectionDot",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FreshnessIndicator",
+      "source": "components/core/FreshnessIndicator.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ConnectionState",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ConnectionState",
+      "source": "components/operations/ConnectionState.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ConsequenceRail",
+      "family": "decision",
+      "domain": "decision",
+      "module": "ConsequenceRail",
+      "source": "components/decision/ConsequenceRail.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "ContextMenu",
+      "family": "primitives",
+      "domain": "core",
+      "module": "ContextMenu",
+      "source": "components/core/ContextMenu.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ContinuityFrame",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ContinuityFrame",
+      "source": "components/core/ContinuityFrame.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ContinuityStatus",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ContinuityFrame",
+      "source": "components/core/ContinuityFrame.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ControlDependencyGraph",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ControlDependencyGraph",
+      "source": "components/charts/ControlDependencyGraph.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CorrelationHeatmap",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "CorrelationHeatmap",
+      "source": "components/charts/CorrelationHeatmap.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "CoverageMatrix",
+      "family": "evidence",
+      "domain": "charts",
+      "module": "CoverageMatrix",
+      "source": "components/charts/CoverageMatrix.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DENSITY",
+      "family": "data",
+      "domain": "core",
+      "module": "Registry",
+      "source": "components/core/Registry.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DETAIL_LEVELS",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DOW",
+      "family": "primitives",
+      "domain": "core",
+      "module": "localDate",
+      "source": "components/core/localDate.js",
+      "stability": "stable"
+    },
+    {
+      "name": "DataCondition",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "DataCondition",
+      "source": "components/operations/DataCondition.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DataConditionLegend",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "DataCondition",
+      "source": "components/operations/DataCondition.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DataConditionValue",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "DataCondition",
+      "source": "components/operations/DataCondition.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DataGrid",
+      "family": "data",
+      "domain": "data",
+      "module": "DataGrid",
+      "source": "components/data/DataGrid.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DataStateSwitch",
+      "family": "data",
+      "domain": "data",
+      "module": "DataStateSwitch",
+      "source": "components/data/DataStateSwitch.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DatePicker",
+      "family": "primitives",
+      "domain": "core",
+      "module": "DatePicker",
+      "source": "components/core/DatePicker.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DateRangePicker",
+      "family": "primitives",
+      "domain": "core",
+      "module": "DateRangePicker",
+      "source": "components/core/DateRangePicker.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Datum",
+      "family": "coordination",
+      "domain": "core",
+      "module": "Datum",
+      "source": "components/core/Datum.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DatumGroup",
+      "family": "coordination",
+      "domain": "core",
+      "module": "Datum",
+      "source": "components/core/Datum.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DecisionConsequenceBar",
+      "family": "decision",
+      "domain": "operations",
+      "module": "DecisionFlow",
+      "source": "components/operations/DecisionFlow.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DecisionFlow",
+      "family": "decision",
+      "domain": "operations",
+      "module": "DecisionFlow",
+      "source": "components/operations/DecisionFlow.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DecisionFlowProvider",
+      "family": "decision",
+      "domain": "operations",
+      "module": "DecisionFlow",
+      "source": "components/operations/DecisionFlow.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DecisionFlowRail",
+      "family": "decision",
+      "domain": "operations",
+      "module": "DecisionFlow",
+      "source": "components/operations/DecisionFlow.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DecisionFlowStage",
+      "family": "decision",
+      "domain": "operations",
+      "module": "DecisionFlow",
+      "source": "components/operations/DecisionFlow.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DecisionSnapshot",
+      "family": "decision",
+      "domain": "decision",
+      "module": "DecisionSnapshot",
+      "source": "components/decision/DecisionSnapshot.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "DecisionSnapshotPanel",
+      "family": "decision",
+      "domain": "decision",
+      "module": "DecisionSnapshot",
+      "source": "components/decision/DecisionSnapshot.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "Delta",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Delta",
+      "source": "components/core/Delta.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DensityToggle",
+      "family": "coordination",
+      "domain": "core",
+      "module": "DensityToggle",
+      "source": "components/core/DensityToggle.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DepthChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DepthChart",
+      "source": "components/charts/DepthChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DepthLadder",
+      "family": "trading",
+      "domain": "trading",
+      "module": "DepthLadder",
+      "source": "components/trading/DepthLadder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DetailDial",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DetailOnly",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Dialog",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Dialog",
+      "source": "components/core/Dialog.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DialogBody",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Dialog",
+      "source": "components/core/Dialog.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DialogFooter",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Dialog",
+      "source": "components/core/Dialog.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DialogForm",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Dialog",
+      "source": "components/core/Dialog.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DialogHeader",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Dialog",
+      "source": "components/core/Dialog.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DiffView",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "DiffView",
+      "source": "components/operations/DiffView.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Disclosure",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DisclosureHooks",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DisclosureProvider",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DisclosureRegion",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DisclosureResidue",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Disclosure",
+      "source": "components/core/Disclosure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DistributionRange",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DistributionRange",
+      "source": "components/charts/DistributionRange.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DonutChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DonutChart",
+      "source": "components/charts/DonutChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DotMatrix",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DotMatrix",
+      "source": "components/charts/DotMatrix.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DrawdownChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DrawdownChart",
+      "source": "components/charts/DrawdownChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Drawer",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Drawer",
+      "source": "components/core/Drawer.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DrawerBody",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Drawer",
+      "source": "components/core/Drawer.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DrawerHeader",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Drawer",
+      "source": "components/core/Drawer.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "DurationContribution",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "DurationContribution",
+      "source": "components/charts/DurationContribution.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ENVELOPE_MARKS",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ValueEnvelope",
+      "source": "components/operations/ValueEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EVIDENCE_SECTIONS",
+      "family": "evidence",
+      "domain": "decision",
+      "module": "EvidenceRail",
+      "source": "components/decision/EvidenceRail.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "EditableCell",
+      "family": "data",
+      "domain": "data",
+      "module": "EditableCell",
+      "source": "components/data/EditableCell.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EmptyState",
+      "family": "data",
+      "domain": "data",
+      "module": "EmptyState",
+      "source": "components/data/EmptyState.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EntitySummary",
+      "family": "data",
+      "domain": "data",
+      "module": "EntitySummary",
+      "source": "components/data/EntitySummary.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EnvelopeCoherence",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ValueEnvelope",
+      "source": "components/operations/ValueEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EnvelopeMark",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ValueEnvelope",
+      "source": "components/operations/ValueEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EnvelopePanel",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ValueEnvelope",
+      "source": "components/operations/ValueEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EquityCurve",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "EquityCurve",
+      "source": "components/charts/EquityCurve.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ErrorBoundary",
+      "family": "primitives",
+      "domain": "core",
+      "module": "ErrorBoundary",
+      "source": "components/core/ErrorBoundary.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EventTimeline",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "EventTimeline",
+      "source": "components/operations/EventTimeline.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EvidenceInspector",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "EvidenceInspector",
+      "source": "components/operations/EvidenceInspector.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EvidenceLink",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "EvidenceLink",
+      "source": "components/operations/EvidenceLink.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EvidencePreview",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "EvidencePreview",
+      "source": "components/operations/EvidencePreview.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "EvidenceRail",
+      "family": "evidence",
+      "domain": "decision",
+      "module": "EvidenceRail",
+      "source": "components/decision/EvidenceRail.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "EvidenceSection",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "EvidenceInspector",
+      "source": "components/operations/EvidenceInspector.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Eyebrow",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Eyebrow",
+      "source": "components/core/Eyebrow.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FIGURE_ROLES",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "Figure",
+      "source": "components/charts/Figure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FieldInput",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormValidation",
+      "source": "components/core/FormValidation.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Figure",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "Figure",
+      "source": "components/charts/Figure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FigureSet",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "Figure",
+      "source": "components/charts/Figure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FileUpload",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FileUpload",
+      "source": "components/core/FileUpload.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FillsFeed",
+      "family": "trading",
+      "domain": "trading",
+      "module": "FillsFeed",
+      "source": "components/trading/FillsFeed.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FilterBuilder",
+      "family": "data",
+      "domain": "data",
+      "module": "FilterBuilder",
+      "source": "components/data/FilterBuilder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Flex",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Flex",
+      "source": "components/core/Flex.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Fmt",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "viz",
+      "source": "components/charts/viz.js",
+      "stability": "stable"
+    },
+    {
+      "name": "Form",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Form",
+      "source": "components/core/Form.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormDivider",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Form",
+      "source": "components/core/Form.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormErrorSummary",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormValidation",
+      "source": "components/core/FormValidation.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormField",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormField",
+      "source": "components/core/FormField.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormGrid",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Form",
+      "source": "components/core/Form.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormHooks",
+      "family": "primitives",
+      "domain": "core",
+      "module": "useFormState",
+      "source": "components/core/useFormState.js",
+      "stability": "stable"
+    },
+    {
+      "name": "FormRow",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Form",
+      "source": "components/core/Form.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormSectionLabel",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Form",
+      "source": "components/core/Form.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormValidation",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormValidation",
+      "source": "components/core/FormValidation.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Format",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormatProvider",
+      "source": "components/core/FormatProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormatHooks",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormatProvider",
+      "source": "components/core/FormatProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FormatProvider",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormatProvider",
+      "source": "components/core/FormatProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FreshnessIndicator",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FreshnessIndicator",
+      "source": "components/core/FreshnessIndicator.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "FxRevaluationTable",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "FxRevaluationTable",
+      "source": "components/accounting/FxRevaluationTable.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "GEOMETRIES",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "Figure",
+      "source": "components/charts/Figure.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "GLYPHS",
+      "family": "primitives",
+      "domain": "core",
+      "module": "format",
+      "source": "components/core/format.js",
+      "stability": "stable"
+    },
+    {
+      "name": "GRID_SCHEMAS",
+      "family": "data",
+      "domain": "data",
+      "module": "DataGrid",
+      "source": "components/data/DataGrid.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "GateRail",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "GateRail",
+      "source": "components/operations/GateRail.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "GlobalSearch",
+      "family": "shell",
+      "domain": "shell",
+      "module": "GlobalSearch",
+      "source": "components/shell/GlobalSearch.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Grid",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Grid",
+      "source": "components/core/Grid.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "HandoverBrief",
+      "family": "coordination",
+      "domain": "operations",
+      "module": "HandoverBrief",
+      "source": "components/operations/HandoverBrief.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "HandoverBriefChip",
+      "family": "coordination",
+      "domain": "operations",
+      "module": "HandoverBrief",
+      "source": "components/operations/HandoverBrief.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Histogram",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "Histogram",
+      "source": "components/charts/Histogram.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "HotkeysProvider",
+      "family": "primitives",
+      "domain": "core",
+      "module": "HotkeysProvider",
+      "source": "components/core/HotkeysProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "IncomeSchedule",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "IncomeSchedule",
+      "source": "components/accounting/IncomeSchedule.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Input",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Input",
+      "source": "components/core/Input.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "InstructionLedger",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionEnvelope",
+      "source": "components/operations/ActionEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "InstrumentChip",
+      "family": "primitives",
+      "domain": "core",
+      "module": "InstrumentChip",
+      "source": "components/core/InstrumentChip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "IntervalBar",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "IntervalBar",
+      "source": "components/charts/IntervalBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "JournalEntryForm",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "JournalEntryForm",
+      "source": "components/accounting/JournalEntryForm.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Kbd",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Kbd",
+      "source": "components/core/Kbd.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "KeyValueGrid",
+      "family": "data",
+      "domain": "data",
+      "module": "KeyValueGrid",
+      "source": "components/data/KeyValueGrid.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LayoutHooks",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkspaceLayout",
+      "source": "components/shell/WorkspaceLayout.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LayoutRegion",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkspaceLayout",
+      "source": "components/shell/WorkspaceLayout.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LedgerTable",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "LedgerTable",
+      "source": "components/accounting/LedgerTable.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LifecycleLanes",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "LifecycleRibbon",
+      "source": "components/accounting/LifecycleRibbon.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LifecycleRibbon",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "LifecycleRibbon",
+      "source": "components/accounting/LifecycleRibbon.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LineageGraph",
+      "family": "evidence",
+      "domain": "charts",
+      "module": "LineageGraph",
+      "source": "components/charts/LineageGraph.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LinkedSelectionProvider",
+      "family": "coordination",
+      "domain": "data",
+      "module": "LinkedSelectionProvider",
+      "source": "components/data/LinkedSelectionProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LinkedSelectionTarget",
+      "family": "coordination",
+      "domain": "data",
+      "module": "LinkedSelectionProvider",
+      "source": "components/data/LinkedSelectionProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "LocalDate",
+      "family": "primitives",
+      "domain": "core",
+      "module": "LocalDate",
+      "source": "components/core/LocalDate.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "LocalDateText",
+      "family": "primitives",
+      "domain": "core",
+      "module": "LocalDate",
+      "source": "components/core/LocalDate.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "LogTail",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "LogTail",
+      "source": "components/operations/LogTail.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "MATURITY_BUCKETS",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "MaturityLadder",
+      "source": "components/charts/MaturityLadder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "MaterialityAssessment",
+      "family": "evidence",
+      "domain": "core",
+      "module": "MaterialityAssessment",
+      "source": "components/core/MaterialityAssessment.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "MaterialityBadge",
+      "family": "evidence",
+      "domain": "core",
+      "module": "MaterialityAssessment",
+      "source": "components/core/MaterialityAssessment.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "MaturityLadder",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "MaturityLadder",
+      "source": "components/charts/MaturityLadder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "MetricCard",
+      "family": "data",
+      "domain": "data",
+      "module": "MetricCard",
+      "source": "components/data/MetricCard.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Money",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "Money",
+      "source": "components/accounting/Money.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "MultiSelect",
+      "family": "primitives",
+      "domain": "core",
+      "module": "MultiSelect",
+      "source": "components/core/MultiSelect.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "NEGATIVE_STYLES",
+      "family": "primitives",
+      "domain": "core",
+      "module": "FormatProvider",
+      "source": "components/core/FormatProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "NavRail",
+      "family": "shell",
+      "domain": "shell",
+      "module": "NavRail",
+      "source": "components/shell/NavRail.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "NotificationCenter",
+      "family": "primitives",
+      "domain": "core",
+      "module": "NotificationCenter",
+      "source": "components/core/NotificationCenter.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "NumberInput",
+      "family": "primitives",
+      "domain": "core",
+      "module": "NumberInput",
+      "source": "components/core/NumberInput.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "OBJECT_TYPES",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectModel",
+      "source": "components/core/ObjectModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectHeader",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectModel",
+      "source": "components/core/ObjectModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectHooks",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectModel",
+      "source": "components/core/ObjectModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectModel",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectModel",
+      "source": "components/core/ObjectModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectScope",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectScopeProvider",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectTrail",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectTrail",
+      "source": "components/core/ObjectTrail.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectTrailList",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectTrail",
+      "source": "components/core/ObjectTrail.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ObjectTrailProvider",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectTrail",
+      "source": "components/core/ObjectTrail.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "OptimisticCell",
+      "family": "data",
+      "domain": "data",
+      "module": "OptimisticCell",
+      "source": "components/data/OptimisticCell.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "OptimisticHooks",
+      "family": "data",
+      "domain": "data",
+      "module": "OptimisticCell",
+      "source": "components/data/OptimisticCell.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "OptimisticProvider",
+      "family": "data",
+      "domain": "data",
+      "module": "OptimisticCell",
+      "source": "components/data/OptimisticCell.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "OptimisticRowBar",
+      "family": "data",
+      "domain": "data",
+      "module": "OptimisticCell",
+      "source": "components/data/OptimisticCell.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "OptionChainTable",
+      "family": "trading",
+      "domain": "trading",
+      "module": "OptionChainTable",
+      "source": "components/trading/OptionChainTable.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "OrderTicket",
+      "family": "trading",
+      "domain": "trading",
+      "module": "OrderTicket",
+      "source": "components/trading/OrderTicket.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "OwnershipGraph",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "OwnershipGraph",
+      "source": "components/charts/OwnershipGraph.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Pagination",
+      "family": "data",
+      "domain": "data",
+      "module": "Pagination",
+      "source": "components/data/Pagination.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "PanelSurface",
+      "family": "primitives",
+      "domain": "core",
+      "module": "PanelSurface",
+      "source": "components/core/PanelSurface.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "PeerComparisonStrip",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "PeerComparisonStrip",
+      "source": "components/charts/PeerComparisonStrip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "PlateGrid",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ComparisonPlate",
+      "source": "components/charts/ComparisonPlate.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "PnLCalendar",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "PnLCalendar",
+      "source": "components/charts/PnLCalendar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Popover",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Popover",
+      "source": "components/core/Popover.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "PostingImpactPreview",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "PostingImpactPreview",
+      "source": "components/accounting/PostingImpactPreview.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ProgressBar",
+      "family": "primitives",
+      "domain": "core",
+      "module": "ProgressBar",
+      "source": "components/core/ProgressBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ProvenanceChip",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ProvenanceChip",
+      "source": "components/operations/ProvenanceChip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ProvenanceTrace",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "EvidenceInspector",
+      "source": "components/operations/EvidenceInspector.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "QUEUE_RUNGS",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ActionQueue",
+      "source": "components/operations/ActionQueue.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ROLES",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "viz",
+      "source": "components/charts/viz.js",
+      "stability": "stable"
+    },
+    {
+      "name": "RadioGroup",
+      "family": "primitives",
+      "domain": "core",
+      "module": "RadioGroup",
+      "source": "components/core/RadioGroup.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ReadOnlyBanner",
+      "family": "shell",
+      "domain": "shell",
+      "module": "SessionControls",
+      "source": "components/shell/SessionControls.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ReadinessPanel",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ReadinessPanel",
+      "source": "components/operations/ReadinessPanel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ReconciliationPanel",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "ReconciliationPanel",
+      "source": "components/accounting/ReconciliationPanel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Registry",
+      "family": "data",
+      "domain": "core",
+      "module": "Registry",
+      "source": "components/core/Registry.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "RegistryTable",
+      "family": "data",
+      "domain": "core",
+      "module": "Registry",
+      "source": "components/core/Registry.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ResolutionDrawer",
+      "family": "decision",
+      "domain": "operations",
+      "module": "ResolutionDrawer",
+      "source": "components/operations/ResolutionDrawer.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ReturnPath",
+      "family": "shell",
+      "domain": "shell",
+      "module": "ReturnPath",
+      "source": "components/shell/ReturnPath.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "RoleBadge",
+      "family": "shell",
+      "domain": "shell",
+      "module": "SessionControls",
+      "source": "components/shell/SessionControls.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "RollforwardMatrix",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "RollforwardMatrix",
+      "source": "components/accounting/RollforwardMatrix.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "RollforwardTrace",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "RollforwardTrace",
+      "source": "components/accounting/RollforwardTrace.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SEVERITY",
+      "family": "data",
+      "domain": "core",
+      "module": "Registry",
+      "source": "components/core/Registry.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "STRATEGY_FORMATION_STEPS",
+      "family": "coordination",
+      "domain": "core",
+      "module": "StrategyModel",
+      "source": "components/core/StrategyModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "STRATEGY_LIFECYCLE",
+      "family": "coordination",
+      "domain": "core",
+      "module": "StrategyModel",
+      "source": "components/core/StrategyModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "STRATEGY_RUN_AXES",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "StrategyRunModel",
+      "source": "components/operations/StrategyRunModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SavedViews",
+      "family": "data",
+      "domain": "data",
+      "module": "SavedViews",
+      "source": "components/data/SavedViews.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScatterChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ScatterChart",
+      "source": "components/charts/ScatterChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScenarioSelector",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "ScenarioSelector",
+      "source": "components/charts/ScenarioSelector.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScheduleLadder",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "ScheduleLadder",
+      "source": "components/accounting/ScheduleLadder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScheduleLadderSet",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "ScheduleLadder",
+      "source": "components/accounting/ScheduleLadder.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopeHooks",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopeMark",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopeMismatch",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScopedValue",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectScope",
+      "source": "components/core/ObjectScope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ScreenComposition",
+      "family": "shell",
+      "domain": "shell",
+      "module": "ScreenComposition",
+      "source": "components/shell/ScreenComposition.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SegmentedControl",
+      "family": "primitives",
+      "domain": "core",
+      "module": "SegmentedControl",
+      "source": "components/core/SegmentedControl.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Select",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Select",
+      "source": "components/core/Select.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SelectionCompare",
+      "family": "data",
+      "domain": "data",
+      "module": "SelectionCompare",
+      "source": "components/data/SelectionCompare.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "SelectionCompareHooks",
+      "family": "data",
+      "domain": "data",
+      "module": "SelectionCompare",
+      "source": "components/data/SelectionCompare.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "SelectionCompareProvider",
+      "family": "data",
+      "domain": "data",
+      "module": "SelectionCompare",
+      "source": "components/data/SelectionCompare.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "SelectionHooks",
+      "family": "coordination",
+      "domain": "data",
+      "module": "LinkedSelectionProvider",
+      "source": "components/data/LinkedSelectionProvider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SelectionToolbar",
+      "family": "data",
+      "domain": "data",
+      "module": "SelectionToolbar",
+      "source": "components/data/SelectionToolbar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SessionControls",
+      "family": "shell",
+      "domain": "shell",
+      "module": "SessionControls",
+      "source": "components/shell/SessionControls.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SeverityBadge",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "SeverityBadge",
+      "source": "components/operations/SeverityBadge.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Skeleton",
+      "family": "data",
+      "domain": "data",
+      "module": "Skeleton",
+      "source": "components/data/Skeleton.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SkeletonTable",
+      "family": "data",
+      "domain": "data",
+      "module": "Skeleton",
+      "source": "components/data/Skeleton.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SlaChip",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "SlaChip",
+      "source": "components/operations/SlaChip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Slider",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Slider",
+      "source": "components/core/Slider.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SmallMultiples",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "SmallMultiples",
+      "source": "components/charts/SmallMultiples.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SnapshotHooks",
+      "family": "decision",
+      "domain": "decision",
+      "module": "DecisionSnapshot",
+      "source": "components/decision/DecisionSnapshot.jsx",
+      "stability": "release-candidate"
+    },
+    {
+      "name": "SourceCoverageSummary",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "SourceCoverageSummary",
+      "source": "components/operations/SourceCoverageSummary.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Sparkline",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "Sparkline",
+      "source": "components/charts/Sparkline.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Spinner",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Spinner",
+      "source": "components/core/Spinner.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "SplitPane",
+      "family": "primitives",
+      "domain": "core",
+      "module": "SplitPane",
+      "source": "components/core/SplitPane.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Stack",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Stack",
+      "source": "components/core/Stack.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "StatementTable",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "StatementTable",
+      "source": "components/accounting/StatementTable.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Status",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "Status",
+      "source": "components/operations/Status.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "StatusBanner",
+      "family": "primitives",
+      "domain": "core",
+      "module": "StatusBanner",
+      "source": "components/core/StatusBanner.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "StatusBar",
+      "family": "shell",
+      "domain": "shell",
+      "module": "StatusBar",
+      "source": "components/shell/StatusBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Stepper",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Stepper",
+      "source": "components/core/Stepper.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "StrategyModel",
+      "family": "coordination",
+      "domain": "core",
+      "module": "StrategyModel",
+      "source": "components/core/StrategyModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "StrategyRunModel",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "StrategyRunModel",
+      "source": "components/operations/StrategyRunModel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TIME_ROLES",
+      "family": "coordination",
+      "domain": "core",
+      "module": "TimeContext",
+      "source": "components/core/TimeContext.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TabPanel",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Tabs",
+      "source": "components/core/Tabs.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TableHooks",
+      "family": "data",
+      "domain": "data",
+      "module": "TableHooks",
+      "source": "components/data/TableHooks.js",
+      "stability": "stable"
+    },
+    {
+      "name": "Tabs",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Tabs",
+      "source": "components/core/Tabs.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TagInput",
+      "family": "primitives",
+      "domain": "core",
+      "module": "TagInput",
+      "source": "components/core/TagInput.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TaxLotTable",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "TaxLotTable",
+      "source": "components/accounting/TaxLotTable.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TextArea",
+      "family": "primitives",
+      "domain": "core",
+      "module": "TextArea",
+      "source": "components/core/TextArea.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TieOutPanel",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "TieOutPanel",
+      "source": "components/accounting/TieOutPanel.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TimeAndSalesTape",
+      "family": "trading",
+      "domain": "trading",
+      "module": "TimeAndSalesTape",
+      "source": "components/trading/TimeAndSalesTape.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TimeContext",
+      "family": "coordination",
+      "domain": "core",
+      "module": "TimeContext",
+      "source": "components/core/TimeContext.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TimeContextPanel",
+      "family": "coordination",
+      "domain": "core",
+      "module": "TimeContext",
+      "source": "components/core/TimeContext.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TimeContextProvider",
+      "family": "coordination",
+      "domain": "core",
+      "module": "TimeContext",
+      "source": "components/core/TimeContext.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TimeHooks",
+      "family": "coordination",
+      "domain": "core",
+      "module": "TimeContext",
+      "source": "components/core/TimeContext.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TimeRole",
+      "family": "coordination",
+      "domain": "core",
+      "module": "TimeContext",
+      "source": "components/core/TimeContext.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TimeframeSwitcher",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "TimeframeSwitcher",
+      "source": "components/charts/TimeframeSwitcher.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Timestamp",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Timestamp",
+      "source": "components/core/Timestamp.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Toast",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Toast",
+      "source": "components/core/Toast.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ToastProvider",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Toast",
+      "source": "components/core/Toast.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Toggle",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Checkbox",
+      "source": "components/core/Checkbox.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Toolbar",
+      "family": "data",
+      "domain": "data",
+      "module": "Toolbar",
+      "source": "components/data/Toolbar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ToolbarDivider",
+      "family": "data",
+      "domain": "data",
+      "module": "Toolbar",
+      "source": "components/data/Toolbar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ToolbarGroup",
+      "family": "data",
+      "domain": "data",
+      "module": "Toolbar",
+      "source": "components/data/Toolbar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ToolbarSpacer",
+      "family": "data",
+      "domain": "data",
+      "module": "Toolbar",
+      "source": "components/data/Toolbar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Tooltip",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Tooltip",
+      "source": "components/core/Tooltip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TraceChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "TraceChart",
+      "source": "components/charts/TraceChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TrailHooks",
+      "family": "coordination",
+      "domain": "core",
+      "module": "ObjectTrail",
+      "source": "components/core/ObjectTrail.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TreeView",
+      "family": "primitives",
+      "domain": "core",
+      "module": "TreeView",
+      "source": "components/core/TreeView.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Treemap",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "Treemap",
+      "source": "components/charts/Treemap.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TrialBalance",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "TrialBalance",
+      "source": "components/accounting/TrialBalance.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "TrustStrip",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "TrustStrip",
+      "source": "components/operations/TrustStrip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "UserMenu",
+      "family": "shell",
+      "domain": "shell",
+      "module": "SessionControls",
+      "source": "components/shell/SessionControls.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ValidationIssueList",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ValidationIssueList",
+      "source": "components/operations/ValidationIssueList.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "Validators",
+      "family": "primitives",
+      "domain": "core",
+      "module": "Validators",
+      "source": "components/core/Validators.js",
+      "stability": "stable"
+    },
+    {
+      "name": "ValueAuthority",
+      "family": "evidence",
+      "domain": "core",
+      "module": "ValueAuthority",
+      "source": "components/core/ValueAuthority.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "ValueEnvelope",
+      "family": "evidence",
+      "domain": "operations",
+      "module": "ValueEnvelope",
+      "source": "components/operations/ValueEnvelope.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "VarianceCell",
+      "family": "accounting",
+      "domain": "accounting",
+      "module": "VarianceCell",
+      "source": "components/accounting/VarianceCell.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "VersionConflictNotice",
+      "family": "decision",
+      "domain": "operations",
+      "module": "VersionConflictNotice",
+      "source": "components/operations/VersionConflictNotice.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "VirtualizedList",
+      "family": "data",
+      "domain": "data",
+      "module": "VirtualizedList",
+      "source": "components/data/VirtualizedList.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WatchlistStrip",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "WatchlistStrip",
+      "source": "components/charts/WatchlistStrip.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WaterfallChart",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "WaterfallChart",
+      "source": "components/charts/WaterfallChart.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorksheetGrid",
+      "family": "data",
+      "domain": "data",
+      "module": "WorksheetGrid",
+      "source": "components/data/WorksheetGrid.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceContextBar",
+      "family": "coordination",
+      "domain": "shell",
+      "module": "WorkspaceContextBar",
+      "source": "components/shell/WorkspaceContextBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceContextProvider",
+      "family": "coordination",
+      "domain": "shell",
+      "module": "WorkspaceContextBar",
+      "source": "components/shell/WorkspaceContextBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceHooks",
+      "family": "coordination",
+      "domain": "shell",
+      "module": "WorkspaceContextBar",
+      "source": "components/shell/WorkspaceContextBar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceLayout",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkspaceLayout",
+      "source": "components/shell/WorkspaceLayout.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceLayoutBar",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkspaceLayout",
+      "source": "components/shell/WorkspaceLayout.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceLayoutGrid",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkspaceLayout",
+      "source": "components/shell/WorkspaceLayout.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceLayoutProvider",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkspaceLayout",
+      "source": "components/shell/WorkspaceLayout.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkspaceSection",
+      "family": "decision",
+      "domain": "operations",
+      "module": "WorkspaceSection",
+      "source": "components/operations/WorkspaceSection.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkstationShell",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkstationShell",
+      "source": "components/shell/WorkstationShell.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "WorkstationTopbar",
+      "family": "shell",
+      "domain": "shell",
+      "module": "WorkstationTopbar",
+      "source": "components/shell/WorkstationTopbar.jsx",
+      "stability": "stable"
+    },
+    {
+      "name": "YieldCurve",
+      "family": "analytics",
+      "domain": "charts",
+      "module": "YieldCurve",
+      "source": "components/charts/YieldCurve.jsx",
+      "stability": "stable"
+    }
+  ]
+}

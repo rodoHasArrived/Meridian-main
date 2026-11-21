@@ -6,3 +6,5 @@ A clickable reference to an evidence artifact — status dot, label, mono route,
 ```
 
 `status` shares the same five-severity vocabulary as `SeverityBadge` — pass the raw domain status string (e.g. `"ReviewRequired"`), don't remap it yourself.
+
+A reference with neither href nor onOpen is static text, retaining its evidence route and state without an enabled inert control.

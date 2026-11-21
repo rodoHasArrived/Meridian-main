@@ -11,16 +11,16 @@
 // `--severity-*` / `--state-*` design tokens, so every consumer here reads tokens with a
 // hex fallback that matches the handoff output.
 
-/** The five canonical operator severities the Concrete visual system encodes. */
-export type SeverityKey = "ready" | "review" | "action" | "blocked" | "info";
+import {
+  DESIGN_SYSTEM_SEVERITIES,
+  normalizeDesignSystemSeverity,
+  type DesignSystemSeverity,
+} from "@/design-system/status";
 
-export const severityKeys: readonly SeverityKey[] = [
-  "ready",
-  "review",
-  "action",
-  "blocked",
-  "info",
-];
+/** The five canonical operator severities the Concrete visual system encodes. */
+export type SeverityKey = DesignSystemSeverity;
+
+export const severityKeys: readonly SeverityKey[] = DESIGN_SYSTEM_SEVERITIES;
 
 export const severityLabels: Record<SeverityKey, string> = {
   ready: "Ready",
@@ -30,32 +30,15 @@ export const severityLabels: Record<SeverityKey, string> = {
   info: "Info",
 };
 
-const SEVERITY_MAP: Record<string, SeverityKey> = {
-  // ready / green
-  ready: "ready", passed: "ready", healthy: "ready", complete: "ready", completed: "ready",
-  cleared: "ready", certified: "ready", approved: "ready", posted: "ready", live: "ready",
-  linked: "ready", livelinked: "ready", verified: "ready", success: "ready", ok: "ready",
-  // review / steel-blue
-  review: "review", reviewrequired: "review", inreview: "review", inprogress: "review",
-  reviewerassigned: "review", submitted: "review", awaitingoperatordecision: "review",
-  readyforreview: "review", running: "review", queued: "review", sourcebacked: "review",
-  // action / ochre — needs operator attention but not hard-blocked
-  action: "action", needsattention: "action", needsfix: "action", warning: "action",
-  degraded: "action", attention: "action", exceptionsopen: "action", stale: "action",
-  reviewrequiredsoon: "action", drafted: "action", deferred: "action",
-  // blocked / brick-red
-  blocked: "blocked", critical: "blocked", failed: "blocked", rejected: "blocked",
-  error: "blocked", blocker: "blocked", danger: "blocked",
-  // info / muted — unknown, not yet started, absent
-  info: "info", unknown: "info", notstarted: "info", missing: "info", pending: "info",
-  draft: "info", neutral: "info", notrequired: "info", default: "info", "": "info",
-};
-
-/** Collapse any Meridian status / severity string onto one of the 5 canonical severities. */
+/**
+ * Collapse any Meridian status / severity string onto one of the 5 canonical severities.
+ *
+ * Delegates to the single design-system normaliser so the operations components and
+ * `StatusBadge` share one alias vocabulary: an empty status stays `info`, and a status string
+ * nobody recognises escalates to `action` rather than looking informational.
+ */
 export function normalizeSeverity(status?: string | null): SeverityKey {
-  if (!status) return "info";
-  const key = String(status).toLowerCase().replace(/[^a-z]/g, "");
-  return SEVERITY_MAP[key] ?? "info";
+  return normalizeDesignSystemSeverity(status);
 }
 
 /** `"ReviewRequired"` → `"Review Required"`; `"NotStarted"` → `"Not Started"`. */

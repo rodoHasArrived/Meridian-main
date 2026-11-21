@@ -14,6 +14,7 @@ type LedgerLineInput = {
     Debit: decimal
     Credit: decimal
     Description: string
+    FunctionalCurrency: string
 }
 
 [<CLIMutable>]

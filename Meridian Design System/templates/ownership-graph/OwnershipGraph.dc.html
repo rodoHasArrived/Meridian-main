@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>Investigate · Ownership Graph — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Investigate · Ownership Graph" description="General-purpose ownership & control investigation — any entity structure (corporate, fund, trust). Layered graph with entity drill-in, an economic vs voting lens, look-through ownership traced to ultimate owners as value envelopes, and an ownership register whose proof states whether every entity's equity is fully attributed." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<meta name="dc-template" content="ownership-graph">
+<style>html,body{margin:0;padding:0;height:100%}</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Ownership graph" hint-size="100%,900px">
+<div data-screen-label="Ownership graph" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:13px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="Ownership Graph" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+<div style="display:flex;flex:1;min-height:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="ownership" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+<main style="flex:1;min-width:0;min-height:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">Ownership &amp; control</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="170px,18px">Meridian Holdings structure · as-of 2026-06-30</x-import>
+<div style="flex:1"></div>
+<div style="display:flex;border:1px solid var(--border);border-radius:2px;overflow:hidden">
+<button type="button" style="appearance:none;border:0;background:var(--card-surface);font:11px var(--font-data);color:var(--text-muted);padding:6px 12px;cursor:pointer" data-on="{{ econOn }}" style-hover="color:var(--text-primary)" onClick="{{ setEconomic }}">{{ econTab }}</button>
+<button type="button" style="appearance:none;border:0;border-left:1px solid var(--border);background:var(--card-surface);font:11px var(--font-data);color:var(--text-muted);padding:6px 12px;cursor:pointer" style-hover="color:var(--text-primary)" onClick="{{ setVoting }}">{{ votingTab }}</button>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="120px,28px" disabled="{{ true }}" title="No original registry filing documents are attached to these synthetic ownership facts." aria-description="No original registry filing documents are attached to these synthetic ownership facts.">Registry filings</x-import>
+</div>
+<p style="margin:0;font:14px/21px var(--font-body);color:var(--text-secondary);max-width:100ch;text-wrap:pretty">Who ultimately owns and controls <b style="color:var(--text-primary);font-weight:600">{{ selLabel }}</b>? Effective ownership is the look-through product along every path, under the <b style="color:var(--text-primary);font-weight:600">{{ lensLabel }}</b> lens — the two lenses disagree wherever a GP interest or dual-class shares separate economics from control. {{ attributionSentence }}</p>
+<div style="display:grid;grid-template-columns:1.3fr 1fr;gap:12px;align-items:start">
+<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" style="display:flex;flex-direction:column" hint-size="100%,420px">
+<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="120px,14px">Structure · {{ lensLabel }} %</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ProvenanceChip" source-system="Entity registry" as-of-date="2026-06-30" completeness="Complete" reconciliation="Matched" hint-size="200px,20px"></x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.OwnershipGraph" nodes="{{ nodes }}" edges="{{ lensEdges }}" selected-id="{{ sel }}" on-select-node="{{ onSelect }}" hint-size="100%,330px"></x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" hint-size="100%,300px">
+<div style="display:flex;align-items:baseline;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="130px,14px">Ownership register</x-import>
+<span style="font-size:11px;color:var(--text-muted)">every edge, both weights, its filing — the proof strip states whether each entity's equity sums to 100%</span>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" columns="{{ registerCols }}" rows="{{ registerRows }}" proof="{{ registerProof }}" row-key="id" density="{{ gridDensity }}" hint-size="100%,260px"></x-import>
+</x-import>
+</div>
+<div style="display:flex;flex-direction:column;gap:12px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" hint-size="100%,230px">
+<div style="padding:10px 14px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="90px,14px">{{ selLabel }}</x-import></div>
+<div style="padding:12px 14px;display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.KeyValueGrid" columns="{{ 2 }}" items="{{ entityFacts }}" hint-size="100%,84px"></x-import>
+<div style="display:flex;gap:8px;flex-wrap:wrap">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.EvidenceLink" label="{{ evidenceLabel }}" status="{{ evidenceStatus }}" route="{{ evidenceRoute }}" href="#evidence" hint-size="170px,20px"></x-import>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.PanelSurface" hint-size="100%,280px">
+<div style="display:flex;align-items:baseline;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border)">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="130px,14px">Ultimate owners of {{ selLabel }}</x-import>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataGrid" columns="{{ uboCols }}" rows="{{ uboRows }}" proof="{{ uboProof }}" row-key="id" density="{{ gridDensity }}" hint-size="100%,220px"></x-import>
+<p style="margin:0;padding:8px 14px 12px;font-size:11px;color:var(--text-muted);text-wrap:pretty">Each figure is a value envelope — derived authority, the filings on its paths as evidence. Hover the marks; the register's missing 5% surfaces here as a provisional condition, not a silent gap.</p>
+</x-import>
+</div>
+</div>
+</main>
+</div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+</div>
+</x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;lens&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;economic&quot;,&quot;options&quot;:[&quot;economic&quot;,&quot;voting&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Analysis&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;OPS&quot;,&quot;options&quot;:[&quot;OPS&quot;,&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() {
+    this.applyChrome();
+    if (!this.ds().OwnershipGraph) {
+      let tries = 0;
+      this._t = setInterval(() => { if (this.ds().OwnershipGraph || ++tries > 80) { clearInterval(this._t); this.forceUpdate(); } }, 60);
+    }
+  }
+  componentWillUnmount() { if (this._t) clearInterval(this._t); }
+  componentDidUpdate() { this.applyChrome(); }
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+
+  state = { sel: "spv", lens: null };
+
+  // General-purpose structure: individuals, an institution, a foundation, a holding
+  // company with dual-class shares, a GP/fund pair (control without economics), an
+  // operating company and an SPV. One deliberate defect: the fund's equity sums to 95%.
+  nodes = [
+    { id: "p1", label: "D. Reyes", type: "Individual", jurisdiction: "US" },
+    { id: "p2", label: "K. Osei", type: "Individual", jurisdiction: "UK" },
+    { id: "pen", label: "Calvert Pension Trust", type: "Institutional", jurisdiction: "US" },
+    { id: "fdn", label: "Reyes Foundation", type: "Foundation", jurisdiction: "US" },
+    { id: "hold", label: "Meridian Holdings Ltd", type: "Holding", jurisdiction: "UK" },
+    { id: "gp", label: "MH Capital GP LLC", type: "General partner", jurisdiction: "US-DE" },
+    { id: "fund", label: "MH Growth Fund LP", type: "Fund", jurisdiction: "KY" },
+    { id: "opco", label: "Meridian Operating GmbH", type: "Operating", jurisdiction: "DE" },
+    { id: "spv", label: "MH Real Assets S.à r.l.", type: "SPV", jurisdiction: "LU" },
+  ];
+  links = [
+    { id: "e1", from: "p1", to: "hold", relationship: "Class B shares", e: 54, v: 71, doc: "CS01 2026" },
+    { id: "e2", from: "p2", to: "hold", relationship: "Class A shares", e: 31, v: 24, doc: "CS01 2026" },
+    { id: "e3", from: "pen", to: "hold", relationship: "Class A shares", e: 15, v: 5, doc: "CS01 2026" },
+    { id: "e4", from: "hold", to: "gp", relationship: "Sole member", e: 100, v: 100, doc: "DE-6098412" },
+    { id: "e5", from: "gp", to: "fund", relationship: "GP interest", e: 2, v: 100, doc: "LPA 2021 §4" },
+    { id: "e6", from: "hold", to: "fund", relationship: "LP interest", e: 48, v: 0, doc: "LPA 2021" },
+    { id: "e7", from: "pen", to: "fund", relationship: "LP interest", e: 30, v: 0, doc: "LPA 2021" },
+    { id: "e8", from: "fdn", to: "fund", relationship: "LP interest", e: 15, v: 0, doc: "LPA 2021" },
+    { id: "e9", from: "fund", to: "spv", relationship: "Sole shareholder", e: 100, v: 100, doc: "RCS B-201144" },
+    { id: "e10", from: "hold", to: "opco", relationship: "Ordinary shares", e: 100, v: 100, doc: "HRB 88412" },
+  ];
+  facts = {
+    p1: { type: "Individual", identifier: "—", incorporated: "—" },
+    p2: { type: "Individual", identifier: "—", incorporated: "—" },
+    pen: { type: "Institutional investor", identifier: "LEI 5493-00KJ", incorporated: "1988" },
+    fdn: { type: "Private foundation", identifier: "EIN 84-2201", incorporated: "2019" },
+    hold: { type: "Holding company", identifier: "LEI 2138-00QT", incorporated: "2014" },
+    gp: { type: "General partner LLC", identifier: "DE 6098412", incorporated: "2021" },
+    fund: { type: "Limited partnership", identifier: "KY CR-44821", incorporated: "2021" },
+    opco: { type: "Operating company", identifier: "HRB 88412", incorporated: "2015" },
+    spv: { type: "Special-purpose vehicle", identifier: "RCS B-201144", incorporated: "2022" },
+  };
+
+  lens() { return this.state.lens || this.props.lens || "economic"; }
+  weight(edge) { return this.lens() === "voting" ? edge.v : edge.e; }
+
+  // Look-through: sum over all paths root→target of the product of edge weights. Cycle-safe.
+  effective(rootId, targetId, key) {
+    const out = (id, seen) => {
+      if (id === targetId) return { share: 1, docs: [] };
+      if (seen.indexOf(id) > -1) return { share: 0, docs: [] };
+      const next = seen.concat(id);
+      let share = 0, docs = [];
+      this.links.filter((l) => l.from === id && l[key] > 0).forEach((l) => {
+        const r = out(l.to, next);
+        if (r.share > 0) { share += (l[key] / 100) * r.share; docs = docs.concat([l.doc], r.docs); }
+      });
+      return { share, docs };
+    };
+    return out(rootId, []);
+  }
+
+  attribution() {
+    const owned = {};
+    this.links.forEach((l) => { owned[l.to] = (owned[l.to] || 0) + l.e; });
+    return Object.keys(owned).filter((id) => Math.round(owned[id] * 10) / 10 !== 100)
+      .map((id) => ({ id, sum: owned[id], node: this.nodes.find((n) => n.id === id) }));
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const { ValueEnvelope } = this.ds();
+    const el = React.createElement;
+    const lens = this.lens();
+    const key = lens === "voting" ? "v" : "e";
+    const sel = this.state.sel;
+    const selNode = this.nodes.find((n) => n.id === sel) || this.nodes[0];
+    const f = this.facts[sel] || {};
+    const gaps = this.attribution();
+    const selGap = gaps.find((g) => g.id === sel);
+    const pct = (x) => (Math.round(x * 1000) / 10).toFixed(1) + "%";
+
+    const roots = this.nodes.filter((n) => !this.links.some((l) => l.to === n.id));
+    const uboRows = roots.map((r) => {
+      const econ = this.effective(r.id, sel, "e");
+      const vote = this.effective(r.id, sel, "v");
+      return { id: r.id, owner: r.label, type: r.type, econ, vote };
+    }).filter((r) => r.econ.share > 0 || r.vote.share > 0)
+      .sort((a, b) => b.econ.share - a.econ.share);
+
+    const envCell = (row, which) => {
+      const r = row[which];
+      const under = which === "econ" && (selGap || gaps.length);
+      if (!ValueEnvelope) return pct(r.share);
+      return el(ValueEnvelope, {
+        value: pct(r.share), align: "right",
+        label: row.owner + " → " + selNode.label + (which === "econ" ? " · economic" : " · voting"),
+        condition: under ? "provisional" : "confirmed",
+        detail: under ? "under-attributed chain" : undefined,
+        authority: "derived",
+        evidence: [...new Set(r.docs)].slice(0, 3).map((d) => ({ label: "Filing", ref: d })),
+        clocks: { asOf: "2026-06-30", calculatedAt: "2026-07-01 06:10:00Z" },
+      });
+    };
+
+    const econSum = uboRows.reduce((a, r) => a + r.econ.share, 0);
+    const attributionSentence = gaps.length
+      ? "One attribution defect is live in this data: " + gaps.map((g) => g.node.label + " sums to " + (Math.round(g.sum * 10) / 10) + "%").join("; ") + " — the register proof and every affected envelope carry it."
+      : "Every entity's equity is fully attributed.";
+
+    return {
+      dataState: this.props.dataState ?? "ready",
+      navSections: (window.MeridianAppMap ? window.MeridianAppMap.sections("ownership") : []),
+      onNav: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id),
+      envLabel: String(this.props.environment ?? "PAPER").toUpperCase(),
+      gridDensity: (this.props.density === "compact" || this.props.density === "terminal") ? "dense" : "standard",
+      nodes: this.nodes,
+      lensEdges: this.links.map((l) => ({ id: l.id, from: l.from, to: l.to, relationship: l.relationship, percent: this.weight(l) })),
+      sel,
+      onSelect: (id) => this.setState({ sel: id }),
+      selLabel: selNode.label,
+      lensLabel: lens === "voting" ? "voting" : "economic",
+      econTab: lens === "economic" ? "● Economic" : "Economic",
+      votingTab: lens === "voting" ? "● Voting" : "Voting",
+      econOn: lens === "economic" ? "on" : "off",
+      setEconomic: () => this.setState({ lens: "economic" }),
+      setVoting: () => this.setState({ lens: "voting" }),
+      attributionSentence,
+      entityFacts: [
+        { label: "Type", value: f.type },
+        { label: "Jurisdiction", value: (selNode.jurisdiction || "—") },
+        { label: "Identifier", value: f.identifier },
+        { label: "Formed", value: f.incorporated },
+      ],
+      evidenceLabel: "Registry filing · " + (f.identifier || "—"),
+      evidenceStatus: selGap ? "Missing" : "Ready",
+      evidenceRoute: "evidence://entities/" + sel + "/registry",
+      registerCols: [
+        { key: "owner", label: "Owner", format: "text" },
+        { key: "owned", label: "Owned entity", format: "text" },
+        { key: "relationship", label: "Relationship", format: "text" },
+        { key: "epct", label: "Economic", align: "right", format: "text", width: 92 },
+        { key: "vpct", label: "Voting", align: "right", format: "text", width: 84 },
+        { key: "doc", label: "Filing", format: "text", width: 110 },
+      ],
+      registerRows: this.links.map((l) => ({
+        id: l.id,
+        owner: (this.nodes.find((n) => n.id === l.from) || {}).label,
+        owned: (this.nodes.find((n) => n.id === l.to) || {}).label,
+        relationship: l.relationship,
+        epct: l.e.toFixed(1) + "%", vpct: l.v.toFixed(1) + "%",
+        doc: l.doc, to: l.to, e: l.e,
+      })),
+      registerProof: {
+        type: "custom",
+        check: (rows) => {
+          const sums = {};
+          rows.forEach((r) => { sums[r.to] = (sums[r.to] || 0) + r.e; });
+          const bad = Object.keys(sums).filter((id) => Math.round(sums[id] * 10) / 10 !== 100);
+          return bad.length
+            ? { ok: false, label: "Σ economic per entity = 100%", text: bad.map((id) => ((this.nodes.find((n) => n.id === id) || {}).label) + " " + (Math.round(sums[id] * 10) / 10) + "%").join(" · ") }
+            : { ok: true, label: "Σ economic per entity = 100%", text: Object.keys(sums).length + " entities fully attributed" };
+        },
+      },
+      uboCols: [
+        { key: "owner", label: "Ultimate owner", format: "text" },
+        { key: "type", label: "Type", format: "text", width: 110 },
+        { key: "econCell", label: "Economic", align: "right", width: 110, cell: (r) => envCell(r, "econ") },
+        { key: "voteCell", label: "Voting", align: "right", width: 110, cell: (r) => envCell(r, "vote") },
+      ],
+      uboRows,
+      uboProof: {
+        type: "custom",
+        check: () => {
+          const s = Math.round(econSum * 1000) / 10;
+          return s === 100
+            ? { ok: true, label: "Σ effective economic", text: "100.0% — fully traced" }
+            : { ok: false, label: "Σ effective economic", text: s.toFixed(1) + "% traced · " + (Math.round((100 - s) * 10) / 10) + "% unattributed" };
+        },
+      },
+      statusItems: [
+        { status: gaps.length ? "warn" : "ok", label: "Attribution", value: gaps.length ? gaps.length + " entity under-attributed" : "Complete" },
+        { label: "Entities", value: String(this.nodes.length) },
+        { label: "Relationships", value: String(this.links.length) },
+        { label: "Lens", value: lens === "voting" ? "Voting" : "Economic" },
+        { status: "ok", label: "Registry", value: "as-of 2026-06-30", push: true },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

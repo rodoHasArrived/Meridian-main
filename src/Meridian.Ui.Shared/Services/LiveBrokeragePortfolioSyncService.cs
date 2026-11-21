@@ -217,13 +217,23 @@ public sealed partial class LiveBrokeragePortfolioSyncService
                 if (!gateway.IsConnected)
                     throw new InvalidOperationException("Alpaca did not establish a broker connection.");
                 var generation = (gateway as IBrokerageConnectionState)?.ConnectionGeneration ?? 0L;
+                // A broker may name one account in more than one way; the gateway decides whether
+                // the linked identifier is one of the connected account's names.
+                var identity = gateway as IBrokerageAccountIdentity;
                 if (gateway is IBrokerageConnectionState bound &&
-                    (bound.ScopeIdentity is not { } scope || !scope.EndsWith($":{externalAccountId}", StringComparison.OrdinalIgnoreCase)))
+                    (bound.ScopeIdentity is not { } scope
+                        || !(scope.EndsWith($":{externalAccountId}", StringComparison.OrdinalIgnoreCase)
+                            || identity?.IdentifiesConnectedAccount(externalAccountId) == true)))
                     throw new InvalidOperationException("The connected brokerage scope does not match the linked account.");
                 if (oms is null)
                     throw new InvalidOperationException("The retained order manager is unavailable.");
+                // Two names for one broker account must not bind it to two local accounts.
                 if (_entries.Any(pair => pair.Key != fundAccountId && pair.Value.Status.LastSuccessfulSyncAt.HasValue &&
-                    string.Equals(pair.Value.Status.Snapshot?.Account.AccountId, externalAccountId, StringComparison.OrdinalIgnoreCase)))
+                    pair.Value.Status.Snapshot?.Account.AccountId is { } boundAccountId &&
+                    (string.Equals(boundAccountId, externalAccountId, StringComparison.OrdinalIgnoreCase)
+                        || identity is not null && ReferenceEquals(pair.Value.Gateway, gateway)
+                            && identity.IdentifiesConnectedAccount(boundAccountId)
+                            && identity.IdentifiesConnectedAccount(externalAccountId))))
                     throw new InvalidOperationException("This broker account is already bound to another local account.");
 
                 var beforeOrders = Fingerprint(oms, fundAccountId);
@@ -342,13 +352,15 @@ public sealed partial class LiveBrokeragePortfolioSyncService
             issues.Add("Broker positions contain duplicate symbols.");
         foreach (var position in snapshot.Positions)
         {
-            var multiplier = position.AssetClass == "us_option"
+            var isOption = IsAlpacaOptionCode(position.AssetClass);
+            var multiplier = isOption
                 ? string.IsNullOrWhiteSpace(position.Symbol) ? null : contracts.GetValueOrDefault(position.Symbol)?.Multiplier
                 : 1m;
-            if (position.AssetClass == "us_option" && multiplier is null)
+            if (isOption && multiplier is null)
                 issues.Add($"The Security Master contract multiplier is unresolved for broker option '{position.Symbol}'.");
             if (string.IsNullOrWhiteSpace(position.Symbol) || position.Quantity == 0m || position.MarketPrice <= 0m
-                || position.AssetClass is not ("us_equity" or "us_option")
+                || !(isOption || ProviderAssetClassCodeCatalog.IsExactCode(
+                    ProviderAssetClassCodeProviders.Alpaca, position.AssetClass, SecurityAssetClassNames.Equity))
                 || multiplier is not { } knownMultiplier
                 || Math.Abs(position.MarketValue - position.Quantity * position.MarketPrice * knownMultiplier) > 0.01m)
                 issues.Add("A broker holding has unsupported or inconsistent quantity, valuation, or asset evidence.");

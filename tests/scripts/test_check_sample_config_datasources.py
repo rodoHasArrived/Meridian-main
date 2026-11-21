@@ -18,7 +18,7 @@ SPEC.loader.exec_module(module)
 
 class SampleConfigDataSourceTests(unittest.TestCase):
     def validate(self, document: dict) -> tuple[int, str]:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             sample = Path(tmp) / "sample.json"
             sample.write_text(json.dumps(document), encoding="utf-8")
             output = io.StringIO()
@@ -33,6 +33,7 @@ class SampleConfigDataSourceTests(unittest.TestCase):
         )
         self.assertIn("alpaca", module.historical_capable_families())
         self.assertIn("ibkr", module.historical_capable_families())
+        self.assertIn("yahoo", module.historical_capable_families())
         self.assertNotIn("nyse", module.historical_capable_families())
 
     def test_configuration_aliases_use_the_shared_identity_map(self) -> None:
@@ -65,11 +66,13 @@ class SampleConfigDataSourceTests(unittest.TestCase):
         self.assertEqual("default-on", activation["yahoo"])
         self.assertEqual("default-on", activation["alpaca"])
         self.assertIn("alpaca", module.credential_gated_families())
+        self.assertNotIn("yahoo", module.credential_gated_families())
 
         for family, extra, expected in (
             ("Synthetic", {}, "only for an explicit true"),
             ("Synthetic", {"Enabled": False}, "Enabled is false"),
             ("Alpaca", {"Enabled": True}, "credentials are absent"),
+            ("Yahoo", {"Enabled": False}, "Enabled is false"),
         ):
             with self.subTest(family=family, extra=extra):
                 result, output = self.validate({
@@ -83,8 +86,36 @@ class SampleConfigDataSourceTests(unittest.TestCase):
                 self.assertEqual(1, result)
                 self.assertIn(expected, output)
 
+    def test_module_owned_yahoo_history_is_a_valid_credential_free_default(self) -> None:
+        result, output = self.validate({
+            "DataSource": "Synthetic",
+            "DataSources": {
+                "Sources": [{"Id": "history", "Provider": "Yahoo", "Type": "Historical"}],
+                "DefaultHistoricalSourceId": "history",
+            },
+        })
+        self.assertEqual(0, result, output)
+
+    def test_module_activation_and_credentials_are_read_from_its_source(self) -> None:
+        yahoo_source = next(module.ADAPTERS_ROOT.rglob("YahooFinanceProviderModule.cs"))
+        original = yahoo_source.read_text(encoding="utf-8")
+        self.assertIn("Yahoo?.Enabled != false", original)
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            adapters = Path(tmp)
+            source = adapters / yahoo_source.name
+            source.write_text(original.replace("Yahoo?.Enabled != false", "Yahoo?.Enabled == true"), encoding="utf-8")
+            with patch.object(module, "ADAPTERS_ROOT", adapters):
+                self.assertEqual("opt-in", module.backfill_activation()["yahoo"])
+                self.assertNotIn("yahoo", module.credential_gated_families())
+                source.write_text(source.read_text(encoding="utf-8").replace(
+                    "IsEnabled(factory) ? new YahooFinanceHistoricalDataProvider",
+                    'IsEnabled(factory) && factory.CreateCredentialContext<YahooFinanceHistoricalDataProvider>().IsConfigured("KEY")'
+                    " ? new YahooFinanceHistoricalDataProvider",
+                ), encoding="utf-8")
+                self.assertIn("yahoo", module.credential_gated_families())
+
     def test_positional_nulls_and_metadata_without_factory_do_not_advertise_streaming(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             catalog = Path(tmp) / "catalog.cs"
             catalog.write_text('''
                 new("history", null, typeof(History)),

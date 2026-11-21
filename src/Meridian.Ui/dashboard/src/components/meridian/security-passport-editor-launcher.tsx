@@ -70,7 +70,7 @@ export function SecurityPassportEditorLauncher({
 
   if (state.status === "error") {
     return (
-      <p className="text-sm text-[var(--danger)]" role="alert">
+      <p className="text-sm text-danger" role="alert">
         {state.message}
       </p>
     );

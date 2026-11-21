@@ -21,7 +21,7 @@ SCAN_DIR = "src/Meridian.Ui.Shared/Endpoints"
 
 def scan(handler_body: str) -> list[tuple[str, int]]:
     """Run the guard over a throwaway tree holding exactly this one endpoint file."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir)
         path = root / SCAN_DIR / "SampleEndpoints.cs"
         path.parent.mkdir(parents=True, exist_ok=True)
@@ -425,7 +425,7 @@ class DeferredCallbackTests(unittest.TestCase):
 class ScanScopeTests(unittest.TestCase):
     def test_missing_scan_directory_is_an_error(self):
         """Silently scanning zero files would disable the gate exactly when scope drifts."""
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             with self.assertRaises(FileNotFoundError):
                 guard.find_violations(Path(temp_dir), ("src/does/not/exist",))
 

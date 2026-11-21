@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.DataQualityPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -565,7 +566,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock x:Name="DrilldownScoreText" Text="{Binding DrilldownScoreText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{Binding DrilldownScoreBrush}" HorizontalAlignment="Center"
-                                           FontFamily="Consolas" />
+                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                 <TextBlock Text="QUALITY SCORE" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
@@ -577,7 +578,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock x:Name="DrilldownCompletenessText" Text="{Binding DrilldownCompletenessText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center"
-                                           FontFamily="Consolas" />
+                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                 <TextBlock Text="STORED COMPLETENESS" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
@@ -589,7 +590,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock x:Name="DrilldownGapsText" Text="{Binding DrilldownGapsText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{StaticResource WarningColorBrush}" HorizontalAlignment="Center"
-                                           FontFamily="Consolas" />
+                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                 <TextBlock Text="GAPS" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
@@ -601,7 +602,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock x:Name="DrilldownErrorsText" Text="{Binding DrilldownErrorsText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{StaticResource ErrorColorBrush}" HorizontalAlignment="Center"
-                                           FontFamily="Consolas" />
+                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                 <TextBlock Text="ANOMALIES" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
@@ -613,7 +614,7 @@
                             <StackPanel HorizontalAlignment="Center">
                                 <TextBlock x:Name="DrilldownLatencyText" Text="{Binding DrilldownLatencyText}" FontSize="26" FontWeight="Bold"
                                            Foreground="{StaticResource InfoColorBrush}" HorizontalAlignment="Center"
-                                           FontFamily="Consolas" />
+                                           FontFamily="{DynamicResource MeridianDataFontFamily}" />
                                 <TextBlock Text="STREAMING SCORE" Foreground="{StaticResource ConsoleTextMutedBrush}"
                                            FontSize="10" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,4,0,0" />
                             </StackPanel>
@@ -744,7 +745,7 @@
                                         </Grid.ColumnDefinitions>
 
                                         <TextBlock Grid.Column="0" Text="{Binding Symbol}" FontWeight="SemiBold"
-                                                   FontFamily="Consolas"
+                                                   FontFamily="{DynamicResource MeridianDataFontFamily}"
                                                    Foreground="{StaticResource ConsoleTextPrimaryBrush}"
                                                    VerticalAlignment="Center"/>
 

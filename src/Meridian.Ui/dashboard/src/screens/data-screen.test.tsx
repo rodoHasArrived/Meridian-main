@@ -3,8 +3,10 @@ import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { vi } from "vitest";
 import * as api from "@/lib/api";
+import * as templateApi from "@/lib/api/provider-connection-templates.api";
 import * as dataOpsApi from "@/lib/api/data-operations-assurance.api";
 import * as plaidLink from "@/lib/plaid-link";
+import * as tableApi from "@/lib/table-workbench";
 import { DataScreen } from "@/screens/data-screen";
 import {
   DATA_BACKFILL_DETAIL_PANEL_ID,
@@ -26,10 +28,10 @@ import type {
 
 const data: DataWorkspaceResponse = {
   metrics: [
-    { id: "m1", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
-    { id: "m2", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
-    { id: "m3", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
-    { id: "m4", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
+    { id: "providers", label: "Providers Healthy", value: "4", delta: "0", tone: "success" },
+    { id: "backfills", label: "Backfills Running", value: "2", delta: "+1", tone: "default" },
+    { id: "exports", label: "Exports Ready", value: "3", delta: "+1", tone: "success" },
+    { id: "review", label: "Needs Review", value: "1", delta: "+1", tone: "warning" }
   ],
   providers: [
     {
@@ -391,11 +393,31 @@ describe("DataScreen", () => {
     expect(screen.queryByText("SYM101")).not.toBeInTheDocument();
     expect(screen.getByText("Showing 100 of 102 returned rows on this page.")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Copy CSV" })).toBeEnabled();
-    expect(screen.getByRole("button", { name: "Download CSV" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Export result preview CSV" })).toBeEnabled();
 
     await user.click(screen.getByRole("button", { name: "Page 2" }));
 
     expect(screen.getByText("SYM101")).toBeInTheDocument();
+  });
+
+  it("exports the exact retained SQL execution after editor text changes", async () => {
+    const user = userEvent.setup();
+    const run = vi.spyOn(api, "runDataQuery").mockResolvedValueOnce({
+      success: true, error: null, columns: ["symbol"], columnTypes: ["VARCHAR"], rows: [["AAPL"]],
+      rowCount: 1, truncated: true, elapsedMs: 2, executionId: "retained-execution-1", retainedRowCount: 500
+    });
+    const exported = vi.spyOn(tableApi, "exportTableQuery").mockResolvedValue(undefined);
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/query"] });
+    await user.click(screen.getByRole("button", { name: "Run query" }));
+    await screen.findByRole("table", { name: "Query results" });
+    fireEvent.change(screen.getByRole("textbox", { name: "SQL statement" }), { target: { value: "SELECT 'edited statement'" } });
+    const controls = screen.getByRole("group", { name: "Query results table controls" });
+    await user.type(within(controls).getByRole("searchbox"), "AAPL");
+    await user.click(within(controls).getByRole("button", { name: "Export CSV" }));
+    expect(exported).toHaveBeenCalledWith("data-query-results", ["0:symbol"], "AAPL", undefined, undefined,
+      expect.any(AbortSignal), { executionId: "retained-execution-1" });
+    expect(run).toHaveBeenCalledTimes(1);
+    exported.mockRestore();
   });
 
   it("keeps the SQL query library secondary until requested", async () => {
@@ -468,6 +490,8 @@ describe("DataScreen", () => {
     expect(screen.getByText(/pinned host-key fingerprint/i)).toBeInTheDocument();
     expect(screen.getByText("4 of 7 required mapping fields matched in trades.csv.")).toBeInTheDocument();
     expect(screen.getAllByText("AAPL").length).toBeGreaterThanOrEqual(1);
+    expect(screen.getByRole("button", { name: "Export preview CSV" })).toBeEnabled();
+    expect(screen.getByRole("button", { name: "Export preview CSV" })).toHaveAttribute("title", expect.stringContaining("not the full uploaded file"));
 
     previewDataUpload.mockRestore();
   });
@@ -483,13 +507,17 @@ describe("DataScreen", () => {
     expect(screen.getByText(/1 provider blocks dependent workflows/i)).toBeInTheDocument();
     expect(screen.getByText(/Next action: Repair Plaid credentials/i)).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Provider health" })).toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Credential posture" })).toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Credential status" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Trust / last good" })).toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Next Action" })).toBeInTheDocument();
     const plaidRow = screen.getByRole("row", { name: /Inspect provider Plaid/i });
     expect(plaidRow).toHaveClass("bg-danger/5");
     expect(within(plaidRow).getByText("Blocked")).toBeInTheDocument();
     expect(within(plaidRow).getByText("Open setup")).toHaveClass("whitespace-nowrap");
+    // "Trust / last good" keeps the last-good fallback when no latency is reported.
+    const plaidTrustCell = within(plaidRow).getByText("Trust score not reported").closest("td");
+    expect(plaidTrustCell).not.toBeNull();
+    expect(within(plaidTrustCell as HTMLElement).getByText("Never")).toBeInTheDocument();
     const plaidDetail = screen.getByRole("region", { name: /provider detail for Plaid/i });
     expect(plaidDetail).toHaveTextContent("Reason: Readiness blocked");
     expect(within(plaidDetail).getByText("READINESS_BLOCKED").closest("details")).not.toHaveAttribute("open");
@@ -609,6 +637,56 @@ describe("DataScreen", () => {
     expect(screen.getByRole("button", { name: "Provider verification unavailable for Polygon.io" })).toBeDisabled();
   });
 
+  it("reviews the template before opening the vault and requires a test before saving", async () => {
+    const user = userEvent.setup();
+    const draft = {
+      setupId: "synthetic-draft", providerKind: "tiingo", environment: "production",
+      credentialFields: [{ name: "ApiKey", label: "API key", required: true, inputKind: "Password" as const }]
+    };
+    const catalogue = vi.spyOn(templateApi, "listConnectionTemplates").mockResolvedValue([
+      {
+        template: { name: "Historical equities", connectionMode: "ReadOnly" }, revision: "example-revision",
+        isBuiltIn: true, requiresExternalAccount: false,
+        reviewRows: [{ field: "Required capabilities", value: "Historical Bars" }],
+        verificationChecks: ["Check sample price adjustments."]
+      }
+    ]);
+    const begin = vi.spyOn(templateApi, "beginTemplateSetup").mockResolvedValue(draft);
+    const vault = vi.spyOn(templateApi, "putTemplateSetupCredentials").mockResolvedValue({} as Awaited<ReturnType<typeof templateApi.putTemplateSetupCredentials>>);
+    const test = vi.spyOn(templateApi, "testTemplateSetup").mockResolvedValue({ canSave: true, detail: "The provider returned a sample." });
+    const saved = vi.spyOn(templateApi, "saveTemplateSetup").mockResolvedValue({
+      connectionId: "new-connection", displayName: "Historical equities", providerKind: "tiingo"
+    });
+
+    try {
+      renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
+      await user.click(screen.getByRole("button", { name: "Add a provider connection" }));
+      const dialog = screen.getByRole("dialog", { name: "Add provider connection" });
+      expect(within(dialog).queryByLabelText(/API key/i)).toBeNull();
+      const useTemplate = within(dialog).getByRole("button", { name: "Use template" });
+      await waitFor(() => expect(useTemplate).toBeEnabled());
+      await user.click(useTemplate);
+      expect(within(dialog).getByRole("row", { name: /Required capabilities.*Historical Bars/ })).toBeInTheDocument();
+      expect(within(dialog).getByText("Check sample price adjustments.")).toBeVisible();
+      expect(begin).not.toHaveBeenCalled();
+      await user.click(within(dialog).getByRole("button", { name: "Continue to vault" }));
+      const key = await within(dialog).findByLabelText("API key (required)");
+      expect(key).toHaveAttribute("type", "password");
+      const save = within(dialog).getByRole("button", { name: "Save connection" });
+      expect(save).toBeDisabled();
+      await user.type(key, "synthetic-provider-key");
+      await user.click(within(dialog).getByRole("button", { name: "Test connection" }));
+      await waitFor(() => expect(save).toBeEnabled());
+      expect(key).toHaveValue("");
+      expect(vault).toHaveBeenCalledWith(draft, { ApiKey: "synthetic-provider-key" }, expect.any(AbortSignal));
+      expect(test).toHaveBeenCalledWith(draft.setupId, expect.any(AbortSignal));
+      await user.click(save);
+      expect(await within(dialog).findByRole("heading", { name: "Historical equities saved" })).toBeVisible();
+    } finally {
+      for (const mock of [catalogue, begin, vault, test, saved]) mock.mockRestore();
+    }
+  });
+
   it("clears provider credentials after setup and suppresses browser autocomplete", async () => {
     const user = userEvent.setup();
 
@@ -634,6 +712,7 @@ describe("DataScreen", () => {
     );
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
 
     expect(screen.getByRole("region", { name: "Yahoo Finance setup summary" })).toHaveTextContent("No key needed");
     expect(screen.getByRole("region", { name: "Yahoo Finance setup summary" })).toHaveTextContent("Preview a historical backfill");
@@ -713,6 +792,7 @@ describe("DataScreen", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "plaid");
 
     const clientId = screen.getByLabelText("Plaid client ID");
@@ -752,6 +832,15 @@ describe("DataScreen", () => {
       query: "Chase",
       requestId: "req-plaid-institutions",
       institutions: [
+        {
+          institutionId: "ins_business",
+          name: "Chase Business",
+          products: ["Transactions"],
+          countryCodes: ["US"],
+          url: null,
+          primaryColor: null,
+          logo: null
+        },
         {
           institutionId: "ins_3",
           name: "Chase",
@@ -822,18 +911,30 @@ describe("DataScreen", () => {
     renderWithRouter(<DataScreen data={data} session={session} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "plaid");
     await user.type(screen.getByLabelText("Plaid client ID"), "client-sandbox-123");
     await user.type(screen.getByLabelText("Plaid secret"), "secret-sandbox-456");
 
-    const bankSearch = screen.getByRole("combobox", { name: "Search supported financial institutions" });
+    const bankSearch = screen.getByRole("searchbox", { name: "Search supported financial institutions" });
     await user.type(bankSearch, "Chase");
-    await user.click(screen.getByRole("button", { name: "Search supported financial institutions for Chase" }));
+    expect(searchPlaidInstitutions).not.toHaveBeenCalled();
+    await user.keyboard("{Enter}");
 
     await waitFor(() => expect(searchPlaidInstitutions).toHaveBeenCalledWith("Chase"));
-    expect(await screen.findByRole("option", { name: /Chase/ })).toHaveTextContent("ins_3 | US | Transactions, Auth, Identity");
-
-    await user.click(screen.getByRole("option", { name: /Chase/ }));
+    const institutions = await screen.findByRole("table", { name: "Supported financial institutions" });
+    const firstInstitution = within(institutions).getByRole("row", { name: "Select Chase Business" });
+    const chase = within(institutions).getByRole("row", { name: "Select Chase" });
+    expect(chase).toHaveTextContent("ins_3 | US | Transactions, Auth, Identity");
+    firstInstitution.focus();
+    await user.keyboard("{End}");
+    expect(chase).toHaveFocus();
+    await user.keyboard("{Home}");
+    expect(firstInstitution).toHaveFocus();
+    await user.keyboard("{ArrowDown}{Enter}");
+    expect(chase).toHaveFocus();
+    expect(chase).toHaveAttribute("aria-selected", "true");
+    expect(searchPlaidInstitutions).toHaveBeenCalledTimes(1);
 
     expect(screen.getByText("Chase is selected for the next bank connection step.")).toBeInTheDocument();
     expect(bankSearch).toHaveValue("Chase");
@@ -895,6 +996,7 @@ describe("DataScreen", () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/providers"] });
 
     await user.click(screen.getByRole("button", { name: /configure a new data provider/i }));
+    await user.click(screen.getByRole("button", { name: "Configure manually" }));
     await user.selectOptions(screen.getByLabelText("Select provider type"), "alpaca");
     await user.type(screen.getByLabelText("Provider API key"), "key-123");
     await user.type(screen.getByLabelText("Provider API secret"), "secret-456");
@@ -924,10 +1026,48 @@ describe("DataScreen", () => {
     expect(screen.queryByRole("region", { name: "Backfill route focus" })).not.toBeInTheDocument();
   });
 
-  it("leads Data with repair work and keeps focused tools available", async () => {
+  it("counts Providers healthy over the same in-use providers its health cards show", () => {
+    const yahooConnection: ProviderConnectionRow = { ...polygonConnection, providerId: "yahoo", displayName: "Yahoo Finance", health: "Warning" };
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection, yahooConnection]} providerReadiness={providerReadiness} />,
+      { initialEntries: ["/data"] }
+    );
+
+    // Plaid is known only from the readiness catalog: available to set up, not in use, so it has
+    // no health card and does not count. Polygon and Yahoo are in use.
+    const overview = screen.getByRole("region", { name: "Provider health overview" });
+    const cards = within(overview).getAllByRole("article");
+    expect(cards.map((card) => card.getAttribute("aria-label"))).toEqual(["Polygon.io health", "Yahoo Finance health"]);
+    // Whatever each card's status (stale evidence caps a healthy one at review), the figure is a
+    // count of these cards.
+    const healthyCards = cards.filter((card) => within(card).queryByText("Healthy")).length;
+    expect(within(screen.getByLabelText("Data headline metrics")).getByText(`${healthyCards} of ${cards.length} providers`)).toBeInTheDocument();
+  });
+
+  it("never lets a ready readiness row hide a listed warning, nor a healthy listing hide blocked readiness", () => {
+    const blockedPolygon: ProviderReadinessSummary = {
+      ...providerReadiness,
+      providers: providerReadiness.providers.map((row) => row.providerId === "polygon" ? { ...row, status: "Blocked" } : row)
+    };
+    expect(blockedPolygon.providers.some((row) => row.providerId === "polygon")).toBe(true);
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection]} providerReadiness={blockedPolygon} />,
+      { initialEntries: ["/data"] }
+    );
+
+    const card = within(screen.getByRole("region", { name: "Provider health overview" })).getByRole("article", { name: "Polygon.io health" });
+    expect(within(card).getByText("Blocked")).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Data headline metrics")).getByText("0 of 1 provider")).toBeInTheDocument();
+  });
+
+  it("leads Data with provider health before repair work and keeps focused tools available", async () => {
     renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data"] });
 
     expect(screen.getByRole("treegrid", { name: "Historical repair jobs" })).toBeInTheDocument();
+    const health = screen.getByRole("region", { name: "Provider health overview" });
+    const repairs = screen.getByRole("treegrid", { name: "Historical repair jobs" });
+    expect(health.compareDocumentPosition(repairs) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByText("Diagnostics ready")).not.toBeInTheDocument();
     await userEvent.setup().click(screen.getByText("Data tools and connections"));
     expect(screen.getByRole("link", { name: "Open Import retained files: Import retained files" })).toHaveAttribute("href", "/data/import");
     expect(screen.getAllByRole("link", { name: "Open Provider connections: Provider connections" })[0]).toHaveAttribute("href", "/data/providers");
@@ -935,6 +1075,33 @@ describe("DataScreen", () => {
     expect(screen.queryByRole("textbox", { name: /search securities/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("tab", { name: /show overview/i })).not.toBeInTheDocument();
     expect(screen.queryByText("Security Master command deck")).not.toBeInTheDocument();
+  });
+
+  it("shows Latency not reported, not a timestamp, under Latency on the Data overview", () => {
+    const alpacaConnection: ProviderConnectionRow = {
+      ...polygonConnection,
+      providerId: "alpaca",
+      displayName: "Alpaca paper",
+      capability: "Brokerage",
+      lastVerifiedAt: "2026-07-13T18:55:00Z",
+      lastSuccessfulAt: "2026-07-13T18:55:00Z"
+    };
+
+    renderWithRouter(
+      <DataScreen data={data} providerConnections={[polygonConnection, alpacaConnection]} />,
+      { initialEntries: ["/data"] }
+    );
+
+    const overview = screen.getByRole("region", { name: "Provider health overview" });
+    const latencyValue = (providerName: string) => {
+      const card = within(overview).getByRole("article", { name: `${providerName} health` });
+      return within(card).getByText("Latency", { selector: "dt" }).nextElementSibling;
+    };
+
+    const alpacaLatency = latencyValue("Alpaca paper");
+    expect(alpacaLatency?.tagName).toBe("DD");
+    expect(alpacaLatency).toHaveTextContent(/^Latency not reported$/);
+    expect(latencyValue("Polygon.io")).toHaveTextContent(/^18ms p50$/);
   });
 
   it("switches the detail panel when a backfill row is selected", async () => {
@@ -1085,6 +1252,57 @@ describe("DataScreen", () => {
       expect(previewStatus).toHaveTextContent("2024-01-01 to 2024-01-31");
     });
     expect(screen.getByText("Preview is ready. Review the summary before running.")).toBeInTheDocument();
+    expect(screen.getByText("Limit unavailable")).toBeInTheDocument();
+    expect(screen.queryByText("Estimated duration")).not.toBeInTheDocument();
+  });
+
+  it("shows observed quota and submits an over-budget plan with explicit throttling", async () => {
+    const user = userEvent.setup();
+    const quota = {
+      expectedRequests: 5,
+      requestsPerWindow: 5,
+      windowSeconds: 60,
+      observedRemainingRequests: 2,
+      observedAt: "2024-01-31T10:00:00Z",
+      resetAt: null,
+      backfillRequestsPerWindow: 4,
+      backfillRemainingRequests: 1,
+      reservedHeadroomPercent: 20,
+      maxConcurrentRequests: 1,
+      estimatedDurationSeconds: 65,
+      exceedsBudget: true,
+      uncertainty: "Pagination and retries can increase usage."
+    };
+    vi.spyOn(api, "previewBackfill").mockResolvedValueOnce({
+      provider: "polygon", providerDisplayName: "Polygon", from: "2024-01-01", to: "2024-01-31",
+      totalDays: 31, estimatedTradingDays: 21, symbols: [], estimatedDurationSeconds: 65, notes: [], quota
+    });
+    const submit = vi.spyOn(api, "submitBackfill").mockResolvedValueOnce({
+      executionId: "admission-1", status: "Queued", provider: "polygon", scheduledAt: "2024-01-31T10:00:00Z", quota
+    });
+    vi.spyOn(api, "getBackfillExecutionHistory").mockResolvedValue({
+      executions: [], total: 0, autoRemediation: { total: 0, withReason: 0, lastOutcome: null, defaultProvider: "stooq" },
+      timestamp: "2024-01-31T10:00:00Z"
+    });
+
+    renderWithRouter(<DataScreen data={data} />, { initialEntries: ["/data/backfills"] });
+    await user.click(screen.getByRole("button", { name: /trigger backfill/i }));
+    await user.type(screen.getByRole("textbox", { name: "Backfill symbols" }), "AAPL");
+    await user.click(screen.getByRole("button", { name: "Preview backfill request" }));
+    const quotaPanel = await screen.findByRole("region", { name: "Provider quota" });
+    expect(quotaPanel).toHaveTextContent("Expected requests");
+    expect(quotaPanel).toHaveTextContent("5 requests / 1 min");
+    expect(quotaPanel).toHaveTextContent("Observed remaining2 requests");
+    expect(quotaPanel).toHaveTextContent("20% headroom target");
+    expect(quotaPanel).toHaveTextContent("Pagination and retries can increase usage.");
+    expect(screen.getByRole("checkbox", { name: "Schedule for later" })).toBeEnabled();
+    await user.click(screen.getByRole("button", { name: "Queue with throttling" }));
+    expect(submit).toHaveBeenCalledWith(expect.objectContaining({
+      provider: "polygon", symbols: ["AAPL"], executionPolicy: "queued", scheduledAt: null,
+      from: "2024-01-01", to: "2024-01-31", submissionId: expect.any(String)
+    }));
+    expect(await screen.findByText("Queued · polygon")).toBeInTheDocument();
+    expect(screen.getByText("Requests are paced to the shared provider budget.")).toBeInTheDocument();
   });
 
   it("locks backfill request fields while preview is pending", async () => {

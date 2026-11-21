@@ -1,4 +1,4 @@
-import { formatCompactCurrency, formatCurrency } from "@/lib/format";
+import { formatCurrency, formatFixed, formatUtcDate } from "@/lib/format";
 import type {
   PortfolioCashLadder,
   PortfolioCashLadderBucket,
@@ -28,12 +28,7 @@ export function formatCashLadderDate(value: string): string {
     : new Date(normalized);
   return Number.isNaN(date.getTime())
     ? normalized
-    : date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-        year: "numeric",
-        timeZone: "UTC"
-      });
+    : formatUtcDate(date);
 }
 
 function formatLadderSigned(value: number, currency: string): string {
@@ -45,16 +40,7 @@ function formatLadderSigned(value: number, currency: string): string {
 }
 
 function formatLadderCompact(value: number, currency: string): string {
-  try {
-    return new Intl.NumberFormat("en-US", {
-      style: "currency",
-      currency,
-      notation: "compact",
-      maximumFractionDigits: 1
-    }).format(value);
-  } catch {
-    return formatCompactCurrency(value);
-  }
+  return formatCurrency(value, { currency, notation: "compact", maximumFractionDigits: 1 });
 }
 
 export const CASH_LADDER_CHART_WIDTH = 960;
@@ -111,6 +97,11 @@ export interface CashLadderScenarioOption {
 
 export interface CashLadderDrillRow {
   id: string;
+  securityId: string;
+  projectionRunIdentity: string | null;
+  termsVersionId: string | null;
+  termsHash: string | null;
+  sourceEntityId: string | null;
   instrument: string;
   assetClass: string;
   flowType: string;
@@ -213,7 +204,7 @@ export function buildCashLadderChart(ladder: PortfolioCashLadder | null): CashLa
     y: scaleY(bucket.cumulativeCash),
     breaches: bucket.breachesMinimumBalance
   }));
-  const cumulativePoints = cumulativeMarkers.map((point) => `${point.x.toFixed(1)},${point.y.toFixed(1)}`).join(" ");
+  const cumulativePoints = cumulativeMarkers.map((point) => `${formatFixed(point.x, 1)},${formatFixed(point.y, 1)}`).join(" ");
 
   const thresholdY = ladder.minimumCashThreshold > paddedMin && ladder.minimumCashThreshold < paddedMax
     ? scaleY(ladder.minimumCashThreshold)
@@ -302,7 +293,12 @@ export function selectBucketContributions(
 
 function toDrillRow(row: PortfolioCashLadderContribution): CashLadderDrillRow {
   return {
-    id: `${row.securityId}-${row.dueDate}-${row.flowType}-${row.amount}`,
+    id: `${row.securityId}-${row.projectionRunId ?? ""}-${row.sourceEntityId ?? ""}-${row.dueDate}-${row.flowType}-${row.amount}`,
+    securityId: row.securityId,
+    projectionRunIdentity: row.projectionRunId ?? null,
+    termsVersionId: row.termsVersionId ?? null,
+    termsHash: row.termsHash ?? null,
+    sourceEntityId: row.sourceEntityId ?? null,
     instrument: row.displayName,
     assetClass: row.assetClass,
     flowType: row.flowType,

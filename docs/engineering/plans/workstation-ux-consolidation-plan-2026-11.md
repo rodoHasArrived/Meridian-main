@@ -1,0 +1,461 @@
+# Browser Workstation UX Consolidation Plan (2026-11-13)
+
+> **Status:** In progress (Phase 0 and the first Phase 1 slices landed 2026-11-13; P4 scope bar 2026-11-14) · **Created:** 2026-11-13 ·
+> **Owner lane:** Workstation Shell and UX
+> **Builds on:** [Browser Workstation UX Review and Improvement Plan (2026-11)](web-workstation-ux-review-plan-2026-11.md).
+> That plan's findings still apply. This plan is a newer review of the same surface. It is
+> organised around consolidation: one place, one vocabulary and one component for each concern.
+> **WPF:** shared contracts stay unchanged, so the desktop lane can follow (`W8-WPF-PARITY-001`).
+
+## Proposals
+
+| # | Proposal | Core change |
+|---|---|---|
+| P1 | One place for "what needs attention" | The trust strip owns global state and the worst blocker. The status bar shows only connectivity and freshness. Per-screen trust rows show only differences. Today merges Finance queue and Operator inbox into one queue with a source filter |
+| P2 | One status vocabulary and one badge | The 5 canonical severities in `design-system/status.tsx` (ready/review/action/blocked/info) are the only public status type. One `StatusBadge` that never truncates. Local tone maps are codemodded onto it |
+| P3 | Numbers that agree, one figure format | A single money/number/date module: 24h UTC by default with a user time zone, relative times with absolute on hover, money as decimal strings (no `parseFloat`). Each headline figure states its scope. Price tables get a currency column |
+| P4 | Operating scope impossible to miss | Permanent `entity › fund › account › period` scope in the top bar, carried in the URL. The empty value reads "All authorized", never "None". Single-account screens show an inline account picker |
+| P5 | Navigation: fewer items, clearer names | Unique names. Admin items collapsed. Breadcrumb on every page. Close Calendar becomes a month grid. Pinned pages and "Recent" in the palette |
+| P6 | Long screens become tabs or task modes | Shared in-page tab bar kept in the URL. One chevron `Disclosure`. Split the 5,000-line screen files along the tab lines |
+| P7 | Tables that work like a finance grid | `TableWorkbench` as the only table. Global density, multi-select with a selection bar, sticky header and first column, virtualization above ~200 rows, em-dash plus tooltip for unavailable values |
+| P8 | Consistent loading/empty/error/disabled states | `AsyncRegion` on every data panel, content-shaped skeletons, a `DisabledReason` pattern, and repeated "none" cells collapsed into a single note |
+| P9 | Visual polish | Mono only for numbers and IDs. A 12px floor. One button hierarchy. Typographic arrows. Injected CSS moved into stylesheets. Dark-mode check |
+| P10 | Workflow features | Record search in the palette, keyboard-first queues, one Views model (fix the `view=` collision), Close Calendar grid, Strategy visuals and comparison, undo, pop-out panels |
+
+## Phased roadmap
+
+Each phase ships on its own, behind the existing browser smoke tests and screenshot captures.
+
+### Phase 0: Quick fixes (landed 2026-11-13)
+
+| Item | Change |
+|---|---|
+| Clipped badges ("OPE", "Defaults or saved preferences a") | `.mds-sev` no longer uses ellipsis. A caps badge keeps its full width and does not shrink. A sentence badge wraps. `Badge` caps badges get `shrink-0 whitespace-nowrap` |
+| Overflow assertion | `scripts/dev/capture-web-screenshots.mjs` reports a new `truncated-badge` content issue for any visible `.mds-sev`/`.mds-badge` whose text overflows its box |
+| ASCII arrows | User-visible `->` in dashboard copy replaced with `→` |
+| Trading debug pills | "Connection Connected" became "Broker Online/Degraded/Offline". "Panel None" is gone; "Open panel" shows only while a panel is open |
+| "Basis: Not declared by source" | `StatStrip` prints a basis line only when a basis or as-of time is declared. The figure passport still states an undeclared basis |
+| Bulk actions with nothing selected | The reconciliation bulk bar shows a hint and "Select all". Clear, Assign, Route and Resolve appear once breaks are selected, or while a draft is open |
+| Duplicate keyboard shortcuts on Reconciliation | The inline disclosure was removed. The `?` button and dialog remain, and the dialog now states the permission/rationale rule |
+| Accounting "Today" | Renamed "Close cockpit" in the Accounting navigation |
+| Header title vs breadcrumb on Today | The document title, route announcement and context control now say "Today", matching the sidebar and breadcrumb |
+
+**Not done in Phase 0:**
+- The breadcrumb `<nav>` already renders on every routed page, and its last crumb is the page
+  `<h1>`, so the two always agree by construction. On workspace overview pages it holds one
+  crumb. Showing a visible ancestor there, such as a "Workspaces" root, is a P5 naming decision
+  left for Phase 2.
+- Captures were not re-run at 1440px and 1024px in this change. The `truncated-badge` check takes
+  effect on the next capture run.
+
+### Phase 1: Clarity foundations (P1–P4, ~3–4 weeks)
+
+**First slice (landed 2026-11-13):**
+- **P2 status styles.** `design-system/status-styles.ts` is now the only status-to-look mapping.
+  - `toSeverity()` sends every badge variant, readiness tone and server status through
+    `normalizeDesignSystemSeverity` onto the five severities.
+  - `statusBadgeVariant`, `statusPanelClass`, `statusTextClass` and `statusMetricTone` give
+    each severity one style.
+  - `lib/shared-tone-mappings.ts` (15 helpers), `screens/accounting-screen.styles.ts` and
+    `screens/data-screen.tone-styles.ts` are removed. Their ~200 call sites in 19 files were
+    migrated.
+  - These colour changes are deliberate:
+    - Old helpers disagreed on "warning" (review in some, action in others). It is now always
+      action.
+    - "default" and "primary" are informational rather than primary-tinted.
+    - Panels use the severity tokens.
+    - Informational text inherits its colour instead of turning muted.
+- **P3 exact money.** `components/accounting/money.ts` parses amounts as exact decimals (BigInt
+  units plus scale).
+  - `formatMoney` formats a decimal string from its digits, rounding half away from zero.
+  - `sumAmounts` sums exactly.
+  - `parseFloat` is gone.
+  - Example: `"12345678901234.565"` now renders `12,345,678,901,234.57`, and `"1.005"` renders
+    `1.01` (previously `1.00`).
+
+**Portfolio figure consistency (landed 2026-11-15, extends P1 and P3):** the Portfolio holdings
+table, headline figures and holding detail panel read one model (`lib/holdings-model.ts`). With no
+current price, Market value shows the last recorded value with a "Stale" marker and the price date;
+a value that does not exist shows "—" with the reason as a tooltip. The table has a Currency column
+and a total line that restates the headline. The screenshot script fails a page whose table rows do
+not sum to the headline Total exposure. The page heading is "Holdings". The WPF Portfolio surface
+does not have this presentation yet.
+
+**Say it once: trust, scope, refresh, headings and copy (landed 2026-11-15, dashboard source;
+P1, P4, C4, C6):**
+- Trust: headline figures carry one compact label with the full source on hover; unverified is a
+  style on the figure; the page trust row renders only when the page differs from the global state.
+- Scope: the header bar shrinks to "All authorized scopes" and lists only set fields; Today's scope
+  row is gone; Trading without an account shows one row instead of a picker box.
+- Refresh: the header Refresh reloads page-owned panels through `useOnGlobalRefresh`. The Today,
+  inbox, Trading readiness, execution evidence, Settings activation and close-history refresh
+  buttons are gone; "Retry" appears only in an error state. About forty sub-page panels (Data
+  regions, Reporting, corporate actions, watchlist and others) still have their own Refresh button
+  and remain to be moved.
+- Headings: one `PageHeading` on every overview; the inline "Hide" link is replaced by one
+  preference under Settings > Preferences.
+- Layout: Trading's overview leads with positions and orders, with readiness and session history
+  collapsed; Accounting's case workbench lost its heading-only band; Settings shows an unavailable
+  activation status below the checklist.
+- Copy: page purpose lines across the seven workspaces are one plain sentence each; the Portfolio
+  chart-method note is behind an information icon.
+- The WPF workstation does not have these changes yet.
+
+**Follow-ups (landed 2026-11-16, dashboard and WPF source; host bundle not rebuilt):**
+- Scope: Trading's account step is inside the header scope bar (`ScopeBarAccountPicker`); the
+  Trading recovery row has no picker.
+- Refresh: the remaining sub-page Refresh buttons are converted to `PanelReload` (header-driven
+  reload, "Retry" only after a failed load). Buttons that start new work are renamed for what they
+  do ("Run checks again", "Fetch latest prices", "Fetch latest chain", "Recalculate preview",
+  "Check command outcome"). A header-driven reload never discards operator input.
+- Copy: operator-visible strings written by the dashboard no longer use "posture", "governed",
+  "handoff", "workstream", "read model", "evidence route", or "projection" for a derived view.
+  Not changed: server-supplied text, wording sent to the server or stored in audit records,
+  genuine forecasts, page names, and the words "retained" and "authoritative".
+- WPF: shell Refresh and F5 reload the active page, docked panes and visible split panes in place
+  through `IPageRefreshTarget`; redundant page-level Refresh buttons are removed; the seven
+  workspace shells state one plain description and one title each; the empty scope reads "All
+  authorized scopes" or "No scope selected"; the position blotter shows market value. WPF is
+  compile-checked on Linux; its tests run on Windows CI only. Not ported to WPF: the compact trust
+  label, the overview layout order, a currency/weight holdings model, sub-panel Refresh buttons,
+  and the copy pass beyond the seven shell pages.
+
+**P1 first step (landed 2026-11-13):** the bottom status bar no longer repeats the
+masthead's worst issue ("Cash variance needs review +5 more"). It holds Sync and page Freshness
+only, so the trust strip is the one shell place that names the worst open issue.
+
+**P1 second step and P3 formatter burn-down (landed 2026-11-13):**
+- Page status rows (`OperationalTrustSummary`) no longer list the masthead's shell-wide issues in
+  their one-line summary. Those issues stay under "Details", and a page whose own facts are ready
+  reads "This page's sources are current · N workspace issues in the trust strip".
+- `localMoneyFormatters` is at 0 (was 24 occurrences in 13 files). Screen-local money and signed
+  formatters were replaced with `@/lib/format`, which gained a `signed` option on `formatNumber`,
+  `formatPercent`, `formatRatioAsPercent`, `formatAmountWithCode` and `formatCount`, and now hosts
+  `formatCurrencyWithCode`. `handRolledNumberFormatting` went from 75 to 72. The only output
+  changes are thousands separators on signed percents and returns of 1,000 or more, "-0" counts
+  now reading "0", and a trimmed currency code.
+
+**P1 third step (landed 2026-11-13):** Today's "Finance queue" and "Operator inbox" now sit
+under one Queue heading with a Source filter (All sources, Workspace signals, Shared inbox). The
+inbox keeps its assignment, snooze and acknowledge controls. The two sources still render as two
+tables: interleaving them into one grid needs a shared row model for workspace signals and inbox
+items, which is a follow-up.
+
+**P1 fourth step (landed 2026-11-13):** Today shows one interleaved queue grid ("Today queue").
+- Row model: `TodayQueueRow` in `lib/daily-control-tower.ts`, built by `buildTodayQueueRows`. Each
+  row has a source (`workspace` or `inbox`), label, detail, workspace, severity rank and observed
+  time. A workspace row also carries its evidence passport and next action. An inbox row carries
+  the full triage item.
+- Order: severity, then oldest first (rows with no observed time go after dated rows), then each
+  source's own rank, with workspace signals first on a tie. Workspace signals have no creation time,
+  so their age is the time of their correlated evidence.
+- The grid has a Source column (Workspace signal / Shared inbox). The Source filter filters rows of
+  this one grid and shows a count per source. The workspace count is the sidebar Today badge's
+  count, which still counts workspace signals only.
+- The inbox read, filters, bulk selection and in-flight or unconfirmed command moved into
+  `useOperatorTriageInbox`, above the filter. Filtering inbox rows out keeps a pending command,
+  and "Retry same command" stays visible under every filter. `OperatorTriageQueue` uses the same
+  hook and keeps its own table.
+- A selected inbox row opens the triage rail: assign, acknowledge, snooze, route and activity. A
+  selected workspace row opens the evidence rail. Keyboard j/k moves across both sources, and "a"
+  opens assignment on an inbox row.
+- "Affected output" and "Evidence" are now optional columns, hidden by default. The evidence rail
+  still shows both.
+- The screenshot catalog now waits on `table[aria-label="Today queue"]` and on
+  `data-today-inbox-state` reaching `ready` or `unavailable`.
+
+**P1 fifth step (landed 2026-11-15): one attention count.** This supersedes the fourth step's
+"the sidebar badge still counts workspace signals only".
+- Item type: `AttentionItem` in `lib/attention-items.ts`, with a source, severity (`blocked`,
+  `action`, `info`, `clear`), owner, due time and snoozed flag. `buildAttentionItems` builds the
+  list from the Control Tower's workspace signals and the shared operator inbox. A workspace signal
+  whose id is `work-item:<workItemId>` and the inbox item with that `workItemId` are one work item:
+  it is listed and counted once, as the inbox item.
+- Count rule, stated once (`needsAttention`, `ATTENTION_COUNT_RULE`): blocked + action, excluding
+  snoozed. The sidebar badges, the masthead pill's "N more" and Today's queue all count the list
+  with it. Per-source and per-workspace counts are filtered views, so they add up to the total; an
+  item with no known workspace counts in the total only.
+- The shell (`app.tsx`) reads the shared inbox once with `useOperatorTriageInbox` and passes the
+  same state to Today, so the badge and the queue cannot count different reads. While the inbox is
+  loading or unavailable, every surface counts workspace signals alone and Today says so.
+- Today's default view ("Needs attention") lists exactly the counted items, so the row count, the
+  toolbar's match count, the Source filter counts and the sidebar badge are the same number. "All
+  items" adds informational and snoozed rows. The help line about what the badges count, the
+  per-source summary line and the seeded read-only inbox notice are gone from the normal view; a
+  real loss of durable triage still raises its alert.
+- KPI denominators name their population through `formatCountOfTotal` ("1 of 2 providers",
+  "4 of 5 schedules", "0 of 1 close task"). Trading's risk cockpit labels its exposure figures
+  "· paper session" so they do not read as the Portfolio header's gross exposure over live holdings.
+- Provider health is one population and one status rule. The population is the providers in use
+  (metrics, a saved connection, a routing connection or a trust snapshot); a provider known only
+  from the readiness catalog is available to set up and is not counted. A provider's status is the
+  worse of its listed status and its readiness status (`ResolveProviderStatus` on the server,
+  `resolveProviderStatus` in the browser, both held to the shared fixture), and a provider is not
+  Healthy on evidence older than three days, on the server as on the page. The Data overview's
+  health cards and its "Providers healthy" figure read the same rows, and the server's Data payload
+  and cross-screen count apply the same rule, so Data, Settings and the trust strip agree.
+- Not done: the notification bell still counts unread notifications, which is a different
+  quantity from the attention count.
+
+**P3 `.toFixed()` burn-down (landed 2026-11-13):** `handRolledNumberFormatting` is at 0 (was
+72), so both formatter ratchets in the Phase 1 criteria are met.
+- `@/lib/format` gained `formatDecimal(value, digits)` for displayed figures (grouped, signed
+  option, "—" for non-finite values) and `formatFixed(value, digits)` for SVG and CSS geometry
+  only.
+- Output changes:
+  - Thousands separators on figures of 1,000 or more.
+  - Decimal ties round on the shortest decimal form, so 0.35 at one digit reads 0.4.
+  - "—" replaces "NaN" and "Infinity" where there was no guard.
+
+**P4 scope bar (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- The header's "Context: …" control is replaced by a permanent, labelled scope bar,
+  `Scope  Account … › Period …`. Subject, Run and Provider are inserted when set. The scope model
+  has no entity or fund dimension yet, so the bar shows the dimensions it does have rather than
+  invent `entity › fund`. An unset dimension reads "All authorized"; the empty scope as a whole
+  reads "All authorized scopes", the same words Today prints. The bar opens the scope picker,
+  which still holds the workflow detail.
+- "No scope selected" (and the scope summary's "No operating scope selected") no longer appears.
+  A unit test covers the empty value, and a source scan fails if either phrase returns.
+- Every `StatStrip` prints the scope it was counted over, inherited from the shell. In order:
+  - the screen's own `scope`;
+  - else the account the supplying payload was loaded for;
+  - else "All authorized scopes" for a payload the shell loads without a scope filter (those
+    figures are not narrowed by the selection, so they do not borrow it);
+  - else the scope the route applies.
+
+  Trading's totals without a fund account now read "Brokerage account …".
+- Trading shows an inline fund-account picker in place of the "Choose a fund account" empty state
+  in a non-live environment. This covers the overview and the one-line row on Orders and the other
+  Trading routes. Live, unknown and failed states still block. Applying an account sets only that
+  dimension, through the same path as the scope picker, so it lands in the URL and links carry it.
+  Picking a scope already updated the URL; tests now prove links carry it.
+- Today's own "Scope …" line was left as is: it already reads "All authorized scopes".
+
+**P4 entity, fund and period (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- The scope model gains Entity and Fund dimensions (`entityId`, `fundId` URL parameters). The bar
+  now reads `Scope  Entity … › Fund … › Account … › Period …`, with Subject, Run and Provider
+  inserted before Period when set. Unset Entity, Fund and Account read "All authorized"; an unset
+  Period reads "All periods".
+- Entity and fund travel on every route's URL and in browser storage, recent scopes, saved
+  layouts, Copy link and the operator's default scope. They apply only where a screen reads them:
+  Accounting reads `entityId`; no screen filters by fund yet, so a set fund shows as retained
+  everywhere. No payload is filtered by entity or fund on the client.
+- Option source: the existing organization read model, `GET /api/fund-structure/graph`
+  (`OrganizationStructureGraphDto`). It lists entities, funds with the entities they hold, and
+  accounts with their fund and entity, filtered server-side. No endpoint was added. An entity
+  narrows the funds and accounts; a fund narrows the accounts; an account whose fund or entity the
+  data does not state is hidden from a narrowed list and counted. The graph is gated to
+  fund-structure permissions; without it the picker takes typed ids and narrows nothing.
+- A period control in the scope picker: All periods, Today, MTD, QTD, YTD, Last month, Custom range
+  (shared `DateRangePicker`) and As of. Presets use the operator's calendar day (`LocalDate`).
+- Shared contract: `OperatingScopeValuesDto` gained optional `EntityId` and `FundId` (additive,
+  appended last) so a saved default keeps them.
+- Gaps at that point (both closed below): no screen narrowed by fund, and operators without
+  fund-structure permissions got no entity or fund lists.
+
+**P4 scope-option read for every operator (landed 2026-11-14, source; host bundle not yet rebuilt):**
+- `GET /api/workstation/scope-options` (`WorkstationScopeOptionsDto`, additive) is open to any
+  authenticated operator with tenant and company scope. It lists only the entities, funds and
+  accounts the caller could already read elsewhere: `AdminMaintenance` sees all; otherwise a node
+  needs a globally held permission plus a scoped grant at that node or an ancestor, with
+  `ManageFundStructure` covering entities, funds and accounts, `ManageDirectLending` and
+  `ViewTrades` accounts, and `ViewLedgerReports`/`ManageLedgerReports` entities.
+  Relationships pointing outside the visible set are null. Tenant isolation is the fund-structure
+  service's.
+- The picker prefers it and falls back to `/api/fund-structure/graph` on a 404 (older hosts). A
+  trading-only operator now gets its accounts; the picker says "No entities or funds are visible to
+  you" instead of naming fund-structure access, and "could not be loaded" when the read fails.
+- Withheld relationships (landed 2026-11-14, source): an account whose fund or entity exists but is
+  outside the caller's visible set carries `fundWithheld`/`entityWithheld` (additive, default
+  false; existence only, never the id or name). The picker, the inline account picker and narrowed
+  screens count those accounts apart from ones with no recorded fund ("2 whose fund is not visible
+  to you not shown") and never treat them as conflicts. They are still left out of a narrowed list.
+
+**P4 screens narrow by fund (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- Shared rule (`lib/operating-scope/fund-scope-narrowing.ts`): a fund-account row is kept when the
+  organization graph places its account under the chosen fund (or, with only an entity chosen,
+  booked to that entity or held by a fund that holds it). This is the scope picker's
+  `constrainScopeOptions` rule. Rows whose account the graph does not place are left out of the
+  narrowed list and counted in a note ("… 2 with no recorded fund not shown."), never hidden
+  silently. Without the structure read (loading, or the read failed) nothing is narrowed and the
+  note says so. No server payload changed; the narrowing is client-side.
+- Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): the household's accounts and positions
+  are narrowed, and the household totals are re-summed over the accounts kept. Other Portfolio
+  routes keep the whole household.
+- Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue, its counts
+  and references are narrowed.
+- Scope bar: `operatingScopeDimensionsForRoute(route, { fundStructureReady })` adds Entity and Fund
+  to the dimensions in effect on `FUND_SCOPE_NARROWED_ROUTES` only when the graph has loaded. The
+  bar, the picker's "Applied on this screen" hints and the figures-strip scope follow it. Without
+  the graph both stay "retained".
+- Trading's inline account picker narrows its suggestions exactly as the scope picker does
+  (accounts with no recorded fund or entity are left out and counted), and flags a typed or
+  scoped account the graph places outside the chosen fund or entity. It still lets the operator
+  use it. Trading has no other per-account list to narrow.
+
+**P4 fund narrowing on more screens (landed 2026-11-14, dashboard source; host bundle not yet rebuilt):**
+- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list is
+  narrowed by each workflow's `fundAccountId` with the shared rule, the "N workflows" count is taken
+  over the kept workflows, and the selected workflow, its detail and its close calendar/cockpit
+  reads follow the kept list. The shared status note sits above the list. The route keeps applying
+  `entityId` to its close-readiness read (`ACCOUNTING_ENTITY_ROUTES`); with the graph loaded, Fund
+  is applied as well. Both add the same `entityId` key, so the bar shows it once.
+- Accounting > Statement import (`/accounting/statement-import`): the saved statement fetch
+  schedules (Scheduled tab) are narrowed by each schedule's `fundAccountId`, with the same note.
+- Both routes are in `FUND_SCOPE_NARROWED_ROUTES`.
+- Not adopted: the reporting delivery history. A `ReportPackDeliveryAttempt` carries a report id,
+  distribution id and (on its package) a reporting run id, but no fund account, fund or entity, and
+  neither the distribution records nor the run projections in the same payload carry one. There is
+  no reliable key to place an attempt under a fund, so no mapping was invented and Reporting does
+  not narrow by fund. Adopting it needs the server to state the attempt's fund account or fund.
+
+**P3 one money formatter (landed 2026-11-14):** `formatMoney` in `@/lib/format` is the only
+money formatter.
+- It accepts a number or a decimal string. Both are read by the exact-decimal core in
+  `lib/exact-decimal.ts`, which is the only place that rounds (half away from zero), signs and
+  groups money. `parseFloat` is not used.
+- New options: `parens`, `zeroDash` and `convention`. The `screen` convention uses Intl symbols
+  and "-". The `statement` convention uses the statement symbol table and U+2212 "−".
+- `components/accounting/money.ts` is now a thin statement-convention wrapper. It re-exports
+  `parseExactDecimal`, `toNumber`, `sumAmounts` and `currencySymbol`.
+- Output change: on screens, an amount that rounds to zero no longer carries a sign. "-$0.00"
+  and "+$0.00" now read "$0.00", which matches what the accounting helpers already did.
+
+**P3 one date format with a time-zone preference (landed 2026-11-14):**
+- `formatTimestamp` renders "Jun 30, 2026, 18:05 UTC" in the operator's display time zone. It
+  uses a 24-hour clock and the zone's short label, e.g. "14:05 EDT".
+- The zone is UTC until the operator picks an IANA zone under Settings > Preferences >
+  Appearance. The choice is validated with Intl and persisted per browser.
+- `formatRelativeTime` gives "5m ago" or "in 2h". `<TimeText>` shows one form and puts the
+  other in its hover title.
+- `formatUtcTimestamp` stays UTC for labels defined on the UTC clock. Its operator-facing
+  callers (about 30 files) now call `formatTimestamp`, which gives identical output at the UTC
+  default.
+- Screen-local formatters were migrated:
+  - Backfill and deadline times on Data. This fixes a doubled "UTC UTC".
+  - Provider last-verified times. These change from 12-hour to 24-hour and gain the year.
+  - Approval discussion dates.
+  - Host-locale times in lifecycle receipts, historical chart bars and price-alert notifications.
+- Tests cover UTC, a New York spring-forward and fall-back transition, and the relative and
+  absolute forms.
+
+**P3 remaining time formatters migrated (landed 2026-11-14):**
+- `formatTimestamp` gained `precision: "minute" | "second" | "millisecond"` (default `"minute"`,
+  byte-identical to before). `formatUtcTimestamp` and `<TimeText>` take the same option. All
+  outputs below are at the UTC default; in a picked zone they render in that zone.
+- Live-quote times: "15:00:00.123 UTC" → "May 8, 2026, 15:00:00.123 UTC" (millisecond).
+- Price-alert times: "May 12, 14:02:37 UTC" → "May 12, 2026, 14:02:37 UTC" (second).
+- Journal tax-result times: unchanged text at UTC ("May 12, 2026, 14:02:37 UTC"), now zone-aware.
+- Brokerage recovery: "2026-10-05 15:30:02 UTC" → "Oct 5, 2026, 15:30:02 UTC" (second).
+- Reporting schedule, last-run and publication times: "May 17, 8:15 PM UTC" →
+  "May 17, 2026, 20:15 UTC". The Reporting tests were updated to pin the new form.
+- Close checklist: the column is a retained record time, not a UTC-defined cut-off, so it moved to
+  the display zone. The header is now "Recorded at" (each cell carries its zone label) and the
+  CSV export keeps the ISO UTC instant. `formatDateTimeUtc` in `lib/time.ts` had no other caller
+  and was removed.
+- Triage queue and Today queue ages: "<1m"/"5m"/"3h"/"2d" (floored) → "20s ago"/"5m ago"/"3h ago"/
+  "2d ago" (`formatRelativeTime`, rounded), rendered by `TriageAge` as `<TimeText>` with the
+  absolute time on hover. A missing or future instant still reads "Age unavailable".
+- `WorkflowContinuityDock` was deleted. `WorkflowContextDisclosure` moved to
+  `components/meridian/workflow-context-disclosure.tsx` with its own stylesheet.
+
+**Remaining in Phase 1:**
+- P4: fund narrowing on more screens with fund-account rows. The Operations Continuity workflow
+  list and the statement fetch schedules adopted the shared rule (above). The reporting delivery
+  history waits on a server-stated fund account or fund for each delivery attempt. Each further
+  route is added to `FUND_SCOPE_NARROWED_ROUTES` as its screen adopts the shared rule. Also open: rebuilding
+  the host bundle for the scope-option read, inline account pickers
+  on other single-account screens as they are identified, and (if wanted) letting a trading,
+  direct-lending or accounting grant at fund level disclose that fund's name, which no existing read
+  does today (until then such accounts are counted as "not visible to you", not placed). A fund's
+  `entityIds` carries no withheld marker yet; add one only if a consumer needs it.
+- P4 WPF consumer (landed 2026-11-14, source): the desktop operating-context page reads
+  `GET /api/workstation/scope-options` through `WorkstationScopeOptionsApiClient` and narrows entity,
+  fund and account pickers by the same rule as the browser picker, reporting failures and accounts
+  left out. Remaining for WPF: a persistent scope bar with period, saved defaults and screen-level
+  fund narrowing; the desktop's 404 fallback uses its in-process fund-structure graph. Tracked in
+  the [WPF alignment plan](wpf-web-ui-alignment-plan.md) parity matrix.
+- The triage "Due · UTC" and "Observed · UTC" labels (`triageDateLabel`) still use a fixed-UTC
+  `Intl.DateTimeFormat` without a zone label. They are honest as headed; moving them to the
+  display zone needs the headers renamed.
+
+Acceptance criteria:
+- Only the 5 canonical severities are exported. `shared-tone-mappings.ts`, the
+  `accounting-screen.styles.ts` tones and `data-screen.tone-styles.ts` are removed.
+- Money/number formatter ratchets are at 0, with no `parseFloat` on monetary values.
+- One date format with a user time-zone preference. Tests cover UTC, DST and relative/absolute times.
+- Each attention item appears in at most 2 places: the trust strip and the queue.
+- The first data row on Today, Portfolio and Accounting is at y ≤ 220px at 1440×900.
+- Every figures strip prints its scope, and "No scope selected" no longer appears.
+- Counts for the same item agree across screens in the seeded scenario, or carry an inline
+  scope label that explains the difference.
+
+**Screenshot-review follow-ups 6–12 (landed 2026-11-15):**
+- *System narration (C4).* Method notes left the reading path: Portfolio's bar note, the two
+  execution-journey paragraphs and the journey's matching rules sit behind `TechnicalDetails`;
+  Orders states its price basis once. Wire values get display labels through
+  `@/lib/display-labels` (`formatEnumLabel`, `executionEventLabel`): "PartialFill ·
+  PartiallyFilled" reads "Partial fill · Partly filled". `@/lib/internal-copy` drops
+  self-describing fixture notes outside the mock-data build. Today's detail sentence is written,
+  not comma-joined (`describeFocus`).
+- *Status that cannot contradict itself (C1).* A provider reported healthy on evidence older than
+  `PROVIDER_EVIDENCE_STALE_AFTER_MS` (3 days) is capped at review with the reason shown. A mark
+  price names its source in the same cell ("… (recorded on the position, no observed mark)") and
+  the separate "No mark observed" row is gone. The breaker control reads "Halt trading (open
+  breaker)" with the state badge beside it.
+- *Detail rails (P2/V1).* `DetailRail` fields stack label above value and collapse to one column
+  below two 10rem columns; long values wrap instead of clipping. `formatCompactTimestamp`,
+  `compactTimestampLabel` and `<TimeText display="compact">` give "Jan 1 '26 00:00Z" with the full
+  timestamp on hover. `TableWorkbenchColumn.priority` drops "low" then "medium" columns while the table
+  overflows its frame, instead of scrolling; dropped columns stay in exports.
+- *One time format (P3).* The execution journey, the audit trail, Reporting exports and delivery
+  history and `triageDateLabel` go through `@/lib/format` in the display zone.
+- *Typography and controls (P9).* The typography-floor baseline is at 0. Disabled buttons use a
+  solid edge instead of a dashed one; opacity stays at 1 because dimming the whole button takes
+  the label below the asserted 4.5:1. Risk KPI tiles share one label casing.
+- *Table toolbars (P7).* Density follows the global setting (no per-table select); Export and Save
+  view share one "⋯" menu; search appears above `TABLE_SEARCH_MIN_ROWS` (10) rows; bulk actions
+  live in a selection bar that exists only while rows are selected.
+- *Error states.* `api-errors` drops empty and brace-only bodies; a 404 from the risk service
+  reads "Risk controls aren't available on this host" with Retry and a "What enables this" link;
+  `AsyncRegion` takes `errorSource` to render the shared `ErrorNotice`.
+- *New ratchets:* `pascalCaseRenderedText` and `isoTimestampsInJsx` in
+  `scripts/design-system-ratchets.mjs`, seeded with the existing occurrences.
+- *Still open:* mono/uppercase label clean-up outside the Risk tiles, the three-level action
+  hierarchy, compact row-status pills, and burning the two new ratchet baselines down.
+
+### Phase 2: Structure and tables (P5–P8, ~4–6 weeks)
+
+Acceptance criteria:
+- No screen file is over 2,000 lines. The active tab is in the URL and survives reload.
+- Raw `<table>` and ad-hoc table ratchets are at 0. Accounting tables run on `TableWorkbench`.
+- A 10,000-row fixture scrolls at ≥ 50 fps.
+- Every disabled action has a reason.
+- Every data panel has loading, empty and error-with-retry states.
+- The sidebar has ≤ 45 entries with no duplicate names, and axe checks are clean on touched routes.
+
+### Phase 3: Visual polish (P9, ~2–3 weeks, can overlap Phase 2)
+
+Acceptance criteria:
+- The typography-floor baseline is at 0.
+- Mono appears only on numeric/ID cells.
+- No runtime-injected CSS, and inline `style={{}}` only for chart geometry.
+- Duplicate primitives are removed.
+- Light and dark captures pass the contrast checks.
+
+### Phase 4: Workflow features (P10, ~4–6 weeks)
+
+Order: record search → keyboard queues → unified Views → Close Calendar grid → Strategy visuals
+and comparison → undo → pop-outs.
+
+Acceptance criteria:
+- The palette finds a record by ID or name in ~200 ms.
+- Every queue supports j/k/x/a/e with a visible hint.
+- There is one Views model, and the `view=` collision is fixed with deep-link tests.
+- The Close Calendar month grid has "My tasks".
+- Strategy shows a curve and drawdown per run, and compares 2–4 runs.
+- Assign, dismiss and snooze can be undone.
+- New contracts are documented for WPF parity.
+
+**Recommended next step:** P2 and P3 from Phase 1. Consistent status and number display is the
+foundation the later phases build on.

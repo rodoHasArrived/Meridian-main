@@ -20,6 +20,49 @@ formats are defined in [Governed Accounting Reporting](../reference/accounting-r
 This runbook does not make legacy report-pack mutation routes authoritative. Those routes remain
 retired, and fixture or caller-supplied rows are not a production recovery mechanism.
 
+## Frozen general-ledger interchange export
+
+The Reporting export surface can download
+`GET /api/ledger/books/{ledgerBookId}/periods/{periodId}/exports/general-ledger`. The authorized
+download captures one ledger population and returns CSV, XLSX and Parquet journal detail together
+with an agreement/evidence manifest and symbol P&L evidence. Amounts preserve decimal precision;
+the neutral `general-ledger.v1` layout claims no accounting-vendor import compatibility.
+The response exposes its snapshot hash for verification. Missing historical lot or approved mark
+evidence remains unavailable in symbol P&L rather than becoming a zero profit.
+
+The session needs ledger-report read authority and `ExportData`, plus retained tenant/company
+ownership of the exact book. Read access alone does not permit downloading this package.
+
+The ZIP contains `general-ledger.v1.csv`, `.xlsx` and `.parquet`, `symbol-pnl.v1.csv` and `.json`,
+and `manifest.json`. XLSX amount cells are text so Excel cannot round away decimal digits; CSV
+neutralizes formula-looking source text. Check the manifest's row count, debit/credit totals,
+variance, currency-evidence gaps, and artifact hashes. A balanced journal export alone does not
+prove complete broker coverage, valuation or tax results.
+
+Unrealized P&L requires an Account-node ledger book, canonical historical open quantity and basis,
+dated Security Master identity, and an independently approved close-price snapshot for that exact
+account/book/period-end date. The supported calculation uses long unit Equity positions, per-unit
+marks and the book's currency throughout; other assets, multipliers and FX conversions remain
+unavailable. Security Master view/modify permission is required to read the marks. Without a pinned
+`closePriceSnapshotId`, the newest close revision must be approved; an unapproved correction does
+not authorize fallback to an older approval.
+
+Historical quantities and basis come from immutable lot mutation snapshots captured with the
+journals. Missing or discontinuous history and a carrying balance that cannot be explained by
+canonical cost basis produce blockers. Posted valuation adjustments without a supported bridge
+can therefore block this calculation even when a current price exists. Review the row's reason;
+do not replace missing values with zero or current holdings. Source-backed dividend receivables
+and loan subledgers keep their distinct roles, and inventory coverage failures apply to their
+financial account and symbol. Treating a position as closed requires retained canonical closure
+evidence; a supported open position can have zero unrealized P&L when its mark equals basis.
+Realized results labelled `AvailableForRetainedDisposals` cover the cited disposal
+journals and their retained lot relief; they do not declare tax finality or all-trade completeness.
+
+This read-only interchange package is distinct from governed financial-statement release. Retain
+the downloaded package when later journals, mappings or price selections may change; each new
+download captures its own declared source population. Existing release and approval controls remain
+required for certified delivery.
+
 ## Execution context and access
 
 Start the intended host and establish the PowerShell 7 `$operatorSession` and `$meridianBaseUrl`
@@ -336,6 +379,24 @@ The coordinated reporting recovery set crosses the production authority and auxi
 Production run and schedule authority does not come from `FileReportingRunStore` or
 `FileReportingScheduleStore`. Do not restore their local snapshots as a substitute for the
 PostgreSQL `reporting_run_snapshots` and `reporting_schedule_snapshots` state.
+
+Capital-call notice generation additionally relies on PostgreSQL run-create claims for its stable
+operation UUID. Configure `MERIDIAN_REPORTING_CONNECTION_STRING` (or the documented ledger
+fallback) and preserve the run snapshots and create-claim tables together. The POST body contains
+`operationId` and the selected `commitmentId`; retry an uncertain result with the same UUID and
+exact call/investor/commitment target and body. The
+server checks current permissions and returns the original certified run without recertifying
+current source data. Deliberate regeneration uses a new UUID. Each notice covers one complete
+posted commitment installment. Select each commitment separately when an investor has multiple
+commitments in the same call. Legacy omission of `commitmentId` is accepted for new generation
+only when the investor has a single call installment. Recover an older omitted-selector request
+with that original body; adding a selector under its existing UUID changes the request identity.
+
+If recovery confirms that exact retained operation is Failed, it returns
+`409 {code: "notice_operation_failed", runId: "<original run ID>"}`. Inspect the failed attempt,
+then explicitly generate a new notice if appropriate; the original failure and audit remain
+retained. Other errors leave the outcome uncertain and require recovery with the original UUID.
+
 Production statement workspaces under
 `<DataRoot>/runtime/statement-reconciliation-authority-workspace/<process-id>/` are hydrated from
 verified PostgreSQL authority bytes. They are not a backup source or a way to repair missing

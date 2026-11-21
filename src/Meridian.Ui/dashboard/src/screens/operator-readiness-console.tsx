@@ -1,17 +1,14 @@
+import { DetailFields } from "@/components/meridian/detail-pane";
 import { Activity, ArrowRight, ClipboardList, FileCheck2, RadioTower, RefreshCcw, ShieldCheck, TrendingUp } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { GateRail, ReadinessPanel, SeverityBadge } from "@/components/operations";
-import { MetricCard } from "@/components/data/concrete";
+import { MetricTile } from "@/components/data/concrete";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
-import {
-  readinessToneToSeverityPanelClass,
-  readinessToneToSeverityStatus,
-  semanticToneToMetricCardTone
-} from "@/lib/shared-tone-mappings";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import {
   useOperatorReadinessConsoleViewModel,
   type ReadinessConsolePanel,
@@ -29,6 +26,7 @@ import type {
   StrategyWorkspaceResponse,
   TradingWorkspaceResponse
 } from "@/types";
+import { statusMetricTone, statusPanelClass, toSeverity } from "@/design-system/status-styles";
 
 interface OperatorReadinessConsoleProps {
   strategy: StrategyWorkspaceResponse | null;
@@ -61,7 +59,7 @@ const workItemColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <SeverityBadge status={readinessToneToSeverityStatus(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
+    render: (row) => <SeverityBadge status={toSeverity(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "target",
@@ -87,7 +85,7 @@ const evidencePanelColumns: DenseDataTableColumn<ReadinessConsoleRow>[] = [
   {
     id: "status",
     label: "Status",
-    render: (row) => <SeverityBadge status={readinessToneToSeverityStatus(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
+    render: (row) => <SeverityBadge status={toSeverity(row.level)} label={row.value} aria-label={row.statusAriaLabel} />
   },
   {
     id: "detail",
@@ -112,6 +110,7 @@ export function OperatorReadinessConsole({
     reporting,
     fundAccountId
   });
+  useOnGlobalRefresh(() => { if (!vm.inboxRefreshDisabled) void vm.refreshInbox(); });
 
   return (
     <div className="space-y-6">
@@ -132,7 +131,7 @@ export function OperatorReadinessConsole({
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ConsoleChip label="As of" value={vm.asOf} />
           <ConsoleChip label="Inbox" value={vm.inboxSummary} />
-          <SeverityBadge status={readinessToneToSeverityStatus(vm.overallLevel)} label={vm.overallLabel} />
+          <SeverityBadge status={toSeverity(vm.overallLevel)} label={vm.overallLabel} />
         </div>
       </section>
 
@@ -146,7 +145,7 @@ export function OperatorReadinessConsole({
           gates={vm.checkpointGates.map((gate) => ({
             key: gate.id,
             label: gate.label,
-            status: readinessToneToSeverityStatus(gate.level),
+            status: toSeverity(gate.level),
             statusLabel: gate.value
           }))}
         />
@@ -154,7 +153,7 @@ export function OperatorReadinessConsole({
 
       <section className="grid gap-4 xl:grid-cols-[1.25fr_0.75fr]">
         <ReadinessPanel
-          state={readinessToneToSeverityStatus(vm.overallLevel)}
+          state={toSeverity(vm.overallLevel)}
           statusLabel={vm.overallLabel}
           title={(
             <span className="inline-flex min-w-0 items-center gap-2">
@@ -177,20 +176,6 @@ export function OperatorReadinessConsole({
               </Button>
               <Button asChild variant="outline" size="sm">
                 <Link to="/reporting/report-packs">Report packs</Link>
-              </Button>
-              <Button
-                type="button"
-                variant="outline"
-                size="sm"
-                onClick={() => void vm.refreshInbox()}
-                disabled={vm.inboxRefreshDisabled}
-                disabledReason={vm.inboxRefreshDisabledReason}
-                busy={vm.inboxRefreshBusy}
-                busyLabel={vm.inboxRefreshLabel}
-                aria-label={vm.inboxRefreshAriaLabel}
-              >
-                <RefreshCcw className="h-4 w-4" aria-hidden="true" />
-                {vm.inboxRefreshLabel}
               </Button>
             </>
           )}
@@ -234,9 +219,9 @@ export function OperatorReadinessConsole({
               >
                 <div className="flex items-center justify-between gap-3">
                   <span className="text-sm font-semibold">{source.label}</span>
-                  <SeverityBadge status={readinessToneToSeverityStatus(source.level)} label={source.status} aria-label={source.statusAriaLabel} />
+                  <SeverityBadge status={toSeverity(source.level)} label={source.status} aria-label={source.statusAriaLabel} />
                 </div>
-                <p className="mt-1 break-all font-mono text-[11px] text-muted-foreground">{source.endpoint}</p>
+                <p className="mt-1 break-all font-mono text-xs text-muted-foreground">{source.endpoint}</p>
               </div>
             ))}
           </div>
@@ -264,15 +249,15 @@ export function OperatorReadinessConsole({
             aria-describedby={metric.detailId}
             className="grid gap-2"
           >
-            <MetricCard
+            <MetricTile
               label={metric.label}
               value={metric.value}
               delta={metric.delta}
-              tone={semanticToneToMetricCardTone(metric.tone)}
+              tone={statusMetricTone(metric.tone)}
             />
             <p
               id={metric.detailId}
-              className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", readinessToneToSeverityPanelClass(metric.level))}
+              className={cn("rounded-md border px-2.5 py-2 text-xs leading-5 text-foreground/75", statusPanelClass(metric.level))}
             >
               {metric.detail}
             </p>
@@ -357,7 +342,7 @@ function SelectedWorkItemDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected work item</span>
-        <SeverityBadge status={readinessToneToSeverityStatus(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
+        <SeverityBadge status={toSeverity(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
@@ -365,7 +350,7 @@ function SelectedWorkItemDetail({
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
         </div>
         <TechnicalDetails label="Audit details" className="mt-3">
-          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <p className="break-words font-mono text-xs text-muted-foreground">{detail.meta}</p>
           <DetailFieldList fields={detail.fields} />
         </TechnicalDetails>
         {detail.action ? (
@@ -414,15 +399,15 @@ function PrimaryNextAction({ action }: { action: ReadinessConsoleNextAction }) {
     <div
       role="group"
       aria-label={action.ariaLabel}
-      className={cn("rounded-lg border px-3 py-3", readinessToneToSeverityPanelClass(action.level))}
+      className={cn("rounded-lg border px-3 py-3", statusPanelClass(action.level))}
     >
       <div className="flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="min-w-0">
-          <div className="eyebrow-label">Primary next action</div>
+          <div className="eyebrow-label eyebrow-label--sentence">Primary next action</div>
           <div className="mt-1 text-sm font-semibold text-foreground">{action.title}</div>
           <p className="mt-1 text-xs leading-5 text-foreground/80">{action.detail}</p>
           <TechnicalDetails label="Action context" className="mt-2">
-            <p className="break-words font-mono text-[11px] text-muted-foreground">{action.meta}</p>
+            <p className="break-words font-mono text-xs text-muted-foreground">{action.meta}</p>
           </TechnicalDetails>
         </div>
         {actionButton}
@@ -500,7 +485,7 @@ function SelectedEvidenceDetail({
     >
       <div className="head flex items-center justify-between gap-3">
         <span>Selected evidence</span>
-        <SeverityBadge status={readinessToneToSeverityStatus(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
+        <SeverityBadge status={toSeverity(detail.level)} label={detail.statusLabel} aria-label={detail.statusAriaLabel} />
       </div>
       <div className="body">
         <div className="min-w-0">
@@ -508,7 +493,7 @@ function SelectedEvidenceDetail({
           <p className="mt-2 text-xs leading-5 text-foreground/80">{detail.detail}</p>
         </div>
         <TechnicalDetails label="Audit details" className="mt-3">
-          <p className="break-words font-mono text-[11px] text-muted-foreground">{detail.meta}</p>
+          <p className="break-words font-mono text-xs text-muted-foreground">{detail.meta}</p>
           <DetailFieldList fields={detail.fields} />
         </TechnicalDetails>
         {detail.action ? (
@@ -529,7 +514,7 @@ function SelectedEvidenceDetail({
 function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
   return (
     <ReadinessPanel
-      state={readinessToneToSeverityStatus(row.level)}
+      state={toSeverity(row.level)}
       statusLabel={row.value}
       title={row.label}
       detail={row.detail}
@@ -552,19 +537,7 @@ function ReadinessRow({ row }: { row: ReadinessConsoleRow }) {
 }
 
 function DetailFieldList({ fields }: { fields: ReadinessConsoleSelectedWorkItemDetail["fields"] }) {
-  return (
-    <dl className="mt-3 grid gap-2">
-      {fields.map((field) => (
-        <div
-          key={field.label}
-          className="grid grid-cols-[minmax(0,0.42fr)_minmax(0,0.58fr)] gap-3 rounded-sm border border-border/60 bg-background/25 px-2.5 py-2"
-        >
-          <dt className="text-[10px] uppercase tracking-[0.14em] text-muted-foreground">{field.label}</dt>
-          <dd className="break-words text-right font-mono text-xs text-foreground">{field.value}</dd>
-        </div>
-      ))}
-    </dl>
-  );
+  return <DetailFields fields={fields} className="mt-3" />;
 }
 
 function InboxErrorRecovery({

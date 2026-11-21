@@ -12,10 +12,10 @@ namespace Meridian.Tests.SecurityMaster;
 public sealed class SecurityTermsS2StampTests
 {
     [Theory]
-    [InlineData("Bond", 3, 1)]
-    [InlineData("CertificateOfDeposit", 3, 1)]
-    [InlineData("StructuredCredit", 4, 2)]
-    [InlineData("Swap", 1, 1)]
+    [InlineData("Bond", 5, 1)]
+    [InlineData("CertificateOfDeposit", 5, 1)]
+    [InlineData("StructuredCredit", 6, 2)]
+    [InlineData("Swap", 4, 1)]
     public void WritableCeiling_AndDocumentFloor_AreSeparate(string assetClass, int writes, int floor)
     {
         SecurityAssetClassCatalog.GetTermsVersion(assetClass).Should().Be(writes);
@@ -33,11 +33,11 @@ public sealed class SecurityTermsS2StampTests
         var identity = baseline with
         {
             TermsVersion = 4,
-            TermsUpgrades = [.. baseline.TermsUpgrades!, SecurityAssetClassTermsUpgrade.Identity(3, "Optional expansion")]
+            TermsUpgrades = [.. baseline.TermsUpgrades!.Where(static step => step.FromVersion < 3), SecurityAssetClassTermsUpgrade.Identity(3, "Optional expansion")]
         };
         var transform = identity with
         {
-            TermsUpgrades = [.. baseline.TermsUpgrades!, SecurityAssetClassTermsUpgrade.Transforming(3, "Required transformation", node => node)]
+            TermsUpgrades = [.. baseline.TermsUpgrades!.Where(static step => step.FromVersion < 3), SecurityAssetClassTermsUpgrade.Transforming(3, "Required transformation", node => node)]
         };
         SecurityAssetClassCatalog.GetStampFloor(identity).Should().Be(1);
         SecurityAssetClassCatalog.GetStampFloor(transform).Should().Be(4);
@@ -48,6 +48,8 @@ public sealed class SecurityTermsS2StampTests
     {
         var descriptor = SecurityAssetClassCatalog.GetOrDefault("Bond") with
         {
+            // This synthetic history stops at v3; later production identity steps cannot activate its stray arrays.
+            TermsVersion = 3,
             TermsUpgrades =
             [
                 SecurityAssetClassTermsUpgrade.Transforming(1, "Synthetic version-two issuer rename", node =>

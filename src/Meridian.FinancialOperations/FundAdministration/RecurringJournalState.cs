@@ -58,7 +58,9 @@ public enum RecurringOccurrenceState
     Claimed,
     Drafted,
     Blocked,
-    DefinitionChanged
+    DefinitionChanged,
+    /// <summary>A calculated occurrence that correctly produced nothing to post; it is not retried.</summary>
+    NoDraftRequired
 }
 
 public sealed record RecurringOccurrenceTransition(
@@ -82,7 +84,12 @@ public sealed record RecurringOccurrenceRecord(
     string? Reason = null,
     string? PeriodId = null,
     string? LockOwner = null,
-    string? ReopenPath = null);
+    string? ReopenPath = null)
+{
+    /// <summary>Write-once digest of trusted calculated intake evidence, independent of the editable draft store.</summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public string? DraftEvidenceDigest { get; init; }
+}
 
 /// <summary>A definition change cannot silently reinterpret a retained approval draft.</summary>
 public sealed class RecurringJournalDefinitionChangedException(string message) : InvalidOperationException(message);
@@ -93,6 +100,15 @@ public sealed class RecurringJournalDefinitionChangedException(string message) :
 public interface IRecurringJournalStore
 {
     Task<IRecurringJournalSession> OpenSessionAsync(CancellationToken ct = default);
+}
+
+/// <summary>
+/// Explicit, administrator-only provisioning of a recurring journal store. Runners never call it,
+/// and an initialized store whose retained state is later lost refuses to reinitialize as empty.
+/// </summary>
+public interface IRecurringJournalStoreProvisioning
+{
+    Task InitializeAsync(CancellationToken ct = default);
 }
 
 /// <summary>
@@ -120,6 +136,8 @@ public interface IRecurringJournalSession : IAsyncDisposable
         int expectedVersion, DateTimeOffset now, CancellationToken ct = default);
     Task<RecurringOccurrenceRecord> ClaimAsync(string scheduleId, DateOnly date,
         int expectedScheduleVersion, int expectedTemplateVersion, DateTimeOffset now, CancellationToken ct = default);
+    Task<RecurringOccurrenceRecord> PinDraftEvidenceAsync(string key, string digest, CancellationToken ct = default)
+        => Task.FromException<RecurringOccurrenceRecord>(new NotSupportedException("This recurring registry cannot retain calculated draft evidence authority."));
     Task<RecurringOccurrenceRecord> SetOutcomeAsync(string key, RecurringOccurrenceState state,
         string? reason, string? periodId, string? lockOwner, string? reopenPath,
         DateTimeOffset now, CancellationToken ct = default);
@@ -155,6 +173,10 @@ public static class RecurringJournalIdentity
 
     public static string SerializeTemplate(RecurringTemplateDefinition definition)
         => JsonSerializer.Serialize(definition, RecurringJournalJsonContext.Default.RecurringTemplateDefinition);
+
+    public static RecurringTemplateDefinition DeserializeTemplate(string json)
+        => JsonSerializer.Deserialize(json, RecurringJournalJsonContext.Default.RecurringTemplateDefinition)
+            ?? throw new JsonException("The retained recurring template definition is missing.");
 
     public static string OccurrenceKey(string scheduleId, DateOnly date)
     {

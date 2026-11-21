@@ -38,8 +38,15 @@ public sealed class ProviderRuntimeCredentialRecoveryTests : IDisposable
         commands = new ProviderRuntimeCredentialService(Config, store);
         resolver = new StoredProviderCredentialResolver(store, fallback.Object, Config);
         var config = Config.LoadRequired().ProviderConnections!;
-        config.RuntimeCredentials.Should().ContainSingle().Which.Should()
-            .Be(new ProviderRuntimeCredentialBinding("alpaca", "tenant-a", "owned"));
+        config.RuntimeCredentials.Should().ContainSingle().Which.Should().BeEquivalentTo(new
+        {
+            ProviderId = "alpaca",
+            TenantId = "tenant-a",
+            ConnectionId = "owned",
+            ExternalAccountId = "account-a",
+            Environment = "paper"
+        });
+        config.RuntimeCredentials!.Single().SelectionId.Should().NotBeNullOrWhiteSpace();
         config.OwnershipRequiredProviders.Should().Contain("alpaca");
         (await store.ReadForProviderAsync("alpaca"))!.Get("KeyId").Should().Be("retained-key");
         (await store.ReadScopedAsync("alpaca", Owner)).Should().BeNull();

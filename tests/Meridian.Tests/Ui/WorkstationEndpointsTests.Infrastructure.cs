@@ -42,7 +42,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
-using IReconciliationApiService = Meridian.Ui.Shared.Contracts.Reconciliation.IReconciliationApiService;
+using IReconciliationApiService = Meridian.Contracts.Reconciliation.IReconciliationApiService;
 using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService;
 
 namespace Meridian.Tests.Ui;
@@ -68,6 +68,7 @@ public sealed partial class WorkstationEndpointsTests
         string currentUserName = "ops-user",
         bool? mapLedgerApi = null,
         string? currentUserTenantId = null,
+        bool useApiExceptionHandler = false,
         [System.Runtime.CompilerServices.CallerFilePath] string callerFilePath = "")
     {
         var builder = WebApplication.CreateBuilder(new WebApplicationOptions
@@ -76,6 +77,11 @@ public sealed partial class WorkstationEndpointsTests
         });
         builder.WebHost.UseTestServer();
         configureServices?.Invoke(builder.Services);
+        if (useApiExceptionHandler)
+        {
+            // The deployed host's Problem Details writer and shared exception handler.
+            builder.Services.AddMeridianApiProblemDetails();
+        }
         builder.Services.TryAddSingleton<IFundProfileTenancyRegistry>(
             new TestCurrentScopeFundProfileTenancyRegistry(
                 currentUserTenantId ?? currentUserCompanyId,
@@ -89,6 +95,10 @@ public sealed partial class WorkstationEndpointsTests
                 NullLogger<FileReconciliationBreakQueueRepository>.Instance));
 
         var app = builder.Build();
+        if (useApiExceptionHandler)
+        {
+            app.UseExceptionHandler();
+        }
         app.Use(async (context, next) =>
         {
             var actor = context.Request.Headers.TryGetValue("X-Meridian-Test-User", out var testActor) &&
@@ -229,7 +239,7 @@ public sealed partial class WorkstationEndpointsTests
                 Arg.Any<Guid>(),
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(call => new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+            .Returns(call => new Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
                 call.ArgAt<Guid>(0),
                 "test-fund-profile"));
         services.AddSingleton(reconciliationAuthority);
@@ -257,7 +267,7 @@ public sealed partial class WorkstationEndpointsTests
                 Arg.Any<Guid>(),
                 Arg.Any<ReconciliationBreakQueueScope>(),
                 Arg.Any<CancellationToken>())
-            .Returns(call => new Meridian.Ui.Shared.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
+            .Returns(call => new Meridian.Contracts.Reconciliation.ReconciliationFundAccountAuthorization(
                 call.ArgAt<Guid>(0),
                 "test-fund-profile"));
         services.AddSingleton(reconciliationAuthority);

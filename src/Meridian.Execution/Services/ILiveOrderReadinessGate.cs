@@ -2,6 +2,12 @@ using Meridian.Execution.Sdk;
 
 namespace Meridian.Execution.Services;
 
+/// <summary>Reads already-produced readiness evidence; never initializes or reconciles runtime state.</summary>
+public interface ILiveOrderReadinessPreview
+{
+    LiveOrderReadinessDecision? Observe(LiveOrderReadinessRequest request);
+}
+
 /// <summary>
 /// Validates that a live broker order belongs to a W7-approved, audit-retained
 /// live operation before the OMS submits it to an external broker gateway.

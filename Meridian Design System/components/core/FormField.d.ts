@@ -15,4 +15,4 @@ export interface FormFieldProps {
   style?: React.CSSProperties;
 }
 
-export declare function FormField(props: FormFieldProps): JSX.Element;
+export declare function FormField(props: FormFieldProps): React.JSX.Element;

@@ -1,0 +1,158 @@
+<!-- @dsCard group="Documentation" viewport="1320x1040" name="Semantic safety — increments A · B · C" subtitle="One rule: a surface may assert only what something established. Increment A's before/after ledger, its exit checks, and the proposed scope of B and C" -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Semantic safety — increments A · B · C</title>
+<link rel="stylesheet" href="../styles.css">
+<style>
+body{margin:0;padding:22px;background:var(--bg,#F2F0EB);color:var(--text-primary,#20252B);font-family:var(--font-body)}
+.wrap{display:grid;gap:14px;max-width:1276px}
+.eyebrow{font:600 10px var(--font-data,monospace);font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted,#606870);margin:0}
+h1{margin:2px 0 0;font:600 22px/1.25 var(--font-body)}
+.lede{margin:7px 0 0;font-size:13px;line-height:1.55;color:var(--text-secondary,#535C65);max-width:96ch;text-wrap:pretty}
+.lede b{color:var(--text-primary,#20252B);font-weight:600}
+.rule{height:1px;background:var(--border-strong,#AAA49A)}
+.strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.panel{border:1px solid var(--border,#D2CDC3);background:var(--bg-light,#F8F7F3);display:grid;gap:0;align-content:start}
+.panel__hd{display:flex;align-items:baseline;gap:8px;padding:8px 11px;border-bottom:1px solid var(--border,#D2CDC3);background:var(--bg-medium,#EBE8E1)}
+.panel__hd h2{margin:0;font:600 13px var(--font-body)}
+.panel__hd .tag{margin-left:auto;font:600 9px var(--font-data,monospace);font-variant:all-small-caps;letter-spacing:.06em;padding:1px 6px;border:1px solid var(--border-strong,#AAA49A);color:var(--text-muted,#606870)}
+.panel__hd .tag[data-on="shipped"]{color:var(--green-dim,#23583F);border-color:var(--green,#2E7655);background:var(--green-a10,rgba(46,118,85,.10))}
+.panel__body{padding:10px 11px;display:grid;gap:7px;font-size:12px;line-height:1.5;color:var(--text-secondary,#535C65)}
+.panel__body p{margin:0;text-wrap:pretty}
+.panel__body .q{color:var(--text-primary,#20252B);font-weight:600}
+.panel__body .retires{font:11px/1.5 var(--font-body);padding-left:9px;border-left:2px solid var(--accent,#C56343)}
+table{border-collapse:collapse;width:100%;background:var(--bg-light,#F8F7F3);border:1px solid var(--border,#D2CDC3)}
+caption{text-align:left;padding:8px 11px;border:1px solid var(--border,#D2CDC3);border-bottom:0;background:var(--bg-medium,#EBE8E1);font:600 13px var(--font-body)}
+th,td{border-top:1px solid var(--border-divider,#E2DED5);padding:7px 11px;text-align:left;vertical-align:top;font-size:11.5px;line-height:1.5}
+thead th{border-top:0;border-bottom:1px solid var(--border-strong,#AAA49A);background:var(--bg-medium,#EBE8E1);font:600 9.5px var(--font-body);font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted,#606870)}
+td.surface{font:600 11px var(--font-data,monospace);color:var(--text-primary,#20252B);white-space:nowrap}
+td.was{color:var(--red-dim,#873832)}
+td.now{color:var(--text-primary,#20252B)}
+td.test{font:10px var(--font-data,monospace);color:var(--text-muted,#606870)}
+.checks{border:1px solid var(--border,#D2CDC3);background:var(--surface-well,#FCFBF8);display:grid;gap:0}
+.checks__hd{padding:8px 11px;border-bottom:1px solid var(--border-strong,#AAA49A);background:var(--bg-medium,#EBE8E1);font:600 13px var(--font-body)}
+.checks ul{margin:0;padding:0;list-style:none;display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.checks li{display:grid;grid-template-columns:18px 1fr;gap:8px;padding:7px 11px;border-top:1px solid var(--border-divider,#E2DED5);font-size:11.5px;line-height:1.5}
+.checks li:nth-child(-n+2){border-top:0}
+.checks .mark{font:11px var(--font-data,monospace);color:var(--green,#2E7655)}
+.foot{display:flex;flex-wrap:wrap;gap:4px 16px;font:10.5px var(--font-data,monospace);color:var(--text-muted,#606870)}
+.foot b{font-weight:600;color:var(--text-secondary,#535C65)}
+a{color:var(--interaction-focus,#2D6FB3)}a:hover{color:var(--interaction-selected,#496C8F)}
+@media(max-width:900px){.strip,.checks ul{grid-template-columns:minmax(0,1fr)}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <p class="eyebrow">Increment record · proposed design-system increments, not product-wave exit claims</p>
+  <h1>Semantic safety, and what it unblocks</h1>
+  <p class="lede">One rule, applied to every surface that decides something: <b>a surface may assert only what something established.</b> Absence is a state with a name — never a zero, never a pass, never an elapsed clock standing in for an acknowledgement. Increment <b>A is shipped on this tree</b>; B and C are proposed and stated here so the order is legible. Full record: <code>docs/SEMANTIC_SAFETY_4_4.md</code>.</p>
+</header>
+
+<div class="rule"></div>
+
+<div class="strip">
+  <section class="panel">
+    <div class="panel__hd"><h2>A · Semantic safety</h2><span class="tag" data-on="shipped">shipped</span></div>
+    <div class="panel__body">
+      <p class="q">Does a surface ever assert something nobody established?</p>
+      <p class="retires">Retires: absence read as agreement — a missing input reading <i>tied</i>, an empty panel reading <i>ready</i>, a timeout dressed as an acknowledgement.</p>
+      <p>Contract and test work only. Nothing migrated across the 28 templates — deliberately, because the negative paths land first.</p>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel__hd"><h2>B · One accounting loop</h2><span class="tag">proposed</span></div>
+    <div class="panel__body">
+      <p class="q">Can one operator close one exception end to end without changing scope or losing the instruction?</p>
+      <p class="retires">Retires: five accounting screens deriving the same books from five private read models.</p>
+      <p>A scoped books read model over <code>ObjectScope</code> · <code>TimeContext</code> · <code>WorkspaceContext</code>; exception, journal review, GL, TB and account sheet recomposed from one selector with stable object identities; attachments and rationale inside the reviewed journal payload; pending instructions mounted above screen lifetime.</p>
+    </div>
+  </section>
+  <section class="panel">
+    <div class="panel__hd"><h2>C · Composition &amp; adoption</h2><span class="tag">proposed</span></div>
+    <div class="panel__body">
+      <p class="q">Does it stay legible and honest at laptop width, at 200% zoom, offline, and in export?</p>
+      <p class="retires">Retires: coverage claimed from references rather than from behaviour.</p>
+      <p>Continuous framing on <code>ScreenComposition</code> / <code>EvidenceRail</code>; evidence and consequence legibility from the existing type and density tokens; the exact seven operator roots; deployment, feed continuity, permission and execution capability separated; report versions bound to export references; the deferred browser and screen-reader halves executed.</p>
+    </div>
+  </section>
+</div>
+
+<table>
+  <caption>Increment A — what each surface used to assert, and what it asserts now</caption>
+  <thead><tr><th scope="col">Surface</th><th scope="col">Asserted without evidence</th><th scope="col">Now</th><th scope="col">Behaviour test</th></tr></thead>
+  <tbody>
+    <tr>
+      <td class="surface">ActionEnvelopeProvider</td>
+      <td class="was">With no transport it answered <code>{ ok: true }</code> to itself and minted a local receipt id — every instruction “landed” against nothing.</td>
+      <td class="now">Landing requires <code>ok === true</code> from the transport and takes the receipt id <b>from the adapter</b>. No transport, an unreadable answer, and a refusal without a reason are all <b>unlanded</b>. Demos pass a named <code>fixtureTransport()</code>.</td>
+      <td class="test">semantic-safety › transport answers (11) · action-contract</td>
+    </tr>
+    <tr>
+      <td class="surface">ActionQueue</td>
+      <td class="was">Promoted a row to “Accepted by the adapter” after 1.5 s of wall time.</td>
+      <td class="now">Every rung is read off the answer. <code>landed</code> with an adapter receipt is <i>confirmed</i>; without one it is only <i>acknowledged</i> and stays unresolved; <code>unlanded</code> is <i>timed out</i>, and its ladder never draws an acknowledgement that never happened.</td>
+      <td class="test">semantic-safety › queue rungs (6)</td>
+    </tr>
+    <tr>
+      <td class="surface">…retry()</td>
+      <td class="was">A retry with nothing to retry fell through to <code>submit()</code>, minting a <b>fresh</b> idempotency key — the one thing the unlanded fate exists to prevent.</td>
+      <td class="now">A no-op that says so; a real retry carries the same key with an incremented attempt.</td>
+      <td class="test">semantic-safety › no instruction, no key</td>
+    </tr>
+    <tr>
+      <td class="surface">TieOutPanel</td>
+      <td class="was">Coerced a missing source to <code>0</code>, so the gross difference vanished and the panel read <b>Tied out</b>.</td>
+      <td class="now">A source with no value — or one carrying <code>missing</code> / <code>pending</code> / <code>stale</code> / <code>na</code> / <code>exception</code> — makes the tie-out <b>indeterminate</b>: residual renders as —, each gap is named, acceptance and resolution are unavailable, and a caller-declared <code>status="tied"</code> cannot outrank it.</td>
+      <td class="test">semantic-safety › a missing input is not a zero (6)</td>
+    </tr>
+    <tr>
+      <td class="surface">AttestationPanel</td>
+      <td class="was">An empty panel derived <b>Ready for attestation</b> — no gates to fail, no evidence to fall short of, nothing bound.</td>
+      <td class="now">Readiness is asserted from what <i>is</i> declared: absent gates, evidence set, snapshot, version or signatory roles are named as under-declaration. A <code>snapshotFindings</code> entry with effect <code>void</code> expires the pending signature; a caller-declared <code>ready</code> survives neither.</td>
+      <td class="test">semantic-safety › readiness is asserted (8)</td>
+    </tr>
+    <tr>
+      <td class="surface">JournalEntryForm</td>
+      <td class="was">Gated Post on arithmetic alone.</td>
+      <td class="now"><code>blockers</code> — a changed reviewed snapshot, a closed period, a withdrawn approval — are named on the form and disable Post. Balance is a precondition for posting, not permission to post.</td>
+      <td class="test">semantic-safety › arithmetic is not permission (3)</td>
+    </tr>
+    <tr>
+      <td class="surface">Assurance</td>
+      <td class="was">A re-preparation after a movement dropped every earlier signature on the floor.</td>
+      <td class="now">Signatures <b>append, never replace</b>. <code>assuranceState</code> splits the trailing run that still binds the balance (<code>live</code>) from what a movement voided (<code>history</code>); both are retained, and <code>Assurance.history()</code> reads the whole chain oldest-first.</td>
+      <td class="test">semantic-safety › history survives a re-preparation (6)</td>
+    </tr>
+    <tr>
+      <td class="surface">assurance.card</td>
+      <td class="was">One click walked an account up the ladder by inventing a preparer, then a reviewer, then a controller.</td>
+      <td class="now">One signed-in operator acting in one authority. An account that needs a different authority — or a second person — refuses, and says which.</td>
+      <td class="test">the card renders the refusal</td>
+    </tr>
+  </tbody>
+</table>
+
+<section class="checks">
+  <div class="checks__hd">Increment A — exit checks</div>
+  <ul>
+    <li><span class="mark" aria-hidden="true">✓</span><span>No missing input yields <i>tied</i> or <i>ready</i> by default — and a caller cannot declare its way past one.</span></li>
+    <li><span class="mark" aria-hidden="true">✓</span><span>No timeout implies acknowledgement: rungs come from the answer, and <code>ackMs</code> is accepted and ignored.</span></li>
+    <li><span class="mark" aria-hidden="true">✓</span><span>No unvalidated transport response becomes <i>confirmed</i> — <code>ok === true</code> plus an adapter receipt id, or it stays unresolved.</span></li>
+    <li><span class="mark" aria-hidden="true">✓</span><span>A re-preparation retains historical signatures: voided, struck through, never deleted.</span></li>
+    <li><span class="mark" aria-hidden="true">✓</span><span>Changing the reviewed snapshot invalidates the pending action — the attestation expires, the post is blocked.</span></li>
+    <li><span class="mark" aria-hidden="true">✓</span><span>Server authority remains the final enforcement boundary: every declaration still reads <i>declared here, enforced by the server</i>.</span></li>
+    <li><span class="mark" aria-hidden="true">✓</span><span>Fixture transports stay explicitly named; an absent transport is a warning plus an unlanded instruction, never a silent success.</span></li>
+    <li><span class="mark" aria-hidden="true">✓</span><span>Negative-path tests land before broad migration — 46 assertions across 8 suites, each suite carrying a positive control so a rule that blocks everything fails too.</span></li>
+  </ul>
+</section>
+
+<p class="foot"><span><b>Record</b> docs/SEMANTIC_SAFETY_4_4.md</span><span><b>Gate</b> tests/semantic-safety.html</span><span><b>Law</b> guidelines/ACTION_SEMANTICS.md · guidelines/DECISION_SEMANTICS.md</span><span><b>B</b> inherits SUITE_COHESION_4_4 › E-4</span><span><b>C</b> inherits tests/BROWSER_TEST_PLAN.md</span></p>
+
+</div>
+</body>
+</html>

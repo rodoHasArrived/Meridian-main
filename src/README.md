@@ -37,7 +37,7 @@ Paths below are relative to `src/`. Use the [source-module index](../docs/source
 | Providers and storage | [Meridian.ProviderSdk](Meridian.ProviderSdk/README.md), [Meridian.Infrastructure](Meridian.Infrastructure/README.md), and [Meridian.Storage](Meridian.Storage/README.md) own provider extension seams, adapters, and persistence. |
 | Financial operations | [Meridian.Ledger](Meridian.Ledger/README.md), [Meridian.FinancialOperations](Meridian.FinancialOperations/README.md), [Meridian.PortfolioRecords](Meridian.PortfolioRecords/README.md), and [Meridian.Reporting](Meridian.Reporting/README.md) own accounting, reconciliation, portfolio records, and reporting. |
 | Trading and research | [Meridian.Strategies](Meridian.Strategies/README.md), [Meridian.Backtesting](Meridian.Backtesting/README.md), [Meridian.Execution](Meridian.Execution/README.md), and [Meridian.Risk](Meridian.Risk/README.md) own strategy, simulation, execution, and risk workflows. |
-| Browser workstation | [Meridian.Ui/dashboard](Meridian.Ui/dashboard/README.md) owns browser UI source; [Meridian.Ui](Meridian.Ui/README.md) owns host-served UI assets, including the built `wwwroot/workstation/` bundle. |
+| Browser workstation | [Meridian.Ui/dashboard](Meridian.Ui/dashboard/README.md) owns browser UI source; [Meridian.Ui](Meridian.Ui/README.md) is a folder, not a .NET project; it holds the built `wwwroot/workstation/` bundle, which the [Meridian](Meridian/README.md) host links and serves. |
 | Desktop workstation | [Meridian.Wpf](Meridian.Wpf/README.md) owns the active Windows desktop UI, including web-UI parity work over shared contracts. |
 | Shared workstation services | [Meridian.Ui.Services](Meridian.Ui.Services/README.md) and [Meridian.Ui.Shared](Meridian.Ui.Shared/README.md) provide API clients, workflow services, endpoint support, and read models consumed by both workstations. |
 | AI integration | [Meridian.Mcp](Meridian.Mcp/README.md) exposes MCP tools and repository-navigation resources. |
@@ -82,6 +82,7 @@ Review renderer output before committing. For code changes, also run the owning 
 - Keep product scope grounded in the [design charter](../docs/product/meridian-design-document.md), current source evidence, and roadmap registry.
 - Browser workstation source belongs in `Meridian.Ui/dashboard/`; build it to refresh `Meridian.Ui/wwwroot/workstation/`.
 - WPF desktop work belongs in `Meridian.Wpf/`. Preserve shared API/read-model behavior across both active workstation lanes.
+- Do not open a change only to merge small projects. Follow the [project consolidation rule](../docs/architecture/project-structure.md#project-consolidation) when a change already touches one.
 - There is no mobile development lane. Responsive browser validation supports the browser workstation.
 - Edit registry inputs or generators for generated documentation; preserve generated blocks in module READMEs.
 

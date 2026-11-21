@@ -261,8 +261,8 @@ function validatePriceSet(value: unknown, scope: OversightScope, valuationDate: 
   exactDecimals(value);
 }
 function parseImport(source: string): unknown {
-  if (new TextEncoder().encode(source).byteLength > 1024 * 1024) fail("The import exceeds the 1 MiB handoff limit.");
-  try { return JSON.parse(source) as unknown; } catch { return fail("The selected handoff file must contain valid JSON."); }
+  if (new TextEncoder().encode(source).byteLength > 1024 * 1024) fail("The import exceeds the 1 MiB file limit.");
+  try { return JSON.parse(source) as unknown; } catch { return fail("The selected import file must contain valid JSON."); }
 }
 
 export function parseCashComparisonImport(source: string, scope: OversightScope): AccountCashReconciliationRequest {

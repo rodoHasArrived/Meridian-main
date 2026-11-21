@@ -41,4 +41,17 @@ describe("AgingTable", () => {
     await userEvent.keyboard(" ");
     expect(onRowSelect).toHaveBeenCalledTimes(2);
   });
+
+  it("makes the scroll region keyboard-focusable with an accessible name", () => {
+    render(<AgingTable rows={rows} />);
+    const region = screen.getByRole("region", { name: "Aging schedule" });
+    expect(region).toHaveAttribute("tabindex", "0");
+  });
+
+  it("renders a single full-width empty row when there are no rows", () => {
+    render(<AgingTable rows={[]} buckets={["Current", "Late"]} />);
+    const cell = screen.getByText("No open items");
+    expect(cell).toHaveAttribute("colspan", "4");
+    expect(cell.closest("tbody")?.querySelectorAll("tr")).toHaveLength(1);
+  });
 });

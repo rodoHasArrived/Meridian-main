@@ -71,7 +71,7 @@ describe("portfolio position table controls", () => {
   });
 
   it("normalizes fields independently and ignores unsupported financial sort columns", () => {
-    expect(normalizePortfolioPositionsTableState({ search: "ms", side: 9, readiness: "current", sort: { columnId: "exposure", direction: "asc" } }))
+    expect(normalizePortfolioPositionsTableState({ search: "ms", side: 9, readiness: "current", sort: { columnId: "exposure", direction: "asc" }, hiddenColumns: [] }))
       .toEqual(state({ search: "ms", readiness: "current" }));
     expect(normalizePortfolioPositionsTableState({ search: false, side: "Long", readiness: "unknown", sort: { columnId: "symbol", direction: "down" } }))
       .toEqual(state({ side: "Long" }));
@@ -85,7 +85,7 @@ describe("portfolio position table controls", () => {
   });
 
   it("roundtrips valid controls and recognizes all resettable controls", () => {
-    const controls = state({ search: " ms ", side: "Long", readiness: "review-required", sort: { columnId: "mark-readiness", direction: "desc" } });
+    const controls = state({ search: " ms ", side: "Long", readiness: "review-required", sort: { columnId: "mark-readiness", direction: "desc" }, hiddenColumns: [] });
     expect(normalizePortfolioPositionsTableState(controls)).toEqual(controls);
     expect(hasPortfolioPositionControls(state())).toBe(false);
     expect(hasPortfolioPositionControls(state({ search: " " }))).toBe(true);

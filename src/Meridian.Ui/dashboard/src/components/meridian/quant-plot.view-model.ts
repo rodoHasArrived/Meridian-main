@@ -1,3 +1,4 @@
+import type { ChartEvidence, ChartMarkGeometry } from "@/components/charts/chart-evidence";
 import type { QuantPlot, QuantPlotBar, QuantPlotPoint, QuantPlotSeries } from "@/types";
 
 export const QUANT_PLOT_WIDTH = 480;
@@ -51,6 +52,11 @@ export interface QuantPlotFrameViewModel {
   description: string;
   viewBox: string;
   legend: QuantPlotLegendItemViewModel[];
+  marks: QuantPlotMark[];
+}
+
+interface QuantPlotMark extends ChartEvidence {
+  geometry: ChartMarkGeometry;
 }
 
 export interface QuantPlotUnsupportedViewModel {
@@ -284,6 +290,7 @@ export function buildQuantPlotViewModel(plot: QuantPlot): QuantPlotViewModel {
             x: chartXFor(pointIndex, series.values.length),
             y: chartYFor(point.value, prepared.bounds)
           }));
+          frame.marks.push(...series.values.map((point, pointIndex) => quantPointMark(plot, series.label, point, `${index}:${pointIndex}`, points[pointIndex])));
           const color = colorForSeries(index);
           return {
             id: `${series.label}-${index}`,
@@ -296,44 +303,81 @@ export function buildQuantPlotViewModel(plot: QuantPlot): QuantPlotViewModel {
         })
       };
     }
-    case "bar":
+    case "bar": {
+      const bars = buildBarRects(prepared.series, prepared.bounds);
+      frame.marks = prepared.series.map((point, index) => quantPointMark(plot, frame.title, point, bars[index].id, bars[index]));
       return {
         kind: "bar",
         frame,
         axisTicks: buildAxisTicks(prepared.bounds),
-        bars: buildBarRects(prepared.series, prepared.bounds)
+        bars
       };
-    case "scatter":
+    }
+    case "scatter": {
+      const points = prepared.points.map((point, index) => ({
+        id: `${point.date}-${index}`,
+        cx: chartXFor(index, prepared.points.length),
+        cy: chartYFor(point.value, prepared.bounds),
+        r: 2.4,
+        fill: "var(--chart-bench)",
+        fillOpacity: 0.85
+      }));
+      frame.marks = prepared.points.map((point, index) => quantPointMark(plot, frame.title, point, points[index].id, { x: points[index].cx, y: points[index].cy }));
       return {
         kind: "scatter",
         frame,
         axisTicks: buildAxisTicks(prepared.bounds),
-        points: prepared.points.map((point, index) => ({
-          id: `${point.date}-${index}`,
-          cx: chartXFor(index, prepared.points.length),
-          cy: chartYFor(point.value, prepared.bounds),
-          r: 2.4,
-          fill: "var(--chart-bench)",
-          fillOpacity: 0.85
-        }))
+        points
       };
-    case "histogram":
+    }
+    case "histogram": {
+      const bars = buildHistogramRects(prepared.bins, prepared.bounds);
+      frame.marks = prepared.bins.map((bin, index) => ({
+        id: bars[index].id,
+        label: `Bin ${index + 1}`,
+        values: [{
+          series: frame.title, value: bin.count, unit: "Observations",
+          basis: `Count of finite script values from ${bin.lo} to ${bin.hi}. The ${index === bars.length - 1 ? "last bin includes both edges" : "lower edge is included and the upper edge is excluded"}.`
+        }],
+        geometry: bars[index]
+      }));
       return {
         kind: "histogram",
         frame,
         axisTicks: buildAxisTicks(prepared.bounds, (value) => Math.round(value).toString()),
-        bars: buildHistogramRects(prepared.bins, prepared.bounds)
+        bars
       };
-    case "candlestick":
+    }
+    case "candlestick": {
+      const candles = buildCandles(prepared.bars, prepared.bounds);
+      frame.marks = prepared.bars.map((bar, index) => ({
+        id: candles[index].id,
+        label: frame.title,
+        asOf: bar.date,
+        values: (["open", "high", "low", "close"] as const).map((key) => ({
+          series: key[0].toUpperCase() + key.slice(1), value: bar[key], unit: "Price per unit (currency unreported)",
+          basis: `Bar ${key} emitted by the script.`
+        })),
+        geometry: { x: candles[index].body.x, y: candles[index].wick.y1, width: candles[index].body.width, height: Math.max(4, candles[index].wick.y2 - candles[index].wick.y1) }
+      }));
       return {
         kind: "candlestick",
         frame,
         axisTicks: buildAxisTicks(prepared.bounds),
-        candles: buildCandles(prepared.bars, prepared.bounds)
+        candles
       };
+    }
     case "heatmap":
       return buildHeatmapViewModel(frame, prepared.data, prepared.labels, prepared.bounds, plot.title);
   }
+}
+
+function quantPointMark(plot: QuantPlot, series: string, point: QuantPlotPoint, id: string, geometry: ChartMarkGeometry): QuantPlotMark {
+  const unit = plot.type === "CumulativeReturn" || plot.type === "Drawdown" ? "Fraction (1 = 100%)" : null;
+  const basis = plot.type === "CumulativeReturn" ? "Compounded period returns through this date, as emitted by the script."
+    : plot.type === "Drawdown" ? "Fractional decline from the running equity peak, as emitted by the script."
+      : "Value emitted by the executed script.";
+  return { id, label: series, asOf: point.date, values: [{ series, value: point.value, unit, basis }], geometry };
 }
 
 export function prepareSeries(plot: QuantPlot): PreparedPlot {
@@ -425,7 +469,8 @@ function buildFrame(title: string, legend: QuantPlotLegendItemViewModel[]): Quan
     ariaLabel: title,
     description: `${title} chart rendered from Meridian run data.${legendText}`,
     viewBox: `0 0 ${QUANT_PLOT_WIDTH} ${QUANT_PLOT_HEIGHT}`,
-    legend: legend.length > 1 ? legend : []
+    legend: legend.length > 1 ? legend : [],
+    marks: []
   };
 }
 
@@ -543,25 +588,31 @@ function buildHeatmapViewModel(
   const range = bounds.max - bounds.min;
   const xLabels = labels.length === cols ? labels : [];
   const yLabels = labels.length === rows ? labels : [];
+  const cells = data.flatMap((row, rowIndex) => row.map((value, columnIndex) => {
+    const normalized = range === 0 ? 0.5 : (value - bounds.min) / range;
+    const cell = {
+      id: `${rowIndex}-${columnIndex}`,
+      title: value.toFixed(4),
+      x: PADDING_LEFT + columnIndex * cellWidth,
+      y: PADDING_TOP + rowIndex * cellHeight,
+      width: Math.max(1, cellWidth - 0.5),
+      height: Math.max(1, cellHeight - 0.5),
+      fill: heatmapToken(normalized),
+      fillOpacity: heatmapOpacity(normalized)
+    };
+    frame.marks.push({
+      id: cell.id,
+      label: `${yLabels[rowIndex] ?? `Row ${rowIndex + 1}`} × ${xLabels[columnIndex] ?? `Column ${columnIndex + 1}`}`,
+      values: [{ series: frame.title, value, unit: null, basis: "Script-emitted value for this matrix cell." }],
+      geometry: cell
+    });
+    return cell;
+  }));
 
   return {
     kind: "heatmap",
     frame,
-    cells: data.flatMap((row, rowIndex) =>
-      row.map((value, columnIndex) => {
-        const normalized = range === 0 ? 0.5 : (value - bounds.min) / range;
-        return {
-          id: `${rowIndex}-${columnIndex}`,
-          title: value.toFixed(4),
-          x: PADDING_LEFT + columnIndex * cellWidth,
-          y: PADDING_TOP + rowIndex * cellHeight,
-          width: Math.max(1, cellWidth - 0.5),
-          height: Math.max(1, cellHeight - 0.5),
-          fill: heatmapToken(normalized),
-          fillOpacity: heatmapOpacity(normalized)
-        };
-      })
-    ),
+    cells,
     xLabels: xLabels.map((label, index) => ({
       id: `xl-${index}`,
       label: truncateHeatmapLabel(label),

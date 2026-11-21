@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.AddProviderWizardPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -37,16 +38,89 @@
                                    HorizontalAlignment="Center" />
                     </Border>
                     <StackPanel Margin="12,0,0,0">
-                        <TextBlock Text="Provider Connection Credentials"
+                        <TextBlock Text="Add Provider"
                                    Style="{StaticResource PageTitleStyle}" />
-                        <TextBlock Text="Manage credentials on an existing owned connection. Connection creation and runtime activation are managed separately."
+                        <TextBlock Text="Start from a connection template or manage credentials for an existing connection."
                                    Style="{StaticResource CardDescriptionStyle}" />
                     </StackPanel>
                     </StackPanel>
                 </Border>
 
-                <!-- Step 1: Pick Provider -->
                 <Border Style="{StaticResource CardStyle}" Margin="0,0,0,24">
+                    <StackPanel>
+                        <TextBlock Text="Connection templates" Style="{StaticResource CardHeaderStyle}" />
+                        <StackPanel x:Name="TemplatePickerPanel" Margin="0,8,0,0">
+                            <ComboBox x:Name="TemplatePicker" DisplayMemberPath="Template.Name"
+                                      SelectionChanged="TemplateSelectionChanged" AutomationProperties.Name="Connection template" />
+                            <WrapPanel Margin="0,8,0,8">
+                                <Button x:Name="UseTemplateButton" Content="Use template" IsEnabled="False"
+                                        Style="{StaticResource PrimaryButtonStyle}" Click="UseTemplate_Click" Margin="0,0,8,0" />
+                                <Button Content="Reload templates" Style="{StaticResource SecondaryButtonStyle}" Click="ReloadTemplates_Click" />
+                            </WrapPanel>
+                            <Expander Header="Manage connection templates">
+                                <StackPanel Margin="0,8,0,0">
+                                    <WrapPanel Margin="0,0,0,8">
+                                        <Button x:Name="ExportTemplateButton" Content="Export selected template" IsEnabled="False" Style="{StaticResource SecondaryButtonStyle}" Click="ExportTemplate_Click" Margin="0,0,8,0" />
+                                        <Button x:Name="ImportTemplatesButton" Content="Import template JSON" IsEnabled="False" Style="{StaticResource SecondaryButtonStyle}" Click="ImportTemplates_Click" />
+                                    </WrapPanel>
+                                    <TextBlock Text="Source connection" Style="{StaticResource FormLabelStyle}" />
+                                    <ComboBox x:Name="SourceTemplateConnection" AutomationProperties.Name="Source connection" SelectionChanged="TemplateSelectionChanged">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock><Run Text="{Binding DisplayName}" /><Run Text=" · " /><Run Text="{Binding ConnectionId}" /></TextBlock>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <TextBlock Text="New template name" Style="{StaticResource FormLabelStyle}" Margin="0,8,0,4" />
+                                    <TextBox x:Name="TemplateNameInput" MaxLength="64" Style="{StaticResource FormTextBoxStyle}"
+                                             AutomationProperties.Name="New template name" TextChanged="TemplateIdentityChanged" />
+                                    <Button x:Name="SaveSourceTemplateButton" Content="Save connection as template" IsEnabled="False"
+                                            Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Click="SaveSourceTemplate_Click" Margin="0,8,0,0" />
+                                </StackPanel>
+                            </Expander>
+                        </StackPanel>
+                        <StackPanel x:Name="TemplateReviewPanel" Visibility="Collapsed" Margin="0,8,0,0">
+                            <TextBlock x:Name="TemplateReviewTitle" Style="{StaticResource CardHeaderStyle}" Focusable="True" />
+                            <TextBlock Text="Values to create" Style="{StaticResource FormLabelStyle}" Margin="0,8,0,4" />
+                            <ItemsControl x:Name="TemplateReviewRows">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,0,0,6">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="2*" />
+                                                <ColumnDefinition Width="3*" />
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Field}" FontWeight="SemiBold" Margin="0,0,10,0" TextWrapping="Wrap" />
+                                            <TextBlock Grid.Column="1" TextWrapping="Wrap"><Run Text="+ " /><Run Text="{Binding Value}" /></TextBlock>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <TextBlock Text="Verification checklist" Style="{StaticResource FormLabelStyle}" Margin="0,8,0,4" />
+                            <ItemsControl x:Name="TemplateVerificationChecks">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock TextWrapping="Wrap" Margin="0,0,0,5"><Run Text="• " /><Run Text="{Binding}" /></TextBlock>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel x:Name="TemplateAccountPanel" Margin="0,8,0,0">
+                                <TextBlock Text="Provider account ID" Style="{StaticResource FormLabelStyle}" />
+                                <TextBox x:Name="TemplateAccountInput" MaxLength="512" AutomationProperties.Name="Provider account ID"
+                                         Style="{StaticResource FormTextBoxStyle}" TextChanged="TemplateIdentityChanged" />
+                            </StackPanel>
+                            <WrapPanel Margin="0,8,0,0">
+                                <Button x:Name="ContinueTemplateButton" Content="Continue to vault" Style="{StaticResource PrimaryButtonStyle}"
+                                        Click="ContinueTemplate_Click" Margin="0,0,8,0" />
+                                <Button x:Name="DiscardTemplateButton" Content="Back to templates" Style="{StaticResource SecondaryButtonStyle}" Click="DiscardTemplate_Click" />
+                            </WrapPanel>
+                        </StackPanel>
+                        <TextBlock x:Name="TemplateMessage" TextWrapping="Wrap" Margin="0,8,0,0" AutomationProperties.LiveSetting="Polite" />
+                    </StackPanel>
+                </Border>
+
+                <!-- Step 1: Pick Provider -->
+                <Border x:Name="ManualProviderPanel" Style="{StaticResource CardStyle}" Margin="0,0,0,24">
                     <StackPanel>
                         <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
                             <Border Width="28" Height="28" CornerRadius="14"
@@ -252,9 +326,10 @@
                                            Foreground="White"
                                            HorizontalAlignment="Center" VerticalAlignment="Center" />
                             </Border>
-                            <TextBlock Text="Enter Credentials" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
+                            <TextBlock x:Name="CredentialStepHeading" Text="Enter Credentials" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" Focusable="True" />
                         </StackPanel>
 
+                        <StackPanel x:Name="ExistingOwnedConnectionPanel">
                         <TextBlock Text="Existing owned connection" Style="{StaticResource FormLabelStyle}" Margin="0,0,0,4" />
                         <ComboBox ItemsSource="{Binding OwnedConnections}" SelectedItem="{Binding SelectedOwnedConnection}" SelectionChanged="OwnedConnectionSelectionChanged" IsSynchronizedWithCurrentItem="False"
                                   AutomationProperties.Name="Existing owned provider connection" AutomationProperties.AutomationId="AddProviderOwnedConnectionSelector">
@@ -269,6 +344,7 @@
                         </ComboBox>
                         <TextBlock Text="{Binding OwnedConnectionStatusText}" TextWrapping="Wrap" Margin="0,8,0,8" />
                         <Button Content="Reload existing connections" Click="ReloadOwnedConnections_Click" Style="{StaticResource SecondaryButtonStyle}" HorizontalAlignment="Left" Margin="0,0,0,12" />
+                        </StackPanel>
                         <TextBlock x:Name="CredentialsInfoText"
                                    Text="{Binding CredentialsInfoText}"
                                    TextWrapping="Wrap"
@@ -276,12 +352,35 @@
                                    Margin="0,0,0,16" />
 
                         <StackPanel x:Name="CredentialFieldsPanel" />
+                        <TextBlock Text="{Binding CredentialRotationText}" TextWrapping="Wrap"
+                                   Foreground="{StaticResource ConsoleTextSecondaryBrush}">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CredentialRotationText}" Value="{x:Null}">
+                                            <Setter Property="Visibility" Value="Collapsed" />
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
 
                         <TextBlock x:Name="NoCredentialsNeededText"
                                    Text="This provider does not require API credentials."
                                    Foreground="{StaticResource SuccessColorBrush}"
                                    Visibility="{Binding NoCredentialsVisibility}"
                                    Margin="0,0,0,8" />
+                        <StackPanel x:Name="TemplateVaultActions" Visibility="Collapsed" Margin="0,8,0,0">
+                            <CheckBox x:Name="TemplateLiveAcknowledgement" Content="I am using credentials for a live provider account."
+                                      Checked="TemplateAcknowledgementChanged" Unchecked="TemplateAcknowledgementChanged" Margin="0,0,0,8" />
+                            <TextBlock x:Name="TemplateVaultMessage" TextWrapping="Wrap" Margin="0,0,0,8" AutomationProperties.LiveSetting="Polite" />
+                            <WrapPanel>
+                                <Button x:Name="TestTemplateButton" Content="Test connection" Style="{StaticResource SecondaryButtonStyle}"
+                                        Click="TestTemplate_Click" Margin="0,0,8,0" />
+                                <Button x:Name="SaveTemplateButton" Content="Save connection" Style="{StaticResource PrimaryButtonStyle}"
+                                        Click="SaveTemplateConnection_Click" />
+                            </WrapPanel>
+                        </StackPanel>
                     </StackPanel>
                 </Border>
 
@@ -298,17 +397,21 @@
                             <TextBlock Text="Test Connection" Style="{StaticResource CardHeaderStyle}" VerticalAlignment="Center" />
                         </StackPanel>
 
-                        <StackPanel Orientation="Horizontal" Margin="0,0,0,12">
+                        <Grid Margin="0,0,0,12">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
                             <Ellipse x:Name="ConnectionTestDot" Width="12" Height="12"
                                      Fill="{Binding ConnectionTestDotBrush}" Margin="0,0,10,0"
                                      VerticalAlignment="Center" />
-                            <TextBlock x:Name="ConnectionTestStatusText"
+                            <TextBlock x:Name="ConnectionTestStatusText" Grid.Column="1" TextWrapping="Wrap"
                                        Text="{Binding ConnectionTestStatusText}"
                                        Foreground="{StaticResource ConsoleTextSecondaryBrush}"
                                        VerticalAlignment="Center" />
-                        </StackPanel>
+                        </Grid>
 
-                        <Button Content="Test Connection"
+                        <Button Content="{Binding TestCredentialActionLabel}"
                                 Style="{StaticResource SecondaryButtonStyle}"
                                 Click="TestProviderConnection_Click" IsEnabled="{Binding CanUseOwnedCredentials}" />
                     </StackPanel>
@@ -330,7 +433,7 @@
                         <TextBlock Text="This action saves credentials for the selected existing connection. Connection creation, subscriptions and runtime activation are managed separately."
                                    TextWrapping="Wrap" Margin="0,0,0,12" />
 
-                        <Button Content="Save selected connection credentials"
+                        <Button Content="{Binding SaveCredentialActionLabel}"
                                 Style="{StaticResource PrimaryButtonStyle}"
                                 Click="SaveProvider_Click" IsEnabled="{Binding CanUseOwnedCredentials}"
                                 Margin="0,16,0,0" />

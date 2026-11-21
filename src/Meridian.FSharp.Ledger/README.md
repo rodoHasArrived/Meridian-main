@@ -6,10 +6,12 @@ module_id: SRC-FSHARP-LEDGER
 path: src/Meridian.FSharp.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-05-28
+last_reviewed: 2026-11-10
 ---
 
 # src/Meridian.FSharp.Ledger
+
+`FundEconomics` accruals round to 2 decimals with away-from-zero midpoint rounding, the same policy as `LedgerCurrencyRounding.RoundCurrency(decimal)` for posted ledger amounts. The kernels take no currency, so they do not apply per-currency minor units.
 
 ## Purpose
 
@@ -24,6 +26,7 @@ This layer should express ledger calculations in functional form while keeping p
 - `Meridian.FSharp.Ledger.fsproj` - F# ledger project boundary.
 - `AccrualTypes.fs` - direct-lending accrual entry validation and deterministic period summaries.
 - `ReconciliationCaseWorkflow.fs` - pure transition legality and provider-ledger tolerance checks for reconciliation cases.
+- `ReturnMeasurement.fs` - W10-PERF-001 return kernels: time-weighted (sub-periods break at external flows; a flow date without a valuation falls back to a labeled `LinkedModifiedDietz` approximation), single-period Modified Dietz, and money-weighted XIRR (Actual/365) that finds every root and returns `ReviewRequired` with candidates when there are none or several. Mixed currency blocks a figure, unposted inputs make it `ProForma`, and translation is explicit at each item's as-of rate. Pure; callers filter inputs to scope and period.
 - Ledger calculation modules and functional domain types.
 
 ## Important workflows
@@ -33,6 +36,7 @@ Use this module for ledger calculations and deterministic reconciliation rules t
 ## API contract notes
 
 - `LedgerInterop.ClassifyBreakFacts` trims string fields before mapping DTOs into `RawBreakFacts`, so classification is stable for equivalent break facts that differ only by surrounding whitespace.
+- `LedgerInterop.ValidateJournalEntry` queries the caller's posted-id sets in place; it builds a set only when handed a plain sequence, so posting cost no longer grows with the number of ids already posted.
 - `LedgerInterop.ValidateAccrualEntry` and `BuildAccrualSummary` expose direct-lending accrual
   validation and period summaries to C# services without adding persistence concerns to this
   project.

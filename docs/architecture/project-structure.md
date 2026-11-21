@@ -2,7 +2,7 @@
 
 **Status:** Active
 **Owner:** Core Team
-**Reviewed:** 2026-10-28 (bounded source-owner and Security Master seam refresh)
+**Reviewed:** 2026-11-18
 
 Meridian uses a standard repository layout organized around source projects,
 tests, automation, docs, design-system assets, and generated artifacts.
@@ -21,6 +21,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Domain/` | Active source code | Domain events, collectors, market abstractions |
 | `src/Meridian.Infrastructure*/` | Active source code | Provider and infrastructure adapters |
 | `src/Meridian.Storage/` | Active source code | WAL, sinks, archival, packaging, lineage |
+| `src/Meridian.Storage.Accounting/` | Active source code | PostgreSQL business persistence adapters, linked legacy source paths and unchanged migration outputs |
 | `src/Meridian.ProviderSdk/` | Active source code | Provider-facing interfaces |
 | `src/Meridian.Execution*/` | Active source code | Execution and broker gateway seams |
 | `src/Meridian.Risk/` | Active source code | Pre-trade risk rules |
@@ -32,12 +33,55 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `src/Meridian.Instruments/` | Active source code | Instrument economics, Security Master-keyed Asset Operations, cash-flow projections, and factor-paydown projections |
 | `src/Meridian.ReferenceData/` | Active source code | Asset-class/instrument-kind mapping, profile catalog contracts, and seeded approved asset-profile templates |
 | `src/Meridian.Reporting/` | Active source code | Governed report packs, report-writer grid rendering, saved filters, formulas, lineage, publication, restatement, and report generation |
+| `src/Meridian.Reporting.ReadModels/` | Active source code | Leaf reporting read models shared by both workstations (income comparisons, report access evaluation, journal-backed tax projections, partners-capital reads, ledger-population replay); extracted from `Meridian.Ui.Shared` with type forwarding and no UI or host references |
 | `src/Meridian.FSharp*/` | Active source code | F# domain models, operations, direct-lending, trading, and functional workflow support |
 | `src/Meridian.QuantScript/` | Active source code | QuantScript parsing, compilation, and charting support |
 | `src/Meridian.Mcp*/` | Active source code | MCP hosts and tool surfaces |
+| `src/Meridian.Audit/` | Active source code | Evidence packets, immutable audit hashes, compliance policy checks, access-review records, retained manifests, lineage, and export-verification ownership |
+| `src/Meridian.DataIntegration/` | Active source code | Scoped provider credential storage, rotation and verification, external GL provider wiring, and OAuth token ownership |
+| `src/Meridian.Documents/` | Active source code | Retained document evidence, manifests, report rendering, and Evidence Vault storage-quota policy and reservations |
+| `src/Meridian.Entities/` | Active source code | Organizations, funds, accounts, entities, assignments, and hierarchy ownership |
+| `src/Meridian.PortfolioRecords/` | Active source code | Portfolio records, positions, activity, holdings, fund-account balances, statement intake, reconciliation runs, sync history, and margin snapshots |
+| `src/Meridian.Workflow/` | Active source code | Workflow definitions, operator actions, presets, runbook execution, environment design, and continuity paths |
+| `src/Meridian.Platform/` | Active source code | Platform coordination such as per-execution lease acquisition, renewal, and guarded actions |
+| `src/Meridian.ProcessIsolation/` | Active source code | Contained process trees with aggregate memory, CPU, and process-count ceilings (hard limits via Windows Job Objects) |
+| `src/Meridian.QuantScript.Worker/` | Active source code | Isolated QuantScript worker process and the sidecar targets that copy or publish it next to its hosts |
+| `src/Meridian.IbApi.SmokeStub/` | Active source code | Local Interactive Brokers API stub used by the IB adapter smoke build |
 | `src/Meridian.Ui/dashboard/` | Active source code | Browser operator workstation for the canonical seven roots and W1-W5 accounting, reporting, private-capital, and multi-asset operational-record workflows |
 | `src/Meridian.Ui.Services/`, `src/Meridian.Ui.Shared/` | Active source code | Shared UI services, endpoints, and read models for accounting configuration, private-capital drill-through, report packs, auth/session adapters, and browser/WPF workflow parity |
 | `src/Meridian.Wpf/` | Active source code | Active desktop shell for operator workflows, Accounting Configure, shared private-capital ledger evidence, report-pack readiness, and multi-asset operational-record views |
+
+### Browser Workstation Folder
+
+`src/Meridian.Ui/` is a folder, not a .NET project. It has no project file and is not in
+`Meridian.sln`. It holds two things:
+
+- `dashboard/` - the browser workstation source (npm/Vite).
+- `wwwroot/workstation/` - the bundle the dashboard build writes. It is gitignored; CI builds it
+  from `dashboard/`.
+
+The `src/Meridian/` host serves that bundle. `Meridian.csproj` links `..\Meridian.Ui\wwwroot\**`
+as content and copies it beside the executable; `UiServer.cs` and `WorkstationAssetTree.cs` in
+`src/Meridian/` serve it. `Meridian.Ui.Services` and `Meridian.Ui.Shared` are real projects in
+sibling folders.
+
+### Project Consolidation
+
+Some small projects have few consumers. Do not open a change only to merge them. Merge one when a
+change already touches it and the merge keeps that change simple.
+
+| Project | Source projects that reference it | When touched |
+| --- | --- | --- |
+| `src/Meridian.ProcessIsolation/` | `Meridian.QuantScript` | Fold its one file into `Meridian.QuantScript`. |
+| `src/Meridian.Audit/` | `Meridian`, `Meridian.Ui.Shared` | Design module; see below. |
+| `src/Meridian.Entities/` | `Meridian.Application`, `Meridian.Workflow`, `Meridian.Ui.Shared` | Design module; see below. |
+| `src/Meridian.ReferenceData/` | `Meridian.Application`, `Meridian.Ui.Shared` | Design module; see below. |
+
+`Meridian.Audit`, `Meridian.Entities`, and `Meridian.ReferenceData` are design-document modules.
+[Design module conformance](design-module-conformance.md) requires a physical project for each, and
+its registry plans to move more code into them. Merging one away changes that contract: update
+`design-module-conformance.yml`, the conformance document, the module's source README and registry
+entry, and `tests/Meridian.DesignModules.Tests` in the same change.
 
 ## Tests And Validation
 
@@ -53,6 +97,8 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | --- | --- | --- |
 | `build/scripts/` | Active script | Build, docs, install, publish, hooks, and validation automation |
 | `scripts/dev/` | Active script | Desktop/web workflow capture, local runners, and smoke probes |
+| `scripts/*.py`, `scripts/ai/` | Active script | CI-invoked status, coverage, and benchmark helpers plus AI maintenance runners; paths are referenced by workflows and retained evidence, so keep them in place |
+| `tools/` | Active script | Python packages for roadmap, source-doc, schema-control, and Codex tooling |
 | `make/`, `Makefile` | Active script | Make targets for environments where `make` is installed |
 | `config/` | Active configuration | Sample/schema/local configuration entry points |
 | `Directory.*.props`, `global.json`, `NuGet.Config` | Active configuration | SDK, build, and package management |
@@ -65,7 +111,7 @@ tests, automation, docs, design-system assets, and generated artifacts.
 | `docs/prompts/` | Active documentation | Maintained prompt, agent, and automation guidance indexes |
 | `archive/docs/` | Historical reference only | Superseded docs-tree material retained for traceability |
 | `Meridian Design System/` | Active design-system assets | Local source of truth for visual foundations, previews, governance tests, and icons |
-| `archive/` | Historical reference only | Legacy superseded docs kept for traceability. Current documentation archives are `archive/docs/plans/` and `archive/docs/summaries/`; `archive/code/` was removed, so `tests/scripts/test_archive_code_tombstones.py` skips until archived source tombstones are added again |
+| `archive/` | Historical reference only | Legacy superseded docs kept for traceability. Current documentation archive buckets are indexed in `archive/docs/README.md` (`adr/`, `plans/`, `summaries/`); `archive/code/` was removed, so `tests/scripts/test_archive_code_tombstones.py` skips until archived source tombstones are added again |
 | `docs/generated/` | Generated documentation | Regenerate by script; do not hand edit generated sections |
 | `docs/docfx/api/` | Generated documentation | DocFX API metadata output; regenerate before publishing docs |
 | `src/Meridian.Ui/wwwroot/workstation/` | Generated/build output | Vite build output for the browser workstation |
@@ -79,7 +125,47 @@ tests, automation, docs, design-system assets, and generated artifacts.
   sidecars such as `*.bak`, `*.backup-*`, `*.pid`, and `*.exitcode`.
 - Safe to consolidate: duplicate generated indexes, stale one-off reports, and
   documentation that repeats command lists already covered by `docs/HELP.md`.
-- Needs review: tracked generated API metadata, tracked workstation bundles,
-  archived code, and agent/skill prompt copies.
+- Needs review: tracked generated API metadata, archived code, and agent/skill prompt copies.
+  The workstation bundle is not tracked; it is a gitignored build output.
 - Should retain: active source, tests, CI workflows, canonical docs, design-system
   assets, and archive material with traceability value.
+
+## Known Layout Follow-ups
+
+These are recorded rather than done because each touches CI, hash-pinned manifests, or retained
+evidence paths and needs an owner decision:
+
+- `Meridian Design System/` contains spaces, which complicates shell tooling. Renaming it touches
+  about 2,500 internal references, hash-pinned release manifests, the design-system workflow, CodeQL
+  and gitleaks configuration, so it should be a dedicated change.
+- `database/manifest/*.json` (about 35 MB, the largest tracked files) and the design-system
+  `api/*.json` bundles are candidates for Git LFS or build-time generation.
+- `src/Meridian.Storage.Accounting/` currently carries only `GlobalUsings.cs`; populate it as the
+  accounting-storage seam or fold it back.
+- `tests/Meridian.Execution.Tests/` and `tests/Meridian.Storage.Tests/` intentionally hold no
+  sources: they compile focused slices of `tests/Meridian.Tests/` through
+  `ExecutionTestSources.props` and `StorageCoreTestSources.props` (see below).
+- The design-system bundles (`_ds_bundle.js`, `_preview_jsx.js`, `api/project-compatibility.json`,
+  the standalone reconciliation HTML) are committed on purpose: `npm run build:check` and
+  `release:check` in the Design System Package workflow verify them against source. Turning them
+  into CI artifacts means changing that package contract first, so it goes with the rename.
+- `docs/testing/evidence/` holds about 9 MB of raw logs and archives in older packets. The
+  no-new-raw-evidence ratchet (`build/scripts/ci/check-evidence-footprint.py`) stops new ones.
+  Shrinking the existing ones means moving packets that are not checksum-pinned to CI artifacts or
+  `archive/`, then running `--tighten-baseline`.
+- Code-level follow-ups, which need a compiler and tests rather than a layout change:
+  sync-over-async bridges in `src/` (for example `StoredProviderCredentialResolver`,
+  `LedgerPostingConsumer`, and the identity stores that block on `AtomicFileWriter`); unscoped
+  `[Obsolete]` overloads that have no removal version yet; `Console.Write` in Application
+  services (for example `SymbolManagementService`) rather than only in `Commands/`; and the
+  dashboard view-model and `dev-fixtures.ts` monoliths tracked by the
+  [god-file burn-down plan](../engineering/plans/god-file-burn-down-plan.md). The SecurityMaster
+  `Compatibility/` shims are still used: `AddSecurityMasterContractAdapters` bridges them and
+  `SecurityMasterContractAdapterTests` covers them.
+
+## Focused storage and execution tests
+
+`tests/Meridian.Storage.Tests` and `tests/Meridian.Execution.Tests` compile source-linked primitive
+and execution tests. Shared manifests remove those same source files from `Meridian.Tests`, so
+each case has one discovery owner. Business persistence and UI composition integration tests stay
+in the broad suite with their shared fixtures. See [boundary extractions](review-boundary-extractions.md).

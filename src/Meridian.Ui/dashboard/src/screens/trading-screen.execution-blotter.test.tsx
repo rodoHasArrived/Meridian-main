@@ -87,7 +87,7 @@ describe("ExecutionBlotterPanel", () => {
     primeReads();
     render(<ExecutionBlotterPanel />);
 
-    const posture = await screen.findByLabelText("Execution gateway posture");
+    const posture = await screen.findByLabelText("Execution gateway status");
     expect(within(posture).getByText("Alpaca")).toBeInTheDocument();
 
     const table = screen.getByLabelText("Execution blotter positions");
@@ -162,6 +162,20 @@ describe("ExecutionBlotterPanel", () => {
 
     await screen.findByLabelText("Execution blotter positions");
     await user.click(screen.getByRole("button", { name: "Upsize" }));
+    await user.click(screen.getByRole("button", { name: "Confirm" }));
+
+    expect(await screen.findByText("Enter a positive quantity to add to the position.")).toBeInTheDocument();
+    expect(api.upsizeExecutionPosition).not.toHaveBeenCalled();
+  });
+
+  it.each(["1e3", "0x10", "+5"])("refuses malformed upsize quantity %s instead of coercing it", async (malformed) => {
+    primeReads();
+    const user = userEvent.setup();
+    render(<ExecutionBlotterPanel />);
+
+    await screen.findByLabelText("Execution blotter positions");
+    await user.click(screen.getByRole("button", { name: "Upsize" }));
+    await user.type(screen.getByLabelText("Quantity to add to SPY"), malformed);
     await user.click(screen.getByRole("button", { name: "Confirm" }));
 
     expect(await screen.findByText("Enter a positive quantity to add to the position.")).toBeInTheDocument();

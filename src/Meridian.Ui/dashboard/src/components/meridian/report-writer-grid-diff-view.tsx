@@ -34,12 +34,12 @@ export function ReportWriterGridDiffView({ diff, maxRows = 6, className }: Repor
 
   return (
     <div className={cn("rounded-sm border border-border/60 bg-background/35 px-2 py-2 text-xs", className)} aria-label={`${diff.title} comparison`}>
-      <p className="text-[11px] text-muted-foreground">
+      <p className="text-xs text-muted-foreground">
         {diff.changedRowCount} changed · {diff.addedRowCount} added · {diff.removedRowCount} removed · {diff.unchangedRowCount} unchanged
       </p>
       <div className="mt-2 max-h-56 overflow-auto rounded-sm border border-border/60">
         <table className="min-w-full table-fixed text-left text-xs">
-          <thead className="bg-secondary/40 text-[10px] uppercase tracking-[0.12em] text-muted-foreground">
+          <thead className="bg-secondary/40 text-xs uppercase tracking-[0.12em] text-muted-foreground">
             <tr>
               <th scope="col" className="min-w-20 px-2 py-1.5 font-semibold">Change</th>
               {diff.columns.map((column) => (
@@ -65,7 +65,7 @@ export function ReportWriterGridDiffView({ diff, maxRows = 6, className }: Repor
                         {hasDelta ? (
                           <span
                             className={cn(
-                              "inline-flex items-center gap-0.5 text-[10px]",
+                              "inline-flex items-center gap-0.5 text-xs",
                               cell.direction === "Up" ? "text-success" : "text-danger"
                             )}
                             title={`Delta ${cell.delta}`}
@@ -88,7 +88,7 @@ export function ReportWriterGridDiffView({ diff, maxRows = 6, className }: Repor
         </table>
       </div>
       {diff.warnings.length > 0 ? (
-        <p className="mt-2 text-[10px] text-warning">{diff.warnings.join("; ")}</p>
+        <p className="mt-2 text-xs text-warning">{diff.warnings.join("; ")}</p>
       ) : null}
     </div>
   );

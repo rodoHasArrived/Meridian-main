@@ -1,5 +1,5 @@
+import { formatPrefixedCurrency } from "@/lib/format";
 import type { AccountingBasisKind } from "@/types";
-import { formatCurrency } from "./accounting-screen.formatting";
 import { readSourceEventIds } from "./accounting-screen.view-model";
 import type {
   AccountingBasisBridgeRowViewModel,
@@ -39,7 +39,7 @@ export function buildBasisBridgeViewState(
       toBasis: comparisonBasis,
       rows: [],
       hasRows: false,
-      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory projection posts journal lines."
+      emptyText: "No non-primary basis rows are available for this run yet. The bridge will populate after GAAP, Cash, Tax, or Statutory journal lines are posted."
     };
   }
 
@@ -56,18 +56,18 @@ export function buildBasisBridgeViewState(
     const sourceLabel = buildBasisBridgeSourceLabel(source);
     const accountLabel = source?.accountName.trim() || "Unnamed account";
     const accountTypeLabel = source?.accountType.trim() || "Unclassified";
-    const varianceLabel = formatCurrency(variance);
+    const varianceLabel = formatPrefixedCurrency(variance);
 
     return {
       rowId: `${comparisonBasis}-${key}`,
       accountLabel,
       accountTypeLabel,
-      primaryBalanceLabel: formatCurrency(primaryBalance),
-      comparisonBalanceLabel: formatCurrency(comparisonBalance),
+      primaryBalanceLabel: formatPrefixedCurrency(primaryBalance),
+      comparisonBalanceLabel: formatPrefixedCurrency(comparisonBalance),
       varianceLabel,
       varianceTone: variance < 0 ? "danger" : variance > 0 ? "success" : "default",
       sourceLabel,
-      ariaLabel: `${accountLabel} ${accountTypeLabel}. Primary ${formatCurrency(primaryBalance)}. ${accountingBasisDisplayName(comparisonBasis)} ${formatCurrency(comparisonBalance)}. Variance ${varianceLabel}.`
+      ariaLabel: `${accountLabel} ${accountTypeLabel}. Primary ${formatPrefixedCurrency(primaryBalance)}. ${accountingBasisDisplayName(comparisonBasis)} ${formatPrefixedCurrency(comparisonBalance)}. Variance ${varianceLabel}.`
     } satisfies AccountingBasisBridgeRowViewModel;
   });
 

@@ -19,7 +19,7 @@ SPEC.loader.exec_module(ratchet)
 
 def count(files: dict[str, str]) -> dict[str, int]:
     """Run the counter over a throwaway tree holding exactly these src/ files."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir)
         for rel, content in files.items():
             path = root / rel

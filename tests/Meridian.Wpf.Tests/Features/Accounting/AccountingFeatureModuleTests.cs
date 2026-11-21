@@ -124,6 +124,7 @@ public sealed class AccountingFeatureModuleTests
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingConfigurePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingCloseViewModel>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<IWorkstationAccountingCloseApiClient, WorkstationAccountingCloseApiClient>(services, ServiceLifetime.Singleton);
+        DesktopFeatureModuleTestAssertions.AssertRegistered<IWorkstationOnboardingApiClient, WorkstationOnboardingApiClient>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingClosePage>(services, ServiceLifetime.Transient);
         DesktopFeatureModuleTestAssertions.AssertRegistered<AccountingPostingService>(services, ServiceLifetime.Singleton);
         DesktopFeatureModuleTestAssertions.AssertRegistered<TrialBalanceProjectionService>(services, ServiceLifetime.Singleton);
@@ -321,6 +322,27 @@ public sealed class AccountingFeatureModuleTests
         source.Should().Contain("ItemsSource=\"{Binding CloseLateAdjustmentRows}\"");
         source.Should().Contain("ItemsSource=\"{Binding CloseEvidenceReviewRows}\"");
         source.Should().Contain("ItemsSource=\"{Binding ClosePeriodLockIssueRows}\"");
+    }
+
+    [Fact]
+    public void OnboardingShadowControl_BindsOnlySharedWorkspaceMembers_AndIsHostedOnTheConfigurePage()
+    {
+        var control = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\OnboardingShadowControl.xaml"));
+        var page = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\AccountingConfigurePage.xaml"));
+        var pageCode = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(
+            @"src\Meridian.Wpf\Views\AccountingConfigurePage.xaml.cs"));
+
+        page.Should().Contain("<views:OnboardingShadowControl DataContext=\"{Binding ShadowOnboarding}\" />");
+        pageCode.Should().Contain("_viewModel.ShadowOnboarding.Cancel();");
+        // Row columns bind to row DTOs; every other binding must resolve on the shared headless workspace model.
+        var outsideColumns = System.Text.RegularExpressions.Regex.Replace(control, "<DataGrid.Columns>.*?</DataGrid.Columns>", "",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        var bindings = System.Text.RegularExpressions.Regex.Matches(outsideColumns, @"\{Binding (\w+)")
+            .Select(match => match.Groups[1].Value).Distinct().ToArray();
+        bindings.Should().Contain(["DesignateCommand", "ImportOpeningCommand", "ExplainCommand", "IssueCertificateCommand", "PromoteCommand", "WithdrawCommand"]);
+        bindings.Should().OnlyContain(name => typeof(OnboardingShadowWorkspace).GetProperty(name) != null);
     }
 
     private static object? GetInjectedDependency(

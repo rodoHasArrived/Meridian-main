@@ -1,0 +1,246 @@
+// The one selector for every count more than one screen shows (A3): open orders, provider health
+// and open reconciliation breaks. Trading, Data, Settings, Accounting, the trust strip and the
+// operator readiness console all read these, and the definitions mirror the server's
+// CrossScreenCountDefinitions (Meridian.Ui.Shared), held together by the shared fixture
+// tests/fixtures/cross-screen-counts/cross-screen-counts.json.
+//
+// A screen that has its own source list loaded (the blotter's open orders, the Data provider rows,
+// the accounting break queue) counts that list with these definitions; a screen without it (Settings,
+// the shell) reads the server's cross-screen counts, which are counted the same way over the same
+// sources. Either way the number is the same, and a count that cannot be read is null, never a
+// substitute figure.
+import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
+
+export const OPEN_ORDERS_DEFINITION =
+  "Orders the order manager reports open (working, partially filled or pending routing) for the fund account in scope.";
+export const PROVIDERS_DEFINITION =
+  "Providers in use (with metrics, a saved connection, a routing connection or a trust snapshot) whose status is Healthy. A provider's status is the worse of its listed status and its readiness status, and it is not Healthy on evidence older than three days.";
+export const OPEN_BREAKS_DEFINITION = "Break-queue items not yet resolved, dismissed or signed off.";
+
+const CLOSED_BREAK_STATUSES = new Set(["resolved", "dismissed", "signedoff", "closed"]);
+
+export interface ProviderHealthCount {
+  healthy: number;
+  total: number;
+}
+
+/** Every order in the order manager's open list counts, whatever its working state. */
+export function countOpenOrders(openOrders: readonly unknown[] | null | undefined): number | null {
+  return openOrders ? openOrders.length : null;
+}
+
+export function isHealthyProviderStatus(status: string | null | undefined): boolean {
+  return (status ?? "").trim().toLowerCase() === "healthy";
+}
+
+export type ListedProviderStatus = "Healthy" | "Warning" | "Degraded" | "Blocked";
+
+const PROVIDER_STATUS_RANK: Record<ListedProviderStatus, number> = { Healthy: 0, Warning: 1, Degraded: 2, Blocked: 3 };
+
+function normalizeProviderStatus(status: string | null | undefined): ListedProviderStatus {
+  const match = (Object.keys(PROVIDER_STATUS_RANK) as ListedProviderStatus[])
+    .find((known) => known.toLowerCase() === (status ?? "").trim().toLowerCase());
+  return match ?? "Warning";
+}
+
+/** A readiness status in the provider list's words; Review and Unknown are a Warning. */
+export function providerStatusFromReadiness(readinessStatus: string): ListedProviderStatus {
+  switch (readinessStatus) {
+    case "Ready": return "Healthy";
+    case "Blocked": return "Blocked";
+    case "Degraded": return "Degraded";
+    default: return "Warning";
+  }
+}
+
+/** The worse of two provider statuses; a status outside the four known ones is a Warning. */
+export function worstProviderStatus(left: string | null | undefined, right: string | null | undefined): ListedProviderStatus {
+  const a = normalizeProviderStatus(left);
+  const b = normalizeProviderStatus(right);
+  return PROVIDER_STATUS_RANK[b] > PROVIDER_STATUS_RANK[a] ? b : a;
+}
+
+/**
+ * The one status a listed provider shows: the worse of its listed status and its readiness status,
+ * when it has one. Mirrors the server's CrossScreenCountDefinitions.ResolveProviderStatus, so a
+ * provider cannot count as Healthy while its card reads Blocked, and readiness never hides a
+ * listed warning. With no readiness the listed status is returned as its source reported it.
+ */
+export function resolveProviderStatus(listedStatus: string | null | undefined, readinessStatus: string | null | undefined): string {
+  if (readinessStatus == null) {
+    return listedStatus ?? "Warning";
+  }
+  return worstProviderStatus(listedStatus, providerStatusFromReadiness(readinessStatus));
+}
+
+/**
+ * How old a provider's newest evidence may be before its health can no longer be confirmed. Three
+ * days spans a weekend without a market session. Mirrors the server's ProviderEvidenceStaleAfter.
+ */
+export const PROVIDER_EVIDENCE_STALE_AFTER_MS = 3 * 24 * 60 * 60 * 1000;
+
+/**
+ * Health is only as current as the evidence behind it: a Healthy provider whose newest evidence is
+ * older than the threshold is a Warning until it is verified again. No timestamped evidence is
+ * unknown, not stale, and any other status is returned unchanged. Mirrors the server's
+ * CrossScreenCountDefinitions.CapHealthyOnStaleEvidence.
+ */
+export function capHealthyOnStaleEvidence<TStatus extends string>(
+  status: TStatus,
+  evidenceObservedAt: readonly (string | null | undefined)[],
+  now: number = Date.now()
+): TStatus | "Warning" {
+  if (!isHealthyProviderStatus(status)) {
+    return status;
+  }
+  const times = evidenceObservedAt.map((value) => (value ? Date.parse(value) : Number.NaN)).filter(Number.isFinite);
+  return times.length > 0 && now - Math.max(...times) > PROVIDER_EVIDENCE_STALE_AFTER_MS ? "Warning" : status;
+}
+
+/** Healthy providers out of every provider row listed. */
+export function countProviderHealth(
+  providers: readonly { status?: string | null }[] | null | undefined
+): ProviderHealthCount | null {
+  if (!providers) {
+    return null;
+  }
+  return {
+    healthy: providers.filter((provider) => isHealthyProviderStatus(provider.status)).length,
+    total: providers.length
+  };
+}
+
+/**
+ * A break is open until resolved, dismissed or signed off. Written as the exclusion so a status
+ * added later counts as work still to do rather than being dropped.
+ */
+export function isOpenBreakStatus(status: string | null | undefined): boolean {
+  return !CLOSED_BREAK_STATUSES.has((status ?? "").replace(/[\s_-]/g, "").toLowerCase());
+}
+
+/** Open breaks in a break-queue read, each item counted once. */
+export function countOpenBreaks(items: readonly { status?: string | null }[] | null | undefined): number | null {
+  return items ? items.filter((item) => isOpenBreakStatus(item.status)).length : null;
+}
+
+export interface CrossScreenCountSources {
+  /** The server's cross-screen counts, loaded by the shell for every route. */
+  shared?: WorkstationCrossScreenCounts | null;
+  /** The trading blotter's open-order list, when the trading workspace is loaded. */
+  openOrders?: readonly unknown[] | null;
+  /** The Data workspace's provider rows, when loaded. */
+  providers?: readonly { status?: string | null }[] | null;
+  /** The accounting break queue, when loaded. */
+  breakQueue?: readonly { status?: string | null }[] | null;
+  /**
+   * An open-break total the server counted with the same definition, such as the accounting
+   * payload's `workspace.openBreaks`. It wins over `breakQueue`, which may be withheld (empty) from
+   * a caller who can see the count but not the cases.
+   */
+  openBreakCount?: number | null;
+}
+
+export interface CrossScreenCountValues {
+  openOrders: number | null;
+  providers: ProviderHealthCount | null;
+  openBreaks: number | null;
+}
+
+/**
+ * The value every screen shows for each cross-screen count: the screen's own source list counted
+ * with the shared definition when it has one, otherwise the server's count, otherwise null.
+ */
+export function selectCrossScreenCounts(sources: CrossScreenCountSources): CrossScreenCountValues {
+  const shared = sources.shared ?? null;
+  return {
+    openOrders: countOpenOrders(sources.openOrders) ?? shared?.openOrders?.count ?? null,
+    providers: countProviderHealth(sources.providers)
+      ?? (shared?.providers ? { healthy: shared.providers.healthy, total: shared.providers.total } : null),
+    openBreaks: sources.openBreakCount ?? countOpenBreaks(sources.breakQueue) ?? shared?.openBreaks?.count ?? null
+  };
+}
+
+/**
+ * Open breaks for an accounting payload: the server's total when it sent one, because the payload
+ * withholds `breakQueue` from callers who may not read case details; otherwise the queue's count.
+ */
+export function countAccountingOpenBreaks(accounting: {
+  workspace?: { openBreaks?: number | null } | null;
+  breakQueue?: readonly { status?: string | null }[] | null;
+}): number {
+  return accounting.workspace?.openBreaks ?? countOpenBreaks(accounting.breakQueue ?? []) ?? 0;
+}
+
+/**
+ * Provider health for a screen that does not refresh the Data payload, such as Settings: the shell's
+ * shared count, which is refreshed on every route, and the Data rows only when that count is
+ * unavailable. Retained Data rows can be older than the shared count, so they never override it.
+ */
+export function selectSharedProviderHealth(
+  shared: WorkstationCrossScreenCounts | null | undefined,
+  providers: readonly { status?: string | null }[] | null | undefined
+): ProviderHealthCount | null {
+  return selectCrossScreenCounts({ shared }).providers ?? countProviderHealth(providers);
+}
+
+/**
+ * Healthy providers with the population they are out of, "2 of 4 providers", or "—" when the
+ * count cannot be read. The label beside it says "healthy"; the value names the denominator.
+ */
+export function formatProviderHealth(count: ProviderHealthCount | null): string {
+  // Written out rather than through formatCountOfTotal: the Vite config loads this module (via the
+  // development fixtures) before path aliases exist, so it must not import runtime helpers.
+  return count ? `${count.healthy} of ${count.total} ${count.total === 1 ? "provider" : "providers"}` : "—";
+}
+
+/** A count as text, or "—" when it cannot be read. */
+export function formatCrossScreenCount(count: number | null): string {
+  return count === null ? "—" : String(count);
+}
+
+// Workspace headline cards that show a cross-screen count, by the ids the server and fixtures use.
+const OPEN_ORDER_METRIC_IDS = new Set(["orders", "open-orders", "trading-open-orders"]);
+const PROVIDER_METRIC_IDS = new Set(["providers", "providers-healthy"]);
+const OPEN_BREAK_METRIC_IDS = new Set(["open-breaks", "breaks"]);
+
+/**
+ * Headline cards that show a cross-screen count take their value from the one selector instead of
+ * the payload's own card string, which was counted separately and could disagree with the list
+ * beside it. Their delta is dropped: it had no stated basis. Other cards pass through unchanged.
+ */
+/**
+ * Sets the open-breaks card's delta (C3). The delta must state its basis, e.g. "2 new since your
+ * last visit"; an empty delta leaves the card without one.
+ */
+export function applyOpenBreakDelta<T extends { id: string; delta: string }>(metrics: readonly T[], delta: string): T[] {
+  return metrics.map((metric) => OPEN_BREAK_METRIC_IDS.has(metric.id) ? { ...metric, delta } : metric);
+}
+
+export function applyCrossScreenCounts<T extends { id: string; value: string; delta: string; tone: string }>(
+  metrics: readonly T[],
+  values: CrossScreenCountValues
+): T[] {
+  return metrics.map((metric) => {
+    if (OPEN_ORDER_METRIC_IDS.has(metric.id)) {
+      return { ...metric, value: formatCrossScreenCount(values.openOrders), delta: "" };
+    }
+    if (PROVIDER_METRIC_IDS.has(metric.id)) {
+      const providers = values.providers;
+      return {
+        ...metric,
+        value: providers ? formatProviderHealth(providers) : "—",
+        delta: "",
+        tone: !providers ? "default" : providers.total > 0 && providers.healthy === providers.total ? "success" : "warning"
+      };
+    }
+    if (OPEN_BREAK_METRIC_IDS.has(metric.id)) {
+      return {
+        ...metric,
+        value: formatCrossScreenCount(values.openBreaks),
+        delta: "",
+        tone: values.openBreaks === null ? "default" : values.openBreaks === 0 ? "success" : "warning"
+      };
+    }
+    return metric;
+  });
+}

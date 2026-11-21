@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Windows;
 using System.Windows.Input;
+using Meridian.Ui.Services.Services;
 using Meridian.Wpf.Workstation.Controls;
 
 namespace Meridian.Wpf.Services;
@@ -14,7 +15,22 @@ public sealed class KeyboardShortcutService
 {
     private static readonly Lazy<KeyboardShortcutService> _instance = new(() => new KeyboardShortcutService());
 
+    /// <summary>
+    /// Actions whose bindings an operator override may never reduce to a bare key or a
+    /// Shift-only chord: they start or stop collection, drop the provider connection, or delete
+    /// data, so an accidental keystroke must not trigger them. Default bindings are unaffected.
+    /// </summary>
+    private static readonly HashSet<string> ModifierRequiredActions = new(StringComparer.Ordinal)
+    {
+        "StartCollector",
+        "StopCollector",
+        "ToggleConnection",
+        "DeleteSelected"
+    };
+
     private readonly Dictionary<string, ShortcutAction> _shortcuts = new();
+    private readonly Dictionary<string, DefaultBinding> _defaultBindings = new(StringComparer.Ordinal);
+    private Action<IReadOnlyDictionary<string, DesktopShortcutOverride>>? _saveOverrides;
     private FrameworkElement? _rootElement;
     private bool _isEnabled = true;
 
@@ -26,7 +42,320 @@ public sealed class KeyboardShortcutService
     private KeyboardShortcutService()
     {
         InitializeDefaultShortcuts();
+        foreach (var (actionId, action) in _shortcuts)
+        {
+            _defaultBindings[actionId] = new DefaultBinding(action.Key, action.Modifiers, action.IsEnabled);
+        }
     }
+
+    /// <summary>
+    /// Creates an isolated instance with the default shortcuts, for tests that must not mutate
+    /// the process-wide singleton.
+    /// </summary>
+    internal static KeyboardShortcutService CreateIsolatedForTests() => new();
+
+    /// <summary>
+    /// Loads the operator's persisted shortcut overrides, applies them, and saves every later
+    /// <see cref="UpdateShortcut"/>, <see cref="SetShortcutEnabled"/>, and
+    /// <see cref="ResetToDefaults"/> change through <paramref name="saveOverrides"/>.
+    /// </summary>
+    public void AttachPreferenceStore(
+        IReadOnlyDictionary<string, DesktopShortcutOverride> persistedOverrides,
+        Action<IReadOnlyDictionary<string, DesktopShortcutOverride>> saveOverrides)
+    {
+        ArgumentNullException.ThrowIfNull(persistedOverrides);
+        ArgumentNullException.ThrowIfNull(saveOverrides);
+
+        _saveOverrides = null;
+        ApplyOverrides(persistedOverrides);
+        _saveOverrides = saveOverrides;
+    }
+
+    /// <summary>
+    /// Restores every default shortcut to its default binding, then applies the valid entries of
+    /// <paramref name="overrides"/>. An entry is skipped when its action is not a default
+    /// shortcut, its key or modifiers do not parse, it would leave a modifier-required action
+    /// without Ctrl or Alt, or it collides with another shortcut's binding.
+    /// </summary>
+    /// <remarks>
+    /// Collisions are judged against the whole saved set rather than one entry at a time, so a
+    /// saved swap (A takes B's default chord while B takes A's) applies both halves instead of
+    /// skipping the first as a collision with the other's not-yet-moved default. When two saved
+    /// rebindings claim the same chord the earlier entry keeps it; a rebinding onto a chord that
+    /// stays on an un-rebound shortcut is skipped.
+    /// </remarks>
+    /// <returns>The action ids whose override was skipped.</returns>
+    public IReadOnlyList<string> ApplyOverrides(IReadOnlyDictionary<string, DesktopShortcutOverride> overrides)
+    {
+        ArgumentNullException.ThrowIfNull(overrides);
+
+        RestoreDefaultBindings();
+        var skipped = new List<string>();
+        var accepted = new List<ParsedOverride>();
+        foreach (var (actionId, shortcutOverride) in overrides)
+        {
+            if (TryParseOverride(actionId, shortcutOverride, out var parsed))
+            {
+                accepted.Add(parsed);
+            }
+            else
+            {
+                skipped.Add(actionId);
+            }
+        }
+
+        // The chord every shortcut would end up on if every accepted entry applied.
+        var proposed = new Dictionary<string, (Key Key, ModifierKeys Modifiers)>(StringComparer.Ordinal);
+        foreach (var (actionId, action) in _shortcuts)
+        {
+            proposed[actionId] = (action.Key, action.Modifiers);
+        }
+
+        foreach (var entry in accepted)
+        {
+            if (entry.RebindsChord)
+            {
+                proposed[entry.ActionId] = (entry.Key, entry.Modifiers);
+            }
+        }
+
+        // Dropping a colliding rebinding returns its action to its default chord, which can in
+        // turn collide with another rebinding, so repeat until the set is stable. Each pass
+        // drops at least one entry, so this terminates.
+        int collidingIndex;
+        while ((collidingIndex = FindFirstCollidingRebinding(accepted, proposed)) >= 0)
+        {
+            var dropped = accepted[collidingIndex];
+            var defaults = _defaultBindings[dropped.ActionId];
+            proposed[dropped.ActionId] = (defaults.Key, defaults.Modifiers);
+            accepted.RemoveAt(collidingIndex);
+            skipped.Add(dropped.ActionId);
+        }
+
+        foreach (var entry in accepted)
+        {
+            var action = _shortcuts[entry.ActionId];
+            action.Key = entry.Key;
+            action.Modifiers = entry.Modifiers;
+            if (entry.IsEnabled is { } isEnabled)
+            {
+                action.IsEnabled = isEnabled;
+            }
+        }
+
+        return skipped;
+    }
+
+    /// <summary>
+    /// Gets the current differences from the default bindings, in the form persisted to the
+    /// operator's desktop preferences.
+    /// </summary>
+    public IReadOnlyDictionary<string, DesktopShortcutOverride> GetOverrides()
+    {
+        var overrides = new Dictionary<string, DesktopShortcutOverride>(StringComparer.Ordinal);
+        foreach (var (actionId, defaults) in _defaultBindings)
+        {
+            if (!_shortcuts.TryGetValue(actionId, out var action))
+            {
+                continue;
+            }
+
+            var bindingChanged = action.Key != defaults.Key || action.Modifiers != defaults.Modifiers;
+            var enabledChanged = action.IsEnabled != defaults.IsEnabled;
+            if (!bindingChanged && !enabledChanged)
+            {
+                continue;
+            }
+
+            overrides[actionId] = new DesktopShortcutOverride(
+                bindingChanged ? action.Key.ToString() : null,
+                bindingChanged ? action.Modifiers.ToString() : null,
+                enabledChanged ? action.IsEnabled : null);
+        }
+
+        return overrides;
+    }
+
+    /// <summary>
+    /// Restores every default shortcut's binding and enabled state and clears the persisted
+    /// overrides.
+    /// </summary>
+    public void ResetToDefaults()
+    {
+        RestoreDefaultBindings();
+        PersistOverrides();
+    }
+
+    /// <summary>
+    /// Gets the default chord and enabled state of a built-in shortcut, or null when
+    /// <paramref name="actionId"/> is not a default shortcut.
+    /// </summary>
+    public (Key Key, ModifierKeys Modifiers, bool IsEnabled)? GetDefaultBinding(string actionId)
+        => _defaultBindings.TryGetValue(actionId, out var defaults)
+            ? (defaults.Key, defaults.Modifiers, defaults.IsEnabled)
+            : null;
+
+    /// <summary>
+    /// Restores one shortcut's default binding and enabled state and saves the change. The
+    /// reset is refused when another shortcut has since been rebound onto that default chord;
+    /// default chords that two built-in shortcuts already share stay shared.
+    /// </summary>
+    /// <param name="actionId">The shortcut to reset.</param>
+    /// <param name="conflictingActionId">
+    /// The rebound shortcut that holds the default chord, when the reset is refused for that reason.
+    /// </param>
+    /// <returns>True when the shortcut now uses its defaults.</returns>
+    public bool TryResetShortcut(string actionId, out string? conflictingActionId)
+    {
+        conflictingActionId = null;
+        if (!_defaultBindings.TryGetValue(actionId, out var defaults)
+            || !_shortcuts.TryGetValue(actionId, out var action))
+        {
+            return false;
+        }
+
+        foreach (var (otherId, other) in _shortcuts)
+        {
+            if (otherId == actionId
+                || other.Key != defaults.Key
+                || other.Modifiers != defaults.Modifiers)
+            {
+                continue;
+            }
+
+            var otherIsOnItsDefault = _defaultBindings.TryGetValue(otherId, out var otherDefaults)
+                                      && otherDefaults.Key == other.Key
+                                      && otherDefaults.Modifiers == other.Modifiers;
+            if (!otherIsOnItsDefault)
+            {
+                conflictingActionId = otherId;
+                return false;
+            }
+        }
+
+        action.Key = defaults.Key;
+        action.Modifiers = defaults.Modifiers;
+        action.IsEnabled = defaults.IsEnabled;
+        PersistOverrides();
+        return true;
+    }
+
+    /// <summary>
+    /// True when an operator may bind <paramref name="actionId"/> to this chord: actions that
+    /// start or stop collection, drop the connection, or delete data must keep Ctrl or Alt.
+    /// </summary>
+    public static bool IsBindingAllowed(string actionId, Key key, ModifierKeys modifiers)
+    {
+        if (key == Key.None)
+        {
+            return false;
+        }
+
+        return !ModifierRequiredActions.Contains(actionId)
+               || (modifiers & (ModifierKeys.Control | ModifierKeys.Alt)) != ModifierKeys.None;
+    }
+
+    private bool TryParseOverride(string actionId, DesktopShortcutOverride? shortcutOverride, out ParsedOverride parsed)
+    {
+        parsed = default;
+        if (shortcutOverride is null
+            || !_defaultBindings.ContainsKey(actionId)
+            || !_shortcuts.TryGetValue(actionId, out var action))
+        {
+            return false;
+        }
+
+        var key = action.Key;
+        var modifiers = action.Modifiers;
+        var rebindsChord = shortcutOverride.Key is not null || shortcutOverride.Modifiers is not null;
+        if (rebindsChord)
+        {
+            if (shortcutOverride.Key is not null
+                && !Enum.TryParse(shortcutOverride.Key, ignoreCase: true, out key))
+            {
+                return false;
+            }
+
+            if (shortcutOverride.Modifiers is not null
+                && !Enum.TryParse(shortcutOverride.Modifiers, ignoreCase: true, out modifiers))
+            {
+                return false;
+            }
+
+            const ModifierKeys knownModifiers =
+                ModifierKeys.Alt | ModifierKeys.Control | ModifierKeys.Shift | ModifierKeys.Windows;
+            if (!Enum.IsDefined(key)
+                || (modifiers & ~knownModifiers) != ModifierKeys.None
+                || !IsBindingAllowed(actionId, key, modifiers))
+            {
+                return false;
+            }
+
+            // A saved chord equal to the default is not a rebinding and cannot collide.
+            rebindsChord = key != action.Key || modifiers != action.Modifiers;
+        }
+
+        parsed = new ParsedOverride(actionId, key, modifiers, rebindsChord, shortcutOverride.IsEnabled);
+        return true;
+    }
+
+    /// <summary>
+    /// The index of the first accepted rebinding whose proposed chord is also proposed for a
+    /// shortcut that is not rebound, or for an earlier accepted rebinding; -1 when none collide.
+    /// </summary>
+    private static int FindFirstCollidingRebinding(
+        List<ParsedOverride> accepted,
+        Dictionary<string, (Key Key, ModifierKeys Modifiers)> proposed)
+    {
+        for (var i = 0; i < accepted.Count; i++)
+        {
+            var entry = accepted[i];
+            if (!entry.RebindsChord)
+            {
+                continue;
+            }
+
+            foreach (var (otherId, chord) in proposed)
+            {
+                if (otherId == entry.ActionId || chord.Key != entry.Key || chord.Modifiers != entry.Modifiers)
+                {
+                    continue;
+                }
+
+                var otherIndex = accepted.FindIndex(other => other.RebindsChord && other.ActionId == otherId);
+                if (otherIndex < 0 || otherIndex < i)
+                {
+                    return i;
+                }
+            }
+        }
+
+        return -1;
+    }
+
+    private readonly record struct ParsedOverride(
+        string ActionId,
+        Key Key,
+        ModifierKeys Modifiers,
+        bool RebindsChord,
+        bool? IsEnabled);
+
+    private void RestoreDefaultBindings()
+    {
+        foreach (var (actionId, defaults) in _defaultBindings)
+        {
+            if (_shortcuts.TryGetValue(actionId, out var action))
+            {
+                action.Key = defaults.Key;
+                action.Modifiers = defaults.Modifiers;
+                action.IsEnabled = defaults.IsEnabled;
+            }
+        }
+    }
+
+    private void PersistOverrides() => _saveOverrides?.Invoke(GetOverrides());
+
+    private readonly record struct DefaultBinding(Key Key, ModifierKeys Modifiers, bool IsEnabled);
 
     /// <summary>
     /// Gets or sets whether keyboard shortcuts are enabled.
@@ -323,6 +652,7 @@ public sealed class KeyboardShortcutService
         {
             action.Key = key;
             action.Modifiers = modifiers;
+            PersistOverrides();
         }
     }
 
@@ -336,6 +666,7 @@ public sealed class KeyboardShortcutService
         if (_shortcuts.TryGetValue(actionId, out var action))
         {
             action.IsEnabled = enabled;
+            PersistOverrides();
         }
     }
 
@@ -462,6 +793,17 @@ public sealed class KeyboardShortcutService
     /// <param name="excludeActionId">Optional action ID to exclude from the check.</param>
     /// <returns>True if a conflict exists.</returns>
     public bool HasConflict(Key key, ModifierKeys modifiers, string? excludeActionId = null)
+        => FindConflictingShortcut(key, modifiers, excludeActionId) is not null;
+
+    /// <summary>
+    /// Gets the shortcut already registered on this key combination, so a rejected rebinding
+    /// can name what holds the chord.
+    /// </summary>
+    /// <param name="key">The key.</param>
+    /// <param name="modifiers">The modifier keys.</param>
+    /// <param name="excludeActionId">Optional action ID to exclude from the check.</param>
+    /// <returns>The conflicting shortcut, or null when the chord is free.</returns>
+    public ShortcutAction? FindConflictingShortcut(Key key, ModifierKeys modifiers, string? excludeActionId = null)
     {
         foreach (var kvp in _shortcuts)
         {
@@ -469,9 +811,9 @@ public sealed class KeyboardShortcutService
                 continue;
 
             if (kvp.Value.Key == key && kvp.Value.Modifiers == modifiers)
-                return true;
+                return kvp.Value;
         }
-        return false;
+        return null;
     }
 
     /// <summary>

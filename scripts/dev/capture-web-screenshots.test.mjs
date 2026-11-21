@@ -6,8 +6,30 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  CAPTURE_CONTENT_ISSUE_KINDS,
   captureRouteWithRetries,
+  checkHoldingsTotals,
+  checkKpiConsistency,
+  checkKpiLabelConsistency,
+  findStatusContradictions,
+  isPositionsTableLabel,
+  findRepeatedUnavailableLines,
+  describePrimaryTaskPosition,
+  describeFailureNotices,
+  describeNavRowBudget,
+  checkSeverityLabelConsistency,
+  loadKpiDefinitions,
+  collectKpiSnapshots,
+  collectAllowedContentIssueKinds,
+  createCaptureApiTracker,
+  describeCaptureContentIssues,
   finalizeCaptureRun,
+  findCaptureContentIssues,
+  isSlugIdentifier,
+  parseCaptureWorkers,
+  partitionCaptureContentIssues,
+  runCaptureWorkers,
+  waitForCaptureReadiness,
   waitForServer,
   writeCaptureManifest
 } from "./capture-web-screenshots.mjs";
@@ -25,6 +47,368 @@ function manifest(status = "running") {
     captures: [{ name: "first", status: "passed" }, { name: "second", status: "failed" }]
   };
 }
+
+function deferred() {
+  let resolve;
+  let reject;
+  const promise = new Promise((resolvePromise, rejectPromise) => {
+    resolve = resolvePromise;
+    reject = rejectPromise;
+  });
+  return { promise, resolve, reject };
+}
+
+test("capture workers default to one and reject unbounded or fractional counts", () => {
+  assert.equal(parseCaptureWorkers(), 1);
+  assert.equal(parseCaptureWorkers("2"), 2);
+  assert.equal(parseCaptureWorkers(8), 8);
+  for (const value of [0, -1, 1.5, 9, Infinity, "not-a-number"]) {
+    assert.throws(() => parseCaptureWorkers(value), /workers.*1.*8/i);
+  }
+});
+
+test("capture workers overlap within their limit and retain catalog order", { timeout: 5000 }, async () => {
+  const captures = Array.from({ length: 5 }, (_, index) => ({ name: `route-${index}` }));
+  const started = captures.map(() => deferred());
+  const finish = captures.map(() => deferred());
+  const checkpoints = [];
+  let active = 0;
+  let peak = 0;
+  const run = runCaptureWorkers(captures, 2, async (capture, index) => {
+    active += 1;
+    peak = Math.max(peak, active);
+    started[index].resolve();
+    await finish[index].promise;
+    active -= 1;
+    return { name: capture.name, status: "passed" };
+  }, async (results) => {
+    checkpoints.push(results.map((result) => result.name));
+  });
+
+  await Promise.all([started[0].promise, started[1].promise]);
+  assert.equal(active, 2);
+  finish[1].resolve();
+  await started[2].promise;
+  finish[2].resolve();
+  await started[3].promise;
+  finish[0].resolve();
+  await started[4].promise;
+  finish[3].resolve();
+  finish[4].resolve();
+
+  assert.deepEqual((await run).map((result) => result.name), captures.map((capture) => capture.name));
+  assert.equal(peak, 2);
+  assert.equal(active, 0);
+  assert.equal(checkpoints.length, captures.length);
+  assert.deepEqual(checkpoints[0], ["route-1"]);
+  for (const checkpoint of checkpoints) {
+    assert.deepEqual(checkpoint, [...checkpoint].sort());
+  }
+});
+
+test("concurrent completions serialize manifest checkpoints without losing results", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const file = path.join(directory, "manifest.json");
+  const captures = Array.from({ length: 12 }, (_, index) => ({ name: `route-${index}` }));
+  const current = { status: "running", selectedCaptureCount: captures.length, captures: [] };
+  let activeWrites = 0;
+  let peakWrites = 0;
+  await runCaptureWorkers(captures, 4, async (capture) => ({ ...capture, status: "passed" }), async (results) => {
+    activeWrites += 1;
+    peakWrites = Math.max(peakWrites, activeWrites);
+    current.captures = results;
+    await writeCaptureManifest(current, file, []);
+    activeWrites -= 1;
+  });
+  const saved = JSON.parse(await fs.readFile(file, "utf8"));
+  assert.equal(peakWrites, 1);
+  assert.equal(saved.capturedCount, captures.length);
+  assert.equal(saved.unattemptedCaptureCount, 0);
+  assert.deepEqual(saved.captures.map((result) => result.name), captures.map((capture) => capture.name));
+});
+
+test("shell circuit breaker stops scheduling and drains active captures before rejecting", { timeout: 5000 }, async () => {
+  const captures = Array.from({ length: 10 }, (_, index) => ({ name: `route-${index}` }));
+  const started = captures.map(() => deferred());
+  const finish = captures.map(() => deferred());
+  const attempted = [];
+  const thirdFailureSaved = deferred();
+  let active = 0;
+  let settled = false;
+  let checkpoint;
+  const run = runCaptureWorkers(captures, 2, async (capture, index) => {
+    attempted.push(index);
+    active += 1;
+    started[index].resolve();
+    await finish[index].promise;
+    active -= 1;
+    return { ...capture, status: "failed", error: "App shell failed to mount: missing fixtures" };
+  }, async (results) => {
+    checkpoint = [...results];
+    if (results.length === 3) thirdFailureSaved.resolve();
+  });
+  const rejection = assert.rejects(run, /Aborting capture run: the app shell failed to mount/);
+  run.then(() => { settled = true; }, () => { settled = true; });
+
+  await Promise.all([started[0].promise, started[1].promise]);
+  finish[0].resolve();
+  await started[2].promise;
+  finish[1].resolve();
+  await started[3].promise;
+  finish[2].resolve();
+  await thirdFailureSaved.promise;
+  assert.equal(settled, false, "The active route must finish before the run rejects");
+  finish[3].resolve();
+  await rejection;
+
+  assert.deepEqual(attempted, [0, 1, 2, 3]);
+  assert.equal(active, 0);
+  assert.equal(checkpoint.length, 4, "The final active capture must remain in partial evidence");
+});
+
+test("a checkpoint failure stops pending captures and waits for active captures", { timeout: 5000 }, async () => {
+  const secondCapture = deferred();
+  const secondStarted = deferred();
+  const checkpointFailed = deferred();
+  const attempted = [];
+  let settled = false;
+  const run = runCaptureWorkers([0, 1, 2, 3], 2, async (_capture, index) => {
+    attempted.push(index);
+    if (index === 1) {
+      secondStarted.resolve();
+      await secondCapture.promise;
+    }
+    return { name: `route-${index}`, status: "passed" };
+  }, async () => {
+    checkpointFailed.resolve();
+    throw new Error("manifest disk full");
+  });
+  const rejection = assert.rejects(run, /manifest disk full/);
+  run.then(() => { settled = true; }, () => { settled = true; });
+  await Promise.all([secondStarted.promise, checkpointFailed.promise]);
+  assert.equal(settled, false);
+  secondCapture.resolve();
+  await rejection;
+  assert.deepEqual(attempted, [0, 1]);
+});
+
+test("an unexpected worker failure drains other active work before rejecting", { timeout: 5000 }, async () => {
+  const failure = deferred();
+  const finishOther = deferred();
+  const otherStarted = deferred();
+  const attempted = [];
+  let otherFinished = false;
+  const run = runCaptureWorkers([0, 1, 2], 2, async (_capture, index) => {
+    attempted.push(index);
+    if (index === 0) await failure.promise;
+    else {
+      otherStarted.resolve();
+      await finishOther.promise;
+      otherFinished = true;
+    }
+    return { name: `route-${index}`, status: "passed" };
+  }, async () => {});
+  const rejection = assert.rejects(run, /browser disconnected/);
+  await otherStarted.promise;
+  failure.reject(new Error("browser disconnected"));
+  // Let the rejected worker settle while its peer remains deliberately active.
+  await new Promise((resolve) => setImmediate(resolve));
+  assert.equal(otherFinished, false);
+  finishOther.resolve();
+  await rejection;
+  assert.equal(otherFinished, true);
+  assert.deepEqual(attempted, [0, 1]);
+});
+
+test("render readiness uses its timeout and never swallows an unfinished render", async (t) => {
+  t.mock.method(Date, "now", () => 1_000);
+  const page = {
+    async waitForFunction(_predicate, _argument, options) {
+      assert.equal(options.timeout, 1234);
+      throw new Error("Fonts or content did not finish rendering");
+    }
+  };
+  await assert.rejects(waitForCaptureReadiness(page, 1234), /did not finish rendering/);
+});
+
+function captureRequest(path) {
+  return { url: () => new URL(path, "http://localhost").href };
+}
+
+test("render readiness waits for pending API data even without a busy element", async (t) => {
+  const page = new EventEmitter();
+  let renderChecks = 0;
+  page.waitForFunction = async () => { renderChecks += 1; };
+  const tracker = createCaptureApiTracker(page);
+  t.after(() => tracker.dispose());
+  const request = captureRequest("/api/portfolio/positions");
+  page.emit("request", request);
+  const run = waitForCaptureReadiness(page, 1000, tracker);
+  await Promise.resolve();
+  assert.equal(renderChecks, 0, "A stable loading panel is not completed API content");
+  page.emit("requestfinished", request);
+  await run;
+  assert.equal(renderChecks, 1);
+});
+
+test("render readiness rechecks after API work starts during a painted-frame check", async (t) => {
+  const page = new EventEmitter();
+  const request = captureRequest("/api/ledger/balances");
+  const requestStarted = deferred();
+  let renderChecks = 0;
+  let finished = false;
+  page.waitForFunction = async () => {
+    renderChecks += 1;
+    if (renderChecks === 1) {
+      page.emit("request", request);
+      requestStarted.resolve();
+    }
+  };
+  const tracker = createCaptureApiTracker(page);
+  t.after(() => tracker.dispose());
+  const run = waitForCaptureReadiness(page, 1000, tracker).then(() => { finished = true; });
+  await requestStarted.promise;
+  await Promise.resolve();
+  assert.equal(finished, false);
+  assert.equal(renderChecks, 1);
+  page.emit("requestfinished", request);
+  await run;
+  assert.equal(renderChecks, 2, "New API data must receive another stable render check");
+});
+
+test("API work completed during a render check still invalidates the checked content", async (t) => {
+  const page = new EventEmitter();
+  let renderChecks = 0;
+  page.waitForFunction = async () => {
+    renderChecks += 1;
+    if (renderChecks === 1) {
+      const request = captureRequest("/api/reporting/runs");
+      page.emit("request", request);
+      page.emit("requestfinished", request);
+    }
+  };
+  const tracker = createCaptureApiTracker(page);
+  t.after(() => tracker.dispose());
+  await waitForCaptureReadiness(page, 1000, tracker);
+  assert.equal(tracker.pendingCount, 0);
+  assert.equal(renderChecks, 2, "A changed request revision needs another render check even when already drained");
+});
+
+test("API request tracking releases failed requests and ignores similarly named Vite modules", async (t) => {
+  const page = new EventEmitter();
+  const tracker = createCaptureApiTracker(page);
+  t.after(() => tracker.dispose());
+  for (const path of ["/workstation/src/lib/api.ts", "/workstation/src/api/client.ts", "/apiary/status", "/workstation/?next=/api/ledger"]) {
+    page.emit("request", captureRequest(path));
+  }
+  assert.equal(tracker.pendingCount, 0);
+  assert.equal(tracker.revision, 0);
+  const request = captureRequest("/api/ledger/balances");
+  page.emit("request", request);
+  assert.equal(tracker.pendingCount, 1);
+  const idle = tracker.waitForIdle(1000);
+  page.emit("requestfailed", request);
+  await idle;
+  assert.equal(tracker.pendingCount, 0);
+  assert.ok(tracker.revision > 0);
+  tracker.dispose();
+  for (const event of ["request", "requestfinished", "requestfailed"]) {
+    assert.equal(page.listenerCount(event), 0);
+  }
+});
+
+test("an API request that never completes fails readiness within its budget", async (t) => {
+  const page = new EventEmitter();
+  let renderChecks = 0;
+  page.waitForFunction = async () => { renderChecks += 1; };
+  const tracker = createCaptureApiTracker(page);
+  t.after(() => tracker.dispose());
+  page.emit("request", captureRequest("/api/portfolio/positions"));
+  await assert.rejects(waitForCaptureReadiness(page, 25, tracker), /API|timed out/i);
+  assert.equal(renderChecks, 0);
+});
+
+test("API changes during rendering share one total readiness deadline", async (t) => {
+  let now = 1000;
+  t.mock.method(Date, "now", () => now);
+  const apiTracker = { pendingCount: 0, revision: 0, async waitForIdle() {} };
+  const budgets = [];
+  const page = {
+    async waitForFunction(_predicate, _argument, { timeout }) {
+      budgets.push(timeout);
+      now += 60;
+      apiTracker.revision += 1;
+    }
+  };
+  await assert.rejects(waitForCaptureReadiness(page, 100, apiTracker), /did not settle within 100ms/);
+  assert.deepEqual(budgets, [100, 40], "API changes must not restart the full readiness timeout");
+});
+
+test("render readiness rejects loading fonts, busy content, images and shifting layouts", async (t) => {
+  const bounds = { x: 0, y: 0, width: 100, height: 80 };
+  const root = {
+    innerText: "Account records loaded",
+    scrollWidth: 100,
+    scrollHeight: 80,
+    busy: false,
+    matches() { return this.busy; },
+    getClientRects() { return [bounds]; },
+    getBoundingClientRect() { return bounds; },
+    querySelectorAll(selector) { return selector === "*" ? [child] : busyChildren; }
+  };
+  const child = {
+    hidden: false,
+    getClientRects() { return this.hidden ? [] : [bounds]; },
+    getBoundingClientRect() { return bounds; }
+  };
+  let busyChildren = [];
+  let onFrame = () => {};
+  let frames = 0;
+  const document = { fonts: { status: "loaded" }, images: [], querySelector: () => root };
+  for (const [name, value] of Object.entries({
+    document,
+    getComputedStyle: (element) => ({ visibility: element.hidden ? "hidden" : "visible" }),
+    requestAnimationFrame(callback) { frames += 1; onFrame(frames); callback(); }
+  })) {
+    const previous = Object.getOwnPropertyDescriptor(globalThis, name);
+    Object.defineProperty(globalThis, name, { configurable: true, writable: true, value });
+    t.after(() => {
+      if (previous) Object.defineProperty(globalThis, name, previous);
+      else delete globalThis[name];
+    });
+  }
+  async function ready() {
+    let result;
+    frames = 0;
+    await waitForCaptureReadiness({ async waitForFunction(predicate) { result = await predicate(); } }, 100);
+    return result;
+  }
+
+  assert.equal(await ready(), true);
+  assert.equal(frames, 2, "Readiness must compare painted frames");
+  document.fonts.status = "loading";
+  assert.equal(await ready(), false);
+  document.fonts.status = "loaded";
+  root.busy = true;
+  assert.equal(await ready(), false);
+  root.busy = false;
+  busyChildren = [child];
+  assert.equal(await ready(), false);
+  child.hidden = true;
+  assert.equal(await ready(), true, "Hidden busy regions must not block visible content");
+  child.hidden = false;
+  busyChildren = [];
+  document.images = [{ ...child, complete: false }];
+  assert.equal(await ready(), false);
+  document.images[0].complete = true;
+  assert.equal(await ready(), true);
+  onFrame = (frame) => { if (frame === 2) bounds.width += 10; };
+  assert.equal(await ready(), false, "A layout change during paint must delay capture");
+  onFrame = (frame) => { if (frame === 2) root.innerText = "New account records loaded"; };
+  assert.equal(await ready(), false, "A content change during paint must delay capture");
+  onFrame = () => {};
+  assert.equal(await ready(), true);
+});
 
 test("incremental manifest retains completed routes, unattempted count, and the log tail", async (t) => {
   const directory = await temporaryDirectory(t);
@@ -82,8 +466,9 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
     async setViewportSize() {},
     async goto() {},
     async waitForSelector() {},
-    async waitForLoadState() {},
+    async waitForFunction() {},
     async evaluate() { return 100; },
+    locator() { return { async evaluateAll() { return []; } }; },
     url() { return "http://localhost/workstation/accounting"; },
     async screenshot({ path: file }) {
       const image = Buffer.alloc(bytes);
@@ -132,6 +517,66 @@ test("a passed capture retains its PNG", async (t) => {
   assert.equal((await run.promise).status, "passed");
   assert.equal((await fs.stat(path.join(directory, "accounting.png"))).size, 100);
   assert.equal(run.isClosed(), true);
+});
+
+test("a ready shell cannot capture before its configured loaded-data text appears", { timeout: 5000 }, async (t) => {
+  const directory = await temporaryDirectory(t);
+  const waitingForData = deferred();
+  const dataVisible = deferred();
+  t.after(() => dataVisible.resolve());
+  let captured = false;
+  let closed = false;
+  const page = Object.assign(new EventEmitter(), {
+    async route() {},
+    async setViewportSize() {},
+    async goto() {},
+    async waitForSelector() {},
+    async waitForFunction() {},
+    getByText(text) {
+      return {
+        filter() { return this; },
+        first() { return this; },
+        async waitFor() {
+          if (text === "Loaded ledger postings") {
+            waitingForData.resolve();
+            await dataVisible.promise;
+          }
+        }
+      };
+    },
+    async evaluate() { return 100; },
+    locator() { return { async evaluateAll() { return []; } }; },
+    url() { return "http://localhost/workstation/accounting"; },
+    async screenshot({ path: file }) {
+      captured = true;
+      const image = Buffer.alloc(100);
+      await fs.writeFile(file, image);
+      return image;
+    }
+  });
+  const browser = {
+    async newContext() {
+      return {
+        async newPage() { return page; },
+        async close() { closed = true; }
+      };
+    }
+  };
+  const run = captureRouteWithRetries(
+    browser,
+    { name: "accounting", path: "/accounting", waitForText: "Ledger", waitForTexts: ["Loaded ledger postings"] },
+    () => ({ assertNoUnexpectedRequests() {} }),
+    directory,
+    "http://localhost/workstation",
+    {}, 50, 1, 100, 1000, 1, () => {}
+  );
+  await waitingForData.promise;
+  assert.equal(captured, false, "Heading and layout readiness must not accept an unfinished data region");
+  assert.equal(closed, false, "The page must stay open for its loaded-data assertion");
+  dataVisible.resolve();
+  assert.equal((await run).status, "passed");
+  assert.equal(captured, true);
+  assert.equal(closed, true);
 });
 
 test("a context close failure preserves the original render error", async (t) => {
@@ -188,4 +633,489 @@ test("readiness reports spawn errors and removes its child listeners", async (t)
   await assert.rejects(waitForServer(url, 100, child, []), /Dev server could not start: spawn npm ENOENT/);
   assert.equal(child.listenerCount("exit"), 0);
   assert.equal(child.listenerCount("error"), 0);
+});
+
+function kpiCapture(route, value, { scope = '{"accountId":"paper","source":"live"}', display = value, scenario, revision = null } = {}) {
+  return {
+    name: route.slice(1), route, status: "passed", scenario,
+    kpis: [{ id: "portfolio.open-positions", scope, value, display, revision }]
+  };
+}
+
+test("KPI consistency detects cross-route raw and displayed value differences", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    kpiCapture("/settings", "5"),
+    kpiCapture("/trading", "2", { display: "2 positions" })
+  ]);
+  assert.equal(result.observationCount, 3);
+  assert.equal(result.comparisonCount, 2);
+  assert.equal(result.conflicts.length, 2);
+  assert.equal(result.conflicts[0].previous.route, "/portfolio");
+  assert.equal(result.conflicts[0].current.route, "/settings");
+  assert.equal(result.conflicts[1].current.display, "2 positions");
+});
+
+test("KPI consistency canonicalizes scope keys and accepts matching values", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    kpiCapture("/settings", "2", { scope: '{"source":"live","accountId":"paper"}' })
+  ]);
+  assert.equal(result.comparisonCount, 1);
+  assert.deepEqual(result.conflicts, []);
+});
+
+test("KPI consistency keeps accounts, sources, runs, currencies, datasets and read revisions separate", () => {
+  const result = checkKpiConsistency([
+    kpiCapture("/portfolio", "2"),
+    ...[
+      { scope: '{"accountId":"other","source":"live"}' },
+      { scope: '{"accountId":"paper","source":"retained","runId":42}' },
+      { scope: '{"accountId":"paper","source":"retained","runId":43}' },
+      { scope: '{"accountId":"paper","source":"live","currency":"EUR"}' },
+      { scenario: "portfolio.degraded" },
+      { revision: "snapshot-2" }
+    ].map((options, index) => kpiCapture(`/route-${index}`, "5", options)),
+    { ...kpiCapture("/failed", "9"), status: "failed" }
+  ]);
+  assert.equal(result.observationCount, 7);
+  assert.equal(result.comparisonCount, 0);
+  assert.deepEqual(result.conflicts, []);
+});
+
+test("KPI collection rejects missing and invalid scope contracts", async () => {
+  const page = (snapshot) => ({ locator: () => ({ evaluateAll: async () => [snapshot] }) });
+  const valid = { ...kpiCapture("/portfolio", "2").kpis[0], renderedDisplay: "2" };
+  assert.deepEqual(await collectKpiSnapshots(page(valid)), [valid]);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, display: null })), /Incomplete KPI/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, scope: "live" })), /invalid scope JSON/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, scope: "[]" })), /must be a JSON object/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, renderedDisplay: null })), /missing \[data-kpi-rendered-value\]/);
+  await assert.rejects(collectKpiSnapshots(page({ ...valid, renderedDisplay: "5" })), /does not match its rendered value '5'/);
+});
+
+test("KPI collection reads the rendered value independently of its metadata", async (t) => {
+  const previousGetComputedStyle = globalThis.getComputedStyle;
+  globalThis.getComputedStyle = () => ({ visibility: "visible" });
+  t.after(() => {
+    if (previousGetComputedStyle) globalThis.getComputedStyle = previousGetComputedStyle;
+    else delete globalThis.getComputedStyle;
+  });
+  const attributes = {
+    "data-kpi-id": "portfolio.open-positions",
+    "data-kpi-scope": "{}",
+    "data-kpi-value": "2",
+    "data-kpi-display": "2"
+  };
+  let renderedText = "  2  ";
+  const element = {
+    getClientRects: () => [{}],
+    getAttribute: (key) => attributes[key] ?? null,
+    querySelector(selector) {
+      assert.equal(selector, "[data-kpi-rendered-value]");
+      return { textContent: renderedText };
+    }
+  };
+  const page = { locator: () => ({ evaluateAll: async (callback) => callback([element]) }) };
+  assert.equal((await collectKpiSnapshots(page))[0].renderedDisplay, "2");
+  renderedText = "5";
+  await assert.rejects(collectKpiSnapshots(page), /does not match its rendered value '5'/);
+});
+
+test("KPI collection excludes closed disclosure contents even when Chromium retains layout boxes", async (t) => {
+  const previousGetComputedStyle = globalThis.getComputedStyle;
+  globalThis.getComputedStyle = () => ({ visibility: "visible" });
+  t.after(() => {
+    if (previousGetComputedStyle) globalThis.getComputedStyle = previousGetComputedStyle;
+    else delete globalThis.getComputedStyle;
+  });
+  let open = false;
+  let inSummary = false;
+  const details = {
+    tagName: "DETAILS", parentElement: null,
+    hasAttribute: () => open,
+    querySelector: () => ({ contains: () => inSummary })
+  };
+  const attributes = {
+    "data-kpi-id": "portfolio.open-positions", "data-kpi-scope": "{}",
+    "data-kpi-value": "2", "data-kpi-display": "2"
+  };
+  const element = {
+    parentElement: details,
+    getClientRects: () => [{}],
+    getAttribute: (key) => attributes[key] ?? null,
+    querySelector: () => ({ textContent: "2" })
+  };
+  const page = { locator: () => ({ evaluateAll: async (callback) => callback([element]) }) };
+  assert.deepEqual(await collectKpiSnapshots(page), []);
+  open = true;
+  assert.equal((await collectKpiSnapshots(page)).length, 1);
+  open = false;
+  inSummary = true;
+  assert.equal((await collectKpiSnapshots(page)).length, 1);
+});
+
+test("rendered identifiers are reported once each, whatever their case", () => {
+  const guid = "53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+  const issues = findCaptureContentIssues(
+    `Selected 2026-05 / ${guid}\nFund account ${guid.toUpperCase()}\nBook 00000000-0000-0000-0000-0000000000aa`
+  );
+  assert.deepEqual(issues, [
+    { kind: "opaque-identifier", excerpt: guid },
+    { kind: "opaque-identifier", excerpt: "00000000-0000-0000-0000-0000000000aa" }
+  ]);
+  // Readable codes, dates and partial hex are not identifiers.
+  assert.deepEqual(findCaptureContentIssues("Period 2026-05 · fund-alpha · deadbeef-cafe"), []);
+});
+
+test("request paths and words about the system are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues(
+      "Recurring queue unavailable: Request failed for /api/ledger/journal-automation/recurring/occurrences?fundProfileId=x (500)\n"
+      + "Strategy Lane · PlotTool\nNo payload is available.\nLegacy pack mutations are retired.\nCaller-visible Reporting records"
+    ),
+    [
+      { kind: "api-path", excerpt: "/api/ledger/journal-automation/recurring/occurrences?fundProfileId=x" },
+      { kind: "internal-term", excerpt: "Lane" },
+      { kind: "internal-term", excerpt: "payload" },
+      { kind: "internal-term", excerpt: "mutations" },
+      { kind: "internal-term", excerpt: "Caller-visible" }
+    ]
+  );
+  // Words that merely contain a banned term, and a path that is not a request path, are fine.
+  assert.deepEqual(findCaptureContentIssues("Planet · explanation · permutation · Rapid API usage · api/keys"), []);
+});
+
+test("slug-shaped record identifiers are reported and ordinary compounds are not", () => {
+  for (const slug of ["run-dev-1", "default-fund", "entity-fund-alpha", "sec-dev-001", "investor-anchor-lp", "cfo-1"]) {
+    assert.equal(isSlugIdentifier(slug), true, slug);
+  }
+  for (const compound of [
+    "as-of", "read-only", "point-in-time", "end-of-day", "fund-level", "account-period", "tier-1", "phase-2",
+    "rule-144a", "mark-to-market", "strat-mean-reversion", "fund"
+  ]) {
+    assert.equal(isSlugIdentifier(compound), false, compound);
+  }
+  assert.deepEqual(
+    findCaptureContentIssues("Fund: default-fund, Entity: entity-fund-alpha as-of 2026-06-30 (read-only), run run-dev-1"),
+    [
+      { kind: "slug-identifier", excerpt: "default-fund" },
+      { kind: "slug-identifier", excerpt: "entity-fund-alpha" },
+      { kind: "slug-identifier", excerpt: "run-dev-1" }
+    ]
+  );
+  // Dates, file names, addresses and upper-case codes are not slugs.
+  assert.deepEqual(findCaptureContentIssues("2026-06-30 · notes-2026.pdf · ops-1@example.com · PO-1 · FL-1"), []);
+});
+
+test("a disabled primary action without a reason is reported from the DOM probe", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Submit approval", { unexplainedDisabledActions: ["Submit approval", "Submit approval", ""] }),
+    [
+      { kind: "disabled-primary-without-reason", excerpt: "Submit approval" },
+      { kind: "disabled-primary-without-reason", excerpt: "(unlabelled button)" }
+    ]
+  );
+  const excused = partitionCaptureContentIssues("", {
+    allowedContentIssues: [{ kind: "disabled-primary-without-reason", reason: "Reason is shown inline beside the button." }]
+  }, { unexplainedDisabledActions: ["Add symbol set"] });
+  assert.equal(excused.blocking.length, 0);
+  assert.equal(excused.allowed.length, 1);
+});
+
+test("a status bar that contradicts the page's freshness is reported", () => {
+  const contradiction = 'status bar "Sync up to date Workspace Portfolio" vs page "Freshness Needs review Stale · 187d ago"';
+  assert.deepEqual(
+    findCaptureContentIssues("Portfolio", { statusContradictions: [contradiction] }),
+    [{ kind: "status-contradiction", excerpt: contradiction }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Portfolio", { statusContradictions: [] }), []);
+});
+
+test("a clipped status badge is reported once per badge text", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Reconciliation", { truncatedBadges: ["Open", "Open", "Defaults or saved preferences active"] }),
+    [
+      { kind: "truncated-badge", excerpt: "Open" },
+      { kind: "truncated-badge", excerpt: "Defaults or saved preferences active" }
+    ]
+  );
+  assert.deepEqual(findCaptureContentIssues("Reconciliation", { truncatedBadges: [] }), []);
+});
+
+test("a detail panel that clips content without a cue is reported once per panel", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Portfolio", { clippedDetailPanels: ["Holding detail", "Holding detail"] }),
+    [{ kind: "detail-rail-clipped", excerpt: "Holding detail" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Portfolio", { clippedDetailPanels: [] }), []);
+});
+
+test("overlapping chart labels are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("NAV", { overlappingChartLabels: ['"Sep \'26" overlaps "Oct \'26"'] }),
+    [{ kind: "chart-label-overlap", excerpt: '"Sep \'26" overlaps "Oct \'26"' }]
+  );
+});
+
+test("a Latency term followed by a clock time or Never is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Plaid\nLatency\nNever\nAlpaca paper\nLatency\nJul 13, 06:55 PM UTC\nYahoo Finance\nLatency\nnever"),
+    [
+      { kind: "latency-not-duration", excerpt: "Latency: Never" },
+      { kind: "latency-not-duration", excerpt: "Latency: Jul 13, 06:55 PM UTC" }
+    ]
+  );
+});
+
+test("a reported latency, its sentinel and other latency labels are not reported", () => {
+  const clean = [
+    "Latency\n18ms p50",
+    "Latency\nLatency not reported",
+    "LATENCY\n—",
+    "Latency / Last Response\nNever",
+    "P99 LATENCY\n12ms",
+    "Last successful evidence\nNever",
+    "Latency statistics: The requested Meridian data is unavailable."
+  ];
+  for (const text of clean) {
+    assert.deepEqual(findCaptureContentIssues(text), [], text);
+  }
+});
+
+test("an unavailable placeholder for an undeclared basis or saved views is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Basis\nBasis unavailable\nSaved views unavailable. You can continue reviewing this table.\nBasis unavailable"),
+    [
+      { kind: "unavailable-placeholder", excerpt: "Basis unavailable" },
+      { kind: "unavailable-placeholder", excerpt: "Saved views unavailable" }
+    ]
+  );
+});
+
+test("a declared-by-source basis and other unavailable notices are not reported as placeholders", () => {
+  const clean = ["Basis\nNot declared by source", "Audit trail unavailable", "Entity name unavailable", "Timestamp unavailable"];
+  for (const text of clean) {
+    assert.deepEqual(findCaptureContentIssues(text), [], text);
+  }
+});
+
+test("the latency and placeholder rules are known kinds that a capture excuses only with a reason", () => {
+  for (const kind of ["latency-not-duration", "unavailable-placeholder"]) {
+    assert.ok(CAPTURE_CONTENT_ISSUE_KINDS.includes(kind), kind);
+    assert.deepEqual([...collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind, reason: "Contract gap." }] })], [kind]);
+    assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind }] }).size, 0);
+    assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind, reason: "  " }] }).size, 0);
+  }
+  assert.deepEqual(
+    CAPTURE_CONTENT_ISSUE_KINDS.slice(CAPTURE_CONTENT_ISSUE_KINDS.indexOf("slug-identifier"), CAPTURE_CONTENT_ISSUE_KINDS.indexOf("slug-identifier") + 3),
+    ["slug-identifier", "latency-not-duration", "unavailable-placeholder"]
+  );
+  const message = describeCaptureContentIssues("web-data-workspace", [{ kind: "latency-not-duration", excerpt: "Latency: Never" }]);
+  assert.match(message, /latency-not-duration "Latency: Never"/);
+  assert.match(message, /show latency only as a duration/);
+  assert.match(message, /leave an undeclared basis off the strip/);
+  assert.match(message, /missing fixture/);
+});
+
+test("a count of one before a plural noun is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("1 ROWS\n1 templates · 2 jobs\nShowing 1 packages.\n(1 checks)").map((issue) => issue.excerpt),
+    ["1 ROWS", "1 templates", "1 packages", "1 checks"]
+  );
+});
+
+test("correct singulars, larger counts and verbs are not reported as plural mistakes", () => {
+  const clean = [
+    "1 row", "11 rows", "21 rows", "0.1 rows", "$1 fees", "2026-01-1 runs", "1 of 4 gates passed",
+    "Slice 1 uses the configured provider", "Step 1 needs review", "1 business day", "1 status",
+    "1 basis", "1 series", "1 provider blocks dependent workflows", "Tier 1 requires approval",
+    // A plural-form modifier inside a singular phrase is correct.
+    "1 operations continuity workflow loaded.", "1 securities account", "1 sales order",
+    // A ratio counts the whole set.
+    "1 of 1 loaded breaks", "Showing 1 of 1 breaks", "Step 1 fails."
+  ].join("\n");
+  assert.deepEqual(findCaptureContentIssues(clean), []);
+  assert.deepEqual(findCaptureContentIssues(""), []);
+  assert.deepEqual(findCaptureContentIssues(null), []);
+});
+
+test("a capture is only excused from a content rule it names with a reason", () => {
+  const text = "1 rows · 53bf0251-17f6-4fb7-8dbe-6fb4966e2749";
+  assert.equal(partitionCaptureContentIssues(text, { name: "plain" }).blocking.length, 2);
+
+  const excused = partitionCaptureContentIssues(text, {
+    name: "excused",
+    allowedContentIssues: [{ kind: "opaque-identifier", reason: "Contract exposes no display name yet." }]
+  });
+  assert.deepEqual(excused.allowed.map((issue) => issue.kind), ["opaque-identifier"]);
+  assert.deepEqual(excused.blocking.map((issue) => issue.kind), ["singular-count-plural-noun"]);
+
+  // An exception with no reason, or for an unknown rule, excuses nothing.
+  assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind: "opaque-identifier" }] }).size, 0);
+  assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: [{ kind: "typo", reason: "x" }] }).size, 0);
+  assert.equal(collectAllowedContentIssueKinds({ allowedContentIssues: "opaque-identifier" }).size, 0);
+});
+
+test("the content-issue failure names the route, the excerpts and the remedy", () => {
+  const issues = Array.from({ length: 7 }, (_, index) => ({ kind: "singular-count-plural-noun", excerpt: `1 thing${index}s` }));
+  const message = describeCaptureContentIssues("web-example", issues);
+  assert.match(message, /^Capture web-example renders 7 operator-copy issue\(s\)/);
+  assert.match(message, /singular-count-plural-noun "1 thing0s"/);
+  assert.match(message, /and 2 more/);
+  assert.match(message, /allowedContentIssues/);
+});
+
+function holdingsCapture(table, headline = { status: "available", value: "37699", currency: "USD" }, display = "$37,699") {
+  return {
+    name: "portfolio", route: "/portfolio", status: "passed",
+    kpis: headline ? [{ id: "portfolio.total-exposure", value: JSON.stringify(headline), display }] : [],
+    holdingsTables: [{ loadedCount: 2, total: "37699", totalCurrency: "USD", rowAmounts: ["7159", "30540"], rowCurrencies: ["USD", "USD"], ...table }]
+  };
+}
+
+test("holdings total check passes when table rows, table total and headline agree", () => {
+  assert.deepEqual(checkHoldingsTotals([holdingsCapture({})]), { checkedCount: 1, conflicts: [] });
+  assert.deepEqual(checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159.5", "30539.50"] })]).conflicts, []);
+});
+
+test("holdings total check flags a table that disagrees with the headline figure", () => {
+  const result = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", "30000"], total: "37159" })]);
+  assert.equal(result.conflicts.length, 1);
+  assert.match(result.conflicts[0].problem, /headline figure '\$37,699'/);
+  const stale = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", "30000"] })]);
+  assert.deepEqual(stale.conflicts.map((conflict) => conflict.problem.includes("table total")), [true, false]);
+});
+
+test("holdings total check flags a headline shown over rows that cannot be summed", () => {
+  const missing = checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159", ""], total: null })]);
+  assert.match(missing.conflicts[0].problem, /cannot be summed/);
+  const mixed = checkHoldingsTotals([holdingsCapture({ rowCurrencies: ["USD", "EUR"], total: null }, { status: "unavailable", value: null, currency: null }, "Unavailable")]);
+  assert.deepEqual(mixed.conflicts, []);
+});
+
+test("holdings total check skips filtered tables and failed captures", () => {
+  assert.equal(checkHoldingsTotals([holdingsCapture({ rowAmounts: ["7159"], rowCurrencies: ["USD"] })]).checkedCount, 0);
+  assert.equal(checkHoldingsTotals([{ ...holdingsCapture({ rowAmounts: ["1", "2"] }), status: "failed" }]).checkedCount, 0);
+});
+
+test("content check flags the article 'a' before a vowel sound", () => {
+  const issues = findCaptureContentIssues("Ops Desk has a Operator session. Add a entry or a Admin. Class A income, a user, a one-time code, a European fund, an owner, data access.");
+  assert.deepEqual(issues.filter((issue) => issue.kind === "article-before-vowel").map((issue) => issue.excerpt),
+    ["a Operator", "a entry", "a Admin"]);
+});
+
+test("the status bar may not say up to date while the masthead or the page needs review", () => {
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: null }), []);
+  assert.deepEqual(findStatusContradictions({ statusBar: "Sync connected Freshness Providers 1 of 4 healthy", pageFreshness: "Stale", shellFreshness: "Providers 1 of 4 healthy" }), []);
+  assert.deepEqual(
+    findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: null, shellFreshness: "Providers 1 of 4 healthy" }),
+    ['status bar "Sync up to date" vs masthead "Providers 1 of 4 healthy"']
+  );
+  assert.equal(findStatusContradictions({ statusBar: "Sync up to date", pageFreshness: "Stale", shellFreshness: "Providers" }).length, 2);
+});
+
+test("a positions table that does not name its source is reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Trading", { unsourcedPositionTables: ["Session positions evidence", "Session positions evidence"] }),
+    [{ kind: "position-source-missing", excerpt: "Session positions evidence" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Trading", { unsourcedPositionTables: [] }), []);
+});
+
+test("figures sharing a label and population must agree across ids and routes", async () => {
+  const definitions = await loadKpiDefinitions();
+  assert.ok(definitions.some((definition) => definition.id === "system.providers-online"), "shared KPI catalog loads");
+  const kpi = (id, value, population = "Providers in use") => ({ id, value, display: value, population });
+  const capture = (route, kpis, scenario = null) => ({ status: "passed", route, scenario, kpis });
+
+  const conflicting = checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")])
+  ], definitions);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].group, "Providers healthy · Providers in use");
+
+  // The same value, a different dataset, or a different rendered population is not a conflict.
+  assert.equal(checkKpiLabelConsistency([
+    capture("/", [kpi("system.providers-online", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "1 of 4 providers")]),
+    capture("/data", [kpi("data.providers-healthy", "0 of 3 providers")], "stale"),
+    capture("/settings", [kpi("data.providers-healthy", "0 of 3 providers", "Providers visible to you")])
+  ], definitions).conflicts.length, 0);
+});
+
+test("only tables named as positions books must name their source", () => {
+  assert.equal(isPositionsTableLabel("Execution blotter positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper current positions"), true);
+  assert.equal(isPositionsTableLabel("Alpaca paper brokerage accounts"), false);
+  assert.equal(isPositionsTableLabel("Retained account margin position contributions"), false);
+  assert.equal(isPositionsTableLabel(null), false);
+});
+
+test("a repeated unavailable line is reported once with its count; two repeats pass", () => {
+  const text = "Ledger\nEntity name unavailable\nEntity name unavailable\nEntity name unavailable\nAge unavailable\nAge unavailable";
+  assert.deepEqual(findRepeatedUnavailableLines(text), ["Entity name unavailable ×3"]);
+  assert.deepEqual(findCaptureContentIssues(text).filter((issue) => issue.kind === "repeated-unavailable"),
+    [{ kind: "repeated-unavailable", excerpt: "Entity name unavailable ×3" }]);
+  assert.deepEqual(findRepeatedUnavailableLines("Basis\nNo data"), []);
+});
+
+test("a declared primary task must start within its limit", () => {
+  const task = { selector: "[aria-label=\"Today queue\"]", maxTop: 600 };
+  assert.equal(describePrimaryTaskPosition(task, 423), null);
+  assert.equal(describePrimaryTaskPosition(task, 1012.4), "[aria-label=\"Today queue\"] starts at 1012px (limit 600px)");
+  assert.equal(describePrimaryTaskPosition(task, null), "[aria-label=\"Today queue\"] not found");
+  assert.equal(describePrimaryTaskPosition(undefined, 2000), null);
+  assert.deepEqual(findCaptureContentIssues("Today", { primaryTaskIssues: ["x starts at 900px (limit 600px)"] }),
+    [{ kind: "primary-task-below-fold", excerpt: "x starts at 900px (limit 600px)" }]);
+});
+
+test("one backend failure shows at most the declared number of notices and Retry buttons", () => {
+  assert.deepEqual(describeFailureNotices(1, { alerts: 1, retries: 1 }), []);
+  assert.deepEqual(describeFailureNotices(1, { alerts: 2, retries: 3 }), ["2 alerts (limit 1)", "3 Retry buttons (limit 1)"]);
+  assert.deepEqual(describeFailureNotices(undefined, { alerts: 9, retries: 9 }), []);
+  assert.deepEqual(findCaptureContentIssues("Journal", { failureNoticeIssues: ["2 alerts (limit 1)"] }),
+    [{ kind: "single-failure-notice", excerpt: "2 alerts (limit 1)" }]);
+});
+
+test("one status label renders with one severity across routes", () => {
+  const capture = (route, severityBadges, scenario = null) => ({ status: "passed", route, scenario, severityBadges });
+  const conflicting = checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "review", severity: "blocked" }, { label: "Blocked", severity: "blocked" }])
+  ]);
+  assert.equal(conflicting.conflicts.length, 1);
+  assert.equal(conflicting.conflicts[0].label, "review");
+  assert.equal(checkSeverityLabelConsistency([
+    capture("/", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "review" }]),
+    capture("/settings", [{ label: "Review", severity: "action" }], "stale")
+  ]).conflicts.length, 0);
+});
+
+test("wrapped figures, uncued overflow and monospace prose are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Close", { wrappedDetailValues: ["Jan 1, 2026"], uncuedOverflowTables: ["Positions"], monospaceProse: ["Select a row to inspect"] }),
+    [
+      { kind: "detail-value-wraps", excerpt: "Jan 1, 2026" },
+      { kind: "table-overflow-without-cue", excerpt: "Positions" },
+      { kind: "monospace-prose", excerpt: "Select a row to inspect" }
+    ]
+  );
+});
+
+test("an expanded workspace stays within the sidebar row budget", () => {
+  assert.deepEqual(describeNavRowBudget(7, 5), []);
+  assert.deepEqual(describeNavRowBudget(7, 22), ["22 sidebar sub-rows (limit 7)"]);
+  assert.deepEqual(describeNavRowBudget(undefined, 22), []);
+  assert.deepEqual(findCaptureContentIssues("Accounting", { navRowIssues: ["22 sidebar sub-rows (limit 7)"] }),
+    [{ kind: "nav-row-budget", excerpt: "22 sidebar sub-rows (limit 7)" }]);
+});
+
+test("a chart without a table alternative is reported", () => {
+  assert.deepEqual(findCaptureContentIssues("Data", { chartsWithoutTables: ["Provider evidence age", ""] }), [
+    { kind: "chart-without-table", excerpt: "Provider evidence age" },
+    { kind: "chart-without-table", excerpt: "(unlabelled chart)" }
+  ]);
 });

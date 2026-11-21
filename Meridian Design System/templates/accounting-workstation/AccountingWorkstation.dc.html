@@ -1,107 +1,158 @@
 <!DOCTYPE html>
-<html data-theme="light">
+<html lang="en" data-theme="light">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Investigate · Accounting Workstation — Meridian</title>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Accounting Workstation" description="Books workstation — general ledger, chart of accounts, trial balance, reconciliation, FX revaluation, gated period close, statements, tax lots, and a prefilled journal-entry drawer" -->
+<!-- @template name="Investigate · Accounting Workstation" description="Books workstation — GL, trial balance, reconciliation, FX reval, gated period close, consolidation. Entity scope is a path in the ownership tree (group ▸ fund ▸ SPV); group scope renders consolidated figures with the elimination layer disclosed, each elimination tracing to its JE pair. Journal posting is the GL screen's compose mode (view=gl&compose=1); a GL row opens its whole entry in the inspector drawer, where the only correction the books allow is a reversal." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="accounting-workstation">
 <style>html,body{margin:0;padding:0;height:100%;}</style>
 </helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Ledger" hint-size="100%,780px">
 <div data-screen-label="Accounting workstation" style="height:100vh;display:flex;flex-direction:column;background:var(--bg);font-family:var(--font-body);color:var(--text-secondary);font-size:13px;">
-  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.WorkstationTopbar" module-label="Accounting" environment="{{ envLabel }}" clock="14:32:08 UTC" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationTopbar" module-label="General Ledger" environment="{{ envLabel }}" brand-src="../../assets/brand/meridian-mark-light.svg" hint-size="100%,48px"></x-import>
   <sc-if value="{{ readOnly }}" hint-placeholder-val="{{ false }}">
-    <x-import component-from-global-scope="MeridianDesignSystem_4f61be.ReadOnlyBanner" message="{{ readOnlyMsg }}" hint-size="100%,32px"></x-import>
+    <x-import component-from-global-scope="MeridianDesignSystem_205d17.ReadOnlyBanner" message="{{ readOnlyMsg }}" hint-size="100%,32px"></x-import>
   </sc-if>
   <div style="display:flex;flex:1;min-height:0;">
-    <x-import component-from-global-scope="MeridianDesignSystem_4f61be.NavRail" active-id="{{ navActive }}" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
+    <x-import component-from-global-scope="MeridianDesignSystem_205d17.NavRail" active-id="{{ navActive }}" sections="{{ navSections }}" on-select="{{ onNav }}" hint-size="224px,100%"></x-import>
     <main style="flex:1;min-width:0;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:12px;">
       <header style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
         <h1 style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);">Accounting</h1>
-        <x-import component-from-global-scope="MeridianDesignSystem_4f61be.Badge" variant="{{ envVariant }}" dot="{{ true }}" hint-size="56px,18px">{{ envLabel }}</x-import>
+        <x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ envVariant }}" dot="{{ true }}" hint-size="56px,18px">{{ envLabel }}</x-import>
         <span style="font-family:var(--font-data);font-size:11px;color:var(--text-muted);">{{ periodLine }}</span>
         <div style="flex:1;"></div>
-        <span style="flex:none;white-space:nowrap;">
-          <x-import component-from-global-scope="MeridianDesignSystem_4f61be.Button" variant="ghost" size="sm" on-click="{{ onRunClose }}" hint-size="92px,28px">Period close</x-import>
+        <span style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.03em;color:var(--text-muted);">Depth</span>
+        <span style="flex:none;">
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.SegmentedControl" size="sm" value="{{ detail }}" on-change="{{ onDetail }}" options="{{ detailOptions }}" hint-size="140px,26px"></x-import>
+        </span>
+        <span style="flex:none;min-width:280px;">
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.Select" placeholder="Entity scope" options="{{ scopeOptions }}" value="{{ scope }}" on-change="{{ onScope }}" hint-size="280px,28px"></x-import>
         </span>
         <span style="flex:none;white-space:nowrap;">
-          <x-import component-from-global-scope="MeridianDesignSystem_4f61be.Button" variant="primary" size="sm" on-click="{{ onNewEntry }}" disabled="{{ readOnly }}" hint-size="132px,28px">New journal entry</x-import>
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onRunClose }}" hint-size="92px,28px">Period close</x-import>
+        </span>
+        <span style="flex:none;white-space:nowrap;">
+          <x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onNewEntry }}" disabled="{{ postDisabled }}" hint-size="132px,28px">New journal entry</x-import>
         </span>
       </header>
+      <x-import component-from-global-scope="MeridianDesignSystem_205d17.Tabs" tabs="{{ viewTabs }}" value="{{ viewTabIndex }}" on-change="{{ onViewTab }}" hint-size="100%,32px"></x-import>
+
 
       <sc-if value="{{ showGl }}" hint-placeholder-val="{{ true }}">
         <x-import component="AcctLedgerView" from="./views/LedgerView.jsx"
           rows="{{ glRows }}" last-ref="{{ glLastRef }}" openings="{{ glOpenings }}" initial-account="{{ glSeed }}"
+          on-inspect="{{ onInspect }}" selected-ref="{{ inspectRef }}"
           hint-size="100%,540px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showAccount }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctAccountSheetView" from="./views/AccountSheetView.jsx"
+          code="{{ accountCode }}" coa="{{ coaNodes }}" ledger="{{ glRows }}" openings="{{ glOpenings }}"
+          rec-left="{{ recLeft }}" rec-right="{{ recRight }}" entity="{{ scope }}" locked="{{ readOnly }}"
+          on-inspect="{{ onInspect }}" on-post-to="{{ onPostTo }}" on-view-ledger="{{ onViewLedger }}" on-go="{{ onNav }}" on-copy="{{ onCopyRef }}"
+          assurance="{{ assurance }}" balances="{{ balances }}" on-sign="{{ onSign }}"
+          hint-size="100%,720px"></x-import>
       </sc-if>
       <sc-if value="{{ showCoa }}" hint-placeholder-val="{{ false }}">
         <x-import component="AcctAccountsView" from="./views/AccountsView.jsx"
-          coa="{{ coaNodes }}" ledger="{{ glRows }}" locked="{{ readOnly }}" on-post-to="{{ onPostTo }}" on-view-ledger="{{ onViewLedger }}"
+          coa="{{ coaNodes }}" ledger="{{ glRows }}" locked="{{ readOnly }}" on-post-to="{{ onPostTo }}" on-view-ledger="{{ onViewLedger }}" on-open-account="{{ onOpenAccount }}"
+          scope-line="{{ coaScopeLine }}" entity-label="{{ coaEntityLabel }}" detail="{{ detail }}" on-reveal="{{ onDetail }}"
           hint-size="100%,540px"></x-import>
       </sc-if>
       <sc-if value="{{ showTb }}" hint-placeholder-val="{{ false }}">
         <x-import component="AcctTrialBalanceView" from="./views/TrialBalanceView.jsx"
-          rows="{{ tbRows }}" as-of="2026-06-30"
+          rows="{{ tbRows }}" as-of="2026-06-30" scope-line="{{ tbScopeLine }}"
+          assurance="{{ assurance }}" balances="{{ balances }}" cert-line="{{ certLine }}" on-open-account="{{ onOpenAccount }}"
           hint-size="100%,540px"></x-import>
       </sc-if>
       <sc-if value="{{ showRecon }}" hint-placeholder-val="{{ false }}">
         <x-import component="AcctReconciliationView" from="./views/ReconciliationView.jsx"
           left="{{ recLeft }}" right="{{ recRight }}" locked="{{ readOnly }}" on-post-accrual="{{ onPostAccrual }}"
+          scope-line="{{ recScopeLine }}" post-scope-locked="{{ postScopeLocked }}"
           hint-size="100%,540px"></x-import>
       </sc-if>
       <sc-if value="{{ showFx }}" hint-placeholder-val="{{ false }}">
         <x-import component="AcctFxRevalView" from="./views/FxRevaluationView.jsx"
           rows="{{ fxRows }}" net-gl="{{ netGl }}" fx-posted="{{ fxPosted }}" fx-ref="{{ fxRef }}" locked="{{ readOnly }}" on-post-reval="{{ onPostReval }}"
+          scope-line="{{ fxScopeLine }}" no-exposure="{{ noFx }}" post-scope-locked="{{ postScopeLocked }}"
           hint-size="100%,480px"></x-import>
       </sc-if>
       <sc-if value="{{ showClose }}" hint-placeholder-val="{{ false }}">
         <x-import component="AcctPeriodCloseView" from="./views/PeriodCloseView.jsx"
           gates="{{ closeGates }}" issues="{{ closeIssues }}" locked="{{ locked }}" can-lock="{{ canLock }}" locked-at="{{ lockedAt }}"
           postings="{{ postingsCount }}" rec-open="{{ recOpenCount }}" fx-posted="{{ fxPosted }}"
+          scope-line="{{ closeScopeLine }}" entity-label="{{ closeEntityLabel }}" detail="{{ detail }}" on-reveal="{{ onDetail }}"
           on-lock="{{ onLock }}" on-reopen="{{ onReopen }}" on-goto="{{ onNav }}"
+          assurance="{{ assurance }}" balances="{{ balances }}" asr-accounts="{{ asrAccounts }}" on-open-account="{{ onOpenAccount }}"
           hint-size="100%,480px"></x-import>
       </sc-if>
       <sc-if value="{{ showStmt }}" hint-placeholder-val="{{ false }}">
         <x-import component="AcctStatementsView" from="./views/StatementsView.jsx"
-          sections="{{ stmtSections }}" total="{{ stmtTotal }}"
+          sections="{{ stmtSections }}" total="{{ stmtTotal }}" title="{{ stmtTitle }}" compare="{{ stmtCompare }}"
           hint-size="100%,540px"></x-import>
+      </sc-if>
+      <sc-if value="{{ showConsol }}" hint-placeholder-val="{{ false }}">
+        <x-import component="AcctConsolidationView" from="./views/ConsolidationView.jsx"
+          data="{{ consolData }}" eliminations="{{ consolElims }}" scope="{{ scope }}"
+          hint-size="100%,560px"></x-import>
       </sc-if>
       <sc-if value="{{ showLots }}" hint-placeholder-val="{{ false }}">
         <x-import component="AcctTaxLotsView" from="./views/TaxLotsView.jsx"
-          lots="{{ lotRows }}" as-of="2026-06-30"
+          lots="{{ lotRows }}" as-of="2026-06-30" scope-line="{{ lotScopeLine }}"
           hint-size="100%,480px"></x-import>
       </sc-if>
     </main>
   </div>
-  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBar" items="{{ statusItems }}" hint-size="100%,28px"></x-import>
 
   <x-import component="AcctJournalDrawer" from="./views/JournalDrawer.jsx"
     open="{{ drawerOpen }}" on-close="{{ onDrawerClose }}" accounts="{{ acctOptions }}"
     seed-header="{{ seedHeader }}" seed-lines="{{ seedLines }}" seed-key="{{ drawerSeq }}"
     note="{{ drawerNote }}" note-title="{{ drawerNoteTitle }}" on-post="{{ onPostEntry }}"
     hint-size="0px,0px"></x-import>
-  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.CommandPalette" commands="{{ paletteCommands }}" hint-size="0px,0px"></x-import>
-  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.HotkeysProvider" bindings="{{ hotkeyBindings }}" hint-size="0px,0px"></x-import>
-  <x-import component-from-global-scope="MeridianDesignSystem_4f61be.ToastProvider" hint-size="0px,0px"></x-import>
+  <x-import component="AcctEntryInspector" from="./views/EntryInspector.jsx"
+    entry-ref="{{ inspectRef }}" rows="{{ glRows }}" entity="{{ scope }}" reversed-by="{{ inspectReversedBy }}"
+    reverse-disabled="{{ reverseDisabled }}" reverse-reason="{{ reverseReason }}"
+    on-reverse="{{ onReverse }}" on-view-account="{{ onInspectAccount }}" on-open-account="{{ onOpenAccount }}" on-copy-ref="{{ onCopyRef }}"
+    on-close="{{ onInspectClose }}" hint-size="0px,0px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.CommandPalette" commands="{{ paletteCommands }}" resolve="{{ paletteResolve }}" scope="accounting-workstation" hint-size="0px,0px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.HotkeysProvider" bindings="{{ hotkeyBindings }}" hint-size="0px,0px"></x-import>
+  <x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
 </div>
+</x-import>
 </x-dc>
-<script type="text/x-dc" data-dc-script data-props="{
-  &quot;environment&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;PAPER&quot;, &quot;tsType&quot;: &quot;\&quot;PAPER\&quot; | \&quot;LIVE\&quot; | \&quot;FIXTURE\&quot;&quot;, &quot;options&quot;: [&quot;PAPER&quot;, &quot;LIVE&quot;, &quot;FIXTURE&quot;], &quot;section&quot;: &quot;Session&quot; },
-  &quot;role&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;operator&quot;, &quot;tsType&quot;: &quot;\&quot;operator\&quot; | \&quot;viewer\&quot;&quot;, &quot;options&quot;: [&quot;operator&quot;, &quot;viewer&quot;], &quot;section&quot;: &quot;Session&quot; },
-  &quot;density&quot;: { &quot;editor&quot;: &quot;enum&quot;, &quot;default&quot;: &quot;default&quot;, &quot;tsType&quot;: &quot;string&quot;, &quot;options&quot;: [&quot;default&quot;, &quot;compact&quot;, &quot;terminal&quot;, &quot;spacious&quot;], &quot;section&quot;: &quot;Display&quot; }
-}">
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;detail&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;full&quot;,&quot;options&quot;:[&quot;summary&quot;,&quot;full&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;view&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;tb&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;gl&quot;,&quot;account&quot;,&quot;coa&quot;,&quot;tb&quot;,&quot;recon&quot;,&quot;fx&quot;,&quot;close&quot;,&quot;stmt&quot;,&quot;consol&quot;,&quot;lots&quot;],&quot;section&quot;:&quot;View&quot;},&quot;account&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;1100&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;View&quot;},&quot;compose&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;View&quot;},&quot;entity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;MER-FUND-I&quot;,&quot;tsType&quot;:&quot;\&quot;MER-GRP\&quot; | \&quot;MER-FUND-I\&quot; | \&quot;MER-SPV-ALPHA\&quot; | \&quot;MER-MGMT\&quot;&quot;,&quot;options&quot;:[&quot;MER-GRP&quot;,&quot;MER-FUND-I&quot;,&quot;MER-SPV-ALPHA&quot;,&quot;MER-MGMT&quot;],&quot;section&quot;:&quot;Scope&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;tsType&quot;:&quot;\&quot;PAPER\&quot; | \&quot;LIVE\&quot; | \&quot;FIXTURE\&quot;&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;section&quot;:&quot;Session&quot;},&quot;role&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;operator&quot;,&quot;tsType&quot;:&quot;\&quot;operator\&quot; | \&quot;viewer\&quot;&quot;,&quot;options&quot;:[&quot;operator&quot;,&quot;viewer&quot;],&quot;section&quot;:&quot;Session&quot;},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
 class Component extends DCLogic {
+  // Chrome tweaks — theme and density drive the design system's own token scopes
+  // (<html data-theme>, <body data-theme-density>); environment drives the badge that
+  // ds-base.js guarantees on every surface.
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+
   // Shared store for the workstation: the DC template mounts the shell and one view module
   // per nav id (views/*.jsx); this class owns cross-view state (ledger, reconciliation,
   // period lock, journal drawer) and passes it down as x-import props.
   state = {
     ready: false,
     view: "gl",
+    // Reading depth (4.1): the screen owns it and hands it to the views; nothing reads
+    // the context (guidelines/PROGRESSIVE_DISCLOSURE.md).
+    detail: null,
+    scope: "MER-FUND-I",
     ledger: [],
     recLeft: [],
     recRight: [],
@@ -117,36 +168,86 @@ class Component extends DCLogic {
     fxPosted: false,
     fxRef: null,
     glSeed: "all",
+    // Drill ladder tier 3 — the Account Sheet (O-2): an account as a destination. Deep link
+    // ?view=account&account=1100; every rendered account code in the suite opens it.
+    accountCode: "1100",
+    // Assurance (4.3 · O-4): certification carried per account × period, each signature bound to
+    // the balance it vouched for. Seeded so the matrix has texture: cash prepared + reviewed,
+    // receivable prepared, equities CERTIFIED — against the balance before JE-1080 landed, so the
+    // signature is void on arrival and the lock gate names it.
+    assurance: {
+      "1100": { signatures: [
+        { stage: "prepared", actor: "R. Chen", authority: "Preparer", at: "2026-06-30T18:02:11Z", balance: 96881.5 },
+        { stage: "reviewed", actor: "M. Okafor", authority: "Reviewer", at: "2026-06-30T19:40:53Z", balance: 96881.5 } ] },
+      "1200": { signatures: [{ stage: "prepared", actor: "R. Chen", authority: "Preparer", at: "2026-06-30T18:14:37Z", balance: 42580 }] },
+      "1310": { signatures: [
+        { stage: "prepared", actor: "R. Chen", authority: "Preparer", at: "2026-06-15T17:20:00Z", balance: 819882 },
+        { stage: "reviewed", actor: "M. Okafor", authority: "Reviewer", at: "2026-06-15T18:05:12Z", balance: 819882 },
+        { stage: "certified", actor: "A. Patel", authority: "Controller", at: "2026-06-15T18:31:44Z", balance: 819882 } ] },
+      "2100": { signatures: [{ stage: "prepared", actor: "R. Chen", authority: "Preparer", at: "2026-06-30T18:22:09Z", balance: -210000 }] },
+      "3100": { signatures: [
+        { stage: "prepared", actor: "R. Chen", authority: "Preparer", at: "2026-06-30T18:25:40Z", balance: -700000 },
+        { stage: "reviewed", actor: "M. Okafor", authority: "Reviewer", at: "2026-06-30T19:44:02Z", balance: -700000 },
+        { stage: "certified", actor: "A. Patel", authority: "Controller", at: "2026-06-30T20:10:19Z", balance: -700000 } ] },
+    },
+    // Drill ladder tier 2 — the selected posting's whole entry, and the reversals posted
+    // against it (origRef → reversal ref). Books are corrected by reversal, never by edit.
+    inspectRef: null,
+    reversals: {},
   };
 
   componentDidMount() {
+    this.applyChrome();
+    try {
+      const u = new URL(window.location.href);
+      // A deep link is an explicit ask; the tweak default only applies when the URL says nothing.
+      const v = u.searchParams.get("view") ?? this.props.view;
+      if (["gl", "coa", "tb", "recon", "fx", "close", "stmt", "lots", "consol", "account"].includes(v)) this.setState({ view: v });
+      const acct = u.searchParams.get("account") ?? this.props.account;
+      if (acct && /^\d{4}$/.test(String(acct))) this.setState({ accountCode: String(acct) });
+      const ent = u.searchParams.get("entity") ?? this.props.entity;
+      if (["MER-GRP", "MER-FUND-I", "MER-SPV-ALPHA", "MER-MGMT"].includes(ent)) this.setState({ scope: ent });
+      const compose = u.searchParams.get("compose");
+      if (compose === null ? this.props.compose : compose === "1" || compose === "true") this._composeOnReady = true;
+      // A break that was resolved by an entry links straight to it (4.4 · E-2): arrive with the
+      // entry inspector already open on the right entry rather than on the ledger's first row.
+      const entry = u.searchParams.get("entry");
+      if (entry && /^JE-\d+$/.test(entry)) this.setState({ view: "gl", glSeed: "all", inspectRef: entry });
+    } catch (e) {}
     const waitBundle = new Promise((res) => {
-      const tick = () => (window.MeridianDesignSystem_4f61be ? res() : setTimeout(tick, 40));
+      const tick = () => (window.MeridianDesignSystem_205d17 ? res() : setTimeout(tick, 40));
       tick();
     });
     Promise.all([import("./data.js"), waitBundle]).then(([m]) => {
       this.DATA = m;
-      const M = window.MeridianDesignSystem_4f61be.Money;
+      const M = window.MeridianDesignSystem_205d17.Money;
       const netGl = M.roundMoney(
-        M.sumAmounts(m.FX_ROWS.map((r) => M.fxRevalue(r.local, r.bookedRate, r.currentRate).gainLoss)), 2);
+        M.sumAmounts(m.fxRows.map((r) => M.fxRevalue(r.local, r.bookedRate, r.currentRate).gainLoss)), 2);
       this.setState({
         ready: true,
         netGl,
-        ledger: m.SEED_LEDGER.map((x) => ({ ...x })),
-        recLeft: m.REC_LEFT.map((x) => ({ ...x })),
-        recRight: m.REC_RIGHT.map((x) => ({ ...x })),
+        ledger: m.seedLedger.map((x) => ({ ...x })),
+        recLeft: m.reconciliationLeft.map((x) => ({ ...x })),
+        recRight: m.reconciliationRight.map((x) => ({ ...x })),
       });
+      if (this._composeOnReady) { this._composeOnReady = false; setTimeout(() => this.openDrawer("blank"), 50); }
     });
     this.applyDensity();
   }
-  componentDidUpdate() { this.applyDensity(); }
+  componentDidUpdate(prevProps) {
+    this.applyDensity(); this.applyChrome(); this.nameCrumb();
+    if (prevProps && prevProps.account !== this.props.account && /^\d{4}$/.test(String(this.props.account || ""))) this.setState({ accountCode: String(this.props.account) });
+    if (prevProps && prevProps.view !== this.props.view && this.props.view === "account") this.setState({ view: "account" });
+    if (prevProps && prevProps.entity !== this.props.entity
+      && ["MER-GRP", "MER-FUND-I", "MER-SPV-ALPHA", "MER-MGMT"].includes(this.props.entity)) this.setState({ scope: this.props.entity });
+  }
   applyDensity() {
     const d = this.props.density ?? "default";
     if (d === "default") delete document.body.dataset.themeDensity;
     else document.body.dataset.themeDensity = d;
   }
 
-  M() { return (window.MeridianDesignSystem_4f61be || {}).Money; }
+  M() { return (window.MeridianDesignSystem_205d17 || {}).Money; }
   fmt(v) { const M = this.M(); return M ? M.formatMoney(v, { currency: "USD" }) : String(v); }
   toast(kind, title, detail) {
     const t = window.MeridianToast;
@@ -156,15 +257,150 @@ class Component extends DCLogic {
 
   go = (view) => this.setState((s) => ({ view, glSeed: view === "gl" ? "all" : s.glSeed }));
 
+  setScope = (id) => this.setState({ scope: id });
+
   viewLedgerFor = (code) => {
     const row = this.state.ledger.find((r) => r.account.slice(0, 4) === code);
     this.setState({ glSeed: row ? row.account : "all", view: "gl" });
+  };
+
+  // The inspected entry is the screen's primary selection, so it lives in the URL (4.4 · E-3) —
+  // deep links, a new tab and the Back button all keep the operator's place.
+  syncEntryParam(ref) {
+    try {
+      const u = new URL(window.location.href);
+      if (ref) u.searchParams.set("entry", ref); else u.searchParams.delete("entry");
+      window.history.replaceState(null, "", u);
+    } catch (e) {}
+  }
+  inspect = (ref) => { this.setState({ inspectRef: ref || null }); this.syncEntryParam(ref || null); };
+  closeInspect = () => { this.setState({ inspectRef: null }); this.syncEntryParam(null); };
+
+  copyRef = (ref) => {
+    try { navigator.clipboard.writeText(ref); } catch (e) {}
+    this.toast("success", "Copied " + ref, "Reference on the clipboard.");
+  };
+
+  inspectAccount = (account) => {
+    this.setState({ inspectRef: null, glSeed: account, view: "gl" });
+  };
+
+  // Account as destination: any "1100" or "1100 · Cash" lands on the sheet, URL carried.
+  openAccount = (account) => {
+    const code = String(account || "").slice(0, 4);
+    if (!/^\d{4}$/.test(code)) return;
+    this.setState({ inspectRef: null, drawerOpen: false, accountCode: code, view: "account" });
+    try { const u = new URL(window.location.href); u.searchParams.set("view", "account"); u.searchParams.set("account", code); window.history.replaceState(null, "", u); } catch (e) {}
+  };
+  // Current balance per account (debit-positive, CoA convention): the chart's stated balance plus
+  // whatever the ledger has moved since the fixture was drawn — so a posting after a signature
+  // voids it, as it must.
+  currentBalances() {
+    const D = this.DATA; if (!D) return {};
+    const M = this.M();
+    const net = (rows) => { const out = {}; for (const r of rows) { if (r.status === "void") continue; const c = String(r.account || "").slice(0, 4); out[c] = (out[c] || 0) + (M.toNumber(r.debit) || 0) - (M.toNumber(r.credit) || 0); } return out; };
+    const seed = net(D.seedLedger), now = net(this.state.ledger);
+    const out = {};
+    for (const n of this.accountLeaves()) out[n.code] = M.roundMoney((Number(n.balance) || 0) + ((now[n.code] || 0) - (seed[n.code] || 0)), 2);
+    return out;
+  }
+  materialCodes() {
+    // Material = the balance clears the desk's 50,000.00 threshold, the same figure the
+    // ledger envelopes declare (data.js › materiality.threshold).
+    return this.accountLeaves().filter((n) => Math.abs(Number(n.balance) || 0) >= 50000).map((n) => n.code);
+  }
+  assuranceAccounts() {
+    const mat = new Set(this.materialCodes());
+    return this.accountLeaves().map((n) => ({ code: n.code, name: n.name, type: n.type, material: mat.has(n.code) }));
+  }
+  signAccount = (code) => {
+    const A = (window.MeridianDesignSystem_205d17 || {}).Assurance;
+    if (!A) return;
+    if (this.isReadOnly()) { this.toast("error", "Signing disabled", "The period is locked or you are signed in as viewer."); return; }
+    const bal = this.currentBalances()[code];
+    const cur = A.state(this.state.assurance[code], bal);
+    const next = A.next(cur.stage);
+    if (!next) return;
+    const who = { prepared: ["R. Chen", "Preparer"], reviewed: ["M. Okafor", "Reviewer"], certified: ["A. Patel", "Controller"] }[next];
+    const rec = A.sign(this.state.assurance[code], { actor: who[0], authority: who[1], balance: bal, at: new Date().toISOString() });
+    this.setState((s) => ({ assurance: { ...s.assurance, [code]: rec } }));
+    this.toast("success", A.STAGES.find((x) => x.id === next).label + " · " + code, who[0] + " signed against " + this.fmt(Math.abs(bal)) + (cur.voided ? " — prior signatures were void; the chain restarts." : "."));
+  };
+  accountLeaves() {
+    const D = this.DATA; if (!D) return [];
+    const out = [];
+    const walk = (n) => { if (n.children && n.children.length) n.children.forEach(walk); else out.push(n); };
+    (this.state.scope === "MER-FUND-I" ? D.chartOfAccounts : this.state.scope === "MER-GRP" ? D.groupCoa() : D.entityCoa[this.state.scope] || []).forEach(walk);
+    return out;
+  }
+  // Name whatever the URL is pointing at, so the masthead crumb reads "1100 · Cash — Operating"
+  // and "JE-1060 · Revenue accrual" rather than bare ids (4.4 · E-1).
+  nameCrumb() {
+    const M = window.MeridianAppMap; if (!M || !M.nameObject) return;
+    const code = this.state.accountCode;
+    const acct = code && this.accountLeaves().find((a) => String(a.code) === String(code));
+    if (acct) M.nameObject("account", acct.code, acct.code + " · " + acct.name);
+    const ref = this.state.inspectRef;
+    const line = ref && this.state.ledger.find((r) => r.ref === ref);
+    if (line) M.nameObject("entry", ref, ref + " · " + (line.memo || line.account || ""));
+  }
+
+  // Reversal — the only correction a posted period allows. Equal and opposite lines under a new
+  // ref, both entries left standing in the audit trail; the original is never edited or removed.
+  reverseEntry = (ref) => {
+    if (this.isReadOnly()) {
+      this.toast("error", "Reversal disabled", this.state.locked
+        ? "Period 2026-Q2 is locked — reopen it to correct the books." : "Viewer role is read-only.");
+      return;
+    }
+    if (this.state.scope !== "MER-FUND-I") {
+      this.toast("error", "Reversals are per-entity", "Post from the entity's own scope — switch to Fund I.");
+      return;
+    }
+    const lines = this.state.ledger.filter((r) => r.ref === ref);
+    if (!lines.length) return;
+    if (lines.every((l) => l.status === "void")) {
+      this.toast("error", "Nothing to reverse", ref + " is voided — it never reached the books.");
+      return;
+    }
+    if (this.state.reversals[ref]) {
+      this.toast("error", "Already reversed", ref + " was reversed by " + this.state.reversals[ref] + ".");
+      return;
+    }
+    const M = this.M();
+    const newRef = "JE-" + this.state.nextRef;
+    const env = {
+      condition: "overridden", detail: "reversal of " + ref, authority: "desk",
+      clocks: { posting: "2026-06-30", effective: "2026-06-30", reportingPeriod: { start: "2026-06-01", end: "2026-06-30" } },
+      evidence: [{ label: "Reversal memo", ref: "REV-" + ref }],
+    };
+    const reversed = lines.map((l) => ({
+      date: "06-30", ref: newRef, account: l.account,
+      memo: "Reversal of " + ref + " — " + (l.memo || ""),
+      debit: l.credit || "", credit: l.debit || "",
+      reversalOf: ref, envelope: env,
+    }));
+    const total = M.sumAmounts(reversed.map((r) => M.toNumber(r.debit) || 0));
+    this.setState((s) => ({
+      ledger: [...s.ledger, ...reversed],
+      reversals: { ...s.reversals, [ref]: newRef },
+      lastRef: newRef,
+      nextRef: s.nextRef + 1,
+      inspectRef: newRef,
+      view: "gl",
+      glSeed: "all",
+    }));
+    this.toast("success", "Posted " + newRef, "Reverses " + ref + " · " + reversed.length + " lines · " + this.fmt(total));
   };
 
   openDrawer = (kind, seedAccount) => {
     if (this.isReadOnly()) {
       this.toast("error", "Posting disabled", this.state.locked
         ? "Period 2026-Q2 is locked." : "Viewer role is read-only.");
+      return;
+    }
+    if (this.state.scope !== "MER-FUND-I") {
+      this.toast("error", "Posting is per-entity", "Journal entries post to MER-FUND-I books — switch scope to Fund I first.");
       return;
     }
     this.setState((s) => ({
@@ -206,7 +442,8 @@ class Component extends DCLogic {
       noteTitle = "Prefilled account";
       note = "First line seeded with " + drawerSeedAccount + " — add the balancing side.";
     }
-    return { header, lines, note, noteTitle };
+    return {
+      dataState: this.props.dataState ?? "ready", header, lines, note, noteTitle };
   }
 
   postEntry = ({ header, lines }) => {
@@ -262,30 +499,90 @@ class Component extends DCLogic {
   };
 
   renderVals() {
+    this.applyChrome();
     const s = this.state;
     const D = this.DATA;
     const env = String(this.props.environment ?? "PAPER").toUpperCase();
     const readOnly = this.isReadOnly();
     const recOpen = s.recLeft.filter((i) => !i.matched).length;
-    const canLock = s.ready && !recOpen && s.fxPosted && !s.locked;
+    const detail = s.detail ?? this.props.detail ?? "full";
+    // The lock derives from certification coverage of MATERIAL accounts, not task completion
+    // alone (O-4). Uncovered accounts are listed, not summarised.
+    const A = s.ready ? (window.MeridianDesignSystem_205d17 || {}).Assurance : null;
+    const balances = s.ready ? this.currentBalances() : {};
+    const asrAccounts = s.ready ? this.assuranceAccounts() : [];
+    const cov = A ? A.coverage(asrAccounts, s.assurance, balances) : { uncovered: [], covered: 0, total: 0, complete: true, rows: [] };
+    const canLock = s.ready && !recOpen && s.fxPosted && !s.locked && cov.complete;
     const seed = this.buildSeed();
 
-    const icon = (n) => "../../assets/icons/" + n + ".svg";
-    const navSections = [
-      { label: "Books", items: [
-        { id: "gl", label: "General Ledger", icon: icon("run-ledger"), shortcut: "G L" },
-        { id: "coa", label: "Chart of Accounts", icon: icon("aggregate-portfolio"), shortcut: "G C" },
-        { id: "tb", label: "Trial Balance", icon: icon("data-quality"), shortcut: "G T" },
-      ]},
-      { label: "Close", items: [
-        { id: "recon", label: "Reconciliation", icon: icon("archive-health"), shortcut: "G R" },
-        { id: "fx", label: "FX Revaluation", icon: icon("data-sources"), shortcut: "G F" },
-        { id: "close", label: "Period Close", icon: icon("retention-assurance"), shortcut: "G P" },
-      ]},
-      { label: "Reporting", items: [
-        { id: "stmt", label: "Statements", icon: icon("governance"), shortcut: "G S" },
-        { id: "lots", label: "Tax Lots", icon: icon("account-portfolio"), shortcut: "G X" },
-      ]},
+    // O-5 · entity scope is a path in the ownership tree; scope restates GL + Statements,
+    // group scope routes Statements to the consolidation surface (eliminations disclosed).
+    const scope = s.scope;
+    const group = scope === "MER-GRP";
+    const fundScope = scope === "MER-FUND-I";
+    const pathOf = (id) => (D ? ((D.entityPaths.find((p) => p.id === id) || {}).path || id) : id);
+    const scopePath = pathOf(scope);
+    const tagRows = (rows, id) => rows.map((r) => ({ ...r, entity: id, memo: "[" + id + "] " + r.memo }));
+    // A reversed entry says so where it is read, not only in its drawer — the ledger is the
+    // record, so the correction is visible on the original line.
+    const revNote = (rows) => rows.map((r) => (s.reversals[r.ref]
+      ? { ...r, memo: (r.memo || "") + " · reversed by " + s.reversals[r.ref] } : r));
+    const ownLedger = revNote(s.ledger);
+    const glRows = !D || fundScope ? ownLedger
+      : group ? [...tagRows(ownLedger, "MER-FUND-I"), ...tagRows(D.icLedgers["MER-SPV-ALPHA"], "MER-SPV-ALPHA"), ...tagRows(D.icLedgers["MER-MGMT"], "MER-MGMT")]
+      : D.icLedgers[scope] || [];
+    const entStmt = D && !fundScope && !group ? D.entityStatement(scope) : null;
+    const effView = s.view === "stmt" && group ? "consol" : s.view;
+    // CoA, FX, and lots restate by scope too — group CoA is the five roots with per-entity
+    // sub-groups (gross); FX exposure lives only in the fund's book; SPV holds one lot.
+    const coaScoped = !D ? [] : fundScope ? D.chartOfAccounts : group ? D.groupCoa() : D.entityCoa[scope] || [];
+    const fxScoped = !D ? [] : fundScope ? D.fxRows : group ? D.fxRows.map((r) => ({ ...r, account: "[MER-FUND-I] " + r.account })) : [];
+    const noFx = !fundScope && !group;
+    const lotsScoped = !D ? [] : fundScope ? D.taxLots : group
+      ? [...D.taxLots.map((l) => ({ ...l, symbol: l.symbol + " · FUND" })), ...D.entityLots["MER-SPV-ALPHA"].map((l) => ({ ...l, symbol: l.symbol + " · SPV" }))]
+      : D.entityLots[scope] || [];
+
+    // TB, recon, and close restate by scope; group is combined GROSS, entity-tagged —
+    // IC mirrors stay visible here and eliminate only on the consolidation surface.
+    const tagTb = (rows, id) => rows.map((r) => ({ ...r, account: "[" + id + "] " + r.account }));
+    const tbRows = !D ? [] : fundScope ? D.trialBalanceRows
+      : group ? [...tagTb(D.trialBalanceRows, "MER-FUND-I"), ...tagTb(D.entityTb["MER-SPV-ALPHA"], "MER-SPV-ALPHA"), ...tagTb(D.entityTb["MER-MGMT"], "MER-MGMT")]
+      : D.entityTb[scope] || [];
+    const retag = (rows, id, off) => rows.map((r, i) => ({ ...r, id: off + i, memo: "[" + id + "] " + r.memo }));
+    const reconOf = (side) => !D ? [] : group
+      ? [...retag(side === "l" ? s.recLeft : s.recRight, "MER-FUND-I", 100),
+         ...retag(D.entityRecons["MER-SPV-ALPHA"][side === "l" ? "left" : "right"], "MER-SPV-ALPHA", 200),
+         ...retag(D.entityRecons["MER-MGMT"][side === "l" ? "left" : "right"], "MER-MGMT", 300)]
+      : (D.entityRecons[scope] || {})[side === "l" ? "left" : "right"] || [];
+    const affClose = D && !fundScope && !group ? D.entityClose[scope] : null;
+    const groupPostings = s.ledger.length + (D ? D.icLedgers["MER-SPV-ALPHA"].length + D.icLedgers["MER-MGMT"].length : 0);
+    const fundCloseStatus = s.locked ? "Passed" : (recOpen || !s.fxPosted) ? "ReviewRequired" : "InProgress";
+    const groupGates = [
+      { key: "e1", label: "MER-FUND-I close", status: fundCloseStatus },
+      { key: "e2", label: "MER-SPV-ALPHA close", status: "Passed" },
+      { key: "e3", label: "MER-MGMT close", status: "Passed" },
+      { key: "ic", label: "Intercompany mirror tie · E-1 E-2", status: "Passed" },
+      { key: "lock", label: "Group lock", status: s.locked ? "Passed" : "NotStarted" },
+    ];
+    const groupIssues = s.locked
+      ? [{ code: "GRP-LOCKED", severity: "Info", message: "Group 2026-Q2 locked — all entities locked; eliminations E-1 · E-2 carried to consolidation." }]
+      : [{ code: "GRP-FUND-I", severity: "Warning", message: "MER-FUND-I 2026-Q2 is still open — the group locks derivatively when every entity locks." },
+         { code: "GRP-IC-ZERO", severity: "Info", message: "IC mirror pairs net to 0.00 (E-1 12,400.00 · E-2 8,500.00) — see Consolidation." }];
+    const affiliateReadOnly = () => this.toast("error", "Affiliate close is read-only",
+      "This entity's books lock from its own controller — its 2026-Q2 close is already locked.");
+    const groupReopen = () => this.toast("error", "Group state is derived",
+      "The group locks and reopens through its entities — reopen MER-FUND-I from its own scope.");
+
+    // The rail is the suite app map — the same destinations, in the same order, as every other
+    // screen (app-map.js). This screen's own nine views are NOT destinations: they are views of
+    // one book, so they live in a tab strip in the work plane and answer to 1…9.
+    const M = window.MeridianAppMap;
+    const VIEWS = [
+      { id: "gl", label: "General Ledger" }, { id: "coa", label: "Chart of Accounts" },
+      { id: "tb", label: "Trial Balance" }, { id: "recon", label: "Cash Reconciliation" },
+      { id: "fx", label: "FX Revaluation" }, { id: "close", label: "Period Close" },
+      { id: "stmt", label: "Statements" }, { id: "consol", label: "Consolidation" },
+      { id: "lots", label: "Tax Lots" },
     ];
 
     const closeGates = [
@@ -293,9 +590,12 @@ class Component extends DCLogic {
       { key: "recon", label: "Cash reconciliation", status: recOpen ? "ReviewRequired" : "Passed" },
       { key: "fx", label: "FX revaluation", status: s.fxPosted ? "Passed" : "InProgress" },
       { key: "tb", label: "Trial balance proof", status: "Passed" },
+      { key: "cert", label: "Material accounts certified", status: s.locked || cov.complete ? "Passed" : cov.uncovered.some((r) => r.voided) ? "Blocked" : "ReviewRequired" },
       { key: "lock", label: "Period lock", status: s.locked ? "Passed" : canLock ? "InProgress" : "NotStarted" },
     ];
     const closeIssues = [];
+    if (!s.locked && cov.uncovered.length) closeIssues.push({ code: "CERT-" + cov.uncovered.length, severity: cov.uncovered.some((r) => r.voided) ? "Error" : "Warning", gate: "Certification",
+      message: cov.uncovered.length + " material account" + (cov.uncovered.length === 1 ? "" : "s") + " not certified — " + cov.uncovered.map((r) => r.code + " " + r.name + (r.voided ? " (signature void — balance moved)" : " (" + r.stage + ")")).join(" · ") + "." });
     if (recOpen) closeIssues.push({ code: "RECON-1100", severity: "Warning", gate: "Reconciliation",
       message: recOpen + " statement line unmatched — INT-0210 interest accrual · $142.18." });
     if (!s.fxPosted) closeIssues.push({ code: "FX-0630", severity: "Warning", gate: "FX revaluation",
@@ -305,30 +605,48 @@ class Component extends DCLogic {
     else if (canLock) closeIssues.push({ code: "CLOSE-READY", severity: "Info",
       message: "All gates passed — period is ready to lock." });
 
-    const goCmd = (id, label, k) => ({
-      id: "go-" + id, group: "Go to", label, shortcut: ["G", k], run: () => this.go(id),
-    });
+    // Two kinds of movement, named differently so they never compete: "View" changes what you
+    // are looking at in this book (1…9); "Go to" leaves for another screen (the suite G chords).
+    const viewCmds = VIEWS.map((v, i) => ({
+      id: "view-" + v.id, group: "View", label: v.label, shortcut: [String(i + 1)],
+      hint: v.id === effView ? "here" : undefined, run: () => this.go(v.id),
+    }));
+    const goCmds = M ? M.SCREENS.filter((sc) => !sc.hidden).map((sc) => ({
+      id: "go-" + sc.id, group: "Go to", label: sc.label,
+      shortcut: sc.shortcut ? sc.shortcut.split(" ") : undefined,
+      hint: sc.id === "accounting" ? "here" : undefined, run: () => M.go(sc.id),
+    })) : [];
     const paletteCommands = [
-      goCmd("gl", "General ledger", "L"), goCmd("coa", "Chart of accounts", "C"),
-      goCmd("tb", "Trial balance", "T"), goCmd("recon", "Reconciliation", "R"),
-      goCmd("fx", "FX revaluation", "F"), goCmd("close", "Period close", "P"),
-      goCmd("stmt", "Statements", "S"), goCmd("lots", "Tax lots", "X"),
       { id: "act-new", group: "Actions", label: "New journal entry", shortcut: ["N"],
         keywords: ["post", "je"], run: () => this.openDrawer("blank") },
       { id: "act-close", group: "Actions", label: "Run period close",
         keywords: ["lock", "quarter"], run: () => this.go("close") },
+      { id: "act-inspect", group: "Actions", label: "Inspect last posted entry", shortcut: ["I"],
+        keywords: ["entry", "reverse", "audit"], run: () => this.setState({ view: "gl", inspectRef: this.state.lastRef }) },
+      { id: "act-account", group: "Actions", label: "Open account sheet", shortcut: ["G", "A"],
+        keywords: ["account", "balance", "proof", "why"], run: () => this.openAccount(this.state.accountCode) },
+      ...viewCmds, ...goCmds,
     ];
+    // Object lookup: type an account code or name → the sheet. The palette resolves against the
+    // scoped chart of accounts, so a code that is not in this entity's books does not appear.
+    const paletteResolve = (q) => {
+      const s = String(q || "").trim().toLowerCase();
+      if (s.length < 2) return [];
+      return this.accountLeaves()
+        .filter((n) => n.code.startsWith(s) || n.name.toLowerCase().includes(s))
+        .slice(0, 8)
+        .map((n) => ({ id: "acct-" + n.code, group: "Accounts", label: n.code + " · " + n.name,
+          meta: this.fmt(Math.abs(Number(n.balance) || 0)), run: () => this.openAccount(n.code),
+          verbs: [{ label: "Sheet", run: () => this.openAccount(n.code) }, { label: "Ledger", run: () => this.viewLedgerFor(n.code) }] }));
+    };
     const bind = (keys, label, group, action) => ({ keys, label, group, action });
     const hotkeyBindings = [
-      bind("g l", "Go to general ledger", "Navigate", () => this.go("gl")),
-      bind("g c", "Go to chart of accounts", "Navigate", () => this.go("coa")),
-      bind("g t", "Go to trial balance", "Navigate", () => this.go("tb")),
-      bind("g r", "Go to reconciliation", "Navigate", () => this.go("recon")),
-      bind("g f", "Go to FX revaluation", "Navigate", () => this.go("fx")),
-      bind("g p", "Go to period close", "Navigate", () => this.go("close")),
-      bind("g s", "Go to statements", "Navigate", () => this.go("stmt")),
-      bind("g x", "Go to tax lots", "Navigate", () => this.go("lots")),
+      ...VIEWS.map((v, i) => bind(String(i + 1), v.label, "View", () => this.go(v.id))),
+      ...(M ? M.SCREENS.filter((sc) => !sc.hidden && sc.shortcut && sc.id !== "accounting")
+        .map((sc) => bind(sc.shortcut.toLowerCase(), "Go to " + sc.label, "Navigate", () => M.go(sc.id))) : []),
       bind("n", "New journal entry", "Actions", () => this.openDrawer("blank")),
+      bind("i", "Inspect last posted entry", "Actions", () => this.setState({ view: "gl", inspectRef: this.state.lastRef })),
+      bind("g a", "Open account sheet", "Navigate", () => this.openAccount(this.state.accountCode)),
     ];
 
     const statusItems = [
@@ -339,60 +657,121 @@ class Component extends DCLogic {
       { status: s.fxPosted ? "ok" : "warn", label: "FX reval", value: s.fxPosted ? "posted" : "pending" },
       { status: s.locked ? "ok" : void 0, label: "Period", value: "2026-Q2 " + (s.locked ? "locked" : "open"), push: true },
       { label: "Books", value: "USD · accrual" },
+      { label: "Scope", value: group ? "Group · 3 entities + elims" : scope },
     ];
 
+    // Tier-2 inspection state — what the drawer may do is decided here, and the reason it may
+    // not is stated beside the disabled control rather than discovered by clicking it.
+    const inspectRef = s.inspectRef;
+    const inspectLines = inspectRef ? glRows.filter((r) => r.ref === inspectRef) : [];
+    const inspectReversedBy = (inspectRef && s.reversals[inspectRef]) || null;
+    let reverseReason = null;
+    if (readOnly) reverseReason = s.locked
+      ? "Period 2026-Q2 is locked — reopen it from Period Close to correct the books."
+      : "Viewer role is read-only — reversal requires an operator.";
+    else if (!fundScope) reverseReason = "Reversals post to the entity's own books — switch scope to " + (window.MeridianWorld ? window.MeridianWorld.entityLabel() : "Meridian Fund I LP") + ".";
+    else if (inspectReversedBy) reverseReason = "Already reversed by " + inspectReversedBy + " — a reversal is posted once.";
+    else if (inspectLines.length && inspectLines.every((l) => l.status === "void"))
+      reverseReason = "Voided — this entry never reached the books, so there is nothing to reverse.";
+    const revCount = Object.keys(s.reversals).length;
+    if (revCount) statusItems.splice(3, 0, { status: "warn", label: "Reversals", value: revCount + " posted" });
+
     return {
+      inspectRef,
+      onInspect: this.inspect,
+      onInspectClose: this.closeInspect,
+      onInspectAccount: this.inspectAccount,
+      onCopyRef: this.copyRef,
+      onReverse: this.reverseEntry,
+      inspectReversedBy,
+      reverseDisabled: !!reverseReason,
+      reverseReason,
+      detail, onDetail: (v) => this.setState({ detail: v }),
+      detailOptions: [{ value: "summary", label: "Summary" }, { value: "full", label: "Full" }],
       envLabel: env,
       envVariant: env.toLowerCase(),
-      periodLine: "Fiscal 2026-Q2 · " + (s.locked ? "locked" : "open") + " · USD · accrual",
+      periodLine: "Fiscal 2026-Q2 · " + (s.locked ? "locked" : "open") + " · USD · accrual · " + scopePath,
       readOnly,
       readOnlyMsg: s.locked
         ? "Period 2026-Q2 is locked — books are read-only. Reopen from Period Close."
         : "Signed in as viewer — posting and close actions are disabled.",
-      navActive: s.view,
-      navSections,
-      onNav: this.go,
+      navActive: "accounting",
+      navSections: M ? M.sections("accounting") : [],
+      onNav: (id) => M && M.go(id),
+      viewTabs: VIEWS.map((v) => v.label),
+      viewTabIndex: Math.max(0, VIEWS.findIndex((v) => v.id === effView)),
+      onViewTab: (i) => this.go(VIEWS[i].id),
       onRunClose: () => this.go("close"),
       onNewEntry: () => this.openDrawer("blank"),
+      scope,
+      scopeOptions: D ? D.entityPaths.map((p) => ({ value: p.id, label: p.path })) : [{ value: scope, label: scope }],
+      onScope: this.setScope,
+      postDisabled: readOnly || !fundScope,
       showGl: s.ready && s.view === "gl",
+      showAccount: s.ready && s.view === "account",
+      accountCode: s.accountCode,
+      assurance: s.assurance,
+      balances,
+      asrAccounts,
+      onSign: this.signAccount,
+      certLine: A ? cov.covered + " of " + cov.total + " material accounts certified" + (cov.rows.some((r) => r.voided) ? " · " + cov.rows.filter((r) => r.voided).length + " signature void" : "") : "",
+      onOpenAccount: this.openAccount,
+      paletteResolve,
       showCoa: s.ready && s.view === "coa",
       showTb: s.ready && s.view === "tb",
       showRecon: s.ready && s.view === "recon",
       showFx: s.ready && s.view === "fx",
       showClose: s.ready && s.view === "close",
-      showStmt: s.ready && s.view === "stmt",
+      showStmt: s.ready && effView === "stmt",
+      showConsol: s.ready && effView === "consol",
+      consolData: D ? D.consolidation : null,
+      consolElims: D ? D.eliminations : [],
       showLots: s.ready && s.view === "lots",
-      glRows: s.ledger,
+      glRows,
       glLastRef: s.lastRef,
-      glOpenings: D ? D.OPENINGS : {},
+      glOpenings: D && (fundScope || group) ? D.openings : {},
       glSeed: s.glSeed,
-      coaNodes: D ? D.COA : [],
+      coaNodes: coaScoped,
+      coaScopeLine: group ? "Combined · gross — per-entity sub-groups; each entity's tree nets to 0.00" : scopePath,
+      coaEntityLabel: scope,
       onPostTo: (acct) => this.openDrawer("account", acct),
       onViewLedger: this.viewLedgerFor,
-      tbRows: D ? D.TB_ROWS : [],
-      recLeft: s.recLeft,
-      recRight: s.recRight,
+      tbRows,
+      tbScopeLine: group ? "Combined · gross — IC mirrors (E-1 · E-2) eliminate at consolidation, not here" : scopePath,
+      recLeft: fundScope ? s.recLeft : reconOf("l"),
+      recRight: fundScope ? s.recRight : reconOf("r"),
+      recScopeLine: group ? "All entities · entity-tagged — the one open break is Fund I's INT-0210" : scopePath,
+      postScopeLocked: !fundScope,
       onPostAccrual: () => this.openDrawer("accrual"),
-      fxRows: D ? D.FX_ROWS : [],
+      fxRows: fxScoped,
+      fxScopeLine: group ? "All entities — foreign-currency balances sit in MER-FUND-I only" : scopePath,
+      noFx,
       netGl: s.netGl,
       fxPosted: s.fxPosted,
       fxRef: s.fxRef,
       onPostReval: () => this.openDrawer("reval"),
-      closeGates,
-      closeIssues,
-      locked: s.locked,
-      canLock,
-      lockedAt: s.lockedAt,
-      postingsCount: s.ledger.length,
-      recOpenCount: recOpen,
-      onLock: this.lockPeriod,
-      onReopen: this.reopenPeriod,
-      stmtSections: D ? D.STMT_SECTIONS : [],
-      stmtTotal: D ? D.STMT_TOTAL : { label: "Net income", values: { q2: 0, q1: 1 } },
-      lotRows: D ? D.LOTS : [],
+      closeGates: fundScope ? closeGates : group ? groupGates : affClose ? affClose.gates : [],
+      closeIssues: fundScope ? closeIssues : group ? groupIssues : affClose ? affClose.issues : [],
+      locked: fundScope ? s.locked : group ? s.locked : true,
+      canLock: fundScope ? canLock : false,
+      lockedAt: fundScope ? s.lockedAt : group ? s.lockedAt : affClose ? affClose.lockedAt : null,
+      postingsCount: fundScope ? s.ledger.length : group ? groupPostings : affClose ? affClose.postings : 0,
+      recOpenCount: fundScope || group ? recOpen : 0,
+      onLock: fundScope ? this.lockPeriod : group ? groupReopen : affiliateReadOnly,
+      onReopen: fundScope ? this.reopenPeriod : group ? groupReopen : affiliateReadOnly,
+      closeScopeLine: scopePath,
+      closeEntityLabel: group ? "Meridian Capital Group — consolidated" : scopePath,
+      stmtSections: !D ? [] : fundScope ? D.statementSections : entStmt ? entStmt.sections : [],
+      stmtTotal: !D ? { label: "Net income", values: { q2: 0, q1: 1 } }
+        : fundScope ? D.statementTotal : entStmt ? entStmt.total : { label: "Net income", values: { q2: 0 } },
+      stmtTitle: fundScope || !D ? "Statement of operations"
+        : "Statement of operations — " + (((D.entityPaths.find((p) => p.id === scope)) || {}).label || scope),
+      stmtCompare: fundScope,
+      lotRows: lotsScoped,
+      lotScopeLine: group ? "All entities · symbol-tagged — Management runs no trading book" : scopePath,
       drawerOpen: s.drawerOpen,
       onDrawerClose: this.closeDrawer,
-      acctOptions: D ? D.ACCOUNT_OPTIONS : [],
+      acctOptions: D ? D.accountOptions : [],
       seedHeader: seed.header,
       seedLines: seed.lines,
       drawerSeq: s.drawerSeq,

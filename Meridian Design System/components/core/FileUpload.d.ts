@@ -1,3 +1,4 @@
+import type React from "react";
 /** Drag-and-drop file input — dashed drop zone (click to browse instead), selected-file list with a
  * per-file remove button. Renders its own list; it does not render a preview thumbnail. */
 export interface FileUploadProps {
@@ -10,4 +11,4 @@ export interface FileUploadProps {
   /** HTML `accept` filter, e.g. `".csv,.xlsx"`. @default "*" (any file type) */
   accept?: string;
 }
-export declare function FileUpload(props: FileUploadProps): JSX.Element;
+export declare function FileUpload(props: FileUploadProps): React.JSX.Element;

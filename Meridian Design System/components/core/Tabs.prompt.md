@@ -8,3 +8,5 @@ In-panel tab switch with an optional count per tab. `tabs` are `{label,count,dis
 ```
 
 Use for switching views inside one surface — not for top-level navigation (that's `NavRail`). Keep to a handful of tabs; overflow means the surface is doing too much.
+
+A11y (3.5): `aria-controls` is emitted only for panels that exist — a tabs array used as a bare switcher no longer references missing ids.

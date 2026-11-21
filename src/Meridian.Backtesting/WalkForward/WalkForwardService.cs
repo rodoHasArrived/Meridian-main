@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using Meridian.Backtesting.Engine;
+using Meridian.Backtesting.Metrics;
 using Meridian.Backtesting.Sdk;
 
 namespace Meridian.Backtesting.WalkForward;
@@ -368,8 +369,8 @@ public sealed class WalkForwardService : IWalkForwardService
     /// <summary>
     /// Computes aggregate OOS metrics from the daily-return series of every completed test window,
     /// concatenated in chronological order with capital re-normalized at each boundary. Sharpe uses
-    /// the same excess-daily-return convention as <c>BacktestMetricsEngine</c> (annual rate / 252,
-    /// annualized by √252).
+    /// the same calendar-daily-return convention as <c>BacktestMetricsEngine</c> (annual rate / 365,
+    /// annualized by √365).
     /// </summary>
     internal static WalkForwardOosMetrics? ComputeStitchedOosMetrics(
         IReadOnlyList<WalkForwardWindowResult> completedWindows,
@@ -405,18 +406,18 @@ public sealed class WalkForwardService : IWalkForwardService
 
         var totalReturn = cumulative - 1.0;
         var annualizedReturn = cumulative > 0
-            ? Math.Pow(cumulative, 252.0 / dailyReturns.Count) - 1.0
+            ? Math.Pow(cumulative, 365.0 / dailyReturns.Count) - 1.0
             : -1.0;
 
-        var dailyRiskFree = annualRiskFreeRate / 252.0;
+        var dailyRiskFree = annualRiskFreeRate / 365.0;
         var excess = dailyReturns.Select(r => r - dailyRiskFree).ToList();
         var mean = excess.Average();
         var std = Math.Sqrt(excess.Sum(x => (x - mean) * (x - mean)) / excess.Count);
-        var sharpe = std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(252.0);
+        var sharpe = std < 1e-10 ? 0.0 : mean / std * Math.Sqrt(365.0);
 
         return new WalkForwardOosMetrics(
-            TotalReturn: (decimal)totalReturn,
-            AnnualizedReturn: (decimal)annualizedReturn,
+            TotalReturn: ReportedReturn.FromDouble(totalReturn),
+            AnnualizedReturn: ReportedReturn.FromDouble(annualizedReturn),
             SharpeRatio: sharpe,
             MaxDrawdownPercent: (decimal)maxDrawdown,
             TradingDays: dailyReturns.Count,

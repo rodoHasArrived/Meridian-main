@@ -204,7 +204,7 @@ class ObservabilityContractFixture:
 
 class ValidateObservabilityContractTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = ObservabilityContractFixture(Path(self._tmp.name))
 

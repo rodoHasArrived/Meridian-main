@@ -31,9 +31,24 @@ public sealed partial class OrderManagementSystem
         string? correlationId,
         RiskValidationResult riskResult,
         string? sessionId,
-        CancellationToken ct)
+        CancellationToken ct,
+        OrderSubmissionAuthorityRecord? authority = null)
     {
-        var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason);
+        var parkedState = CreateRejectedState(orderId, request, riskResult.RejectReason, authority?.Origin ?? OrderCommandOrigin.Unattributed);
+
+        // The park normally retained the typed authority already: the OMS staged it with the
+        // queue before risk validation. Attaching afterwards is only a fallback for a validator
+        // that parks into the queue without that staging. Best effort like the rest of post-park
+        // bookkeeping: without it the release stays on the untyped path, which refuses live orders.
+        if (authority is not null && riskResult.EscalationId is { } parkedEscalationId && _escalationQueue is not null
+            && _escalationQueue.TryGet(parkedEscalationId)?.Authority is null
+            && !_escalationQueue.TryAttachAuthority(parkedEscalationId, authority))
+        {
+            _logger.LogWarning(
+                "Order {OrderId} parked for approval ({EscalationId}) without its typed authority retained",
+                LogSanitizer.Sanitize(orderId),
+                LogSanitizer.Sanitize(parkedEscalationId));
+        }
 
         // The tracked state is terminal (nothing is working at the broker), but the client
         // order id must not be reclaimable while the approval is live: another submission
@@ -120,10 +135,15 @@ public sealed partial class OrderManagementSystem
     }
 
     /// <inheritdoc />
-    public IReadOnlyList<OrderState> GetExposureReservingOrders()
+    public IReadOnlyList<OrderState> GetExposureReservingOrders() => GetReservingOrders(largestQuantity: false);
+
+    /// <inheritdoc />
+    public IReadOnlyList<OrderState> GetUnitReservingOrders() => GetReservingOrders(largestQuantity: true);
+
+    private List<OrderState> GetReservingOrders(bool largestQuantity)
     {
         var reserving = new List<OrderState>(GetOpenOrders());
-        var amendments = GetAmendmentExposureReservations();
+        var amendments = GetAmendmentExposureReservations(largestQuantity);
         reserving.RemoveAll(order => _amendmentBook.Contains(order.OrderId));
         reserving.AddRange(amendments);
 
@@ -161,7 +181,7 @@ public sealed partial class OrderManagementSystem
     /// completes locally because no broker order exists. Returns null when the order is
     /// not parked, leaving the ordinary gateway cancellation to run.
     /// </summary>
-    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct)
+    private async Task<OrderResult?> TryCancelParkedOrderAsync(string orderId, CancellationToken ct, OrderSubmissionAuthority? authority = null)
     {
         if (TryWithdrawParkedEscalation(orderId) is not { } withdrawnState)
         {
@@ -176,7 +196,8 @@ public sealed partial class OrderManagementSystem
             state: withdrawnState,
             report: null,
             message: "Cancelled while awaiting governed approval; the escalation was withdrawn.",
-            ct: ct).ConfigureAwait(false);
+            ct: ct,
+            authority: authority).ConfigureAwait(false);
 
         return new OrderResult { Success = true, OrderId = orderId, OrderState = withdrawnState };
     }
@@ -265,6 +286,10 @@ public sealed partial class OrderManagementSystem
         CancellationToken ct)
     {
         var amendmentProbe = BuildAmendmentProbe(state, modification);
+        if (await _admissionPolicy.EvaluateSessionAsync(amendmentProbe, ct).ConfigureAwait(false) is { Status: "blocked" } session)
+            return new AmendmentGateResult(null, session.Message, null, null);
+        if (await _admissionPolicy.EvaluateMarketReferenceAsync(amendmentProbe, ct).ConfigureAwait(false) is { } reference)
+            return new AmendmentGateResult(null, reference.Reason, null, null);
         IReadOnlyList<string>? warnings = null;
         string? consumedApprovalId = null;
 
@@ -484,7 +509,8 @@ public sealed partial class OrderManagementSystem
         string brokerName,
         string? runId,
         string? correlationId,
-        CancellationToken ct)
+        CancellationToken ct,
+        Guid? journalAttemptId)
     {
         var message = $"Duplicate client order id '{orderId}': an order with this id is already being tracked and is not in a terminal state.";
 
@@ -498,7 +524,8 @@ public sealed partial class OrderManagementSystem
             message,
             ct,
             rejectionSource: "duplicate client order id guard",
-            reasonCode: "DUPLICATE_CLIENT_ORDER_ID").ConfigureAwait(false);
+            reasonCode: "DUPLICATE_CLIENT_ORDER_ID",
+            journalAttemptId: journalAttemptId).ConfigureAwait(false);
 
         return new OrderResult
         {
@@ -511,10 +538,12 @@ public sealed partial class OrderManagementSystem
     private static OrderState CreateRejectedState(
         string orderId,
         OrderRequest request,
-        string? reason)
+        string? reason,
+        OrderCommandOrigin? origin = null)
     {
         return new OrderState
         {
+            Origin = origin,
             OrderId = orderId,
             Symbol = request.Symbol,
             Side = request.Side,

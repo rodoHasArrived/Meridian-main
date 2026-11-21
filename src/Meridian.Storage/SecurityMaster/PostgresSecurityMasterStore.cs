@@ -22,16 +22,20 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         Func<PostgresSecurityMasterStore, NpgsqlConnection, NpgsqlTransaction, SecurityProjectionRecord, CancellationToken, Task> WriteAsync);
 
     /// <summary>
-    /// The projection writers that predate <see cref="SecurityTermsProjectionRegistry"/> and have
-    /// not moved onto it. Every other class — including Bond, whose three sibling tables are now
-    /// registry satellites — is a descriptor. Option stays here because its tables are keyed by
-    /// contract symbol rather than security, its alias table fans out from the record's aliases, its
+    /// The projection writers the declarative <see cref="SecurityTermsProjectionRegistry"/> cannot
+    /// express. Every other class — including Bond, whose three sibling tables are now registry
+    /// satellites — is a descriptor. Option stays here because its tables are keyed by contract
+    /// symbol rather than security, its alias table fans out from the record's aliases, its
     /// lifecycle row has an insert-only <c>listed_at</c>, and
     /// <see cref="PostgresOptionReferenceProjectionStore"/> writes the same tables from quotes.
+    /// CustomAsset is here because its fields are governed per profile and have no fixed column
+    /// set: it projects one row per <c>profileFields</c> key (migration 064), keyed by security and
+    /// field rather than a column per term.
     /// </summary>
     private static readonly IReadOnlyList<AssetProjectionWriter> HandWrittenProjectionWriters =
     [
         new("Option", static (store, c, t, r, ct) => store.UpsertOptionProjectionTablesAsync(c, t, r, ct)),
+        new(CustomAssetAssetClass, static (store, c, t, r, ct) => store.UpsertCustomAssetProfileFieldProjectionAsync(c, t, r, ct)),
     ];
 
     /// <summary>
@@ -184,12 +188,10 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                 "ProjectionBatchRebuilt",
                 "security-master.rebuild",
                 DateTimeOffset.UtcNow,
-                new
-                {
+                new ProjectionBatchRebuiltPayload(
                     projectionName,
                     lastGlobalSequence,
-                    records = acceptedRecords.Select(static record => new { record.SecurityId, record.Version }).ToArray()
-                },
+                    acceptedRecords.Select(static record => new ProjectionBatchRebuiltRecord(record.SecurityId, record.Version)).ToArray()),
                 ct).ConfigureAwait(false);
         }
 
@@ -284,7 +286,26 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
 
         // Use full-text search when the query is long enough for meaningful tokenisation.
         // The ILIKE fallback catches short identifiers (e.g. "GE", "T") that tsvector skips.
-        command.CommandText = useFts
+        command.CommandText = request.PrefixOnly
+            ? $"""
+               select security_id
+               from {Qualified("securities")}
+               where (security_id::text = @exact_id
+                   or lower(primary_identifier_value) = lower(@query)
+                   or lower(display_name) = lower(@query)
+                   or (length(@query) >= 2 and (
+                       starts_with(security_id::text, lower(@query))
+                       or starts_with(lower(primary_identifier_value), lower(@query))
+                       or starts_with(lower(display_name), lower(@query)))))
+                 and (@active_only = false or status = 'Active')
+               order by case
+                   when security_id::text = @exact_id then 0
+                   when lower(primary_identifier_value) = lower(@query) or lower(display_name) = lower(@query) then 1
+                   when starts_with(security_id::text, lower(@query)) or starts_with(lower(primary_identifier_value), lower(@query)) then 2
+                   else 3 end, display_name, security_id
+               limit @take offset @skip;
+               """
+            : useFts
             ? $"""
                select security_id,
                       ts_rank(search_vector, plainto_tsquery('simple', @query)) as rank
@@ -309,7 +330,14 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
                """;
 
         command.Parameters.AddWithValue("query", trimmedQuery);
-        command.Parameters.AddWithValue("pattern", $"%{trimmedQuery}%");
+        if (request.PrefixOnly)
+        {
+            command.Parameters.AddWithValue("exact_id", Guid.TryParse(trimmedQuery, out var id) ? id.ToString("D") : string.Empty);
+        }
+        else
+        {
+            command.Parameters.AddWithValue("pattern", $"%{trimmedQuery}%");
+        }
         command.Parameters.AddWithValue("active_only", request.ActiveOnly);
         command.Parameters.AddWithValue("take", request.Take);
         command.Parameters.AddWithValue("skip", request.Skip);
@@ -375,6 +403,27 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         }
 
         return results;
+    }
+
+    /// <summary>
+    /// One aggregate over <c>securities</c> (ADR-024 decision 5): a row is untagged when its
+    /// payload is not a JSON object or its <c>termsFormat</c> member is absent or not a string —
+    /// the same verdict <c>SecurityTermsEnvelope.GetDeclaredFormat</c> reaches, without loading a
+    /// single projection. <c>SecurityMasterPostgresRoundTripTests</c> pins the SQL to the C#
+    /// semantics row by row.
+    /// </summary>
+    public async Task<int> CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default)
+    {
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var command = connection.CreateCommand();
+        command.CommandText =
+            $"""
+            select count(*) from {Qualified("securities")}
+            where jsonb_typeof(asset_specific_terms) is distinct from 'object'
+               or jsonb_typeof(asset_specific_terms -> 'termsFormat') is distinct from 'string';
+            """;
+        var result = await command.ExecuteScalarAsync(ct).ConfigureAwait(false);
+        return Convert.ToInt32(result, System.Globalization.CultureInfo.InvariantCulture);
     }
 
     public async Task<long?> GetCheckpointAsync(string projectionName, CancellationToken ct = default)
@@ -579,7 +628,12 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         SecurityProjectionRecord record,
         CancellationToken ct)
     {
-        if (SecurityAssetClassCatalog.GetOrDefault(record.AssetClass).ProjectionKind != SecurityTermsProjectionKind.Specialized ||
+        // Option is no longer the only Specialized class (CustomAsset is too), so the option tables
+        // also require the OCC-symbol fact: a record that moved from Option to CustomAsset must clear
+        // them. Option is the only Specialized class keyed by OCC contract symbols.
+        var descriptor = SecurityAssetClassCatalog.GetOrDefault(record.AssetClass);
+        if (!descriptor.UsesOccOptionSymbols ||
+            descriptor.ProjectionKind != SecurityTermsProjectionKind.Specialized ||
             !TryBuildOptionProjection(record, out var projection))
         {
             await DeleteOptionProjectionTablesAsync(connection, transaction, record.SecurityId, ct).ConfigureAwait(false);
@@ -590,52 +644,6 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
         await UpsertOptionSeriesProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertOptionLifecycleProjectionAsync(connection, transaction, projection, ct).ConfigureAwait(false);
         await UpsertOptionAliasProjectionAsync(connection, transaction, projection, record.Aliases, ct).ConfigureAwait(false);
-    }
-
-    private async Task ReplaceIdentifiersAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction transaction,
-        Guid securityId,
-        IReadOnlyList<SecurityIdentifierDto> identifiers,
-        CancellationToken ct)
-    {
-        await using (var delete = connection.CreateCommand())
-        {
-            delete.Transaction = transaction;
-            delete.CommandText = $"delete from {Qualified("security_identifiers")} where security_id = @security_id;";
-            delete.Parameters.AddWithValue("security_id", securityId);
-            await delete.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
-
-        foreach (var identifier in identifiers)
-        {
-            await using var insert = connection.CreateCommand();
-            insert.Transaction = transaction;
-            insert.CommandText =
-                $"""
-                insert into {Qualified("security_identifiers")} (
-                    security_id, identifier_kind, identifier_value, normalized_identifier_value,
-                    provider, normalized_provider, is_primary,
-                    valid_from, valid_to, source, confidence, manual_override)
-                values (
-                    @security_id, @identifier_kind, @identifier_value, @normalized_identifier_value,
-                    @provider, @normalized_provider, @is_primary,
-                    @valid_from, @valid_to, @source, @confidence, @manual_override);
-                """;
-            insert.Parameters.AddWithValue("security_id", securityId);
-            insert.Parameters.AddWithValue("identifier_kind", identifier.Kind.ToString());
-            insert.Parameters.AddWithValue("identifier_value", identifier.Value);
-            insert.Parameters.AddWithValue("normalized_identifier_value", SecurityIdentifierNormalizer.GetOrComputeNormalizedValue(identifier));
-            insert.Parameters.AddWithValue("provider", (object?)identifier.Provider ?? DBNull.Value);
-            insert.Parameters.AddWithValue("normalized_provider", ToDbNullable(SecurityIdentifierNormalizer.GetOrComputeNormalizedProvider(identifier)));
-            insert.Parameters.AddWithValue("is_primary", identifier.IsPrimary);
-            insert.Parameters.AddWithValue("valid_from", identifier.ValidFrom.UtcDateTime);
-            insert.Parameters.AddWithValue("valid_to", (object?)identifier.ValidTo?.UtcDateTime ?? DBNull.Value);
-            insert.Parameters.AddWithValue("source", "SecurityMaster");
-            insert.Parameters.AddWithValue("confidence", DBNull.Value);
-            insert.Parameters.AddWithValue("manual_override", false);
-            await insert.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-        }
     }
 
     private async Task SaveCheckpointCoreAsync(
@@ -1215,16 +1223,7 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
     /// Migration 048 backfills existing rows with the same rule.
     /// </summary>
     internal static string? ResolveListingMic(JsonElement commonTerms)
-    {
-        if (Meridian.Contracts.Domain.Mic.TryParse(GetOptionalString(commonTerms, "primaryListingMic"), out var primary))
-        {
-            return primary.Value;
-        }
-
-        return Meridian.Contracts.Domain.MicReference.TryResolve(GetOptionalString(commonTerms, "exchange"), out var resolved)
-            ? resolved.Value
-            : null;
-    }
+        => SecurityListingIdentity.ResolvePrimaryListingMic(commonTerms);
 
     internal static string? GetOptionalString(JsonElement json, string propertyName)
         => json.TryGetProperty(propertyName, out var value) && value.ValueKind == JsonValueKind.String
@@ -1232,16 +1231,28 @@ public sealed partial class PostgresSecurityMasterStore : ISecurityMasterStore
             : null;
 
     /// <summary>
-    /// The terms-payload family written to the <c>terms_format</c> column (migration 042). A declared
-    /// <see cref="SecurityTermsEnvelope.FormatKey"/> wins; a payload that predates the tag is
-    /// classified by the same shape rule the migration backfill applied, so the column has one
-    /// definition whether the row was migrated or written. The stored payload is never mutated to add
-    /// the tag — writers own stamping. A declared format this node does not know is refused here with
-    /// a precise reason rather than by the column's check constraint.
+    /// The terms-payload family written to the <c>terms_format</c> column (migration 042): the declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/>, which migration 068's
+    /// <c>ck_securities_terms_format_declared</c> requires to equal the column. The store never infers a
+    /// family and never mutates the payload to add the tag — writers own stamping. An untagged payload
+    /// is refused here with <see cref="SecurityTermsFormatUndeclaredException"/> (ADR-024 amendment
+    /// 2026-11-13 step 5), and a declared format this node does not know with a precise reason, rather
+    /// than by the check constraints.
     /// </summary>
     internal static string ResolveStorableTermsFormat(SecurityProjectionRecord record)
     {
-        var format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        string format;
+        try
+        {
+            format = SecurityTermsEnvelope.ResolveFormat(record.AssetSpecificTerms);
+        }
+        catch (SecurityTermsFormatUndeclaredException exception)
+        {
+            throw new InvalidOperationException(
+                $"Security '{record.SecurityId}' ({record.AssetClass}) cannot be stored: {exception.Message}",
+                exception);
+        }
+
         if (!SecurityTermsFormats.IsKnown(format))
         {
             throw new InvalidOperationException(

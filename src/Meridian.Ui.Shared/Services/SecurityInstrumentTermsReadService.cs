@@ -38,9 +38,17 @@ public sealed class SecurityInstrumentTermsReadService(
         var diagnostics = new List<string>();
         var supported = SecurityAssetClassCatalog.TryGet(detail.AssetClass, out var descriptor);
         var assetClass = descriptor?.AssetClass ?? detail.AssetClass;
-        var format = SecurityTermsEnvelope.ResolveFormat(detail.AssetSpecificTerms);
+        // Current-state reads require an explicit family. The frozen legacy classifier belongs to
+        // event replay; this inspection must neither guess a family nor stamp the retained bytes.
+        var declaredFormat = SecurityTermsEnvelope.GetDeclaredFormat(detail.AssetSpecificTerms);
+        var format = declaredFormat ?? "Undeclared";
         var termsVersion = SecurityTermsEnvelope.ResolveAssetClassTermsVersion(detail.AssetSpecificTerms);
         if (!supported) diagnostics.Add($"Asset class '{detail.AssetClass}' has no registered term schema; supplied values remain unvalidated.");
+        if (declaredFormat is null)
+        {
+            supported = false;
+            diagnostics.Add("The retained current-state payload does not declare a termsFormat. Its family was not inferred; raw payload inspection remains available.");
+        }
         if (supported && SecurityTermsEnvelope.TryGetReadRefusal(assetClass, detail.AssetSpecificTerms, out var refusal))
         {
             supported = false;
@@ -51,25 +59,33 @@ public sealed class SecurityInstrumentTermsReadService(
             supported = false;
             diagnostics.Add("The retained terms envelope has an invalid or ambiguous format/version declaration.");
         }
+        var profileGoverned = SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, detail.AssetSpecificTerms);
         var codecVersions = Properties(detail.AssetSpecificTerms, SecurityTermsEnvelope.SchemaVersionKey);
         if (codecVersions.Count == 1 && codecVersions[0].Value.ValueKind == JsonValueKind.Number
             && codecVersions[0].Value.TryGetInt32(out var codecVersion)
-            && !AssetSpecificTermsSchema.IsAccepted(codecVersion, format == SecurityTermsFormats.CustomProfile))
+            && !AssetSpecificTermsSchema.IsAccepted(codecVersion, profileGoverned))
         {
             supported = false;
             diagnostics.Add($"Retained schemaVersion {codecVersion} is not supported by the asset-specific-terms family; raw payload inspection remains available.");
         }
 
-        var profile = ResolveProfile(detail.AssetSpecificTerms, profiles, diagnostics, out var profileId, out var profileVersion);
-        if (format == SecurityTermsFormats.CustomProfile && profile is null)
+        string? profileId = null;
+        int? profileVersion = null;
+        var profile = profileGoverned
+            ? ResolveProfile(detail.AssetSpecificTerms, profiles, diagnostics, out profileId, out profileVersion) : null;
+        if ((format == SecurityTermsFormats.CustomProfile || profileGoverned) && profile is null)
+        {
             supported = false;
+            if (!profileGoverned)
+                diagnostics.Add("The retained profile payload does not belong to a profile-supported asset class/envelope; no profile schema was substituted.");
+        }
 
         var source = Source(detail, economic);
         if (source.Status != SecurityInstrumentTermsSourceStatus.Matched) diagnostics.Add(source.Summary);
         var context = new ProjectionContext(assetClass, termsVersion, detail.AssetSpecificTerms, profile, diagnostics);
         var fields = new List<SecurityInstrumentTermDto>();
         fields.AddRange(context.Block(detail.CommonTerms, "/commonTerms", "Common terms", []));
-        IReadOnlyList<SecurityAssetTermField> declarations = supported && format == SecurityTermsFormats.Flat
+        IReadOnlyList<SecurityAssetTermField> declarations = supported && format == SecurityTermsFormats.Flat && !profileGoverned
             ? SecurityAssetTermsSchema.Fields(assetClass) : [];
         fields.AddRange(context.Block(detail.AssetSpecificTerms, "/assetSpecificTerms", "Asset-specific terms", declarations));
 
@@ -204,13 +220,16 @@ public sealed class SecurityInstrumentTermsReadService(
                     message = "This field was introduced after the payload's declared terms version.";
                 if (message is not null) state = SecurityInstrumentTermState.Invalid;
             }
+            var toleratedReadAbsence = state == SecurityInstrumentTermState.Missing && field?.AbsentReadDefault is not null;
             if (state == SecurityInstrumentTermState.Missing && field?.Required == true)
-                message = "Required by the retained asset-class schema; no source value was supplied.";
+                message = toleratedReadAbsence
+                    ? $"No retained source value. The canonical reader declares absence as '{field!.AbsentReadDefault}'; this inspection does not insert it."
+                    : "Required by the retained asset-class schema; no source value was supplied.";
             if (state == SecurityInstrumentTermState.Null && field?.Required == true)
                 message = "Required by the retained asset-class schema; an explicit null was supplied.";
             if (field is null && message is not null && !ambiguous && value.ValueKind != JsonValueKind.Undefined)
                 state = SecurityInstrumentTermState.Invalid;
-            if (message is not null) diagnostics.Add($"{path}: {message}");
+            if (message is not null && !toleratedReadAbsence) diagnostics.Add($"{path}: {message}");
 
             IReadOnlyList<SecurityInstrumentTermDto> children = [];
             if (depth < 32)
@@ -227,7 +246,7 @@ public sealed class SecurityInstrumentTermsReadService(
             else if (value.ValueKind is JsonValueKind.Array or JsonValueKind.Object)
                 diagnostics.Add($"{path}: nested inspection depth exceeded; full retained JSON remains available.");
 
-            var unit = Unit(key, siblings, path, value);
+            var unit = Unit(key, siblings, path, value, schemaPath);
             var hint = SecurityAssetClassRegistry.TryGet(assetClass, out var definition)
                 ? definition.UiHints.FirstOrDefault(candidate => candidate.Key == field?.Key) : null;
             var label = path.StartsWith("/assetSpecificTerms/profileFields/", StringComparison.Ordinal)
@@ -276,10 +295,38 @@ public sealed class SecurityInstrumentTermsReadService(
             return null;
         }
 
-        private (string? Value, SecurityInstrumentTermUnitStatus Status, string? Path) Unit(string key, JsonElement siblings, string path, JsonElement value)
+        private (string? Value, SecurityInstrumentTermUnitStatus Status, string? Path) Unit(string key, JsonElement siblings, string path, JsonElement value, string schemaPath)
         {
             if (value.ValueKind is not JsonValueKind.Number)
                 return (null, SecurityInstrumentTermUnitStatus.NotApplicable, null);
+            var rateField = SecurityRateFieldUnits.Find(assetClass, schemaPath);
+            if (rateField is not null)
+            {
+                // The current canonical rate-field inventory owns which values honor record units.
+                // Field defaults and unit-invariant zero are deliberately not presented as an
+                // explicit source declaration, and no amount is normalized for this readout.
+                if (rateField.HonorsRecordUnit && !schemaPath.Contains('.')
+                    && !SecurityTermsEnvelope.IsProfileGovernedPayload(assetClass, assetTerms))
+                {
+                    var conventionField = SecurityAssetTermsSchema.Field(assetClass, "scheduleConventions");
+                    var conventions = Properties(assetTerms, "scheduleConventions");
+                    if (conventionField is not null && conventionField.SinceTermsVersion <= termsVersion
+                        && termsVersion <= SecurityAssetClassCatalog.GetReadsTermsThrough(assetClass) && conventions.Count == 1)
+                    {
+                        var couponUnits = Properties(conventions[0].Value, "couponRateUnit");
+                        if (couponUnits.Count == 1 && couponUnits[0].Value.ValueKind == JsonValueKind.String
+                            && RateUnitNormalizer.ParseCouponRateUnit(couponUnits[0].Value.GetString()) is not null)
+                            return (couponUnits[0].Value.GetString(), SecurityInstrumentTermUnitStatus.Explicit,
+                                "/assetSpecificTerms/" + Pointer(conventions[0].Name) + "/" + Pointer(couponUnits[0].Name));
+                    }
+                    var recordUnits = Properties(assetTerms, SecurityRecordRateUnit.FieldKey);
+                    if (recordUnits.Count == 1
+                        && SecurityRecordRateUnit.Read(assetClass, assetTerms) is RateUnit.Fraction or RateUnit.Percent or RateUnit.BasisPoints)
+                        return (recordUnits[0].Value.GetString(), SecurityInstrumentTermUnitStatus.Explicit,
+                            "/assetSpecificTerms/" + Pointer(recordUnits[0].Name));
+                }
+                return (null, SecurityInstrumentTermUnitStatus.Unspecified, null);
+            }
             // Only a retained, unambiguous adjacent declaration establishes a unit. In particular,
             // an instrument's reporting currency does not prove strike currency or a quote basis.
             var companion = key switch
@@ -293,19 +340,6 @@ public sealed class SecurityInstrumentTermsReadService(
             if (units.Count == 1 && units[0].Value.ValueKind == JsonValueKind.String && !string.IsNullOrWhiteSpace(units[0].Value.GetString()))
                 return (units[0].Value.GetString(), SecurityInstrumentTermUnitStatus.Explicit,
                     path[..path.LastIndexOf('/')] + "/" + Pointer(units[0].Name));
-            if (key == "couponRate" && path == "/assetSpecificTerms/couponRate"
-                && units.Count == 0)
-            {
-                var conventions = Properties(assetTerms, "scheduleConventions");
-                if (conventions.Count == 1)
-                {
-                    var couponUnits = Properties(conventions[0].Value, "couponRateUnit");
-                    if (couponUnits.Count == 1 && couponUnits[0].Value.ValueKind == JsonValueKind.String
-                        && couponUnits[0].Value.GetString() is "Percent" or "Fraction")
-                        return (couponUnits[0].Value.GetString(), SecurityInstrumentTermUnitStatus.Explicit,
-                            "/assetSpecificTerms/" + Pointer(conventions[0].Name) + "/" + Pointer(couponUnits[0].Name));
-                }
-            }
             return (null, SecurityInstrumentTermUnitStatus.Unspecified, null);
         }
     }

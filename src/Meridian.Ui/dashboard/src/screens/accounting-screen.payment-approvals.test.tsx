@@ -67,7 +67,7 @@ describe("BankingPaymentApprovalsPanel", () => {
     const table = await screen.findByLabelText("Payment intents");
     expect(within(table).getByText("WIRE-8891")).toBeInTheDocument();
     expect(within(table).getByText("Pending")).toBeInTheDocument();
-    expect(within(screen.getByLabelText("Payment approval posture")).getByText("125,000.00 USD")).toBeInTheDocument();
+    expect(within(screen.getByLabelText("Payment approval status")).getByText("125,000.00 USD")).toBeInTheDocument();
   });
 
   it("approves an intent with the reviewer's notes", async () => {

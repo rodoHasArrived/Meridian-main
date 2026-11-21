@@ -14,7 +14,7 @@ SPEC.loader.exec_module(SCANNER)
 
 class CommitSecretScanTests(unittest.TestCase):
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.report = Path(self.temp.name) / 'result.sarif'
         self.sha = 'a' * 40

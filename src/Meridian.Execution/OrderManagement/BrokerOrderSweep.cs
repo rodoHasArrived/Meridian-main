@@ -127,7 +127,10 @@ internal sealed class BrokerOrderSweep(
     /// report when the cancellation did not take. Goes straight to the gateway because there is no
     /// tracked <see cref="OrderState"/> for the ordinary cancel path to update.
     /// </summary>
-    internal async Task<KillSwitchSweepFailure?> CancelResidualOrderAsync(BrokerOrder order, CancellationToken ct)
+    internal async Task<KillSwitchSweepFailure?> CancelResidualOrderAsync(
+        BrokerOrder order,
+        CancellationToken ct,
+        OrderSubmissionAuthority? authority = null)
     {
         KillSwitchSweepFailure? failure;
         ExecutionReport? report = null;
@@ -163,7 +166,8 @@ internal sealed class BrokerOrderSweep(
                 message: failure is null
                     ? "Cancel-all cancelled a broker-side order the in-memory book did not track."
                     : failure.Value.Reason,
-                ct: ct).ConfigureAwait(false);
+                ct: ct,
+                authority: authority).ConfigureAwait(false);
         }
         catch (Exception auditException)
         {

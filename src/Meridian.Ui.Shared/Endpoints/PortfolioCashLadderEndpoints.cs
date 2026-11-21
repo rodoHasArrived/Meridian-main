@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text.Json;
 using Meridian.Contracts.AssetOperations;
+using Meridian.Contracts.Workstation;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -48,6 +49,47 @@ public static class PortfolioCashLadderEndpoints
         })
         .WithName("GetPortfolioCashLadder").RequirePermission(UserPermission.ViewTrades)
         .Produces<PortfolioCashLadderDto>(StatusCodes.Status200OK);
+
+        /// <summary>
+        /// Compares today's ladder with the ladder rebuilt as of a prior date (default: the end of the
+        /// previous month). Same query parameters as the ladder, plus <c>baselineAsOf</c> (yyyy-MM-dd).
+        /// </summary>
+        group.MapGet("/comparison", async (
+            HttpContext context,
+            CancellationToken ct) =>
+        {
+            var service = context.RequestServices.GetService<IPortfolioCashLadderQueryService>() ?? new PortfolioCashLadderReadService();
+            if (service is not PortfolioCashLadderReadService readService)
+            {
+                return Results.Problem("The registered cash ladder service does not support prior-period comparison.", statusCode: StatusCodes.Status501NotImplemented);
+            }
+
+            var rawBaseline = context.Request.Query["baselineAsOf"].FirstOrDefault();
+            DateOnly? baselineAsOf = null;
+            if (!string.IsNullOrWhiteSpace(rawBaseline))
+            {
+                if (!DateOnly.TryParseExact(rawBaseline, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var parsed))
+                {
+                    return Results.Problem("baselineAsOf must be a date in yyyy-MM-dd form.", statusCode: StatusCodes.Status400BadRequest);
+                }
+
+                baselineAsOf = parsed;
+            }
+
+            var query = new PortfolioCashLadderQuery(
+                ScenarioId: context.Request.Query["scenario"].FirstOrDefault(),
+                HorizonDays: ParseBoundedInt(context.Request.Query["horizonDays"].FirstOrDefault(), 90, 1, MaxHorizonDays),
+                MinimumCashThreshold: ParseOptionalDecimal(context.Request.Query["minimumCash"].FirstOrDefault()),
+                BucketDays: ParseBoundedInt(context.Request.Query["bucketDays"].FirstOrDefault(), 7, 1, 31),
+                FundAccountId: context.Request.Query["fundAccountId"].FirstOrDefault(),
+                EngineVersion: context.Request.Query["engineVersion"].FirstOrDefault());
+            var comparison = await readService.GetCashLadderComparisonAsync(query, baselineAsOf, ct).ConfigureAwait(false);
+            return Results.Json(comparison, jsonOptions);
+        })
+        .WithName("GetPortfolioCashLadderComparison").RequirePermission(UserPermission.ViewTrades)
+        .Produces<PeriodComparisonDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status501NotImplemented);
 
         /// <summary>
         /// Returns the stress-scenario catalog, including per-scenario modeled

@@ -346,6 +346,80 @@ public sealed partial class FileReconciliationBreakQueueRepository
     private string ComputeBulkInputHash(ReconciliationBulkCaseworkRequest request)
         => HashPayload($"meridian.reconciliation-bulk-casework-request.v1\n{JsonSerializer.Serialize(request, _jsonOptions)}")!;
 
+    private sealed record ReviewedBulkVersions(IReadOnlyDictionary<string, long> Cases, long? SuccessorVersion);
+
+    private ReviewedBulkVersions? ReadReviewedBulkVersions(
+        ReconciliationBulkCaseworkRequest request, ReconciliationBreakQueueScope? scope, string inputHash)
+    {
+        if (string.IsNullOrWhiteSpace(request.PreviewBulkActionId)
+            || !_bulkReceipts.TryGetValue(request.PreviewBulkActionId, out var preview)
+            || (scope is null ? preview.AccessScope is not null : !AccessScopeEquals(preview.AccessScope, scope))
+            || preview.LegacyUnverified
+            || !preview.Result.DryRun || preview.Result.ReviewProtocol != 1
+            || preview.Result.Outcome.State is not (OperationTerminalState.Succeeded or OperationTerminalState.CompletedWithWarnings)
+            || _bulkReceipts.Values.Any(receipt =>
+                string.Equals(receipt.PreviewBulkActionId, preview.BulkActionId, StringComparison.OrdinalIgnoreCase)))
+        {
+            return null;
+        }
+
+        var audit = _auditEvents.LastOrDefault(item => item.EventType == "BulkActionRequested"
+            && string.Equals(item.BreakId, preview.BulkActionId, StringComparison.OrdinalIgnoreCase));
+        var reviewed = ReadAuditedBulkRequest(preview, audit);
+        if (reviewed is null || !reviewed.DryRun)
+            return null;
+
+        var eligible = preview.Result.Results.Where(static item => item.WouldSucceed && item.Error is null && item.Item is not null).ToArray();
+        if (eligible.Length == 0 || eligible.Any(static item => item.Item!.Version <= 0))
+            return null;
+        var expected = reviewed with
+        {
+            BreakIds = eligible.Select(static item => item.BreakId).ToArray(),
+            CommandId = request.CommandId,
+            IdempotencyKey = request.IdempotencyKey,
+            DryRun = false,
+            AllowPartialSuccess = false,
+            PreviewBulkActionId = request.PreviewBulkActionId
+        };
+        if (ComputeBulkInputHash(expected) != inputHash)
+            return null;
+
+        // The audit chain binds each reviewed row to its exact observed state. Do not accept an
+        // independent snapshot result whose row versions differ from those immutable events.
+        var validatedRows = _auditEvents.Where(item => item.EventType == "BulkActionCaseValidated"
+                && item.Actor == reviewed.Actor && item.CorrelationId == reviewed.CorrelationId && item.Source == reviewed.Source
+                && item.CommandId == $"{preview.BulkActionId}:{item.BreakId}")
+            .ToLookup(static item => item.BreakId, StringComparer.OrdinalIgnoreCase);
+        if (validatedRows.Count != eligible.Length || !eligible.All(entry => validatedRows[entry.BreakId].Any(row =>
+                row.AfterPayload == JsonSerializer.Serialize(entry.Item, _jsonOptions))))
+            return null;
+
+        var successor = preview.Result.ReviewedSuccessor;
+        if (reviewed.Action == ReconciliationCaseworkAction.Supersede)
+        {
+            if (successor is null || successor.Version <= 0
+                || !string.Equals(successor.BreakId, reviewed.SupersedingBreakId?.Trim(), StringComparison.OrdinalIgnoreCase))
+                return null;
+            var successorAudit = _auditEvents.LastOrDefault(item => item.EventType == "BulkActionSuccessorReviewed"
+                && item.CommandId == preview.BulkActionId && item.BreakId == successor.BreakId);
+            var reviewedCase = TryReadQueueItem(successorAudit?.AfterPayload);
+            if (reviewedCase?.BreakId != successor.BreakId || reviewedCase.Version != successor.Version)
+                return null;
+        }
+        return new ReviewedBulkVersions(eligible.ToDictionary(static item => item.BreakId, static item => item.Item!.Version,
+            StringComparer.OrdinalIgnoreCase), successor?.Version);
+    }
+
+    private ReconciliationBulkCaseworkRequest? ReadAuditedBulkRequest(BulkCaseworkReceipt receipt, ReconciliationBreakQueueAuditEvent? audit)
+    {
+        if (audit?.BeforePayload is not { } payload || audit.CommandId != receipt.CommandId
+            || !string.Equals(audit.TenantId, receipt.AccessScope?.TenantId, StringComparison.OrdinalIgnoreCase)
+            || !string.Equals(audit.CompanyId, receipt.AccessScope?.CompanyId, StringComparison.OrdinalIgnoreCase))
+            return null;
+        var request = JsonSerializer.Deserialize<ReconciliationBulkCaseworkRequest>(payload, _jsonOptions);
+        return request is not null && ComputeBulkInputHash(request) == receipt.InputHashSha256 ? request : null;
+    }
+
     private string ComputeCreateInputHash(ReconciliationBreakQueueItem item)
     {
         var materialInput = new
@@ -379,7 +453,10 @@ public sealed partial class FileReconciliationBreakQueueRepository
                 .OrderBy(static output => output, StringComparer.Ordinal)
                 .ToArray()
         };
-        return HashPayload($"meridian.reconciliation-break-create.v1\n{JsonSerializer.Serialize(materialInput, _jsonOptions)}")!;
+        var basePayload = $"meridian.reconciliation-break-create.v1\n{JsonSerializer.Serialize(materialInput, _jsonOptions)}";
+        return HashPayload(item.StatementEvidence is { } statementEvidence
+            ? $"{basePayload}\n{JsonSerializer.Serialize(statementEvidence, _jsonOptions)}"
+            : basePayload)!;
     }
 
     private string ComputeRetainedCreateInputHash(
@@ -439,6 +516,8 @@ public sealed partial class FileReconciliationBreakQueueRepository
             return new BulkRequestProblem("Break ids cannot be empty.", ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
         if (request.BreakIds.Distinct(StringComparer.OrdinalIgnoreCase).Count() != request.BreakIds.Count)
             return new BulkRequestProblem("Break ids must be unique within a bulk request.", ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
+        if (request.DryRun && request.PreviewBulkActionId is not null)
+            return new BulkRequestProblem("A bulk preview cannot reference another preview.", ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
         if (request.MaxCaseCount <= 0 || request.MaxCaseCount > MaximumBulkCaseCount)
             return new BulkRequestProblem($"MaxCaseCount must be between 1 and {MaximumBulkCaseCount}.", ReconciliationBreakQueueTransitionErrorCode.InvalidRequest);
         if (request.BreakIds.Count > request.MaxCaseCount || request.BreakIds.Count > MaximumBulkCaseCount)
@@ -1071,6 +1150,9 @@ public sealed partial class FileReconciliationBreakQueueRepository
 
         return command.Action switch
         {
+            _ when PreparerAttestationApprovalBoundary.IsReservedReference(command.ApprovalReference)
+                || PreparerAttestationApprovalBoundary.IsReservedReference(command.ApprovalActor)
+                => PreparerApprovalRefusal(item),
             _ when RequiresHumanOrigin(command) && !OperationsOriginGuard.IsHumanOperator(command.ActionOrigin)
                 => Invalid(item, OperationsOriginGuard.RefusalMessage("resolve, sign off, or reopen reconciliation cases"), ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator, ["actionOrigin"], RequestedLifecycle(command)),
             ReconciliationCaseworkAction.Assign when string.IsNullOrWhiteSpace(command.Assignee)
@@ -1720,7 +1802,11 @@ public sealed partial class FileReconciliationBreakQueueRepository
         string InputHashSha256,
         ReconciliationBulkCaseworkResult Result,
         bool LegacyUnverified = false,
-        ReconciliationBreakQueueScope? AccessScope = null);
+        ReconciliationBreakQueueScope? AccessScope = null)
+    {
+        [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+        public string? PreviewBulkActionId { get; init; }
+    }
 
     private sealed record PreparedBulkCasework(
         string BreakId,

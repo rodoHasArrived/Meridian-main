@@ -20,7 +20,7 @@ spec.loader.exec_module(environment)
 
 class EnvironmentTests(unittest.TestCase):
     def setUp(self):
-        self.temporary = tempfile.TemporaryDirectory()
+        self.temporary = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temporary.cleanup)
         self.root = Path(self.temporary.name)
         for relative in environment._inputs(self.root, "backend-connected"):

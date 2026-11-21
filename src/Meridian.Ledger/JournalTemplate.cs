@@ -1,3 +1,4 @@
+using System.Text.Json.Serialization;
 using Meridian.Contracts.Ledger;
 
 namespace Meridian.Ledger;
@@ -68,6 +69,44 @@ public sealed record JournalTemplateLine(
 }
 
 /// <summary>
+/// Marks a <see cref="JournalTemplate"/> whose lines are computed for each occurrence by a registered
+/// posting calculation (for example a day-weighted management fee or a period FX revaluation)
+/// instead of being resolved from fixed template lines. <see cref="Kind"/> names the calculation;
+/// <see cref="Inputs"/> carries its non-numeric identifiers (security, expense, account). Numeric
+/// terms stay on the schedule's parameters so they version with the schedule.
+/// </summary>
+public sealed record JournalTemplateCalculation
+{
+    public JournalTemplateCalculation(string kind, IReadOnlyDictionary<string, string>? inputs = null)
+    {
+        if (string.IsNullOrWhiteSpace(kind))
+            throw new ArgumentException("Journal template calculation kind must not be null or whitespace.", nameof(kind));
+
+        Kind = kind.Trim().ToLowerInvariant();
+        // Sorted, trimmed keys keep the retained definition's content fingerprint independent of
+        // the order in which a client happened to send the inputs.
+        var normalized = new SortedDictionary<string, string>(StringComparer.Ordinal);
+        foreach (var (key, value) in inputs ?? new Dictionary<string, string>())
+        {
+            if (!string.IsNullOrWhiteSpace(key) && !string.IsNullOrWhiteSpace(value))
+                normalized[key.Trim()] = value.Trim();
+        }
+
+        Inputs = normalized;
+    }
+
+    public string Kind { get; }
+
+    public IReadOnlyDictionary<string, string> Inputs { get; }
+
+    public bool Equals(JournalTemplateCalculation? other)
+        => other is not null && Kind == other.Kind && Inputs.Count == other.Inputs.Count &&
+           Inputs.All(pair => other.Inputs.TryGetValue(pair.Key, out var value) && value == pair.Value);
+
+    public override int GetHashCode() => HashCode.Combine(Kind, Inputs.Count);
+}
+
+/// <summary>
 /// A named, reusable double-entry posting template. Registering a template once lets fund
 /// administrators re-post the same balanced structure — accruals, fee bookings, standard reclasses —
 /// with per-instance amounts and dimensional scope, instead of re-keying journal lines each period.
@@ -85,15 +124,18 @@ public sealed record JournalTemplate
         string description,
         IReadOnlyList<JournalTemplateLine> lines,
         IReadOnlyList<string>? requiredParameters = null,
-        string? ledgerBook = null)
+        string? ledgerBook = null,
+        JournalTemplateCalculation? calculation = null)
     {
         if (string.IsNullOrWhiteSpace(templateId))
             throw new ArgumentException("Journal template identifier must not be null or whitespace.", nameof(templateId));
         if (string.IsNullOrWhiteSpace(name))
             throw new ArgumentException("Journal template name must not be null or whitespace.", nameof(name));
         ArgumentNullException.ThrowIfNull(lines);
-        if (lines.Count == 0)
+        if (lines.Count == 0 && calculation is null)
             throw new ArgumentException("A journal template must define at least one line.", nameof(lines));
+        if (lines.Count > 0 && calculation is not null)
+            throw new ArgumentException("A calculated journal template takes its lines from the calculation and must not define fixed lines.", nameof(lines));
 
         TemplateId = templateId.Trim();
         Name = name.Trim();
@@ -105,6 +147,7 @@ public sealed record JournalTemplate
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
         LedgerBook = string.IsNullOrWhiteSpace(ledgerBook) ? null : ledgerBook.Trim();
+        Calculation = calculation;
     }
 
     public string TemplateId { get; }
@@ -122,6 +165,14 @@ public sealed record JournalTemplate
     public string? LedgerBook { get; }
 
     /// <summary>
+    /// The posting calculation that supplies this template's lines, or null for a fixed-line
+    /// template. Omitted from serialization when absent so the retained content fingerprint of
+    /// every fixed-line definition registered before calculated templates existed is unchanged.
+    /// </summary>
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public JournalTemplateCalculation? Calculation { get; }
+
+    /// <summary>
     /// Resolves this template against the supplied parameters and effective timestamp, producing a
     /// balanced <see cref="JournalTemplateInstance"/> ready to post.
     /// </summary>
@@ -131,6 +182,11 @@ public sealed record JournalTemplate
     public JournalTemplateInstance Instantiate(JournalTemplateInstantiation instantiation)
     {
         ArgumentNullException.ThrowIfNull(instantiation);
+        if (Calculation is not null)
+        {
+            throw new LedgerValidationException(
+                $"Journal template '{TemplateId}' is calculated by '{Calculation.Kind}' and has no fixed lines to instantiate.");
+        }
 
         // Normalize the supplied parameters once (trimmed keys, case-insensitive) so lookups are
         // robust regardless of the comparer or key spacing the caller's dictionary used.
@@ -155,6 +211,7 @@ public sealed record JournalTemplate
             : instantiation.DescriptionOverride.Trim();
 
         var resolvedLines = new List<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)>();
+        Dictionary<int, string>? lineMemos = null;
         foreach (var line in Lines)
         {
             var amount = line.Resolve(parameters);
@@ -162,6 +219,8 @@ public sealed record JournalTemplate
                 continue;
 
             var dimensions = line.Dimensions ?? instantiation.Dimensions;
+            if (!string.IsNullOrWhiteSpace(line.Memo))
+                (lineMemos ??= new Dictionary<int, string>()).Add(resolvedLines.Count, line.Memo);
             resolvedLines.Add(line.Side == JournalTemplateSide.Debit
                 ? (line.Account, amount, 0m, dimensions)
                 : (line.Account, 0m, amount, dimensions));
@@ -203,7 +262,10 @@ public sealed record JournalTemplate
             instantiation.Timestamp.ToUniversalTime(),
             description,
             resolvedLines,
-            metadata.Normalize());
+            metadata.Normalize())
+        {
+            LineMemos = lineMemos is null ? null : ReadOnlyCollectionHelpers.FreezeDictionary(lineMemos)
+        };
     }
 
     private static IReadOnlyList<string> InferParameters(IReadOnlyList<JournalTemplateLine> lines)
@@ -237,6 +299,9 @@ public sealed record JournalTemplateInstance(
     IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)> Lines,
     JournalEntryMetadata Metadata)
 {
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<int, string>? LineMemos { get; init; }
+
     public decimal TotalDebits => Lines.Sum(static line => line.debit);
 
     public decimal TotalCredits => Lines.Sum(static line => line.credit);
@@ -248,7 +313,7 @@ public sealed record JournalTemplateInstance(
     {
         var journalId = Guid.NewGuid();
         var entries = Lines
-            .Select(line => new LedgerEntry(
+            .Select((line, index) => new LedgerEntry(
                 Guid.NewGuid(),
                 journalId,
                 Timestamp,
@@ -256,7 +321,10 @@ public sealed record JournalTemplateInstance(
                 line.debit,
                 line.credit,
                 Description,
-                line.dimensions))
+                line.dimensions)
+            {
+                Memo = LineMemos?.GetValueOrDefault(index)
+            })
             .ToList();
 
         return new JournalEntry(journalId, Timestamp, Description, entries, Metadata);

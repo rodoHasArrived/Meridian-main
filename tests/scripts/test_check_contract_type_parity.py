@@ -55,7 +55,7 @@ export interface OtherDto {
 
 class ContractTypeParityTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._temp = tempfile.TemporaryDirectory()
+        self._temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.root = Path(self._temp.name)
         (self.root / "cs").mkdir()
         (self.root / "ts").mkdir()

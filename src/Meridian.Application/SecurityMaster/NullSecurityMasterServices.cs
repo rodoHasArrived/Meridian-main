@@ -104,7 +104,7 @@ public sealed class NullSecurityMasterQueryService
 /// <summary>
 /// Rejects security mutations when the Security Master service is unavailable.
 /// </summary>
-public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender
+public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaster.ISecurityMasterService, Meridian.Contracts.SecurityMaster.ISecurityMasterAmender, IGovernedPublicationAmender
 {
     private static Task<T> NotConfigured<T>() =>
         Task.FromException<T>(new InvalidOperationException(
@@ -115,6 +115,9 @@ public sealed class NullSecurityMasterService : Meridian.Contracts.SecurityMaste
         => NotConfigured<SecurityDetailDto>();
 
     public Task<SecurityDetailDto> AmendTermsAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
+        => NotConfigured<SecurityDetailDto>();
+
+    public Task<SecurityDetailDto> AmendApprovedRevisionAsync(AmendSecurityTermsRequest request, CancellationToken ct = default)
         => NotConfigured<SecurityDetailDto>();
 
     public Task<SecurityDetailDto> AmendPreferredEquityTermsAsync(Guid securityId, AmendPreferredEquityTermsRequest request, CancellationToken ct = default)

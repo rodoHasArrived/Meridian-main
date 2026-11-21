@@ -10,4 +10,4 @@ The operations pipeline as a connected horizontal stepper — ingest → mapping
 ]} />
 ```
 
-Pair with a `SeverityBadge` + proof-state `Callout` and gate the primary action button on the last gate's status (see PATTERNS.md § Strategy Executor patterns → Review gating).
+Pair with a `SeverityBadge` + proof-state `Callout` and gate the primary action button on the last gate's status (see guidelines/PATTERNS.md § Strategy Executor patterns → Review gating).

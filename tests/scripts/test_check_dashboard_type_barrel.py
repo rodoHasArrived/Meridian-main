@@ -36,7 +36,7 @@ class BarrelFixture:
 
 class DashboardTypeBarrelTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -280,7 +280,7 @@ class StarReexportTests(unittest.TestCase):
     """The exact scenario a bare `export *` hides, and the precondition that stops it."""
 
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -330,7 +330,7 @@ class MultipleDeclarationsPerLineTests(unittest.TestCase):
     """The `^` anchor saw only the first export on a line; brace depth now decides scope."""
 
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -376,7 +376,7 @@ class TypeOnlyStarReexportTests(unittest.TestCase):
     """TypeScript 5.0 `export type *` publishes like its value form and must classify alike."""
 
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -413,7 +413,7 @@ class ReexportOriginTests(unittest.TestCase):
     """Two modules publishing one binding is legal; two bindings is the collision."""
 
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -479,7 +479,7 @@ class ReexportOriginTests(unittest.TestCase):
 
 class NamespaceOriginAndCommentedBarrelTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -534,7 +534,7 @@ class NamespaceOriginAndCommentedBarrelTests(unittest.TestCase):
 
 class SpecifierResolutionTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -576,7 +576,7 @@ class SpecifierResolutionTests(unittest.TestCase):
 
 class BarrelSyntaxCoverageTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -615,7 +615,7 @@ class BarrelSyntaxCoverageTests(unittest.TestCase):
 
 class ImportedReexportOriginTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -670,7 +670,7 @@ class ImportedReexportOriginTests(unittest.TestCase):
 
 class RegexLiteralAfterConditionTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 
@@ -711,7 +711,7 @@ class RegexLiteralAfterConditionTests(unittest.TestCase):
 
 class RegexProbeStringTests(unittest.TestCase):
     def setUp(self) -> None:
-        self._tmp = tempfile.TemporaryDirectory()
+        self._tmp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self._tmp.cleanup)
         self.fixture = BarrelFixture(Path(self._tmp.name))
 

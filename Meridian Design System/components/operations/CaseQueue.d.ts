@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Case queue — operator triage list for reconciliation cases and workflow break
  * cases. Field names mirror the server case models (`ReconciliationCaseSummaryDto`,
@@ -43,7 +44,7 @@ export interface CaseQueueItem {
   sla?: { state?: string; dueAtUtc?: string; ageBand?: string; businessAgeHours?: number };
   [key: string]: unknown;
 }
-export interface CaseQueueProps extends React.HTMLAttributes<HTMLElement> {
+export interface CaseQueueProps extends Omit<React.HTMLAttributes<HTMLElement>, "onSelect"> {
   items?: CaseQueueItem[];
   /** Controlled selected case id. */
   selectedId?: string;
@@ -53,4 +54,4 @@ export interface CaseQueueProps extends React.HTMLAttributes<HTMLElement> {
   /** @default "No open cases" */
   emptyLabel?: React.ReactNode;
 }
-export declare function CaseQueue(props: CaseQueueProps): JSX.Element;
+export declare function CaseQueue(props: CaseQueueProps): React.JSX.Element;

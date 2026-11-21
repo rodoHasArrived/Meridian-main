@@ -303,6 +303,54 @@ public sealed class SecurityMasterEditViewModelTests
         });
     }
 
+    [Fact]
+    public void SaveAsync_WhenGovernedTermAmendmentsAreRequired_RefusesTheDirectAmendment()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
+            var policy = new Mock<Meridian.Application.SecurityMaster.IGovernedTermAmendmentPolicy>();
+            policy.SetupGet(p => p.RefusalReason).Returns("Direct term amendments are disabled by governance policy.");
+
+            var viewModel = SecurityMasterEditViewModel.CreateNew(
+                WpfServices.LoggingService.Instance,
+                NotificationService.Instance,
+                service.Object,
+                new StubAuthorizationSource("desktop.operator"),
+                new StubMutationAuthorization(granted: true),
+                policy.Object);
+            viewModel.LoadForEdit(CreateEquityDetail());
+            viewModel.DisplayName = "Apple Inc. Class A";
+
+            await viewModel.SaveCommand.ExecuteAsync(null);
+
+            viewModel.StatusText.Should().Contain("disabled by governance policy");
+            service.VerifyNoOtherCalls();
+        });
+    }
+
+    [Fact]
+    public void SaveAsync_WhenTheServiceRefusesUnderGovernance_ReportsTheRefusalWithoutAPolicy()
+    {
+        // Composed without the policy, the editor still cannot write directly: the service enforces
+        // RequireGovernedTermAmendments itself, and the editor reports its refusal.
+        WpfTestThread.Run(async () =>
+        {
+            var service = new Mock<ISecurityMasterService>(MockBehavior.Strict);
+            service
+                .Setup(s => s.AmendTermsAsync(It.IsAny<AmendSecurityTermsRequest>(), It.IsAny<CancellationToken>()))
+                .ThrowsAsync(new Meridian.Application.SecurityMaster.GovernedTermAmendmentRequiredException());
+
+            var viewModel = CreateViewModel(service);
+            viewModel.LoadForEdit(CreateEquityDetail());
+            viewModel.DisplayName = "Apple Inc. Class A";
+
+            await viewModel.SaveCommand.ExecuteAsync(null);
+
+            viewModel.StatusText.Should().Contain("disabled by governance policy");
+        });
+    }
+
     private static SecurityMasterEditViewModel CreateViewModel(
         Mock<ISecurityMasterService>? service = null,
         WpfServices.IDesktopAuthorizationSource? operatorContext = null,

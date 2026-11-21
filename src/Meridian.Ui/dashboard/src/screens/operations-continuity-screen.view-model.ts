@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { formatCurrency as formatCurrencyAmount } from "@/lib/format";
+import { formatAmountWithCode, formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
 import {
   collectCloseWorkflowEvidenceLinks,
@@ -23,6 +23,11 @@ import {
   type PrivateCapitalCloseCockpitQuery
 } from "@/lib/api";
 import { describeApiError, isAbortError } from "@/lib/api-errors";
+import {
+  narrowRowsWithFundScopeContext,
+  type FundScopeNarrowingContextValue
+} from "@/lib/operating-scope/fund-scope-context";
+import type { FundScopeNarrowingStatus } from "@/lib/operating-scope/fund-scope-narrowing";
 import { humanizeStatus } from "@/components/operations/status";
 import { normalizeLocalWorkstationRoute, workstationRouteWithQuery } from "@/lib/workspace";
 import {
@@ -634,6 +639,10 @@ export interface OperationsContinuityScreenViewModel {
   workflowsTableLabel: string;
   workflowsTableCaption: string;
   workflows: OperationsContinuityWorkflowRow[];
+  /** How the workflow list was narrowed by the scope's entity/fund (`inactive` when not). */
+  workflowsFundScopeStatus: FundScopeNarrowingStatus;
+  /** What that narrowing did, to print next to the list; null when no entity or fund is chosen. */
+  workflowsFundScopeNote: string | null;
   selectedWorkflowId: string | null;
   selectWorkflow: (workflowId: string) => void;
   selectedDetail: OperationsContinuityDetailPanel | null;
@@ -699,6 +708,9 @@ export interface BuildOperationsContinuityScreenViewModelOptions {
   commandCenter?: FinancialOperationsCommandCenter | null;
   expectedCloseScope?: PrivateCapitalCloseCockpitQuery;
   workflows: OperationsContinuityWorkflowSummary[];
+  /** How `workflows` was narrowed by the scope's entity/fund before it got here. */
+  workflowsFundScopeStatus?: FundScopeNarrowingStatus;
+  workflowsFundScopeNote?: string | null;
   selectedWorkflowId: string | null;
   detail: OperationsContinuityWorkflow | null;
   loading: boolean;
@@ -729,10 +741,26 @@ const emptyCloseScope: PrivateCapitalCloseCockpitQuery = {};
 export function useOperationsContinuityScreenViewModel(
   services: OperationsContinuityScreenServices = defaultServices,
   closeScope: PrivateCapitalCloseCockpitQuery = emptyCloseScope,
-  selection: OperationsContinuityScreenSelection = {}
+  selection: OperationsContinuityScreenSelection = {},
+  /**
+   * The shell's entity/fund narrowing inputs. When given, the workflow list is narrowed to the
+   * chosen fund (or entity) by each workflow's fund account, and selection, detail and close reads
+   * follow the kept workflows. Null (the default) keeps every workflow.
+   */
+  fundScope: FundScopeNarrowingContextValue | null = null
 ): OperationsContinuityScreenViewModel {
   const { initialWorkflowId, fundAccountId, ledgerBookId, periodId, status } = normalizeWorkflowSelection(selection);
-  const [workflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
+  const [loadedWorkflows, setWorkflows] = useState<OperationsContinuityWorkflowSummary[]>([]);
+  // Workflows narrowed to the scope's fund (or entity) when the organization graph places their
+  // fund accounts; workflows it does not place are counted in the note, never hidden silently.
+  const workflowsFundScope = useMemo(
+    () => narrowRowsWithFundScopeContext(fundScope, loadedWorkflows, (workflow) => workflow.fundAccountId, "close workflows"),
+    [fundScope, loadedWorkflows]
+  );
+  const workflows = workflowsFundScope.rows;
+  // An applied fund/entity narrowing that keeps no workflow leaves no scope to read the close
+  // calendar or cockpit for; an unscoped read would show other funds' items, so none is made.
+  const narrowedToNoWorkflow = workflowsFundScope.status === "applied" && workflows.length === 0;
   const [selectedWorkflowId, setSelectedWorkflowId] = useState<string | null>(null);
   const [detail, setDetail] = useState<OperationsContinuityWorkflow | null>(null);
   const [loading, setLoading] = useState(true);
@@ -745,7 +773,16 @@ export function useOperationsContinuityScreenViewModel(
   const [closeCockpitLoading, setCloseCockpitLoading] = useState(false);
   const [closeCockpitError, setCloseCockpitError] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
-  const [selectionError, setSelectionError] = useState<string | null>(null);
+  const [requestSelectionError, setSelectionError] = useState<string | null>(null);
+  // A requested workflow the server returned but the scope's fund/entity narrowed out is reported
+  // as out of scope, never replaced silently by the first kept workflow.
+  const requestedOutsideFundScope = !!initialWorkflowId
+    && !loading
+    && loadedWorkflows.some((workflow) => workflow.workflowId === initialWorkflowId)
+    && !workflows.some((workflow) => workflow.workflowId === initialWorkflowId);
+  const selectionError = requestSelectionError ?? (requestedOutsideFundScope
+    ? `Workflow ${initialWorkflowId} is outside the chosen fund or entity. Clear the fund or entity in the scope to open it.`
+    : null);
   const [detailError, setDetailError] = useState<string | null>(null);
   const mountedRef = useRef(true);
   const listRevisionRef = useRef(0);
@@ -905,7 +942,20 @@ export function useOperationsContinuityScreenViewModel(
     closeScope.fundAccountId, closeScope.entityId, closeScope.periodId]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
+      return;
+    }
+
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
+      closeCalendarRevisionRef.current += 1;
+      closeCalendarAbortRef.current?.abort();
+      closeCalendarAbortRef.current = null;
+      setCloseCalendar(null);
+      setCloseCalendarError(null);
+      setCloseCalendarLoading(false);
       return;
     }
 
@@ -943,10 +993,24 @@ export function useOperationsContinuityScreenViewModel(
           closeCalendarAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   useEffect(() => {
-    if (loading || selectionError) {
+    if (loading) {
+      return;
+    }
+
+    // A blocked selection (a requested workflow unavailable or outside the scope) or a narrowing
+    // that keeps no workflow leaves nothing to read for: clear what an earlier scope loaded and
+    // invalidate reads still in flight, so another fund's close evidence never stays on screen.
+    if (selectionError || narrowedToNoWorkflow) {
+      closeCockpitRevisionRef.current += 1;
+      closeCockpitAbortRef.current?.abort();
+      closeCockpitAbortRef.current = null;
+      setCloseCockpit(null);
+      setCommandCenter(null);
+      setCloseCockpitError(null);
+      setCloseCockpitLoading(false);
       return;
     }
 
@@ -989,7 +1053,7 @@ export function useOperationsContinuityScreenViewModel(
           closeCockpitAbortRef.current = null;
         }
       });
-  }, [workflows, closeCockpitScope, closeScope, loading, selectionError, services]);
+  }, [workflows, closeCockpitScope, closeScope, loading, narrowedToNoWorkflow, selectionError, services]);
 
   const selectWorkflow = useCallback((workflowId: string) => {
     setSelectedWorkflowId(workflowId);
@@ -999,6 +1063,8 @@ export function useOperationsContinuityScreenViewModel(
     commandCenter,
     expectedCloseScope: closeScope,
     workflows,
+    workflowsFundScopeStatus: workflowsFundScope.status,
+    workflowsFundScopeNote: workflowsFundScope.note,
     selectedWorkflowId,
     detail,
     loading,
@@ -1014,13 +1080,15 @@ export function useOperationsContinuityScreenViewModel(
     selectionBlocked: selectionError !== null,
     refresh,
     selectWorkflow
-  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows]);
+  }), [commandCenter, closeScope, closeCalendar, closeCalendarError, closeCalendarLoading, closeCockpit, closeCockpitError, closeCockpitLoading, detail, detailError, detailLoading, error, loading, refresh, selectWorkflow, selectedWorkflowId, selectionError, workflows, workflowsFundScope.status, workflowsFundScope.note]);
 }
 
 export function buildOperationsContinuityScreenViewModel({
   commandCenter = null,
   expectedCloseScope = emptyCloseScope,
   workflows,
+  workflowsFundScopeStatus = "inactive",
+  workflowsFundScopeNote = null,
   selectedWorkflowId,
   detail,
   loading,
@@ -1126,32 +1194,36 @@ export function buildOperationsContinuityScreenViewModel({
     ? buildDetailPanel(selectedSummary, effectiveDetail, blockers.length)
     : null;
   return {
-    title: "Operations continuity",
+    title: "Period close workflows",
     subtitle: "Track account-period close workflows from broker intake through Security Master coverage, ledger posting, reconciliation, approval, and close evidence.",
     loading,
     statusAnnouncement: buildStatusAnnouncement({ loading, rows, selectedSummary, detailLoading, detailError }),
     errorText: error,
     detailErrorText: detailError,
-    reloadLabel: loading ? "Refreshing" : "Refresh workflows",
-    reloadAriaLabel: loading ? "Refreshing operations continuity workflows" : "Refresh operations continuity workflows",
+    reloadLabel: loading ? "Retrying" : "Retry workflows",
+    reloadAriaLabel: loading ? "Loading operations continuity workflows" : "Retry loading operations continuity workflows",
     reloadBusy: loading,
     reloadDisabled: loading,
-    reloadDisabledReason: loading ? "Operations continuity workflows are already refreshing." : null,
+    reloadDisabledReason: loading ? "Operations continuity workflows are already loading." : null,
     workflowsSummaryLabel: `${rows.length} workflow${rows.length === 1 ? "" : "s"}`,
     workflowsEmptyText: loading
       ? "Loading operations continuity workflows..."
       : error
         ? "Operations continuity workflows could not be loaded."
-        : "No operations continuity workflows are available for this workstation context.",
+        : workflowsFundScopeStatus === "applied"
+          ? "No operations continuity workflows are under the chosen entity or fund."
+          : "No operations continuity workflows are available for this workstation context.",
     workflowsTableLabel: "Operations continuity workflows",
     workflowsTableCaption: "Operations continuity workflows. Select a row to inspect close-lane gates, blockers, next action, and timeline.",
     workflows: rows,
+    workflowsFundScopeStatus,
+    workflowsFundScopeNote,
     selectedWorkflowId: selectedSummary?.workflowId ?? null,
     selectWorkflow,
     selectedDetail,
     nextAction,
     gatesLabel: "Gates",
-    gatesEmptyText: detailLoading ? "Loading selected workflow gates..." : "Open a workflow to inspect gate posture.",
+    gatesEmptyText: detailLoading ? "Loading selected workflow gates..." : "Open a workflow to inspect gate status.",
     gates,
     blockersLabel: "Blockers",
     blockersEmptyText: detailLoading ? "Loading selected workflow blockers..." : "No blockers are surfaced for the selected workflow.",
@@ -1347,7 +1419,7 @@ function mapWorkflowApprovalHistoryRow(
     reviewer: reviewer ?? resolveApprovalReviewer(workflow),
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref,
-    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local evidence route",
+    evidenceRouteLabel: evidenceHref ? "Open approval evidence" : "No local supporting record link",
     decisionGuardLabel,
     approveWorkflowReportPackId: resolveApprovalReportPackId(workflow),
     approveWorkflowEvidenceLinks: collectApprovalDecisionEvidenceLinks(workflow, approval),
@@ -1460,7 +1532,7 @@ function buildNextActionViewModel({
         ? "Start or load an operations continuity workflow before taking an action."
         : !rawAction
           ? workflow.status === "Closed"
-            ? "This workflow is closed and locked; use the governed reopen command with admin incident metadata before applying further transitions."
+            ? "This workflow is closed and locked; use the period reopen command with admin incident metadata before applying further transitions."
             : "No server-recommended next action is available for the selected workflow."
           : !href
             ? "The server did not provide a local workstation route for this action."
@@ -1612,7 +1684,7 @@ function buildBlockerRows(blockers: OperationsWorkflowBlocker[]): OperationsCont
       severityTone: severityTone(blocker.severity),
       evidenceLabel: blocker.evidenceLinks.length === 0 ? "No linked evidence" : `${blocker.evidenceLinks.length} evidence link${blocker.evidenceLinks.length === 1 ? "" : "s"}`,
       evidenceHref,
-      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local evidence route",
+      evidenceRouteLabel: evidenceHref ? "Open blocker evidence" : "No local supporting record link",
       ariaLabel: `${blocker.code}, ${blocker.severity || "Review"} blocker for ${blocker.gate ? gateLabel(blocker.gate) : "workflow"}`
     };
   });
@@ -1638,7 +1710,7 @@ function buildReconciliationLaneRows(lanes: OperationsReconciliationLaneSummary[
         summary: lane.summary?.trim() || "No reconciliation lane summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         routeHref,
         routeLabel: routeHref ? "Open lane" : "No local route",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
@@ -2044,7 +2116,7 @@ function buildEvidencePackageRows(packages: OperationsEvidencePackageSummary[]):
         summary: packageDto.summary?.trim() || "No evidence package summary returned.",
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
         routeHref,
         routeLabel: routeHref ? "Open package" : "No local route",
@@ -2313,7 +2385,7 @@ function mapCloseCalendarErrorQueueRow(
     id: "close-calendar:error",
     kindLabel: "Close calendar",
     title: `${scopeLabel}: Close calendar unavailable`,
-    detail: "Close-calendar projection could not be loaded from the shared operations API.",
+    detail: "Close-calendar view could not be loaded from the shared operations API.",
     statusLabel: "Unavailable",
     statusTone: "blocked",
     ownerLabel: "Operations control",
@@ -2431,7 +2503,7 @@ function mapCloseCockpitErrorQueueRow(
     id: "private-capital-close-cockpit:error",
     kindLabel: "Private-capital close cockpit",
     title: `${scopeLabel}: Private-capital close cockpit unavailable`,
-    detail: "Private-capital proof-lane and NAV-support projection could not be loaded from the shared operations API.",
+    detail: "Private-capital proof-lane and NAV-support view could not be loaded from the shared operations API.",
     statusLabel: "Unavailable",
     statusTone: "blocked",
     ownerLabel: "Operations control",
@@ -2674,7 +2746,7 @@ function buildBreakCaseRows(
         symbolLabel,
         evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} retained evidence link${evidenceCount === 1 ? "" : "s"}`,
         evidenceHref,
-        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local evidence route",
+        evidenceRouteLabel: evidenceHref ? "Open retained evidence" : "No local supporting record link",
         approvalLabel,
         blockedOutputsLabel,
         actionLabel,
@@ -2977,7 +3049,7 @@ function buildCloseGovernanceViewModel(
         : "Select an operations continuity workflow to inspect close-lock and reopen evidence.",
       closeAuditLabel: "No close audit event",
       closePackageLabel: "No close package published",
-      reopenAuditLabel: "No governed reopen recorded",
+      reopenAuditLabel: "No period reopen recorded",
       reopenIncidentLabel: "No incident correlation",
       reopenEvidenceLabel: "No reopen evidence links",
       reopenRationaleLabel: "No reopen rationale recorded",
@@ -3008,12 +3080,12 @@ function buildCloseGovernanceViewModel(
       ? "Period reopened under governance"
       : "Period remains open";
   const lockDetail = isClosed
-    ? "Closed operations continuity workflows are immutable until a governed admin reopen command succeeds."
+    ? "Closed operations continuity workflows are immutable until an admin period reopen command succeeds."
     : latestReopen
-      ? "The workflow is open after a governed reopen; subsequent close evidence must retain the reopen audit trail."
+      ? "The workflow is open after a period reopen; subsequent close evidence must retain the reopen audit trail."
       : "Close publication has not locked this account period yet.";
   const commandGuardLabel = isClosed
-    ? "Mutations must use the governed reopen command with incident metadata, justification, approval reference, and impact summary."
+    ? "Mutations must use the period reopen command with incident metadata, justification, approval reference, and impact summary."
     : latestReopen
       ? "Close can proceed only after refreshed gate evidence and the reopen incident trail remain linked."
       : "Close and reopen command decisions remain enforced by the shared workflow API.";
@@ -3032,7 +3104,7 @@ function buildCloseGovernanceViewModel(
       : "No close package published",
     reopenAuditLabel: latestReopen
       ? `${eventLabel(latestReopen.eventType)} by ${latestReopen.actor || "unknown actor"} at ${formatDate(latestReopen.occurredAtUtc)} / ${latestReopen.currentHash.slice(0, 12)}`
-      : "No governed reopen recorded",
+      : "No period reopen recorded",
     reopenIncidentLabel: latestReopen?.correlationId?.trim()
       ? `Incident ${latestReopen.correlationId}`
       : "No incident correlation",
@@ -3047,7 +3119,7 @@ function buildCloseGovernanceViewModel(
     canReopenWorkflow: reopenWorkflowDisabledReason === null,
     reopenWorkflowLabel: "Reopen period",
     reopenWorkflowDisabledReason,
-    reopenWorkflowAriaLabel: `Reopen governed period for ${workflow.periodId || "selected period"}`
+    reopenWorkflowAriaLabel: `Reopen period for ${workflow.periodId || "selected period"}`
   };
 }
 
@@ -3057,11 +3129,11 @@ function buildReopenWorkflowDisabledReason(workflow: OperationsContinuityWorkflo
   }
 
   if (workflow.version === null || workflow.version === undefined) {
-    return "Workflow version is unavailable for governed reopen.";
+    return "Workflow version is unavailable for period reopen.";
   }
 
   if (workflow.status !== "Closed") {
-    return "Only closed workflows can be reopened through the governed reopen command.";
+    return "Only closed workflows can be reopened through the period reopen command.";
   }
 
   if (!workflow.closePackage) {
@@ -3114,7 +3186,7 @@ const FINANCIAL_OPERATIONS_DASHBOARD_METRIC_ORDER = [
 
 const FINANCIAL_OPERATIONS_COMMAND_LABELS: Record<string, string> = {
   "receive-activity": "Start/import/normalize activity",
-  "match-records": "Run reconciliation and refresh posture",
+  "match-records": "Run reconciliation and refresh status",
   "resolve-exceptions": "Assign, escalate, or resolve breaks",
   "approve-results": "Submit or decide approval",
   "produce-evidence": "Open evidence package routes",
@@ -3152,11 +3224,11 @@ function buildCloseCalendarViewModel(
       scopeLabel: selectedSummary
         ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
         : "No close scope selected",
-      freshnessLabel: "Projection pending",
+      freshnessLabel: "Snapshot pending",
       itemCountLabel: "No calendar items",
       blockerCountLabel: "No blockers loaded",
-      checklistCountLabel: "No checklist posture loaded",
-      approvalCountLabel: "No approval posture loaded",
+      checklistCountLabel: "No checklist status loaded",
+      approvalCountLabel: "No approval status loaded",
       nextDueLabel: loading
         ? "Next due task loading"
         : error
@@ -3272,7 +3344,7 @@ function buildCloseCockpitViewModel(
       scopeLabel: selectedSummary
         ? `Selected ${selectedSummary.periodId} / ${selectedSummary.fundAccountId}`
         : "No close scope selected",
-      freshnessLabel: "Projection pending",
+      freshnessLabel: "Snapshot pending",
       readinessLabel: "Readiness unavailable",
       laneCountLabel: "No cockpit lanes",
       proofLaneSummaryLabel: loading
@@ -3470,7 +3542,7 @@ function mapCloseCockpitApprovalRow(
     rationale: approval.rationale?.trim() || "No approval rationale returned.",
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     evidenceHref,
-    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local evidence route",
+    evidenceRouteLabel: evidenceHref ? "Open evidence" : "No local supporting record link",
     workflowHref,
     routeLabel: workflowHref ? "Open workflow" : "No local route",
     ariaLabel: `${approval.periodId} approval ${approval.approvalId}, ${splitEnumLabel(approval.status)}`
@@ -3488,6 +3560,11 @@ function mapNavSupportPackageRow(packageDto: PrivateCapitalNavSupportPackage): O
   const actions = (packageDto.requiredActions ?? [])
     .map((action) => action.trim())
     .filter(Boolean);
+  // ISO codes render symbol-style ("$1,250,000.00"); any other code keeps the amount with the code as a suffix.
+  const shadowNavCurrency = packageDto.currency ?? "USD";
+  const shadowNavAmount = /^[A-Z]{3}$/.test(shadowNavCurrency)
+    ? formatCurrencyAmount(packageDto.shadowNav, { currency: shadowNavCurrency, fallback: "Not recorded" })
+    : formatAmountWithCode(packageDto.shadowNav, shadowNavCurrency, { minimumFractionDigits: 0, maximumFractionDigits: 4, fallback: "Not recorded" });
 
   return {
     id: packageDto.packageId,
@@ -3500,7 +3577,7 @@ function mapNavSupportPackageRow(packageDto: PrivateCapitalNavSupportPackage): O
       : `${readyComponentCount}/${components.length} components ready; review ${reviewComponents.join(", ")}`,
     shadowNavLabel: packageDto.shadowNav === null || packageDto.shadowNav === undefined
       ? "Shadow NAV not retained"
-      : `${formatCurrency(packageDto.shadowNav, packageDto.currency ?? "USD")} shadow NAV`,
+      : `${shadowNavAmount} shadow NAV`,
     evidenceLabel: evidenceCount === 0 ? "No retained evidence" : `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`,
     requiredActionsLabel: actions.length === 0 ? "No required actions" : actions.join("; "),
     routeHref,
@@ -3684,7 +3761,7 @@ function buildAccountingRecordSummaryViewModel(
 
   const readiness = summary.auditPackReadiness ?? null;
   const missingCount = readiness?.missingEvidenceCategories?.length ?? 0;
-  const generatedIn = readiness ? `${readiness.generatedInSeconds.toFixed(3)}s` : "not measured";
+  const generatedIn = readiness ? `${formatNumber(readiness.generatedInSeconds, { minimumFractionDigits: 3, maximumFractionDigits: 3 })}s` : "not measured";
 
   return {
     title: "Accounting record",
@@ -3917,7 +3994,7 @@ function buildStatusAnnouncement({
     return "No operations continuity workflows are available.";
   }
 
-  return `${rows.length} operations continuity workflows loaded. Selected ${selectedSummary.periodId} close.`;
+  return `${pluralizeCount(rows.length, "operations continuity workflow")} loaded. Selected ${selectedSummary.periodId} close.`;
 }
 
 function formatError(err: unknown, fallback: string): string {
@@ -3952,21 +4029,7 @@ function formatOperatorDisplayName(value: string | null): string {
 }
 
 function formatDecimal(value: number | null | undefined): string {
-  return typeof value === "number" && Number.isFinite(value)
-    ? value.toLocaleString("en-US", { maximumFractionDigits: 4 })
-    : "Not recorded";
-}
-
-function formatCurrency(value: number | null | undefined, currency: string): string {
-  if (typeof value !== "number" || !Number.isFinite(value)) {
-    return "Not recorded";
-  }
-
-  if (!/^[A-Z]{3}$/.test(currency)) {
-    return `${formatDecimal(value)} ${currency}`;
-  }
-
-  return formatCurrencyAmount(value, { currency });
+  return formatNumber(value, { maximumFractionDigits: 4, fallback: "Not recorded" });
 }
 
 /** Input is already in percent units (readiness scores are 0-100). For fractions use `formatRatioAsPercent`. */

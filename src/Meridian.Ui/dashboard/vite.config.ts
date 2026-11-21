@@ -7,6 +7,15 @@ import type { Plugin, ProxyOptions } from "vite";
 import { resolveDevFixture } from "./src/lib/dev-fixtures";
 import { getScenario, resolveScenarioResponse, scenarioHeader, unexpectedScenarioRequest } from "./src/scenarios";
 import { COVERED_CALL_API_ENDPOINTS, QUANT_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "./src/lib/workstation-endpoints";
+import { synchronizeDesignSystemAssets } from "./scripts/sync-design-system-assets.mjs";
+
+/** Includes direct Vite launches from scripts/dev/web-dev.mjs, beyond npm hooks. */
+export function createMeridianDesignSystemAssetsPlugin(): Plugin {
+  return {
+    name: "meridian-design-system-assets",
+    buildStart() { synchronizeDesignSystemAssets(); }
+  };
+}
 
 export const defaultMeridianApiBaseUrl = "http://localhost:8080";
 export const meridianDevFixtureHeader = "x-meridian-dev-fixture";
@@ -276,10 +285,24 @@ const { version: appVersion } = JSON.parse(
   readFileSync(path.resolve(__dirname, "package.json"), "utf8")
 ) as { version: string };
 
+// HTML-linked assets are emitted as files. Keep imports of the same asset on that URL too,
+// regardless of whether the HTML or JavaScript pipeline processes the asset first.
+const htmlLinkedAssets = new Set(
+  Array.from(
+    readFileSync(path.resolve(__dirname, "index.html"), "utf8").matchAll(/\shref="\/(src\/[^"?#]+)"/g),
+    (match) => path.resolve(appRoot, match[1])
+  )
+);
+
+/** Defers to Vite's size limit except for assets already linked by the entry HTML. */
+export function meridianAssetsInlineLimit(filePath: string): boolean | undefined {
+  return htmlLinkedAssets.has(path.resolve(filePath)) ? false : undefined;
+}
+
 export default defineConfig({
   root: appRoot,
   base: "/workstation/",
-  plugins: [react(), createMeridianDevSessionPlugin(), createMeridianScenarioPlugin()],
+  plugins: [createMeridianDesignSystemAssetsPlugin(), react(), createMeridianDevSessionPlugin(), createMeridianScenarioPlugin()],
   define: {
     __APP_VERSION__: JSON.stringify(appVersion),
     "import.meta.env.VITE_MERIDIAN_DEV_MODE": JSON.stringify(devMode ?? "")
@@ -298,7 +321,8 @@ export default defineConfig({
   },
   build: {
     outDir: "../wwwroot/workstation",
-    emptyOutDir: true
+    emptyOutDir: true,
+    assetsInlineLimit: meridianAssetsInlineLimit
   },
   test: {
     globals: true,

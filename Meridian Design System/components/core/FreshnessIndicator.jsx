@@ -11,16 +11,16 @@ function inject() {
   injected = true;
   const css = `
 .mds-fresh{display:inline-flex;align-items:center;gap:7px;font-family:var(--font-data,monospace);
-  font-size:11px;line-height:1.2;color:var(--text-secondary,#4E5258);white-space:nowrap;}
+  font-size:11px;line-height:1.2;color:var(--text-secondary,#535C65);white-space:nowrap;}
 .mds-fresh__dot{flex:none;width:8px;height:8px;border-radius:50%;background:var(--mds-fresh-c);
   box-shadow:0 0 0 2px var(--mds-fresh-ring);}
 .mds-fresh--connecting .mds-fresh__dot{animation:mds-fresh-pulse 1.1s ease-in-out infinite;}
 @keyframes mds-fresh-pulse{0%,100%{opacity:1;}50%{opacity:.35;}}
-.mds-fresh__src{color:var(--text-primary,#22252A);font-weight:600;}
+.mds-fresh__src{color:var(--text-primary,#20252B);font-weight:600;}
 .mds-fresh__state{color:var(--mds-fresh-c);font-weight:600;font-variant:all-small-caps;
   letter-spacing:.04em;}
-.mds-fresh__sep{color:var(--text-disabled,#94999F);}
-.mds-fresh__time{color:var(--text-muted,#5E666F);}
+.mds-fresh__sep{color:var(--text-disabled,#A4ABB2);}
+.mds-fresh__time{color:var(--text-muted,#606870);}
 .mds-fresh--badge{padding:3px 8px;border:1px solid var(--mds-fresh-ring);
   background:var(--mds-fresh-wash);border-radius:var(--radius-chip,2px);}
 `;
@@ -31,18 +31,18 @@ function inject() {
 }
 
 const STATUS = {
-  live:       { label: "live",       c: "var(--green,#3A7A56)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
-  fresh:      { label: "fresh",      c: "var(--green,#3A7A56)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
-  stale:      { label: "stale",      c: "var(--orange,#8A5C12)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-  delayed:    { label: "delayed",    c: "var(--orange,#8A5C12)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
-  offline:    { label: "offline",    c: "var(--red,#A8443C)",    ring: "var(--red-a20)",    wash: "var(--red-a10)" },
-  connecting: { label: "connecting", c: "var(--accent,#A85436)", ring: "var(--blue-a10)",   wash: "var(--blue-a10)" },
-  idle:       { label: "idle",       c: "var(--text-disabled,#94999F)", ring: "rgba(136,144,153,.25)", wash: "transparent" },
+  live:       { label: "live",       c: "var(--green-dim,#225840)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
+  fresh:      { label: "fresh",      c: "var(--green-dim,#225840)",  ring: "var(--green-a20)",  wash: "var(--green-a10)" },
+  stale:      { label: "stale",      c: "var(--orange-dim,#724D11)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+  delayed:    { label: "delayed",    c: "var(--orange-dim,#724D11)", ring: "var(--orange-a20)", wash: "var(--orange-a10)" },
+  offline:    { label: "offline",    c: "var(--red-dim,#873832)",    ring: "var(--red-a20)",    wash: "var(--red-a10)" },
+  connecting: { label: "connecting", c: "var(--semantic-info,#2F648A)", ring: "var(--blue-a10)",   wash: "var(--blue-a10)" },
+  idle:       { label: "idle",       c: "var(--text-disabled,#A4ABB2)", ring: "rgba(136,144,153,.25)", wash: "transparent" },
 };
 
 function relativeTime(then) {
   const t = then instanceof Date ? then.getTime() : (typeof then === "number" ? then : Date.parse(then));
-  if (!t || Number.isNaN(t)) return null;
+  if (!Number.isFinite(t)) return null;
   const s = Math.max(0, Math.round((Date.now() - t) / 1000));
   if (s < 5) return "just now";
   if (s < 60) return `${s}s ago`;

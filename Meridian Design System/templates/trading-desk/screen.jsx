@@ -7,7 +7,7 @@ const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow,
   SegmentedControl, InstrumentChip, DepthLadder, TimeframeSwitcher, AsOfControl,
   OrderTicket, Blotter, FillsFeed, FreshnessIndicator, ToastProvider, HotkeysProvider,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NOW = Date.UTC(2026, 6, 2, 14, 32, 8);

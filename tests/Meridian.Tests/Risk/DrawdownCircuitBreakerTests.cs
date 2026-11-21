@@ -119,16 +119,18 @@ public sealed class DrawdownCircuitBreakerTests
     }
 
     [Fact]
-    public async Task EvaluateAsync_WhenInitialCapitalIsZero_ReturnsApproved()
+    public async Task EvaluateAsync_WhenInitialCapitalIsZero_RejectsInsteadOfSwitchingItselfOff()
     {
-        // F# rule short-circuits when initialCapital == 0 to avoid division by zero
+        // A configured threshold with no positive baseline cannot be measured. Approving would
+        // silently disable the breaker through a misconfiguration, so the rule fails closed.
         var tracker = new Mock<IPositionTracker>();
         tracker.Setup(t => t.GetPortfolioValue()).Returns(0m);
         var sut = CreateSut(tracker.Object, initialCapital: 0m, maxDrawdownPercent: 10m);
 
         var result = await sut.EvaluateAsync(CreateOrder());
 
-        result.IsApproved.Should().BeTrue();
+        result.IsApproved.Should().BeFalse();
+        result.RejectReason.Should().Contain("cannot be evaluated");
     }
 
     [Fact]

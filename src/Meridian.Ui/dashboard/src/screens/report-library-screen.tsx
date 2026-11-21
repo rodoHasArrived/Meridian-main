@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import { appendRecordWorkspaceContext, readRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
@@ -38,7 +39,7 @@ const standardReportCatalog = [
     name: "Trial Balance",
     family: "Financial Statements",
     produces: "Account-balance proof with debit, credit, and ending balance support.",
-    requiredData: "Ledger, chart of accounts, accounting basis, period close posture",
+    requiredData: "Ledger, chart of accounts, accounting basis, period close status",
     owner: "Controller",
     keywords: ["trial", "balance"]
   },
@@ -46,7 +47,7 @@ const standardReportCatalog = [
     name: "Balance Sheet",
     family: "Financial Statements",
     produces: "Assets, liabilities, and capital roll-forward for the selected scope.",
-    requiredData: "Ledger, consolidation, valuation, period close posture",
+    requiredData: "Ledger, consolidation, valuation, period close status",
     owner: "Controller",
     keywords: ["balance sheet", "statement of financial position"]
   },
@@ -125,6 +126,8 @@ const standardReportCatalog = [
 ];
 
 export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
+  const { search } = useLocation();
+  const recordContext = readRecordWorkspaceContext(search);
   const reporting = normalizeReportingWorkspace(data);
   const templateRows = useMemo(() => buildTemplateRows(reporting?.templates ?? []), [reporting?.templates]);
   const runStatusRows = useMemo(
@@ -155,7 +158,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
           <div className="flex flex-wrap items-start justify-between gap-3">
             <div>
               <CardTitle>Report Library</CardTitle>
-              <CardDescription className="mt-1">Choose an available governed template, or browse the standard catalog when a new report family needs setup.</CardDescription>
+              <CardDescription className="mt-1">Choose an available template, or browse the standard catalog when a new report family needs setup.</CardDescription>
             </div>
             <Badge variant={templateRows.length > 0 ? "success" : "warning"}>
               {templateRows.length} available template{templateRows.length === 1 ? "" : "s"}
@@ -167,6 +170,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
             <section aria-label="Available report templates" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {templateRows.map((template) => {
                 const latestRun = runStatusRows.find((run) => run.templateId === template.templateName || run.templateId === template.id);
+                const route = workstationRouteWithQuery(template.canRunOnDemand ? "reportingRunParameters" : "reportingReportBuilder", { templateId: template.id });
                 return (
                   <article key={template.id} className="rounded-md border border-border/70 bg-secondary/15 p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
@@ -184,7 +188,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
                           : "No retained run"}
                       </span>
                       <Button asChild size="sm" variant={template.canRunOnDemand ? "default" : "outline"}>
-                        <Link to={workstationRouteWithQuery(template.canRunOnDemand ? "reportingRunParameters" : "reportingReportBuilder", { templateId: template.id })}>
+                        <Link to={recordContext ? appendRecordWorkspaceContext(route, recordContext) ?? route : route}>
                           {template.canRunOnDemand ? `Run ${template.name}` : `Review ${template.name}`}
                         </Link>
                       </Button>
@@ -195,7 +199,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
             </section>
           ) : (
             <p role="status" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-3 text-sm text-warning">
-              No governed templates are available. Browse the standard catalog to choose the report family to configure.
+              No templates are available. Browse the standard catalog to choose the report family to configure.
             </p>
           )}
 

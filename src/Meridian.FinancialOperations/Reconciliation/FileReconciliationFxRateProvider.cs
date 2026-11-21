@@ -36,11 +36,14 @@ public static class FileReconciliationFxRateProvider
 
         try
         {
-            var document = JsonSerializer.Deserialize<ReconciliationFxRateFile>(File.ReadAllText(path), JsonOptions);
+            var content = File.ReadAllText(path);
+            var document = JsonSerializer.Deserialize<ReconciliationFxRateFile>(content, JsonOptions);
             var quotes = (document?.Quotes ?? [])
                 .Where(static quote => quote is not null)
                 .Select(static quote => new ReconciliationFxQuote(quote!.From, quote.To, quote.Rate, quote.AsOf));
-            return new TableReconciliationFxRateProvider(quotes, document?.PivotCurrency);
+            // The content digest identifies the exact table revision a posted rate came from.
+            var revision = Meridian.Contracts.Integrity.Sha256Digest.ComputeUtf8(content);
+            return new TableReconciliationFxRateProvider(quotes, document?.PivotCurrency, $"{RelativePath} sha256:{revision}");
         }
         catch (Exception ex) when (ex is IOException or JsonException or UnauthorizedAccessException)
         {

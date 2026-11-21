@@ -1,4 +1,5 @@
 using Meridian.Application.Config.Credentials;
+using Meridian.Contracts.Operations;
 using Meridian.DataIntegration.Credentials;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Contracts;
@@ -16,6 +17,8 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
     private readonly IProviderCredentialResolver _fallback;
     private readonly ProviderCredentialScope? _scope;
     private readonly UI.ConfigStore? _configStore;
+    private readonly ProviderRouting.ProviderCredentialOwnershipPolicy _ownershipPolicy =
+        ProviderRouting.ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
 
     public StoredProviderCredentialResolver(
         IProviderCredentialStore credentialStore,
@@ -27,9 +30,11 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
 
     /// <summary>Resolves host defaults from the current retained configuration at provider construction.</summary>
     public StoredProviderCredentialResolver(IProviderCredentialStore credentialStore,
-        IProviderCredentialResolver fallback, UI.ConfigStore configStore) : this(credentialStore, fallback)
+        IProviderCredentialResolver fallback, UI.ConfigStore configStore,
+        ProviderRouting.ProviderCredentialOwnershipPolicy? ownershipPolicy = null) : this(credentialStore, fallback)
     {
         _configStore = configStore ?? throw new ArgumentNullException(nameof(configStore));
+        _ownershipPolicy = ownershipPolicy ?? ProviderRouting.ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
     }
 
     /// <summary>
@@ -57,6 +62,9 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         {
             if (_scope is not null)
                 throw new InvalidOperationException("Scoped credentials require a catalog-managed provider.");
+            if (_ownershipPolicy.RequireExplicitOwnership &&
+                (AttributeCredentialResolver.GetAttributes(providerType).Count > 0 || configuredValues?.Count > 0))
+                throw new ProviderCredentialOwnershipRequiredException();
             return _fallback.CreateContext(providerType, configuredValues);
         }
 
@@ -75,25 +83,160 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         // Storage failures propagate instead of silently switching credential ownership.
         // Hold ownership stable while opening the selected vault record. A configuration writer
         // cannot reassign/remove the connection between authorization and secret resolution.
-        // IProviderCredentialResolver.CreateContext is synchronous by contract (provider factories
-        // construct adapters synchronously), and the configuration lease is an exclusive cross-process
-        // file lock with no shared-read mode, so this blocking acquisition is structural. Keep provider
-        // construction off request threads rather than widening the lease here.
-        using var ownershipLease = _configStore?.AcquireWriteLeaseAsync().GetAwaiter().GetResult();
-        var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
-            _configStore.LoadRequired(), providerId));
-        var stored = scope is null
-            ? _credentialStore.ReadForProviderAsync(providerId).GetAwaiter().GetResult()
-            : (_credentialStore as IScopedProviderCredentialStore
-                ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."))
-                .ReadScopedAsync(providerId, scope).GetAwaiter().GetResult();
+        //
+        // Provider construction is synchronous, so this method cannot await the lease or the
+        // vault. An asynchronous caller reads them first with PrepareAsync; inside that prepared
+        // scope the record is already in hand and nothing here blocks.
+        var (scope, stored) = ActivePreparation.Value is { IsActive: true, Preparation: var prepared }
+            && prepared.Owner == this
+            && prepared.TryGet(providerId, out var preparedRead)
+            ? preparedRead.GetOrThrow()
+            : ReadStoredCredentialsBlocking(providerId);
         var values = new Dictionary<string, string?>(StringComparer.Ordinal);
         if (stored is not null)
         {
             foreach (var attribute in AttributeCredentialResolver.GetAttributes(providerType))
                 values[attribute.Name] = ResolveStoredValue(stored, descriptor, attribute.Name);
         }
-        return new ResolvedCredentialContext(values, stored?.Environment ?? scope?.Environment);
+        return new ResolvedCredentialContext(values, stored?.Environment ?? scope?.Environment,
+            scope is null ? null : ProviderProvenanceLabels.ConnectionId(providerId, scope.TenantId, scope.ConnectionId),
+            scope?.TenantId, ProviderProvenanceLabels.RuntimeRevision(stored?.CredentialGeneration));
+    }
+
+    /// <inheritdoc />
+    /// <remarks>
+    /// Reads the selected vault records under one ownership lease, exactly as a synchronous
+    /// <see cref="CreateContext"/> would read each of them. A record that fails to read does not
+    /// fail the preparation: the failure is kept and rethrown when that provider is constructed,
+    /// so one unreadable record still only affects its own provider.
+    /// </remarks>
+    public async ValueTask<IPreparedProviderCredentials> PrepareAsync(
+        IReadOnlyCollection<Type>? providerTypes = null,
+        CancellationToken ct = default)
+    {
+        var providerIds = providerTypes is null
+            ? ProviderCredentialCatalog.All.Select(static entry => entry.ProviderId)
+            : providerTypes.Select(ResolveProviderId).Where(static id => id is not null).Select(static id => id!);
+        var distinct = providerIds.Distinct(StringComparer.OrdinalIgnoreCase).ToArray();
+        if (distinct.Length == 0)
+            return PreparedProviderCredentials.None;
+
+        var reads = new Dictionary<string, PreparedRead>(StringComparer.OrdinalIgnoreCase);
+        using (var ownershipLease = _configStore is null
+            ? null
+            : await _configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false))
+        {
+            foreach (var providerId in distinct)
+            {
+                ct.ThrowIfCancellationRequested();
+                try
+                {
+                    reads[providerId] = new PreparedRead(
+                        await ReadStoredCredentialsUnderLeaseAsync(providerId, ct).ConfigureAwait(false), null);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    reads[providerId] = new PreparedRead(
+                        default, System.Runtime.ExceptionServices.ExceptionDispatchInfo.Capture(ex));
+                }
+            }
+        }
+
+        return new Preparation(this, reads);
+    }
+
+    /// <summary>
+    /// The unprepared path: the caller is synchronous and nothing was read ahead, so it has to
+    /// wait. The asynchronous chain runs as one unit on the thread pool and is waited on once;
+    /// its continuations never need the caller's synchronization context, so a caller that owns
+    /// one cannot deadlock against its own blocked thread.
+    /// </summary>
+    private (ProviderCredentialScope? Scope, ProviderCredentialReadResult? Stored) ReadStoredCredentialsBlocking(
+        string providerId)
+        => Task.Run(() => ReadStoredCredentialsAsync(providerId)).GetAwaiter().GetResult();
+
+    private async Task<(ProviderCredentialScope? Scope, ProviderCredentialReadResult? Stored)> ReadStoredCredentialsAsync(
+        string providerId)
+    {
+        using var ownershipLease = _configStore is null
+            ? null
+            : await _configStore.AcquireWriteLeaseAsync().ConfigureAwait(false);
+        return await ReadStoredCredentialsUnderLeaseAsync(providerId, CancellationToken.None).ConfigureAwait(false);
+    }
+
+    /// <summary>Resolves ownership and reads the vault record. The caller holds the lease.</summary>
+    private async Task<(ProviderCredentialScope? Scope, ProviderCredentialReadResult? Stored)> ReadStoredCredentialsUnderLeaseAsync(
+        string providerId,
+        CancellationToken ct)
+    {
+        var scope = _scope ?? (_configStore is null ? null : ProviderRouting.ProviderRuntimeCredentialService.ResolveScope(
+            _configStore.LoadRequired(), providerId));
+        if (scope is null && _ownershipPolicy.ProhibitsLegacy(providerId))
+            return (null, null); // Authoritative missing credentials; never consult the unassigned vault or fallback.
+        var stored = scope is null
+            ? await _credentialStore.ReadForProviderAsync(providerId, ct).ConfigureAwait(false)
+            : await (_credentialStore as IScopedProviderCredentialStore
+                ?? throw new InvalidOperationException("Credential vault does not support scoped ownership."))
+                .ReadScopedAsync(providerId, scope, ct).ConfigureAwait(false);
+        return (scope, stored);
+    }
+
+    /// <summary>
+    /// The prepared scope active on the current execution flow. Set only by
+    /// <see cref="Preparation.Activate"/>, which is synchronous, so the value is visible to the
+    /// construction that follows and restored when the scope is disposed.
+    /// </summary>
+    /// <remarks>
+    /// The flow holds the scope, not the preparation, because work started inside the scope
+    /// (a timer, a background task) captures the flow and keeps it for as long as it runs. Once
+    /// the scope is disposed such work stops seeing the prepared reads and reads the vault
+    /// itself, so a long-lived task can never keep constructing from credentials read at startup.
+    /// </remarks>
+    private static readonly AsyncLocal<PreparedScope?> ActivePreparation = new();
+
+    private readonly record struct PreparedRead(
+        (ProviderCredentialScope? Scope, ProviderCredentialReadResult? Stored) Value,
+        System.Runtime.ExceptionServices.ExceptionDispatchInfo? Failure)
+    {
+        public (ProviderCredentialScope? Scope, ProviderCredentialReadResult? Stored) GetOrThrow()
+        {
+            Failure?.Throw();
+            return Value;
+        }
+    }
+
+    private sealed class Preparation(
+        StoredProviderCredentialResolver owner,
+        IReadOnlyDictionary<string, PreparedRead> reads) : IPreparedProviderCredentials
+    {
+        public StoredProviderCredentialResolver Owner { get; } = owner;
+
+        public bool TryGet(string providerId, out PreparedRead read) => reads.TryGetValue(providerId, out read);
+
+        public IDisposable Activate()
+        {
+            var scope = new PreparedScope(this, ActivePreparation.Value);
+            ActivePreparation.Value = scope;
+            return scope;
+        }
+    }
+
+    private sealed class PreparedScope(Preparation preparation, PreparedScope? previous) : IDisposable
+    {
+        private int _disposed;
+
+        public Preparation Preparation { get; } = preparation;
+
+        public bool IsActive => Volatile.Read(ref _disposed) == 0;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+            // Restores the disposing flow. Flows captured inside the scope keep this instance
+            // and are turned away by IsActive.
+            ActivePreparation.Value = previous;
+        }
     }
 
     private static string? ResolveStoredValue(
@@ -136,11 +279,18 @@ public sealed class StoredProviderCredentialResolver : IProviderCredentialResolv
         private readonly IReadOnlyDictionary<string, string?> _values;
 
         public string? CredentialEnvironment { get; }
+        public string? ProvenanceConnectionId { get; }
+        public string? ProvenanceTenantId { get; }
+        public string? ProvenanceRuntimeRevision { get; }
 
-        public ResolvedCredentialContext(IReadOnlyDictionary<string, string?> values, string? credentialEnvironment)
+        public ResolvedCredentialContext(IReadOnlyDictionary<string, string?> values, string? credentialEnvironment,
+            string? connectionId, string? tenantId, string? runtimeRevision)
         {
             _values = values;
             CredentialEnvironment = credentialEnvironment;
+            ProvenanceConnectionId = connectionId;
+            ProvenanceTenantId = tenantId;
+            ProvenanceRuntimeRevision = runtimeRevision;
         }
 
         public string? Get(string name)

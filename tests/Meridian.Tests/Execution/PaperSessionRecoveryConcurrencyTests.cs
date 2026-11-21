@@ -418,7 +418,8 @@ public sealed class PaperSessionRecoveryConcurrencyTests : IDisposable
         var fillId = PaperSessionFillRecord.ComputeCanonicalFillId(invalidFill);
 
         var first = () => service.RecordFillAsync(session.SessionId, fillId, invalidFill);
-        await first.Should().ThrowAsync<LedgerValidationException>();
+        await first.Should().ThrowAsync<ArgumentOutOfRangeException>()
+            .WithMessage("*Fill price must be positive*");
         var afterFirst = service.GetSession(session.SessionId)!;
         afterFirst.FillCount.Should().Be(0);
         afterFirst.Portfolio!.Cash.Should().Be(10_000m);
@@ -426,12 +427,14 @@ public sealed class PaperSessionRecoveryConcurrencyTests : IDisposable
             .Should().ContainSingle(record => record.FillId == fillId && !record.IsApplied);
 
         var retry = () => service.RecordFillAsync(session.SessionId, fillId, invalidFill);
-        await retry.Should().ThrowAsync<LedgerValidationException>();
+        await retry.Should().ThrowAsync<ArgumentOutOfRangeException>()
+            .WithMessage("*Fill price must be positive*");
         service.GetSession(session.SessionId)!.FillCount.Should().Be(0);
 
         await using var restarted = CreateService(store);
         var restart = () => restarted.InitialiseAsync();
-        await restart.Should().ThrowAsync<LedgerValidationException>();
+        await restart.Should().ThrowAsync<ArgumentOutOfRangeException>()
+            .WithMessage("*Fill price must be positive*");
         restarted.GetSessions().Should().BeEmpty();
     }
 

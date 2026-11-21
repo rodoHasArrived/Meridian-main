@@ -3,6 +3,7 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.OperationsContinuity;
+using Meridian.FinancialOperations.Intercompany;
 using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.FinancialOperations.PrivateCapital;
@@ -45,13 +46,19 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
     private readonly IOperationsContinuityWorkflowService? _operationsContinuityWorkflowService;
     private readonly IDailyValuationScheduleStatusSource? _dailyValuationScheduleStatusSource;
     private readonly IAutomatedJournalScheduleStatusSource? _automatedJournalScheduleStatusSource;
+    private readonly IRecurringJournalQueueSource? _recurringJournalQueueSource;
+    private readonly IIntercompanyBalanceScheduleSource? _intercompanyBalances;
 
     public PrivateCapitalCloseCockpitService(
         IManualJournalEntryWorkbenchService? manualJournalEntryWorkbenchService,
         IOperationsContinuityWorkflowService? operationsContinuityWorkflowService,
         IDailyValuationScheduleStatusSource? dailyValuationScheduleStatusSource = null,
-        IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null)
+        IAutomatedJournalScheduleStatusSource? automatedJournalScheduleStatusSource = null,
+        IRecurringJournalQueueSource? recurringJournalQueueSource = null,
+        IIntercompanyBalanceScheduleSource? intercompanyBalances = null)
     {
+        _recurringJournalQueueSource = recurringJournalQueueSource;
+        _intercompanyBalances = intercompanyBalances;
         _manualJournalEntryWorkbenchService = manualJournalEntryWorkbenchService;
         _operationsContinuityWorkflowService = operationsContinuityWorkflowService;
         _dailyValuationScheduleStatusSource = dailyValuationScheduleStatusSource;
@@ -106,6 +113,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             .SelectMany(static workflow => workflow.CloseReadiness?.NextActions ?? workflow.NextActions)
             .DistinctBy(static action => action.Code, StringComparer.OrdinalIgnoreCase)
             .ToArray();
+        var intercompanySchedule = _intercompanyBalances is null ? null : await _intercompanyBalances.GetForCloseAsync(
+            tenantId, companyId, fundProfileId, ledgerBookId, periodId, ct).ConfigureAwait(false);
         var lanes = BuildLanes(
             activity,
             workflows,
@@ -115,7 +124,13 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             dailyValuationStatus,
             dailyValuationDrafts,
             automatedJournalStatus,
-            automatedJournalDrafts);
+            automatedJournalDrafts,
+            intercompanySchedule);
+        if (await BuildRecurringJournalLaneAsync(fundProfileId, ledgerBookId, entityId, periodId, tenantId, companyId, ct)
+                .ConfigureAwait(false) is { } recurringLane)
+        {
+            lanes = [.. lanes, recurringLane];
+        }
         var approvalHistory = BuildApprovalHistory(workflows, records, reportOutputs);
         var navSupportPackages = BuildNavSupportPackages(workflows, records, reportOutputs);
         var evidencePackages = BuildEvidencePackages(lanes, approvalHistory, navSupportPackages, workflows);
@@ -195,7 +210,8 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
         DailyValuationScheduleStatusDto? dailyValuationStatus,
         IReadOnlyList<ManualJournalEntryDraftDto> dailyValuationDrafts,
         AutomatedJournalScheduleStatusDto? automatedJournalStatus,
-        IReadOnlyList<ManualJournalEntryDraftDto> automatedJournalDrafts)
+        IReadOnlyList<ManualJournalEntryDraftDto> automatedJournalDrafts,
+        IntercompanyBalanceScheduleDto? intercompanySchedule)
     {
         var lanes = new List<PrivateCapitalCloseCockpitLaneDto>
         {
@@ -205,7 +221,7 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             BuildCapitalAccountLane(activity, records, subledgers),
             BuildPartnerCapitalTieOutLane(activity, records, subledgers, reportOutputs),
             BuildExpenseFeeAllocationLane(activity, records, subledgers),
-            BuildManagementCompanyOperationsLane(activity, records, subledgers),
+            BuildManagementCompanyOperationsLane(activity, records, subledgers, intercompanySchedule),
             BuildNavSupportLane(workflows, records, reportOutputs),
             BuildValuationEvidenceLane(workflows, records),
             BuildReportingLane(workflows, reportOutputs),
@@ -400,59 +416,6 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             "Retain posted expense, fee, and allocation review evidence");
     }
 
-    private static PrivateCapitalCloseCockpitLaneDto BuildManagementCompanyOperationsLane(
-        PrivateCapitalActivityProjectionDto? activity,
-        IReadOnlyList<PrivateCapitalFundEventLedgerRecordDto> records,
-        IReadOnlyList<PrivateCapitalCapitalAccountSubledgerDto> subledgers)
-    {
-        var managementRecords = records
-            .Where(IsManagementCompanyOperatingRecord)
-            .ToArray();
-        var values = records.SelectMany(BuildManagementCompanyRecordValues).ToArray();
-        var signals = new[]
-        {
-            EvidenceSignal("expense allocation", ContainsManagementCompanyToken(values, "allocation", "expense allocation")),
-            EvidenceSignal("management fee", ContainsManagementCompanyToken(values, "management fee", "managementfee", "management fees")),
-            EvidenceSignal("intercompany balance", ContainsManagementCompanyToken(values, "intercompany", "due to", "due from", "due-to", "due-from")),
-            EvidenceSignal("bank/card evidence", ContainsManagementCompanyToken(values, "bank", "card", "bank card", "bankcard")),
-            EvidenceSignal("budget or cash-plan snapshot", ContainsManagementCompanyToken(values, "budget", "cash plan", "cash-plan", "cashplan")),
-            EvidenceSignal("reimbursement evidence", ContainsManagementCompanyToken(values, "reimbursement", "reimbursements", "reimburse"))
-        };
-        var completeSignals = signals.Count(static signal => signal.IsPresent);
-        var hasSource = managementRecords.Length > 0 || completeSignals > 0;
-        var hasValidationBlocker = managementRecords.Any(static record => record.ValidationIssueCount > 0);
-        var isReady = hasSource && !hasValidationBlocker && completeSignals == signals.Length;
-        var status = isReady
-            ? EvidenceStatusDto.Ready
-            : hasValidationBlocker
-                ? EvidenceStatusDto.Blocked
-                : MissingWhenNoSources(activity, []);
-        var missing = signals
-            .Where(static signal => !signal.IsPresent)
-            .Select(static signal => signal.Label)
-            .ToArray();
-        var evidence = RecordEvidence(managementRecords, "Management-company operating evidence")
-            .Concat(SubledgerEvidence(subledgers, "Cumulative capital-account diagnostics"))
-            .DistinctBy(static link => link.EvidenceId, StringComparer.OrdinalIgnoreCase)
-            .ToArray();
-
-        return Lane(
-            "management-company-operations",
-            "Management company operating records",
-            status,
-            isReady,
-            isReady
-                ? $"{managementRecords.Length} management-company operating record(s) retain expense allocation, intercompany, management-fee, bank/card, budget or cash-plan, and reimbursement evidence."
-                : hasSource
-                    ? $"Management-company operating support is incomplete; missing {string.Join(", ", missing)}."
-                    : "No retained management-company operating records are linked to this close scope.",
-            managementRecords
-                .Select(static record => record.NextActionRoute ?? record.ActivityRoute ?? record.EvidenceRoute)
-                .FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route))
-                ?? subledgers.Select(static subledger => subledger.ActivityRoute).FirstOrDefault(static route => !string.IsNullOrWhiteSpace(route)),
-            evidence,
-            "Retain management-company operating evidence for expense allocations, intercompany balances, fees, bank/card support, budget or cash-plan snapshots, and reimbursements");
-    }
 
     private static PrivateCapitalCloseCockpitLaneDto BuildNavSupportLane(
         IReadOnlyList<OperationsContinuityWorkflowDto> workflows,
@@ -908,6 +871,76 @@ public sealed partial class PrivateCapitalCloseCockpitService : IPrivateCapitalC
             UiApiRoutes.LedgerJournalAutomationDailyMarkToMarketSchedules,
             evidence,
             requiredAction);
+    }
+
+    /// <summary>
+    /// Recurring and calculated journals generated for the period (fees, accruals, FX revaluation)
+    /// must be posted, or recorded as needing no draft, before the period closes. The lane exists
+    /// only when the period has such occurrences, so a fund without recurring schedules is unaffected.
+    /// An occurrence the scheduled worker has not yet claimed is not visible here.
+    /// </summary>
+    private async Task<PrivateCapitalCloseCockpitLaneDto?> BuildRecurringJournalLaneAsync(
+        string? fundProfileId, Guid? ledgerBookId, string? entityId, string? periodId,
+        string? tenantId, string? companyId, CancellationToken ct)
+    {
+        if (_recurringJournalQueueSource is null || ledgerBookId is not { } bookId ||
+            NormalizeOptional(fundProfileId) is not { } fund || NormalizeOptional(entityId) is not { } entity ||
+            NormalizeOptional(tenantId) is not { } tenant || NormalizeOptional(companyId) is not { } company)
+        {
+            return null;
+        }
+
+        const string laneId = "recurring-journals";
+        const string label = "Recurring and calculated journals";
+        RecurringJournalOccurrenceDto[] rows;
+        try
+        {
+            var queue = await _recurringJournalQueueSource
+                .GetQueueAsync(fund, bookId, entity, ct, tenant, company)
+                .ConfigureAwait(false);
+            // The close scope may name the period by its authoritative id or by calendar month.
+            rows = queue.Occurrences.Where(row =>
+                (!string.IsNullOrWhiteSpace(row.PeriodId) && string.Equals(row.PeriodId.Trim(), periodId?.Trim(), StringComparison.OrdinalIgnoreCase)) ||
+                MatchesPeriod(row.EffectiveDate, periodId)).ToArray();
+        }
+        catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException)
+        {
+            // Unknown is not ready: an unreadable queue cannot show the period's journals are posted.
+            return Lane(laneId, label, EvidenceStatusDto.Blocked, false,
+                "The recurring journal queue could not be read, so the period's recurring journals cannot be confirmed as posted.",
+                UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, [],
+                "Restore the recurring journal queue, then recheck close readiness");
+        }
+
+        if (rows.Length == 0)
+            return null;
+
+        // The queue reports a reversed or rebooked occurrence as blocked until its correction
+        // journal is posted, so one that is still "Drafted" here has a posted correction.
+        static bool IsPosted(RecurringJournalOccurrenceDto row) => row.State == "Drafted" &&
+            (string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.Posted), StringComparison.Ordinal) ||
+             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.CloseLocked), StringComparison.Ordinal) ||
+             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.Reversed), StringComparison.Ordinal) ||
+             string.Equals(row.ApprovalStatus, nameof(ManualJournalEntryStatusDto.Rebooked), StringComparison.Ordinal));
+        var posted = rows.Count(IsPosted);
+        var nothingDue = rows.Count(static row => row.State == "NoDraftRequired");
+        var awaiting = rows.Count(row => row.State == "Drafted" && !IsPosted(row));
+        var blocked = rows.Length - posted - nothingDue - awaiting;
+        var isReady = posted + nothingDue == rows.Length;
+        var evidence = rows
+            .SelectMany(row => row.SourceEvidenceReferences.Select(reference => new OperationsEvidenceLinkDto(
+                $"recurring-journal:{row.OccurrenceId}:{reference}", "Recurring journal source evidence", reference,
+                "recurring-journal-queue", null)))
+            .DistinctBy(static link => link.Route, StringComparer.Ordinal)
+            .ToArray();
+        return Lane(laneId, label,
+            isReady ? EvidenceStatusDto.Ready : blocked > 0 ? EvidenceStatusDto.Blocked : EvidenceStatusDto.ReviewRequired,
+            isReady,
+            $"{rows.Length} recurring occurrence(s) in the period: {posted} posted, {nothingDue} with nothing to post, {awaiting} awaiting approval or posting, {blocked} blocked or not yet drafted.",
+            UiApiRoutes.LedgerJournalAutomationRecurringOccurrences, evidence,
+            blocked > 0
+                ? "Resolve the blocked recurring occurrences, then approve and post their drafts"
+                : "Review, approve, and post the recurring journal drafts for the period");
     }
 
     private static PrivateCapitalCloseCockpitLaneDto BuildAutomatedJournalLane(

@@ -124,7 +124,7 @@ public sealed class StrategyWorkspaceShellPageTests
         xaml.Should().Contain("StrategyHeroBadgeText");
         xaml.Should().Contain("StrategyHeroPrimaryActionButton");
         xaml.Should().Contain("StrategyHeroSecondaryActionButton");
-        xaml.Should().Contain("Next Handoff");
+        xaml.Should().Contain("Next step");
         xaml.Should().Contain("ShellContext=\"{Binding ShellContext}\"");
         xaml.Should().Contain("CommandGroup=\"{Binding CommandGroup}\"");
         xaml.Should().Contain("Text=\"{Binding StrategyWorkflowStatusText}\"");

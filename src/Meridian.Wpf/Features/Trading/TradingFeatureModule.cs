@@ -17,7 +17,7 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
 {
     private static readonly IReadOnlyList<ShellPageDescriptor> Pages =
     [
-        ShellPageRegistryBuilder.Page<TradingWorkspaceShellPage>("TradingShell", "Trading Workspace", "Monitor markets, review orders, and track risk across active runs.", "trading", "Desk", "\uE945", 0, ShellNavigationVisibilityTier.Primary, ["trading", "home", "workspace", "monitor"], ["LiveData", "OrderBook", "PositionBlotter", "RunRisk", "PortfolioShell", "Backtest"], ["TradingWorkspace"]),
+        ShellPageRegistryBuilder.Page<TradingWorkspaceShellPage>("TradingShell", "Trading Workspace", "See your positions and open orders, and check whether the account is ready to trade.", "trading", "Desk", "\uE945", 0, ShellNavigationVisibilityTier.Primary, ["trading", "home", "workspace", "monitor"], ["LiveData", "OrderBook", "PositionBlotter", "RunRisk", "PortfolioShell", "Backtest"], ["TradingWorkspace"]),
         ShellPageRegistryBuilder.Page<LiveDataViewerPage>("LiveData", "Live data", "Monitor streaming quotes, venue state, and feed health.", "trading", "Market Feed", "\uE9D2", 10, ShellNavigationVisibilityTier.Primary, ["streaming", "market", "feed", "monitor"], ["OrderBook", "PositionBlotter", "Backtest", "LeanIntegration", "PortfolioImport"], ["LiveDataViewer"]),
         ShellPageRegistryBuilder.Page<OrderBookPage>("OrderBook", "Order book", "Review depth and quote quality before sending orders.", "trading", "Market Feed", "\uE8FD", 20, ShellNavigationVisibilityTier.Primary, ["order book", "depth", "quotes"], ["LiveData", "PositionBlotter"]),
         ShellPageRegistryBuilder.Page<PositionBlotterPage>("PositionBlotter", "Position blotter", "Review open positions and realized or unrealized P&L.", "trading", "Execution", "\uE8FD", 30, ShellNavigationVisibilityTier.Primary, ["positions", "blotter", "pnl", "review"], ["AccountPortfolio", "RunRisk", "RunLedger", "FundPortfolio"], ["Blotter"]),
@@ -36,6 +36,7 @@ public sealed class TradingFeatureModule : IDesktopFeatureModule
         services.AddSingleton<IExecutionSafetyControlClient, ExecutionSafetyControlClient>();
         services.AddSingleton<TradingSafetyCommandService>();
         services.AddWorkspaceScoped<TradingWorkspaceShellPresentationService>();
+        services.AddTransient<PaperSessionReconciliationViewModel>();
         services.AddTransient<TradingWorkspaceShellStateProvider>();
         services.AddTransient<TradingWorkspaceShellViewModel>();
         services.AddTransient<TradingWorkspaceShellPage>();

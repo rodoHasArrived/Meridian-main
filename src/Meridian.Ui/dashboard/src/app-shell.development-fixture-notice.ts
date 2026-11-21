@@ -63,7 +63,7 @@ const developmentFixtureDemoSteps = [
     matchPath: WORKSTATION_ROUTE_CATALOG.dataQuotes,
     matchView: "watchlist",
     label: "Watchlist",
-    ariaLabel: "Open sample watchlist demo lane"
+    ariaLabel: "Open sample watchlist demo"
   },
   {
     id: "quotes",

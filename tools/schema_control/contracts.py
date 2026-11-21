@@ -9,9 +9,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 import hashlib
+import io
 import json
 from pathlib import Path
 import re
+import subprocess
+import tarfile
+import tempfile
 from typing import Any, Iterable, Sequence
 
 
@@ -1310,4 +1314,60 @@ def build_contract_manifest(root: Path, config: dict) -> dict:
     return manifest
 
 
-__all__ = ["build_contract_manifest"]
+def build_contract_manifest_at_revision(root: Path, revision: str, config_path: str) -> dict:
+    """Catalog pinned Git source with the current parser, without running base code.
+
+    Only regular source files are materialized in a disposable directory. The
+    accepted registry is read from that same revision, so renamed/removed sets
+    retain a meaningful structural diff after raw inventories leave Git.
+    """
+    root = root.resolve()
+    configured = Path(config_path)
+    configured = configured if configured.is_absolute() else root / configured
+    try:
+        relative_config = configured.resolve().relative_to(root).as_posix()
+    except ValueError as exc:
+        raise ValueError("Contract baseline registry must be inside the repository") from exc
+
+    def git(*args: str) -> bytes:
+        try:
+            return subprocess.check_output(["git", "--literal-pathspecs", *args], cwd=root, stderr=subprocess.PIPE)
+        except subprocess.CalledProcessError as exc:
+            raise ValueError("Unable to reconstruct pinned contract source: " + exc.stderr.decode(errors="replace").strip()) from exc
+
+    pinned = git("rev-parse", "--verify", "--end-of-options", f"{revision}^{{commit}}").decode().strip()
+    config = json.loads(git("show", f"{pinned}:{relative_config}"))
+    if not isinstance(config, dict):
+        raise ValueError("Contract baseline registry must be an object")
+    directories: set[str] = set()
+    for entry in config.get("contract_sets", []):
+        for label in entry.get("directories", []):
+            path = Path(label)
+            if path.is_absolute() or ".." in path.parts:
+                raise ValueError("Contract baseline source directories must be repository relative")
+            directories.add(path.as_posix())
+    if not directories:
+        with tempfile.TemporaryDirectory(prefix="meridian-contract-baseline-") as temporary:
+            return build_contract_manifest(Path(temporary), config)
+    archive = git("archive", "--format=tar", pinned, "--", *sorted(directories))
+    with tempfile.TemporaryDirectory(prefix="meridian-contract-baseline-") as temporary:
+        destination = Path(temporary)
+        with tarfile.open(fileobj=io.BytesIO(archive)) as members:
+            for member in members:
+                if not member.name.endswith(".cs"):
+                    continue
+                path = Path(member.name)
+                if not member.isfile() or path.is_absolute() or ".." in path.parts:
+                    raise ValueError(f"Contract baseline source is not a regular repository file: {member.name}")
+                output = destination / path
+                output.parent.mkdir(parents=True, exist_ok=True)
+                source = members.extractfile(member)
+                assert source is not None
+                output.write_bytes(source.read())
+        # Registered sets may contain no public C# types, but must still exist.
+        for directory in directories:
+            (destination / directory).mkdir(parents=True, exist_ok=True)
+        return build_contract_manifest(destination, config)
+
+
+__all__ = ["build_contract_manifest", "build_contract_manifest_at_revision"]

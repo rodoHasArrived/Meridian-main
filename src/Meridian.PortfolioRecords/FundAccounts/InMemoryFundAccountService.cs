@@ -358,13 +358,29 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             request.SourceFormat,
             request.Lines.Count,
             DateTimeOffset.UtcNow,
-            request.LoadedBy);
+            request.LoadedBy,
+            request.Authority,
+            BondHoldingNormalization.ContentHash(request));
 
         (long Version, string Json)? snapshot = null;
         lock (_gate)
         {
             var stored = RequireAccountLocked(request.AccountId);
             EnsureAllowed(stored.Summary, "ingest-custodian-statement", request.IsBackfill, allowSuspended: true);
+            var retained = stored.CustodianBatches.FirstOrDefault(b => b.BatchId == batch.BatchId);
+            if (retained is not null)
+            {
+                if (retained.ContentSha256 != batch.ContentSha256)
+                    throw new InvalidOperationException("Custodian batch identity already retains different content.");
+                return retained;
+            }
+            if (request.Authority?.SupersedesBatchId is { } predecessor
+                && !stored.CustodianBatches.Any(b => b.BatchId == predecessor && b.AsOfDate == batch.AsOfDate
+                    && b.Authority is { } prior && prior.Revision < request.Authority.Revision))
+                throw new InvalidOperationException("Superseded statement must belong to this account/date and have an earlier revision.");
+            if (_accounts.Values.SelectMany(a => a.CustodianPositions)
+                .Any(p => p.BatchId != batch.BatchId && request.Lines.Any(l => l.LineId == p.LineId)))
+                throw new InvalidOperationException("A custodian line identity cannot be reused by another batch.");
             stored.CustodianBatches.Add(batch);
             UpsertCustodianPositions(stored.CustodianPositions, request.Lines);
             snapshot = CaptureSnapshotLocked();
@@ -465,8 +481,22 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             var results = stored.CustodianPositions
                 .Where(p => p.AsOfDate == asOfDate)
                 .ToList();
+            var batches = stored.CustodianBatches.Where(b => b.AsOfDate == asOfDate).ToArray();
+            var current = AccountReconciliationChecks.SelectCustodianState(accountId, asOfDate, results, batches);
+            return Task.FromResult(current.Positions);
+        }
+    }
 
-            return Task.FromResult<IReadOnlyList<CustodianPositionLineDto>>(results);
+    public Task<CustodianHoldingSnapshotDto?> GetCustodianSnapshotAsync(Guid accountId, DateOnly asOf,
+        DateTimeOffset? knownAt = null, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        lock (_gate)
+        {
+            if (!_accounts.TryGetValue(accountId, out var stored))
+                return Task.FromResult<CustodianHoldingSnapshotDto?>(null);
+            return Task.FromResult(CustodianHoldingSnapshotSelector.Select(accountId, asOf, knownAt,
+                stored.CustodianBatches, stored.CustodianPositions));
         }
     }
 
@@ -523,6 +553,11 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
                 .Where(b => b.AsOfDate == request.AsOfDate)
                 .ToList();
 
+            var custodianState = AccountReconciliationChecks.SelectCustodianState(request.AccountId,
+                request.AsOfDate, positions, custodianBatches);
+            positions = custodianState.Positions.ToList();
+            custodianBatches = custodianState.Batches.ToList();
+
             bankLines = BankStatementClosingBalanceAuthority.ForStatementDate(BankLinesWithAuthority(stored), request.AsOfDate)
                 .ToList();
         }
@@ -569,14 +604,14 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         List<CustodianPositionLineDto> existing,
         IReadOnlyList<CustodianPositionLineDto> incoming)
     {
-        var index = existing.ToDictionary(
-            static line => BuildCustodianDedupKey(line),
-            static line => line,
-            StringComparer.OrdinalIgnoreCase);
+        // A security may recur in successive full statements (or in distinct source rows).
+        // Retain every immutable line identity so knowledge-cutoff replay can reconstruct the
+        // earlier batch rather than losing its membership when a correction is ingested.
+        var index = existing.ToDictionary(static line => line.LineId);
 
         foreach (var line in incoming)
         {
-            index[BuildCustodianDedupKey(line)] = line;
+            index[line.LineId] = line;
         }
 
         existing.Clear();
@@ -631,9 +666,6 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
             }
             : line);
     }
-
-    private static string BuildCustodianDedupKey(CustodianPositionLineDto line)
-        => $"{line.AccountId:N}|{line.AsOfDate:yyyyMMdd}|{line.IdentifierType}|{line.Identifier}".ToUpperInvariant();
 
     public Task<IReadOnlyList<AccountReconciliationRunDto>> GetReconciliationRunsAsync(
         Guid accountId, CancellationToken ct = default)
@@ -1434,7 +1466,7 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
 
     private void LoadState()
     {
-        if (_persistencePath is null || !File.Exists(_persistencePath))
+        if (_persistencePath is null)
         {
             return;
         }
@@ -1443,22 +1475,34 @@ public sealed class InMemoryFundAccountService : IFundAccountService, IAccountMa
         {
             var json = File.ReadAllText(_persistencePath);
             var state = JsonSerializer.Deserialize<PersistedState>(json, JsonOptions);
-            if (state is null)
+            if (state is null || state.Version != 1 || state.Accounts is null)
             {
-                return;
+                throw new InvalidDataException("The fund-account snapshot is empty or has an unsupported format.");
             }
 
             foreach (var account in state.Accounts)
             {
-                _accounts[account.Summary.AccountId] = NormalizeStoredAccount(account);
+                if (account?.Summary is null || !_accounts.TryAdd(account.Summary.AccountId, NormalizeStoredAccount(account)))
+                {
+                    throw new InvalidDataException("The fund-account snapshot contains missing or duplicate account records.");
+                }
             }
 
             _stateVersion = 1;
             _persistedVersion = 1;
         }
-        catch (Exception ex) when (ex is IOException or JsonException)
+        catch (Exception ex) when (ex is FileNotFoundException or DirectoryNotFoundException)
         {
-            // Preserve startup availability for malformed or missing local snapshots.
+            // A new local store has no snapshot yet.
+        }
+        catch (Exception ex) when (ex is IOException or InvalidDataException or JsonException or UnauthorizedAccessException)
+        {
+            Serilog.Log.ForContext<InMemoryFundAccountService>().Error(ex,
+                "Cannot load fund-account snapshot {PersistencePath}; startup refused and the file left unchanged",
+                _persistencePath);
+            throw new InvalidDataException(
+                $"Cannot load fund-account snapshot '{_persistencePath}'. Restore or repair it before restarting; the file has been left unchanged.",
+                ex);
         }
     }
 

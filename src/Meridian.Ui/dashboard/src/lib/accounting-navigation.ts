@@ -39,7 +39,8 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
     items: [
       {
         id: "today",
-        label: "Today",
+        // Not "Today": that name belongs to the global front door (the Daily Control Tower).
+        label: "Close cockpit",
         route: WORKSTATION_ROUTE_CATALOG.accounting,
         match: "exact"
       },
@@ -67,6 +68,16 @@ export const ACCOUNTING_NAVIGATION_GROUPS: readonly AccountingNavigationGroupDef
           { route: WORKSTATION_ROUTE_CATALOG.accountingTrialBalanceLegacy },
           { route: WORKSTATION_ROUTE_CATALOG.accountingAccountDetail }
         ]
+      },
+      {
+        id: "factor-paydown",
+        label: "Factor paydown",
+        route: WORKSTATION_ROUTE_CATALOG.accountingFactorPaydown
+      },
+      {
+        id: "consolidation",
+        label: "Consolidation",
+        route: WORKSTATION_ROUTE_CATALOG.accountingConsolidation
       },
       {
         id: "adjustments",

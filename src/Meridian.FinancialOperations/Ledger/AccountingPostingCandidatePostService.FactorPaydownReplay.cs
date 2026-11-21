@@ -51,8 +51,22 @@ public sealed partial class AccountingPostingCandidatePostService
             return new LedgerEntry(line.EntryId, line.JournalEntryId, originalAt, line.Account, debit, credit,
                 line.Description, line.Dimensions, line.Currency);
         }).ToArray();
+        // The exact journal/receipt/evidence checks above prove the retained posting. Its
+        // append-only eligibility receipt was stamped after the original atomic command was
+        // fingerprinted, so reconstruct only that command's pre-append metadata here. Storage
+        // still checks the complete original fingerprint and verifies the retained audit chain.
+        var originalMetadata = existing.Entry.Metadata;
+        if (originalMetadata.Tags?.Any(pair => string.Equals(pair.Key, "controls.eligibility", StringComparison.OrdinalIgnoreCase)) == true)
+        {
+            var tags = originalMetadata.Tags.Where(pair =>
+                    !string.Equals(pair.Key, "controls.eligibility", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(pair => pair.Key, pair => pair.Value, StringComparer.Ordinal);
+            // Null and empty tags normalize identically with the retained typed command. Leave
+            // absent receipts untouched, and retain every other provenance and economic tag.
+            originalMetadata = originalMetadata with { Tags = tags.Count == 0 ? null : tags };
+        }
         var originalEntry = new JournalEntry(existing.Entry.JournalEntryId, originalAt,
-            existing.Entry.Description, lines, existing.Entry.Metadata);
+            existing.Entry.Description, lines, originalMetadata);
         var write = new LedgerJournalEntryWrite(originalEntry, existing.AggregateId, existing.PeriodId,
             existing.CommandId, existing.CorrelationId, existing.AccountingBasis, existing.AccountingPolicyId,
             existing.AccountingPolicyVersion, existing.RuleId, existing.RuleVersion, existing.SourceEventId,

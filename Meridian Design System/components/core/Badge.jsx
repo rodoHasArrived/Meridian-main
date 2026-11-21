@@ -12,15 +12,15 @@ function inject() {
   padding:3px 8px;font-family:var(--font-body);font-size:11px;font-weight:600;
   font-variant:all-small-caps;letter-spacing:.03em;white-space:nowrap;line-height:1.3;border-radius:var(--radius-chip,2px);}
 .mds-badge__dot{height:6px;width:6px;background:currentColor;flex:0 0 auto;}
-.mds-badge--neutral{background:var(--bg-hover,#F0EEE9);border-color:var(--border,#E4E3DE);color:var(--text-secondary,#4E5258);}
-.mds-badge--info{background:var(--blue-a10,rgba(168,84,54,.10));border-color:var(--accent,#A85436);color:var(--accent-dim,#8C4429);}
-.mds-badge--success{background:var(--green-a10,rgba(58,122,86,.10));border-color:var(--green,#3A7A56);color:var(--green-dim,#2C5C40);}
-.mds-badge--warning{background:var(--orange-a10,rgba(138,92,18,.10));border-color:var(--orange,#8A5C12);color:var(--orange-dim,#68450E);}
-.mds-badge--danger{background:var(--red-a10,rgba(168,68,60,.10));border-color:var(--red,#A8443C);color:var(--red-dim,#7E332D);}
+.mds-badge--neutral{background:var(--bg-hover,#EDEFF0);border-color:var(--border,#D2CDC3);color:var(--text-secondary,#535C65);}
+.mds-badge--info{background:var(--blue-a10,rgba(47,100,138,.10));border-color:var(--semantic-info,#2F648A);color:var(--semantic-info,#2F648A);}
+.mds-badge--success{background:var(--green-a10,rgba(46,118,85,.10));border-color:var(--green,#2E7655);color:var(--green-dim,#225840);}
+.mds-badge--warning{background:var(--orange-a10,rgba(152,103,23,.10));border-color:var(--orange,#986717);color:var(--orange-dim,#724D11);}
+.mds-badge--danger{background:var(--red-a10,rgba(181,75,66,.10));border-color:var(--red,#B54B42);color:var(--red-dim,#883832);}
 /* environment modes — SOLID filled chips (you-are-here), a different register from washed status */
-.mds-badge--live{background:var(--mode-live,#A8443C);border-color:var(--mode-live,#A8443C);color:var(--text-on-fill,#fff);font-weight:700;}
-.mds-badge--paper{background:var(--mode-paper,#A85436);border-color:var(--mode-paper,#A85436);color:var(--text-on-fill,#fff);font-weight:700;}
-.mds-badge--fixture{background:var(--mode-fixture,#8A5C12);border-color:var(--mode-fixture,#8A5C12);color:var(--text-on-fill,#fff);font-weight:700;}
+.mds-badge--live{background:var(--mode-live,#B54B42);border-color:var(--mode-live,#B54B42);color:var(--text-on-fill,#fff);font-weight:700;}
+.mds-badge--paper{background:var(--mode-paper,#5D7286);border-color:var(--mode-paper,#5D7286);color:var(--text-on-fill,#fff);font-weight:700;}
+.mds-badge--fixture{background:var(--mode-fixture,#986717);border-color:var(--mode-fixture,#986717);color:var(--text-on-fill,#fff);font-weight:700;}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "badge");

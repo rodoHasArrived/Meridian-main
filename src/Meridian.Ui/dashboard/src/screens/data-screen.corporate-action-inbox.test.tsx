@@ -2,6 +2,7 @@ import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { CorporateActionInboxRegion, CORPORATE_ACTION_CASE_WORKSPACE_ID } from "@/screens/data-screen.corporate-action-inbox";
 import { useCorporateActionInboxPanel } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import type {
@@ -310,6 +311,25 @@ describe("CorporateActionInboxRegion", () => {
     });
   });
 
+  it("re-reads the queue on a header refresh but never under an open acceptance confirmation", async () => {
+    const user = userEvent.setup();
+    const fetchInbox = vi.fn(defaultFetchInbox);
+    const view = render(<GlobalRefreshProvider sequence={0}><Harness fetchInbox={fetchInbox} /></GlobalRefreshProvider>);
+    const headerRefresh = (sequence: number) => view.rerender(<GlobalRefreshProvider sequence={sequence}><Harness fetchInbox={fetchInbox} /></GlobalRefreshProvider>);
+    expect((await screen.findAllByText("case-aapl-dividend")).length).toBeGreaterThan(0);
+    expect(screen.queryByRole("button", { name: /Refresh/ })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Retry loading corporate action case queue" })).not.toBeInTheDocument();
+    headerRefresh(1);
+    await waitFor(() => expect(fetchInbox).toHaveBeenCalledTimes(2));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Accept canonical fact" })).toBeEnabled());
+
+    await user.click(screen.getByRole("button", { name: "Accept canonical fact" }));
+    expect(screen.getByRole("dialog", { name: "Accept Dividend as a canonical fact?" })).toBeInTheDocument();
+    headerRefresh(2);
+    expect(fetchInbox).toHaveBeenCalledTimes(2);
+    expect(screen.getByRole("dialog", { name: "Accept Dividend as a canonical fact?" })).toBeInTheDocument();
+  });
+
   it("has no automated accessibility violations in loaded case-workspace state", async () => {
     const { container } = render(<Harness />);
     await screen.findAllByText("case-aapl-dividend");
@@ -375,5 +395,86 @@ describe("CorporateActionInboxRegion", () => {
     expect(screen.getAllByText("TermsConfirmed").length).toBeGreaterThan(0);
     expect(screen.getByText(/1 durable processing case; no staged corporate actions awaiting review/i)).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Accept canonical fact" })).toBeDisabled();
+  });
+
+  it("renders supplied calendar dates as time elements with unchanged text and leaves unsupplied dates as plain text", async () => {
+    const user = userEvent.setup();
+    const fetchInbox = vi.fn().mockResolvedValue({
+      ...inbox(),
+      stagedCount: 1,
+      staged: [proposal({ recordDate: null })],
+      cases: [],
+      errors: []
+    });
+    render(<Harness fetchInbox={fetchInbox} />);
+
+    const row = await screen.findByRole("row", { name: /Inspect corporate action case for Dividend on AAPL/i });
+    const queueExDate = within(row).getByText("2026-07-20");
+    expect(queueExDate.tagName).toBe("TIME");
+    expect(queueExDate).toHaveAttribute("datetime", "2026-07-20");
+    expect(queueExDate).toHaveClass("block", "font-mono", "text-foreground");
+
+    await user.click(row);
+    const workspace = document.getElementById(CORPORATE_ACTION_CASE_WORKSPACE_ID) as HTMLElement;
+    const summaryValue = (label: string) => {
+      const term = within(workspace).getAllByText(label).find((element) => element.tagName === "DT") as HTMLElement;
+      return term.nextElementSibling as HTMLElement;
+    };
+
+    const exDate = summaryValue("Ex-date");
+    expect(exDate.textContent).toMatch(/^2026-07-20 \(.+\)$/);
+    expect(within(exDate).getByText("2026-07-20")).toHaveAttribute("datetime", "2026-07-20");
+
+    const payableDate = summaryValue("Payable date");
+    expect(payableDate).toHaveTextContent(/^2026-08-01$/);
+    expect(within(payableDate).getByText("2026-08-01").tagName).toBe("TIME");
+
+    const recordDate = summaryValue("Record date");
+    expect(recordDate).toHaveTextContent(/^Not supplied$/);
+    expect(recordDate.querySelector("time")).toBeNull();
+
+    const sourceFacts = within(workspace).getByRole("table", { name: "Corporate action source facts and provenance" });
+    expect(within(sourceFacts).getByText("2026-07-20")).toHaveAttribute("datetime", "2026-07-20");
+    expect(within(sourceFacts).getByText("2026-08-01")).toHaveAttribute("datetime", "2026-08-01");
+    const recordDateFact = within(sourceFacts).getByRole("row", { name: /Record date/ });
+    // The winning value is the cell after the field name, whether the field is a row header or a cell.
+    const recordDateCells = within(recordDateFact).getAllByRole("cell");
+    const recordDateValue = recordDateCells[recordDateCells.findIndex((cell) => cell.textContent === "Record date") + 1];
+    expect(recordDateValue).toHaveTextContent(/^Not supplied$/);
+    expect(recordDateFact.querySelector("time")).toBeNull();
+    expect(within(sourceFacts).getByText("0.25 USD").tagName).toBe("TD");
+
+    await user.click(screen.getByRole("button", { name: "Accept canonical fact" }));
+    const dialog = screen.getByRole("dialog", { name: "Accept Dividend as a canonical fact?" });
+    const dialogExDate = within(dialog).getByText("2026-07-20");
+    expect(dialogExDate.tagName).toBe("TIME");
+    expect(dialogExDate).toHaveAttribute("datetime", "2026-07-20");
+  });
+
+  it("keeps the unsupplied ex-date of a durable case without a source snapshot as plain text", async () => {
+    const fetchInbox = vi.fn().mockResolvedValue({
+      ...inbox(),
+      stagedCount: 0,
+      staged: [],
+      cases: [processingCase({ sourceSnapshot: null })],
+      errors: []
+    });
+    const { container } = render(<Harness fetchInbox={fetchInbox} />);
+
+    const row = await screen.findByRole("row", { name: /Inspect corporate action case/i });
+    const exDate = within(row).getAllByText("Not supplied").find((element) => element.classList.contains("block") && element.classList.contains("font-mono")) as HTMLElement;
+    expect(exDate.tagName).toBe("SPAN");
+    expect(exDate).toHaveClass("block", "font-mono", "text-foreground");
+    expect(container.querySelector("time")).toBeNull();
+  });
+
+  it("has no automated accessibility violations with date elements in an open case workspace", async () => {
+    const user = userEvent.setup();
+    const { container } = render(<Harness />);
+
+    await user.click(await screen.findByRole("row", { name: /Inspect corporate action case for Dividend on AAPL/i }));
+    expect(container.querySelectorAll("time[datetime]").length).toBeGreaterThan(0);
+
+    expect((await axe(container)).violations).toEqual([]);
   });
 });

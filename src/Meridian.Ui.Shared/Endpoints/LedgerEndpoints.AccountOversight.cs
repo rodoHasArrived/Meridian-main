@@ -247,6 +247,8 @@ public static partial class LedgerEndpoints
                 .ConfigureAwait(false);
         }
         catch (KeyNotFoundException) { return Results.NotFound(); }
+        catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+        catch (JsonException ex) { return Results.BadRequest(new { error = ex.Message }); }
         catch (ArgumentException ex) { return Results.Problem(ex.Message, statusCode: StatusCodes.Status422UnprocessableEntity); }
         catch (AccountCashForecastSourceAuthorityException ex)
         { return Results.Conflict(new { code = "CASH_FORECAST_SOURCE_AUTHORITY_REQUIRED", error = ex.Message }); }

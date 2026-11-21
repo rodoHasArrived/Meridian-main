@@ -26,7 +26,10 @@ let private FloatingWithFloorCapAndSecurityMasterHash = "1D87D653D4189C9FEED4F98
 [<Literal>]
 let private InterestOnlyWithGraceHash = "BB66416FE686BA4860EE7FE5AA4A0016D6DCE9CC8006F58DAC9E177CC6BB6E89"
 
-let private fixedBulletTerms () =
+/// Fixed bullet DTO with an explicit PrincipalPrepayment excess rule (PRD-115); same hex as the C# lane.
+let private FixedBulletWithPrincipalPrepaymentRuleHash = "229F0A104022000EBB8CB539D80A04A9EF5894A1AAFF3891EBA7B2380FC73290"
+
+let private fixedBulletTermsWithRule (rule: Nullable<ExcessPaymentApplication>) =
     DirectLendingTermsDto(
         DateOnly(2026, 1, 15),
         DateOnly(2029, 1, 15),
@@ -44,7 +47,10 @@ let private fixedBulletTerms () =
         Nullable 0.005m,
         Nullable 200m,
         true,
-        """{"leverage":"<=4.0x"}""")
+        """{"leverage":"<=4.0x"}""",
+        ExcessPaymentApplication = rule)
+
+let private fixedBulletTerms () = fixedBulletTermsWithRule (Nullable())
 
 let private floatingWithFloorCapAndSecurityMasterTerms () =
     DirectLendingTermsDto(
@@ -119,6 +125,14 @@ let ``Terms hash for the fixed bullet DTO matches the base capture and the C# la
 
     decision.TermsVersion.TermsHash |> should equal FixedBulletHash
     decision.Contract.TermsVersions.[0].TermsHash |> should equal FixedBulletHash
+
+[<Fact>]
+let ``Terms hash with an explicit excess-payment rule matches the C# lane and differs from the base capture`` () =
+    let decision =
+        createLoanWith (fixedBulletTermsWithRule (Nullable ExcessPaymentApplication.PrincipalPrepayment))
+
+    decision.TermsVersion.TermsHash |> should equal FixedBulletWithPrincipalPrepaymentRuleHash
+    decision.TermsVersion.TermsHash |> should not' (equal FixedBulletHash)
 
 [<Fact>]
 let ``Terms hash for the floating DTO with floor cap and Security Master reference matches the base capture`` () =

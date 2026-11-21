@@ -4,7 +4,7 @@ using Meridian.Contracts.Workstation;
 using Meridian.Domain.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation;
 using Meridian.PortfolioRecords.Accounts;
-using Meridian.Ui.Shared.Contracts.Reconciliation;
+using Meridian.Contracts.Reconciliation;
 using WorkstationStatementMatchTier = Meridian.Contracts.Workstation.StatementMatchTier;
 
 namespace Meridian.Ui.Shared.Services;
@@ -93,7 +93,7 @@ public class ReconciliationApiService : IReconciliationApiService
 
         var breakDtos = result.Breaks.Select(ToRunBreakDto).ToArray();
         var status = breakDtos.Length == 0 ? StatementRunStatus.Completed : StatementRunStatus.ReviewRequired;
-        return ToRunDto(result.Import, breakDtos, status, request.Notes, result.Cases);
+        return ToRunDto(result, breakDtos, status, request.Notes);
     }
 
     public async Task<bool> OwnsStatementRunAsync(
@@ -182,14 +182,12 @@ public class ReconciliationApiService : IReconciliationApiService
         }
 
         var breaks = result.Breaks.Select(ToRunBreakDto).ToArray();
-        var cases = result.Cases;
         return ToRunDto(
-            result.Import,
+            result,
             breaks,
             breaks.Any(static item => string.Equals(item.Status, "Open", StringComparison.OrdinalIgnoreCase))
                 ? StatementRunStatus.ReviewRequired
-                : StatementRunStatus.Completed,
-            cases: cases);
+                : StatementRunStatus.Completed);
     }
 
     public async Task<StatementRunValidationDto?> GetStatementRunValidationAsync(
@@ -230,10 +228,9 @@ public class ReconciliationApiService : IReconciliationApiService
 
         var breaks = result.Breaks.Select(ToRunBreakDto).ToArray();
         return ToRunDto(
-            result.Import,
+            result,
             breaks,
-            breaks.Length == 0 ? StatementRunStatus.Completed : StatementRunStatus.ReviewRequired,
-            cases: result.Cases);
+            breaks.Length == 0 ? StatementRunStatus.Completed : StatementRunStatus.ReviewRequired);
     }
 
     public async Task<IReadOnlyList<StatementRunExceptionDto>> ListOpenExceptionsAsync(
@@ -666,13 +663,13 @@ public class ReconciliationApiService : IReconciliationApiService
         => openBreakCounts.TryGetValue(import.ImportId, out var runCount) ? runCount : 0;
 
     private static StatementRunDto ToRunDto(
-        CanonicalStatementImport import,
+        StatementRunWorkflowResult result,
         IReadOnlyList<StatementRunBreakDto> breaks,
         StatementRunStatus status,
-        string? notes = null,
-        IReadOnlyList<ReconciliationCase>? cases = null)
+        string? notes = null)
     {
-        var casesByBreakId = (cases ?? [])
+        var import = result.Import;
+        var casesByBreakId = result.Cases
             .SelectMany(static reconciliationCase => ResolveCaseBreakIds(reconciliationCase)
                 .Select(breakId => new KeyValuePair<string, ReconciliationCase>(breakId, reconciliationCase)))
             .GroupBy(static item => item.Key, StringComparer.OrdinalIgnoreCase)
@@ -706,8 +703,8 @@ public class ReconciliationApiService : IReconciliationApiService
             SourceFileHash: import.SourceFileHash,
             MappingProfileId: import.MappingProfileId,
             MappingProfileVersion: null,
-            ToleranceProfileId: import.ToleranceProfileId,
-            ToleranceProfileVersion: null,
+            ToleranceProfileId: result.ExecutedTolerancePolicy?.ProfileId ?? import.ToleranceProfileId,
+            ToleranceProfileVersion: result.ExecutedTolerancePolicy?.Version,
             ImportedBy: import.ImportedBy,
             ImportedAtUtc: import.ImportedAtUtc,
             ValidationIssues: [],
@@ -725,7 +722,7 @@ public class ReconciliationApiService : IReconciliationApiService
                 CashBreakCount: breaks.Count(static item => item.BreakType is StatementBreakType.CashBalanceMismatch),
                 TransactionBreakCount: breaks.Count(static item => item.BreakType is StatementBreakType.TransactionAmountMismatch)),
             Breaks: breaks.Select(item => ToStatementBreakDto(item, casesByBreakId)).ToList(),
-            Cases: cases?.Select(ToStatementCaseDto).ToList() ?? [],
+            Cases: result.Cases.Select(ToStatementCaseDto).ToList(),
             ImportId: import.ImportId,
             FundProfileId: import.FundAccountId,
             FundAccountId: Guid.TryParse(import.FundAccountId, out var accountId) ? accountId : null,

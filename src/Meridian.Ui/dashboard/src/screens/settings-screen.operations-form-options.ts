@@ -6,6 +6,7 @@ import type {
   OperationsCloseCalendarItem,
   RolePermissionCatalog
 } from "@/types";
+import { pluralizeCount } from "@/lib/format";
 
 export function buildLedgerMappingAssignmentDraft(workbench: LedgerMappingWorkbench | null): {
   canAssign: boolean;
@@ -125,7 +126,7 @@ export function buildRolePermissionProfileDraft(catalog: RolePermissionCatalog |
 
   return {
     canSave: true,
-    statusLabel: `${permissionOptions.length} grants`,
+    statusLabel: pluralizeCount(permissionOptions.length, "grant"),
     disabledReason: null,
     baseRoleOptions,
     permissionOptions,
@@ -163,7 +164,7 @@ export function buildApprovalPolicyRuleDraft(matrix: OperationsApprovalPolicyMat
 
   return {
     canSave: true,
-    statusLabel: `${matrix.rows.length} rules`,
+    statusLabel: pluralizeCount(matrix.rows.length, "rule"),
     disabledReason: null,
     rows: matrix.rows,
     policyOptions: matrix.rows.map((row) => ({
@@ -221,7 +222,7 @@ export function buildCloseCalendarItemDraft(calendar: OperationsCloseCalendar | 
 
   return {
     canSave: true,
-    statusLabel: `${configurableItems.length} workflows`,
+    statusLabel: pluralizeCount(configurableItems.length, "workflow"),
     disabledReason: null,
     items: configurableItems,
     workflowOptions: configurableItems.map((item) => ({

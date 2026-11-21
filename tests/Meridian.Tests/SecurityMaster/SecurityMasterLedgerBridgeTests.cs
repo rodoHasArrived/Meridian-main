@@ -10,16 +10,65 @@ using ISecurityMasterQueryService = Meridian.Contracts.SecurityMaster.ISecurityM
 namespace Meridian.Tests.SecurityMaster;
 
 /// <summary>
-/// Unit tests for <see cref="SecurityMasterLedgerBridge"/>.
+/// Unit tests for <see cref="HistoricalCorporateActionLedgerFixture"/>.
 /// </summary>
 [Trait("Category", "Unit")]
-public sealed class SecurityMasterLedgerBridgeTests
+public sealed class HistoricalCorporateActionLedgerFixtureTests
 {
     private static readonly Guid SecurityId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
     private const string Ticker = "AAPL";
 
-    private static SecurityMasterLedgerBridge BuildBridge(ISecurityMasterQueryService queryService)
-        => new(queryService, NullLogger<SecurityMasterLedgerBridge>.Instance);
+    private static HistoricalCorporateActionLedgerFixture BuildBridge(ISecurityMasterQueryService queryService)
+    {
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService);
+        return new(queryService, NullLogger<HistoricalCorporateActionLedgerFixture>.Instance);
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_ReturnOfCapitalWithPayloadOnlyAmount_PostsFromTypedTerms()
+    {
+        // The amount of a return of capital may be recorded only in its payload; the bridge reads the
+        // typed cash-distribution terms, which fall back to the payload, instead of the column alone.
+        var payload = System.Text.Json.JsonDocument.Parse(
+            $$"""{"{{CorporateActionPayloads.CapitalReturnPerShare}}":0.40}""").RootElement;
+        var returnOfCapital = MakeDividend(0m, new DateOnly(2025, 3, 15)) with
+        {
+            EventType = CorporateActionEventTypes.ReturnOfCapital,
+            DividendPerShare = null,
+            Payload = payload
+        };
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { returnOfCapital });
+        var bridge = BuildBridge(queryService);
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, new HistoricalCorporateActionPostingContext(PositionQuantity: 100m));
+
+        // Declaration plus pay-date receipt, exactly as a column-recorded return of capital posts.
+        ledger.Journal.Should().HaveCount(2);
+        ledger.Journal[0].JournalEntryId.Should().Be(returnOfCapital.CorpActId);
+        ledger.Journal[0].IsBalanced.Should().BeTrue();
+        ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Cash).Should().Be(40m, "100 units × 0.40 per unit from the payload");
+        ledger.GetBalance(LedgerAccounts.DividendIncome).Should().Be(0m, "a return of capital reduces carrying value, not income");
+    }
+
+    [Fact]
+    public async Task PostCorporateActionsAsync_DividendOnACommitmentMeasuredLot_IsNotPosted()
+    {
+        // A private fund interest's lots are measured in commitment amount; a per-unit dividend has
+        // no reading on them, so the bridge must not multiply the rate by committed currency.
+        var dividend = MakeDividend(0.25m, new DateOnly(2025, 3, 15));
+        var queryService = Substitute.For<ISecurityMasterQueryService>();
+        queryService.GetCorporateActionsAsync(SecurityId, Arg.Any<CancellationToken>()).Returns(new[] { dividend });
+        var bridge = new HistoricalCorporateActionLedgerFixture(queryService, NullLogger<HistoricalCorporateActionLedgerFixture>.Instance);
+        LedgerBridgeTestRecords.StubSecurityRecord(queryService, "PrivateFundInterest");
+        var ledger = new Meridian.Ledger.Ledger();
+
+        await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, new HistoricalCorporateActionPostingContext(PositionQuantity: 1_000_000m));
+
+        ledger.Journal.Should().BeEmpty();
+    }
 
     private static CorporateActionDto MakeDividend(decimal dividendPerShare, DateOnly exDate)
         => new(
@@ -105,7 +154,7 @@ public sealed class SecurityMasterLedgerBridgeTests
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 100m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 100m));
 
         ledger.Journal.Should().HaveCount(2);
         var entry = ledger.Journal[0];
@@ -140,7 +189,7 @@ public sealed class SecurityMasterLedgerBridgeTests
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 100m, WithholdingTaxRate: 0.2m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 100m, WithholdingTaxRate: 0.2m));
 
         ledger.Journal.Should().HaveCount(3);
         ledger.GetBalance(LedgerAccounts.DividendReceivable(Ticker)).Should().Be(0m);
@@ -167,12 +216,12 @@ public sealed class SecurityMasterLedgerBridgeTests
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 10m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 10m));
         await bridge.PostCorporateActionsAsync(
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 10m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 10m));
 
         // Second call must skip the already-posted declaration and pay-date receipt.
         ledger.Journal.Should().HaveCount(2);
@@ -238,7 +287,7 @@ public sealed class SecurityMasterLedgerBridgeTests
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 100_000m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 100_000m));
 
         ledger.Journal.Should().ContainSingle();
         var entry = ledger.Journal[0];
@@ -350,7 +399,7 @@ public sealed class SecurityMasterLedgerBridgeTests
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 1_000m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 1_000m));
 
         var entry = ledger.Journal.Should().ContainSingle().Subject;
         entry.IsBalanced.Should().BeTrue();
@@ -423,7 +472,7 @@ public sealed class SecurityMasterLedgerBridgeTests
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 100m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 100m));
 
         ledger.Journal.Should().BeEmpty("a cancelled corporate action must not post economics");
     }
@@ -447,7 +496,7 @@ public sealed class SecurityMasterLedgerBridgeTests
             SecurityId,
             Ticker,
             ledger,
-            new CorporateActionLedgerPostingContext(PositionQuantity: 100m));
+            new HistoricalCorporateActionPostingContext(PositionQuantity: 100m));
 
         // Only the amended terms post (declaration + pay-date receipt), never both versions.
         ledger.Journal.Should().HaveCount(2);
@@ -464,7 +513,7 @@ public sealed class SecurityMasterLedgerBridgeTests
 
         var bridge = BuildBridge(queryService);
         var ledger = new Meridian.Ledger.Ledger();
-        var context = new CorporateActionLedgerPostingContext(PositionQuantity: 100m);
+        var context = new HistoricalCorporateActionPostingContext(PositionQuantity: 100m);
 
         await bridge.PostCorporateActionsAsync(SecurityId, Ticker, ledger, context);
         var entriesAfterOriginal = ledger.Journal.Count;
@@ -480,5 +529,31 @@ public sealed class SecurityMasterLedgerBridgeTests
 
         // The correction belongs to the governed restatement path; the bridge never double-books.
         ledger.Journal.Should().HaveCount(entriesAfterOriginal);
+    }
+}
+
+/// <summary>
+/// The Security Master record the ledger bridge reads to unitize a cash distribution's position.
+/// An Equity record (shares, multiplier one) keeps every per-share scenario's arithmetic unchanged.
+/// </summary>
+internal static class LedgerBridgeTestRecords
+{
+    public static void StubSecurityRecord(ISecurityMasterQueryService queryService, string assetClass = "Equity")
+    {
+        var emptyTerms = System.Text.Json.JsonDocument.Parse("{}").RootElement;
+        queryService.GetByIdAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>())
+            .Returns(call => new SecurityDetailDto(
+                call.Arg<Guid>(),
+                assetClass,
+                SecurityStatusDto.Active,
+                "Test Security",
+                "USD",
+                emptyTerms,
+                emptyTerms,
+                Identifiers: [],
+                Aliases: [],
+                Version: 1,
+                EffectiveFrom: DateTimeOffset.UtcNow.AddYears(-1),
+                EffectiveTo: null));
     }
 }

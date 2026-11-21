@@ -1,13 +1,19 @@
+import { CashLadderPeriodComparison } from "@/screens/cash-ladder-screen.comparison";
+import { AccountBondPlanningPanel } from "@/components/meridian/account-bond-planning-panel";
 import { useEffect, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowLeft, Layers3 } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
+import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart-evidence";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { MetricCard, EmptyState } from "@/components/data/concrete";
+import { MetricTile, EmptyState } from "@/components/data/concrete";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { getPortfolioCashLadder } from "@/lib/api/portfolio-cash-ladder.api";
-import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
+import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { CashLadderProjectionEvidence } from "@/screens/cash-ladder-screen.projection-evidence";
 import { cn } from "@/lib/utils";
 import {
   buildCashLadderChart,
@@ -27,20 +33,20 @@ import {
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
 const SOURCE_PALETTE = [
-  "var(--chart-series-1, #3A7A56)",
-  "var(--chart-series-2, #A85436)",
-  "var(--chart-series-3, #7C5CBF)",
-  "var(--chart-series-4, #B08A2E)",
-  "var(--chart-series-5, #A8443C)",
-  "var(--chart-series-6, #8A5C12)",
-  "var(--chart-series-7, #5E666F)"
+  "var(--chart-series-1, #29323A)",
+  "var(--chart-series-2, #5D7286)",
+  "var(--chart-series-3, #2E4B6E)",
+  "var(--chart-series-4, #7890A4)",
+  "var(--chart-series-5, #8C918F)",
+  "var(--chart-series-6, #4B5C6B)",
+  "var(--chart-series-7, #606870)"
 ] as const;
 
-const GRID = "var(--chart-grid, #E4E3DE)";
-const AXIS = "var(--chart-axis, #5E666F)";
-const BORDER = "var(--chart-border, #AFABA1)";
-const CUMULATIVE = "var(--chart-equity, #3A7A56)";
-const THRESHOLD = "var(--chart-warning, #8A5C12)";
+const GRID = "var(--chart-grid, #E2DED5)";
+const AXIS = "var(--chart-axis, #606870)";
+const BORDER = "var(--chart-border, #AAA49A)";
+const CUMULATIVE = "var(--chart-equity, #2E7655)";
+const THRESHOLD = "var(--chart-warning, #986717)";
 
 const metricToneMap = {
   default: "neutral",
@@ -49,13 +55,16 @@ const metricToneMap = {
   danger: "danger"
 } as const;
 
-const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
+function drillColumns(onInspect: (row: CashLadderDrillRow) => void): DenseDataTableColumn<CashLadderDrillRow>[] {
+  return [
   {
     id: "instrument",
     label: "Instrument",
     render: (row) => (
       <div className="flex flex-col">
-        <span className="font-semibold text-foreground">{row.instrument}</span>
+        {row.assetClass !== "CapitalActivity" && row.securityId && row.securityId !== "00000000-0000-0000-0000-000000000000" ? (
+          <Link className="font-semibold text-foreground underline underline-offset-2" to={workstationRouteWithQuery("portfolioAssetDetail", { securityId: row.securityId })}>{row.instrument}</Link>
+        ) : <span className="font-semibold text-foreground">{row.instrument}</span>}
         <span className="text-xs text-muted-foreground">{row.assetClass}</span>
       </div>
     )
@@ -95,7 +104,9 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
     label: "Projection run",
     render: (row) => (
       <div className="flex flex-col">
-        <span className="font-mono text-foreground">{row.projectionRunId}</span>
+        {row.assetClass !== "CapitalActivity" && row.projectionRunIdentity && row.securityId && row.securityId !== "00000000-0000-0000-0000-000000000000" ? (
+          <button type="button" className="text-left font-mono text-foreground underline underline-offset-2" aria-label={`Inspect projection run for ${row.instrument}`} onClick={() => onInspect(row)}>{row.projectionRunId}</button>
+        ) : <span className="font-mono text-foreground">{row.projectionRunId}</span>}
         <span className="text-xs text-muted-foreground">{row.projectionEngineVersion}</span>
       </div>
     )
@@ -108,7 +119,12 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
   {
     id: "source",
     label: "Source",
-    render: (row) => <span className="text-xs text-muted-foreground">{row.sourceDomain}</span>
+    render: (row) => <div className="flex flex-col gap-1 text-xs text-muted-foreground">
+      {row.sourceDomain === "SecurityMaster" && row.sourceEntityId ? (
+        <Link className="underline underline-offset-2" to={workstationRouteWithQuery("accountingSecurityMaster", { securityId: row.sourceEntityId, tab: "evidence" })}>Security Master evidence</Link>
+      ) : <span>{row.sourceDomain}</span>}
+      {row.sourceEntityId ? <span className="break-all font-mono">{row.sourceEntityId}</span> : <span>Source identity unavailable</span>}
+    </div>
   },
   {
     id: "scenario",
@@ -122,7 +138,8 @@ const drillColumns: DenseDataTableColumn<CashLadderDrillRow>[] = [
         <span className="text-xs text-muted-foreground">—</span>
       )
   }
-];
+  ];
+}
 
 export interface CashLadderScreenProps {
   fundAccountId?: string;
@@ -145,11 +162,15 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
   const [minimumCashInput, setMinimumCashInput] = useState("");
   const [appliedMinimumCash, setAppliedMinimumCash] = useState<number | undefined>(undefined);
   const [selection, setSelection] = useState<{ requestKey: string; index: number } | null>(null);
+  const [evidenceSelection, setEvidenceSelection] = useState<{ requestKey: string; row: CashLadderDrillRow } | null>(null);
   const requestKey = JSON.stringify([fundAccountId, scenarioId, appliedMinimumCash]);
   const ladder = result?.requestKey === requestKey ? result.ladder : null;
   const status = result?.requestKey === requestKey ? result.status : "loading";
   const selectedBucket = selection?.requestKey === requestKey ? selection.index : null;
-  const setSelectedBucket = (index: number | null) => setSelection(index === null ? null : { requestKey, index });
+  const setSelectedBucket = (index: number | null) => {
+    setSelection(index === null ? null : { requestKey, index });
+    setEvidenceSelection(null);
+  };
   const minimumCashDirty = useRef(false);
 
   useEffect(() => {
@@ -179,6 +200,30 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
 
   const chart = buildCashLadderChart(ladder);
   const activeScenario = selectActiveScenario(ladder);
+  const chartEvidence: ChartEvidence[] = chart && ladder ? chart.bars.map((bar) => ({
+    id: `${requestKey}:${bar.bucketStart}`,
+    label: bar.label,
+    asOf: ladder.asOfDate,
+    values: [
+      ...bar.segments.map((segment) => ({
+        series: segment.source, value: segment.amount, unit: ladder.baseCurrency,
+        basis: "Signed projected flows from this source in the bucket, in the ladder base currency."
+      })),
+      {
+        series: "Cumulative cash", value: ladder.buckets[bar.index].cumulativeCash, unit: ladder.baseCurrency,
+        basis: "Opening cash plus projected net flows through this bucket."
+      }
+    ],
+    proof: { href: "#cash-ladder-contributing-flows", label: "Open contributing flows", onOpen: () => setSelectedBucket(bar.index) },
+    sourceDetail: `Projection through ${bar.bucketEnd} · ${activeScenario?.displayName ?? ladder.scenarioId}${bar.breachesMinimumBalance ? " · below minimum balance" : ""}.`
+  })) : [];
+  if (chart?.thresholdY != null && ladder) {
+    chartEvidence.push({
+      id: `${requestKey}:threshold`, label: "Minimum balance marker", asOf: ladder.asOfDate,
+      values: [{ series: "Minimum cash balance", value: ladder.minimumCashThreshold, unit: ladder.baseCurrency, basis: "Applied threshold for this projection." }],
+      proof: { href: "#cash-ladder-threshold", label: "Open minimum-balance control" }
+    });
+  }
   const summaryCards = selectSummaryCards(ladder);
   const drillRows = selectBucketContributions(ladder, selectedBucket);
   const selectedBucketLabel = selectedBucket !== null && ladder && selectedBucket < ladder.buckets.length
@@ -193,22 +238,27 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
 
   return (
     <div className="space-y-4 p-4" data-testid="cash-ladder-screen">
+      <AccountBondPlanningPanel accountId={fundAccountId} />
       <div className="flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <Layers3 className="size-5 text-muted-foreground" aria-hidden />
           <div>
-            <h1 className="text-lg font-semibold text-foreground">Cash Ladder</h1>
+            <h2 className="text-lg font-semibold text-foreground">Projected cash flows</h2>
             <p className="text-sm text-muted-foreground">
               Projected portfolio inflows and outflows by source, joined with opening cash and capital activity.
             </p>
           </div>
         </div>
         <div className="flex flex-wrap items-center gap-2">
-          {ladder ? <Badge variant="outline">{ladder.engineVersion}</Badge> : null}
+          {ladder ? (
+            <TechnicalDetails label="Projection details">
+              <dl><div><dt className="font-semibold">Engine version</dt><dd className="font-mono">{ladder.engineVersion}</dd></div></dl>
+            </TechnicalDetails>
+          ) : null}
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Scenario
-            <select
-              className="rounded border bg-background px-2 py-1 text-sm text-foreground"
+            <Select
+              className="min-h-8 py-1 text-sm"
               value={scenarioId}
               onChange={(event) => {
                 setScenarioId(event.target.value);
@@ -221,14 +271,14 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                   {option.displayName}
                 </option>
               ))}
-            </select>
+            </Select>
           </label>
           <label className="flex items-center gap-2 text-sm text-muted-foreground">
             Min balance
-            <input
+            <Input
               type="number"
               inputMode="decimal"
-              className="w-28 rounded border bg-background px-2 py-1 text-sm text-foreground"
+              className="min-h-8 w-28 py-1 font-mono text-sm"
               placeholder="0"
               value={minimumCashInput}
               onChange={(event) => {
@@ -240,6 +290,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                   applyMinimumCash();
                 }
               }}
+              id="cash-ladder-threshold"
               aria-label="Minimum cash balance threshold"
             />
           </label>
@@ -271,7 +322,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
         <>
           <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
             {summaryCards.map((card) => (
-              <MetricCard
+              <MetricTile
                 key={card.id}
                 label={card.label}
                 value={card.value}
@@ -318,129 +369,144 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
             </CardHeader>
             <CardContent>
               {chart ? (
-                <svg
-                  viewBox={`0 0 ${CASH_LADDER_CHART_WIDTH} ${CASH_LADDER_CHART_HEIGHT}`}
-                  className="w-full"
-                  role="img"
-                  aria-label="Portfolio cash ladder: stacked projected flows per bucket with cumulative cash line and minimum-balance band"
-                >
-                  {chart.yTicks.map((tick) => (
-                    <g key={tick.y}>
+                <ChartEvidenceView label="Projected cash by bucket" evidence={chartEvidence}>
+                  {(inspection) => (
+                    <svg
+                      viewBox={`0 0 ${CASH_LADDER_CHART_WIDTH} ${CASH_LADDER_CHART_HEIGHT}`}
+                      className="w-full"
+                      role="group"
+                      aria-describedby={inspection.hintId}
+                      aria-label="Portfolio cash ladder: stacked projected flows per bucket with cumulative cash line and minimum-balance band"
+                    >
+                      {chart.yTicks.map((tick) => (
+                        <g key={tick.y}>
+                          <line
+                            x1={CASH_LADDER_CHART_PADDING.left}
+                            x2={CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.right}
+                            y1={tick.y}
+                            y2={tick.y}
+                            stroke={GRID}
+                            strokeWidth="0.8"
+                            opacity="0.55"
+                          />
+                          <text x={CASH_LADDER_CHART_PADDING.left - 8} y={tick.y + 3} fill={AXIS} textAnchor="end" fontSize="10">
+                            {tick.label}
+                          </text>
+                        </g>
+                      ))}
+
+                      {chart.thresholdBand ? (
+                        <rect
+                          x={CASH_LADDER_CHART_PADDING.left}
+                          y={chart.thresholdBand.y}
+                          width={CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.left - CASH_LADDER_CHART_PADDING.right}
+                          height={chart.thresholdBand.height}
+                          fill={THRESHOLD}
+                          opacity="0.08"
+                        />
+                      ) : null}
+                      {chart.thresholdY !== null ? (
+                        <line
+                          x1={CASH_LADDER_CHART_PADDING.left}
+                          x2={CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.right}
+                          y1={chart.thresholdY}
+                          y2={chart.thresholdY}
+                          stroke={THRESHOLD}
+                          strokeWidth="1.2"
+                          strokeDasharray="6 3"
+                        />
+                      ) : null}
+
                       <line
                         x1={CASH_LADDER_CHART_PADDING.left}
                         x2={CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.right}
-                        y1={tick.y}
-                        y2={tick.y}
-                        stroke={GRID}
-                        strokeWidth="0.8"
-                        opacity="0.55"
+                        y1={chart.zeroLineY}
+                        y2={chart.zeroLineY}
+                        stroke={BORDER}
+                        strokeWidth="1"
                       />
-                      <text x={CASH_LADDER_CHART_PADDING.left - 8} y={tick.y + 3} fill={AXIS} textAnchor="end" fontSize="10">
-                        {tick.label}
-                      </text>
-                    </g>
-                  ))}
 
-                  {chart.thresholdBand ? (
-                    <rect
-                      x={CASH_LADDER_CHART_PADDING.left}
-                      y={chart.thresholdBand.y}
-                      width={CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.left - CASH_LADDER_CHART_PADDING.right}
-                      height={chart.thresholdBand.height}
-                      fill={THRESHOLD}
-                      opacity="0.08"
-                    />
-                  ) : null}
-                  {chart.thresholdY !== null ? (
-                    <line
-                      x1={CASH_LADDER_CHART_PADDING.left}
-                      x2={CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.right}
-                      y1={chart.thresholdY}
-                      y2={chart.thresholdY}
-                      stroke={THRESHOLD}
-                      strokeWidth="1.2"
-                      strokeDasharray="6 3"
-                    />
-                  ) : null}
-
-                  <line
-                    x1={CASH_LADDER_CHART_PADDING.left}
-                    x2={CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.right}
-                    y1={chart.zeroLineY}
-                    y2={chart.zeroLineY}
-                    stroke={BORDER}
-                    strokeWidth="1"
-                  />
-
-                  {chart.bars.map((bar) => (
-                    <g
-                      key={bar.index}
-                      role="button"
-                      tabIndex={0}
-                      aria-label={bar.ariaLabel}
-                      className="cursor-pointer focus:outline-hidden"
-                      onClick={() => setSelectedBucket(bar.index === selectedBucket ? null : bar.index)}
-                      onKeyDown={(event) => {
-                        if (event.key === "Enter" || event.key === " ") {
-                          event.preventDefault();
-                          setSelectedBucket(bar.index === selectedBucket ? null : bar.index);
-                        }
-                      }}
-                    >
-                      {bar.segments.map((segment, segmentIndex) => (
-                        <rect
-                          key={`${bar.index}-${segmentIndex}`}
-                          x={bar.x}
-                          y={segment.y}
-                          width={bar.width}
-                          height={segment.height}
-                          fill={SOURCE_PALETTE[segment.paletteIndex]}
-                          opacity={selectedBucket === null || selectedBucket === bar.index ? 0.85 : 0.35}
-                        >
-                          <title>{`${bar.label} · ${segment.source}: ${segment.amount.toLocaleString("en-US")}`}</title>
-                        </rect>
+                      {chart.bars.map((bar) => (
+                        <g key={bar.index}>
+                          {bar.segments.map((segment, segmentIndex) => (
+                            <rect
+                              key={`${bar.index}-${segmentIndex}`}
+                              x={bar.x}
+                              y={segment.y}
+                              width={bar.width}
+                              height={segment.height}
+                              fill={SOURCE_PALETTE[segment.paletteIndex]}
+                              opacity={selectedBucket === null || selectedBucket === bar.index ? 0.85 : 0.35}
+                            />
+                          ))}
+                          {bar.breachesMinimumBalance ? (
+                            <rect
+                              x={bar.x - 2}
+                              y={CASH_LADDER_CHART_PADDING.top}
+                              width={bar.width + 4}
+                              height={CASH_LADDER_CHART_HEIGHT - CASH_LADDER_CHART_PADDING.top - CASH_LADDER_CHART_PADDING.bottom}
+                              fill="none"
+                              stroke={THRESHOLD}
+                              strokeWidth="1"
+                              strokeDasharray="3 2"
+                              opacity="0.7"
+                            />
+                          ) : null}
+                          <text
+                            x={bar.x + bar.width / 2}
+                            y={CASH_LADDER_CHART_HEIGHT - CASH_LADDER_CHART_PADDING.bottom + 14}
+                            fill={AXIS}
+                            textAnchor="middle"
+                            fontSize="9"
+                          >
+                            {bar.label.split(" – ")[0]}
+                          </text>
+                        </g>
                       ))}
-                      {bar.breachesMinimumBalance ? (
-                        <rect
-                          x={bar.x - 2}
-                          y={CASH_LADDER_CHART_PADDING.top}
-                          width={bar.width + 4}
-                          height={CASH_LADDER_CHART_HEIGHT - CASH_LADDER_CHART_PADDING.top - CASH_LADDER_CHART_PADDING.bottom}
-                          fill="none"
-                          stroke={THRESHOLD}
-                          strokeWidth="1"
-                          strokeDasharray="3 2"
-                          opacity="0.7"
+
+                      <polyline
+                        points={chart.cumulativePoints}
+                        fill="none"
+                        stroke={CUMULATIVE}
+                        strokeWidth="2"
+                      />
+                      {chart.cumulativeMarkers.map((marker, index) => (
+                        <circle
+                          key={index}
+                          cx={marker.x}
+                          cy={marker.y}
+                          r={marker.breaches ? 4 : 2.5}
+                          fill={marker.breaches ? THRESHOLD : CUMULATIVE}
+                        />
+                      ))}
+                      {chart.bars.map((bar) => {
+                        const slotWidth = (CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.left - CASH_LADDER_CHART_PADDING.right) / chart.bars.length;
+                        return (
+                          <ChartEvidenceMark
+                            key={chartEvidence[bar.index].id}
+                            inspection={inspection}
+                            index={bar.index}
+                            geometry={{
+                              x: bar.x + (bar.width - slotWidth) / 2,
+                              y: CASH_LADDER_CHART_PADDING.top,
+                              width: slotWidth,
+                              height: CASH_LADDER_CHART_HEIGHT - CASH_LADDER_CHART_PADDING.top - CASH_LADDER_CHART_PADDING.bottom
+                            }}
+                            pressed={bar.index === selectedBucket}
+                            onActivate={() => setSelectedBucket(bar.index === selectedBucket ? null : bar.index)}
+                          />
+                        );
+                      })}
+                      {chart.thresholdY !== null ? (
+                        <ChartEvidenceMark
+                          inspection={inspection}
+                          index={chart.bars.length}
+                          geometry={{ x: CASH_LADDER_CHART_PADDING.left, y: chart.thresholdY - 3, width: CASH_LADDER_CHART_WIDTH - CASH_LADDER_CHART_PADDING.left - CASH_LADDER_CHART_PADDING.right, height: 6 }}
                         />
                       ) : null}
-                      <text
-                        x={bar.x + bar.width / 2}
-                        y={CASH_LADDER_CHART_HEIGHT - CASH_LADDER_CHART_PADDING.bottom + 14}
-                        fill={AXIS}
-                        textAnchor="middle"
-                        fontSize="9"
-                      >
-                        {bar.label.split(" – ")[0]}
-                      </text>
-                    </g>
-                  ))}
-
-                  <polyline
-                    points={chart.cumulativePoints}
-                    fill="none"
-                    stroke={CUMULATIVE}
-                    strokeWidth="2"
-                  />
-                  {chart.cumulativeMarkers.map((marker, index) => (
-                    <circle
-                      key={index}
-                      cx={marker.x}
-                      cy={marker.y}
-                      r={marker.breaches ? 4 : 2.5}
-                      fill={marker.breaches ? THRESHOLD : CUMULATIVE}
-                    />
-                  ))}
-                </svg>
+                    </svg>
+                  )}
+                </ChartEvidenceView>
               ) : (
                 <EmptyState
                   icon="chart"
@@ -472,7 +538,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
           </Card>
 
           <div className="grid gap-4 xl:grid-cols-3">
-            <Card className="xl:col-span-2">
+            <Card id="cash-ladder-contributing-flows" tabIndex={-1} className="xl:col-span-2">
               <CardHeader className="pb-2">
                 <CardTitle>
                   {selectedBucketLabel ? `Contributing flows · ${selectedBucketLabel}` : "Contributing flows"}
@@ -485,7 +551,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
               </CardHeader>
               <CardContent>
                 <DenseDataTable
-                  columns={drillColumns}
+                  columns={drillColumns((row) => setEvidenceSelection({ requestKey, row }))}
                   rows={drillRows}
                   getRowId={(row) => row.id}
                   emptyText={
@@ -495,6 +561,9 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
                   }
                   ariaLabel="Cash ladder contributing flows"
                 />
+                {evidenceSelection?.requestKey === requestKey && ladder ? (
+                  <CashLadderProjectionEvidence key={evidenceSelection.row.id} row={evidenceSelection.row} onClose={() => setEvidenceSelection(null)} />
+                ) : null}
               </CardContent>
             </Card>
 
@@ -556,6 +625,7 @@ function AccountCashLadderScreen({ fundAccountId }: CashLadderScreenProps) {
               </CardContent>
             </Card>
           </div>
+          <CashLadderPeriodComparison scenario={scenarioId} minimumCash={appliedMinimumCash} fundAccountId={fundAccountId} />
         </>
       ) : null}
     </div>

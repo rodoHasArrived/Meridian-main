@@ -1,0 +1,96 @@
+<UserControl x:Class="Meridian.Wpf.Views.IntercompanyInterestAccrualControl"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             AutomationProperties.Name="Loan interest accrual">
+    <UserControl.Resources>
+        <Style TargetType="TextBox" BasedOn="{StaticResource FormTextBoxStyle}">
+            <Setter Property="Margin" Value="0,3,12,10" />
+            <Setter Property="MinWidth" Value="160" />
+            <Setter Property="Padding" Value="6" />
+        </Style>
+        <Style TargetType="Button" BasedOn="{StaticResource ConsoleButtonStyle}">
+            <Setter Property="Margin" Value="0,4,8,4" />
+            <Setter Property="Padding" Value="10,5" />
+        </Style>
+        <Style TargetType="DataGrid">
+            <Setter Property="AutoGenerateColumns" Value="False" />
+            <Setter Property="IsReadOnly" Value="True" />
+            <Setter Property="CanUserAddRows" Value="False" />
+            <Setter Property="CanUserDeleteRows" Value="False" />
+            <Setter Property="Margin" Value="0,8,0,12" />
+        </Style>
+    </UserControl.Resources>
+    <UserControl.Style>
+        <Style TargetType="UserControl">
+            <Style.Triggers>
+                <DataTrigger Binding="{Binding IsBusy}" Value="True"><Setter Property="IsEnabled" Value="False" /></DataTrigger>
+            </Style.Triggers>
+        </Style>
+    </UserControl.Style>
+    <ScrollViewer VerticalScrollBarVisibility="Auto">
+        <StackPanel Margin="16">
+            <TextBlock Text="Accrue interest" FontSize="20" FontWeight="SemiBold" />
+            <TextBlock Text="Interest is calculated by the server from the approved legal terms, the loan-interest profile's approved revisions and the posted loan principal. No rate, principal or amount is entered here. A floating rate uses the approved index fixing for each period (see the Rate fixings tab) plus the declared spread; a missing fixing refuses the window. A fixed-rate loan that compounds at each schedule period adds the accrued interest already posted at the period start, once every earlier day is accrued and posted; a floating rate is never compounded. Fees are not calculated here. The calculation and its evidence are shared with the browser workstation and nothing posts automatically."
+                       Margin="0,5,0,12" TextWrapping="Wrap" />
+            <WrapPanel>
+                <Button Content="Load books" Command="{Binding LoadChoicesCommand}" VerticalAlignment="Center" AutomationProperties.Name="Load accrual books" />
+                <TextBlock Text="{Binding ChoicesStatus}" TextWrapping="Wrap" VerticalAlignment="Center" MaxWidth="640"
+                           AutomationProperties.Name="Accrual selection status" AutomationProperties.LiveSetting="Polite" />
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="Source ledger book" />
+                    <ComboBox ItemsSource="{Binding BookChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding SourceBook}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Accrual source ledger book" /></StackPanel>
+                <StackPanel><TextBlock Text="Loan-interest accounting profile" />
+                    <ComboBox ItemsSource="{Binding InterestProfileChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding InterestProfile}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Loan-interest accounting profile" /></StackPanel>
+                <StackPanel><TextBlock Text="Loan principal accounting profile (same legal agreement)" />
+                    <ComboBox ItemsSource="{Binding PrincipalProfileChoices}" DisplayMemberPath="Label" SelectedValuePath="Id" SelectedValue="{Binding PrincipalProfile}"
+                              Style="{StaticResource FormComboBoxStyle}" Width="360" Margin="0,3,12,10" AutomationProperties.Name="Loan principal accounting profile" /></StackPanel>
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel><TextBlock Text="First accrued day (yyyy-MM-dd)" /><TextBox Text="{Binding AccrualFrom, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="First accrued day" /></StackPanel>
+                <StackPanel><TextBlock Text="Accrue up to, not including (yyyy-MM-dd)" /><TextBox Text="{Binding AccrualTo, UpdateSourceTrigger=PropertyChanged}" AutomationProperties.Name="Accrue up to date" /></StackPanel>
+                <Button Content="Preview interest accrual" Command="{Binding PreviewCommand}" VerticalAlignment="Center" />
+            </WrapPanel>
+            <TextBlock Text="{Binding StatusText}" TextWrapping="Wrap" AutomationProperties.Name="Interest accrual status" AutomationProperties.LiveSetting="Polite" />
+            <TextBlock Text="{Binding PermissionNote}" TextWrapping="Wrap" Margin="0,4,0,0" AutomationProperties.Name="Interest accrual permission" />
+            <TextBlock Text="{Binding Summary}" FontWeight="SemiBold" TextWrapping="Wrap" Margin="0,10,0,0" AutomationProperties.Name="Interest accrual summary" AutomationProperties.LiveSetting="Polite" />
+            <ItemsControl ItemsSource="{Binding Refusals}" AutomationProperties.Name="Interest accrual refusals">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate><TextBlock Text="{Binding}" TextWrapping="Wrap" Margin="0,2,0,0" /></DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <TextBlock Text="Accrual slices (exact server amounts)" FontWeight="SemiBold" Margin="0,10,0,0" />
+            <DataGrid ItemsSource="{Binding Slices}" MaxHeight="220" AutomationProperties.Name="Interest accrual slices">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Days" Binding="{Binding Days}" Width="220" />
+                    <DataGridTextColumn Header="Posted principal" Binding="{Binding Principal}" Width="180" />
+                    <DataGridTextColumn Header="Compounded interest" Binding="{Binding CompoundedInterest}" Width="170" />
+                    <DataGridTextColumn Header="Annual rate" Binding="{Binding AnnualRate}" Width="110" />
+                    <DataGridTextColumn Header="Fixing" Binding="{Binding Fixing}" Width="230" />
+                    <DataGridTextColumn Header="Day count" Binding="{Binding DayCount}" Width="300" />
+                    <DataGridTextColumn Header="Unrounded interest" Binding="{Binding UnroundedAmount}" Width="260" />
+                    <DataGridTextColumn Header="Authority" Binding="{Binding Authority}" Width="420" />
+                    <DataGridTextColumn Header="Principal evidence" Binding="{Binding PrincipalEvidence}" Width="240" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Text="Proposed accrual journal lines" FontWeight="SemiBold" />
+            <DataGrid ItemsSource="{Binding Lines}" MaxHeight="160" AutomationProperties.Name="Proposed accrual journal lines">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Account" Binding="{Binding Account}" Width="300" />
+                    <DataGridTextColumn Header="Side" Binding="{Binding Side}" Width="90" />
+                    <DataGridTextColumn Header="Functional amount" Binding="{Binding Amount}" Width="200" />
+                    <DataGridTextColumn Header="Original transaction evidence" Binding="{Binding Original}" Width="320" />
+                </DataGrid.Columns>
+            </DataGrid>
+            <Expander Header="Accrual calculation evidence">
+                <TextBox Text="{Binding Evidence, Mode=OneWay}" IsReadOnly="True" TextWrapping="Wrap" AcceptsReturn="True" AutomationProperties.Name="Interest accrual evidence" />
+            </Expander>
+            <Button Content="Create accrual draft for review" Command="{Binding CreateDraftCommand}" HorizontalAlignment="Left" Margin="0,10,0,4" />
+            <TextBlock Text="The draft enters ordinary journal review in the source book. It is refused if the approved terms, profile, principal or FX inputs changed after this preview."
+                       TextWrapping="Wrap" />
+            <TextBlock Text="{Binding DraftStatus}" TextWrapping="Wrap" Margin="0,4,0,0" AutomationProperties.Name="Interest accrual draft" AutomationProperties.LiveSetting="Polite" />
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

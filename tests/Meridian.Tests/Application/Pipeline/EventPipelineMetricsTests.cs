@@ -102,8 +102,10 @@ public class EventPipelineMetricsTests : IAsyncLifetime
 
         // At least some events should have been accepted
         published.Should().BeGreaterThan(0);
-        // Sum should be less than or equal to total attempted (race conditions possible)
-        (published + dropped).Should().BeLessThanOrEqualTo(totalAttempted);
+        published.Should().BeLessThanOrEqualTo(totalAttempted);
+        // In DropOldest mode an evicted event was admitted first and dropped afterwards, so it is
+        // counted on both sides: drops can never exceed what was admitted.
+        dropped.Should().BeLessThanOrEqualTo(published);
     }
 
     [Fact]

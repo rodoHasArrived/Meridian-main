@@ -37,6 +37,33 @@ public sealed partial class OrderManagementSystemAmendmentRecoveryTests
     }
 
     [Fact]
+    public async Task PendingAmendment_UnitReservationKeepsTheLargerQuantityOutcome()
+    {
+        var gateway = new ScriptedAmendmentGateway();
+        gateway.Modify = (_, _) => Task.FromResult(gateway.Report(ExecutionReportType.ModificationPending,
+            OrderStatus.Accepted, 0m) with
+        {
+            OrderQuantity = 1m,
+            CandidateGatewayOrderId = "candidate",
+            RejectReason = "Replacement acknowledgement timed out; reconcile before retrying."
+        });
+        await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: new PaperTradingPortfolio(1_000_000m));
+        await oms.StartAsync();
+        (await oms.PlaceOrderAsync(LimitOrder(100m, 1m))).Success.Should().BeTrue();
+
+        (await oms.ModifyOrderAsync("local", new OrderModification { NewQuantity = 1m, NewLimitPrice = 200m }))
+            .Success.Should().BeFalse();
+
+        // 1 @ $200 is the larger value, but the original 100 shares still execute if the
+        // amendment fails, so a share limit must reserve 100.
+        oms.GetExposureReservingOrders().Single().Quantity.Should().Be(1m);
+        var units = oms.GetUnitReservingOrders().Single();
+        units.Quantity.Should().Be(100m);
+        units.LimitPrice.Should().Be(1m);
+    }
+
+    [Fact]
     public async Task InvalidAmendment_IsRejectedBeforeAnythingIsPersisted()
     {
         var directory = Path.Combine(Path.GetTempPath(), $"amendment-validation-{Guid.NewGuid():N}");

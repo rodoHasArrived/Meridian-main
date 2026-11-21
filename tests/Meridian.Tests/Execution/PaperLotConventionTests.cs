@@ -23,9 +23,11 @@ public sealed class PaperLotConventionTests
             JsonSerializer.SerializeToElement(new { multiplier = 1m }), [], [], 1, now, null);
         identity.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "KNOWN", null,
             Arg.Any<CancellationToken>(), Arg.Any<DateTimeOffset?>()).Returns(detail);
+        var feed = new Meridian.Execution.Adapters.LiveMarketDataCache();
+        feed.RecordTrade("KNOWN", new Meridian.Contracts.Domain.Models.Trade(DateTimeOffset.UtcNow, "KNOWN", 10m, 100, Meridian.Contracts.Domain.Enums.AggressorSide.Buy, 1));
         await using var gateway = new Meridian.Execution.PaperTradingGateway(
             NullLogger<Meridian.Execution.PaperTradingGateway>.Instance,
-            securityMaster: (ISecurityTradingParametersQueryService?)null, securityIdentity: identity);
+            securityMaster: (ISecurityTradingParametersQueryService?)null, liveFeed: feed, securityIdentity: identity);
         var report = await gateway.SubmitOrderAsync(new OrderRequest
         {
             Symbol = "KNOWN",

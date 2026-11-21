@@ -35,6 +35,18 @@ def _registry_root(temp_dir: str, sequence_line: str | None) -> Path:
     """Clone the real registries into a temp root, optionally injecting a sequence on one item."""
     root = Path(temp_dir)
     shutil.copytree(ROOT / "docs" / "roadmap" / "data", root / "docs" / "roadmap" / "data")
+    shutil.copytree(ROOT / "docs/roadmap/snapshots", root / "docs/roadmap/snapshots")
+    shutil.copytree(ROOT / "docs/product/history", root / "docs/product/history")
+    readiness = common.load_data(ROOT / "docs/roadmap/data/production-readiness.yml")
+    for item in readiness["items"]:
+        for link in item["evidence_links"]:
+            if "://" in link:
+                continue
+            source = ROOT / link.split("#", 1)[0]
+            target = root / link.split("#", 1)[0]
+            if source.is_file() and not target.exists():
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copy(source, target)
     (root / "docs" / "source" / "data").mkdir(parents=True)
     shutil.copy(
         ROOT / "docs" / "source" / "data" / "source-modules.yml",
@@ -87,7 +99,7 @@ class RoadmapSourceDocsTests(unittest.TestCase):
         self.assertEqual([], [finding for finding in scan_todos.validate(ROOT) if finding.severity == "error"])
 
     def test_valid_sequence_passes_registry_validation(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = _registry_root(temp_dir, "    sequence: 3\n")
             errors = [finding for finding in validate_roadmap.validate(root) if finding.severity == "error"]
 
@@ -99,7 +111,7 @@ class RoadmapSourceDocsTests(unittest.TestCase):
         # generated view against its adopted rank while CI reported the data valid.
         for declared in ("0", "-2", "abc", "1.5", "true"):
             with self.subTest(sequence=declared):
-                with tempfile.TemporaryDirectory() as temp_dir:
+                with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                     root = _registry_root(temp_dir, f"    sequence: {declared}\n")
                     errors = [finding for finding in validate_roadmap.validate(root) if finding.severity == "error"]
 
@@ -112,7 +124,7 @@ class RoadmapSourceDocsTests(unittest.TestCase):
         # The sort key parses the wave from the identifier while the diagram labels with the
         # declared `wave`, so a mismatch would place an item among one wave's work while
         # presenting it as another's.
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = _registry_root(temp_dir, None)
             items_path = root / "docs" / "roadmap" / "data" / "roadmap-items.yml"
             text = items_path.read_text(encoding="utf-8")
@@ -153,7 +165,7 @@ class RoadmapSourceDocsTests(unittest.TestCase):
         self.assertEqual("A\n<!-- begin -->\nnew\n<!-- end -->\nB\n", updated)
 
     def test_missing_source_readme_front_matter_fails(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             (root / "docs/source/data").mkdir(parents=True)
             (root / "src/Example").mkdir(parents=True)
@@ -207,7 +219,7 @@ modules:
         self.assertIn("TODO-SRC-UI-DASHBOARD-001", checklist)
 
     def test_sync_source_readmes_creates_missing_readme_from_registry(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             (root / "docs/source/data").mkdir(parents=True)
             (root / "src/Example").mkdir(parents=True)
@@ -246,7 +258,7 @@ modules:
         self.assertIn("### End-user value", content)
 
     def test_tree_readme_sync_respects_ignore_patterns(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             (root / "docs/source/data").mkdir(parents=True)
             (root / "src/Example/Feature").mkdir(parents=True)
@@ -302,7 +314,7 @@ modules:
         self.assertIn("SRC-UI-DASHBOARD", module_ids)
 
     def test_doc_hash_manifest_narrow_write_preserves_unselected_modules(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             (root / "docs/source/data").mkdir(parents=True)
             (root / "docs/source/generated").mkdir(parents=True)
@@ -366,7 +378,7 @@ modules:
         self.assertEqual(baseline_by_id["SRC-EXAMPLE-B"]["source_hash"], updated_by_id["SRC-EXAMPLE-B"]["source_hash"])
 
     def test_stale_doc_marker_reports_source_hash_drift(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             (root / "docs/source/data").mkdir(parents=True)
             (root / "docs/source/generated").mkdir(parents=True)

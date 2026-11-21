@@ -15,6 +15,15 @@ import type {
 const FAN_OUT_BLOCKER =
   "Corporate-action source decisions are read-only until an authoritative service can enumerate every affected tenant/company scope and apply the decision atomically.";
 
+it("preserves separate case selections when one source proposal has multiple account-scoped cases", () => {
+  const model = buildCorporateActionInboxModel(response({ staged: [], cases: [
+    compactCase({ caseId: "account-case-a", scope: { tenantId: "tenant", companyId: "company", custodyAccountId: "account-a" } }),
+    compactCase({ caseId: "account-case-b", scope: { tenantId: "tenant", companyId: "company", custodyAccountId: "account-b" } })
+  ] }));
+  expect(model.rows.map((row) => row.rowId)).toEqual(["case:account-case-a", "case:account-case-b"]);
+  expect(model.rows.map((row) => row.acceptanceScope?.custodyAccountId)).toEqual(["account-a", "account-b"]);
+});
+
 function proposal(overrides: Partial<CorporateActionProposalEntry> = {}): CorporateActionProposalEntry {
   return {
     securityId: "3f0c9a53-3f8f-4b04-9c1e-0f8f4b049c1e",
@@ -208,6 +217,7 @@ describe("buildCorporateActionInboxModel", () => {
     expect(row.canAcceptCanonicalFact).toBe(false);
     expect(row.acceptCanonicalFactDisabledReason).toBe("Server did not supply action authorization.");
     expect(model.summary).toContain("1 staged proposal");
+    expect(model.lastIngestLabel).toBe("Jul 5, 2026, 12:00 UTC");
   });
 
   it("orders rows by ex-date urgency and flags disputes with a warning tone", () => {

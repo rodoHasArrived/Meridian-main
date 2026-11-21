@@ -16,6 +16,7 @@ namespace Meridian.Storage.Reporting;
 /// </summary>
 public sealed class PostgresReportingRunStore : IReportingRunStore
 {
+    public bool SupportsDurableCreateClaims => true;
     private const int MaximumIdentityLength = 256;
 
     private readonly ReportingArtifactStoreOptions _options;

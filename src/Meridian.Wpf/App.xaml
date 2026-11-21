@@ -13,10 +13,10 @@
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesignTheme.Dark.xaml" />
                 <ResourceDictionary Source="pack://application:,,,/MaterialDesignThemes.Wpf;component/Themes/MaterialDesign3.Defaults.xaml" />
 
-                <!-- Core Styles: ThemeTokens must load first so AppStyles can resolve its StaticResource references -->
+                <!-- Core tokens and font families precede the styles that consume them. -->
                 <ResourceDictionary Source="Styles/ThemeTokens.xaml" />
-                <ResourceDictionary Source="Styles/AppStyles.xaml" />
                 <ResourceDictionary Source="Styles/ThemeTypography.xaml" />
+                <ResourceDictionary Source="Styles/AppStyles.xaml" />
                 <ResourceDictionary Source="Styles/ThemeSurfaces.xaml" />
                 <ResourceDictionary Source="Styles/ThemeControls.xaml" />
                 <!-- Shared data-provenance badge (persistent, non-dismissable) -->

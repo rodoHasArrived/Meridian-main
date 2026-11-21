@@ -15,50 +15,9 @@ public interface ITradingCalendarProvider : IProviderMetadata
         ProviderTradingCalendarRequest request,
         CancellationToken ct = default)
         => throw new NotSupportedException(
-            "This calendar provider implements the legacy GetSessionsAsync contract. " +
-            "Implement GetTradingCalendarAsync to return provenance-complete calendar data.");
-
-    /// <summary>
-    /// Gets sessions through the former calendar contract.
-    /// </summary>
-    /// <remarks>
-    /// Retained so existing provider adapters and callers can transition without a source-breaking
-    /// interface change. New code must use <see cref="GetTradingCalendarAsync"/> because this
-    /// projection cannot represent closures or the required provider provenance.
-    /// </remarks>
-    [Obsolete("Use GetTradingCalendarAsync so calendar output retains provider provenance.")]
-    async Task<IReadOnlyList<TradingSession>> GetSessionsAsync(
-        TradingCalendarRequest request,
-        CancellationToken ct = default)
-    {
-        var response = await GetTradingCalendarAsync(
-            new ProviderTradingCalendarRequest(request.Market, request.From, request.To),
-            ct).ConfigureAwait(false);
-
-        response.EnsureProvenanceComplete();
-        return response.Sessions
-            .Select(session => new TradingSession(
-                session.Date,
-                true,
-                session.OpenTime,
-                session.CloseTime,
-                session.SessionType))
-            .ToArray();
-    }
+            "This calendar provider does not implement GetTradingCalendarAsync. " +
+            "Implement it to return provenance-complete calendar data.");
 }
-
-/// <summary>Provider-neutral request for venue trading sessions retained for source compatibility.</summary>
-[Obsolete("Use ProviderTradingCalendarRequest.")]
-public sealed record TradingCalendarRequest(string Market, DateOnly From, DateOnly To, string? AssetClass = null);
-
-/// <summary>Provider-neutral trading session retained for source compatibility.</summary>
-[Obsolete("Use ProviderTradingSession and ProviderTradingCalendarResponse.")]
-public sealed record TradingSession(
-    DateOnly Date,
-    bool IsOpen,
-    DateTimeOffset? OpensAt = null,
-    DateTimeOffset? ClosesAt = null,
-    string? Name = null);
 
 /// <summary>
 /// Specifies the market and inclusive date range requested from a calendar provider.

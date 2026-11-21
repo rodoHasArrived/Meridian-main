@@ -53,7 +53,7 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
         global_json = json.loads((REPO_ROOT / "global.json").read_text(encoding="utf-8"))
 
         self.assertEqual(global_json["sdk"]["version"], "10.0.100")
-        self.assertTrue(global_json["sdk"]["allowPrerelease"])
+        self.assertFalse(global_json["sdk"]["allowPrerelease"])
         self.assertEqual(target_framework("src/Meridian/Meridian.csproj"), "net10.0")
 
     def test_projects_referencing_host_match_host_target_framework(self) -> None:
@@ -95,8 +95,9 @@ class ProjectTargetFrameworkAlignmentTests(unittest.TestCase):
 
         self.assertIn("- language: csharp", workflow)
         self.assertIn("build-mode: manual", workflow)
-        self.assertIn("DOTNET_VERSION: '10.0.x'", workflow)
-        self.assertIn("dotnet-version: ${{ env.DOTNET_VERSION }}", workflow)
+        self.assertIn("global-json-file: global.json", workflow)
+        self.assertNotIn("DOTNET_VERSION:", workflow)
+        self.assertNotIn("dotnet-version:", workflow)
         self.assertNotIn("dotnet-version: '9.0.x'", workflow)
         self.assertIn("Restore C# solution", workflow)
         self.assertIn("Build C# solution", workflow)

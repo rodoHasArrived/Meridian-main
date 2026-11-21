@@ -159,12 +159,22 @@ public sealed class ReportingReconciliationEvidenceSource : IReportingReconcilia
                 BuildOpenBreakEvidenceReferences(openBreaks, receipt.EvidenceIds));
         }
 
-        await EnsureCurrentCanonicalQueueMatchesReceiptAsync(
-                receipt,
-                source,
-                receiptQueueScope,
-                cancellationToken)
-            .ConfigureAwait(false);
+        if (receipt.CompletionCheckpointId?.StartsWith(
+                CapitalCallNoticeReportingService.OperationalCompletionPrefix, StringComparison.Ordinal) == true)
+        {
+            if (!CapitalCallNoticeReportingService.MatchesOperationalReceipt(parameters, receipt))
+                throw new ReportingReconciliationEvidenceInvalidException(
+                    "The retained operational notice receipt does not match its exact call, investor, commitment and posted source.");
+        }
+        else
+        {
+            await EnsureCurrentCanonicalQueueMatchesReceiptAsync(
+                    receipt,
+                    source,
+                    receiptQueueScope,
+                    cancellationToken)
+                .ConfigureAwait(false);
+        }
 
         if (receipt.ReconciledAtUtc == default
             || receipt.ReconciledAtUtc.Offset != TimeSpan.Zero

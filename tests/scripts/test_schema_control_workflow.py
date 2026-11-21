@@ -161,7 +161,7 @@ class SchemaControlWorkflowTests(unittest.TestCase):
         )
 
     def test_pr_revision_evidence_keeps_event_base_when_origin_main_advances(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             baseline_sha, candidate_sha = self._init_repository(root)
             self._git(root, "update-ref", "refs/remotes/origin/main", baseline_sha)
@@ -195,7 +195,7 @@ class SchemaControlWorkflowTests(unittest.TestCase):
             self.assertIn(candidate_sha, summary)
 
     def test_manual_revision_step_resolves_explicit_ref_to_commit(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             baseline_sha, candidate_sha = self._init_repository(root)
             self._git(root, "update-ref", "refs/heads/review-baseline", baseline_sha)
@@ -215,7 +215,7 @@ class SchemaControlWorkflowTests(unittest.TestCase):
             self.assertEqual(candidate_sha, evidence["candidate_sha"])
 
     def test_manual_revision_step_rejects_missing_and_invalid_baselines(self) -> None:
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             self._init_repository(root)
             for baseline_ref in ("", "missing-ref", "$(touch injected)", "--help"):

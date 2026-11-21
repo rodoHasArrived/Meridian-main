@@ -111,6 +111,11 @@ public sealed class ServiceManagerViewModelTests
         xaml.Should().Contain("{Binding StatusLoadStateText}");
         xaml.Should().Contain("{Binding StatusLoadDetailText}");
         xaml.Should().Contain("ServiceManagerStatusProgress");
+        // The shell Refresh reloads service status; the page keeps a Retry only in the failed-load state.
+        xaml.Should().NotContain("Content=\"Refresh Status\"");
+        xaml.Should().Contain("ServiceManagerStatusRetryButton");
+        xaml.Should().Contain("Visibility=\"{Binding IsStatusLoadFailed, Converter={StaticResource BoolToVisibilityConverter}}\"");
+        viewModel.Should().Contain("public IAsyncRelayCommand RefreshCommand { get; }");
         viewModel.Should().Contain("IServiceManagerBackend");
         viewModel.Should().Contain("Status refresh failed:");
         viewModel.Should().Contain("IsStatusLoadFailed");

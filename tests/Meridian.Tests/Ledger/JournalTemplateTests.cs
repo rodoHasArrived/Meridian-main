@@ -10,6 +10,23 @@ namespace Meridian.Tests.Ledger;
 /// </summary>
 public sealed class JournalTemplateTests
 {
+    [Fact]
+    public void Instantiation_and_reversal_preserve_line_memos_after_zero_amount_lines_are_removed()
+    {
+        var template = new JournalTemplate("funding", "Funding", "", [
+            new JournalTemplateLine(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 0m, Memo: "Unused"),
+            new JournalTemplateLine(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 100m, Memo: "Cash received"),
+            new JournalTemplateLine(LedgerAccounts.CapitalAccount, JournalTemplateSide.Credit, FixedAmount: 100m)
+        ]);
+        var original = template.Instantiate(new(At, new Dictionary<string, decimal>())).ToJournalEntry();
+        var restored = System.Text.Json.JsonSerializer.Deserialize<JournalEntry>(System.Text.Json.JsonSerializer.Serialize(original))!;
+        var reversal = LedgerJournalReversal.Reverse(restored, Guid.NewGuid(), At.AddDays(1));
+
+        restored.Lines.Select(line => line.Memo).Should().Equal("Cash received", null);
+        reversal.Lines.Select(line => line.Memo).Should().Equal("Cash received", null);
+        reversal.IsBalanced.Should().BeTrue();
+    }
+
     private static readonly DateTimeOffset At = new(2026, 06, 30, 12, 0, 0, TimeSpan.Zero);
 
     private static JournalTemplate ManagementFeeTemplate() => new(
@@ -149,5 +166,30 @@ public sealed class JournalTemplateTests
             Metadata: new JournalEntryMetadata(LedgerBook: "Book-A")));
 
         instance.Metadata.LedgerBook.Should().Be("Book-A");
+    }
+
+    [Fact]
+    public void CalculatedTemplate_HasNoFixedLines_AndCannotBeInstantiated()
+    {
+        var template = new JournalTemplate("calc", "Calculated", "", [],
+            calculation: new JournalTemplateCalculation(" Management-Fee-Accrual ", new Dictionary<string, string> { [" b "] = " 2 ", ["a"] = "1" }));
+
+        template.Calculation!.Kind.Should().Be("management-fee-accrual");
+        template.Calculation.Inputs.Keys.Should().Equal("a", "b");
+        template.Calculation.Inputs["b"].Should().Be("2");
+        var instantiate = () => template.Instantiate(new JournalTemplateInstantiation(DateTimeOffset.UnixEpoch, new Dictionary<string, decimal>()));
+        instantiate.Should().Throw<LedgerValidationException>().WithMessage("*calculated*");
+    }
+
+    [Fact]
+    public void Template_RejectsFixedLinesTogetherWithACalculation_AndNoLinesWithoutOne()
+    {
+        var line = new JournalTemplateLine(LedgerAccounts.Cash, JournalTemplateSide.Debit, FixedAmount: 1m);
+
+        var both = () => new JournalTemplate("t", "T", "", [line], calculation: new JournalTemplateCalculation("fx-revaluation"));
+        var neither = () => new JournalTemplate("t", "T", "", []);
+
+        both.Should().Throw<ArgumentException>();
+        neither.Should().Throw<ArgumentException>();
     }
 }

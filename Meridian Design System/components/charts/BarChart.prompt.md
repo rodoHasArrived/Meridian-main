@@ -1,1 +1,1 @@
-BarChart — categorical comparison bars (P&L by sector, fees by venue, fills per venue). Vertical SVG bars by default; `horizontal` renders ranked rows (label · bar · value) suited to exposure views. `signed` tints bars red/green by sign; per-bar `color` overrides. Flat, token-driven.
+BarChart — categorical comparison bars. Vertical SVG bars (ChartFrame, left rail) or `horizontal` ranked rows (label · bar · value). `signed` tints by sign; `colors` per-bar overrides; `sort` asc/desc. Data: plain `values` + parallel `labels`.

@@ -28,10 +28,14 @@ public sealed class StreamingFailoverService : IDisposable
     private readonly ConcurrentDictionary<string, Action<FailoverTransitionRequest>> _transitionHandlers =
         new(StringComparer.OrdinalIgnoreCase);
     private readonly ConcurrentDictionary<Guid, FailoverTransitionRequest> _pendingTransitions = new();
+    private readonly ConcurrentDictionary<string, Func<string, StreamingTransportLiveness>> _transportProbes =
+        new(StringComparer.OrdinalIgnoreCase);
     private readonly IConnectionHealthMonitor _healthMonitor;
     private readonly object _failoverGate = new();
     private readonly CancellationTokenSource _shutdownCts = new();
+    private readonly ConcurrentDictionary<string, byte> _disabledProviders = new(StringComparer.OrdinalIgnoreCase);
     private Timer? _evaluationTimer;
+    private int _evaluationIntervalSeconds;
     private volatile bool _isDisposed;
 
     /// <summary>
@@ -115,8 +119,9 @@ public sealed class StreamingFailoverService : IDisposable
                 rule.Id, rule.PrimaryProviderId, string.Join(", ", rule.BackupProviderIds), rule.FailoverThreshold);
         }
 
-        var interval = TimeSpan.FromSeconds(Math.Max(config.HealthCheckIntervalSeconds, 1));
-        _evaluationTimer = new Timer(EvaluateHealth, config, interval, interval);
+        _evaluationIntervalSeconds = Math.Max(config.HealthCheckIntervalSeconds, 1);
+        var interval = TimeSpan.FromSeconds(_evaluationIntervalSeconds);
+        _evaluationTimer = new Timer(EvaluateHealth, null, interval, interval);
 
         _log.Information("Streaming failover started with {RuleCount} rules, evaluation interval {Interval}s",
             rules.Length, config.HealthCheckIntervalSeconds);
@@ -168,6 +173,49 @@ public sealed class StreamingFailoverService : IDisposable
 
         lock (_failoverGate)
             return !_isDisposed && _transitionHandlers.ContainsKey(ruleId);
+    }
+
+    /// <summary>
+    /// Registers the runtime's view of its current transport for a rule. The health monitor only
+    /// infers liveness from recorded activity, so a quiet feed looks identical to a dead one;
+    /// the probe lets inferred silence be checked against the connection that actually exists.
+    /// </summary>
+    internal IDisposable RegisterTransportProbe(
+        string ruleId,
+        Func<string, StreamingTransportLiveness> probe)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ruleId);
+        ArgumentNullException.ThrowIfNull(probe);
+        ObjectDisposedException.ThrowIf(_isDisposed, this);
+
+        if (!_transportProbes.TryAdd(ruleId, probe))
+        {
+            throw new InvalidOperationException(
+                $"A streaming transport probe is already registered for rule '{ruleId}'.");
+        }
+
+        return new TransportProbeRegistration(_transportProbes, ruleId, probe);
+    }
+
+    /// <summary>
+    /// Records transport-level liveness for a provider's current connection. This keeps the
+    /// connection's inactivity window open without counting as a successful operation, so a quiet
+    /// but connected feed stays healthy and recovery evidence is not inflated by heartbeats.
+    /// </summary>
+    public void RecordHeartbeat(string providerId)
+    {
+        if (_isDisposed)
+            return;
+
+        var key = ProviderIdentity.NormalizeId(providerId);
+
+        // A provider that sat on standby long enough is marked lost by the monitor, and a
+        // heartbeat alone does not reverse that. Re-registering (a no-op while it is still
+        // monitored) restores timeout-based monitoring once its transport is live again.
+        if (_providerHealth.ContainsKey(key))
+            _healthMonitor.RegisterConnection(key, key);
+
+        _healthMonitor.RecordHeartbeat(key);
     }
 
     /// <summary>
@@ -416,6 +464,164 @@ public sealed class StreamingFailoverService : IDisposable
     }
 
     /// <summary>
+    /// Applies a saved failover configuration to the running coordinator without a restart.
+    /// </summary>
+    /// <remarks>
+    /// <para>Threshold, latency and health-check-interval edits take effect on the next evaluation and
+    /// keep each rule's active provider, failover state and counters. A rule's provider list can change
+    /// only to providers that already have a live client (registered with <see cref="RegisterProvider"/>)
+    /// and must still contain the active provider.</para>
+    /// <para>Adding a rule, removing a rule that a live runtime drives, or referencing a provider without
+    /// a live client cannot be applied in-process; those rules are reported as deferred and keep their
+    /// previous runtime behaviour until the host restarts.</para>
+    /// </remarks>
+    public IReadOnlyList<FailoverRuleApplyOutcome> ApplyConfiguration(DataSourcesConfig config)
+    {
+        ArgumentNullException.ThrowIfNull(config);
+        var outcomes = new List<FailoverRuleApplyOutcome>();
+        lock (_failoverGate)
+        {
+            ObjectDisposedException.ThrowIf(_isDisposed, this);
+            var nextRules = config.FailoverRules ?? Array.Empty<FailoverRuleConfig>();
+            var nextIds = new HashSet<string>(nextRules.Select(rule => rule.Id), StringComparer.OrdinalIgnoreCase);
+
+            foreach (var rule in nextRules)
+            {
+                if (!_ruleStates.TryGetValue(rule.Id, out var state))
+                {
+                    outcomes.Add(FailoverRuleApplyOutcome.Defer(rule.Id,
+                        "New failover rules take effect after a host restart."));
+                    continue;
+                }
+
+                if (SameRule(state.Rule, rule))
+                    continue;
+
+                var providers = new[] { rule.PrimaryProviderId }.Concat(rule.BackupProviderIds ?? []).ToArray();
+                var missing = providers.FirstOrDefault(id => !_providerHealth.ContainsKey(ProviderIdentity.NormalizeId(id)));
+                if (missing is not null)
+                {
+                    outcomes.Add(FailoverRuleApplyOutcome.Defer(rule.Id,
+                        $"Provider '{ProviderIdentity.NormalizeId(missing)}' has no live streaming client; restart the host to add it."));
+                    continue;
+                }
+
+                if (!providers.Any(id => ProviderIdentity.EqualsId(id, state.CurrentActiveProviderId)))
+                {
+                    outcomes.Add(FailoverRuleApplyOutcome.Defer(rule.Id,
+                        $"The active provider '{state.CurrentActiveProviderId}' was removed from the rule; restart the host or fail over first."));
+                    continue;
+                }
+
+                if (state.HasPendingTransition)
+                {
+                    outcomes.Add(FailoverRuleApplyOutcome.Defer(rule.Id,
+                        "A provider transition is in progress; save again once it completes or restart the host."));
+                    continue;
+                }
+
+                state.ReplaceRule(rule);
+                outcomes.Add(FailoverRuleApplyOutcome.Apply(rule.Id));
+                _log.Information(
+                    "Applied failover rule {RuleId} live: primary={Primary}, backups=[{Backups}], failoverThreshold={FailoverThreshold}, recoveryThreshold={RecoveryThreshold}, maxLatencyMs={MaxLatencyMs}",
+                    rule.Id, rule.PrimaryProviderId, string.Join(", ", rule.BackupProviderIds ?? []),
+                    rule.FailoverThreshold, rule.RecoveryThreshold, rule.MaxLatencyMs);
+            }
+
+            foreach (var ruleId in _ruleStates.Keys.Where(id => !nextIds.Contains(id)).ToArray())
+            {
+                if (_transitionHandlers.ContainsKey(ruleId))
+                {
+                    outcomes.Add(FailoverRuleApplyOutcome.Defer(ruleId,
+                        "This rule drives the live streaming client; removing it takes effect after a host restart."));
+                    continue;
+                }
+
+                _ruleStates.TryRemove(ruleId, out _);
+                outcomes.Add(FailoverRuleApplyOutcome.Apply(ruleId));
+                _log.Information("Removed failover rule {RuleId} live", ruleId);
+            }
+
+            var intervalSeconds = Math.Max(config.HealthCheckIntervalSeconds, 1);
+            if (_evaluationTimer is not null && intervalSeconds != _evaluationIntervalSeconds)
+            {
+                var interval = TimeSpan.FromSeconds(intervalSeconds);
+                _evaluationTimer.Change(interval, interval);
+                _log.Information("Failover health-check interval changed live from {Previous}s to {Next}s",
+                    _evaluationIntervalSeconds, intervalSeconds);
+                _evaluationIntervalSeconds = intervalSeconds;
+            }
+        }
+
+        EvaluateHealth(null);
+        return outcomes;
+    }
+
+    private static bool SameRule(FailoverRuleConfig a, FailoverRuleConfig b)
+        => a with { BackupProviderIds = Array.Empty<string>() } == b with { BackupProviderIds = Array.Empty<string>() }
+            && (a.BackupProviderIds ?? []).SequenceEqual(b.BackupProviderIds ?? [], StringComparer.OrdinalIgnoreCase);
+
+    /// <summary>Current health-evaluation interval in seconds (0 before <see cref="Start"/>).</summary>
+    public int EvaluationIntervalSeconds
+    {
+        get { lock (_failoverGate) return _evaluationIntervalSeconds; }
+    }
+
+    /// <summary>
+    /// Excludes a provider from (or re-includes it in) failover candidate selection and automatic
+    /// recovery. Excluding the active provider does not switch away from it; call
+    /// <see cref="MoveOffDisabledProviderAsync"/> for that.
+    /// </summary>
+    /// <returns><see langword="true"/> when the enabled state changed.</returns>
+    public bool SetProviderEnabled(string providerId, bool enabled)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(providerId);
+        var key = ProviderIdentity.NormalizeId(providerId);
+        var changed = enabled
+            ? _disabledProviders.TryRemove(key, out _)
+            : _disabledProviders.TryAdd(key, 0);
+        if (changed)
+        {
+            _log.Information("Streaming provider {ProviderId} {State} for failover", key,
+                enabled ? "re-included" : "excluded");
+        }
+
+        return changed;
+    }
+
+    /// <summary>Whether a provider is currently eligible for failover selection.</summary>
+    public bool IsProviderEnabled(string providerId)
+        => !_disabledProviders.ContainsKey(ProviderIdentity.NormalizeId(providerId));
+
+    /// <summary>
+    /// When a rule's active provider has been disabled, hands the rule off to the next enabled, healthy
+    /// provider through the normal two-phase transition so subscriptions move with it.
+    /// </summary>
+    /// <returns>
+    /// <see langword="null"/> when the active provider is enabled (nothing to do), <see langword="true"/>
+    /// when the hand-off committed, and <see langword="false"/> when no enabled provider could take over.
+    /// </returns>
+    public async Task<bool?> MoveOffDisabledProviderAsync(string ruleId, CancellationToken ct = default)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(ruleId);
+        string? target;
+        lock (_failoverGate)
+        {
+            if (_isDisposed || !_ruleStates.TryGetValue(ruleId, out var state))
+                return false;
+            if (IsProviderEnabled(state.CurrentActiveProviderId))
+                return null;
+
+            target = FindNextHealthyProvider(state.Rule, state.CurrentActiveProviderId, includePrimary: true);
+        }
+
+        if (target is null)
+            return false;
+
+        return await ForceFailoverAsync(ruleId, target, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
     /// Gets the current active provider ID for a given rule.
     /// </summary>
     public string? GetActiveProviderId(string ruleId)
@@ -522,7 +728,8 @@ public sealed class StreamingFailoverService : IDisposable
         if (ruleState.IsInFailoverState && rule is { } r)
         {
             var primaryId = ProviderIdentity.NormalizeId(r.PrimaryProviderId);
-            if (_providerHealth.TryGetValue(primaryId, out var primaryHealth))
+            if (!_disabledProviders.ContainsKey(primaryId) &&
+                _providerHealth.TryGetValue(primaryId, out var primaryHealth))
             {
                 if (primaryHealth.ConsecutiveSuccesses >= r.RecoveryThreshold &&
                     IsLatencyWithinRule(primaryHealth, r))
@@ -733,7 +940,8 @@ public sealed class StreamingFailoverService : IDisposable
             .Concat(rule.BackupProviderIds)
             .Select(ProviderIdentity.NormalizeId)
             .Where(id => !string.Equals(id, currentActiveKey, StringComparison.Ordinal))
-            .Where(id => includePrimary || !ProviderIdentity.EqualsId(id, rule.PrimaryProviderId));
+            .Where(id => includePrimary || !ProviderIdentity.EqualsId(id, rule.PrimaryProviderId))
+            .Where(id => !_disabledProviders.ContainsKey(id));
 
         foreach (var providerId in allProviders)
         {
@@ -762,6 +970,18 @@ public sealed class StreamingFailoverService : IDisposable
 
     private void HandleConnectionLost(ConnectionLostEvent evt)
     {
+        switch (ProbeTransport(evt.ConnectionId))
+        {
+            case StreamingTransportLiveness.Live:
+                // The monitor inferred the loss from silence, but the transport is still up.
+                // Re-registering restores the monitored connection without raising a recovery.
+                _healthMonitor.RegisterConnection(evt.ConnectionId, evt.ProviderName);
+                _healthMonitor.RecordHeartbeat(evt.ConnectionId);
+                return;
+            case StreamingTransportLiveness.NotCurrent:
+                return;
+        }
+
         RecordFailure(evt.ConnectionId, evt.Reason ?? "Connection lost");
     }
 
@@ -772,10 +992,50 @@ public sealed class StreamingFailoverService : IDisposable
 
     private void HandleHeartbeatMissed(HeartbeatMissedEvent evt)
     {
+        switch (ProbeTransport(evt.ConnectionId))
+        {
+            case StreamingTransportLiveness.Live:
+                // Quiet but connected: the transport itself is the heartbeat.
+                _healthMonitor.RecordHeartbeat(evt.ConnectionId);
+                return;
+            case StreamingTransportLiveness.NotCurrent:
+                // A standby (or superseded) provider has no transport to go quiet; its silence
+                // must not consume the failure budget it needs to be a viable failover target.
+                return;
+        }
+
         if (evt.MissedCount >= 2)
         {
             RecordFailure(evt.ConnectionId, $"Heartbeat missed ({evt.MissedCount} consecutive)");
         }
+    }
+
+    /// <summary>
+    /// Resolves the registered runtimes' view of a provider's transport. With no runtime
+    /// registered the answer is <see cref="StreamingTransportLiveness.Unknown"/> and the monitor's
+    /// inference stands unchanged.
+    /// </summary>
+    private StreamingTransportLiveness ProbeTransport(string providerId)
+    {
+        var result = StreamingTransportLiveness.Unknown;
+        foreach (var probe in _transportProbes.Values)
+        {
+            StreamingTransportLiveness observed;
+            try
+            {
+                observed = probe(providerId);
+            }
+            catch (Exception ex)
+            {
+                _log.Warning(ex, "Streaming transport probe failed for provider {ProviderId}", providerId);
+                continue;
+            }
+
+            if (observed > result)
+                result = observed;
+        }
+
+        return result;
     }
 
     private void RaiseFailoverTriggered(FailoverTriggeredEvent evt)
@@ -816,6 +1076,7 @@ public sealed class StreamingFailoverService : IDisposable
 
         _evaluationTimer?.Dispose();
         _transitionHandlers.Clear();
+        _transportProbes.Clear();
         _healthMonitor.OnConnectionLost -= HandleConnectionLost;
         _healthMonitor.OnConnectionRecovered -= HandleConnectionRecovered;
         _healthMonitor.OnHeartbeatMissed -= HandleHeartbeatMissed;
@@ -842,6 +1103,42 @@ public sealed class StreamingFailoverService : IDisposable
                 handlers.TryRemove(ruleId, out _);
         }
     }
+
+    private sealed class TransportProbeRegistration(
+        ConcurrentDictionary<string, Func<string, StreamingTransportLiveness>> probes,
+        string ruleId,
+        Func<string, StreamingTransportLiveness> probe) : IDisposable
+    {
+        private int _disposed;
+
+        public void Dispose()
+        {
+            if (Interlocked.Exchange(ref _disposed, 1) != 0)
+                return;
+
+            probes.TryRemove(
+                new KeyValuePair<string, Func<string, StreamingTransportLiveness>>(ruleId, probe));
+        }
+    }
+}
+
+/// <summary>
+/// A streaming runtime's view of one provider's transport, ordered so that the strongest
+/// evidence wins when several runtimes are asked about the same provider.
+/// </summary>
+internal enum StreamingTransportLiveness
+{
+    /// <summary>No runtime is registered, so nothing is known beyond the monitor's inference.</summary>
+    Unknown = 0,
+
+    /// <summary>The provider is not the runtime's current connection (standby or superseded).</summary>
+    NotCurrent = 1,
+
+    /// <summary>The provider is the current connection and its transport is not connected.</summary>
+    Down = 2,
+
+    /// <summary>The provider is the current connection and its transport is connected.</summary>
+    Live = 3
 }
 
 /// <summary>
@@ -954,7 +1251,7 @@ internal sealed class ProviderHealthState
 /// </summary>
 internal sealed class FailoverRuleState
 {
-    public FailoverRuleConfig Rule { get; }
+    public FailoverRuleConfig Rule { get; private set; }
     public string CurrentActiveProviderId { get; private set; }
     public bool IsInFailoverState { get; private set; }
     public DateTimeOffset? LastFailoverTime { get; private set; }
@@ -984,6 +1281,13 @@ internal sealed class FailoverRuleState
         IsInFailoverState = inFailover;
     }
 
+    /// <summary>Swaps in an edited rule, keeping the active provider and counters.</summary>
+    public void ReplaceRule(FailoverRuleConfig rule)
+    {
+        Rule = rule;
+        IsInFailoverState = !ProviderIdentity.EqualsId(CurrentActiveProviderId, rule.PrimaryProviderId);
+    }
+
     public void MarkTransitionPending(Guid transitionId) => PendingTransitionId = transitionId;
 
     public bool IsPendingTransition(Guid transitionId) => PendingTransitionId == transitionId;
@@ -1006,6 +1310,14 @@ internal sealed class FailoverRuleState
 }
 
 // --- Event and snapshot records ---
+
+/// <summary>Whether one failover rule edit was applied to the running coordinator.</summary>
+public sealed record FailoverRuleApplyOutcome(string RuleId, bool Applied, string? Reason)
+{
+    internal static FailoverRuleApplyOutcome Apply(string ruleId) => new(ruleId, true, null);
+
+    internal static FailoverRuleApplyOutcome Defer(string ruleId, string reason) => new(ruleId, false, reason);
+}
 
 /// <summary>
 /// A requested provider transition. The failover coordinator does not change its active-provider

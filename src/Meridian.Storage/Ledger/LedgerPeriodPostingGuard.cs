@@ -10,14 +10,20 @@ namespace Meridian.Storage.Ledger;
 public static class LedgerPeriodPostingGuard
 {
     public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
-        => ValidateCore(entry, period, verifiedAmortizationReversal: false);
+        => ValidateCore(entry, period, verifiedAmortizationReversal: false, verifiedPriorPeriodAdjustment: false);
 
     // Called only after the atomic store locks current authority and verifies the original
     // receipt, unchanged lot and exact inverse. A public journal request cannot opt into it.
     internal static void ValidateRetainedAmortizationReversal(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
-        => ValidateCore(entry, period, verifiedAmortizationReversal: true);
+        => ValidateCore(entry, period, verifiedAmortizationReversal: true, verifiedPriorPeriodAdjustment: false);
 
-    private static void ValidateCore(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period, bool verifiedAmortizationReversal)
+    // Only the transactional store can establish the closed root, retained predecessor and
+    // complete inverse. Public callers cannot opt into mixed prior-period lineage using tags.
+    internal static void ValidateRetainedPriorPeriodAdjustment(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period)
+        => ValidateCore(entry, period, verifiedAmortizationReversal: false, verifiedPriorPeriodAdjustment: true);
+
+    private static void ValidateCore(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period,
+        bool verifiedAmortizationReversal, bool verifiedPriorPeriodAdjustment)
     {
         ArgumentNullException.ThrowIfNull(entry);
         ArgumentNullException.ThrowIfNull(entry.Entry);
@@ -31,7 +37,7 @@ public static class LedgerPeriodPostingGuard
         }
 
         ValidateAdjustmentApprovalMetadata(entry);
-        ValidateSecurityMasterLineage(entry, verifiedAmortizationReversal);
+        ValidateSecurityMasterLineage(entry, verifiedAmortizationReversal, verifiedPriorPeriodAdjustment);
         ValidateTreasuryLedgerMetadata(entry, period);
 
         if (string.Equals(period.Status, "Open", StringComparison.Ordinal))
@@ -172,13 +178,45 @@ public static class LedgerPeriodPostingGuard
         }
     }
 
-    private static void ValidateSecurityMasterLineage(LedgerJournalEntryWrite entry, bool verifiedAmortizationReversal)
+    private static void ValidateSecurityMasterLineage(LedgerJournalEntryWrite entry,
+        bool verifiedAmortizationReversal, bool verifiedPriorPeriodAdjustment)
     {
         var journalEntry = entry.Entry;
         var instrumentLines = journalEntry.Lines
             .Where(IsInstrumentBearingLine)
             .ToArray();
         var metadata = journalEntry.Metadata;
+        if (metadata.Tags?.GetValueOrDefault("securityMaster.lineageMode") == "per-line")
+        {
+            var key = metadata.IdempotencyKey;
+            if (key?.StartsWith("portfolio-opening:", StringComparison.Ordinal) != true &&
+                key?.StartsWith("portfolio-opening-correction:", StringComparison.Ordinal) != true &&
+                !verifiedPriorPeriodAdjustment)
+                throw new LedgerValidationException("Per-line Security Master lineage requires the retained opening or opening-correction source.");
+            if (metadata.SecurityId.HasValue || !string.IsNullOrWhiteSpace(metadata.Symbol))
+                throw new LedgerValidationException("A mixed opening uses per-line instrument identity rather than an ambiguous header security.");
+            foreach (var line in instrumentLines)
+            {
+                var prefix = $"securityMaster.line.{line.EntryId:D}.";
+                if (!Guid.TryParse(metadata.Tags.GetValueOrDefault(prefix + "securityId"), out var id) || id == Guid.Empty ||
+                    line.Dimensions?.InstrumentId != id ||
+                    !TryGetMetadataTag(metadata, prefix + "provenance", out var provenance) ||
+                    !TryGetMetadataTag(metadata, prefix + "lineage", out var lineage))
+                    throw new LedgerValidationException("Each opening instrument line requires its exact Security Master identity, provenance and approved mapping.");
+                var tags = new Dictionary<string, string>(metadata.Tags, StringComparer.OrdinalIgnoreCase)
+                { ["securityMasterProvenance"] = provenance, ["securityMasterLineage"] = lineage };
+                ValidateSecurityMasterLineageCore(entry, [line], metadata with
+                { SecurityId = id, Symbol = line.Account.Symbol, Tags = tags }, verifiedAmortizationReversal: false);
+            }
+            return;
+        }
+        ValidateSecurityMasterLineageCore(entry, instrumentLines, metadata, verifiedAmortizationReversal);
+    }
+
+    private static void ValidateSecurityMasterLineageCore(LedgerJournalEntryWrite entry,
+        LedgerEntry[] instrumentLines, JournalEntryMetadata metadata, bool verifiedAmortizationReversal)
+    {
+        var journalEntry = entry.Entry;
         var instrumentBearing = instrumentLines.Length > 0 ||
             !string.IsNullOrWhiteSpace(metadata.Symbol) ||
             metadata.SecurityId.GetValueOrDefault() != Guid.Empty;
@@ -300,8 +338,12 @@ public static class LedgerPeriodPostingGuard
             normalized.Equals("Futures MTM Settlement", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("LoanPrincipal", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("LoanAndAccrualsClearing", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PrepaidInterestLiability", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("UnappliedCashLiability", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("AccruedInterestReceivable", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("InterestIncome", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PikInterestReceivable", StringComparison.OrdinalIgnoreCase) ||
+            normalized.Equals("PikInterestIncome", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("CommitmentFeeReceivable", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("CommitmentFeeIncome", StringComparison.OrdinalIgnoreCase) ||
             normalized.Equals("PenaltyReceivable", StringComparison.OrdinalIgnoreCase) ||

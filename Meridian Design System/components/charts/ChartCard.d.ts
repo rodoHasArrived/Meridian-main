@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Chart card — mirrors `ChartCardStyle`: a header row (title + optional small-caps OHLC/stat
  * readout + actions) over a framed plot area that hosts a CandleChart or EquityCurve.
@@ -20,4 +21,4 @@ export interface ChartCardProps {
   children?: React.ReactNode;
   style?: React.CSSProperties;
 }
-export declare function ChartCard(props: ChartCardProps): JSX.Element;
+export declare function ChartCard(props: ChartCardProps): React.JSX.Element;

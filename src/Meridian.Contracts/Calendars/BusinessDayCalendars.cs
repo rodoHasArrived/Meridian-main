@@ -37,6 +37,36 @@ public static class BusinessDayCalendars
     /// </summary>
     public static IBusinessDayCalendar WeekendsOnly { get; } = new HolidayBusinessDayCalendar(WeekendsOnlyId, 1);
 
+    /// <summary>The longest canonical calendar id, in characters.</summary>
+    public const int MaxCalendarIdLength = 16;
+
+    /// <summary>The canonical calendar id grammar, as refusals that name it describe it.</summary>
+    public const string CanonicalCalendarIdDescription = "an uppercase ASCII letter followed by 1 to 15 uppercase ASCII letters or digits";
+
+    /// <summary>
+    /// Whether <paramref name="calendarId"/> is a canonical calendar id
+    /// (<see cref="CanonicalCalendarIdDescription"/>): matched exactly, with no trimming or case
+    /// folding, so <c>usny</c> and <c>" USNY"</c> are not ids. <see cref="WeekendsOnlyId"/> is one.
+    /// False for null. Calendar files and declared <c>paymentCalendars</c> share this grammar.
+    /// </summary>
+    public static bool IsCanonicalCalendarId([System.Diagnostics.CodeAnalysis.NotNullWhen(true)] string? calendarId)
+    {
+        if (calendarId is null || calendarId.Length is < 2 or > MaxCalendarIdLength || calendarId[0] is < 'A' or > 'Z')
+        {
+            return false;
+        }
+
+        foreach (var ch in calendarId)
+        {
+            if (ch is not ((>= 'A' and <= 'Z') or (>= '0' and <= '9')))
+            {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
     /// <summary>
     /// The joint of <paramref name="calendars"/>: a single calendar is returned as itself, and two or
     /// more become a <see cref="JointBusinessDayCalendar"/>.

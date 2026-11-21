@@ -60,7 +60,7 @@ class RoadmapValidatorCompatibilityTests(unittest.TestCase):
         self.assertEqual(0, result)
 
     def test_legacy_contract_remains_supported(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             roadmap_path = Path(temp_dir) / "legacy-roadmap.yml"
             roadmap_path.write_text(VALID_LEGACY_CONTRACT, encoding="utf-8")
 
@@ -73,7 +73,7 @@ class RoadmapValidatorCompatibilityTests(unittest.TestCase):
             "        reviewed_by: roadmap-reviewer\n",
             "",
         )
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             roadmap_path = Path(temp_dir) / "legacy-roadmap.yml"
             roadmap_path.write_text(invalid_contract, encoding="utf-8")
             stderr = io.StringIO()
@@ -93,7 +93,7 @@ class RoadmapValidatorCompatibilityTests(unittest.TestCase):
             def safe_load(_text: str):
                 raise FailingYamlModule.YAMLError("malformed legacy YAML")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             roadmap_path = Path(temp_dir) / "malformed-legacy-roadmap.yml"
             roadmap_path.write_text(VALID_LEGACY_CONTRACT, encoding="utf-8")
             stderr = io.StringIO()
@@ -114,7 +114,7 @@ schema:
   version: "1.0.0"
 items: []
 """.lstrip()
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             roadmap_path = Path(temp_dir) / "roadmap-items.yml"
             roadmap_path.write_text(canonical_shape, encoding="utf-8")
             stderr = io.StringIO()

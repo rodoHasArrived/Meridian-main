@@ -22,7 +22,9 @@
           SkipUnchangedFiles="true" />
   </Target>
 
-  <Target Name="PublishQuantScriptWorkerSidecar" AfterTargets="Publish">
+  <!-- An empty PublishDir would resolve workers/quant-script/ against the project source
+       directory and publish the worker into the source tree (it was committed that way once). -->
+  <Target Name="PublishQuantScriptWorkerSidecar" AfterTargets="Publish" Condition="'$(PublishDir)' != ''">
     <PropertyGroup>
       <_QuantScriptWorkerPublishDir>$([System.IO.Path]::GetFullPath('$(PublishDir)workers/quant-script/', '$(MSBuildProjectDirectory)'))</_QuantScriptWorkerPublishDir>
       <_QuantScriptWorkerPublishProperties>Configuration=$(Configuration);TargetFramework=$(QuantScriptWorkerTargetFramework);PublishDir=$(_QuantScriptWorkerPublishDir);PublishSingleFile=false;MeridianBuildIsolationKey=$(MeridianBuildIsolationKey)</_QuantScriptWorkerPublishProperties>

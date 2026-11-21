@@ -108,9 +108,9 @@ export function AddProviderDrawer({ open, catalogue, onClose, onAdd }: Props) {
                       key={entry.moduleId}
                       type="button"
                       onClick={() => handleSelect(entry)}
-                      className={`w-full rounded-md border p-3 text-left text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40 ${
+                      className={`w-full rounded-md border p-3 text-left text-sm transition-colors focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-[var(--interaction-focus)] ${
                         selectedId === entry.moduleId
-                          ? "border-primary/60"
+                          ? "border-[var(--interaction-selected)]"
                           : "border-border/70 bg-background/35 hover:border-border hover:bg-secondary/40"
                       }`}
                       aria-pressed={selectedId === entry.moduleId}

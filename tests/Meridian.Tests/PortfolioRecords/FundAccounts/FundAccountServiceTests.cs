@@ -9,6 +9,93 @@ public sealed class FundAccountServiceTests
 {
     private static InMemoryFundAccountService CreateService() => new();
 
+    [Theory]
+    [InlineData("{truncated")]
+    [InlineData("")]
+    [InlineData("null")]
+    [InlineData("{}")]
+    [InlineData("{\"version\":1,\"accounts\":null}")]
+    [InlineData("{\"version\":2,\"accounts\":[]}")]
+    [InlineData("{\"version\":1,\"accounts\":[null]}")]
+    [InlineData("{\"version\":1,\"accounts\":[{}]}")]
+    public void LoadState_InvalidSnapshot_RefusesStartupAndPreservesFile(string contents)
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"meridian-accounts-{Guid.NewGuid():N}.json");
+        File.WriteAllText(path, contents);
+        try
+        {
+            var error = Assert.Throws<InvalidDataException>(() => new InMemoryFundAccountService(path));
+
+            Assert.Contains(path, error.Message);
+            Assert.NotNull(error.InnerException);
+            Assert.Equal(contents, File.ReadAllText(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task LoadState_DuplicateAccountRecords_RefusesStartupAndPreservesFile()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"meridian-accounts-{Guid.NewGuid():N}.json");
+        try
+        {
+            var service = new InMemoryFundAccountService(path);
+            await service.CreateAccountAsync(MakeBankRequest());
+            var state = System.Text.Json.Nodes.JsonNode.Parse(await File.ReadAllTextAsync(path))!;
+            var accounts = state["accounts"]!.AsArray();
+            accounts.Add(accounts[0]!.DeepClone());
+            var contents = state.ToJsonString();
+            await File.WriteAllTextAsync(path, contents);
+
+            Assert.Throws<InvalidDataException>(() => new InMemoryFundAccountService(path));
+            Assert.Equal(contents, await File.ReadAllTextAsync(path));
+        }
+        finally
+        {
+            File.Delete(path);
+        }
+    }
+
+    [Fact]
+    public void LoadState_UnreadableSnapshot_RefusesStartup()
+    {
+        var path = Path.Combine(Path.GetTempPath(), $"meridian-accounts-{Guid.NewGuid():N}.json");
+        Directory.CreateDirectory(path);
+        try
+        {
+            var error = Assert.Throws<InvalidDataException>(() => new InMemoryFundAccountService(path));
+            Assert.Contains(path, error.Message);
+            Assert.True(Directory.Exists(path));
+        }
+        finally
+        {
+            Directory.Delete(path);
+        }
+    }
+
+    [Fact]
+    public async Task LoadState_MissingSnapshot_CreatesDurableStore()
+    {
+        var directory = Path.Combine(Path.GetTempPath(), $"meridian-accounts-{Guid.NewGuid():N}");
+        var path = Path.Combine(directory, "accounts.json");
+        try
+        {
+            var service = new InMemoryFundAccountService(path);
+            var account = await service.CreateAccountAsync(MakeBankRequest());
+
+            var restored = new InMemoryFundAccountService(path);
+            Assert.Equal(account, await restored.GetAccountAsync(account.AccountId));
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
     private static CreateAccountRequest MakeCustodyRequest(
         Guid? fundId = null,
         CustodianAccountDetailsDto? details = null) =>

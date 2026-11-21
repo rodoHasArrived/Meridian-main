@@ -28,9 +28,16 @@ namespace Meridian.Infrastructure.Adapters.Alpaca;
 public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProviderModuleCredentialHints, IProviderModuleConnectionProbe
 {
     private const string AlpacaBrokerApiBase = "https://broker-api.sandbox.alpaca.markets";
-    private const string AlpacaPaperApiBase = "https://paper-api.alpaca.markets";
-    private const string AlpacaLiveApiBase = "https://api.alpaca.markets";
-    private static readonly HttpClient ProbeClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private static readonly HttpClient SharedProbeClient = new() { Timeout = TimeSpan.FromSeconds(10) };
+    private readonly HttpClient _probeClient;
+
+    /// <summary>Creates the module. Module discovery requires this parameterless constructor.</summary>
+    public AlpacaProviderModule() : this(SharedProbeClient)
+    {
+    }
+
+    /// <summary>Creates the module with the client its setup probe sends through.</summary>
+    internal AlpacaProviderModule(HttpClient probeClient) => _probeClient = probeClient;
 
     /// <inheritdoc/>
     public IReadOnlyList<string> CredentialKeyHints => ["keyId", "secretKey"];
@@ -54,11 +61,13 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
     public override void Register(IServiceCollection services, DataSourceRegistry registry)
     {
         // Credential resolution for all providers: context (ProviderModules config) → env vars.
-        var envCreds = AlpacaCredentialEnvironment.Resolve();
-        var keyId = GetKeyId() ?? envCreds.KeyId;
-        var secretKey = GetSecretKey() ?? envCreds.SecretKey;
+        var tradingCredentials = ResolveTradingCredentials();
+        var keyId = tradingCredentials.KeyId;
+        var secretKey = tradingCredentials.SecretKey;
 
-        // Settings resolution: context overrides AlpacaOptions defaults.
+        // Settings resolution: context overrides AlpacaOptions defaults. useSandbox selects the
+        // market-data stream sandbox only; the paper or live Trading API is chosen by
+        // ResolveTradingCredentials.
         var feed = GetSetting("feed") ?? "iex";
         var useSandbox = bool.TryParse(GetSetting("useSandbox"), out var sbVal) && sbVal;
         var subscribeQuotes = bool.TryParse(GetSetting("subscribeQuotes"), out var sqVal) && sqVal;
@@ -66,8 +75,14 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         // ----------------------------------------------------------------
         // Historical backfill provider
         // ----------------------------------------------------------------
-        services.AddSingleton<AlpacaHistoricalDataProvider>(_ =>
-            new AlpacaHistoricalDataProvider(keyId: keyId, secretKey: secretKey, feed: feed));
+        services.AddSingleton<AlpacaHistoricalDataProvider>(sp =>
+        {
+            var providers = sp.GetService<AppConfig>()?.Backfill?.Providers;
+            var options = BackfillProviderRuntimeOptions.FromConfig(providers, "alpaca");
+            return new AlpacaHistoricalDataProvider(keyId: keyId, secretKey: secretKey, feed: feed,
+                adjustment: providers?.Alpaca?.Adjustment ?? "all", priority: options.Priority,
+                rateLimitPerMinute: options.Requests!.Value);
+        });
 
         services.AddSingleton<IHistoricalDataProvider>(sp =>
             sp.GetRequiredService<AlpacaHistoricalDataProvider>());
@@ -98,7 +113,8 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             {
                 var tradeCollector = sp.GetRequiredService<TradeDataCollector>();
                 var quoteCollector = sp.GetRequiredService<QuoteCollector>();
-                return new AlpacaMarketDataClient(tradeCollector, quoteCollector, streamingOptions);
+                return new AlpacaMarketDataClient(tradeCollector, quoteCollector, streamingOptions,
+                    ProviderValidationProfile.Resolve(sp.GetService<AppConfig>()?.Backfill, "alpaca"));
             });
 
             services.AddSingleton<IMarketDataClient>(sp =>
@@ -131,14 +147,24 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
         services.AddSingleton<AlpacaBrokerageGateway>(sp =>
     {
         var httpFactory = sp.GetRequiredService<IHttpClientFactory>();
-        // Prefer context-resolved credentials; fall back to a registered AlpacaOptions or empty
-        var brokerageOptions = !string.IsNullOrWhiteSpace(keyId) && !string.IsNullOrWhiteSpace(secretKey)
-            ? new AlpacaOptions(KeyId: keyId, SecretKey: secretKey, Feed: feed, UseSandbox: useSandbox, SubscribeQuotes: subscribeQuotes)
-            : sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
         var logger = sp.GetRequiredService<ILogger<AlpacaBrokerageGateway>>();
         var streamLogger = sp.GetRequiredService<ILogger<AlpacaTradeUpdatesClient>>();
-        var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger, sp.GetRequiredService<IAtomicFileWriter>());
-        return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger, stream);
+        if (!tradingCredentials.HasCredentials)
+        {
+            // No module credentials: fall back to a registered AlpacaOptions or empty, and let
+            // the gateway resolve whatever the environment holds when it connects.
+            var fallbackOptions = sp.GetService<AlpacaOptions>() ?? new AlpacaOptions();
+            return new AlpacaBrokerageGateway(httpFactory, fallbackOptions, logger,
+                new AlpacaTradeUpdatesClient(fallbackOptions, streamLogger, sp.GetRequiredService<IAtomicFileWriter>()));
+        }
+
+        // The gateway and its trade-update stream are pinned to the same key pair and the same
+        // paper or live environment the setup probe checks, across requests and reconnects.
+        var brokerageOptions = new AlpacaOptions(
+            KeyId: keyId, SecretKey: secretKey, Feed: feed, UseSandbox: useSandbox, SubscribeQuotes: subscribeQuotes);
+        var stream = new AlpacaTradeUpdatesClient(brokerageOptions, streamLogger, sp.GetRequiredService<IAtomicFileWriter>(),
+            credentials: tradingCredentials);
+        return new AlpacaBrokerageGateway(httpFactory, brokerageOptions, logger, stream, tradingCredentials);
     });
         services.AddSingleton<IBrokerageAccountCatalog>(sp =>
             sp.GetRequiredService<AlpacaBrokerageGateway>());
@@ -148,20 +174,40 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             sp.GetRequiredService<AlpacaBrokerageGateway>());
     }
 
+    /// <summary>
+    /// The one decision of which key pair and which Trading API environment this module uses,
+    /// shared by the registered brokerage gateway and the setup probe. Keys come from the module
+    /// context, then the environment. Paper or live comes from
+    /// <c>ALPACA_TRADING_ENVIRONMENT</c> and is paper unless that says live. The
+    /// <c>useSandbox</c> setting is not consulted: it selects the market-data stream sandbox.
+    /// </summary>
+    internal AlpacaCredentialSnapshot ResolveTradingCredentials()
+    {
+        var environment = AlpacaCredentialEnvironment.Resolve();
+        return environment with
+        {
+            KeyId = GetKeyId() ?? environment.KeyId,
+            SecretKey = GetSecretKey() ?? environment.SecretKey,
+        };
+    }
+
+    /// <summary>The Trading API host the gateway and the probe use for these credentials.</summary>
+    internal static string TradingApiBaseUrl(AlpacaCredentialSnapshot credentials) =>
+        AlpacaTradingApi.BaseUrl(credentials.UseSandbox);
+
     /// <inheritdoc/>
     public async Task<ModuleProbeResult> ProbeConnectionAsync(CancellationToken ct = default)
     {
-        var envCreds = AlpacaCredentialEnvironment.Resolve();
-        var keyId = GetKeyId() ?? envCreds.KeyId;
-        var secretKey = GetSecretKey() ?? envCreds.SecretKey;
-
-        if (string.IsNullOrWhiteSpace(keyId) || string.IsNullOrWhiteSpace(secretKey))
+        var credentials = ResolveTradingCredentials();
+        if (!credentials.HasCredentials)
             return ModuleProbeResult.Failure("No credentials available to probe connection");
 
-        // Mirror the same endpoint selection the brokerage gateway uses so the probe
-        // validates the same environment the module will connect to after restart.
-        var useSandbox = bool.TryParse(GetSetting("useSandbox"), out var sbProbe) && sbProbe;
-        var probeBase = useSandbox ? AlpacaPaperApiBase : AlpacaLiveApiBase;
+        // The same key pair and environment the registered brokerage gateway is pinned to, so
+        // the probe validates what the module will actually connect to.
+        var keyId = credentials.KeyId;
+        var secretKey = credentials.SecretKey;
+        var useSandbox = credentials.UseSandbox;
+        var probeBase = TradingApiBaseUrl(credentials);
 
         var sw = System.Diagnostics.Stopwatch.StartNew();
         try
@@ -169,7 +215,7 @@ public sealed class AlpacaProviderModule : ConfigurableProviderModuleBase, IProv
             using var request = new HttpRequestMessage(HttpMethod.Get, $"{probeBase}/v2/account");
             request.Headers.Add("APCA-API-KEY-ID", keyId);
             request.Headers.Add("APCA-API-SECRET-KEY", secretKey);
-            using var response = await ProbeClient.SendAsync(request, ct).ConfigureAwait(false);
+            using var response = await _probeClient.SendAsync(request, ct).ConfigureAwait(false);
             sw.Stop();
             if (response.IsSuccessStatusCode)
                 return ModuleProbeResult.Success(sw.Elapsed.TotalMilliseconds,

@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_preview_jsx.js"></script>
+<script src="../../_ds_bundle.js"></script>
+<script src="./support.js"></script>
+<title>StrategyBuilder — Meridian</title>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Companion · StrategyBuilder" description="Declared companion view of the strategy-formation template; retains the same shared object and workflow state." -->
+<helmet>
+<script src="./ds-base.js"></script>
+<script src="../_strategy-executor/executor-store.js"></script>
+<script src="../_strategy-executor/screen-kit.js"></script>
+<meta name="dc-template" content="strategy-builder">
+<style>html,body{margin:0;padding:0;height:100%}
+.sb-kv{display:flex;justify-content:space-between;gap:10px;font-size:12px}
+.sb-kv .k{color:var(--text-muted)}.sb-kv .v{font-family:var(--font-data);color:var(--text-primary);font-variant-numeric:tabular-nums;text-align:right;word-break:break-all}
+</style>
+</helmet>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Worksheet" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="compose" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
+<div data-screen-label="Strategy worksheet" style="padding:16px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary);white-space:nowrap">{{ stratName }}</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ envVariant }}" dot="{{ true }}" hint-size="60px,18px">{{ envLabel }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="neutral" hint-size="80px,18px">{{ versionChip }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Badge" variant="{{ freshVariant }}" dot="{{ true }}" hint-size="90px,18px">{{ freshLabel }}</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" on-click="{{ onSave }}" hint-size="50px,28px">Save</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onRun }}" hint-size="100px,28px">Run backtest</x-import>
+</div>
+<sc-if value="{{ showStorageNotice }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="warning" title="{{ storageTitle }}" detail="{{ storageDetail }}" hint-size="100%,48px"></x-import>
+</sc-if>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:12px;align-items:start">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorksheetGrid" columns="{{ colsDef }}" rows="{{ totalRows }}" cells="{{ cells }}" active-cell="{{ active }}" on-active-cell-change="{{ onActive }}" editable="{{ true }}" on-cell-commit="{{ onCellCommit }}" hint-size="100%,420px"></x-import>
+<div style="display:flex;flex-direction:column;gap:12px">
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="90px,14px">Cell inspector</x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ inspStatus }}" label="{{ inspStatusLabel }}" hint-size="60px,18px"></x-import>
+</div>
+<div style="display:flex;flex-direction:column;gap:8px">
+<div class="sb-kv"><span class="k">Statement</span><span class="v">{{ inspRef }}</span></div>
+<div class="sb-kv"><span class="k">Formula</span><code class="v" style="font-size:12px">{{ inspFormula }}</code></div>
+<div class="sb-kv"><span class="k">Functions</span><span class="v" style="font-size:11px">{{ inspFns }}</span></div>
+<div class="sb-kv"><span class="k">Note</span><span class="v" style="font-size:11px;color:var(--text-secondary)">{{ inspNote }}</span></div>
+</div>
+<div style="font:11px/1.5 var(--font-body);color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px">One worksheet, one draft — Formation and Field &amp; Formula edit these same statements.</div>
+<div style="display:flex;gap:8px">
+<a href="{{ fieldsHref }}" style="font:12px var(--font-body);color:var(--link,#2A5F96)">Edit in Field &amp; Formula →</a>
+</div>
+</div>
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:10px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="90px,14px">Run readiness</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ActionGuardList" guards="{{ runGuards }}" label="Run backtest" show-summary="{{ true }}" on-remediate="{{ onRemediate }}" hint-size="100%,120px"></x-import>
+<div style="display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--border);padding-top:8px">
+<div class="sb-kv"><span class="k">Material hash</span><span class="v">{{ matHash }}</span></div>
+<div class="sb-kv"><span class="k">Run proofs current</span><span class="v">{{ proofsCurrent }}</span></div>
+<div class="sb-kv"><span class="k">Latest run</span><span class="v"><a href="{{ runsHref }}" style="color:var(--link,#2A5F96);text-decoration:none">{{ latestRunId }}</a></span></div>
+</div>
+</div>
+</div>
+</div>
+<sc-if value="{{ bannerErr }}" hint-placeholder-val="{{ false }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="danger" title="{{ errTitle }}" detail="{{ errDetail }}" hint-size="100%,48px"></x-import>
+</sc-if>
+<sc-if value="{{ bannerOk }}" hint-placeholder-val="{{ true }}">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.StatusBanner" tone="success" title="Worksheet valid" detail="{{ okDetail }}" hint-size="100%,48px"></x-import>
+</sc-if>
+</div>
+</x-import>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  state = { booted: false, bootError: null, draft: null, active: "B1" };
+  K() { return window.MeridianExecutorKit; }
+  componentDidMount() { this.K() && this.K().applyChrome(this.props, "PAPER"); const wait = setInterval(() => { if (this.K()) { clearInterval(wait); this.K().boot(this); } }, 30); this._wait = wait; }
+  componentWillUnmount() { clearInterval(this._wait); this.K() && this.K().unboot(this); }
+  componentDidUpdate() { this.K() && this.K().applyChrome(this.props, "PAPER"); }
+  fnsIn(f) { const m = String(f || "").match(/\b[A-Z][A-Z_0-9]{1,}\s*\(/g); return m ? Array.from(new Set(m.map((x) => x.replace(/\s*\($/, "")))).join(" · ") : "none"; }
+  renderVals() {
+    const K = this.K(), env = String(this.props.environment ?? "PAPER").toUpperCase();
+    if (!K) return { dataState: "loading" };
+    K.applyChrome(this.props, "PAPER");
+    const base = { dataState: this.state.bootError ? "error" : (!this.state.booted ? "loading" : (this.props.dataState ?? "ready")), onRetry: () => window.location.reload(), topbar: K.topbarEl(React, "Strategy Builder", env), nav: K.navEl(React, "builder"), envVariant: env.toLowerCase(), envLabel: env };
+    if (!this.state.booted) return { ...base, statusBar: K.statusEl(React, [{ label: "Worksheet", value: "Loading" }].concat(K.statusTail(env))), colsDef: this.cols(), totalRows: 6, cells: {}, stratName: "Strategy Builder" };
+    const X = K.X(), SM = K.ds().StrategyModel, d = this.state.draft;
+    const ws = d.portfolioRules.worksheet || [];
+    const errs = ws.filter((c) => c.status === "error");
+    const runs = X.listRuns(d.id).filter((r) => r.lifecycle === "complete");
+    const latest = runs.find((r) => !r.legacy) || null;
+    const fresh = latest ? X.freshnessFor(latest.id) : { state: "unknown" };
+    const currentN = runs.filter((r) => X.freshnessFor(r.id).state === "current").length;
+    const fb = K.freshBadge(latest ? fresh.state : "unknown");
+    const storage = X.storageNotice();
+    const cells = {};
+    ws.forEach((c, i) => {
+      const r = i + 1;
+      cells["A" + r] = { type: "label", value: c.ref };
+      cells["B" + r] = { type: c.status === "error" ? "error" : "formula", value: c.formula, formula: c.formula };
+      cells["C" + r] = { type: "text", value: c.status === "error" ? "▲ error" : "✓ ok" };
+      cells["D" + r] = { type: "text", value: c.message || "" };
+    });
+    const rowOf = (ref) => parseInt(ref.slice(1), 10);
+    const cellAt = (ref) => ws[rowOf(ref) - 1] || null;
+    const active = this.state.active, insp = cellAt(active) || ws[0] || {};
+    const blockers = SM.formationIssues(d).filter((i) => i.severity === "blocking" && i.stage !== "review");
+    const runGuards = blockers.length ? blockers.map((i) => ({ id: i.stage + "-" + i.code, state: "blocking", label: i.message, reason: "Stage · " + i.stage, remediation: i.code === "worksheet-error" ? null : { label: "Open Formation", actionId: "formation" } })) : [{ id: "run-ok", state: "satisfied", label: "All formation gates clear", reason: "Backtest snapshots the draft into a new immutable run artifact." }];
+    return {
+      ...base,
+      statusBar: K.statusEl(React, [
+        { status: errs.length ? "err" : "ok", label: "Statements", value: ws.length + " · " + errs.length + " error" + (errs.length === 1 ? "" : "s") },
+        { label: "Draft", value: K.hash8(SM.materialHash(d)) },
+        { label: "Runs", value: currentN + "/" + runs.length + " current" },
+      ].concat(K.statusTail(env))),
+      stratName: d.name, versionChip: "v" + d.version + " · " + d.lifecycle,
+      freshVariant: fb.variant, freshLabel: fb.label,
+      showStorageNotice: !!storage, storageTitle: storage ? storage.title : "", storageDetail: storage ? storage.message : "",
+      onSave: () => { X.updateStrategy(d.id, (x) => x); const t = window.MeridianToast; t && t.success && t.success("Draft persisted", "Material " + K.hash8(SM.materialHash(d)) + " · shared with Formation and Field & Formula"); },
+      onRun: () => {
+        const t = window.MeridianToast;
+        const res = X.runBacktest(d.id, { env: env.toLowerCase(), seedTag: "builder" });
+        if (res && res.ok) { t && t.success && t.success("Run complete · " + res.artifact.id, "Opening Strategy Runs"); setTimeout(() => K.nav("runs", { run: res.artifact.id }), 650); }
+        else if (res) { t && t.error && t.error("Run blocked", res.issues[0].message); }
+        this.setState({ draft: X.getStrategy(d.id) });
+      },
+      colsDef: this.cols(), totalRows: Math.max(6, ws.length + 2), cells,
+      active, onActive: (ref) => this.setState({ active: ref }),
+      onCellCommit: (ref, val) => {
+        const col = ref[0], row = rowOf(ref), t = window.MeridianToast;
+        if (col !== "B") { t && t.info && t.info("Read-only column", "Edit the statement in column B — status and notes are derived."); return; }
+        const target = ws[row - 1] ? ws[row - 1].ref : "B" + (ws.length + 2);
+        this.setState({ draft: X.updateWorksheetCell(d.id, target, val) });
+      },
+      inspRef: insp.ref || "—",
+      inspStatus: insp.status === "error" ? "Blocked" : "Ready", inspStatusLabel: insp.status === "error" ? "error" : "ok",
+      inspFormula: insp.formula || "—",
+      inspFns: this.fnsIn(insp.formula),
+      inspNote: insp.status === "error" ? (insp.message || "Does not evaluate.") : "Evaluates against " + (d.universe.datasetId || "the selected dataset"),
+      fieldsHref: X.withIdentity(K.ROUTES.fields), runsHref: X.withIdentity(K.ROUTES.runs, latest ? { run: latest.id } : {}),
+      runGuards, onRemediate: (rem) => { if (rem && rem.actionId === "formation") K.nav("formation"); },
+      matHash: K.hash8(SM.materialHash(d)),
+      proofsCurrent: currentN + " of " + runs.length,
+      latestRunId: latest ? latest.id : "none",
+      bannerErr: errs.length > 0, bannerOk: errs.length === 0,
+      errTitle: errs.length ? "Statement " + errs[0].ref + " — " + (errs[0].message || "does not evaluate") : "",
+      errDetail: errs.length + " blocking error" + (errs.length === 1 ? "" : "s") + " across " + ws.length + " statements · run, export and approval stay gated until every statement evaluates.",
+      okDetail: ws.length + " statements · draft " + K.hash8(SM.materialHash(d)) + " · run proofs current " + currentN + "/" + runs.length,
+    };
+  }
+  cols() { return [{ key: "A", label: "Cell", width: 64, align: "left" }, { key: "B", label: "Statement", width: 560, align: "left" }, { key: "C", label: "Status", width: 90, align: "left" }, { key: "D", label: "Note", width: 320, align: "left" }]; }
+}
+</script>
+</body>
+</html>

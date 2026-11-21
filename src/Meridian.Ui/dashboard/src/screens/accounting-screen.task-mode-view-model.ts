@@ -29,6 +29,8 @@ export type AccountingTaskModeId =
 export interface AccountingTaskModeViewModel {
   id: AccountingTaskModeId;
   label: string;
+  /** Task title for the route body heading; the breadcrumb already shows the page name. */
+  title: string;
   description: string;
   routeLabel: string;
   href: string;
@@ -60,77 +62,88 @@ const accountingTaskModeDefinitions: Record<AccountingTaskModeId, AccountingTask
   "close-cockpit": {
     id: "close-cockpit",
     label: "Close Cockpit",
-    description: "Daily close posture, blockers, owners, affected outputs, next actions, and retained proof stay first for Accounting operators.",
+    title: "Close Cockpit",
+    description: "See what is blocking the close, who owns it, and the next action.",
     routeLabel: "Close Cockpit",
     href: WORKSTATION_ROUTE_CATALOG.accounting
   },
   "reconciliation-casework": {
     id: "reconciliation-casework",
     label: "Reconciliation Casework",
-    description: "Statement runs, open breaks, owners, evidence, comments, and resolution actions stay grouped for case handling.",
+    title: "Reconciliation Casework",
+    description: "Work through reconciliation breaks and resolve each one with its supporting records.",
     routeLabel: "Reconciliation Casework",
     href: WORKSTATION_ROUTE_CATALOG.accountingReconciliation
   },
   "external-gl-reconciliation": {
     id: "external-gl-reconciliation",
     label: "External GL Reconciliation",
-    description: "Provider imports, account mappings, tie-out evidence, and guarded export packages stay in one focused external-ledger workflow.",
+    title: "External GL Reconciliation",
+    description: "Tie the external general ledger out to Meridian and prepare exports.",
     routeLabel: "External GL Reconciliation",
     href: WORKSTATION_ROUTE_CATALOG.accountingExternalGlReconciliation
   },
   "ledger-explorer": {
     id: "ledger-explorer",
     label: "Ledger Explorer",
-    description: "Posted-journal trial balance and P&L for the governed book of record, with strategy-run ledger drill-through kept alongside as an explicitly labelled simulation artifact.",
+    title: "Ledger Explorer",
+    description: "Review the trial balance and P&L from posted journals; strategy-run ledgers are shown separately as simulations.",
     routeLabel: "Ledger Explorer",
     href: WORKSTATION_ROUTE_CATALOG.accountingLedger
   },
   "journal-entry": {
     id: "journal-entry",
     label: "Journal Entry",
-    description: "Manual journal drafting, validation, evidence attachment, and approval submission stay in one governed task mode.",
+    title: "Journal Entry",
+    description: "Draft a manual journal, attach its support, and submit it for approval.",
     routeLabel: "Journal Entry",
     href: WORKSTATION_ROUTE_CATALOG.accountingJournalEntries
   },
   "capital-accounts": {
     id: "capital-accounts",
     label: "Capital Accounts",
-    description: "Investor capital activity, allocation proof, statement lineage, and report-output readiness stay connected.",
+    title: "Investor capital activity",
+    description: "Review investor capital activity and the allocations behind each statement.",
     routeLabel: "Capital Accounts",
     href: WORKSTATION_ROUTE_CATALOG.accountingCapitalAccounts
   },
   exceptions: {
     id: "exceptions",
     label: "Exceptions",
-    description: "Material accounting exceptions, ownership, evidence, and resolution actions stay in one focused review queue.",
+    title: "Exception review queue",
+    description: "Review material accounting exceptions and resolve them.",
     routeLabel: "Exceptions",
     href: WORKSTATION_ROUTE_CATALOG.accountingExceptions
   },
   "security-master": {
     id: "security-master",
     label: "Security Master",
-    description: "Search governed instrument identity, inspect conflicts, and review the evidence supporting each security record.",
+    title: "Security record search",
+    description: "Look up a security, resolve identifier conflicts, and see what supports its record.",
     routeLabel: "Security Master",
     href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster
   },
   approvals: {
     id: "approvals",
     label: "Approvals",
-    description: "Review exactly what is awaiting approval, why it is ready, its retained evidence, and the effect of each decision.",
+    title: "Pending close approvals",
+    description: "See what is waiting for your approval and what each decision will do.",
     routeLabel: "Approvals",
     href: WORKSTATION_ROUTE_CATALOG.accountingApprovals
   },
   configure: {
     id: "configure",
     label: "Configure",
-    description: "Set up ledger books and posting controls, verify readiness, and activate only configurations that pass governed checks.",
+    title: "Ledger book setup",
+    description: "Set up ledger books and posting rules, then activate them once they pass their checks.",
     routeLabel: "Configure",
     href: WORKSTATION_ROUTE_CATALOG.accountingConfigure
   },
   "delivery-evidence": {
     id: "delivery-evidence",
     label: "Delivery Evidence",
-    description: "Accounting evidence routes into governed report packs, retained manifests, exports, and audit-ready output support.",
+    title: "Delivery Evidence",
+    description: "See which accounting records feed each report pack and export.",
     routeLabel: "Delivery Evidence",
     href: WORKSTATION_ROUTE_CATALOG.reportingEvidence
   }
@@ -233,9 +246,11 @@ export function buildAccountingSectionVisibility(
   }
 
   return {
-    ...visibility,
+    // A legacy anchor owns only the section it names. Merging with the current
+    // route used to expose two workflows and re-enable the entire shared tail.
+    ...Object.fromEntries(Object.keys(visibility).map((key) => [key, false])) as unknown as AccountingSectionVisibilityViewModel,
     showCloseCockpitLanding: false,
-    showWorkflowDetails: true,
+    showWorkflowDetails: false,
     ...forcedVisibility
   };
 }

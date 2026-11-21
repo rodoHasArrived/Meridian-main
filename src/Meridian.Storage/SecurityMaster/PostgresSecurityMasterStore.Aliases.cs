@@ -308,18 +308,16 @@ public sealed partial class PostgresSecurityMasterStore
             "AliasRevisionRecorded",
             recordedBy,
             DateTimeOffset.UtcNow,
-            new
-            {
-                aliasId = alias.AliasId,
-                aliasKind = alias.AliasKind,
-                aliasValue = alias.AliasValue,
-                provider = alias.Provider,
-                scope = alias.Scope.ToString(),
-                reason = alias.Reason,
-                validFrom = alias.ValidFrom,
-                validTo = alias.ValidTo,
-                isEnabled = alias.IsEnabled
-            },
+            new AliasRevisionRecordedPayload(
+                alias.AliasId,
+                alias.AliasKind,
+                alias.AliasValue,
+                alias.Provider,
+                alias.Scope.ToString(),
+                alias.Reason,
+                alias.ValidFrom,
+                alias.ValidTo,
+                alias.IsEnabled),
             ct).ConfigureAwait(false);
     }
 
@@ -511,7 +509,7 @@ public sealed partial class PostgresSecurityMasterStore
                 "AliasRevisionsSynchronized",
                 ProjectionReplacementAliasActor,
                 DateTimeOffset.UtcNow,
-                new { appendedRevisions = appended },
+                new AliasRevisionsSynchronizedPayload(appended),
                 ct).ConfigureAwait(false);
         }
     }

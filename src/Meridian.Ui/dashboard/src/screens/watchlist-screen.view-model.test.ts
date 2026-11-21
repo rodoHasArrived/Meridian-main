@@ -381,8 +381,8 @@ describe("watchlist-screen view model", () => {
 
   it("derives the live-price refresh command state", () => {
     expect(buildQuoteRefreshCommand("ready", 2, false)).toEqual({
-      label: "Refresh prices",
-      ariaLabel: "Refresh live prices",
+      label: "Fetch latest prices",
+      ariaLabel: "Fetch latest live prices",
       disabled: false,
       disabledReason: null,
       busy: false
@@ -390,14 +390,14 @@ describe("watchlist-screen view model", () => {
 
     expect(buildQuoteRefreshCommand("empty", 0, false)).toMatchObject({
       disabled: true,
-      disabledReason: "Add a symbol before refreshing live prices."
+      disabledReason: "Add a symbol before fetching live prices."
     });
 
     expect(buildQuoteRefreshCommand("ready", 2, true)).toEqual({
-      label: "Refreshing prices…",
-      ariaLabel: "Refreshing live prices",
+      label: "Fetching prices…",
+      ariaLabel: "Fetching latest live prices",
       disabled: true,
-      disabledReason: "Live price refresh is already running.",
+      disabledReason: "Live prices are already being fetched.",
       busy: true
     });
   });

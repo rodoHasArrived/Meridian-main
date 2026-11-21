@@ -35,7 +35,7 @@ export function StatementImportPanel(options: StatementImportPanelProps = {}) {
   return (
     <section className="flex flex-col gap-4" aria-label="Import statement">
       <PanelSurface className="p-4">
-        <h1 className="text-base font-semibold text-foreground">Import statement</h1>
+        <h2 className="text-base font-semibold text-foreground">Upload or fetch a statement</h2>
         <p className="mt-1 text-xs text-muted-foreground">
           Upload a broker or custodian statement, or fetch it through a configured provider. Review the canonical
           mapping and confidence before records enter the reconciliation queue.
@@ -191,7 +191,7 @@ function SourceSection({ viewModel }: { viewModel: StatementImportPanelViewModel
                     type="button"
                     className={cn(
                       "inline-flex items-center gap-1.5 rounded-[2px] border border-primary/40 bg-primary/10 px-2.5 py-1",
-                      "font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-primary transition-colors",
+                      "font-mono text-xs font-semibold uppercase tracking-[0.14em] text-primary transition-colors",
                       "hover:bg-primary/20 focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40"
                     )}
                     aria-label={`Apply suggested profile ${suggestion.displayName}, score ${Math.round(suggestion.score * 100)} percent`}
@@ -576,16 +576,16 @@ function CommitResultPanel({ viewModel }: { viewModel: StatementImportPanelViewM
       />
       <dl className="grid gap-2 text-xs sm:grid-cols-2">
         <div>
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Retained source</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Retained source</dt>
           <dd className="font-mono">{result.retainedSourcePath}</dd>
         </div>
         <div>
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Retained canonical</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Retained canonical</dt>
           <dd className="font-mono">{result.retainedCanonicalPath}</dd>
         </div>
         {result.evidenceVaultIdentity ? (
           <div>
-            <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Evidence vault</dt>
+            <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Evidence vault</dt>
             <dd className="font-mono">{result.evidenceVaultIdentity.vaultId}</dd>
           </div>
         ) : null}
@@ -627,7 +627,7 @@ function TrustedCloseHandoff({ result }: { result: StatementImportPanelViewModel
   return (
     <div
       className="flex flex-col gap-3 rounded-[2px] border border-success/40 bg-success/5 p-3"
-      aria-label="Trusted close handoff"
+      aria-label="Trusted close next step"
     >
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -651,19 +651,19 @@ function TrustedCloseHandoff({ result }: { result: StatementImportPanelViewModel
       </div>
       <dl className="grid gap-2 text-xs sm:grid-cols-2" aria-label="Trusted close scope">
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Fund profile</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Fund profile</dt>
           <dd className="break-all font-mono text-foreground">{scope.fundProfileId}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Ledger book</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Ledger book</dt>
           <dd className="break-all font-mono text-foreground">{scope.ledgerBookId}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">Accounting period</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">Accounting period</dt>
           <dd className="break-all font-mono text-foreground">{scope.accountingPeriodId}</dd>
         </div>
         <div className="min-w-0">
-          <dt className="font-mono text-[10px] uppercase tracking-[0.14em] text-muted-foreground">As of</dt>
+          <dt className="font-mono text-xs uppercase tracking-[0.14em] text-muted-foreground">As of</dt>
           <dd className="font-mono text-foreground">{scope.asOfDate}</dd>
         </div>
       </dl>
@@ -682,7 +682,7 @@ function CommitCaseLinks({ result }: { result: StatementImportPanelViewModel["co
 
   return (
     <div className="flex flex-col gap-2" aria-label="Statement import reconciliation cases">
-      <span className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+      <span className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
         Reconciliation cases
       </span>
       <ul className="grid gap-2 sm:grid-cols-2">
@@ -695,7 +695,7 @@ function CommitCaseLinks({ result }: { result: StatementImportPanelViewModel["co
               <span className="min-w-[10rem] flex-1 truncate font-medium text-foreground">{caseLink.label}</span>
               <Button asChild variant="outline" size="sm">
                 <Link to={caseLink.route}>
-                  <span className="max-w-[14rem] truncate font-mono text-[11px]">{caseLink.caseId}</span>
+                  <span className="max-w-[14rem] truncate font-mono text-xs">{caseLink.caseId}</span>
                   <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
                 </Link>
               </Button>

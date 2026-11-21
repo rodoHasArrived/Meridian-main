@@ -8,13 +8,14 @@
  */
 
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, RefreshCcw } from "lucide-react";
+import { Activity } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { cn } from "@/lib/utils";
+import { CrossProviderTolerancePanel } from "@/screens/data-quality-watch.cross-provider-policy";
 import {
   getHighLatencyQualitySymbols,
   getLowCompletenessQualitySymbols,
@@ -52,6 +53,7 @@ import type {
   QualitySymbolHealth,
   QualityTopErrorSymbol
 } from "@/types/data-quality-watch.types";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 /** Matches the route defaults, so the label always states the threshold in force. */
 const HIGH_LATENCY_THRESHOLD_MS = 100;
@@ -147,10 +149,7 @@ export function DataQualityWatch() {
               Which symbols are unhealthy, slow, error-prone, incomplete, or silent right now.
             </CardDescription>
           </div>
-          <Button size="sm" variant="outline" onClick={() => void refresh()} disabled={loading}>
-            <RefreshCcw className="mr-2 h-4 w-4" />
-            Refresh
-          </Button>
+          <PanelReload reload={refresh} failed={errors.length > 0} busy={loading} what="the quality watch" />
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -249,6 +248,8 @@ export function DataQualityWatch() {
             caption={`The ${UNACKNOWLEDGED_ANOMALY_COUNT} most recent anomalies awaiting acknowledgement.`}
           />
         </Section>
+
+        <CrossProviderTolerancePanel />
       </CardContent>
     </Card>
   );
@@ -257,7 +258,7 @@ export function DataQualityWatch() {
 function Stat({ label, value, tone }: { label: string; value: string; tone?: QualityTone }) {
   return (
     <div className="flex min-w-0 items-baseline gap-2">
-      <dt className="whitespace-nowrap uppercase tracking-[0.08em] text-muted-foreground">{label}</dt>
+      <dt className={cn("whitespace-nowrap text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</dt>
       <dd className={cn("whitespace-nowrap font-mono text-sm font-semibold", toneClass(tone ?? "default"))}>{value}</dd>
     </div>
   );

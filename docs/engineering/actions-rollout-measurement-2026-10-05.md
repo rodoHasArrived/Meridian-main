@@ -8,7 +8,7 @@ The report contains **24 comparable completed PR changes after rollout**, but on
 
 ## Scope and evidence
 
-[Source snapshot](actions-rollout-source-2026-10-05.json.gz), [full report](actions-rollout-report-2026-10-05.json.gz), and [comparison policy](actions-rollout-policy-2026-10-05.json) preserve the measured inputs, attempt accounting, change classifications, exclusions and exact match membership. The JSON snapshots use deterministic gzip compression.
+[Source snapshot](../../archive/docs/engineering/actions-rollout-source-2026-10-05.json.gz), [full report](../../archive/docs/engineering/actions-rollout-report-2026-10-05.json.gz), and [comparison policy](../../archive/docs/engineering/actions-rollout-policy-2026-10-05.json) preserve the measured inputs, attempt accounting, change classifications, exclusions and exact match membership. The JSON snapshots use deterministic gzip compression.
 
 - Baseline: September 26, 00:00:00 UTC through September 28, 21:28:53 UTC, inclusive.
 - Rollout observations: October 3–4 UTC, both complete days. These disjoint windows are not a continuous history.
@@ -135,7 +135,7 @@ Each link opens its Meridian CI workflow run. The source snapshot retains all co
 
 ## Five-pair benchmark and validation evidence
 
-[Benchmark evidence](actions-local-benchmarks-2026-10-05.json) retains all 20 measured variants, exact discovery digests, counts, timing, provenance, decisions and both unsuccessful setup attempts.
+[Benchmark evidence](../../archive/docs/engineering/actions-local-benchmarks-2026-10-05.json) retains all 20 measured variants, exact discovery digests, counts, timing, provenance, decisions and both unsuccessful setup attempts.
 
 The five .NET pairs (2/4 processes) and five browser pairs (8/16 files per batch) ran on one local Linux executor at test-source commit `e5783987f743bea998aaa59c53c44490a7c1f3ce`. The executor had a four-CPU quota and 16 GiB memory limit, .NET SDK 10.0.100 and Node v24.19.0. Vitest retained two workers. Pair order alternated, and measured variants ran sequentially. The benchmark working tree contained this collector/report change; selected .NET and browser test sources matched the recorded commit. These benchmarks measure that fixed commit; canonical CI validates subsequent integration with main.
 
@@ -199,8 +199,8 @@ Hosted .NET concurrency remains **2**, local .NET concurrency **1**, browser bat
 
 ```bash
 python build/scripts/ci/ci-metrics.py \
-  --input docs/engineering/actions-rollout-source-2026-10-05.json.gz \
-  --comparison docs/engineering/actions-rollout-policy-2026-10-05.json \
+  --input archive/docs/engineering/actions-rollout-source-2026-10-05.json.gz \
+  --comparison archive/docs/engineering/actions-rollout-policy-2026-10-05.json \
   --output artifacts/actions-rollout/report.json \
   --markdown artifacts/actions-rollout/report.md
 ```

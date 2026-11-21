@@ -15,7 +15,8 @@ namespace Meridian.Contracts.SecurityMaster;
 /// version. Nothing here writes a stored payload, and the <c>schema_version</c> and
 /// <c>terms_format</c> columns stay derived from the stored blob.</para>
 /// <para>The hook acts only on objects of the flat codec — <c>schemaVersion</c>
-/// <see cref="AssetSpecificTermsSchema.Legacy"/> (absent included), flat by tag or by shape, and
+/// <see cref="AssetSpecificTermsSchema.Legacy"/> (absent included), declaring the flat family in
+/// <see cref="SecurityTermsEnvelope.FormatKey"/> (an untagged payload is never upgraded), and
 /// carrying neither a <c>customProfileId</c> nor a <c>profileFields</c> object — stamped from version
 /// 1 up to, but not including, the class's current version. Everything else passes through
 /// unchanged: economic documents, custom-profile envelopes, other codec numbers, payloads already at
@@ -122,13 +123,15 @@ public static class SecurityAssetClassTermsUpgrader
     }
 
     /// <summary>
-    /// The codec axis (<c>schemaVersion</c> is the flat codec's), the family axis (flat by tag or by
-    /// shape) and the profile signals the mapping reads (<c>customProfileId</c>, <c>profileFields</c>):
-    /// a profile-governed payload's fields belong to its profile, not to the class's terms version.
+    /// The codec axis (<c>schemaVersion</c> is the flat codec's), the family axis (the declared
+    /// <see cref="SecurityTermsEnvelope.FormatKey"/> is flat; an untagged payload is not inferred by
+    /// shape, ADR-024 amendment 2026-11-13 step 5) and the profile signals the mapping reads
+    /// (<c>customProfileId</c>, <c>profileFields</c>): a profile-governed payload's fields belong to its
+    /// profile, not to the class's terms version.
     /// </summary>
     private static bool IsFlatCodecPayload(JsonElement payload)
         => SecurityAssetSpecificTermsV0ToCurrentUpcaster.ResolveSchemaVersion(payload) == AssetSpecificTermsSchema.Legacy
-           && string.Equals(SecurityTermsEnvelope.ResolveFormat(payload), SecurityTermsFormats.Flat, StringComparison.Ordinal)
+           && string.Equals(SecurityTermsEnvelope.GetDeclaredFormat(payload), SecurityTermsFormats.Flat, StringComparison.Ordinal)
            && !SecurityTermsEnvelope.CarriesProfileEnvelope(payload);
 
     private static SecurityAssetClassTermsUpgrade RequireStep(

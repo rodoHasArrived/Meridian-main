@@ -3,6 +3,9 @@ import { useCallback, useEffect, useId, useMemo, useRef, useState, type ReactNod
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Drawer, DrawerBody } from "@/components/ui/drawer";
+import { SectionDescription } from "@/components/ui/section-description";
+import { TechnicalDetails } from "@/components/ui/technical-details";
+import { EntityLink } from "@/components/meridian/entity-inspector";
 import { ProofDrawer, ProofActionButton } from "@/components/meridian/proof-drawer";
 import { cn } from "@/lib/utils";
 import {
@@ -20,6 +23,13 @@ import type {
   FinancialRecordExplorerSavedViewSaveRequestDto,
   FinancialRecordExplorerTone
 } from "@/types";
+import { eyebrowClassName, usesTrackedCaps } from "@/design-system/label-case";
+import { normalizeFinancialLabel, pluralizeCount } from "@/lib/format";
+
+const inspectorWorkspaceRoutes: Record<string, string> = {
+  ledger: "/accounting/ledger", portfolio: "/portfolio",
+  "security-instrument": "/accounting/security-master", "report-line-provenance": "/reporting/evidence"
+};
 
 export interface FinancialRecordExplorerScopeItem {
   id: string;
@@ -61,8 +71,12 @@ export function FinancialRecordExplorerShell({
   explorer,
   onSaveView,
   onSelectRecord,
+  activeRecordId,
+  scopeControls,
+  formatRunLabel,
   children,
-  className
+  className,
+  compact = false
 }: {
   explorerLabel: string;
   title: string;
@@ -76,8 +90,16 @@ export function FinancialRecordExplorerShell({
   explorer?: FinancialRecordExplorerDto | null;
   onSaveView?: (request: FinancialRecordExplorerSavedViewSaveRequestDto) => void | Promise<void>;
   onSelectRecord?: (recordId: string) => void;
+  /** A linked authoritative record controls selection; never fall back to another row. */
+  activeRecordId?: string;
+  /** Required scope choices render before summaries, records, and supporting results. */
+  scopeControls?: ReactNode;
+  /** Display-only run naming; underlying scope, filters, share state and save requests stay exact. */
+  formatRunLabel?: (runId: string) => string;
   children: ReactNode;
   className?: string;
+  /** Keep task scope and warnings visible while leading with the record grid. */
+  compact?: boolean;
 }) {
   const dtoMode = explorer ?? null;
   const normalizedViews = useMemo(() => dtoMode
@@ -169,15 +191,17 @@ export function FinancialRecordExplorerShell({
     );
   }, [dtoMode, searchText, selectedFilters]);
 
-  const selectedRow = rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
+  const selectedRow = activeRecordId !== undefined
+    ? rows.find((row) => row.recordId === activeRecordId) ?? null
+    : rows.find((row) => row.recordId === selectedRecordId) ?? rows[0] ?? null;
   const selectedRecord = selectedRow?.detail ?? null;
-  const selectedRecordShareId = selectedRow?.recordId ?? selectedRecordId;
+  const selectedRecordShareId = activeRecordId ?? selectedRow?.recordId ?? selectedRecordId;
 
   useEffect(() => {
-    if (selectedRow?.recordId) {
+    if (activeRecordId === undefined && selectedRow?.recordId) {
       onSelectRecord?.(selectedRow.recordId);
     }
-  }, [onSelectRecord, selectedRow?.recordId]);
+  }, [activeRecordId, onSelectRecord, selectedRow?.recordId]);
   const trimmedViewName = viewName.trim();
   const materialChange = Boolean(dtoMode && onSaveView && (trimmedViewName || searchText.trim() || (selectedViewId && selectedViewId !== activeSavedView?.id)));
   const canSaveView = Boolean(materialChange && trimmedViewName);
@@ -229,34 +253,41 @@ export function FinancialRecordExplorerShell({
   }
 
   function handleSelectRecord(recordId: string) {
+    if (activeRecordId !== undefined) onSelectRecord?.(recordId);
     setSelectedRecordId(recordId);
     setInspectorOpen(true);
   }
 
   return (
-    <section className={cn("workspace-section-band", className)} aria-labelledby={titleId}>
-      <div className="workspace-section-subheader">
-        <div className="min-w-0">
-          <p className="eyebrow-label">{explorerLabel}</p>
+    <section className={cn("workspace-section-band", compact && "!gap-2", className)} aria-labelledby={titleId}>
+      <div className={cn("workspace-section-subheader", compact && "!flex-nowrap !gap-2 !py-2")}>
+        <div className={cn("min-w-0", compact && "flex-1")}>
+          {!compact ? <p className={eyebrowClassName(explorerLabel)}>{explorerLabel}</p> : null}
           <h2 id={titleId} className="workspace-section-title">{headerTitle}</h2>
-          <p className="workspace-section-summary">{headerDescription}</p>
-          {dtoMode ? (
+          {compact ? <SectionDescription descriptionKey={`explorer:${titleId}`} label={`About ${headerTitle}`}>{headerDescription}</SectionDescription> : <p className="workspace-section-summary">{headerDescription}</p>}
+          {dtoMode && (!compact || dtoMode.isBlocked) ? (
             <p className="mt-2 text-xs text-muted-foreground">{dtoMode.sourceState}</p>
           ) : null}
         </div>
-        <div className="flex flex-wrap items-center gap-2">
-          <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge>
+        <div className={cn("flex flex-wrap items-center gap-2", compact && "shrink-0")}>
+          {!compact ? <Badge variant={dtoMode?.isBlocked ? "danger" : "default"} dot>{selectedDtoSavedView?.label ?? activeSavedView?.label ?? "Unsaved view"}</Badge> : null}
           {dtoMode ? (
             <Button asChild size="sm" variant="outline">
-              <a href={shareHref} aria-label={`Share ${headerTitle} evidence state: ${shareStateSummary}`}>
+              <a href={shareHref} aria-label={`Share state — ${headerTitle} evidence state: ${shareStateSummary}`}>
                 <Link2 className="h-3.5 w-3.5" aria-hidden="true" />
                 Share state
               </a>
             </Button>
           ) : null}
+          {dtoMode && selectedRow && inspectorWorkspaceRoutes[dtoMode.explorerId] && !dtoMode.isBlocked ? <EntityLink ariaLabel="Inspect record — selected record" record={{
+            kind: "record", id: selectedRow.recordId, label: selectedRow.label,
+            workspaceHref: `${inspectorWorkspaceRoutes[dtoMode.explorerId]}${new URL(shareHref, "http://localhost").search}`,
+            summary: [{ label: "Record type", value: selectedRow.recordType }, { label: "Source", value: selectedRow.source }, { label: "Status", value: selectedRow.status }],
+            proof: { explorer: dtoMode, recordId: selectedRow.recordId }
+          }}>Inspect record</EntityLink> : null}
           {dtoMode && onSaveView ? (
             <input
-              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-hidden placeholder:text-muted-foreground focus:border-primary/60"
+              className="h-8 w-44 rounded-md border border-border/70 bg-background px-2 text-xs text-foreground outline-hidden placeholder:text-muted-foreground focus:border-[var(--interaction-focus)]"
               value={viewName}
               onChange={(event) => setViewName(event.target.value)}
               placeholder="View name"
@@ -281,20 +312,36 @@ export function FinancialRecordExplorerShell({
         </div>
       </div>
 
-      <div className="grid gap-3 xl:grid-cols-[minmax(0,0.72fr)_minmax(260px,0.28fr)]">
+      {scopeControls ? <div className={compact ? "mb-2" : "mb-4"}>{scopeControls}</div> : null}
+
+      {compact ? (
+        <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs">
+          <ExplorerScopeBar compact items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: formatRunLabel && /^(run|run id)$/i.test(item.label.trim()) ? formatRunLabel(item.value) : item.value })) : scopeItems} />
+          <ExplorerSummaryStrip compact items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: normalizeFinancialLabel(item.label), value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
+          {!dtoMode ? <>
+            <SavedViewSelector compact views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
+            <AppliedFilterStrip compact formatRunLabel={formatRunLabel} filters={appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
+          </> : null}
+          <TechnicalDetails label="Explorer details" className={cn("ml-auto", compact && "[&>summary]:min-h-8 [&>summary]:py-1")}>
+            {dtoMode ? <p className="mb-2 text-xs text-muted-foreground">{dtoMode.sourceState}</p> : null}
+            <ProofSummary title={headerTitle} actions={actions} explorer={dtoMode} />
+          </TechnicalDetails>
+        </div>
+      ) : <div className="grid gap-3 xl:grid-cols-[minmax(0,0.72fr)_minmax(260px,0.28fr)]">
         <div className="space-y-3">
-          <ExplorerScopeBar items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: item.value })) : scopeItems} />
+          <ExplorerScopeBar items={dtoMode ? dtoMode.scopeItems.map((item) => ({ id: item.label, label: item.label, value: formatRunLabel && /^(run|run id)$/i.test(item.label.trim()) ? formatRunLabel(item.value) : item.value })) : scopeItems} />
           <SavedViewSelector views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} />
-          <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: item.label, value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
-          <AppliedFilterStrip filters={dtoMode ? selectedFilters.length > 0 ? selectedFilters : dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
+          <ExplorerSummaryStrip items={dtoMode ? dtoMode.summaryItems.map((item) => ({ id: item.label, label: normalizeFinancialLabel(item.label), value: item.value, tone: normalizeTone(item.tone) })) : summaryItems} />
+          <AppliedFilterStrip formatRunLabel={formatRunLabel} filters={dtoMode ? selectedFilters.length > 0 ? selectedFilters : dtoMode.filters : appliedFilters.map((filter) => ({ filterId: filter.id, label: filter.label, value: filter.value, operator: "equals", tone: "Default" as FinancialRecordExplorerTone }))} />
         </div>
         <ProofSummary title={headerTitle} actions={actions} explorer={dtoMode} />
-      </div>
+      </div>}
 
       {dtoMode ? (
-        <div className="mt-4 space-y-4">
-          <div className="space-y-3">
-            <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3 py-2">
+        <div className={compact ? "space-y-2" : "mt-4 space-y-4"}>
+          <div className={compact ? "space-y-2" : "space-y-3"}>
+            <div className={cn("flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3", compact ? "py-1" : "py-2")}>
+              {compact ? <SavedViewSelector compact views={normalizedViews} selectedViewId={selectedViewId} onSelect={handleSelectSavedView} /> : null}
               <Search className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
               <input
                 className="min-w-[220px] flex-1 bg-transparent text-sm outline-hidden placeholder:text-muted-foreground"
@@ -303,10 +350,11 @@ export function FinancialRecordExplorerShell({
                 placeholder="Search financial records"
                 aria-label={`Search ${headerTitle}`}
               />
-              {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{rows.length} rows</Badge>}
+              {compact ? <AppliedFilterStrip compact formatRunLabel={formatRunLabel} filters={selectedFilters.length > 0 ? selectedFilters : dtoMode.filters} /> : null}
+              {dtoMode.isBlocked ? <Badge variant="danger">Blocked</Badge> : <Badge variant="outline">{pluralizeCount(rows.length, "row")}</Badge>}
             </div>
             <ExplorerGrid explorer={dtoMode} rows={rows} columns={visibleColumns} selectedRecordId={selectedRow?.recordId ?? null} onSelect={handleSelectRecord} />
-            <RecordGraph explorer={dtoMode} />
+            <RecordGraph explorer={dtoMode} formatRunLabel={formatRunLabel} />
           </div>
         </div>
       ) : null}
@@ -339,13 +387,13 @@ function getCurrentExplorerHref(): string {
   return typeof window === "undefined" ? "" : window.location.href;
 }
 
-function ExplorerScopeBar({ items }: { items: FinancialRecordExplorerScopeItem[] }) {
+function ExplorerScopeBar({ items, compact = false }: { items: FinancialRecordExplorerScopeItem[]; compact?: boolean }) {
   return (
-    <dl className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Explorer scope">
+    <dl className={compact ? "flex flex-wrap items-baseline gap-x-3 gap-y-1" : "grid gap-2 sm:grid-cols-2 xl:grid-cols-4"} aria-label="Explorer scope">
       {items.map((item) => (
-        <div key={item.id} className="rounded-md border border-border/70 bg-background/60 px-3 py-2">
-          <dt className="text-[11px] font-semibold uppercase text-muted-foreground">{item.label}</dt>
-          <dd className="mt-1 truncate font-mono text-sm text-foreground">{item.value}</dd>
+        <div key={item.id} className={compact ? "flex items-baseline gap-1" : "rounded-md border border-border/70 bg-background/60 px-3 py-2"}>
+          <dt className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</dt>
+          <dd className={cn("font-mono text-foreground", compact ? "text-xs" : "mt-1 truncate text-sm")}>{item.value}</dd>
         </div>
       ))}
     </dl>
@@ -355,19 +403,21 @@ function ExplorerScopeBar({ items }: { items: FinancialRecordExplorerScopeItem[]
 function SavedViewSelector({
   views,
   selectedViewId,
-  onSelect
+  onSelect,
+  compact = false
 }: {
   views: FinancialRecordExplorerSavedView[];
   selectedViewId: string;
   onSelect: (viewId: string) => void;
+  compact?: boolean;
 }) {
   return (
-    <div className="rounded-md border border-border/70 bg-secondary/15 p-3" aria-label="Saved explorer views">
-      <div className="flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground">
+    <div className={compact ? "flex flex-wrap items-center gap-2" : "rounded-md border border-border/70 bg-secondary/15 p-3"} aria-label="Saved explorer views">
+      <div className={cn("flex items-center gap-2 text-xs font-semibold uppercase text-muted-foreground", compact && "sr-only")}>
         <LayoutPanelTop className="h-3.5 w-3.5" aria-hidden="true" />
         Saved views
       </div>
-      <div className="mt-2 flex flex-wrap gap-2">
+      <div className={cn("flex flex-wrap gap-2", !compact && "mt-2")}>
         {views.map((view) => (
           <button
             key={view.id}
@@ -385,27 +435,27 @@ function SavedViewSelector({
   );
 }
 
-function ExplorerSummaryStrip({ items }: { items: FinancialRecordExplorerSummaryItem[] }) {
+function ExplorerSummaryStrip({ items, compact = false }: { items: FinancialRecordExplorerSummaryItem[]; compact?: boolean }) {
   return (
-    <div className="grid gap-2 sm:grid-cols-2 xl:grid-cols-4" aria-label="Explorer summary">
+    <div className={compact ? "flex flex-wrap items-baseline gap-2" : "grid gap-2 sm:grid-cols-2 xl:grid-cols-4"} aria-label="Explorer summary">
       {items.map((item) => (
-        <div key={item.id} className={cn("rounded-md border px-3 py-2", summaryToneClass(item.tone))}>
-          <div className="text-[11px] font-semibold uppercase text-muted-foreground">{item.label}</div>
-          <div className="mt-1 font-mono text-lg font-semibold">{item.value}</div>
+        <div key={item.id} className={cn("rounded-md border", compact ? "flex items-baseline gap-1 px-2 py-1" : "px-3 py-2", summaryToneClass(item.tone))}>
+          <div className={cn("text-xs font-semibold text-[var(--text-secondary)]", usesTrackedCaps(item.label) && "uppercase")}>{item.label}</div>
+          <div className={cn("font-mono font-semibold", compact ? "text-xs" : "mt-1 text-lg")}>{item.value}</div>
         </div>
       ))}
     </div>
   );
 }
 
-function AppliedFilterStrip({ filters }: { filters: FinancialRecordExplorerFilterDto[] }) {
+function AppliedFilterStrip({ filters, formatRunLabel, compact = false }: { filters: FinancialRecordExplorerFilterDto[]; formatRunLabel?: (runId: string) => string; compact?: boolean }) {
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-md border border-border/70 bg-background/60 px-3 py-2" aria-label="Applied explorer filters">
+    <div className={cn("flex flex-wrap items-center gap-2", !compact && "rounded-md border border-border/70 bg-background/60 px-3 py-2")} aria-label="Applied explorer filters">
       <Filter className="h-3.5 w-3.5 text-muted-foreground" aria-hidden="true" />
       {filters.length > 0 ? filters.map((filter) => (
         <span key={filter.filterId} className="toolbar-chip">
           <span>{filter.label}</span>
-          <b>{filter.value}</b>
+          <b>{formatRunLabel && /^(run|run id)$/i.test((filter.label || filter.filterId).trim()) ? formatRunLabel(filter.value) : filter.value}</b>
         </span>
       )) : (
         <span className="text-sm text-muted-foreground">No filters applied.</span>
@@ -632,7 +682,7 @@ function ExplorerGrid({
         <thead className="bg-secondary/40 text-xs uppercase text-muted-foreground">
           <tr aria-rowindex={1}>
             {columns.map((column) => (
-              <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{column.header}</th>
+              <th key={column.columnId} className={cn("px-3 py-2 text-left", column.isRightAligned ? "text-right" : "")}>{normalizeFinancialLabel(column.header)}</th>
             ))}
           </tr>
         </thead>
@@ -725,7 +775,7 @@ function normalizeSearchToken(value: string): string {
   return value.trim().toLowerCase();
 }
 
-function RecordGraph({ explorer }: { explorer: FinancialRecordExplorerDto }) {
+function RecordGraph({ explorer, formatRunLabel }: { explorer: FinancialRecordExplorerDto; formatRunLabel?: (runId: string) => string }) {
   if (explorer.recordGraph.nodes.length === 0) {
     return null;
   }
@@ -738,7 +788,7 @@ function RecordGraph({ explorer }: { explorer: FinancialRecordExplorerDto }) {
       </div>
       <div className="mt-3 flex flex-wrap gap-2">
         {explorer.recordGraph.nodes.slice(0, 18).map((node) => (
-          <Badge key={node.nodeId} variant={toneToBadge(node.tone)}>{node.label}</Badge>
+          <Badge key={node.nodeId} variant={toneToBadge(node.tone)}>{formatRunLabel && node.nodeType.trim().toLowerCase() === "run" ? formatRunLabel(node.nodeId) : node.label}</Badge>
         ))}
       </div>
     </section>
@@ -789,11 +839,11 @@ function toneTextClass(tone?: FinancialRecordExplorerTone): string {
 function summaryToneClass(tone: FinancialRecordExplorerSummaryItem["tone"]): string {
   switch (tone) {
     case "success":
-      return "border-success/30 bg-success/10 text-success";
+      return "border-success/30 bg-success/10 text-[var(--severity-ready-fg)]";
     case "warning":
-      return "border-warning/30 bg-warning/10 text-warning";
+      return "border-warning/30 bg-warning/10 text-[var(--severity-action-fg)]";
     case "danger":
-      return "border-danger/30 bg-danger/10 text-danger";
+      return "border-danger/30 bg-danger/10 text-[var(--severity-blocked-fg)]";
     default:
       return "border-border/70 bg-background/60 text-foreground";
   }

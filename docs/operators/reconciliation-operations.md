@@ -14,6 +14,8 @@ This lane is the canonical operator procedure page for reconciliation exception 
 
 ## Reconciliation Triage Sequence
 
+For the new three-source workflow, see [Ledger, OMS and broker comparison](#ledger-oms-and-broker-comparison).
+
 Complete [preflight](preflight-checklist.md) first. Use the signed-in Windows workstation or, for
 API inspection, PowerShell 7 from the repository root with the preflight session in terminal 2.
 Installed hosts use the supervisor-selected URL. Confirm the operator's company/tenant and the
@@ -59,6 +61,25 @@ are checked separately. For exact statement-to-report inputs, use the
    existing schedule. Legacy schedules without this field remain classified as broker imports.
 6. Open the returned Evidence Vault route to inspect retained source/canonical proof and open the
    returned reconciliation route for break or case review.
+
+The canonical CSV retains `relatedTransactionId` for a receipt reversal's original provider payment.
+Optional receipt evidence extends the existing ordered column suffix after `marketValue` and
+`accruedInterest`: `securityId`, `receiptAllocations`, `obligationKey`, `projectedCashFlowId`.
+Earlier column prefixes remain accepted; absent metadata leaves existing retained row hashes
+unchanged. Supply either a single `obligationKey`, a single `projectedCashFlowId`, or a JSON
+`receiptAllocations` array such as `[{"obligationKey":"receipt-key","amount":40}]` in a CSV-quoted
+field. Each array leg requires exactly one of those identities and a positive amount; the legs
+must total the absolute payment amount, including for reversals. Duplicate identities, malformed
+IDs, conflicting allocation forms, and nonconserving amounts are refused during import. These
+fields retain source attribution; the receipt queue still verifies the canonical security,
+accepted obligation, currency, and original receipt before counting money.
+
+In Casework, use **Previous case** and **Next case** or press **K** and **J** to traverse the filtered
+queue. Press **Escape** to return to the queue. Use **Compare with an earlier retained case** when
+the lineage includes an earlier observation. The copied case link carries the selected comparison.
+The case rail holds the decision preview, affected outputs and retained activity. If the case changes
+during review, reload it and open a fresh preview. If a request ends before confirmation, use
+**Check outcome** with the retained command ID or **Check batch outcome** for a batch receipt.
 
 Statement ingress is bounded, and a breach is refused rather than truncated — no partially imported
 statement is ever committed. A refusal surfaces as a blocking issue on preview and validate, and as a
@@ -137,6 +158,12 @@ findings even when HTTP status is `200`. A completed import retains source/canon
 a reconciliation route. A resolved break needs retained evidence and an accepted correction or
 explanation; an empty queue or a successful fetch alone is insufficient.
 
+The margin control view and its certification require tenant and company scope. They show only
+provider accounts whose external account id is bound to an active fund account owned by your
+tenant and company (account code, custodian sub-account, bank account number or IBAN). A retained
+statement that is missing from the view usually means that binding is absent: fix the fund
+account's identifiers rather than the evidence.
+
 | Symptom | Next action |
 | --- | --- |
 | `401/403` or missing expected scope | Reauthenticate and verify permissions/company assignment before changing records. |
@@ -192,3 +219,76 @@ boundaries and traversal beyond 36,600 dates are refused. Correct the named poli
 restart the host, and retry; do not remove calendar IDs to make a refusal look on track. Existing
 pause and stop rules remain casework decisions. Source clearing does not resolve, approve or sign
 off a case, and does not remove close blockers.
+
+## Ledger, OMS and broker comparison
+
+The bounded three-way workflow compares posted journal cash and canonical lot quantities/basis,
+independent per-account `PaperTradingPortfolio` observations, and normalized retained broker
+observations. It does not use the broker-backed `BrokeragePortfolioState` as independent OMS
+proof. The scope is one authorized USD primary book, account and accounting period, with long
+cash equities and the gross-trade-value/fees-expensed book cost convention.
+
+Use `POST /api/fund-accounts/{accountId}/brokerage-sync/reconcile-three-way` with `ledgerBookId`,
+`accountingPeriodId`, a stable `operationId`, and an optional UTC `cutoffUtc` (defaults to the current
+capture). The server derives tenant/company and validates account, entity, book, period and current
+broker linkage. Request bodies cannot supply source balances or snapshots. Retrieve the latest
+completed result using `GET /api/fund-accounts/{accountId}/brokerage-sync/three-way-reconciliation/latest`
+with both `ledgerBookId` and `accountingPeriodId` query parameters.
+
+Every run retains independent operands, their source times, evidence references, comparison results
+and a recovery receipt. Quantity tolerance is zero; cash and cost-basis tolerance are USD 0.01.
+The default source-age limit is 30 minutes and pairwise timestamp drift is five minutes. Missing
+opening cash, canonical lot history, independent OMS scope, source identity, freshness or cost
+comparability produces `Blocked`, never a fabricated zero or a matched result. Decimal amounts are
+serialized as exact strings. Paper and synthetic provenance remains visible in source, run and case
+records. Replay returns the frozen completed receipt; an existing operation within its exact scope
+cannot accept a changed cutoff. Use a new operation ID to compare newer source evidence.
+
+Broker cost convention defaults to `Unknown`. Set
+`Reconciliation:ThreeWay:BrokerCostBasisConvention` to `GrossTradeValueFeesExpensed` only where the
+selected adapter's cost operands have that declared meaning. This setting does not establish live
+provider verification. The server retains source history separately from the latest broker sync;
+relinking the account creates a different evidence partition. Coherent historical journal and lot
+capture is required; current lot basis is not substituted for historical basis.
+
+Daily execution shares the existing statement scheduler's minute tick. Configure an explicit list
+under `Reconciliation:ThreeWay:Schedules`, each with `TenantId`, `CompanyId`, `FinancialAccountId`,
+`LedgerBookId`, `AccountingPeriodId`, and `Enabled`. An empty list enables no background account
+access. The worker reauthorizes each scope, retains current independent observations on each tick,
+and after `DailyRunAfterUtc` (default `00:15:00`) compares the preceding UTC day's end under a stable
+`daily:yyyy-MM-dd` identity. Missing cutoff observations remain blocked; the worker does not replace
+them with a later snapshot. Period rollover requires updated explicit scope configuration. Restart
+the host after changing this configuration.
+
+Breaks enter the existing governed queue with stable subject identities, retained first-seen time,
+source operands and suggested investigative actions. A complete subsequent comparison may clear the
+source observation; it does not approve, resolve, waive or sign off casework. Missing fills should
+be recovered through their retained posting workflow. Independently evidenced adjustments continue
+through existing journal review and approval. Posting an adjustment alone does not prove agreement;
+rerun the comparison. These development scenarios are synthetic verification, not live activation.
+
+### Evidence-backed missing-fee draft
+
+The initial correction treatment supports one negative USD `FEE` activity with a stable broker
+transaction ID. Its independently retained amount must exactly explain the ledger-versus-broker
+cash difference, and all fee-like posted cash activity must have transaction identity coverage.
+Duplicate IDs, unknown coverage, multiple possible fees, unsupported currency or an unexplained
+residual produce `InsufficientEvidence`; the system does not invent a balancing entry.
+
+Configure `Reconciliation:ThreeWay:CashAccountPath` and `FeeExpenseAccountPath` with active chart
+paths in the selected tenant/company/book. Cash and expense mappings must have the correct types,
+no instrument symbol, and no conflicting financial-account binding. A ready proposal identifies
+its source fee, retained evidence hash, and reviewed accounting-period version. The browser's
+**Prepare draft** command calls
+`POST /api/fund-accounts/{accountId}/brokerage-sync/three-way-reconciliation/adjustments/prepare`
+with the retained `ledgerBookId`, `accountingPeriodId`, `operationId`, `checkId`,
+`expectedPeriodVersion`, and `evidenceHash`. Changed current journal, cash, broker or period evidence
+requires a new comparison and review before a new draft can be prepared.
+
+Preparation saves an adjusting expense/cash draft in the existing journal workbench. It does not
+submit, approve or post it. The draft retains its fee identity, original proof and simulation mark.
+Its economic identity uses tenant, provider/external account, financial account, book and fee ID,
+so a second comparison cannot create another monetary effect for the same fee. An uncertain
+response can retry the same request to recover the existing draft. Changed evidence for that same
+fee must be reviewed through the existing governed correction workflow. Independent journal
+approval and posting remain required, followed by another three-way comparison.

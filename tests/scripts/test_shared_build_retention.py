@@ -17,7 +17,7 @@ SCRIPT_PATH = REPO_ROOT / "scripts" / "dev" / "SharedBuild.ps1"
 class SharedBuildRetentionTests(unittest.TestCase):
     def test_build_retention_preserves_profiles_outside_temporary_run_budgets(self) -> None:
         for policy in ("age", "count", "size"):
-            with self.subTest(policy=policy), tempfile.TemporaryDirectory() as temp_dir:
+            with self.subTest(policy=policy), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
                 repo_root = Path(temp_dir)
                 profiles = []
                 expired_runs = []
@@ -61,7 +61,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             oldest_bin = self._create_artifact(repo_root, "artifacts/bin/run-1", age_days=3)
             retained_bin = self._create_artifact(repo_root, "artifacts/bin/run-2", age_days=2)
@@ -96,7 +96,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             oldest_bin = self._create_artifact(
                 repo_root,
@@ -143,7 +143,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertTrue(newest_bin.exists(), result.stdout)
 
     def test_prunes_recent_workflow_runs_beyond_retained_latest(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             oldest = self._create_artifact(
                 repo_root,
@@ -173,7 +173,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertTrue(newest.exists(), result.stdout)
 
     def test_workflow_count_retention_runs_when_age_retention_is_disabled(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             oldest = self._create_artifact(
                 repo_root,
@@ -197,7 +197,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
             self.assertTrue(newest.exists(), result.stdout)
 
     def test_workflow_retention_ignores_non_run_directories(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             checkpoints = self._create_artifact(
                 repo_root,
@@ -232,7 +232,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir) / "repo"
             external_root = Path(temp_dir) / "external-bin"
             (repo_root / "artifacts").mkdir(parents=True)
@@ -276,7 +276,7 @@ class SharedBuildRetentionTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir) / "repo"
             external_artifacts = Path(temp_dir) / "external-artifacts"
             repo_root.mkdir(parents=True)

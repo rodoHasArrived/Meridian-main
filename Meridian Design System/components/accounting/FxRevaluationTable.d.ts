@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * FX revaluation table — foreign-currency balances translated at booked vs. current rates,
  * with the unrealized gain/loss per row (`Money.fxRevalue`, half-even) and a footer totalling
@@ -28,4 +29,4 @@ export interface FxRevaluationTableProps {
   /** Highlight one row. */
   selectedIndex?: number;
 }
-export declare function FxRevaluationTable(props: FxRevaluationTableProps): JSX.Element;
+export declare function FxRevaluationTable(props: FxRevaluationTableProps): React.JSX.Element;

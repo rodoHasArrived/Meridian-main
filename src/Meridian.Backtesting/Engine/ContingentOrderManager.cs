@@ -98,7 +98,9 @@ internal static class ContingentOrderManager
                 continue;
             }
 
-            var newSignedQuantity = Math.Sign(sibling.Quantity) * nextRemaining;
+            // Quantity is the order total and RemainingQuantity is derived from it less
+            // FilledQuantity, so the reduced total keeps what the sibling has already filled.
+            var newSignedQuantity = Math.Sign(sibling.Quantity) * (Math.Abs(sibling.FilledQuantity) + nextRemaining);
             pendingOrders[i] = sibling with { Quantity = newSignedQuantity };
         }
     }

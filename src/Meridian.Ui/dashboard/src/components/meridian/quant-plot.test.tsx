@@ -100,10 +100,10 @@ describe("QuantPlotChart", () => {
 
   it("renders an SVG with the plot title as accessible label", () => {
     render(<QuantPlotChart plot={basePlot} />);
-    const chart = screen.getByRole("img", { name: "Equity curve" });
+    const chart = screen.getByRole("group", { name: "Equity curve" });
     expect(chart).toBeInTheDocument();
     expect(chart).toHaveAccessibleDescription(/Series: A, B/);
-    expect(screen.getByText("A")).toBeInTheDocument();
+    expect(screen.getAllByText("A")).toHaveLength(3);
     expect(screen.getByText("B")).toBeInTheDocument();
   });
 
@@ -112,7 +112,7 @@ describe("QuantPlotChart", () => {
     const vm = buildQuantPlotViewModel(plot);
     if (vm.kind !== "line") throw new Error("expected line");
     render(<QuantPlotChart plot={plot} />);
-    const chart = screen.getByRole("img", { name: "AAPL Drawdown" });
+    const chart = screen.getByRole("group", { name: "AAPL Drawdown" });
     const path = chart.querySelector('path[fill="none"]');
     const coordinates = path?.getAttribute("d")?.match(/-?\d+\.\d+/g)?.map(Number) ?? [];
     expect(coordinates[5]).toBeGreaterThan(coordinates[1]);

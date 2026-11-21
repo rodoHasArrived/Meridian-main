@@ -17,7 +17,7 @@ export function buildReportingOperatorFocusItems(reportingPayload: ReportingWork
     ? [buildOperatorFocusCandidate({
         id: "reporting:missing-report-pack-distribution",
         label: "Report-pack recipient missing",
-        detail: "No governed report-pack distribution recipients are loaded for approval-ready output review.",
+        detail: "No report-pack distribution recipients are loaded for approval-ready output review.",
         route: WORKSTATION_ROUTE_CATALOG.reportingReportPacks,
         workspaceLabel: "Reporting",
         actionLabel: "Open report packs",

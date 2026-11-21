@@ -1,9 +1,15 @@
-import { RefreshCcw } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Link } from "react-router-dom";
+import { ErrorNotice } from "@/components/ui/error-notice";
+import { isApiError } from "@/lib/api-errors";
+import { useOnGlobalRefresh } from "@/lib/global-refresh";
+import { formatEnumLabel } from "@/lib/display-labels";
+import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { cn } from "@/lib/utils";
 import { useRiskControlPanelViewModel } from "@/components/ui/risk-control-panel.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 const toneClass = {
   success: "text-success",
@@ -13,6 +19,9 @@ const toneClass = {
 
 export function RiskControlPanel() {
   const vm = useRiskControlPanelViewModel();
+  const riskControlsUnavailable = isApiError(vm.loadFailure) && vm.loadFailure.status === 404;
+  // The header Refresh re-reads limits, but never over a load, a save, or a typed value not yet saved.
+  useOnGlobalRefresh(() => { if (!vm.refreshAction.disabled && !vm.hasUnsavedEdits) void vm.refresh(); });
 
   return (
     <Card
@@ -28,25 +37,32 @@ export function RiskControlPanel() {
             <CardTitle>Risk control panel</CardTitle>
             <CardDescription>{vm.overallSummary}</CardDescription>
           </div>
-          <Button
-            type="button"
-            variant="outline"
-            size="sm"
-            onClick={() => void vm.refresh()}
-            busy={vm.refreshAction.busy}
-            busyLabel={vm.refreshAction.busyLabel}
-            disabled={vm.refreshAction.disabled}
-            disabledReason={vm.refreshAction.disabledReason}
-            aria-label={vm.refreshAction.ariaLabel}
-          >
-            <RefreshCcw className="h-3.5 w-3.5" aria-hidden="true" />
-            {vm.refreshAction.label}
-          </Button>
         </div>
       </CardHeader>
       <CardContent className="space-y-4">
         <span id="risk-control-status" className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
-        {vm.error ? (
+        {vm.loadFailure ? (
+          riskControlsUnavailable ? (
+            <ErrorNotice
+              error={vm.loadFailure}
+              title="Risk controls aren't available on this host"
+              summary="This Meridian host does not serve the risk-control service, so limits cannot be read or changed here."
+              onRetry={() => void vm.refresh()}
+              retryBusy={vm.loading}
+              alwaysOfferRetry
+              help={<Link className="text-primary underline" to={WORKSTATION_ROUTE_CATALOG.settingsDiagnostics}>What enables this</Link>}
+            />
+          ) : (
+            <ErrorNotice
+              error={vm.loadFailure}
+              title="Risk controls could not be loaded"
+              fallback="Try again, or open diagnostics if it keeps happening."
+              onRetry={() => void vm.refresh()}
+              retryBusy={vm.loading}
+              help={<Link className="text-primary underline" to={WORKSTATION_ROUTE_CATALOG.settingsDiagnostics}>Open diagnostics</Link>}
+            />
+          )
+        ) : vm.error ? (
           <div role="alert" className="rounded-[2px] border border-danger/35 bg-danger/10 px-3 py-2.5 text-sm text-danger">
             <p>{vm.error.summary}</p>
             {vm.error.details.length > 0 ? (
@@ -74,11 +90,11 @@ export function RiskControlPanel() {
           </div>
         ) : null}
         <div className="space-y-2">
-          <h4 className="text-xs font-semibold uppercase text-muted-foreground">{vm.rowsLabel}</h4>
+          <h4 className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(vm.rowsLabel) && "uppercase")}>{vm.rowsLabel}</h4>
           {vm.rows.map((row) => (
-            <article key={row.ruleName} className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+            <article key={row.ruleName} className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
               <div className="flex items-center justify-between gap-3">
-                <h4 className="font-semibold">{row.ruleName}</h4>
+                <h4 className="font-semibold"><span title={row.ruleName}>{formatEnumLabel(row.ruleName)}</span></h4>
                 <span className={cn("text-xs font-semibold uppercase tracking-wide", toneClass[row.tone])}>
                   {row.state}
                 </span>
@@ -96,7 +112,7 @@ export function RiskControlPanel() {
           )}
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <label htmlFor={vm.drawdownField.id} className="text-sm font-semibold">
             {vm.drawdownField.label}
           </label>
@@ -135,7 +151,7 @@ export function RiskControlPanel() {
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <h4 className="text-sm font-semibold">Fat-finger limits</h4>
           <div className="mt-2 space-y-2">
             <div>
@@ -203,7 +219,7 @@ export function RiskControlPanel() {
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <h4 className="text-sm font-semibold">Price collar</h4>
           <div className="mt-2">
             <label htmlFor={vm.priceCollarField.id} className="text-sm font-semibold">
@@ -245,12 +261,12 @@ export function RiskControlPanel() {
           </div>
         </div>
 
-        <div className="rounded-[2px] border border-border/70 bg-background/35 p-3">
+        <div className="rounded-[var(--radius-card)] border border-border/70 bg-background/35 p-3">
           <h4 className="font-semibold">{vm.timelineLabel}</h4>
           <ul className="mt-2 space-y-1 text-sm text-muted-foreground">
             {vm.violationTimeline.slice(0, 10).map((item) => (
               <li key={item.id}>
-                <span className="font-medium text-foreground">{item.ruleName}:</span> {item.message}
+                <span className="font-medium text-foreground">{formatEnumLabel(item.ruleName)}:</span> {item.message}
               </li>
             ))}
             {vm.violationTimeline.length === 0 && <li>{vm.emptyTimelineText}</li>}

@@ -11,17 +11,17 @@ function inject() {
   injected = true;
   const css = `
 .mds-den{display:inline-flex;align-items:stretch;padding:2px;gap:2px;
-  background:var(--bg-medium,#EDEAE4);border:1px solid var(--border,#E4E3DE);
+  background:var(--bg-medium,#EBE8E1);border:1px solid var(--border,#D2CDC3);
   border-radius:var(--radius-button,2px);font-family:var(--font-body);}
 .mds-den--full{display:flex;width:100%;}
 .mds-den__btn{flex:1;display:inline-flex;align-items:center;justify-content:center;gap:6px;
-  padding:5px 12px;font-size:12px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;
-  color:var(--text-secondary,#4E5258);background:transparent;border:none;border-radius:var(--radius-button,2px);}
-.mds-den__btn:hover:not(.mds-den__btn--active){color:var(--text-primary,#22252A);background:var(--bg-hover,#F0EEE9);}
-.mds-den__btn--active{color:var(--text-primary,#22252A);background:var(--bg-light,#FBFAF8);
-  font-weight:600;box-shadow:inset 0 0 0 1px var(--border,#E4E3DE);}
+  min-height:24px;padding:5px 12px;font-size:12px;font-weight:500;line-height:1;white-space:nowrap;cursor:pointer;
+  color:var(--text-secondary,#535C65);background:transparent;border:none;border-radius:var(--radius-button,2px);}
+.mds-den__btn:hover:not(.mds-den__btn--active){color:var(--text-primary,#20252B);background:var(--bg-hover,#EDEFF0);}
+.mds-den__btn--active{color:var(--text-primary,#20252B);background:var(--bg-light,#F8F7F3);
+  font-weight:600;box-shadow:inset 0 0 0 1px var(--border,#D2CDC3);}
 .mds-den__btn:focus-visible{outline:var(--focus-ring);outline-offset:var(--focus-ring-offset);}
-.mds-den--sm .mds-den__btn{padding:3px 9px;font-size:11px;}
+.mds-den--sm .mds-den__btn{padding:3px 9px;font-size:11px;min-height:24px;}
 .mds-den__glyph{display:inline-flex;flex-direction:column;gap:2px;width:11px;}
 .mds-den__glyph i{display:block;height:1.5px;background:currentColor;border-radius:1px;}
 `;
@@ -78,13 +78,17 @@ export function DensityToggle({
   const isControlled = controlled != null;
   const [internal, setInternal] = React.useState(() => {
     if (isControlled) return controlled;
-    if (persist && typeof localStorage !== "undefined") {
-      const saved = localStorage.getItem(persist);
-      if (saved) return saved;
-    }
+    try {
+      if (persist && typeof localStorage !== "undefined") {
+        const saved = localStorage.getItem(persist);
+        if (LEVELS.some((level) => level.value === saved)) return saved;
+      }
+    } catch { /* Browser storage may be unavailable; density stays local. */ }
     return defaultValue;
   });
-  const value = isControlled ? controlled : internal;
+  const requested = isControlled ? controlled : internal;
+  const value = LEVELS.some((level) => level.value === requested) ? requested : "default";
+  const buttonRefs = React.useRef([]);
 
   React.useEffect(() => {
     if (!apply) return;
@@ -93,7 +97,8 @@ export function DensityToggle({
 
   const select = (v) => {
     if (!isControlled) setInternal(v);
-    if (persist && typeof localStorage !== "undefined") localStorage.setItem(persist, v);
+    try { if (persist && typeof localStorage !== "undefined") localStorage.setItem(persist, v); }
+    catch { /* Persistence failure must not prevent the explicit density choice. */ }
     onChange && onChange(v);
   };
 
@@ -101,13 +106,23 @@ export function DensityToggle({
     <div role="radiogroup" aria-label="Display density"
       className={`mds-den mds-den--${size}${fullWidth ? " mds-den--full" : ""}${className ? " " + className : ""}`}
       {...rest}>
-      {LEVELS.map((lv) => {
+      {LEVELS.map((lv, index) => {
         const active = lv.value === value;
         return (
           <button key={lv.value} type="button" role="radio" aria-checked={active}
+            ref={(node) => { buttonRefs.current[index] = node; }} tabIndex={active ? 0 : -1}
             title={lv.label}
             className={`mds-den__btn${active ? " mds-den__btn--active" : ""}`}
-            onClick={() => select(lv.value)}>
+            onClick={() => select(lv.value)}
+            onKeyDown={(event) => {
+              let next;
+              if (event.key === "ArrowRight" || event.key === "ArrowDown") next = (index + 1) % LEVELS.length;
+              else if (event.key === "ArrowLeft" || event.key === "ArrowUp") next = (index - 1 + LEVELS.length) % LEVELS.length;
+              else if (event.key === "Home") next = 0;
+              else if (event.key === "End") next = LEVELS.length - 1;
+              else return;
+              event.preventDefault(); select(LEVELS[next].value); buttonRefs.current[next]?.focus();
+            }}>
             <Glyph gap={lv.gap} />
             {showLabels && <span>{lv.label}</span>}
           </button>

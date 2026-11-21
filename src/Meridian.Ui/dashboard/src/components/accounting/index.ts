@@ -32,3 +32,9 @@ export { AgingTable } from "./AgingTable";
 export type { AgingTableProps, AgingTableRow } from "./AgingTable";
 
 export { ReconciliationComparisonPanel } from "./ReconciliationComparisonPanel";
+
+export { RollforwardTrace } from "./RollforwardTrace";
+export type { RollforwardTraceProps, RollforwardMovement, RollforwardOperator } from "./RollforwardTrace";
+
+export { TieOutPanel } from "./TieOutPanel";
+export type { TieOutPanelProps, TieOutSource, TieOutItem, TieOutType } from "./TieOutPanel";

@@ -1,18 +1,203 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="../_scaffold/vendor/react-18.3.1.production.min.js"></script>
+<script src="../_scaffold/vendor/react-dom-18.3.1.production.min.js"></script>
+<script src="../../_ds_bundle.js"></script>
 <script src="./support.js"></script>
+<title>Report · Report Scheduler — Meridian</title>
 </head>
 <body>
 <x-dc>
-<!-- @template name="Report Scheduler" description="Delivery-operations view — scheduled report packs, recipients, run status, and the delivery-history audit trail" -->
+<!-- @template name="Report · Report Scheduler" description="Delivery operations — schedules, recipients, run status, audit trail. Frame, tables and history are editable markup." -->
 <helmet>
 <script src="./ds-base.js"></script>
 <meta name="dc-template" content="report-scheduler">
+<style>html,body{margin:0;padding:0;height:100%}tr[data-rs-row="on"]{background:var(--selected-surface,#E7EDF2);box-shadow:inset 3px 0 0 var(--interaction-selected,#496C8F)}</style>
 </helmet>
-<x-import component-from-global-scope="ReportSchedulerScreen" from="./screen.jsx" hint-size="100%,820px"></x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.DataStateSwitch" state="{{ dataState }}" label="Schedules" action-label="Retry" on-action="{{ onRetry }}" hint-size="100%,780px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.WorkstationShell" height="100vh" archetype="monitor" labelled-by="workspace-title" topbar="{{ topbar }}" nav="{{ nav }}" status-bar="{{ statusBar }}" hint-size="100%,780px">
+<div data-screen-label="Report scheduler" style="padding:14px;display:flex;flex-direction:column;gap:10px">
+<div style="display:flex;align-items:center;gap:10px">
+<h1 id="workspace-title" style="font:600 22px var(--font-display);margin:0;color:var(--text-primary)">Report Scheduler</h1>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="Blocked" label="{{ failedLine }}" hint-size="70px,18px"></x-import>
+<div style="flex:1"></div>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" hint-size="120px,28px" disabled="{{ true }}" title="Creating report packs requires the application reporting configuration service." aria-description="Creating report packs requires the application reporting configuration service.">New report pack</x-import>
+</div>
+<div style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:12px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="110px,14px">Scheduled packs</x-import>
+<table style="width:100%;border-collapse:collapse;font-size:13px;margin-top:10px">
+<thead>
+<tr>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Pack</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Schedule</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Recipients</th>
+<th style="padding:7px 10px;text-align:left;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Last run</th>
+<th style="padding:7px 10px;text-align:right;border-bottom:1px solid var(--border-strong);font-weight:600;font-size:11px;color:var(--text-muted)">Next run</th>
+</tr>
+</thead>
+<tbody>
+<sc-for list="{{ packRows }}" as="p" hint-placeholder-count="5">
+<tr data-rs-row="{{ p.sel }}" onClick="{{ p.select }}" style="cursor:pointer;transition:background 120ms" style-hover="background:var(--bg-hover)">
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-weight:600;color:var(--text-primary);white-space:nowrap">{{ p.name }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);font-family:var(--font-data);font-size:11.5px;color:var(--text-secondary);white-space:nowrap">{{ p.cadence }}</td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><div style="display:flex;gap:4px;flex-wrap:wrap">
+<sc-for list="{{ p.recipients }}" as="rc" hint-placeholder-count="2">
+<span style="display:inline-flex;align-items:center;border:1px solid var(--border);background:var(--bg-medium);color:var(--text-secondary);font-family:var(--font-data);font-size:10.5px;padding:1px 6px;border-radius:2px;white-space:nowrap">{{ rc }}</span>
+</sc-for>
+</div></td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border)"><x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ p.badgeStatus }}" label="{{ p.lastStatus }}" hint-size="80px,18px"></x-import></td>
+<td style="padding:8px 10px;border-bottom:1px solid var(--border);text-align:right;font-family:var(--font-data);font-size:11.5px;color:var(--text-muted);white-space:nowrap">{{ p.next }}</td>
+</tr>
+</sc-for>
+</tbody>
+</table>
+</div>
+<div style="display:grid;grid-template-columns:minmax(0,1fr) 360px;gap:10px;align-items:start">
+<div style="background:var(--bg-light);border:1px solid var(--border);border-radius:4px;padding:12px;min-width:0">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="110px,14px">Delivery history</x-import>
+<div style="display:flex;flex-direction:column;margin-top:10px">
+<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+<span style="width:8px;height:8px;border-radius:50%;background:var(--red-dim,#883832);flex:none;margin-top:4px"></span>
+<div style="flex:1;min-width:0">
+<div style="font-size:13px;font-weight:600;color:var(--text-primary)">Data Health Digest failed</div>
+<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">SMTP relay refused · 1 recipient · retry scheduled 07:15 ET</div>
+<div style="margin-top:5px"><span style="display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg-medium);font-family:var(--font-data);font-size:10.5px;color:var(--text-secondary);padding:2px 7px;border-radius:2px">delivery-9921.log</span></div>
+</div>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);white-space:nowrap">7h ago · reporter</span>
+</div>
+<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+<span style="width:8px;height:8px;border-radius:50%;background:var(--orange,#986717);flex:none;margin-top:4px"></span>
+<div style="flex:1;min-width:0">
+<div style="font-size:13px;font-weight:600;color:var(--text-primary)">Reconciliation Log delivered (partial)</div>
+<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">2 of 2 recipients · 1 attachment truncated &gt; 25MB</div>
+</div>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);white-space:nowrap">8h ago · reporter</span>
+</div>
+<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+<span style="width:8px;height:8px;border-radius:50%;background:var(--green-dim,#225840);flex:none;margin-top:4px"></span>
+<div style="flex:1;min-width:0">
+<div style="font-size:13px;font-weight:600;color:var(--text-primary)">Execution Quality delivered</div>
+<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">2 recipients · 1.4MB · 3.2s</div>
+</div>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);white-space:nowrap">19h ago · reporter</span>
+</div>
+<div style="display:flex;gap:10px;padding:9px 0;border-bottom:1px solid var(--border)">
+<span style="width:8px;height:8px;border-radius:50%;background:var(--green-dim,#225840);flex:none;margin-top:4px"></span>
+<div style="flex:1;min-width:0">
+<div style="font-size:13px;font-weight:600;color:var(--text-primary)">EOD P&amp;L Pack delivered</div>
+<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">4 recipients · 0.9MB</div>
+<div style="margin-top:5px"><span style="display:inline-flex;align-items:center;gap:5px;border:1px solid var(--border);background:var(--bg-medium);font-family:var(--font-data);font-size:10.5px;color:var(--text-secondary);padding:2px 7px;border-radius:2px">delivery-9903.log</span></div>
+</div>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);white-space:nowrap">21h ago · reporter</span>
+</div>
+<div style="display:flex;gap:10px;padding:9px 0">
+<span style="width:8px;height:8px;border-radius:50%;background:var(--brand-signal,#C56343);flex:none;margin-top:4px"></span>
+<div style="flex:1;min-width:0">
+<div style="font-size:13px;font-weight:600;color:var(--text-primary)">Schedule edited</div>
+<div style="font-size:11.5px;color:var(--text-muted);margin-top:2px">EOD P&amp;L Pack · 17:00 → 17:05 ET · +2 recipients</div>
+</div>
+<span style="font-family:var(--font-data);font-size:10.5px;color:var(--text-muted);white-space:nowrap">1d ago · s.kwon</span>
+</div>
+</div>
+</div>
+<div style="background:var(--card-surface-raised,#FCFBF8);border:1px solid var(--border-strong);border-radius:4px;padding:14px;display:flex;flex-direction:column;gap:12px">
+<div style="display:flex;align-items:center;gap:8px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Eyebrow" hint-size="60px,14px">{{ selId }}</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.SeverityBadge" status="{{ selBadgeStatus }}" label="{{ selLastStatus }}" hint-size="80px,18px"></x-import>
+</div>
+<div style="font:600 15px var(--font-display);color:var(--text-primary)">{{ selName }}</div>
+<div style="display:flex;flex-direction:column;gap:8px;font-family:var(--font-data);font-size:12px;color:var(--text-secondary)">
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Schedule</span><span>{{ selCadence }}</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Last run</span><span>{{ selLast }}</span></div>
+<div style="display:flex;justify-content:space-between"><span style="color:var(--text-muted)">Next run</span><span>{{ selNext }}</span></div>
+</div>
+<div>
+<div style="font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted);margin-bottom:6px">Recipients</div>
+<div style="display:flex;gap:4px;flex-wrap:wrap">
+<sc-for list="{{ selRecipients }}" as="rc" hint-placeholder-count="2">
+<span style="display:inline-flex;align-items:center;border:1px solid var(--border);background:var(--bg-medium);color:var(--text-secondary);font-family:var(--font-data);font-size:10.5px;padding:1px 6px;border-radius:2px;white-space:nowrap">{{ rc }}</span>
+</sc-for>
+</div>
+</div>
+<div style="display:flex;gap:8px;margin-top:2px">
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="primary" size="sm" on-click="{{ onRunNow }}" hint-size="80px,28px">Run now</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.Button" variant="ghost" size="sm" hint-size="100px,28px" disabled="{{ true }}" title="Editing schedules requires application delivery permissions and a persistence service." aria-description="Editing schedules requires application delivery permissions and a persistence service.">Edit schedule</x-import>
+</div>
+</div>
+</div>
+</div>
+</x-import>
+<x-import component-from-global-scope="MeridianDesignSystem_205d17.ToastProvider" hint-size="0px,0px"></x-import>
+</x-import>
 </x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1920,&quot;height&quot;:1080},&quot;density&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;default&quot;,&quot;options&quot;:[&quot;default&quot;,&quot;compact&quot;,&quot;terminal&quot;,&quot;spacious&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;theme&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;light&quot;,&quot;options&quot;:[&quot;light&quot;,&quot;dark&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Display&quot;},&quot;environment&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;PAPER&quot;,&quot;options&quot;:[&quot;PAPER&quot;,&quot;LIVE&quot;,&quot;FIXTURE&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Session&quot;},&quot;dataState&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;default&quot;:&quot;ready&quot;,&quot;options&quot;:[&quot;ready&quot;,&quot;loading&quot;,&quot;empty&quot;,&quot;error&quot;],&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Data state&quot;}}">
+class Component extends DCLogic {
+  applyChrome() {
+    const html = document.documentElement;
+    html.setAttribute("data-theme", (window.MeridianPrefs?window.MeridianPrefs.theme(this.props.theme ?? "light"):(this.props.theme ?? "light")));
+    html.setAttribute("data-environment", (window.MeridianPrefs?window.MeridianPrefs.environment(String(this.props.environment ?? "PAPER").toUpperCase()):(String(this.props.environment ?? "PAPER").toUpperCase())));
+    if (document.body) document.body.setAttribute("data-theme-density", (window.MeridianPrefs?window.MeridianPrefs.density(this.props.density ?? "default"):(this.props.density ?? "default")));
+  }
+  componentDidMount() { this.applyChrome(); }
+  componentDidUpdate(previous) { this.applyChrome(); if (previous.dataState !== this.props.dataState && this.state.previewReady) this.setState({ previewReady: false }); }
+
+  NOW = Date.UTC(2026, 6, 2, 14, 32, 8);
+  packs = [
+    { id: "EOD-PNL", name: "EOD P&L Pack", cadence: "Daily · 17:05 ET", recipients: ["desk@", "risk@", "r.alvarez", "s.kwon"], last: this.NOW - 74000000, lastStatus: "Delivered", next: this.NOW + 12000000 },
+    { id: "RISK-WK", name: "Weekly Risk Review", cadence: "Mon · 08:00 ET", recipients: ["risk@", "cio@"], last: this.NOW - 340000000, lastStatus: "Delivered", next: this.NOW + 210000000 },
+    { id: "RECON-DLY", name: "Reconciliation Log", cadence: "Daily · 06:30 ET", recipients: ["ops@", "accounting@"], last: this.NOW - 28000000, lastStatus: "Partial", next: this.NOW + 58000000 },
+    { id: "FILL-QLY", name: "Execution Quality", cadence: "Daily · 18:00 ET", recipients: ["desk@", "compliance@"], last: this.NOW - 70000000, lastStatus: "Delivered", next: this.NOW + 15000000 },
+    { id: "DATA-HLTH", name: "Data Health Digest", cadence: "Daily · 07:00 ET", recipients: ["data-eng@"], last: this.NOW - 26000000, lastStatus: "Failed", next: this.NOW + 60000000 },
+  ];
+  badgeOf = { Delivered: "Complete", Partial: "NeedsAttention", Failed: "Blocked" };
+
+  state = { selected: 0 };
+
+  ds() { return window.MeridianDesignSystem_205d17 || {}; }
+  rel(ts) {
+    const diff = ts - this.NOW, abs = Math.abs(diff);
+    const d = Math.floor(abs / 86400000), h = Math.floor((abs % 86400000) / 3600000), m = Math.floor((abs % 3600000) / 60000);
+    const span = d >= 1 ? d + "d " + h + "h" : h >= 1 ? h + "h " + m + "m" : m + "m";
+    return diff >= 0 ? "in " + span : span + " ago";
+  }
+
+  renderVals() {
+    this.applyChrome();
+    const s = this.state;
+    const { WorkstationTopbar, NavRail, StatusBar } = this.ds();
+    const el = React.createElement;
+    const pack = this.packs[s.selected];
+    const failed = this.packs.filter((p) => p.lastStatus === "Failed").length;
+    return {
+      dataState: this.state.previewReady ? "ready" : (this.props.dataState ?? "ready"),
+      onRetry: () => this.setState({ previewReady: true }),
+      topbar: WorkstationTopbar && el(WorkstationTopbar, { moduleLabel: "Scheduled Delivery", environment: String(this.props.environment ?? "PAPER").toUpperCase(),  brandSrc: "../../assets/brand/meridian-mark-light.svg" }),
+      nav: NavRail && el(NavRail, { activeId: "report-scheduler", onSelect: (id) => window.MeridianAppMap && window.MeridianAppMap.go(id), sections: (window.MeridianAppMap ? window.MeridianAppMap.sections("report-scheduler") : []) }),
+      statusBar: StatusBar && el(StatusBar, { items: [
+        { status: "ok", label: "reporter", value: "idle" },
+        { label: "Packs", value: String(this.packs.length) },
+        { status: "err", label: "Failed", value: String(failed) },
+        { status: "ok", label: "Next", value: "EOD P&L · " + this.rel(this.packs[0].next).replace("in ", ""), push: true },
+      ] }),
+      failedLine: failed + " failed",
+      packRows: this.packs.map((p, i) => ({
+        name: p.name, cadence: p.cadence, recipients: p.recipients,
+        badgeStatus: this.badgeOf[p.lastStatus], lastStatus: p.lastStatus,
+        next: this.rel(p.next),
+        sel: i === s.selected ? "on" : "off",
+        select: () => this.setState({ selected: i }),
+      })),
+      selId: pack.id, selName: pack.name, selCadence: pack.cadence,
+      selBadgeStatus: this.badgeOf[pack.lastStatus], selLastStatus: pack.lastStatus,
+      selLast: this.rel(pack.last), selNext: this.rel(pack.next),
+      selRecipients: pack.recipients,
+      onRunNow: () => { const t = window.MeridianToast; if (t && t.success) t.success("Run queued", pack.name + " · manual trigger"); },
+    };
+  }
+}
+</script>
 </body>
 </html>

@@ -28,16 +28,39 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
     public decimal EconomicUnits => Amount * Multiplier;
 
     /// <summary>
-    /// Value at a raw unit quote. Debt quotes are percentages of par; listed contracts
-    /// scale the quote by their contract multiplier. Exact retained monetary basis must
-    /// not pass through this conversion a second time.
+    /// Value at a raw unit quote, scaling by the unit kind's default quote convention: face-value
+    /// lots read the quote as a percentage of par, everything else per unit, and listed contracts
+    /// scale by their contract multiplier. Exact retained monetary basis must not pass through
+    /// this conversion a second time.
+    /// <para>
+    /// The unit-kind default and the catalog's declared <see cref="SecurityAssetClassDescriptor.QuoteConvention"/>
+    /// agree for every catalogued class today (pinned by <c>SecurityQuoteConventionCoverageTests</c>).
+    /// A class-aware caller pricing a class that declares a different convention uses
+    /// <see cref="ValueAtPrice(decimal, SecurityQuoteConvention)"/> with
+    /// <see cref="QuoteConventionFor(string?)"/> instead of this overload.
+    /// </para>
     /// </summary>
     public decimal ValueAtPrice(decimal price)
+        => ValueAtPrice(price, UnitKind == SecurityLotUnitKind.FaceValue
+            ? SecurityQuoteConvention.PercentOfPar
+            : SecurityQuoteConvention.PerUnit);
+
+    /// <summary>Value at a raw unit quote under a declared quote convention.</summary>
+    public decimal ValueAtPrice(decimal price, SecurityQuoteConvention quoteConvention)
     {
         if (!Enum.IsDefined(UnitKind) || Multiplier <= 0m)
             throw new InvalidOperationException("A defined lot unit and positive multiplier are required for pricing.");
-        return EconomicUnits * price / (UnitKind == SecurityLotUnitKind.FaceValue ? 100m : 1m);
+        return EconomicUnits * price / (quoteConvention == SecurityQuoteConvention.PercentOfPar ? 100m : 1m);
     }
+
+    /// <summary>
+    /// The quote convention an asset class declares in the catalog, for class-aware pricing paths.
+    /// Unknown classes are rejected rather than guessed.
+    /// </summary>
+    public static SecurityQuoteConvention QuoteConventionFor(string? assetClass)
+        => SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor)
+            ? descriptor.QuoteConvention
+            : throw new ArgumentException($"Unknown asset class '{assetClass}' has no declared quote convention.", nameof(assetClass));
 
     /// <summary>The unitized quantity of any lot.</summary>
     public static LotQuantity Of(IUnitizedLot lot)
@@ -54,9 +77,58 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
     /// </summary>
     public static (SecurityLotUnitKind UnitKind, decimal Multiplier) UnitFor(string? assetClass, JsonElement? assetSpecificTerms = null)
     {
+        if (!TryUnitFor(assetClass, assetSpecificTerms, out var unitKind, out var multiplier, out var error, out var parameterName))
+            throw new ArgumentException(error, parameterName);
+        return (unitKind, multiplier);
+    }
+
+    /// <summary>A quantity of <paramref name="amount"/> for an asset class, unitized from the registry.</summary>
+    public static LotQuantity For(string? assetClass, decimal amount, JsonElement? assetSpecificTerms = null)
+    {
+        var (unit, multiplier) = UnitFor(assetClass, assetSpecificTerms);
+        return new LotQuantity(amount, unit, multiplier);
+    }
+
+    /// <summary>
+    /// <see cref="For"/> without the exception: false, with the reason, when the class is not
+    /// registered or its contract multiplier term is missing or not positive. Callers that report
+    /// a skipped posting rather than fail (journal producers, ledger bridges) use this form.
+    /// </summary>
+    public static bool TryFor(
+        string? assetClass,
+        decimal amount,
+        JsonElement? assetSpecificTerms,
+        out LotQuantity quantity,
+        [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error)
+    {
+        if (!TryUnitFor(assetClass, assetSpecificTerms, out var unitKind, out var multiplier, out error, out _))
+        {
+            quantity = default;
+            return false;
+        }
+
+        quantity = new LotQuantity(amount, unitKind, multiplier);
+        return true;
+    }
+
+    private static bool TryUnitFor(
+        string? assetClass,
+        JsonElement? assetSpecificTerms,
+        out SecurityLotUnitKind unitKind,
+        out decimal multiplier,
+        [System.Diagnostics.CodeAnalysis.NotNullWhen(false)] out string? error,
+        out string parameterName)
+    {
+        unitKind = default;
+        multiplier = 1m;
+        error = null;
+        parameterName = nameof(assetClass);
         if (!SecurityAssetClassCatalog.TryGet(assetClass, out var descriptor))
-            throw new ArgumentException("A registered asset class is required to determine lot units.", nameof(assetClass));
-        var multiplier = 1m;
+        {
+            error = "A registered asset class is required to determine lot units.";
+            return false;
+        }
+
         if (descriptor.LotMultiplierTermKey is { } key)
         {
             if (assetSpecificTerms is not { ValueKind: JsonValueKind.Object } terms
@@ -65,17 +137,14 @@ public readonly record struct LotQuantity(decimal Amount, SecurityLotUnitKind Un
                 || !value.TryGetDecimal(out multiplier)
                 || multiplier <= 0m)
             {
-                throw new ArgumentException($"Asset class '{descriptor.AssetClass}' requires a positive '{key}' term to open a lot.", nameof(assetSpecificTerms));
+                multiplier = 1m;
+                error = $"Asset class '{descriptor.AssetClass}' requires a positive '{key}' term to open a lot.";
+                parameterName = nameof(assetSpecificTerms);
+                return false;
             }
         }
 
-        return (descriptor.LotUnit, multiplier);
-    }
-
-    /// <summary>A quantity of <paramref name="amount"/> for an asset class, unitized from the registry.</summary>
-    public static LotQuantity For(string? assetClass, decimal amount, JsonElement? assetSpecificTerms = null)
-    {
-        var (unit, multiplier) = UnitFor(assetClass, assetSpecificTerms);
-        return new LotQuantity(amount, unit, multiplier);
+        unitKind = descriptor.LotUnit;
+        return true;
     }
 }

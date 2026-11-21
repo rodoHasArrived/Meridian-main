@@ -54,8 +54,8 @@ public sealed partial class SecurityMasterPricingService
                 observations = (await _store.GetRawPricesAsync(input.SecurityId, request.EvaluatedAsOf, ct, knownAt).ConfigureAwait(false))
                     .OrderBy(p => p.SourceId, StringComparer.Ordinal).ToArray();
             else
-                observations = new[] { new SecurityRawPriceDto(selection.SelectedSource, selection.GoldenCopyPrice, selection.PriceAsOf, selection.Unit) }
-                    .Concat(selection.ComparisonPrices.Select(p => new SecurityRawPriceDto(p.SourceId, p.Price, p.PriceAsOf, p.Unit)))
+                observations = new[] { new SecurityRawPriceDto(selection.SelectedSource, selection.GoldenCopyPrice, selection.PriceAsOf, selection.Unit) { Quotation = selection.Quotation } }
+                    .Concat(selection.ComparisonPrices.Select(p => new SecurityRawPriceDto(p.SourceId, p.Price, p.PriceAsOf, p.Unit) { Quotation = p.Quotation }))
                     .OrderBy(p => p.SourceId, StringComparer.Ordinal).ToArray();
             lines.Add(new(input.SecurityId, selection, observations, input.Override,
                 selection is null ? null : input.Override?.Price ?? selection.GoldenCopyPrice,

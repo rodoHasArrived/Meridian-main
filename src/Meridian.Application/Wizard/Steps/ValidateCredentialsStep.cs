@@ -1,5 +1,6 @@
 using Meridian.Core.Config;
 using Meridian.Application.Services;
+using Meridian.Application.ProviderRouting;
 using Meridian.Application.Wizard.Core;
 using Meridian.Application.Wizard.Metadata;
 
@@ -13,13 +14,25 @@ public sealed class ValidateCredentialsStep : IWizardStep
 {
     private readonly TextWriter _output;
     private readonly TextReader _input;
+    private readonly ProviderCredentialOwnershipPolicy _ownershipPolicy;
+    private readonly Func<DataSourceSelection, CancellationToken, Task<CredentialValidationService.ValidationResult?>> _validate;
 
     public WizardStepId StepId => WizardStepId.ValidateCredentials;
 
-    public ValidateCredentialsStep(TextWriter output, TextReader input)
+    public ValidateCredentialsStep(TextWriter output, TextReader input,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
+        : this(output, input, ownershipPolicy, ValidateAsync)
+    {
+    }
+
+    internal ValidateCredentialsStep(TextWriter output, TextReader input,
+        ProviderCredentialOwnershipPolicy? ownershipPolicy,
+        Func<DataSourceSelection, CancellationToken, Task<CredentialValidationService.ValidationResult?>> validate)
     {
         _output = output;
         _input = input;
+        _ownershipPolicy = ownershipPolicy ?? ProviderCredentialOwnershipPolicy.ForCurrentEnvironment();
+        _validate = validate;
     }
 
     public async Task<WizardStepResult> ExecuteAsync(WizardContext context, CancellationToken ct)
@@ -32,6 +45,7 @@ public sealed class ValidateCredentialsStep : IWizardStep
         if (dataSource == null)
             return WizardStepResult.Skipped("No data source configured; skipping validation.");
 
+        ProviderConfigurationCredentialGuard.Prepare(new AppConfig(Alpaca: dataSource.Alpaca, Polygon: dataSource.Polygon), _ownershipPolicy);
         var hasCredentials = dataSource.DataSource switch
         {
             DataSourceKind.Alpaca => !string.IsNullOrWhiteSpace(dataSource.Alpaca?.KeyId) &&
@@ -57,20 +71,16 @@ public sealed class ValidateCredentialsStep : IWizardStep
             return WizardStepResult.Succeeded();
         }
 
+        // This legacy wizard has no retained tenant/account selection. Even an environment
+        // reference must go through scoped setup instead of this provider-wide live validator.
+        if (_ownershipPolicy.RequireExplicitOwnership && dataSource.DataSource is DataSourceKind.Alpaca or DataSourceKind.Polygon)
+            throw new ProviderConfigurationCredentialException();
+
         _output.WriteLine("  Validating credentials with provider API...\n");
 
         try
         {
-            await using var validator = new CredentialValidationService();
-
-            CredentialValidationService.ValidationResult? result = dataSource.DataSource switch
-            {
-                DataSourceKind.Alpaca when dataSource.Alpaca != null =>
-                    await validator.ValidateAlpacaAsync(dataSource.Alpaca, ct),
-                DataSourceKind.Polygon when dataSource.Polygon != null =>
-                    await validator.ValidatePolygonAsync(dataSource.Polygon, ct),
-                _ => null
-            };
+            var result = await _validate(dataSource, ct);
 
             if (result == null)
             {
@@ -108,6 +118,17 @@ public sealed class ValidateCredentialsStep : IWizardStep
         }
 
         return WizardStepResult.Succeeded();
+    }
+
+    private static async Task<CredentialValidationService.ValidationResult?> ValidateAsync(DataSourceSelection dataSource, CancellationToken ct)
+    {
+        await using var validator = new CredentialValidationService();
+        return dataSource.DataSource switch
+        {
+            DataSourceKind.Alpaca when dataSource.Alpaca != null => await validator.ValidateAlpacaAsync(dataSource.Alpaca, ct),
+            DataSourceKind.Polygon when dataSource.Polygon != null => await validator.ValidatePolygonAsync(dataSource.Polygon, ct),
+            _ => null
+        };
     }
 
     private void ShowCredentialHelp(string providerName)

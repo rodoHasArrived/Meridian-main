@@ -90,7 +90,15 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
     },
     "generate-health-dashboard": {
         "script": "generate-health-dashboard.py",
-        "args": ["--output", "docs/status/doc-health-dashboard.md", "--json-output", "docs/status/doc-health-dashboard.json"],
+        # Line counts go only to the ignored artifacts/ tree; see generate-health-dashboard.py.
+        "args": [
+            "--output",
+            "docs/status/doc-health-dashboard.md",
+            "--json-output",
+            "docs/status/doc-health-dashboard.json",
+            "--volatile-json-output",
+            "artifacts/docs/doc-health-line-metrics.json",
+        ],
         "output": "docs/status/doc-health-dashboard.md",
     },
     "repair-links": {
@@ -219,6 +227,18 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
         "args": ["--output", "docs/status/coverage-report.md"],
         "output": "docs/status/coverage-report.md",
     },
+    "check-public-type-reference": {
+        "script": "render-public-type-reference.py",
+        "args": ["--check"],
+    },
+    "check-endpoint-reference": {
+        "script": "render-endpoint-reference.py",
+        "args": ["--check"],
+    },
+    "check-configuration-reference": {
+        "script": "generate-configuration-reference.py",
+        "args": ["--check"],
+    },
     "generate-changelog": {
         "script": "generate-changelog.py",
         "args": ["--output", "docs/status/CHANGELOG.md", "--recent", "50"],
@@ -288,6 +308,9 @@ SCRIPT_CONFIG: Dict[str, Dict[str, Sequence[str] | str]] = {
 
 PROFILE_CONFIG: Dict[str, List[str]] = {
     "quick": [
+        "check-public-type-reference",
+        "check-endpoint-reference",
+        "check-configuration-reference",
         "scan-todos",
         "validate-docs-structure",
         "check-docfx-navigation",
@@ -306,6 +329,9 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-workflow-manifest",
     ],
     "core": [
+        "check-public-type-reference",
+        "check-endpoint-reference",
+        "check-configuration-reference",
         "scan-todos",
         "validate-docs-structure",
         "check-docfx-navigation",
@@ -332,6 +358,9 @@ PROFILE_CONFIG: Dict[str, List[str]] = {
         "generate-workflow-manifest",
     ],
     "full": [
+        "check-public-type-reference",
+        "check-endpoint-reference",
+        "check-configuration-reference",
         "scan-todos",
         "validate-docs-structure",
         "check-docfx-navigation",
@@ -549,6 +578,32 @@ def write_markdown_summary(path: Path, results: Iterable[ScriptResult], dry_run:
     write_text_lf(path, "\n".join(lines) + "\n")
 
 
+def write_run_summaries(args: argparse.Namespace, root: Path, selected: Sequence[str],
+                        results: Sequence[ScriptResult], *, in_progress: bool = False) -> None:
+    if args.summary_output:
+        write_markdown_summary(Path(args.summary_output), results, args.dry_run)
+        if in_progress:
+            output = Path(args.summary_output)
+            write_text_lf(output, output.read_text(encoding="utf-8") + "\nRun in progress; selected steps without results have not completed.\n")
+        if not in_progress:
+            print(f"Wrote markdown summary: {args.summary_output}")
+
+    if args.json_output:
+        payload = {
+            "dry_run": args.dry_run,
+            "profile": args.profile,
+            "selected_scripts": selected,
+            "results": [stable_result(result, root) for result in results],
+        }
+        if in_progress:
+            payload["in_progress"] = True
+        out = Path(args.json_output)
+        out.parent.mkdir(parents=True, exist_ok=True)
+        write_text_lf(out, json.dumps(payload, indent=2) + "\n")
+        if not in_progress:
+            print(f"Wrote JSON summary: {args.json_output}")
+
+
 def main() -> int:  # noqa: C901
     args = parse_args()
     root = Path(__file__).resolve().parents[3]
@@ -614,6 +669,11 @@ def main() -> int:  # noqa: C901
             if name == "scan-todos" and args.auto_create_todos:
                 extra_args.extend(["--json-output", TODO_SCAN_JSON_PATH])
 
+            if name == "generate-workflow-manifest":
+                # The manifest audits these files. Publish completed results
+                # before invoking it; selected-but-unrun steps remain absent,
+                # so this partial report makes no success claim for the child.
+                write_run_summaries(args, root, selected, results, in_progress=True)
             print(f"Running {name}...")
             result = run_script_with_args(name, root, extra_args=extra_args)
             results.append(result)
@@ -651,21 +711,7 @@ def main() -> int:  # noqa: C901
                 if todo_result.status != "success" and not args.continue_on_error:
                     print("Stopping due to failure. Use --continue-on-error to continue.", file=sys.stderr)
 
-    if args.summary_output:
-        write_markdown_summary(Path(args.summary_output), results, args.dry_run)
-        print(f"Wrote markdown summary: {args.summary_output}")
-
-    if args.json_output:
-        payload = {
-            "dry_run": args.dry_run,
-            "profile": args.profile,
-            "selected_scripts": selected,
-            "results": [stable_result(result, root) for result in results],
-        }
-        out = Path(args.json_output)
-        out.parent.mkdir(parents=True, exist_ok=True)
-        write_text_lf(out, json.dumps(payload, indent=2) + "\n")
-        print(f"Wrote JSON summary: {args.json_output}")
+    write_run_summaries(args, root, selected, results)
 
     failed = [r for r in results if r.status == "failed"]
     return 1 if failed else 0

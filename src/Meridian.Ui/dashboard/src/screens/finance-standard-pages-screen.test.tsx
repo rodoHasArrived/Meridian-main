@@ -1,6 +1,8 @@
-import { createLedgerAmountProofPacket } from "@/test/ledger-amount-proof-fixtures";
-import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
+import { createAmountPassport, passportIdentity } from "@/test/amount-passport-fixtures";
+import { getAmountPassport } from "@/lib/amount-passport-api";
+import { AmountPassportProvider } from "@/components/meridian/amount-passport";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
 import { useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
@@ -9,11 +11,15 @@ import {
   AccountDetailScreen,
   ApprovalInboxScreen,
   CloseCalendarScreen,
+  ConsolidationWorkflowScreen,
+  FactorPaydownScreen,
   LedgerExplorerScreen,
   ReconciliationMatchWorkbenchScreen,
   ReportPreviewValidationScreen,
   ReportRunDetailScreen
 } from "@/screens/finance-standard-pages-screen";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
+import { collectScopeStructureOptions, UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import { requireFirst } from "@/test/fixtures";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { AccountingWorkspaceResponse } from "@/types";
@@ -23,12 +29,15 @@ vi.mock("@/lib/api", async () => {
   return {
     ...actual,
     getOperationsCloseCalendar: vi.fn(),
+    getReconciliationBreakQueue: vi.fn(),
     getRunLedgerJournal: vi.fn(),
     getRunTrialBalance: vi.fn()
   };
 });
 
-vi.mock("@/lib/ledger-amount-proof-api", () => ({ getLedgerAmountProof: vi.fn() }));
+vi.mock("@/lib/amount-passport-api", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/amount-passport-api")>(), getAmountPassport: vi.fn()
+}));
 
 vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerBooks: vi.fn(),
@@ -75,15 +84,16 @@ function mockPostedBook() {
 
 function mockPostedAmount() {
   mockPostedBook();
+  const identity = passportIdentity({ subjectId: "je-proof:line-proof:debit" });
+  identity.scope = { ...identity.scope, ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID, fundProfileId: "fund-alpha" };
+  const proofPacket = createAmountPassport(identity, "Cash debit", "500");
   vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockImplementation(async (periodId) => periodId === LEDGER_PERIOD_ID ? [{
     journalEntryId: "je-proof", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID,
     timestamp: "2026-07-31T00:00:00Z", description: "Scoped posting", totalDebits: 500, totalCredits: 500,
-    isBalanced: true, lines: [{ entryId: "line-proof", journalEntryId: "je-proof", timestamp: "2026-07-31T00:00:00Z",
+    isBalanced: true, lines: [{ entryId: "line-proof", journalEntryId: "je-proof", timestamp: "2026-07-31T00:00:00Z", amountPassport: proofPacket.reference,
       accountName: "Cash", accountType: "Asset", symbol: "AAPL", debit: 500, credit: 0, description: "Selected line" }]
   }] : []);
-  const proofPacket = createLedgerAmountProofPacket({ subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID,
-    periodId: LEDGER_PERIOD_ID, fundProfileId: "fund-alpha", amount: 500, currency: "USD", label: "Cash" });
-  vi.mocked(getLedgerAmountProof).mockResolvedValue(proofPacket);
+  vi.mocked(getAmountPassport).mockResolvedValue(proofPacket);
   return proofPacket;
 }
 
@@ -179,7 +189,8 @@ const data = {
 } as unknown as AccountingWorkspaceResponse;
 
 async function renderPage(node: ReactElement, route: string) {
-  const result = renderWithRouter(node, { initialEntries: [route] });
+  const result = renderWithRouter(<AmountPassportProvider enabled scopeKey="test" session="controller">{node}</AmountPassportProvider>,
+    { initialEntries: [route] });
   await waitForAsyncEffects();
   return result;
 }
@@ -308,7 +319,7 @@ describe("finance standard pages", () => {
     expect(screen.getAllByText("Publication manifest retained for release control.").length).toBeGreaterThan(0);
 
     const confidence = screen.getByRole("region", { name: "Report preview confidence" });
-    const freshness = within(confidence).getByText("Freshness").parentElement;
+    const freshness = within(confidence).getByText("Freshness:", { selector: "summary span.text-muted-foreground" }).parentElement;
     expect(freshness).toHaveTextContent("Needs review");
     expect(freshness).toHaveTextContent("No as-of date retained");
   });
@@ -333,7 +344,7 @@ describe("finance standard pages", () => {
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
     await renderPage(<ReportRunDetailScreen data={data} />, "/reporting/runs/detail");
 
-    expect(screen.getByRole("alert")).toHaveTextContent("Select a governed report run");
+    expect(screen.getByRole("alert")).toHaveTextContent("Select a report run");
     expect(screen.queryByText("Entity Scope: Fund Alpha")).not.toBeInTheDocument();
   });
 
@@ -409,14 +420,22 @@ describe("finance standard pages", () => {
     expect(screen.getByLabelText("Ledger book")).toBeInTheDocument();
     expect(screen.getByLabelText("Ledger period")).toBeInTheDocument();
     expect(screen.queryByLabelText("Run / period")).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Group consolidation" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Elimination book ID")).toHaveValue(LEDGER_BOOK_ID);
-    expect(screen.getByLabelText("Elimination period ID")).toHaveValue(LEDGER_PERIOD_ID);
+    expect(screen.queryByRole("heading", { name: "Group consolidation" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Factor paydown" })).not.toBeInTheDocument();
+    const consolidation = new URL(screen.getByRole("link", { name: "Open consolidation" }).getAttribute("href")!, "http://localhost");
+    expect(consolidation.pathname).toBe("/accounting/consolidation");
+    expect(consolidation.searchParams.get("ledgerBookId")).toBe(LEDGER_BOOK_ID);
+    expect(consolidation.searchParams.get("periodId")).toBe(LEDGER_PERIOD_ID);
 
     // The drill-through carries the period, which is how the detail screen resolves a posted
     // entry. It used to carry a runId, which no posted entry has.
-    expect(await screen.findByRole("table", { name: "Ledger Explorer results" })).toHaveTextContent("Open journal detail");
-    expect(screen.getByRole("link", { name: "Open journal detail" })).toHaveAttribute(
+    // The Journal ID column shows the ID itself (not generic link copy), and the posted
+    // amounts keep their cents.
+    const ledgerTable = await screen.findByRole("table", { name: "Ledger Explorer results" });
+    expect(ledgerTable).not.toHaveTextContent("Open journal detail");
+    expect(ledgerTable).toHaveTextContent("$500.00");
+    expect(screen.getByRole("link", { name: "Open journal je-cash-1" })).toHaveTextContent("je-cash-1");
+    expect(screen.getByRole("link", { name: "Open journal je-cash-1" })).toHaveAttribute(
       "href",
       `/accounting/journal-entries/detail?journalEntryId=je-cash-1&periodId=${LEDGER_PERIOD_ID}`
     );
@@ -425,23 +444,20 @@ describe("finance standard pages", () => {
   it("selects a retained posting amount by entry identity and exact book, period and fund scope", async () => {
     const proofPacket = mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    expect(getLedgerAmountProof).not.toHaveBeenCalled();
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
-    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500 proof detail" });
-    expect(await within(drawer).findByRole("link", { name: "Open Retained journal line" })).toHaveAttribute("href", proofPacket.ledgerAmount!.evidence[0]!.route);
-    expect(getLedgerAmountProof).toHaveBeenCalledWith(expect.objectContaining({
-      subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID,
-      fundProfileId: "fund-alpha", amount: 500
-    }), expect.objectContaining({ signal: expect.any(AbortSignal) }));
-    fireEvent.keyDown(window, { key: "Escape" });
+    expect(getAmountPassport).not.toHaveBeenCalled();
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
+    const drawer = await screen.findByRole("dialog", { name: "Amount passport" });
+    expect(await within(drawer).findByRole("link", { name: /^Retained journal line/ })).toHaveAttribute("href", proofPacket.evidence[0]!.href);
+    expect(getAmountPassport).toHaveBeenCalledWith(proofPacket.reference.identity, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    fireEvent.keyDown(within(drawer).getByRole("button", { name: "Close drawer" }), { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
   it("requires a fresh amount click after visiting Trial balance and returning to Ledger", async () => {
     mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
@@ -450,12 +466,12 @@ describe("finance standard pages", () => {
     await waitForAsyncEffects();
     await waitForAsyncEffects();
 
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it.each(["book", "period"] as const)("requires a fresh amount click after a %s scope round trip", async (scope) => {
@@ -483,8 +499,8 @@ describe("finance standard pages", () => {
         : scope === "period" ? [period, otherPeriod] : [period]) as never;
     });
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
 
     const selector = () => document.getElementById(`ledger-${scope}-select`) as HTMLSelectElement;
     fireEvent.change(selector(), { target: { value: scope === "book" ? otherBookId : otherPeriodId } });
@@ -495,22 +511,22 @@ describe("finance standard pages", () => {
     await waitForAsyncEffects();
     await waitForAsyncEffects();
 
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it("discards pending evidence after a tab round trip until the operator selects the amount again", async () => {
     const proofPacket = mockPostedAmount();
     let completeProof!: (packet: typeof proofPacket) => void;
-    vi.mocked(getLedgerAmountProof).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
+    vi.mocked(getAmountPassport).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" }));
-    expect(screen.getByRole("dialog")).toHaveTextContent("Loading retained amount evidence");
-    const signal = vi.mocked(getLedgerAmountProof).mock.calls[0][1]?.signal;
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
+    expect(await screen.findByRole("dialog")).toHaveTextContent("Loading amount passport");
+    const signal = vi.mocked(getAmountPassport).mock.calls[0][1]?.signal;
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
@@ -518,15 +534,15 @@ describe("finance standard pages", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
     await waitForAsyncEffects();
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500 for Cash in journal je-proof" });
+    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     await act(async () => { completeProof(proofPacket); });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Open Retained journal line" })).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole("link", { name: /^Retained journal line/ })).not.toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it("labels posted amounts in the book's currency and claims no evidence it does not have", async () => {
@@ -580,12 +596,77 @@ describe("finance standard pages", () => {
     const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
     expect(table).not.toHaveTextContent("Evidence status");
     expect(table).not.toHaveTextContent("Linked");
-    expect(table).toHaveTextContent("€500");
+    expect(table).toHaveTextContent("€500.00");
     expect(table).not.toHaveTextContent("$500");
-    // The entry's lines agree on an entity, so the column names it rather than claiming the entry
-    // spans every entity.
-    expect(table).toHaveTextContent("entity-lux");
+    // Posting lines inherit their entry's status; instruction copy is not a status value.
+    expect(table).not.toHaveTextContent("Select amount for proof");
+    // A general-ledger grid: journal rows, indented posting lines, plain amounts and a totals row.
+    expect(table).not.toHaveTextContent("Posting amount");
+    expect(table).not.toHaveTextContent("00:00 UTC");
+    const totals = within(table).getByRole("row", { name: "Ledger totals" });
+    expect(totals).toHaveTextContent("Totals");
+    // This fixture's only posting is a one-sided debit, so the totals row reports the difference.
+    expect(totals).toHaveTextContent("€500.00€0.00Difference €500.00");
+    expect(totals).not.toHaveTextContent("Balanced");
+    expect(table.querySelector("tr.ledger-row--posting")).not.toBeNull();
+    expect(screen.getAllByRole("button", { name: /^Inspect (debit|credit) / }).length).toBeGreaterThan(0);
+    // Missing display-name evidence must not promote an internal identifier to an entity name, and
+    // when no row has a name the Entity column is said once rather than "unavailable" on every row.
+    expect(table).not.toHaveTextContent("Entity name unavailable");
+    expect(screen.getByText("Entity: no posting has an entity name; entity IDs are in each journal's detail and in exports")).toBeInTheDocument();
+    expect(table).not.toHaveTextContent("entity-lux");
     expect(table).not.toHaveTextContent("All entities");
+  });
+
+  it("keeps entity references in the source book when posted entries carry no entity names", async () => {
+    mockPostedBook();
+    const feederBookId = "00000000-0000-0000-0000-0000000000cc";
+    const sourceBook = (await ledgerReportsApi.getLedgerBooks())[0]!;
+    vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([
+      sourceBook,
+      { ...sourceBook, ledgerBookId: feederBookId, displayName: "Feeder Fund", baseCurrency: "EUR" }
+    ]);
+    vi.mocked(ledgerReportsApi.getLedgerPeriods).mockImplementation(async (query) => query?.ledgerBookId === feederBookId ? [{
+      periodId: LEDGER_PERIOD_ID, ledgerBookId: feederBookId, fiscalYear: 2026, periodNo: 7,
+      label: "July 2026", startDate: "2026-07-01", endDate: "2026-07-31", status: "HardClosed",
+      openedAt: "2026-07-01T00:00:00Z", closedAt: "2026-08-02T00:00:00Z", version: 1
+    }] as never : []);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValue([{
+      journalEntryId: "je-feeder", periodId: LEDGER_PERIOD_ID, ledgerBookId: feederBookId,
+      timestamp: "2026-07-31T00:00:00Z", description: "Feeder posting", totalDebits: 500, totalCredits: 500,
+      isBalanced: true, lines: [{ entryId: "line-feeder", journalEntryId: "je-feeder",
+        timestamp: "2026-07-31T00:00:00Z", accountName: "Cash", accountType: "Asset", symbol: null,
+        financialAccountId: "1000", debit: 500, credit: 0, description: "Feeder posting", dimensions: { entityId: "entity-feeder" } }]
+    }] as never);
+
+    await renderPage(<LedgerExplorerScreen data={data} />,
+      `/accounting/ledger?ledgerBookId=${feederBookId}&periodId=${LEDGER_PERIOD_ID}&symbol=EURUSD&asOf=2026-07-31`);
+
+    // Posted entries carry entity IDs but no entity names, so the Entity column is said once and
+    // the entity reference stays in Journal references (and in exports), in the source book's scope.
+    const table = await screen.findByRole("table", { name: "Ledger Explorer results" });
+    expect(within(table).queryByRole("columnheader", { name: "Entity" })).not.toBeInTheDocument();
+    expect(screen.getByText("Entity: no posting has an entity name; entity IDs are in each journal's detail and in exports")).toBeInTheDocument();
+    expect(screen.getByText(/je-feeder · Entity reference: entity-feeder/)).toBeInTheDocument();
+  });
+
+  it("opens consolidation as a scoped workflow rather than a ledger tail", async () => {
+    mockPostedBook();
+    await renderPage(<ConsolidationWorkflowScreen />, `/accounting/consolidation?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`);
+    expect(screen.getByRole("heading", { name: "Group consolidation" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Elimination book ID")).toHaveValue(LEDGER_BOOK_ID);
+    expect(screen.getByLabelText("Elimination period ID")).toHaveValue(LEDGER_PERIOD_ID);
+    expect(ledgerReportsApi.getLedgerPeriodJournalEntries).not.toHaveBeenCalled();
+  });
+
+  it("opens factor paydown with the governed book and period selectors", async () => {
+    mockPostedBook();
+    await renderPage(<FactorPaydownScreen />, `/accounting/factor-paydown?ledgerBookId=${LEDGER_BOOK_ID}&periodId=${LEDGER_PERIOD_ID}`);
+    expect(screen.getByRole("region", { name: "Factor paydown" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Ledger book")).toHaveValue(LEDGER_BOOK_ID);
+    expect(screen.getByLabelText("Ledger period")).toHaveValue(LEDGER_PERIOD_ID);
+    expect(ledgerReportsApi.getLedgerPeriodJournalEntries).not.toHaveBeenCalled();
+    expect(screen.queryByRole("heading", { name: "Group consolidation" })).not.toBeInTheDocument();
   });
 
   it("keeps the journal tab's selected book when the operator visits the trial balance", async () => {
@@ -643,8 +724,9 @@ describe("finance standard pages", () => {
     // The trial-balance tab reads the same scope rather than resolving its own. Holding two
     // independent scopes meant this tab defaulted to the first book and wrote it into the route,
     // so coming back showed book B under a URL that said A.
-    const trialBalanceBookSelect = document.getElementById("trial-balance-book-select") as HTMLSelectElement | null;
-    expect(trialBalanceBookSelect?.value).toBe(FEEDER_BOOK_ID);
+    const trialBalanceBookSelect = screen.getByRole("combobox", { name: "Ledger book" });
+    expect(trialBalanceBookSelect).toHaveValue("Beta Feeder Fund · EUR");
+    expect(ledgerReportsApi.getLedgerPeriods).toHaveBeenLastCalledWith({ ledgerBookId: FEEDER_BOOK_ID });
 
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
@@ -697,12 +779,11 @@ describe("finance standard pages", () => {
     await waitForAsyncEffects();
 
     // The operator picks the period that closed since, on the tab that can see it.
-    const trialBalancePeriodSelect =
-      document.getElementById("trial-balance-period-select") as HTMLSelectElement | null;
-    expect(trialBalancePeriodSelect).not.toBeNull();
-    fireEvent.change(trialBalancePeriodSelect!, { target: { value: AUGUST_PERIOD_ID } });
+    const trialBalancePeriodSelect = screen.getByRole("combobox", { name: "Period" });
+    await userEvent.click(trialBalancePeriodSelect);
+    await userEvent.click(screen.getByRole("option", { name: "August 2026 · Hard closed" }));
     await waitForAsyncEffects();
-    expect(trialBalancePeriodSelect?.value).toBe(AUGUST_PERIOD_ID);
+    expect(trialBalancePeriodSelect).toHaveValue("August 2026 · Hard closed");
 
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
@@ -910,10 +991,8 @@ describe("finance standard pages", () => {
     // The sibling tab discovers August and selects it, putting it in the shared route.
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
-    fireEvent.change(
-      document.getElementById("trial-balance-period-select") as HTMLSelectElement,
-      { target: { value: AUGUST_PERIOD_ID } }
-    );
+    await userEvent.click(screen.getByRole("combobox", { name: "Period" }));
+    await userEvent.click(screen.getByRole("option", { name: "August 2026 · Hard closed" }));
     await waitForAsyncEffects();
 
     // Coming back, this tab cannot refresh, so it can never resolve August.
@@ -1038,10 +1117,8 @@ describe("finance standard pages", () => {
     vi.mocked(ledgerReportsApi.getLedgerBooks).mockResolvedValue([masterBook, addedBook] as never);
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
-    fireEvent.change(
-      document.getElementById("trial-balance-book-select") as HTMLSelectElement,
-      { target: { value: SECOND_BOOK_ID } }
-    );
+    await userEvent.click(screen.getByRole("combobox", { name: "Ledger book" }));
+    await userEvent.click(screen.getByRole("option", { name: "Beta Feeder Fund · USD" }));
     await waitForAsyncEffects();
     expect(search()).toContain(SECOND_BOOK_ID);
 
@@ -1218,10 +1295,8 @@ describe("finance standard pages", () => {
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
-    fireEvent.change(
-      document.getElementById("trial-balance-period-select") as HTMLSelectElement,
-      { target: { value: JUNE_PERIOD_ID } }
-    );
+    await userEvent.click(screen.getByRole("combobox", { name: "Period" }));
+    await userEvent.click(screen.getByRole("option", { name: "June 2026 · Hard closed" }));
     await waitForAsyncEffects();
     expect(search()).toContain(JUNE_PERIOD_ID);
 
@@ -1292,8 +1367,75 @@ describe("finance standard pages", () => {
 
     expect(screen.getByRole("heading", { name: "Reconciliation Match Workbench" })).toBeInTheDocument();
     expect(screen.getAllByText("Cash variance needs review").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", "/accounting/reconciliation");
-    expect(screen.getByRole("button", { name: "Record match decision" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", `/accounting/reconciliation?reconciliationBreak=${encodeURIComponent(data.breakQueue[0].breakId)}`);
+    expect(screen.getByRole("heading", { name: "Source lineage" })).toBeInTheDocument();
+  });
+
+  it.each([
+    "runId=import-run&caseId=case%3Asource-break&breakId=source-break",
+    "caseId=case%3Asource-break",
+    "breakId=statement%3Aqueue-break",
+    "runId=import-run"
+  ])("opens the addressed statement break in Match with %s", async (query) => {
+    const priorBreak = requireFirst(data.breakQueue, "prior reconciliation break");
+    const importedBreak = {
+      ...priorBreak,
+      breakId: "statement:queue-break",
+      runId: "statement-reconciliation",
+      sourceBreakId: "source-break",
+      sourceImportId: "import-run",
+      reason: "Imported custodian cash differs from the ledger."
+    };
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={{ ...data, breakQueue: [...data.breakQueue, importedBreak] }} />,
+      `/accounting/reconciliation/match?${query}`
+    );
+
+    expect(screen.getByText(importedBreak.reason)).toBeInTheDocument();
+    expect(screen.queryByText(priorBreak.reason)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Review retained evidence" })).toHaveAttribute(
+      "href", "/reporting/evidence?subjectKind=reconciliation-break&subjectId=statement%3Aqueue-break"
+    );
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", "/accounting/reconciliation?reconciliationBreak=statement%3Aqueue-break"
+    );
+  });
+
+  it("reads the current queue when the imported case is absent from the workspace snapshot", async () => {
+    const importedBreak = {
+      ...requireFirst(data.breakQueue, "prior reconciliation break"),
+      breakId: "statement:queue-break",
+      runId: "statement-reconciliation",
+      sourceBreakId: "source-break",
+      sourceImportId: "import-run",
+      fundAccountId: "fund-alpha",
+      reason: "Newly published statement break."
+    };
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([importedBreak]);
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={data} />,
+      "/accounting/reconciliation/match?runId=import-run&breakId=source-break&fundAccountId=fund-alpha"
+    );
+
+    expect(api.getReconciliationBreakQueue).toHaveBeenCalledWith(
+      undefined, "fund-alpha", { signal: expect.any(AbortSignal), allowDevelopmentFallback: false }
+    );
+    expect(screen.getByText(importedBreak.reason)).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", "/accounting/reconciliation?reconciliationBreak=statement%3Aqueue-break&fundAccountId=fund-alpha"
+    );
+  });
+
+  it("reports an unavailable case without selecting a different break from the same run", async () => {
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={data} />,
+      "/accounting/reconciliation/match?runId=run-42&caseId=case%3Amissing-break&breakId=missing-break"
+    );
+
+    expect(screen.getByText("Requested reconciliation break unavailable")).toBeInTheDocument();
+    expect(screen.queryByText(requireFirst(data.breakQueue, "prior reconciliation break").reason)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Review retained evidence" })).not.toBeInTheDocument();
   });
 
   it("renders close calendar tasks", async () => {
@@ -1326,6 +1468,78 @@ describe("finance standard pages", () => {
     expect(await screen.findByText(/June 2026: Run trial balance · Ledger Posting Draft · owner Controller · due Jul 3, 2026/)).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open close workflow for June 2026" })).toHaveAttribute("href", "/accounting/operations-continuity");
     expect(screen.getByRole("link", { name: "Open Operations Continuity" })).toHaveAttribute("href", "/accounting/operations-continuity");
+    // The month grid shows the workflow on the day its next task is due, above the list view.
+    const calendar = screen.getByRole("region", { name: "Close calendar" });
+    expect(within(calendar).getByRole("grid", { name: "July 2026" })).toBeInTheDocument();
+    const dueDay = within(calendar).getByRole("gridcell", { name: /^3 July 2026/ });
+    expect(within(dueDay).getByRole("link", { name: /June 2026: Run trial balance/ })).toHaveAttribute("href", "/accounting/operations-continuity");
+    expect(screen.getByRole("heading", { name: "List view" })).toBeInTheDocument();
+  });
+
+  describe("close calendar fund narrowing", () => {
+    const closeItem = (workflowId: string, fundAccountId: string, periodId: string) => ({
+      workflowId,
+      fundAccountId,
+      periodId,
+      status: "LedgerPostingDraft",
+      version: 1,
+      nextDueDate: "2026-07-03",
+      nextDueTaskId: "trial-balance",
+      nextDueLabel: `Close ${fundAccountId}`,
+      nextDueOwner: "Controller",
+      readinessSeverity: "Warning",
+      readinessScore: 68,
+      isReadyToClose: false,
+      blockerCount: 0,
+      openChecklistCount: 0,
+      requiredApprovalCount: 1,
+      completedApprovalCount: 0,
+      route: "/accounting/operations-continuity"
+    });
+    const structure = collectScopeStructureOptions({
+      entities: [{ entityId: "E-A", name: "Entity A" }],
+      funds: [{ fundId: "F-1", name: "Fund One", entityIds: ["E-A"] }, { fundId: "F-2", name: "Fund Two", entityIds: ["E-A"] }],
+      accounts: [
+        { accountId: "acct-1", displayName: "Fund one brokerage", fundId: "F-1", entityId: "E-A" },
+        { accountId: "acct-2", displayName: "Fund two brokerage", fundId: "F-2", entityId: "E-A" }
+      ]
+    });
+    const mockCalendar = () => vi.mocked(api.getOperationsCloseCalendar).mockResolvedValueOnce({
+      generatedAtUtc: "2026-06-30T02:00:00Z",
+      items: [
+        closeItem("wf-1", "acct-1", "2026-06"),
+        closeItem("wf-2", "acct-2", "2026-06"),
+        closeItem("wf-3", "acct-unfiled", "2026-06")
+      ]
+    } as never);
+    const renderWithFundScope = (value: FundScopeNarrowingContextValue) => renderPage(
+      <FundScopeNarrowingProvider value={value}>
+        <CloseCalendarScreen data={data} />
+      </FundScopeNarrowingProvider>,
+      "/accounting/close-calendar"
+    );
+
+    it("lists only the chosen fund's close workflows and counts the ones with no recorded fund", async () => {
+      mockCalendar();
+      await renderWithFundScope({ structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Fund One" } });
+
+      const queue = screen.getByRole("list", { name: "Close workflow queue" });
+      expect(within(queue).getAllByRole("listitem")).toHaveLength(1);
+      expect(within(queue).getByText(/Close acct-1/)).toBeInTheDocument();
+      expect(screen.getByRole("status", { name: "Close calendar fund scope" })).toHaveTextContent(
+        "Narrowed to fund Fund One: showing 1 of 3 close workflows. 1 with no recorded fund not shown."
+      );
+    });
+
+    it("lists every close workflow, with an honest note, when the organization graph is unavailable", async () => {
+      mockCalendar();
+      await renderWithFundScope({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });
+
+      expect(within(screen.getByRole("list", { name: "Close workflow queue" })).getAllByRole("listitem")).toHaveLength(3);
+      expect(screen.getByRole("status", { name: "Close calendar fund scope" })).toHaveTextContent(
+        "Not narrowed by entity or fund: the organization structure could not be loaded, so all authorized close workflows are shown."
+      );
+    });
   });
 
   it("renders approval inbox rows with per-approval decision links", async () => {

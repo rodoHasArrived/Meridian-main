@@ -2,6 +2,8 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-li
 import userEvent from "@testing-library/user-event";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import {
   acknowledgeOperationsContinuityChecklistTask,
   approveOperationsContinuityWorkflow,
@@ -30,6 +32,8 @@ import type {
   PrivateCapitalCloseCockpit
 } from "@/types";
 import { requirePresent } from "@/test/fixtures";
+import { FundScopeNarrowingProvider, type FundScopeNarrowingContextValue } from "@/lib/operating-scope/fund-scope-context";
+import { collectScopeStructureOptions, UNAVAILABLE_SCOPE_STRUCTURE } from "@/lib/operating-scope/structure-options";
 import { sharedCloseDecision } from "./operations-continuity-screen.close-test-fixtures";
 
 vi.mock("@/lib/api", () => ({
@@ -1064,7 +1068,7 @@ describe("OperationsContinuityScreen", () => {
   it("renders workflow list, detail gates, blockers, timeline, and enabled next action", async () => {
     renderScreen();
 
-    expect(await screen.findByRole("heading", { name: "Operations continuity" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Period close workflows" })).toBeInTheDocument();
     const workflows = await screen.findByRole("treegrid", { name: "Operations continuity workflows" });
     expect(within(workflows).getByText("2026-05 close")).toBeInTheDocument();
     expect(workflows).not.toHaveTextContent(fundAccountId);
@@ -1086,7 +1090,7 @@ describe("OperationsContinuityScreen", () => {
     });
     const gates = screen.getByRole("table", { name: "Operations continuity gates" });
     const brokerIntakeGate = within(gates).getByRole("row", { name: "Broker intake gate, Passed, 0 blockers" });
-    expect(within(brokerIntakeGate).getByText("May 08, 14:20 UTC by Operations user")).toBeInTheDocument();
+    expect(within(brokerIntakeGate).getByText("May 8, 2026, 14:20 UTC by Operations user")).toBeInTheDocument();
     const completionIdentity = within(brokerIntakeGate).getByText("Completion identity").closest("details");
     expect(completionIdentity).not.toHaveAttribute("open");
     expect(within(completionIdentity as HTMLElement).getByText("Actor ID: ops-user")).toBeInTheDocument();
@@ -1109,12 +1113,12 @@ describe("OperationsContinuityScreen", () => {
     const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
     expect(within(breakCases).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(breakCases).getByText("fund-controller")).toBeInTheDocument();
-    expect(within(breakCases).getByText("Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(breakCases).getByText("Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(breakCases).getByText("Expected 125,000.25 / Actual 124,998.25 / Variance -2")).toBeInTheDocument();
     expect(within(breakCases).getByText("1 retained evidence link")).toBeInTheDocument();
     expect(within(breakCases).getByRole("link", { name: "Open retained evidence for break recon-break-42" }))
       .toHaveAttribute("href", "/accounting/reconciliation/recon-break-42/evidence");
-    expect(within(breakCases).getByText("SLA Warning due May 09, 16:00 UTC")).toBeInTheDocument();
+    expect(within(breakCases).getByText("SLA Warning due May 9, 2026, 16:00 UTC")).toBeInTheDocument();
     expect(within(breakCases).getByText("Materiality 2")).toBeInTheDocument();
     expect(within(breakCases).getByText("Root cause Broker Cash Timing")).toBeInTheDocument();
     expect(within(breakCases).getByText("Approval Ready For Signoff")).toBeInTheDocument();
@@ -1155,7 +1159,7 @@ describe("OperationsContinuityScreen", () => {
     const closeGovernance = screen.getByLabelText("Period close lock and reopen evidence");
     expect(within(closeGovernance).getByText("Period remains open")).toBeInTheDocument();
     expect(within(closeGovernance).getByText("No close audit event")).toBeInTheDocument();
-    expect(within(closeGovernance).getByText("No governed reopen recorded")).toBeInTheDocument();
+    expect(within(closeGovernance).getByText("No period reopen recorded")).toBeInTheDocument();
     const closePackage = screen.getByLabelText("Close package publication summary");
     expect(within(closePackage).getByText("close-package-2026-05")).toBeInTheDocument();
     expect(within(closePackage).getByRole("link", { name: "Open retained close package manifest" }))
@@ -1203,7 +1207,7 @@ describe("OperationsContinuityScreen", () => {
       .toHaveAttribute("href", "/accounting/operations-continuity");
     const commandSpine = screen.getByRole("table", { name: "Financial Operations command spine" });
     expect(within(commandSpine).getByText("Start/import/normalize activity")).toBeInTheDocument();
-    expect(within(commandSpine).getByText("Run reconciliation and refresh posture")).toBeInTheDocument();
+    expect(within(commandSpine).getByText("Run reconciliation and refresh status")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Assign, escalate, or resolve breaks")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Submit or decide approval")).toBeInTheDocument();
     expect(within(commandSpine).getByText("Open evidence package routes")).toBeInTheDocument();
@@ -1227,7 +1231,7 @@ describe("OperationsContinuityScreen", () => {
     const operatorQueue = screen.getByRole("table", { name: "Financial Operations operator queue" });
     expect(within(operatorQueue).getByText("recon-break-42")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("approval-close-2026-05")).toHaveLength(2);
-    expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 08, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("CashBalance / cash-balance-check; Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Reconciliation lane")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("MBS factor reconciliation")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("1 open break; MBS factor reconciliation has 1 open break requiring controller review.")).toBeInTheDocument();
@@ -1273,7 +1277,7 @@ describe("OperationsContinuityScreen", () => {
     expect(within(operatorQueue).getByText("Complete reopened incident remediation and close the period again with retained evidence.")).toBeInTheDocument();
     expect(within(operatorQueue).getAllByText("Command stage")).toHaveLength(4);
     expect(within(operatorQueue).getByText("Match Records")).toBeInTheDocument();
-    expect(within(operatorQueue).getByText("Run reconciliation and refresh posture; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
+    expect(within(operatorQueue).getByText("Run reconciliation and refresh status; Cash, position, trade, income, MBS factor, bank, and GL reconciliation lanes are tracked from the shared workflow detail.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Complete source-backed reconciliation lanes before approval.")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Close Support")).toBeInTheDocument();
     expect(within(operatorQueue).getByText("Review checklist and close readiness; Close checklist, period lock, and reopen evidence are governed by the shared workflow.")).toBeInTheDocument();
@@ -1314,7 +1318,7 @@ describe("OperationsContinuityScreen", () => {
     const workflowApprovalHistory = screen.getByRole("table", { name: "Operations continuity workflow approval history" });
     expect(within(workflowApprovalHistory).getByText("approval-close-2026-05")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Reviewer fund-controller / Operator ops-user")).toBeInTheDocument();
-    expect(within(workflowApprovalHistory).getByText("Submitted May 08, 15:05 UTC")).toBeInTheDocument();
+    expect(within(workflowApprovalHistory).getByText("Submitted May 8, 2026, 15:05 UTC")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Decision pending")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByText("Pending final ledger validation before close sign-off.")).toBeInTheDocument();
     expect(within(workflowApprovalHistory).getByRole("link", { name: "Open approval evidence for workflow approval approval-close-2026-05" }))
@@ -1758,7 +1762,7 @@ describe("OperationsContinuityScreen", () => {
     vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([repairedDetail]);
     vi.mocked(getOperationsContinuityWorkflow).mockReturnValueOnce(pendingDetail).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(repairedDecision);
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(getOperationsContinuityWorkflow).toHaveBeenCalledTimes(2));
     expect(screen.queryByRole("button", { name: "Publish close package for 2026-05" })).not.toBeInTheDocument();
 
@@ -1801,7 +1805,7 @@ describe("OperationsContinuityScreen", () => {
 
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedDetail));
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     const repairedPublish = await screen.findByRole("button", { name: "Publish close package for 2026-05" });
     await waitFor(() => expect(repairedPublish).toBeEnabled());
     await user.click(repairedPublish);
@@ -1853,7 +1857,7 @@ describe("OperationsContinuityScreen", () => {
     repairedProjection.approvals.at(-1)!.decidedAtUtc = "2026-05-10T10:45:00.0000001-07:00";
     vi.mocked(getOperationsContinuityWorkflow).mockResolvedValue(repairedDetail);
     vi.mocked(getFinancialOperationsCommandCenter).mockResolvedValue(sharedCloseDecision(repairedProjection));
-    await user.click(screen.getByRole("button", { name: "Refresh operations continuity workflows" }));
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
     await waitFor(() => expect(screen.getByRole("button", { name: "Publish close package for 2026-05" })).toBeEnabled());
     await user.click(screen.getByRole("button", { name: "Publish close package for 2026-05" }));
     await waitFor(() => expect(closeOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.objectContaining({
@@ -1882,17 +1886,18 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    const reopen = await screen.findByRole("button", { name: "Reopen governed period for 2026-05" });
-    fireEvent.change(await screen.findByLabelText("Incident id"), {
+    const reopenForm = screen.getByRole("form", { name: "Period reopen command" });
+    const reopen = await within(reopenForm).findByRole("button", { name: "Reopen period for 2026-05" });
+    fireEvent.change(within(reopenForm).getByLabelText("Incident id"), {
       target: { value: "incident-2026-05-close-restatement" }
     });
-    fireEvent.change(screen.getByLabelText("Approval reference"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Approval reference"), {
       target: { value: "admin-approval-42" }
     });
-    fireEvent.change(screen.getByLabelText("Justification"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Justification"), {
       target: { value: "Controller approved restatement remediation." }
     });
-    fireEvent.change(screen.getByLabelText("Impact summary"), {
+    fireEvent.change(within(reopenForm).getByLabelText("Impact summary"), {
       target: { value: "Ledger and report package will be regenerated with retained evidence." }
     });
     await user.click(reopen);
@@ -1957,7 +1962,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Assign break recon-break-42 to browser operator" }));
+    const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
+    await user.click(await within(breakCases).findByRole("button", { name: "Assign break recon-break-42 to browser operator" }));
 
     await waitFor(() => {
       expect(assignOperationsContinuityBreakCase).toHaveBeenCalledWith(
@@ -1985,7 +1991,8 @@ describe("OperationsContinuityScreen", () => {
     const user = userEvent.setup();
     renderScreen();
 
-    await user.click(await screen.findByRole("button", { name: "Resolve break recon-break-42" }));
+    const breakCases = screen.getByRole("table", { name: "Operations continuity break assignment and escalation" });
+    await user.click(await within(breakCases).findByRole("button", { name: "Resolve break recon-break-42" }));
 
     const alert = await screen.findByRole("alert");
     expect(within(alert).getByText("Break version conflict.")).toBeInTheDocument();
@@ -2125,16 +2132,122 @@ describe("OperationsContinuityScreen", () => {
   });
 });
 
+describe("OperationsContinuityScreen fund narrowing", () => {
+  const structure = collectScopeStructureOptions({
+    entities: [{ entityId: "E-A", name: "Entity A" }],
+    funds: [{ fundId: "F-1", name: "Fund One", entityIds: ["E-A"] }, { fundId: "F-2", name: "Fund Two", entityIds: ["E-A"] }],
+    accounts: [
+      { accountId: fundAccountId, displayName: "Fund one brokerage", fundId: "F-1", entityId: "E-A" },
+      { accountId: "acct-2", displayName: "Fund two brokerage", fundId: "F-2", entityId: "E-A" }
+    ]
+  });
+  const otherFund = { ...summary, workflowId: "wf-fund-two", fundAccountId: "acct-2", periodId: "2026-04", updatedAtUtc: "2026-05-08T13:00:00Z" };
+  const unfiled = { ...summary, workflowId: "wf-unfiled", fundAccountId: "acct-unfiled", periodId: "2026-03", updatedAtUtc: "2026-05-08T12:00:00Z" };
+  const renderWithFundScope = (value: FundScopeNarrowingContextValue, entry = "/accounting/operations-continuity") => render(
+    <MemoryRouter initialEntries={[entry]}>
+      <FundScopeNarrowingProvider value={value}>
+        <Routes>
+          <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+        </Routes>
+      </FundScopeNarrowingProvider>
+    </MemoryRouter>
+  );
+
+  it("lists only the chosen fund's workflows, recounts them and counts the ones with no recorded fund", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
+    renderWithFundScope({ structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Fund One" } });
+
+    const note = await screen.findByRole("status", { name: "Operations continuity fund scope" });
+    expect(note).toHaveTextContent("Narrowed to fund Fund One: showing 1 of 3 close workflows. 1 with no recorded fund not shown.");
+    expect(note).toHaveAttribute("data-narrowing", "applied");
+    const table = screen.getByRole("treegrid", { name: "Operations continuity workflows" });
+    expect(within(table).getByRole("row", { name: /2026-05 operations continuity workflow/i })).toBeInTheDocument();
+    expect(within(table).queryByRole("row", { name: /2026-04 operations continuity workflow/i })).not.toBeInTheDocument();
+    expect(within(table).queryByRole("row", { name: /2026-03 operations continuity workflow/i })).not.toBeInTheDocument();
+    expect(screen.getByText("1 workflow")).toBeInTheDocument();
+    await waitFor(() => expect(getOperationsContinuityWorkflow).toHaveBeenCalledWith(workflowId, expect.anything()));
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalledWith(otherFund.workflowId, expect.anything());
+  });
+
+  it("reports a requested workflow the fund scope narrowed out instead of opening another", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
+    renderWithFundScope(
+      { structure, loading: false, entityId: null, fundId: "F-1", names: { fundId: "Fund One" } },
+      `/accounting/operations-continuity?workflowId=${otherFund.workflowId}`
+    );
+
+    const alert = await screen.findByRole("alert");
+    expect(alert).toHaveTextContent(`Workflow ${otherFund.workflowId} is outside the chosen fund or entity.`);
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+    expect(screen.queryByText("2026-05 close workflow")).not.toBeInTheDocument();
+  });
+
+  it("makes no unscoped close-calendar or cockpit read when the chosen fund keeps no workflow", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, unfiled]);
+    renderWithFundScope({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } });
+
+    const note = await screen.findByRole("status", { name: "Operations continuity fund scope" });
+    expect(note).toHaveTextContent("Narrowed to fund Fund Two: showing 0 of 2 close workflows.");
+    await waitFor(() => expect(screen.getByText("0 workflows")).toBeInTheDocument());
+    expect(getOperationsCloseCalendar).not.toHaveBeenCalled();
+    expect(getPrivateCapitalCloseCockpit).not.toHaveBeenCalled();
+    expect(getOperationsContinuityWorkflow).not.toHaveBeenCalled();
+  });
+
+  it("clears close panels loaded for a requested workflow once a fund change puts it out of scope", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund]);
+    const entry = `/accounting/operations-continuity?workflowId=${workflowId}`;
+    const tree = (value: FundScopeNarrowingContextValue) => (
+      <MemoryRouter initialEntries={[entry]}>
+        <FundScopeNarrowingProvider value={value}>
+          <Routes>
+            <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+          </Routes>
+        </FundScopeNarrowingProvider>
+      </MemoryRouter>
+    );
+    const { rerender } = render(tree({ structure, loading: false, entityId: null, fundId: null, names: {} }));
+
+    const calendar = await screen.findByRole("table", { name: "Operations continuity close calendar" });
+    await waitFor(() => expect(within(calendar).getByText(`2026-05 / ${fundAccountId}`)).toBeInTheDocument());
+
+    rerender(tree({ structure, loading: false, entityId: null, fundId: "F-2", names: { fundId: "Fund Two" } }));
+
+    expect(await screen.findByRole("alert")).toHaveTextContent(`Workflow ${workflowId} is outside the chosen fund or entity.`);
+    await waitFor(() => expect(screen.queryByText(`2026-05 / ${fundAccountId}`)).not.toBeInTheDocument());
+  });
+
+  it("lists every workflow, with an honest note, when the organization graph is unavailable", async () => {
+    vi.mocked(getOperationsContinuityWorkflows).mockResolvedValue([summary, otherFund, unfiled]);
+    renderWithFundScope({ structure: UNAVAILABLE_SCOPE_STRUCTURE, loading: false, entityId: null, fundId: "F-1", names: { fundId: "F-1" } });
+
+    const note = await screen.findByRole("status", { name: "Operations continuity fund scope" });
+    expect(note).toHaveTextContent(
+      "Not narrowed by entity or fund: the organization structure could not be loaded, so all authorized close workflows are shown."
+    );
+    const table = screen.getByRole("treegrid", { name: "Operations continuity workflows" });
+    expect(within(table).getByRole("row", { name: /2026-03 operations continuity workflow/i })).toBeInTheDocument();
+    expect(within(table).getByRole("row", { name: /2026-04 operations continuity workflow/i })).toBeInTheDocument();
+    expect(screen.getByText("3 workflows")).toBeInTheDocument();
+  });
+});
+
 function renderScreen(initialEntry?: string) {
   const scope = sharedCloseDecision(detail).closeReadiness!.scope;
   const query = new URLSearchParams(Object.entries(scope).map(([key, value]) => [key, value ?? ""]));
   return render(
     <MemoryRouter initialEntries={[initialEntry ?? `/accounting/operations-continuity?${query.toString()}`]}>
       <Routes>
-        <Route path="/accounting/operations-continuity" element={<OperationsContinuityScreen />} />
+        <Route path="/accounting/operations-continuity" element={<WithHeaderRefresh><OperationsContinuityScreen /></WithHeaderRefresh>} />
       </Routes>
     </MemoryRouter>
   );
+}
+
+/** Stands in for the shell: the header Refresh is the only control that reloads the workflow list. */
+function WithHeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence((value) => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
 }
 
 function createApprovalDecisionReadyDetail(reportPackEvidence: OperationsEvidenceLink): OperationsContinuityWorkflow {

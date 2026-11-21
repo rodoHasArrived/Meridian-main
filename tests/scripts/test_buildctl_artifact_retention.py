@@ -27,7 +27,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
         cls.buildctl = load_buildctl()
 
     def test_prunes_old_isolated_build_artifacts(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             old_bin = self._create_artifact(repo_root, "artifacts/bin/old-run", age_days=20)
             old_obj = self._create_artifact(repo_root, "artifacts/obj/old-run", age_days=20)
@@ -47,7 +47,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertTrue(recent_bin.exists())
 
     def test_retains_active_isolation_key_even_when_stale(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             active_bin = self._create_artifact(repo_root, "artifacts/bin/current-run", age_days=45)
             old_obj = self._create_artifact(repo_root, "artifacts/obj/old-run", age_days=45)
@@ -64,7 +64,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertFalse(old_obj.exists())
 
     def test_prunes_recent_artifacts_beyond_retained_latest(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             oldest_bin = self._create_artifact(repo_root, "artifacts/bin/run-1", age_days=3)
             retained_bin = self._create_artifact(repo_root, "artifacts/bin/run-2", age_days=2)
@@ -85,7 +85,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertTrue(newest_bin.exists())
 
     def test_prunes_oldest_artifacts_when_root_size_cap_is_exceeded(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             oldest_bin = self._create_artifact(
                 repo_root,
@@ -122,7 +122,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertTrue(newest_bin.exists())
 
     def test_size_cap_preserves_active_isolation_key(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             old_bin = self._create_artifact(
                 repo_root,
@@ -151,7 +151,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertTrue(active_bin.exists())
 
     def test_non_positive_retention_disables_pruning(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir)
             old_bin = self._create_artifact(repo_root, "artifacts/bin/old-run", age_days=45)
 
@@ -169,7 +169,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
             self.assertTrue(old_bin.exists())
 
     def test_persistent_profiles_are_excluded_from_all_retention_budgets(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             for kind in ("bin", "obj"):
                 self._create_artifact(root, f"artifacts/{kind}/profile-persistent", age_days=45, size_bytes=2 * 1024 * 1024)
@@ -185,7 +185,7 @@ class IsolatedBuildArtifactRetentionTests(unittest.TestCase):
                 self.assertTrue((root / f"artifacts/{kind}/new-run").exists())
 
     def test_skips_artifact_root_symlink_target(self) -> None:
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             repo_root = Path(temp_dir) / "repo"
             external_root = Path(temp_dir) / "external-bin"
             repo_root.mkdir()

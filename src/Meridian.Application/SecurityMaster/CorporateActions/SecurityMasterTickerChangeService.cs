@@ -27,13 +27,18 @@ public sealed class SecurityMasterTickerChangeService
 {
     private readonly ContractSecurityMasterQueryService _queryService;
     private readonly ISecurityMasterService _commandService;
+    private readonly ISecurityMasterAmender? _systemAmender;
     private readonly ILogger<SecurityMasterTickerChangeService> _logger;
 
     public SecurityMasterTickerChangeService(
         ContractSecurityMasterQueryService queryService,
         ISecurityMasterService commandService,
-        ILogger<SecurityMasterTickerChangeService> logger)
+        ILogger<SecurityMasterTickerChangeService> logger,
+        ISecurityMasterAmender? systemAmender = null)
     {
+        // A ticker change is symbology maintenance, not a term correction, so it amends through the
+        // system-ingest path the governed-amendment setting does not block.
+        _systemAmender = systemAmender ?? commandService as ISecurityMasterAmender;
         _queryService = queryService ?? throw new ArgumentNullException(nameof(queryService));
         _commandService = commandService ?? throw new ArgumentNullException(nameof(commandService));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
@@ -69,20 +74,21 @@ public sealed class SecurityMasterTickerChangeService
             NormalizedProvider = null
         };
 
-        var amended = await _commandService.AmendTermsAsync(
-                new AmendSecurityTermsRequest(
-                    SecurityId: request.SecurityId,
-                    ExpectedVersion: detail.Version,
-                    CommonTerms: null,
-                    AssetSpecificTermsPatch: null,
-                    IdentifiersToAdd: [newIdentifier],
-                    IdentifiersToExpire: [oldIdentifier with { ValidTo = request.EffectiveAtUtc }],
-                    EffectiveFrom: request.EffectiveAtUtc,
-                    SourceSystem: request.SourceSystem,
-                    UpdatedBy: request.UpdatedBy,
-                    SourceRecordId: null,
-                    Reason: request.Reason ?? $"Ticker change {request.OldTicker.Trim().ToUpperInvariant()} → {request.NewTicker.Trim().ToUpperInvariant()}."),
-                ct)
+        var amendRequest = new AmendSecurityTermsRequest(
+            SecurityId: request.SecurityId,
+            ExpectedVersion: detail.Version,
+            CommonTerms: null,
+            AssetSpecificTermsPatch: null,
+            IdentifiersToAdd: [newIdentifier],
+            IdentifiersToExpire: [oldIdentifier with { ValidTo = request.EffectiveAtUtc }],
+            EffectiveFrom: request.EffectiveAtUtc,
+            SourceSystem: request.SourceSystem,
+            UpdatedBy: request.UpdatedBy,
+            SourceRecordId: null,
+            Reason: request.Reason ?? $"Ticker change {request.OldTicker.Trim().ToUpperInvariant()} → {request.NewTicker.Trim().ToUpperInvariant()}.");
+        var amended = await (_systemAmender is { } systemAmender
+                ? systemAmender.AmendTermsAsync(amendRequest, ct)
+                : _commandService.AmendTermsAsync(amendRequest, ct))
             .ConfigureAwait(false);
 
         _logger.LogInformation(

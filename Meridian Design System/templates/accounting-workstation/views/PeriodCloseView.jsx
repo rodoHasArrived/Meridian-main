@@ -2,15 +2,17 @@
 // Lock is enabled only when reconciliation is clear and the FX reval is posted; locking
 // makes the whole workstation read-only (Reopen reverses it).
 function AcctPeriodCloseView(props) {
-  const { GateRail, ValidationIssueList, ReadinessPanel, PanelSurface, Eyebrow, Button, KeyValueGrid } =
-    window.MeridianDesignSystem_4f61be;
+  const { GateRail, ValidationIssueList, ReadinessPanel, PanelSurface, Eyebrow, Button, KeyValueGrid, Assurance } =
+    window.MeridianDesignSystem_205d17;
   const gates = props.gates || [];
   const passed = gates.filter((g) => g.status === "Passed").length;
+  const showMatrix = !!(Assurance && props.asrAccounts && props.asrAccounts.length);
 
   return (
     <section data-screen-label="Period close" style={{ display: "flex", flexDirection: "column", gap: 14 }}>
       <div style={{ display: "flex", alignItems: "baseline", gap: 10, flexWrap: "wrap" }}>
         <Eyebrow>Period close · 2026-Q2</Eyebrow>
+        {props.scopeLine && <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-primary)" }}>{props.scopeLine}</span>}
         <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>
           Every gate must pass before the period can lock
         </span>
@@ -44,7 +46,7 @@ function AcctPeriodCloseView(props) {
           state={props.locked ? "Passed" : props.canLock ? "Ready" : "ReviewRequired"}
           statusLabel={props.locked ? "Locked" : undefined}
           score={passed + " / " + gates.length + " gates"}
-          title="Fiscal period 2026-Q2"
+          title={props.entityLabel || "Fiscal period 2026-Q2"}
           detail={props.locked
             ? "Books are read-only. Reopening requires controller authorization."
             : props.canLock
@@ -61,15 +63,25 @@ function AcctPeriodCloseView(props) {
             </Button>
           )}
         >
-          <KeyValueGrid columns={2} items={[
+          <KeyValueGrid columns={2} detail={props.detail || "full"} onReveal={props.onReveal} items={[
             { label: "Basis", value: "USD · accrual" },
             { label: "Postings", value: (props.postings || 0) + " lines" },
-            { label: "Opened", value: "2026-04-01" },
-            { label: "Locked", value: props.lockedAt || "—" },
+            { label: "Opened", value: "2026-04-01", tier: "full" },
+            { label: "Locked", value: props.lockedAt || "—", tier: "full" },
           ]} />
           </ReadinessPanel>
         </div>
       </div>
+
+      {showMatrix && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          <div style={{ display: "flex", alignItems: "baseline", gap: 10 }}>
+            <Eyebrow>Certification</Eyebrow>
+            <span style={{ fontFamily: "var(--font-data)", fontSize: 11, color: "var(--text-muted)" }}>accounts × stages · the lock reads material coverage, not task completion · click a row to sign from its Account Sheet</span>
+          </div>
+          <Assurance.Matrix accounts={props.asrAccounts} records={props.assurance || {}} balances={props.balances || {}} currency="USD" onOpenAccount={props.onOpenAccount} />
+        </div>
+      )}
     </section>
   );
 }

@@ -422,6 +422,8 @@ export function buildCloseSetupTaskOptions(
       statusTone: closeTaskStatusTone(task.status),
       ownerLabel: task.owner || "Unassigned",
       dueDateLabel: formatDateOnly(task.dueDate),
+      dueDate: task.dueDate ?? null,
+      dueDone: closeTaskStatusTone(task.status) === "success",
       dependencyLabel: task.dependencies.length > 0
         ? `${formatCount(task.dependencies.length, "dependency")}: ${task.dependencies.map((dependency) => dependency.dependsOnTaskId).join(", ")}`
         : "No dependencies",
@@ -455,6 +457,8 @@ export function buildCloseSetupDependencyOptions(
         statusTone: closeTaskStatusTone(task.status),
         ownerLabel: task.owner || "Unassigned",
         dueDateLabel: formatDateOnly(task.dueDate),
+      dueDate: task.dueDate ?? null,
+      dueDone: closeTaskStatusTone(task.status) === "success",
         checked,
         toggleAriaLabel: `${checked ? "Remove" : "Add"} ${task.displayName} as a dependency`
       };
@@ -608,6 +612,8 @@ export function buildClosePlanTaskRow(task: CloseTask): AccountingClosePlanTaskR
     displayName: task.displayName,
     ownerLabel: task.owner || "Unassigned",
     dueDateLabel: formatDateOnly(task.dueDate),
+      dueDate: task.dueDate ?? null,
+      dueDone: closeTaskStatusTone(task.status) === "success",
     statusLabel: formatCloseTaskStatus(task.status),
     statusTone: closeTaskStatusTone(task.status),
     dependencyLabel: task.dependencies.length > 0

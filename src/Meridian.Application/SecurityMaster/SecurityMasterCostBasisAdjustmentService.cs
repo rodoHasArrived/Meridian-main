@@ -69,7 +69,7 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
         ArgumentNullException.ThrowIfNull(openLots);
 
         var adjustments = new List<LedgerTaxLotBasisAdjustment>();
-        AddCorporateActionAdjustments(adjustments, await GetEffectiveActionsAsync(securityId, asOf, ct).ConfigureAwait(false), securityId, asOf);
+        AddCorporateActionAdjustments(adjustments, await GetEffectiveActionsAsync(securityId, asOf, ct).ConfigureAwait(false), openLots, securityId, asOf);
 
         var security = await _queryService.GetByIdAsync(securityId, ct).ConfigureAwait(false);
         if (security is not null)
@@ -133,6 +133,7 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
     private void AddCorporateActionAdjustments(
         List<LedgerTaxLotBasisAdjustment> adjustments,
         IReadOnlyList<CorporateActionDto> effectiveActions,
+        IReadOnlyList<LedgerTaxLot> openLots,
         Guid securityId,
         DateOnly asOf)
     {
@@ -141,23 +142,65 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             if (action.ExDate > asOf)
                 continue;
 
-            var canonical = CorporateActionEventTypes.Normalize(action.EventType);
             var reference = $"corp-action:{action.CorpActId:D}";
 
-            if (canonical is CorporateActionEventTypes.StockSplit or CorporateActionEventTypes.ReverseStockSplit
-                && action.SplitRatio is { } ratio && ratio > 0m)
+            // Read through the typed corporate-action terms: a return of capital whose per-unit
+            // amount is recorded only in its payload relieves basis like one recorded in the column.
+            var terms = CorporateActionTerms.From(action);
+            if (terms is SplitCorporateActionTerms { Ratio: { } ratio } && ratio > 0m)
             {
                 adjustments.Add(new LedgerTaxLotBasisAdjustment(
                     LedgerTaxLotBasisAdjustmentKind.Split, ratio, action.ExDate, securityId, LotId: null, reference).EnsureValid());
             }
-            else if (canonical == CorporateActionEventTypes.ReturnOfCapital
-                && action.DividendPerShare is { } perShare && perShare > 0m)
+            else if (terms is CashDistributionCorporateActionTerms { EventType: CorporateActionEventTypes.ReturnOfCapital, PositiveAmountPerUnit: { } perShare })
             {
-                adjustments.Add(new LedgerTaxLotBasisAdjustment(
-                    LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perShare, action.ExDate, securityId, LotId: null, reference).EnsureValid());
+                AddReturnOfCapitalAdjustments(adjustments, perShare, action, openLots, securityId, reference);
             }
         }
     }
+
+    /// <summary>
+    /// A per-unit return of capital relieves basis only on lots counted in shares or fund units: a
+    /// commitment, face, notional or contract lot has no per-unit reading of the distribution, so
+    /// those lots are left unadjusted and reported rather than having their basis silently reduced.
+    /// </summary>
+    private void AddReturnOfCapitalAdjustments(
+        List<LedgerTaxLotBasisAdjustment> adjustments,
+        decimal perUnit,
+        CorporateActionDto action,
+        IReadOnlyList<LedgerTaxLot> openLots,
+        Guid securityId,
+        string reference)
+    {
+        var securityLots = openLots
+            .Where(lot => lot.SecurityId is null || lot.SecurityId == securityId)
+            .ToArray();
+        var incompatible = securityLots
+            .Where(static lot => !IsUnitCounted(lot))
+            .ToArray();
+        if (incompatible.Length == 0)
+        {
+            adjustments.Add(new LedgerTaxLotBasisAdjustment(
+                LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perUnit, action.ExDate, securityId, LotId: null, reference).EnsureValid());
+            return;
+        }
+
+        foreach (var lot in securityLots.Where(IsUnitCounted))
+        {
+            adjustments.Add(new LedgerTaxLotBasisAdjustment(
+                LedgerTaxLotBasisAdjustmentKind.ReturnOfCapital, perUnit, action.ExDate, securityId, lot.LotId, reference).EnsureValid());
+        }
+
+        _logger.LogWarning(
+            "Return of capital {CorporateActionId} for {SecurityId} left {LotCount} lot(s) unadjusted: lots measured in {UnitKinds} have no per-unit reading of the distribution.",
+            action.CorpActId,
+            securityId,
+            incompatible.Length,
+            string.Join(", ", incompatible.Select(static lot => lot.UnitKind).Distinct()));
+    }
+
+    private static bool IsUnitCounted(LedgerTaxLot lot)
+        => lot.UnitKind is SecurityLotUnitKind.Shares or SecurityLotUnitKind.Units;
 
     private void AddFactorAdjustment(
         List<LedgerTaxLotBasisAdjustment> adjustments,
@@ -207,10 +250,9 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
         var convention = DayCountConventions.Parse(terms.DayCountConvention);
 
-        // Fixed-income lots are recorded as a price per 100 of par (bond quotation convention);
-        // premium/discount amortizes straight-line toward par, weighted by the day-count year
-        // fraction from acquisition to the sale/as-of date.
-        const decimal parPrice = 100m;
+        // Relief unit cost is money per recorded quantity, not a market quote. The lot's shared
+        // quantity states how much face one recorded unit carries, whether one or one hundred.
+        // Amortization moves that monetary unit cost toward the face per recorded unit.
         var amortizeTo = asOf < maturity ? asOf : maturity;
 
         foreach (var lot in openLots)
@@ -219,10 +261,14 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
             // unlinked lots (no SecurityId) relieve at their recorded basis.
             if (lot.SecurityId != securityId)
                 continue;
+            if (lot.UnitKind != SecurityLotUnitKind.FaceValue)
+                throw new InvalidOperationException(
+                    $"Lot '{lot.LotId}' is measured in {lot.UnitKind}; par amortization requires a face-value lot.");
             if (lot.AcquiredDate >= amortizeTo || lot.AcquiredDate >= maturity)
                 continue;
 
-            var premiumOrDiscount = lot.UnitCost - parPrice;
+            var parPerUnit = LotQuantity.Of(lot).EconomicUnits / lot.Quantity;
+            var premiumOrDiscount = lot.UnitCost - parPerUnit;
             if (premiumOrDiscount == 0m)
                 continue;
 
@@ -239,7 +285,9 @@ public sealed class SecurityMasterCostBasisAdjustmentService : ISecurityMasterCo
 
             // Signed per-unit delta that moves basis toward par: premium (unit cost > par) yields a
             // negative delta (write-down); discount (unit cost < par) yields a positive delta.
-            var delta = decimal.Round((parPrice - lot.UnitCost) * fraction, 10, MidpointRounding.AwayFromZero);
+            // Keep decimal precision until monetary relief is rounded. Rounding a per-face delta
+            // here loses cents on large holdings and depends on the lot's chosen quantity unit.
+            var delta = (parPerUnit - lot.UnitCost) * fraction;
             if (delta == 0m)
                 continue;
 

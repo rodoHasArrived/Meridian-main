@@ -20,7 +20,7 @@ const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[
     render: (row) => (
       <span className="block min-w-0">
         <span className="block font-semibold text-foreground">{row.lotId}</span>
-        <span className="mt-1 block break-all font-mono text-[11px] text-muted-foreground">{row.runId}</span>
+        <span className="mt-1 block break-all font-mono text-xs text-muted-foreground">{row.runId}</span>
       </span>
     )
   },
@@ -165,7 +165,7 @@ export function ReferenceDataWorkbenchPanel({
                     fields={view.selectedDetail.fields.map((field) => ({ label: field.label, value: field.value }))}
                   />
                   {view.selectedDetail.responsePreview ? (
-                    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-[11px] leading-5 text-muted-foreground">
+                    <pre className="max-h-72 overflow-auto rounded-md border border-border bg-muted/40 p-3 font-mono text-xs leading-5 text-muted-foreground">
                       {view.selectedDetail.responsePreview}
                     </pre>
                   ) : null}
@@ -184,7 +184,7 @@ export function ReferenceDataWorkbenchPanel({
                 </div>
               ) : (
                 <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                  <div className="eyebrow-label">Reference data detail</div>
+                  <div className="eyebrow-label eyebrow-label--sentence">Reference data detail</div>
                   <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                 </div>
@@ -269,7 +269,7 @@ export function SecurityOpenLotReadModelPanel({
                   />
                 ) : (
                   <div role="region" aria-label={view.detailEmptyAriaLabel}>
-                    <div className="eyebrow-label">Open lot detail</div>
+                    <div className="eyebrow-label eyebrow-label--sentence">Open lot detail</div>
                     <h3 className="mt-2 text-sm font-semibold text-foreground">{view.detailEmptyTitle}</h3>
                     <p className="mt-2 text-sm leading-6 text-muted-foreground">{view.detailEmptyText}</p>
                   </div>
@@ -356,7 +356,7 @@ export function InstrumentPassportPanel({ view }: { view: InstrumentPassportView
                         <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
                       </div>
                       <p className="mt-2 text-xs leading-5 text-muted-foreground">{item.summary}</p>
-                      <div className="mt-2 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
+                      <div className="mt-2 flex flex-wrap gap-2 font-mono text-xs text-muted-foreground">
                         <span>{item.evidenceLabel}</span>
                         <span>{item.blockerLabel}</span>
                       </div>
@@ -393,17 +393,17 @@ export function InstrumentPassportPanel({ view }: { view: InstrumentPassportView
                                 <span className="text-xs font-semibold text-foreground">{item.label}</span>
                                 <Badge variant={item.statusBadgeVariant}>{item.statusLabel}</Badge>
                               </div>
-                              <div className="mt-1 break-words font-mono text-[11px] text-muted-foreground">{item.value}</div>
+                              <div className="mt-1 break-words font-mono text-xs text-muted-foreground">{item.value}</div>
                             </div>
                             <div className="min-w-0">
                               <p className="text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                              <div className="mt-1 flex flex-wrap gap-2 font-mono text-[11px] text-muted-foreground">
+                              <div className="mt-1 flex flex-wrap gap-2 font-mono text-xs text-muted-foreground">
                                 <span>{item.evidenceLabel}</span>
                                 <span>{item.blockerLabel}</span>
                               </div>
                               {item.route ? (
                                 <Button asChild variant="ghost" size="sm" className="mt-2 h-7 px-2 text-xs">
-                                  <Link to={item.route} aria-label={`Follow handoff action ${item.label}`}>
+                                  <Link to={item.route} aria-label={`Follow next-step action ${item.label}`}>
                                     Follow
                                   </Link>
                                 </Button>

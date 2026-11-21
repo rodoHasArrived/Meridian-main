@@ -1,4 +1,5 @@
 <Page x:Class="Meridian.Wpf.Views.OperatorReadinessConsolePage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
@@ -87,13 +88,6 @@
                                 VerticalAlignment="Center"
                                 AutomationProperties.AutomationId="OperatorReadinessConsoleActionPosture">
                         <WrapPanel HorizontalAlignment="Right">
-                            <Button Content="Refresh"
-                                    Command="{Binding RefreshCommand}"
-                                    ToolTip="Reload readiness, inbox, reconciliation, and run sources."
-                                    ToolTipService.ShowOnDisabled="True"
-                                    Style="{StaticResource PrimaryButtonStyle}"
-                                    AutomationProperties.AutomationId="OperatorReadinessConsoleRefreshButton"
-                                    Margin="0,0,8,8" />
                             <Button Content="Open trading"
                                     Command="{Binding OpenPageCommand}"
                                     CommandParameter="TradingShell"

@@ -7,3 +7,5 @@ Hover/focus tooltip for terse supplementary text — a full timestamp behind a r
 ```
 
 Keep `content` to a phrase — it's a hint, not a panel. For rich or interactive content use `Popover`; for an action menu use `ContextMenu`.
+
+A single focusable child receives the tooltip's `aria-describedby` while preserving existing descriptions. Set `focusable` for a nonfocusable text/icon trigger so the wrapper becomes the keyboard stop. Delay timers are cancelled on unmount; Escape dismisses the visible tooltip.

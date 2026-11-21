@@ -18,8 +18,18 @@ let positionLimit (ctx: RiskContext) : RiskDecision =
             | OrderSide.Buy -> ctx.Request.Quantity
             | _ -> -ctx.Request.Quantity
 
-        let projectedQuantity = ctx.CurrentPositionQuantity + signedQuantity
-        if abs projectedQuantity > maxPositionSize then
+        let currentQuantity = ctx.CurrentPositionQuantity
+        let projectedQuantity = currentQuantity + signedQuantity
+
+        // A position already over the cap (after a limit was tightened, or a fill outside this
+        // gate) must still be unwindable in steps. An order that shrinks the position on the
+        // same side of zero, or flattens it, is always allowed. One that crosses through zero
+        // still has to land inside the limit, so it cannot open an oversized opposite position.
+        let strictlyReducesSameSide =
+            abs projectedQuantity < abs currentQuantity
+            && (projectedQuantity = 0m || sign projectedQuantity = sign currentQuantity)
+
+        if abs projectedQuantity > maxPositionSize && not strictlyReducesSameSide then
             Reject $"Position limit exceeded: projected {projectedQuantity} > max {maxPositionSize} for {ctx.Request.Symbol}"
         else
             Approve
@@ -32,7 +42,13 @@ let drawdownCircuitBreaker (ctx: RiskContext) : RiskDecision =
             Reject (sprintf "Drawdown circuit breaker: %.2f%% drawdown exceeds %.2f%% threshold" (float drawdownPercent) (float maxDrawdownPercent))
         else
             Approve
-    | _ -> Approve
+    // No threshold configured: the breaker is switched off on purpose.
+    | _, _, None -> Approve
+    // A threshold is configured but the drawdown cannot be measured (no portfolio value, or a
+    // missing or non-positive initial capital). Approving here would switch the breaker off
+    // silently through a misconfiguration, so fail closed and say why.
+    | _ ->
+        Reject "Drawdown circuit breaker cannot be evaluated: a drawdown threshold is configured but portfolio value or a positive initial capital is missing."
 
 /// Projected gross exposure of the order's symbol after the order executes.
 /// Direction-aware: the current contribution-level gross is preserved and only the net
@@ -54,12 +70,17 @@ let projectedSymbolAbsoluteExposure (ctx: RiskContext) : decimal =
 /// be able to unwind incrementally rather than being locked out (and, at Critical
 /// severity, tripping the breaker on its own de-risking attempts).
 /// Missing exposure data or an unconfigured ceiling approves.
-let grossExposureLimit (ctx: RiskContext) : RiskDecision =
-    match ctx.PortfolioExposure, ctx.MaxGrossExposure with
-    | Some grossExposure, Some maxGrossExposure when maxGrossExposure > 0m ->
+/// The book's gross exposure after this order: the symbol's current absolute exposure is
+/// replaced by its projected one. None when the portfolio exposure is not measured.
+let projectedGrossExposure (ctx: RiskContext) : decimal option =
+    ctx.PortfolioExposure
+    |> Option.map (fun grossExposure ->
         let currentSymbolAbs = ctx.SymbolExposure |> Option.defaultValue 0m
-        let projectedSymbolAbs = projectedSymbolAbsoluteExposure ctx
-        let projected = max 0m (grossExposure - currentSymbolAbs + projectedSymbolAbs)
+        max 0m (grossExposure - currentSymbolAbs + projectedSymbolAbsoluteExposure ctx))
+
+let grossExposureLimit (ctx: RiskContext) : RiskDecision =
+    match ctx.PortfolioExposure, projectedGrossExposure ctx, ctx.MaxGrossExposure with
+    | Some grossExposure, Some projected, Some maxGrossExposure when maxGrossExposure > 0m ->
         if projected > maxGrossExposure && projected >= grossExposure then
             Reject (sprintf "Gross exposure limit: projected %.2f exceeds %.2f ceiling" (float projected) (float maxGrossExposure))
         else

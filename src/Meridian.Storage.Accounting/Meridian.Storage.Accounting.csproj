@@ -1,0 +1,51 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- PostgreSQL business adapters compose Storage primitives with ledger/reporting contracts.
+       Linked sources preserve existing paths and namespaces during the boundary extraction. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Meridian.Storage</RootNamespace>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="../Meridian.Storage/Meridian.Storage.csproj" />
+    <ProjectReference Include="../Meridian.Ledger/Meridian.Ledger.csproj" />
+    <ProjectReference Include="../Meridian.Reporting/Meridian.Reporting.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql" />
+    <PackageReference Include="Serilog" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="Meridian.Tests" />
+    <InternalsVisibleTo Include="Meridian.Storage.Tests" />
+    <InternalsVisibleTo Include="Meridian.Execution.Tests" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="../Meridian.Storage/AssetOperations/**/*.cs" Link="AssetOperations/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/AssetOperations/Migrations/*.sql" Link="AssetOperations/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/Banking/**/*.cs" Link="Banking/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/Banking/Migrations/*.sql" Link="Banking/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/DirectLending/**/*.cs" Link="DirectLending/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/DirectLending/Migrations/*.sql" Link="DirectLending/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/FundAccounts/**/*.cs" Link="FundAccounts/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/FundAccounts/Migrations/*.sql" Link="FundAccounts/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/FundStructure/**/*.cs" Link="FundStructure/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/FundStructure/Migrations/*.sql" Link="FundStructure/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/Ledger/**/*.cs" Link="Ledger/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Compile Include="../Meridian.Storage/Export/LedgerJournalExporter.cs" Link="Export/LedgerJournalExporter.cs" />
+    <Compile Include="../Meridian.Storage/Export/LedgerJournalExportJsonContext.cs" Link="Export/LedgerJournalExportJsonContext.cs" />
+    <Content Include="../Meridian.Storage/Ledger/Migrations/*.sql" Link="Ledger/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/MoneyMarket/**/*.cs" Link="MoneyMarket/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/MoneyMarket/Migrations/*.sql" Link="MoneyMarket/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/Reporting/**/*.cs" Link="Reporting/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/Reporting/Migrations/*.sql" Link="Reporting/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/SecurityMaster/**/*.cs" Link="SecurityMaster/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/SecurityMaster/Migrations/*.sql" Link="SecurityMaster/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/Tenancy/**/*.cs" Link="Tenancy/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/Tenancy/Migrations/*.sql" Link="Tenancy/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <Compile Include="../Meridian.Storage/Operations/**/*.cs" Link="Operations/%(RecursiveDir)%(Filename)%(Extension)" />
+    <Content Include="../Meridian.Storage/Operations/Migrations/*.sql" Link="Operations/Migrations/%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+</Project>

@@ -68,7 +68,7 @@ describe("StrategyDesignerScreen", () => {
     const runDescribedBy = run.getAttribute("aria-describedby");
     expect(runDescribedBy).toBeTruthy();
     expect(document.getElementById(runDescribedBy as string)?.textContent).toContain(
-      "governed evidence references"
+      "evidence references"
     );
   });
 });

@@ -1,7 +1,10 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { describeOperatingScope, operatingScopeKey } from "@/lib/operating-scope/recent-scopes";
+import { useEffect, useId, useRef, useState, type ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
+import { Select } from "@/components/ui/select";
+import { ScopePeriodField } from "@/components/meridian/scope-period-field";
 import { searchSymbolsQuery } from "@/lib/api";
 import {
   normalizeOperatingContextSymbol,
@@ -9,17 +12,24 @@ import {
   type AppShellOperatingScopeQueryKey
 } from "@/app-shell.operating-scope";
 import type { ScopeFundAccountOption } from "@/lib/operating-scope/fund-accounts";
+import { describeAccountListNarrowing } from "@/lib/operating-scope/fund-scope-narrowing";
+import type { OperatingScopeWindow } from "@/lib/operating-scope/period";
+import {
+  accountConflictsWithScope,
+  constrainScopeOptions,
+  fundConflictsWithEntity,
+  mergeScopeAccountOptions,
+  scopeStructureHelp,
+  UNAVAILABLE_SCOPE_STRUCTURE,
+  type ScopeStructureOptions
+} from "@/lib/operating-scope/structure-options";
 import type { SymbolRecord } from "@/types";
 
 const SYMBOL_SEARCH_DEBOUNCE_MS = 250;
 const SYMBOL_SEARCH_MIN_LENGTH = 2;
 const SYMBOL_SUGGESTION_LIMIT = 8;
 const RETAINED_FIELDS = [
-  ["runId", "Run", "runId"],
-  ["from", "From", "window"],
-  ["to", "To", "window"],
-  ["date", "Date", "window"],
-  ["asOf", "As of", "window"]
+  ["runId", "Run", "runId"]
 ] as const;
 
 type SymbolSearchState = { query: string; status: "idle" | "loading" | "ready" | "error"; records: SymbolRecord[] };
@@ -29,15 +39,54 @@ export interface ScopePickerProps {
   onOpenChange: (open: boolean) => void;
   scope: AppShellOperatingScopeInput;
   fundAccounts: ScopeFundAccountOption[];
+  /**
+   * Entities, funds and their accounts the operator may scope to (`/api/workstation/scope-options`,
+   * or the organization graph on an older host). When it is unavailable (not loaded, or the read
+   * failed) the entity and fund fields take a typed id and nothing is narrowed; when it loaded with
+   * an empty list, that field takes a typed id too.
+   */
+  structure?: ScopeStructureOptions;
+  /** True while the organization read model is loading. */
+  structureLoading?: boolean;
+  /** The clock period presets are computed on; injectable for tests. */
+  now?: Date;
   onApply: (next: AppShellOperatingScopeInput) => void;
   scopeDimensionsInEffect?: AppShellOperatingScopeQueryKey[];
+  /** Recently applied scopes, newest first (C1); choosing one loads it into the draft. */
+  recentScopes?: AppShellOperatingScopeInput[];
+  /** The signed-in operator's saved default scope, or null when none is saved. */
+  defaultScope?: AppShellOperatingScopeInput | null;
+  /** Saves the draft as the operator's default (null clears it). Omit to hide the default controls. */
+  onSaveDefault?: (scope: AppShellOperatingScopeInput | null) => Promise<void> | void;
+  /** On-demand workflow detail shown under the scope controls; following a link in it closes the picker. */
+  workflowContext?: ReactNode;
   /** Overridable for tests. */
   searchSymbols?: typeof searchSymbolsQuery;
 }
 
 /** Draft-only editing: all scope dimensions remain inspectable, and only Apply changes scope. */
-export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, scopeDimensionsInEffect, searchSymbols = searchSymbolsQuery }: ScopePickerProps) {
+export function ScopePicker({
+  open,
+  onOpenChange,
+  scope,
+  fundAccounts,
+  structure = UNAVAILABLE_SCOPE_STRUCTURE,
+  structureLoading = false,
+  now,
+  onApply,
+  scopeDimensionsInEffect,
+  recentScopes = [],
+  defaultScope = null,
+  onSaveDefault,
+  workflowContext,
+  searchSymbols = searchSymbolsQuery
+}: ScopePickerProps) {
+  const [defaultStatus, setDefaultStatus] = useState<string | null>(null);
   const [symbol, setSymbol] = useState("");
+  const [entityId, setEntityId] = useState("");
+  const [fundId, setFundId] = useState("");
+  const [structureNote, setStructureNote] = useState<string | null>(null);
+  const [period, setPeriod] = useState<OperatingScopeWindow>({});
   const [fundAccountId, setFundAccountId] = useState("");
   const [provider, setProvider] = useState("");
   const [retained, setRetained] = useState<AppShellOperatingScopeInput>({});
@@ -58,18 +107,59 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
   const applicability = (key: AppShellOperatingScopeQueryKey) => scopeDimensionsInEffect
     ? scopeDimensionsInEffect.includes(key) ? "Applied on this screen" : "Retained for other screens"
     : "Carried across the workstation";
+  const accountOptions = mergeScopeAccountOptions(structure, fundAccounts);
+  const constrained = constrainScopeOptions(structure, accountOptions, { entityId, fundId });
+  const withCurrent = <T extends { id: string; label: string }>(options: T[], current: string) =>
+    current.trim() && !options.some((option) => option.id.toLowerCase() === current.trim().toLowerCase())
+      ? [...options, { id: current.trim(), label: `${current.trim()} (not in your list)` } as T]
+      : options;
+  // GUID case may differ between a link and the read model; select the listed option either way.
+  const selectValue = (options: { id: string }[], current: string) =>
+    options.find((option) => option.id.toLowerCase() === current.trim().toLowerCase())?.id ?? current;
+  const chooseEntity = (next: string) => {
+    setEntityId(next);
+    const cleared: string[] = [];
+    let nextFund = fundId;
+    if (fundConflictsWithEntity(structure, accountOptions, fundId, next)) {
+      nextFund = "";
+      setFundId("");
+      cleared.push("fund");
+    }
+    if (accountConflictsWithScope(structure, accountOptions, fundAccountId, { entityId: next, fundId: nextFund })) {
+      setFundAccountId("");
+      cleared.push("fund account");
+    }
+    setStructureNote(cleared.length > 0 ? `Cleared the ${cleared.join(" and ")}: not under the chosen entity.` : null);
+  };
+  const chooseFund = (next: string) => {
+    setFundId(next);
+    if (accountConflictsWithScope(structure, accountOptions, fundAccountId, { entityId, fundId: next })) {
+      setFundAccountId("");
+      setStructureNote("Cleared the fund account: not in the chosen fund.");
+    } else {
+      setStructureNote(null);
+    }
+  };
+  const structureHelp = scopeStructureHelp(structure, structureLoading);
+  // Shared with the inline account picker, so both say the same thing about the same narrowing.
+  const accountNarrowing = describeAccountListNarrowing(constrained, { entityId, fundId });
 
   useEffect(() => {
     if (!open) return;
     setSymbol(scope.symbol ?? "");
+    setEntityId(scope.entityId ?? "");
+    setFundId(scope.fundId ?? "");
+    setStructureNote(null);
     setFundAccountId(scope.fundAccountId ?? "");
     setProvider(scope.provider ?? "");
-    setRetained({ runId: scope.runId, from: scope.from, to: scope.to, date: scope.date, asOf: scope.asOf });
+    setRetained({ runId: scope.runId });
+    setPeriod({ from: scope.from, to: scope.to, date: scope.date, asOf: scope.asOf });
     setClearStaged(false);
     setDismissed(false);
     setActiveIndex(-1);
+    setDefaultStatus(null);
     setSearch({ query: "", status: "idle", records: [] });
-  }, [open, scope.symbol, scope.fundAccountId, scope.provider, scope.runId, scope.from, scope.to, scope.date, scope.asOf]);
+  }, [open, scope.entityId, scope.fundId, scope.symbol, scope.fundAccountId, scope.provider, scope.runId, scope.from, scope.to, scope.date, scope.asOf]);
 
   useEffect(() => {
     if (!open || dismissed || symbolQuery.length < SYMBOL_SEARCH_MIN_LENGTH) return;
@@ -102,25 +192,57 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
     setActiveIndex(-1);
     symbolRef.current?.focus();
   };
-  const apply = () => {
+  const draftScope = (): AppShellOperatingScopeInput => {
     const next = {
+      entityId: entityId.trim() || null,
+      fundId: fundId.trim() || null,
       symbol: normalizeOperatingContextSymbol(symbol),
       fundAccountId: fundAccountId.trim() || null,
       provider: provider.trim() || null,
       runId: retained.runId ?? null,
-      from: retained.from ?? null,
-      to: retained.to ?? null,
-      date: retained.date ?? null,
-      asOf: retained.asOf ?? null
+      from: period.from ?? null,
+      to: period.to ?? null,
+      date: period.date ?? null,
+      asOf: period.asOf ?? null
     };
-    onApply(Object.values(next).some(Boolean) ? next : {});
+    return Object.values(next).some(Boolean) ? next : {};
+  };
+  const apply = () => {
+    onApply(draftScope());
     onOpenChange(false);
+  };
+  // A recent or default scope only loads into the draft; Apply stays the one action that changes scope.
+  const loadDraft = (next: AppShellOperatingScopeInput) => {
+    setSymbol(next.symbol ?? "");
+    setEntityId(next.entityId ?? "");
+    setFundId(next.fundId ?? "");
+    setStructureNote(null);
+    setFundAccountId(next.fundAccountId ?? "");
+    setProvider(next.provider ?? "");
+    setRetained({ runId: next.runId });
+    setPeriod({ from: next.from, to: next.to, date: next.date, asOf: next.asOf });
+    setClearStaged(false);
+    setDismissed(true);
+    setActiveIndex(-1);
+  };
+  const saveDefault = async (next: AppShellOperatingScopeInput | null) => {
+    if (!onSaveDefault) return;
+    try {
+      await onSaveDefault(next);
+      setDefaultStatus(next ? "Saved as your default scope." : "Default scope cleared.");
+    } catch {
+      setDefaultStatus("Your default scope could not be saved. Your current scope is unchanged.");
+    }
   };
   const clearAll = () => {
     setSymbol("");
+    setEntityId("");
+    setFundId("");
+    setStructureNote(null);
     setFundAccountId("");
     setProvider("");
     setRetained({});
+    setPeriod({});
     setClearStaged(true);
     setDismissed(true);
     setActiveIndex(-1);
@@ -132,10 +254,39 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
         <DialogHeader>
           <DialogTitle id={`${id}-title`}>Operating scope</DialogTitle>
           <DialogDescription id={`${id}-description`}>
-            Set the subject, fund account, and provider carried across the workstation. Each screen applies the dimensions it supports. Changes take effect when you apply.
+            Set the entity, fund, fund account, period, subject, and provider carried across the workstation. Each screen applies the dimensions it supports. Changes take effect when you apply.
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-3 pt-2">
+          <div>
+            <label className="text-sm font-medium text-foreground" htmlFor={`${id}-entity`}>Entity</label>
+            {structure.entities.length > 0 ? (
+              <Select id={`${id}-entity`} aria-describedby={`${id}-entity-help`} value={selectValue(constrained.entities, entityId)} onChange={(event) => chooseEntity(event.target.value)}>
+                <option value="">All authorized</option>
+                {withCurrent(constrained.entities, entityId).map((entity) => <option key={entity.id} value={entity.id}>{entity.label}</option>)}
+              </Select>
+            ) : (
+              <Input id={`${id}-entity`} autoComplete="off" aria-describedby={`${id}-entity-help`} placeholder="Entity id (blank for all authorized)" value={entityId} onChange={(event) => chooseEntity(event.target.value)} />
+            )}
+            <p id={`${id}-entity-help`} className="mt-1 text-xs text-muted-foreground">{applicability("entityId")}</p>
+          </div>
+          <div>
+            <label className="text-sm font-medium text-foreground" htmlFor={`${id}-fund`}>Fund</label>
+            {structure.funds.length > 0 ? (
+              <Select id={`${id}-fund`} aria-describedby={`${id}-fund-scope-help`} value={selectValue(constrained.funds, fundId)} onChange={(event) => chooseFund(event.target.value)}>
+                <option value="">All authorized</option>
+                {withCurrent(constrained.funds, fundId).map((fund) => <option key={fund.id} value={fund.id}>{fund.label}</option>)}
+              </Select>
+            ) : (
+              <Input id={`${id}-fund`} autoComplete="off" aria-describedby={`${id}-fund-scope-help`} placeholder="Fund id (blank for all authorized)" value={fundId} onChange={(event) => chooseFund(event.target.value)} />
+            )}
+            <p id={`${id}-fund-scope-help`} className="mt-1 text-xs text-muted-foreground">
+              {applicability("fundId")}
+              {constrained.fundsConstrained ? `. Showing ${constrained.funds.length} fund${constrained.funds.length === 1 ? "" : "s"} holding the chosen entity.` : null}
+            </p>
+            {structureHelp ? <p role="status" className="mt-1 text-xs text-muted-foreground">{structureHelp}</p> : null}
+            {structureNote ? <p role="status" className="mt-1 text-xs text-muted-foreground">{structureNote}</p> : null}
+          </div>
           <div>
             <label className="text-sm font-medium text-foreground" htmlFor={`${id}-symbol`}>Subject symbol</label>
             <Input
@@ -202,9 +353,12 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
           </div>
           <div>
             <label className="text-sm font-medium text-foreground" htmlFor={`${id}-fund-account`}>Fund account</label>
-            <Input id={`${id}-fund-account`} autoComplete="off" list={fundAccounts.length > 0 ? `${id}-fund-accounts` : undefined} aria-describedby={`${id}-fund-help`} placeholder="Fund account id" value={fundAccountId} onChange={(event) => setFundAccountId(event.target.value)} />
-            <p id={`${id}-fund-help`} className="mt-1 text-xs text-muted-foreground">{applicability("fundAccountId")}</p>
-            {fundAccounts.length > 0 ? <datalist id={`${id}-fund-accounts`}>{fundAccounts.map((account) => <option key={account.id} value={account.id}>{account.label}</option>)}</datalist> : null}
+            <Input id={`${id}-fund-account`} autoComplete="off" list={constrained.accounts.length > 0 ? `${id}-fund-accounts` : undefined} aria-describedby={`${id}-fund-help`} placeholder="Fund account id" value={fundAccountId} onChange={(event) => setFundAccountId(event.target.value)} />
+            <p id={`${id}-fund-help`} className="mt-1 text-xs text-muted-foreground">{applicability("fundAccountId")}{accountNarrowing ? `. ${accountNarrowing}` : null}</p>
+            {constrained.accounts.length > 0 ? <datalist id={`${id}-fund-accounts`} data-testid="scope-fund-account-options">{constrained.accounts.map((account) => <option key={account.id} value={account.id}>{account.label}</option>)}</datalist> : null}
+          </div>
+          <div>
+            <ScopePeriodField value={period} onChange={setPeriod} applicability={applicability("window")} now={now} />
           </div>
           <div>
             <label className="text-sm font-medium text-foreground" htmlFor={`${id}-provider`}>Provider</label>
@@ -214,7 +368,7 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
           {RETAINED_FIELDS.some(([key]) => retained[key]) ? (
             <section aria-label="Retained scope" className="rounded-sm border border-border p-3">
               <h3 className="text-sm font-medium">Retained scope</h3>
-              <p className="mt-1 text-xs text-muted-foreground">Read-only here. Use the originating workflow to change these values.</p>
+              <p className="mt-1 text-xs text-muted-foreground">Read-only here. Use the originating workflow to change this value.</p>
               <dl className="mt-2 space-y-2 text-xs">
                 {RETAINED_FIELDS.filter(([key]) => retained[key]).map(([key, label, dimension]) => (
                   <div key={key} className="grid grid-cols-[4rem_minmax(0,1fr)] gap-x-2">
@@ -225,7 +379,41 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
               </dl>
             </section>
           ) : null}
-          {clearStaged ? <p role="status" className="text-sm text-muted-foreground">Scope reset staged, including date and run context. Apply scope to save these changes, or Cancel to keep the current scope.</p> : null}
+          {recentScopes.length > 0 || onSaveDefault ? (
+            <section aria-label="Saved scopes" className="space-y-3 rounded-sm border border-border p-3">
+              {recentScopes.length > 0 ? (
+                <div>
+                  <h3 className="text-sm font-medium">Recent scopes</h3>
+                  <ul className="mt-1.5 flex flex-wrap gap-1.5">
+                    {recentScopes.map((recent) => (
+                      <li key={operatingScopeKey(recent)}>
+                        <Button type="button" size="sm" variant="outline" onClick={() => loadDraft(recent)} aria-label={`Use recent scope ${describeOperatingScope(recent)}`}>
+                          {describeOperatingScope(recent)}
+                        </Button>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              ) : null}
+              {onSaveDefault ? (
+                <div>
+                  <h3 className="text-sm font-medium">My default</h3>
+                  <p className="mt-0.5 text-xs text-muted-foreground">
+                    {defaultScope
+                      ? `${describeOperatingScope(defaultScope)}. Applied when you open the workstation with no scope in the link.`
+                      : "No default saved. Save one to start every session, on any machine, with this scope."}
+                  </p>
+                  <div className="mt-1.5 flex flex-wrap gap-1.5">
+                    {defaultScope ? <Button type="button" size="sm" variant="ghost" onClick={() => loadDraft(defaultScope)}>Use my default</Button> : null}
+                    <Button type="button" size="sm" variant="ghost" onClick={() => void saveDefault(draftScope())}>Save as my default</Button>
+                    {defaultScope ? <Button type="button" size="sm" variant="ghost" onClick={() => void saveDefault(null)}>Clear default</Button> : null}
+                  </div>
+                  {defaultStatus ? <p role="status" className="mt-1 text-xs text-muted-foreground">{defaultStatus}</p> : null}
+                </div>
+              ) : null}
+            </section>
+          ) : null}
+          {clearStaged ? <p role="status" className="text-sm text-muted-foreground">Scope reset staged, including entity, fund, period and run context. Apply scope to save these changes, or Cancel to keep the current scope.</p> : null}
           <div className="flex items-center justify-between gap-3 pt-2">
             <Button type="button" size="sm" variant="ghost" onClick={clearAll}>Clear scope</Button>
             <div className="flex items-center gap-2">
@@ -234,6 +422,16 @@ export function ScopePicker({ open, onOpenChange, scope, fundAccounts, onApply, 
             </div>
           </div>
         </div>
+        {workflowContext ? (
+          <div
+            className="scope-picker-workflow-context"
+            onClick={(event) => {
+              if ((event.target as Element).closest("a")) onOpenChange(false);
+            }}
+          >
+            {workflowContext}
+          </div>
+        ) : null}
       </DialogContent>
     </Dialog>
   );

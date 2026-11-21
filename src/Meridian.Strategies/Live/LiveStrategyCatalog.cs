@@ -119,11 +119,17 @@ public sealed class LiveStrategyCatalog : ILiveStrategyCatalog
         .Register(BuyAndHoldLiveStrategy.CatalogId, static ctx => new BuyAndHoldLiveStrategy(
             ctx.StrategyId,
             quantityPerSymbol: ctx.GetInt64("quantity", 10)))
-        .Register(MovingAverageCrossoverLiveStrategy.CatalogId, static ctx => new MovingAverageCrossoverLiveStrategy(
+        .Register(MovingAverageCrossoverLiveStrategy.CatalogId, static ctx => new BacktestStrategyLiveAdapter(
             ctx.StrategyId,
+            new Meridian.Backtesting.Sdk.Strategies.MovingAverageCrossoverStrategy(
             fastPeriod: ctx.GetInt32("fastPeriod", 10),
             slowPeriod: ctx.GetInt32("slowPeriod", 30),
-            quantity: ctx.GetInt64("quantity", 10)));
+            quantity: ctx.GetInt64("quantity", 10),
+            barBased: ResolveReferenceInputMode(ctx.Parameters))));
+
+    private static bool ResolveReferenceInputMode(IReadOnlyDictionary<string, string> parameters) =>
+        !parameters.TryGetValue("inputMode", out var mode) ? false : mode.ToLowerInvariant() switch
+        { "bars" => true, "trades" => false, _ => throw new ArgumentException("Reference strategy inputMode must be bars or trades.") };
 
     /// <inheritdoc/>
     public bool TryCreate(

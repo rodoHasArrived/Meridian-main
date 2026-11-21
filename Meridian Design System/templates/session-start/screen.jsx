@@ -4,7 +4,7 @@
 
 const {
   PanelSurface, Input, Button, Badge, Stepper, Select, StatusBar, StatusBanner,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const ENVS = [

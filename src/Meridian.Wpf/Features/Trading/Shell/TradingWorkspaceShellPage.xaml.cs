@@ -32,6 +32,9 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => PageLoadedCoreAsync(sender, e), nameof(OnPageLoaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task PageLoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         AttachViewModelEvents();
         ApplyToneBindings();
@@ -136,6 +139,10 @@ public partial class TradingWorkspaceShellPage : TradingWorkspaceShellPageBase
         ApplyTone(AuditStatusPill, AuditStatusLabelText, ViewModel.AuditStatusTone);
         ApplyTone(ValidationStatusPill, ValidationStatusLabelText, ViewModel.ValidationStatusTone);
     }
+
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.RefreshAsync();
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(TradingDockManager, e);

@@ -1,7 +1,9 @@
 using FluentAssertions;
 using Meridian.Contracts.Tenancy;
 using Meridian.Identity.Auth;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -88,6 +90,29 @@ public sealed class RegistryFundProfileTenantGuardTests
         var decision = await guard.EvaluateAsync(Caller(), "fund-x");
 
         decision.IsAllowed.Should().BeTrue();
+    }
+
+    [Fact]
+    public async Task RegistryUnavailable_DoesNotLogRequestScopeOrExceptionDetails()
+    {
+        const string fundProfileId = "fund-confidential-123";
+        var registry = Substitute.For<IFundProfileTenancyRegistry>();
+        var logger = new RecordingLogger<RegistryFundProfileTenantGuard>();
+        var guard = new RegistryFundProfileTenantGuard(registry, logger);
+        registry.IsAccessibleAsync(fundProfileId, "tenant-acme", "company-acme", Arg.Any<CancellationToken>())
+            .ThrowsAsync(new InvalidOperationException($"Registry failed for {fundProfileId}: confidential backend details"));
+
+        var decision = await guard.EvaluateAsync(Caller(), fundProfileId);
+
+        decision.IsAllowed.Should().BeTrue();
+        var warning = logger.Entries.Should().ContainSingle().Subject;
+        warning.LogLevel.Should().Be(LogLevel.Warning);
+        warning.Message.Should().Contain(nameof(InvalidOperationException))
+            .And.NotContain(fundProfileId)
+            .And.NotContain("confidential backend details");
+        warning.Exception.Should().BeNull("exception messages can contain the request scope");
+        await registry.Received(1).IsAccessibleAsync(
+            fundProfileId, "tenant-acme", "company-acme", Arg.Any<CancellationToken>());
     }
 
     [Fact]

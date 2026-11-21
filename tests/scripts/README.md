@@ -23,6 +23,10 @@ Meridian assemblies, so they run without the .NET toolchain.
   it by path; they must not mutate the working tree.
 - **Portable report paths:** repository-relative diagnostic paths use `/` on every platform;
   fixtures should distinguish those paths from absolute temporary paths outside the checkout.
+- **Cleanup-tolerant temporary directories:** call
+  `tempfile.TemporaryDirectory(ignore_cleanup_errors=True)`. Without it, a process still writing
+  inside the directory (a temporary `.git`, for example) makes cleanup raise and fails a test whose
+  assertions passed. `test_temporary_directory_cleanup_tolerance.py` rejects call sites that omit it.
 
 ## Where each kind of Python test lives
 

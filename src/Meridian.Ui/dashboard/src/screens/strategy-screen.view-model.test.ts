@@ -253,10 +253,11 @@ describe("strategy-screen view model", () => {
     });
   });
 
-  it("keeps run selection capped to the latest two ids and supports deselection", () => {
+  it("selects up to four runs, refuses a fifth without dropping one, and supports deselection", () => {
     expect(toggleRunSelection([], "run-1")).toEqual(["run-1"]);
     expect(toggleRunSelection(["run-1"], "run-2")).toEqual(["run-1", "run-2"]);
-    expect(toggleRunSelection(["run-1", "run-2"], "run-3")).toEqual(["run-2", "run-3"]);
+    expect(toggleRunSelection(["run-1", "run-2"], "run-3")).toEqual(["run-1", "run-2", "run-3"]);
+    expect(toggleRunSelection(["run-1", "run-2", "run-3", "run-4"], "run-5")).toEqual(["run-1", "run-2", "run-3", "run-4"]);
     expect(toggleRunSelection(["run-1", "run-2"], "run-1")).toEqual(["run-2"]);
   });
 
@@ -276,7 +277,7 @@ describe("strategy-screen view model", () => {
     expect(state.canDiff).toBe(true);
     expect(state.compareCommand).toMatchObject({
       label: "Compare 2 runs",
-      ariaLabel: "Compare 2 runs: Mean Reversion FX and Index Momentum",
+      ariaLabel: "Compare 2 runs: Mean Reversion FX, Index Momentum",
       disabled: false,
       disabledReason: null,
       busy: false
@@ -654,7 +655,7 @@ describe("strategy-screen view model", () => {
     expect(panel.hasParameterChanges).toBe(true);
     expect(panel.parameterChanges[0]).toMatchObject({
       key: "lookback",
-      valueText: "20 -> 30",
+      valueText: "20 → 30",
       ariaLabel: "lookback changed from 20 to 30.",
       rowSelectAriaLabel: "Inspect lookback parameter diff",
       detailPanelId: "strategy-run-diff-selected-parameter-detail",
@@ -690,7 +691,7 @@ describe("strategy-screen view model", () => {
     expect(selectedSecond.selectedParameterKey).toBe("threshold");
     expect(selectedSecond.parameterChanges[1]).toMatchObject({
       detailExpanded: true,
-      valueText: "1.5 -> 2.0"
+      valueText: "1.5 → 2.0"
     });
   });
 
@@ -710,7 +711,7 @@ describe("strategy-screen view model", () => {
     expect(plotTool.workspace.notebookToolbarItems).toEqual([
       { id: "count", label: "Notebook set", value: "3 retained" },
       { id: "selected", label: "Selected", value: "Mean Reversion FX", active: true },
-      { id: "lane", label: "Lane", value: "Strategy" }
+      { id: "lane", label: "Workspace", value: "Strategy" }
     ]);
     expect(plotTool.studies[0]).toMatchObject({
       id: "run-1",
@@ -779,6 +780,28 @@ describe("strategy-screen view model", () => {
     expect(plotTool.workspace.statusBadgeLabel).not.toBe("RESEARCH");
   });
 
+  it("renders run-linked PlotTool metrics as Unavailable instead of inventing values when no run exists", () => {
+    const plotTool = buildPlotToolState({
+      metrics,
+      runs: [],
+      selectedRuns: [],
+      comparison: [],
+      runDiff: null
+    });
+
+    const moments = Object.fromEntries(plotTool.statistics.moments.map((row) => [row.id, row.value]));
+    expect(moments["net-pnl"]).toBe("Unavailable");
+    expect(moments.return).toBe("Unavailable");
+    expect(moments.sharpe).toBe("Unavailable");
+    expect(moments.drawdown).toBe("Unavailable");
+    expect(plotTool.statistics.moments.map((row) => row.value).join(" ")).not.toContain("3,200");
+
+    const sharpeTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "sharpe");
+    const drawdownTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "drawdown");
+    expect(sharpeTile).toMatchObject({ value: "Unavailable", tone: "default" });
+    expect(drawdownTile).toMatchObject({ value: "Unavailable", tone: "default" });
+  });
+
   it("builds PlotTool table states with explicit empty copy", () => {
     expect(buildPlotToolMomentsTable([])).toEqual({
       rows: [],
@@ -826,7 +849,7 @@ describe("strategy-screen view model", () => {
     expect(buildPlotNotebookToolbarItems(rows, "run-2")).toEqual([
       { id: "count", label: "Notebook set", value: "3 retained" },
       { id: "selected", label: "Selected", value: "Index Momentum", active: true },
-      { id: "lane", label: "Lane", value: "Strategy" }
+      { id: "lane", label: "Workspace", value: "Strategy" }
     ]);
 
     const state = buildStrategyRunLibraryState({
@@ -926,11 +949,11 @@ describe("strategy-screen view model", () => {
     });
 
     expect(approving.canSubmit).toBe(false);
-    expect(approving.disabledReason).toBe("Governed promotion approval is already running.");
+    expect(approving.disabledReason).toBe("Promotion approval is already running.");
     expect(approving.submitLabel).toBe("Approving Paper promotion...");
     expect(approving.acknowledgementDisabled).toBe(true);
     expect(approving.acknowledgementDisabledReason).toBe(
-      "Governed promotion approval is already running; wait before changing acknowledgement."
+      "Promotion approval is already running; wait before changing acknowledgement."
     );
     expect(approving.acknowledgementDisabledReasonId).toBe(
       "promote-paper-approval-acknowledgement-disabled-reason"
@@ -940,10 +963,10 @@ describe("strategy-screen view model", () => {
     );
     expect(approving.cancelDisabled).toBe(true);
     expect(approving.cancelDisabledReason).toBe(
-      "Governed promotion approval is already running; wait for the durable decision before closing review."
+      "Promotion approval is already running; wait for the durable decision before closing review."
     );
     expect(approving.cancelAriaLabel).toBe(
-      "Governed promotion approval is already running; wait for the durable decision before closing review."
+      "Promotion approval is already running; wait for the durable decision before closing review."
     );
   });
 
@@ -1002,7 +1025,7 @@ describe("strategy-screen view model", () => {
       label: "Compare 2 runs",
       ariaLabel: "Compare 2 runs unavailable",
       disabled: true,
-      disabledReason: "Select exactly two runs before using this command. 0 selected."
+      disabledReason: "Select two to 4 runs before comparing. 0 selected."
     });
     expect(noSelection.diff.disabledReason).toBe("Select exactly two runs before using this command. 0 selected.");
     expect(noSelection.promote.disabledReason).toBe("Select one completed backtest run before promoting to paper. 0 selected.");
@@ -1090,12 +1113,12 @@ describe("strategy-screen view model", () => {
     expect(done.approval).toMatchObject({
       title: "Paper promotion approved - target run paper-run-123",
       detail: "Strategy promoted from Backtest to Paper. Durable promotion promotion-123 is retained with audit audit-123.",
-      actionAriaLabel: "Open governed Trading promotion record for target run paper-run-123",
+      actionAriaLabel: "Open Trading promotion record for target run paper-run-123",
       actionHref: "/trading?runId=paper-run-123#promotion-gate-panel"
     });
   });
 
-  it("preserves canonical run-pair ordering across toggle churn for compare continuity", () => {
+  it("keeps the selection order across toggles and separates three-run compare from two-run diff", () => {
     let selected = toggleRunSelection([], "run-1");
     selected = toggleRunSelection(selected, "run-2");
     selected = toggleRunSelection(selected, "run-3");
@@ -1111,11 +1134,14 @@ describe("strategy-screen view model", () => {
       actionError: null
     });
 
-    expect(selected).toEqual(["run-2", "run-3"]);
-    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-2", "run-3"]);
+    // Three runs stay selected in the order chosen: compare takes all three, diff needs exactly two.
+    expect(selected).toEqual(["run-1", "run-2", "run-3"]);
+    expect(state.selectedRuns.map((run) => run.id)).toEqual(["run-1", "run-2", "run-3"]);
     expect(state.canCompare).toBe(true);
-    expect(state.canDiff).toBe(true);
-    expect(state.selectionText).toBe("Index Momentum vs Carry Alpha");
+    expect(state.canDiff).toBe(false);
+    expect(state.compareCommand.label).toBe("Compare 3 runs");
+    expect(state.diffCommand.disabledReason).toBe("Select exactly two runs before using this command. 3 selected.");
+    expect(state.selectionText).toBe("Mean Reversion FX vs Index Momentum vs Carry Alpha");
   });
 
   it("summarizes shared run history across backtest, paper, and engines", () => {
@@ -1178,6 +1204,7 @@ describe("strategy-screen view model", () => {
 
   it("prefers API-backed PlotTool payload when provided", () => {
     const apiPlotTool: StrategyPlotToolPayload = {
+      analyticsEvidenceStatus: "Retained",
       activeView: "workspace",
       tabs: [],
       studies: [],
@@ -1233,6 +1260,20 @@ describe("strategy-screen view model", () => {
 
     expect(state.plotTool.workspace.title).toBe("API workspace");
     expect(state.plotTool.statistics.title).toBe("API stats");
+    expect(state.plotTool.workspace.points).toEqual([]);
+    expect(state.plotTool.workspace.scatterChart.points).toEqual([]);
+    expect(state.plotTool.statistics.distributionBars).toEqual([]);
+  });
+
+  it("withholds statistical observations whose producer has not declared retained or illustrative evidence", () => {
+    const state = buildStrategyRunLibraryState({ runs, selectedIds: [], selectedRun: null,
+      comparison: [], runDiff: null, promotionHistory: [], activeCommand: null, actionError: null,
+      plotToolFromApi: { workspace: { points: [{ x: 1, y: 2, emphasis: true }] },
+        statistics: { distributionBars: [1, 2, 3] }, studies: [], tabs: [] } });
+    expect(state.plotTool.analyticsEvidenceStatus).toBe("Unverified");
+    expect(state.plotTool.workspace.points).toEqual([]);
+    expect(state.plotTool.statistics.distributionBars).toEqual([]);
+    expect(state.plotTool.statistics.sampleRows).toEqual([]);
   });
 
   it("uses an honest empty PlotTool state when no API payload is provided", () => {
@@ -1250,8 +1291,8 @@ describe("strategy-screen view model", () => {
     expect(state.plotTool.studies).toEqual([]);
     expect(state.selectedPlotStudyId).toBeNull();
     expect(state.selectedPlotStudyDetail).toBeNull();
-    expect(state.plotTool.workspace.title).toBe("PlotTool catalog not connected");
-    expect(state.plotTool.workspace.studyTableEmptyText).toBe("No retained PlotTool studies are available. Connect a governed PlotTool catalog before selecting notebooks.");
+    expect(state.plotTool.workspace.title).toBe("Strategy analytics not connected");
+    expect(state.plotTool.workspace.studyTableEmptyText).toBe("No retained PlotTool studies are available. Connect an approved PlotTool catalog before selecting notebooks.");
     expect(state.plotTool.workspace.points).toEqual([]);
     expect(state.plotTool.workspace.scatterChart.points).toEqual([]);
     expect(state.plotTool.statistics.title).toBe("PlotTool statistics not connected");

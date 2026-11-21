@@ -4,6 +4,8 @@
   "private": true,
   "description": "Build tools for Meridian",
   "scripts": {
+    "check:design-system": "npm --prefix src/Meridian.Ui/dashboard run check:design-system --",
+    "check:design-system:browser": "npm --prefix src/Meridian.Ui/dashboard run check:design-system:browser --",
     "dev": "node scripts/dev/web-dev.mjs --mode backend-connected",
     "dev:backend": "node scripts/dev/web-dev.mjs --mode backend-connected",
     "dev:fixtures": "node scripts/dev/web-dev.mjs --mode fixture-only",

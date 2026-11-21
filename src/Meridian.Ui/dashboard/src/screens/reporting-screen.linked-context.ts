@@ -36,7 +36,7 @@ export function buildReportingLinkedContextItem(
     id: "reporting-evidence",
     label: "Evidence packet",
     detail: packCount > 0
-      ? `${formatReportingLinkedContextCount(packCount, "report recipient")} can carry ${symbol} context into governed review; ${formatReportingLinkedContextCount(pendingCount, "distribution")} pending.`
+      ? `${formatReportingLinkedContextCount(packCount, "report recipient")} can carry ${symbol} context into review; ${formatReportingLinkedContextCount(pendingCount, "distribution")} pending.`
       : `No report-pack recipient is loaded while reviewing ${symbol}.`,
     route,
     workspaceLabel: "Reporting",

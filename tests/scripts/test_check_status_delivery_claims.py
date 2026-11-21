@@ -22,7 +22,7 @@ class StatusDeliveryClaimChecksTests(unittest.TestCase):
         return path
 
     def test_accepts_scoped_paper_claims_with_packet_reference(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             doc = self.write_doc(
                 root,
@@ -35,7 +35,7 @@ Latest pass packet: artifacts/provider-validation/_automation/2026-05-17/dk1-pil
             self.assertEqual([], module.validate_doc(doc))
 
     def test_rejects_prohibited_live_phrase(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             doc = self.write_doc(
                 root,
@@ -50,7 +50,7 @@ Latest pass packet: artifacts/provider-validation/_automation/2026-05-17/dk1-pil
 
 
     def test_allows_negated_live_readiness_phrase(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             doc = self.write_doc(
                 root,
@@ -63,14 +63,14 @@ Latest pass packet: artifacts/provider-validation/_automation/2026-05-17/dk1-pil
             self.assertEqual([], module.validate_doc(doc))
 
     def test_rejects_missing_packet_reference(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             doc = self.write_doc(root, "docs/reference/provider-validation-matrix.md", "Paper workflow remains in progress.")
             errors = module.validate_doc(doc)
             self.assertTrue(any("missing latest pass packet reference" in err for err in errors))
 
     def test_allows_archive_migration_stub_without_current_packet_claim(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             doc = self.write_doc(
                 root,
@@ -93,7 +93,7 @@ This status file has been migrated to docs/reference/provider-validation-matrix.
         self.assertNotIn("docs/status/provider-validation-matrix.md", module.DEFAULT_DOCS)
 
     def test_allows_archive_migration_stub_without_current_packet_claim(self) -> None:
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             root = Path(tmp)
             doc = self.write_doc(
                 root,

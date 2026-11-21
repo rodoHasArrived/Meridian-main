@@ -47,6 +47,12 @@ public interface IDirectLendingService
 
     Task<LoanServicingStateDto?> ApplyWriteOffAsync(Guid loanId, ApplyWriteOffRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
+    /// <summary>PRD-115: applies held unapplied cash to amounts owed.</summary>
+    Task<LoanServicingStateDto?> ApplyUnappliedCashAsync(Guid loanId, ApplyUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    /// <summary>PRD-115: returns held unapplied cash to the borrower.</summary>
+    Task<LoanServicingStateDto?> RefundUnappliedCashAsync(Guid loanId, RefundUnappliedCashRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
     Task<LoanServicingStateDto?> ChargePrepaymentPenaltyAsync(Guid loanId, ChargePrepaymentPenaltyRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
 
     Task<DailyAccrualEntryDto?> PostDailyAccrualAsync(Guid loanId, PostDailyAccrualRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
@@ -108,5 +114,14 @@ public interface IDirectLendingService
 
     // Discount / premium amortization
     Task<LoanServicingStateDto?> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
-}
 
+    Task<DirectLendingIndexFixingDto?> RecordIndexFixingAsync(RecordIndexFixingRequest request, CancellationToken ct = default);
+
+    Task<IReadOnlyList<DirectLendingIndexFixingDto>> GetIndexFixingsAsync(string? indexName = null, DateOnly? from = null, DateOnly? to = null, CancellationToken ct = default);
+
+    Task<LoanServicingStateDto?> ApplyScheduledRateResetAsync(Guid loanId, ApplyScheduledRateResetRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    Task<LoanServicingStateDto?> CapitalizePikAsync(Guid loanId, CapitalizePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);
+
+    Task<LoanServicingSchedulePreviewDto?> GetServicingSchedulePreviewAsync(Guid loanId, DateOnly from, DateOnly to, CancellationToken ct = default);
+}

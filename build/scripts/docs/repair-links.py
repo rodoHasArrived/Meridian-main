@@ -175,7 +175,7 @@ def _extract_anchors(content: str) -> set[str]:
 def _is_external_or_special(target: str) -> bool:
     """Return ``True`` if *target* is an external URL or special link.
 
-    We skip ``http://``, ``https://``, ``mailto:``, ``tel:``, ``#``-only
+    We skip ``http://``, ``https://``, ``skill://``, ``mailto:``, ``tel:``, ``#``-only
     (same-page anchors resolved separately), and template placeholders.
 
     Args:
@@ -188,7 +188,7 @@ def _is_external_or_special(target: str) -> bool:
     if not stripped:
         return True
     # External protocols
-    if re.match(r"^https?://", stripped, re.IGNORECASE):
+    if re.match(r"^(?:https?|skill)://", stripped, re.IGNORECASE):
         return True
     if stripped.startswith(("mailto:", "tel:", "ftp://", "ftps://")):
         return True
@@ -332,12 +332,37 @@ def _collect_markdown_files(docs_root: Path) -> list[Path]:
     return md_files
 
 
+def _anchor_exists(
+    target: Path,
+    anchor: str,
+    cache: dict[Path, tuple[set[str], int]],
+) -> bool:
+    """Check Markdown headings or bounded GitHub line anchors on source files."""
+    if target not in cache:
+        try:
+            content = target.read_text(encoding="utf-8", errors="replace")
+        except OSError:
+            return False
+        cache[target] = (_extract_anchors(content), len(content.splitlines()))
+    headings, line_count = cache[target]
+    if anchor in headings:
+        return True
+    if target.suffix.lower() != ".md":
+        match = re.fullmatch(r"l([0-9]+)(?:-l([0-9]+))?", anchor)
+        if match:
+            start = int(match.group(1))
+            end = int(match.group(2) or match.group(1))
+            return 1 <= start <= end <= line_count
+    return False
+
+
 def _scan_file(  # noqa: C901
     md_file: Path,
     repo_root: Path,
     file_index: dict[str, list[Path]],
     auto_fix: bool,
     result: ScanResult,
+    anchor_cache: Optional[dict[Path, tuple[set[str], int]]] = None,
 ) -> list[tuple[int, str, str]]:
     """Scan a single markdown file for broken internal links.
 
@@ -358,6 +383,8 @@ def _scan_file(  # noqa: C901
         print(f"Warning: could not read {md_file}: {exc}", file=sys.stderr)
         return []
 
+    if anchor_cache is None:
+        anchor_cache = {}
     lines = content.splitlines(keepends=True)
     replacements: list[tuple[int, str, str]] = []  # (line_idx, old, new)
     in_fenced_block = False
@@ -452,15 +479,7 @@ def _scan_file(  # noqa: C901
 
                 # File exists -- validate anchor if present.
                 if anchor_part and resolved.is_file():
-                    try:
-                        target_content = resolved.read_text(
-                            encoding="utf-8", errors="replace"
-                        )
-                    except OSError:
-                        target_content = ""
-
-                    anchors = _extract_anchors(target_content)
-                    if anchor_part not in anchors:
+                    if not _anchor_exists(resolved, anchor_part, anchor_cache):
                         result.broken_links.append(
                             BrokenLink(
                                 location=location,
@@ -754,6 +773,8 @@ def main(argv: Optional[list[str]] = None) -> int:
     )
     result.files_scanned = len(md_files)
 
+    # Cache target headings/line counts across generated references in this read-only scan.
+    anchor_cache: dict[Path, tuple[set[str], int]] = {}
     # Scan every file.
     for md_file in md_files:
         replacements = _scan_file(
@@ -762,6 +783,7 @@ def main(argv: Optional[list[str]] = None) -> int:
             file_index=file_index,
             auto_fix=args.auto_fix,
             result=result,
+            anchor_cache=anchor_cache,
         )
         if replacements:
             _apply_replacements(md_file, replacements)

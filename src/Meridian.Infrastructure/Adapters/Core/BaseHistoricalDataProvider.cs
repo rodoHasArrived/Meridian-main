@@ -1,3 +1,4 @@
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 using System.Text.Json.Serialization.Metadata;
 using Meridian.Core.Exceptions;
@@ -36,23 +37,27 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </remarks>
 [ImplementsAdr("ADR-001", "Base historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IDisposable
+public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IBackfillRequestMeteredProvider, IDisposable
 {
     private static readonly JsonSerializerOptions ReflectionJsonOptions = new()
     {
         TypeInfoResolver = new DefaultJsonTypeInfoResolver()
     };
 
+    protected readonly BackfillProviderRuntimeOptions? RuntimeOptions;
     protected readonly HttpClient Http;
     protected readonly RateLimiter RateLimiter;
+    /// <summary>The request budget; capabilities sharing a vendor quota can override it.</summary>
+    protected virtual RateLimiter RequestRateLimiter => RateLimiter;
     protected readonly ILogger Log;
     protected readonly ResiliencePipeline<HttpResponseMessage> ResiliencePipeline;
     private readonly HttpResponseHandler _responseHandler;
+    private readonly ResiliencePipeline<HttpResponseMessage> _requestTimeoutPipeline;
     private readonly object _rateLimitSync = new();
+    private readonly CancellationTokenSource _lifetime = new();
     private readonly TimeProvider _timeProvider;
+    private readonly ConditionalWeakTable<HttpResponseMessage, object> _responsesWithCooldown = new();
 
-    private int _requestCount;
-    private DateTimeOffset _windowStart;
     private DateTimeOffset? _rateLimitResetsAt;
     private bool _isRateLimited;
     protected bool Disposed;
@@ -62,6 +67,9 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// Unique identifier for the provider (e.g., "alpaca", "tiingo").
     /// </summary>
     public abstract string Name { get; }
+
+    /// <inheritdoc />
+    public virtual string CoverageFeed => "default";
 
     /// <summary>
     /// Human-readable display name.
@@ -84,6 +92,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     public virtual TimeSpan RateLimitDelay => TimeSpan.Zero;
     public virtual int MaxRequestsPerWindow => int.MaxValue;
     public virtual TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+    protected virtual bool HasKnownQuota => true;
 
     /// <summary>
     /// Consolidated capability flags for this provider.
@@ -173,8 +182,12 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         HttpClient? httpClient = null,
         ILogger? log = null,
         bool enableResilience = true,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        BackfillProviderRuntimeOptions? runtimeOptions = null)
     {
+        if (runtimeOptions?.Requests is < 1 || runtimeOptions?.Window is { } window && window <= TimeSpan.Zero)
+            throw new ArgumentOutOfRangeException(nameof(runtimeOptions), "Rate limits and windows must be positive.");
+        RuntimeOptions = runtimeOptions;
         Log = log ?? LoggingSetup.ForContext(GetType());
         Http = httpClient ?? HttpClientFactoryProvider.CreateClient(HttpClientName);
         _timeProvider = timeProvider ?? TimeProvider.System;
@@ -187,21 +200,26 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             Log,
             _timeProvider);
 
-        // Initialize resilience pipeline for transient fault handling
+        // Quota and provider cooldown waits can legitimately exceed five minutes. Keep
+        // those waits cancellable by the caller, with bounded retries and per-send timeouts.
         ResiliencePipeline = enableResilience
             ? HttpResiliencePolicy.CreateComprehensivePipeline(
                 maxRetries: 3,
                 retryBaseDelay: TimeSpan.FromSeconds(1),
                 circuitBreakerFailureThreshold: 5,
                 circuitBreakerDuration: TimeSpan.FromSeconds(30),
-                requestTimeout: TimeSpan.FromSeconds(30))
+                requestTimeout: TimeSpan.FromSeconds(30),
+                timeProvider: _timeProvider,
+                includeAttemptTimeout: false,
+                includeTotalTimeout: false)
+            : ResiliencePipeline<HttpResponseMessage>.Empty;
+        _requestTimeoutPipeline = enableResilience
+            ? HttpResiliencePolicy.CreateTimeoutPipeline(TimeSpan.FromSeconds(30), _timeProvider)
             : ResiliencePipeline<HttpResponseMessage>.Empty;
 
         // Initialize centralized HTTP response handler (Name property must be available).
         // Name is abstract, so derived class must implement it before this runs.
         _responseHandler = new HttpResponseHandler(GetType().Name, Log);
-
-        _windowStart = _timeProvider.GetUtcNow();
     }
 
 
@@ -227,15 +245,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// <summary>
     /// Wait for a rate limit slot before making a request.
     /// </summary>
-    protected async Task WaitForRateLimitSlotAsync(CancellationToken ct)
+    protected Task WaitForRateLimitSlotAsync(CancellationToken ct)
     {
-        await RateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
-        lock (_rateLimitSync)
-        {
-            var now = _timeProvider.GetUtcNow();
-            ResetRequestWindowIfExpired(now);
-            _requestCount++;
-        }
+        var scope = HistoricalBackfillRequestScope.Current;
+        return RequestRateLimiter.WaitForUnitsAsync(1, scope?.HeadroomPercent(this) ?? 0,
+            scope is null ? null : wait => scope.Throttled(Name, "quota-admission", wait), ct);
     }
 
     /// <summary>
@@ -243,12 +257,13 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// </summary>
     protected void RecordRateLimitHit(TimeSpan? retryAfter)
     {
+        var duration = retryAfter is { } value ? (value > TimeSpan.Zero ? value : TimeSpan.Zero) : RateLimitWindow;
+        RequestRateLimiter.ApplyCooldown(duration);
         DateTimeOffset resetAt;
         lock (_rateLimitSync)
         {
             _isRateLimited = true;
-            var duration = retryAfter is { } value && value > TimeSpan.Zero ? value : RateLimitWindow;
-            resetAt = _timeProvider.GetUtcNow() + duration;
+            resetAt = RequestRateLimiter.GetCooldownUntil() ?? _timeProvider.GetUtcNow();
             _rateLimitResetsAt = resetAt;
         }
 
@@ -262,7 +277,8 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     {
         lock (_rateLimitSync)
         {
-            return GetRateLimitInfo(_timeProvider.GetUtcNow());
+            var budget = RequestRateLimiter.GetBudgetStatus();
+            return GetRateLimitInfo(budget);
         }
     }
 
@@ -271,52 +287,63 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     {
         lock (_rateLimitSync)
         {
-            var observedAt = _timeProvider.GetUtcNow();
-            var info = GetRateLimitInfo(observedAt);
+            var budget = RequestRateLimiter.GetBudgetStatus();
+            var info = GetRateLimitInfo(budget);
+            var dailyLimited = budget.DailyMaximum is { } daily && budget.DailyUnitsUsed >= daily;
             return new ProviderRateLimitDiagnosticSnapshot(
                 info.ProviderName,
                 ProviderRateLimitSurfaces.Historical,
-                observedAt,
+                budget.ObservedAt,
                 info.RequestsMade,
                 info.MaxRequests,
                 info.Window,
                 info.IsLimited,
                 info.ResetsAt,
-                info.UsageRatio,
-                info.IsLimited ? "provider-response" : null);
+                Math.Max(info.UsageRatio, budget.DailyMaximum is { } maximum ? (double)budget.DailyUnitsUsed!.Value / maximum : 0),
+                dailyLimited ? "daily-quota" : budget.UnitsInWindow >= budget.Maximum ? "window-quota" : info.IsLimited ? "provider-response" : null)
+            {
+                QuotaKnown = HasKnownQuota,
+                QuotaUnit = budget.Unit,
+                DailyUnitsUsed = budget.DailyUnitsUsed,
+                DailyMaximum = budget.DailyMaximum,
+                DailyResetsAt = budget.DailyResetsAt,
+                DailyResetPolicy = budget.DailyMaximum.HasValue
+                    ? budget.DailyReset == DailyQuotaResetMode.UtcMidnight ? "utc-midnight" : "rolling-24-hours"
+                    : null
+            };
         }
     }
 
-    private RateLimitInfo GetRateLimitInfo(DateTimeOffset observedAt)
+    private RateLimitInfo GetRateLimitInfo(RequestBudgetStatus usage)
     {
-        ResetRequestWindowIfExpired(observedAt);
+        var observedAt = usage.ObservedAt;
+        if (usage.CooldownUntil is { } sharedReset && sharedReset > observedAt)
+        {
+            _isRateLimited = true;
+            _rateLimitResetsAt = sharedReset;
+        }
         if (_isRateLimited && _rateLimitResetsAt is { } resetAt && observedAt >= resetAt)
         {
             _isRateLimited = false;
             _rateLimitResetsAt = null;
         }
 
+        var quotaLimited = usage.UnitsInWindow >= usage.Maximum ||
+            (usage.DailyMaximum is { } daily && usage.DailyUnitsUsed >= daily);
+        var reset = _rateLimitResetsAt;
+        if (quotaLimited && usage.NextAvailableAt is { } available && (reset is null || available > reset))
+            reset = available;
+
         return new RateLimitInfo(
             Name,
-            _requestCount,
-            MaxRequestsPerWindow,
-            RateLimitWindow,
-            _rateLimitResetsAt,
-            _isRateLimited,
-            _rateLimitResetsAt.HasValue ? _rateLimitResetsAt.Value - observedAt : null
+            usage.UnitsInWindow,
+            usage.Maximum,
+            usage.Window,
+            reset,
+            _isRateLimited || quotaLimited,
+            reset.HasValue ? reset.Value - observedAt : null
         );
     }
-
-    private void ResetRequestWindowIfExpired(DateTimeOffset observedAt)
-    {
-        if (observedAt - _windowStart <= RateLimitWindow)
-            return;
-
-        _requestCount = 0;
-        _windowStart = observedAt;
-    }
-
-
 
     /// <summary>
     /// Execute an HTTP GET request with rate limiting, resilience, and standard error handling.
@@ -329,16 +356,39 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected async Task<HttpResponseMessage> ExecuteGetAsync(string url, string symbol, string dataType, CancellationToken ct)
     {
         ThrowIfDisposed();
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
+        var observation = HistoricalBackfillRequestScope.Current;
+        using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, _lifetime.Token);
         Log.Debug("Requesting {Provider} {DataType} for {Symbol}: {Url}", Name, dataType, symbol, RedactSensitiveQueryParameters(url));
 
-        // Execute with resilience pipeline (retry, circuit breaker)
-        var response = await ResiliencePipeline.ExecuteAsync(
-            async token => await Http.GetAsync(url, token).ConfigureAwait(false),
-            ct).ConfigureAwait(false);
-
-        return response;
+        // This pipeline is the sole retry owner. Reserve quota inside its callback so
+        // every send, including retries, consumes a slot. Factory retry handlers opt out.
+        return await ResiliencePipeline.ExecuteAsync(async token =>
+        {
+            await WaitForRateLimitSlotAsync(token).ConfigureAwait(false);
+            token.ThrowIfCancellationRequested();
+            using var request = new HttpRequestMessage(HttpMethod.Get, url);
+            request.Options.Set(SharedResiliencePolicies.ProviderOwnsRetries, true);
+            // Quota waiting observes caller cancellation; the network attempt gets its
+            // own fresh timeout only after it is admitted by the shared limiter.
+            var response = await _requestTimeoutPipeline.ExecuteAsync(
+                async sendToken =>
+                {
+                    observation?.RequestStarted(Name);
+                    return await Http.SendAsync(request, sendToken).ConfigureAwait(false);
+                },
+                token).ConfigureAwait(false);
+            var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _timeProvider);
+            if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
+                (!response.IsSuccessStatusCode && retryAfter.HasValue))
+            {
+                RecordRateLimitHit(retryAfter ?? TimeSpan.FromSeconds(60));
+                if (response.StatusCode != System.Net.HttpStatusCode.TooManyRequests)
+                    observation?.Throttled(Name, "provider-backoff", retryAfter);
+                _responsesWithCooldown.Add(response, new object());
+                RaiseRateLimitHit(GetRateLimitInfo());
+            }
+            return response;
+        }, cancellation.Token).ConfigureAwait(false);
     }
 
     private static string RedactSensitiveQueryParameters(string url)
@@ -448,8 +498,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             dataType,
             info =>
             {
-                RecordRateLimitHit(info.RetryAfter);
-                RaiseRateLimitHit(GetRateLimitInfo());
+                if (!_responsesWithCooldown.TryGetValue(response, out _))
+                {
+                    RecordRateLimitHit(info.RetryAfter);
+                    RaiseRateLimitHit(GetRateLimitInfo());
+                }
             },
             ct).ConfigureAwait(false);
 
@@ -619,6 +672,9 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
 
         if (disposing)
         {
+            _lifetime.Cancel();
+            // Concurrent admission may still be linking this token. No wait handle is
+            // allocated, so let the source be collected after those operations complete.
             RateLimiter.Dispose();
             Http.Dispose();
         }

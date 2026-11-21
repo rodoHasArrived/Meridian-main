@@ -896,10 +896,9 @@ public sealed partial class ProviderLedgerReconciliationService
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             _logger.LogError(
-                ex,
-                "Failed to update provider-ledger reconciliation run intent {OperationId} for account {AccountId}",
-                intent.OperationId,
-                intent.AccountId);
+                "Failed to update provider-ledger reconciliation run intent {OperationHash} ({FailureType})",
+                Sha256Digest.ComputeUtf8(intent.OperationId),
+                ex.GetType().Name);
         }
     }
 

@@ -4,6 +4,10 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { SettingsScreen } from "@/screens/settings-screen";
 import { renderWithRouter } from "@/test/render";
+import { useState, type ReactNode } from "react";
+import { GlobalRefreshProvider } from "@/lib/global-refresh";
+import { CrossScreenCountsProvider } from "@/lib/cross-screen-counts-context";
+import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type {
   BrokerageConnectionStatus,
   LedgerMappingWorkbench,
@@ -521,6 +525,11 @@ const securityAssetProfiles: SecurityAssetProfileDefinition[] = [
   }
 ];
 
+function HeaderRefresh({ children }: { children: ReactNode }) {
+  const [sequence, setSequence] = useState(0);
+  return <GlobalRefreshProvider sequence={sequence}><button type="button" onClick={() => setSequence(value => value + 1)}>Header refresh</button>{children}</GlobalRefreshProvider>;
+}
+
 describe("SettingsScreen", () => {
   beforeEach(() => {
     apiMocks.approveSecurityAssetProfile.mockReset();
@@ -567,7 +576,7 @@ describe("SettingsScreen", () => {
     apiMocks.activateProviderIntegration.mockReset();
   });
 
-  it("lands the bare /settings route on the focused task chooser", () => {
+  it("lands the bare /settings route on the evidence-based setup checklist", () => {
     renderWithRouter(
       <SettingsScreen
         session={session}
@@ -578,12 +587,14 @@ describe("SettingsScreen", () => {
     );
 
     expect(screen.getByRole("region", { name: "Settings workbench context" })).toHaveTextContent(
-      "Settings"
+      "Settings overview"
     );
     expect(screen.queryByRole("tablist", { name: "Settings routes" })).not.toBeInTheDocument();
-    expect(screen.getByRole("treegrid", { name: "Settings tasks" })).toBeInTheDocument();
-    expect(screen.getAllByRole("link", { name: /Open Preferences:/ })[0]).toHaveAttribute("href", "/settings/preferences");
-    expect(screen.queryByRole("region", { name: "Profile and authentication posture" })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+    expect(screen.getByText("Defaults or saved preferences active")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open Preferences" })).toHaveAttribute("href", "/settings/preferences");
+    expect(screen.queryByRole("region", { name: "Profile and authentication status" })).not.toBeInTheDocument();
   });
 
   it("keeps legacy hash deep links winning over the bare-route chooser", () => {
@@ -621,6 +632,33 @@ describe("SettingsScreen", () => {
     expect(screen.queryByText("Focused provider: polygon")).not.toBeInTheDocument();
   });
 
+  it("keeps workspace KPIs out of the settings chooser when source freshness differs", () => {
+    // The overview and retained counts have different freshness. Settings still leads with
+    // setup work; operational figures belong to the workspaces that own them.
+    renderWithRouter(
+      <WorkspaceFigureContextProvider
+        value={{
+          freshness: "fresh",
+          dataLabel: null,
+          staleSources: ["crossScreenCounts"],
+          sourceLoadedAt: { overview: "2026-06-30T18:10:00Z", crossScreenCounts: "2026-06-30T17:40:00Z" }
+        }}
+      >
+        <CrossScreenCountsProvider
+          counts={{ asOf: "2026-06-30T17:40:00Z", openOrders: null, providers: { healthy: 3, total: 4, definition: "Healthy providers." }, openBreaks: null }}
+        >
+          <SettingsScreen session={session} overview={overview} />
+        </CrossScreenCountsProvider>
+      </WorkspaceFigureContextProvider>,
+      { initialEntries: ["/settings"] }
+    );
+
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Workstation setup checklist" })).toBeInTheDocument();
+    expect(screen.queryByText("Open positions")).not.toBeInTheDocument();
+    expect(screen.queryByText("Storage health")).not.toBeInTheDocument();
+  });
+
   it("renders recent events as accessible status evidence rows", () => {
     renderWithRouter(<SettingsScreen session={session} overview={overview} />, {
       initialEntries: ["/settings#diagnostic-endpoints"]
@@ -632,13 +670,13 @@ describe("SettingsScreen", () => {
     );
     const eventTable = screen.getByRole("treegrid", { name: "1 recent system event" });
     const eventRow = within(eventTable).getByRole("row", {
-      name: /Select event evt-1\. OBS event from Provider health at May 1, 00:00 UTC\. Brokerage sync delayed\./i
+      name: /Select event evt-1\. OBS event from Provider health at May 1, 2026, 00:00 UTC\. Brokerage sync delayed\./i
     });
     const eventDetail = screen.getByRole("complementary", { name: "Selected recent event detail" });
     const diagnosticsCard = document.querySelector("#diagnostic-endpoints");
 
     expect(diagnosticsCard).toBeInTheDocument();
-    expect(within(diagnosticsCard as HTMLElement).getByLabelText(/Heartbeat Stale · May 1, 00:00 UTC/)).toBeInTheDocument();
+    expect(within(diagnosticsCard as HTMLElement).getByLabelText(/Heartbeat Stale · May 1, 2026, 00:00 UTC/)).toBeInTheDocument();
     expect(within(diagnosticsCard as HTMLElement).getByText("Heartbeat details").closest("details")).not.toHaveAttribute("open");
     expect(within(diagnosticsCard as HTMLElement).getByText("2026-05-01T00:00:00Z")).not.toBeVisible();
     expect(eventRow).toHaveAttribute("aria-selected", "true");
@@ -649,6 +687,33 @@ describe("SettingsScreen", () => {
     expect(within(eventRow).getByText("Provider health")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Brokerage sync delayed.")).toBeInTheDocument();
     expect(within(eventDetail).getByText("Provider health / evt-1")).toBeInTheDocument();
+  });
+
+  it("uses the holdings owner for access position facts instead of the system summary", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} portfolio={portfolio} />, {
+      initialEntries: ["/settings/access"]
+    });
+
+    expect(screen.getByText("Open positions").parentElement).toHaveTextContent("Open positions0");
+    const count = screen.getByText("Positions").parentElement!;
+    expect(count).toHaveTextContent("Positions0");
+    expect(count).toHaveAttribute("data-kpi-id", "portfolio.open-positions");
+    expect(count).toHaveAttribute("data-kpi-display", "0");
+    expect(count.querySelector("[data-kpi-rendered-value]")).toHaveTextContent("0");
+    expect(screen.queryByLabelText("Operator control posture metrics")).not.toBeInTheDocument();
+  });
+
+  it("withholds access position facts when only the independent system summary is available", () => {
+    renderWithRouter(<SettingsScreen session={session} overview={{ ...overview, openPositions: 5 }} />, {
+      initialEntries: ["/settings/access"]
+    });
+
+    expect(screen.getByText("Open positions").parentElement).toHaveTextContent("Open positionsUnavailable");
+    const count = screen.getByText("Positions").parentElement!;
+    expect(count).toHaveTextContent("PositionsUnavailable");
+    expect(count).toHaveAttribute("data-kpi-display", "Unavailable");
+    expect(count.querySelector("[data-kpi-rendered-value]")).toHaveTextContent("Unavailable");
+    expect(screen.getByText("Open positions").parentElement).not.toHaveTextContent("5");
   });
 
   it("renders profile authentication posture with authority handoffs", () => {
@@ -662,8 +727,8 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings/access"] }
     );
 
-    const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
-    expect(profileRegion).toHaveTextContent("Profile and access posture");
+    const profileRegion = screen.getByRole("region", { name: "Profile and authentication status" });
+    expect(profileRegion).toHaveTextContent("Profile and access status");
     expect(profileRegion).toHaveTextContent("Access ready");
     expect(profileRegion).toHaveTextContent("Andrew Rowden");
     expect(profileRegion).toHaveTextContent("Fund Manager");
@@ -674,10 +739,10 @@ describe("SettingsScreen", () => {
       name: "Profile authentication and authorization readiness steps"
     })).toBeInTheDocument();
     expect(within(profileRegion).getByRole("link", {
-      name: "Open Trading readiness from verified profile authentication posture"
+      name: "Open Trading readiness from verified profile authentication status"
     })).toHaveAttribute("href", "/trading/readiness");
     expect(within(profileRegion).getByRole("link", {
-      name: "Open Settings diagnostic services from profile authentication posture"
+      name: "Open Settings diagnostic services from profile authentication status"
     })).toHaveAttribute("href", "/settings/diagnostics");
     expect(document.querySelector("#diagnostic-endpoints")).not.toBeInTheDocument();
   });
@@ -693,15 +758,15 @@ describe("SettingsScreen", () => {
       { initialEntries: ["/settings/access"] }
     );
 
-    const profileRegion = screen.getByRole("region", { name: "Profile and authentication posture" });
+    const profileRegion = screen.getByRole("region", { name: "Profile and authentication status" });
     expect(profileRegion).toHaveTextContent("Access review");
     expect(profileRegion).toHaveTextContent("Brokerage evidence delayed");
     expect(within(profileRegion).queryByText("Access ready")).not.toBeInTheDocument();
     expect(within(profileRegion).queryByRole("link", {
-      name: "Open Trading readiness from verified profile authentication posture"
+      name: "Open Trading readiness from verified profile authentication status"
     })).not.toBeInTheDocument();
     expect(within(profileRegion).getByRole("link", {
-      name: "Review Alpaca provider setup from profile authentication posture"
+      name: "Review Alpaca provider setup from profile authentication status"
     })).toHaveAttribute("href", "/settings#alpaca-provider-setup");
   });
 
@@ -791,6 +856,7 @@ describe("SettingsScreen", () => {
     const appearanceRegion = screen.getByRole("region", { name: "Appearance preferences" });
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Appearance" })).toBeInTheDocument();
     expect(within(appearanceRegion).getByRole("radiogroup", { name: "Display density" })).toBeInTheDocument();
+    expect(within(appearanceRegion).getByRole("combobox", { name: "Time zone" })).toHaveValue("UTC");
   });
 
   it("renders fund operations controls for mappings, roles, approvals, and close calendar", () => {
@@ -812,7 +878,7 @@ describe("SettingsScreen", () => {
     expect(within(controlCenter).getByText("Account Close Calendar")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 unmapped")).toBeInTheDocument();
     expect(within(controlCenter).getByText("Accounting active")).toBeInTheDocument();
-    expect(within(controlCenter).getByText("1 rules")).toBeInTheDocument();
+    expect(within(controlCenter).getByText("1 rule")).toBeInTheDocument();
     expect(within(controlCenter).getByText("1 blocked")).toBeInTheDocument();
     const roleCard = within(controlCenter).getByText("Role and Permission Studio").closest('[role="listitem"]');
     const closeCard = within(controlCenter).getByText("Account Close Calendar").closest('[role="listitem"]');
@@ -1498,7 +1564,8 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("Data providers")).toBeInTheDocument();
     expect(screen.getByText("Alpaca")).toBeInTheDocument();
     expect(screen.getByText("Polygon.io")).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Refresh Provider Connection Center routing data" })).toBeInTheDocument();
+    // Loaded routing evidence is re-read by the header Refresh; no local refresh or retry control shows.
+    expect(screen.queryByRole("button", { name: /Provider Connection Center routing data/ })).not.toBeInTheDocument();
     expect(screen.getByText("Reference data")).toBeInTheDocument();
     expect(screen.getByText("97% · Healthy")).toBeInTheDocument();
     expect(screen.getByText("Routing evidence missing")).toBeInTheDocument();
@@ -1914,7 +1981,7 @@ describe("SettingsScreen", () => {
     });
 
     renderWithRouter(
-      <SettingsScreen
+      <HeaderRefresh><SettingsScreen
         session={session}
         overview={overview}
         brokerageConnection={alpacaConnection}
@@ -1922,7 +1989,7 @@ describe("SettingsScreen", () => {
         providerRoutingConnections={providerRoutingConnections}
         providerRoutingBindings={providerRoutingBindings}
         providerRoutingTrustSnapshots={providerRoutingTrustSnapshots}
-      />,
+      /></HeaderRefresh>,
       { initialEntries: ["/settings/providers/polygon/advanced"] }
     );
 
@@ -1941,8 +2008,10 @@ describe("SettingsScreen", () => {
       expect(apiMocks.getProviderIntegrationQuarantineReview).toHaveBeenCalledWith("provider-reference", 5);
     });
     expect(await within(panel).findByText("Provider integration runtime evidence loaded.")).toBeInTheDocument();
+    // Once loaded, the header Refresh re-reads runtime evidence; no local load, refresh, or retry control remains.
+    expect(within(panel).queryByRole("button", { name: /provider integration runtime evidence for Polygon\.io/ })).not.toBeInTheDocument();
     expect(within(panel).getByText("provider-reference")).toBeInTheDocument();
-    expect(within(panel).getByText("Jun 16, 12:30 UTC")).toBeInTheDocument();
+    expect(within(panel).getByText("Jun 16, 2026, 12:30 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("2 / 4")).toBeInTheDocument();
     expect(within(panel).getByText("14 / 3")).toBeInTheDocument();
     expect(within(panel).getByText("1 critical / 1 warning")).toBeInTheDocument();
@@ -1951,7 +2020,7 @@ describe("SettingsScreen", () => {
     expect(within(panel).getByText("1 rows")).toBeInTheDocument();
     expect(within(panel).getByText("1 review required")).toBeInTheDocument();
     expect(within(panel).getByText("1 ready / 0 blocked")).toBeInTheDocument();
-    expect(within(panel).getByText("0 handoffs")).toBeInTheDocument();
+    expect(within(panel).getByText("0 deliveries")).toBeInTheDocument();
     expect(within(panel).getByText("sync-positions-2")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-1")).toBeInTheDocument();
     expect(within(panel).getByText("quarantine-position-3")).toBeInTheDocument();
@@ -1987,10 +2056,10 @@ describe("SettingsScreen", () => {
     });
 
     await user.click(within(panel).getByRole("button", {
-      name: "Create reconciliation handoff for 1 provider integration staging rows for Polygon.io"
+      name: "Create reconciliation delivery for 1 provider integration staging rows for Polygon.io"
     }));
     expect(apiMocks.createProviderIntegrationReconciliationHandoff).not.toHaveBeenCalled();
-    await user.click(screen.getByRole("button", { name: "Confirm reconciliation handoff for Polygon.io" }));
+    await user.click(screen.getByRole("button", { name: "Confirm reconciliation delivery for Polygon.io" }));
 
     await waitFor(() => {
       expect(apiMocks.createProviderIntegrationReconciliationHandoff).toHaveBeenCalledWith(expect.objectContaining({
@@ -2020,7 +2089,7 @@ describe("SettingsScreen", () => {
         note: "Reviewed from the Settings Provider Connection Center runtime evidence panel."
       }));
     });
-    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 12:42 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Review by Andrew Rowden · Jun 16, 2026, 12:42 UTC")).toBeInTheDocument();
     expect(within(panel).getByText("Decision recorded")).toBeInTheDocument();
     expect(within(panel).queryByRole("button", {
       name: "Review quarantine record quarantine-position-1 for Polygon.io"
@@ -2071,7 +2140,7 @@ describe("SettingsScreen", () => {
         note: "Marked from the Settings Provider Connection Center for replay after mapping changes."
       }));
     });
-    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 12:43 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Replay after mapping change by Andrew Rowden · Jun 16, 2026, 12:43 UTC")).toBeInTheDocument();
     expect(within(panel).queryByRole("button", {
       name: "Mark quarantine record quarantine-position-2 as cash position for Polygon.io"
     })).not.toBeInTheDocument();
@@ -2092,7 +2161,7 @@ describe("SettingsScreen", () => {
         note: "Ignored from the Settings Provider Connection Center after operator review."
       }));
     });
-    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 12:44 UTC")).toBeInTheDocument();
+    expect(await within(panel).findByText("Decision: Ignore provider record by Andrew Rowden · Jun 16, 2026, 12:44 UTC")).toBeInTheDocument();
 
     await user.click(within(panel).getByRole("button", { name: "Run due provider integration sync for Polygon.io" }));
     expect(apiMocks.runDueProviderIntegrationSync).not.toHaveBeenCalled();
@@ -2108,6 +2177,14 @@ describe("SettingsScreen", () => {
         queryParametersByCapability: {}
       }));
     });
+
+    // The header Refresh re-reads loaded runtime evidence; a failed read brings back one Retry.
+    await within(panel).findByText(/Provider integration runtime (evidence )?loaded/);
+    const monitorReads = apiMocks.getProviderIntegrationConnectionMonitor.mock.calls.length;
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitFor(() => expect(apiMocks.getProviderIntegrationConnectionMonitor.mock.calls.length).toBe(monitorReads + 1));
+    await within(panel).findByText(/Provider integration runtime (evidence )?loaded/);
+    expect(within(panel).queryByRole("button", { name: /provider integration runtime evidence for Polygon\.io/ })).not.toBeInTheDocument();
   });
 
   it("runs the guided provider integration workbench over shared setup and dry-run endpoints", async () => {
@@ -2694,7 +2771,7 @@ describe("SettingsScreen", () => {
     );
 
     const storageRow = screen.getByRole("row", {
-      name: /Select event evt-2\. CRIT event from Storage at May 1, 00:04 UTC\. Storage heartbeat missed\./i
+      name: /Select event evt-2\. CRIT event from Storage at May 1, 2026, 00:04 UTC\. Storage heartbeat missed\./i
     });
 
     storageRow.focus();
@@ -2781,7 +2858,7 @@ describe("SettingsScreen", () => {
     expect(screen.getByText("********1234")).toBeInTheDocument();
     expect(screen.getByText("PA123")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Alpaca provider setup checklist" })).toBeInTheDocument();
-    expect(screen.getByText("Stored paper credentials and current account verification support the readiness handoff.")).toBeInTheDocument();
+    expect(screen.getByText("Stored paper credentials and current account verification support the readiness review.")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Open Trading readiness after Alpaca account verification" })).toHaveAttribute(
       "href",
       "/trading/readiness"

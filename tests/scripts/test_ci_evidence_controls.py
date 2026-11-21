@@ -24,7 +24,7 @@ class EvidenceControlsTests(unittest.TestCase):
     def test_missing_empty_malformed_and_stale_trx_fail_even_when_process_succeeds(self):
         runner = load('run-dotnet-ci-tests')
         for evidence in (None, '<TestRun/>', '<broken', '<TestRun><UnitTestResult outcome="NotExecuted"/></TestRun>'):
-            with self.subTest(evidence=evidence), tempfile.TemporaryDirectory() as tmp:
+            with self.subTest(evidence=evidence), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
                 output = Path(tmp) / 'required'
                 output.mkdir()
                 (output / 'required-old.trx').write_text('<TestRun><UnitTestResult outcome="Passed"/></TestRun>')
@@ -40,7 +40,7 @@ class EvidenceControlsTests(unittest.TestCase):
 
     def test_trx_counts_and_identity_digest_ignore_run_guids_and_result_order(self):
         evidence = load('test_evidence')
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             file = Path(tmp) / 'slice.trx'
             rows = ['<UnitTestResult testName="first" outcome="Passed"/>', '<UnitTestResult testName="second" outcome="NotExecuted"/>']
             file.write_text('<TestRun>' + ''.join(rows) + '</TestRun>')
@@ -52,7 +52,7 @@ class EvidenceControlsTests(unittest.TestCase):
 
     def test_all_external_actions_including_subpaths_require_sha_and_version(self):
         hygiene = load('check-workflow-hygiene')
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             directory = Path(tmp)
             for ref, expected in [
                 ('org/repo/sub@v4 # v4', False),
@@ -79,7 +79,7 @@ class EvidenceControlsTests(unittest.TestCase):
             'tracking': 'docs/engineering/ci-cd-optimization.md#script-test-quarantine',
         }
         for bad in ('reason only', {'reason': 'no owner'}, dict(valid, reviewBy='2000-01-01')):
-            with tempfile.TemporaryDirectory() as tmp:
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
                 file = Path(tmp) / 'quarantine.json'
                 file.write_text(json.dumps({'quarantined_modules': {name: bad}}))
                 with self.assertRaises(ValueError):
@@ -87,7 +87,7 @@ class EvidenceControlsTests(unittest.TestCase):
 
     def test_empty_quarantine_keeps_every_discovered_test(self):
         runner = load('run-script-tests')
-        with tempfile.TemporaryDirectory() as tmp:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
             file = Path(tmp) / 'quarantine.json'
             file.write_text(json.dumps({'quarantined_modules': {}}))
             quarantined = runner.load_quarantine(file)

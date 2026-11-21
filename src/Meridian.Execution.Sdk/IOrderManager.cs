@@ -9,6 +9,27 @@ public interface IOrderManager
     /// <summary>Places a new order after risk validation.</summary>
     Task<OrderResult> PlaceOrderAsync(OrderRequest request, CancellationToken ct = default);
 
+    /// <summary>
+    /// Places a new order under typed, server-built authority. Implementations without typed
+    /// authority support refuse rather than silently treating the command as an untyped order.
+    /// </summary>
+    Task<OrderResult> SubmitAsync(OrderSubmitCommand command, CancellationToken ct = default) =>
+        throw new NotSupportedException("This order manager does not support typed order commands.");
+
+    /// <summary>Cancels an open order. Authority is recorded by implementations that support it.</summary>
+    Task<OrderResult> CancelAsync(OrderCancelCommand command, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return CancelOrderAsync(command.OrderId, ct);
+    }
+
+    /// <summary>Modifies an open order. Authority is recorded by implementations that support it.</summary>
+    Task<OrderResult> ReplaceAsync(OrderReplaceCommand command, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return ModifyOrderAsync(command.OrderId, command.Modification, ct);
+    }
+
     /// <summary>Cancels an open order.</summary>
     Task<OrderResult> CancelOrderAsync(string orderId, CancellationToken ct = default);
 
@@ -26,6 +47,15 @@ public interface IOrderManager
     /// Implementations without handoff tracking return the open book.
     /// </summary>
     IReadOnlyList<OrderState> GetExposureReservingOrders() => GetOpenOrders();
+
+    /// <summary>
+    /// Same reservations as <see cref="GetExposureReservingOrders"/>, but a pending amendment
+    /// reserves whichever outcome has the larger quantity rather than the larger value. Unit
+    /// limits need this: 100 shares at $1 amended to 1 share at $200 is the larger value at one
+    /// share, yet the original 100 shares still execute if the amendment fails.
+    /// Implementations without amendment tracking return the exposure reservations.
+    /// </summary>
+    IReadOnlyList<OrderState> GetUnitReservingOrders() => GetExposureReservingOrders();
 
     /// <summary>Gets order state by ID.</summary>
     OrderState? GetOrder(string orderId);
@@ -51,6 +81,17 @@ public interface IOrderManager
     /// </para>
     /// </summary>
     Task<KillSwitchSweepResult> CancelAllAsync(CancellationToken ct = default);
+
+    /// <summary>
+    /// The same kill-switch sweep as <see cref="CancelAllAsync(CancellationToken)"/>, under the
+    /// kill-switch authority that invoked it. Implementations that record authority attach it to
+    /// every cancellation the sweep makes; the default runs the unattributed sweep.
+    /// </summary>
+    Task<KillSwitchSweepResult> CancelAllAsync(OrderCancelAllCommand command, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+        return CancelAllAsync(ct);
+    }
 
     /// <summary>
     /// Gets the most recently completed orders (filled, cancelled, rejected, expired) for display

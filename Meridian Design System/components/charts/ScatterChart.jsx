@@ -1,8 +1,10 @@
 // Meridian ScatterChart — X/Y relationship across a sample (spread vs vol, factor exposure,
 // tracking error vs return). History points fade in with recency; an optional highlighted
-// "current" point sits over the cloud; an optional least-squares trendline overlays. Flat,
-// token-driven, mirrors the Histogram/DrawdownChart plot conventions.
+// "current" point sits over the cloud; an optional least-squares trendline overlays.
+// Renders through ChartFrame (real-pixel, shared nice ticks on both axes).
 import React from "react";
+import { niceTicks, domainOf } from "./viz.js";
+import { ChartFrame, AXIS_FONT } from "./ChartFrame.jsx";
 
 function linreg(points) {
   const n = points.length;
@@ -16,8 +18,8 @@ function linreg(points) {
   return { a, b };
 }
 
-export function ScatterChart({
-  points = [],
+export function ScatterChart({ ariaLabel, ariaDescription, accessibleData,
+  points = [],                 // [{x, y}]
   current = null,
   trendline = true,
   xFmt = (v) => v.toFixed(0),
@@ -27,58 +29,40 @@ export function ScatterChart({
   fadeByRecency = true,
   pointColor = "var(--chart-secondary)",
   currentColor = "var(--orange)",
+  height = 300,
 }) {
-  const W = 960, H = 340;
-  const padT = 16, axisB = 24, axisL = 46, axisR = 14;
-  const plotL = axisL, plotR = W - axisR, plotT = padT, plotB = H - axisB;
-
   const allX = points.map((p) => p.x).concat(current ? [current.x] : []);
   const allY = points.map((p) => p.y).concat(current ? [current.y] : []);
-  const xMin = Math.min(...allX), xMax = Math.max(...allX);
-  const yMin = Math.min(...allY), yMax = Math.max(...allY);
-  const xPad = (xMax - xMin || 1) * 0.06, yPad = (yMax - yMin || 1) * 0.08;
-  const xLo = xMin - xPad, xHi = xMax + xPad, yLo = yMin - yPad, yHi = yMax + yPad;
-
-  const px = (x) => plotL + ((x - xLo) / (xHi - xLo || 1)) * (plotR - plotL);
-  const py = (y) => plotB - ((y - yLo) / (yHi - yLo || 1)) * (plotB - plotT);
-
+  const [xLo, xHi] = domainOf([allX], 0.06);
+  const yDomain = domainOf([allY], 0.08);
   const fit = trendline ? linreg(points) : null;
-  const labelFont = { fontFamily: "var(--font-data)", fontSize: 11 };
-
-  const xTickVals = Array.from({ length: xTicks + 1 }, (_, i) => xLo + (i / xTicks) * (xHi - xLo));
-  const yTickVals = Array.from({ length: yTicks + 1 }, (_, i) => yLo + (i / yTicks) * (yHi - yLo));
   const n = points.length;
-
   return (
-    <svg viewBox={`0 0 ${W} ${H}`} preserveAspectRatio="none" style={{ width: "100%", height: "100%", display: "block" }}>
-      <rect x="0" y="0" width={W} height={H} fill="var(--chart-plot)" />
-      {yTickVals.map((v, i) => (
-        <g key={"y" + i}>
-          <line x1={plotL} x2={plotR} y1={py(v)} y2={py(v)} stroke="var(--chart-grid)" strokeWidth="0.8" opacity="0.55" />
-          <text x={plotL - 6} y={py(v) + 4} fill="var(--chart-axis)" textAnchor="end" style={labelFont}>{yFmt(v)}</text>
-        </g>
-      ))}
-      {xTickVals.map((v, i) => (
-        <text key={"x" + i} x={px(v)} y={H - 8} fill="var(--chart-axis)" textAnchor="middle" style={labelFont}>{xFmt(v)}</text>
-      ))}
-
-      {fit && (
-        <line x1={px(xLo)} x2={px(xHi)} y1={py(fit.a + fit.b * xLo)} y2={py(fit.a + fit.b * xHi)}
-          stroke="var(--accent)" strokeWidth="1.4" opacity="0.8" />
-      )}
-
-      {points.map((p, i) => {
-        const op = fadeByRecency && n > 1 ? 0.16 + 0.58 * (i / (n - 1)) : 0.55;
-        return <circle key={i} cx={px(p.x)} cy={py(p.y)} r="3" fill={pointColor} opacity={op} />;
-      })}
-
-      {current && (
-        <circle cx={px(current.x)} cy={py(current.y)} r="5.5" fill={currentColor} stroke="var(--bg-light)" strokeWidth="1.5" />
-      )}
-
-      <line x1={plotL} x2={plotR} y1={plotB} y2={plotB} stroke="var(--chart-border)" strokeWidth="1.2" />
-      <line x1={plotL} x2={plotL} y1={plotT} y2={plotB} stroke="var(--chart-border)" strokeWidth="1" opacity="0.5" />
-    </svg>
+    <ChartFrame ariaLabel={ariaLabel} ariaDescription={ariaDescription} accessibleData={accessibleData} height={height} n={Math.max(1, n)} railSide="left" rail={46} padL={14} padT={16} axisB={24} leftRule
+      panes={[{ key: "y", domain: yDomain, ticks: yTicks, fmt: yFmt }]}>
+      {(g) => {
+        const Y = g.pane("y");
+        const px = (x) => g.plotL + ((x - xLo) / (xHi - xLo || 1)) * (g.plotR - g.plotL);
+        return (
+          <g>
+            {niceTicks(xLo, xHi, xTicks).filter((v) => v >= xLo && v <= xHi).map((v, i) => (
+              <text key={"x" + i} x={px(v)} y={height - 8} fill="var(--chart-axis)" textAnchor="middle" style={AXIS_FONT}>{xFmt(v)}</text>
+            ))}
+            {fit && (
+              <line x1={px(xLo)} x2={px(xHi)} y1={Y.y(fit.a + fit.b * xLo)} y2={Y.y(fit.a + fit.b * xHi)}
+                stroke="var(--brand-signal,#C56343)" strokeWidth="1.4" opacity="0.8" />
+            )}
+            {points.map((p, i) => {
+              const op = fadeByRecency && n > 1 ? 0.16 + 0.58 * (i / (n - 1)) : 0.55;
+              return <circle key={i} cx={px(p.x)} cy={Y.y(p.y)} r="3" fill={pointColor} opacity={op} />;
+            })}
+            {current && (
+              <circle cx={px(current.x)} cy={Y.y(current.y)} r="5.5" fill={currentColor} stroke="var(--bg-light)" strokeWidth="1.5" />
+            )}
+          </g>
+        );
+      }}
+    </ChartFrame>
   );
 }
 

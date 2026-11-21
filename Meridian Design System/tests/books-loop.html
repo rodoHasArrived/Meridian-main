@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Meridian — books loop</title>
+<link rel="stylesheet" href="../styles.css">
+<style>body{font-family:var(--font-body,sans-serif);background:var(--bg,#F2F0EB);color:var(--text-primary,#20252B);margin:0;padding:24px}h1{font-size:20px;margin:0 0 4px}p.sub{font:12px var(--font-data,monospace);color:var(--text-muted,#606870);margin:0 0 16px;max-width:104ch;line-height:1.55}table{border-collapse:collapse;width:100%;max-width:1080px;font:12px var(--font-data,monospace);background:var(--bg-light,#F8F7F3)}td,th{border:1px solid var(--border,#D2CDC3);padding:5px 9px;text-align:left}tr[data-ok="0"] td{background:var(--red-a10,rgba(181,75,66,.1));color:var(--red-dim,#873832)}th{font:600 10px var(--font-body,sans-serif);font-variant:all-small-caps;color:var(--text-muted,#606870);background:var(--bg-medium,#EBE8E1)}#sum{font:600 14px var(--font-data,monospace);margin:14px 0}</style>
+<script src="../templates/_scaffold/books.js"></script>
+</head>
+<body>
+<h1>Meridian — the books loop: one selector, one journey</h1>
+<p class="sub">Increment B's exit check, executed rather than claimed: select a synthetic cash difference → inspect its evidence → stage a journal → approve against one snapshot → submit → receive an explicit receipt → read the resulting ledger, trial balance and account sheet, with scope intact and the instruction still in hand. The rule under test throughout: <b>the actual residual closes on a receipt, never on a click</b>, and a projected figure is never printed where an actual one belongs. The instruction suites run against an isolated store, so this page never writes the operator's own tray.</p>
+<div id="sum">running…</div>
+<table><thead><tr><th>#</th><th>suite</th><th>assertion</th><th>result</th></tr></thead><tbody id="out"></tbody></table>
+<script>
+const rows=[],out=document.getElementById("out");let suite="";
+function record(name,ok,note){rows.push({suite,name,ok,note});const tr=document.createElement("tr");tr.dataset.ok=ok?"1":"0";tr.innerHTML=`<td>${rows.length}</td><td>${suite}</td><td>${name}</td><td>${ok?"PASS":"FAIL "+(note||"")}</td>`;out.appendChild(tr);}
+async function t(name,fn){let ok=false,note="";try{const r=await fn();ok=r===true||r===undefined;if(typeof r==="string"){ok=false;note=r;}}catch(e){note=String(e&&e.message||e);}record(name,ok,note);}
+const eq=(a,b)=>{if(a!==b)throw new Error(`expected ${JSON.stringify(b)}, got ${JSON.stringify(a)}`)};
+const ok=(v,m)=>{if(!v)throw new Error(m||"falsy")};
+const R2=(n)=>Math.round((Number(n)||0)*100)/100;
+const sum=(a,f)=>R2(a.reduce((s,x)=>s+(f?f(x):x),0));
+
+const B=window.MeridianBooks;
+const SCOPE={entity:"MER-FUND-I",basis:"STAT",period:"2026-06"};
+
+/** A fresh instruction store over a storage we own, so the operator's tray is never touched. */
+function fakeStorage(){const m=new Map();return{getItem:(k)=>m.has(k)?m.get(k):null,setItem:(k,v)=>m.set(k,String(v)),removeItem:(k)=>m.delete(k)};}
+async function loadInstructions(storage){
+  const src=await fetch("../templates/_scaffold/instructions.js").then(r=>r.text());
+  const g={sessionStorage:storage,console:window.console,location:window.location};
+  new Function("window",src)(g);
+  return g.MeridianInstructions;
+}
+
+/** The draft the Books loop seeds from CASE-4187's own statement line. */
+function fullDraft(){return{
+  ref:"JE-1090",date:"2026-06-26",memo:"Interest accrual — sweep account — accrual correction",
+  rationale:"Income received on the custodian statement and never accrued in the ledger.",
+  attachments:[{label:"Custodian statement page",ref:"CS-0626 p.4"}],
+  sourceBreak:"CASE-4187",
+  lines:[{code:"1100",debit:142.18},{code:"4200",credit:142.18}],
+};}
+
+async function main(){
+  suite="spine";
+  await t("the read model is on the window",()=>ok(B&&B.select&&B.stage&&B.reviewPayload,"MeridianBooks missing"));
+  await t("the instruction store loads in isolation",async()=>{const I=await loadInstructions(fakeStorage());ok(I&&I.submit&&I.settle,"instructions missing")});
+  await t("identity round-trips",()=>{eq(B.id("break","CASE-4187"),"break:CASE-4187");eq(B.parse("glline:JE-1042#1").type,"glline");eq(B.parse("glline:JE-1042#1").key,"JE-1042#1")});
+
+  suite="one selector · one identity";
+  const m0=B.select(SCOPE);
+  await t("five surfaces derive from one selection",()=>ok(m0.breaks&&m0.glRows&&m0.trialBalance&&m0.accounts&&m0.matched,"a derivation is missing"));
+  await t("a break names the account it belongs to, by identity",()=>{const b=m0.find("break:CASE-4187");eq(b.accountIdentity,"account:1100");ok(m0.find(b.accountIdentity),"the account identity does not resolve")});
+  await t("a GL line names its journal, by identity",()=>{const r=m0.glRows[0];eq(r.journalIdentity,"journal:"+r.ref);ok(m0.find(r.journalIdentity),"the journal identity does not resolve")});
+  await t("a trial-balance line IS the account sheet line",()=>{const tb=m0.trialBalance.filter(r=>r.code==="1100")[0];eq(tb.identity,"account:1100");eq(m0.find(tb.identity).code,"1100")});
+  await t("a matched statement line names its ledger entry",()=>{const s=m0.matched.filter(x=>x.statementLine==="DTC-88421")[0];eq(s.ledgerIdentity,"journal:JE-1042");ok(m0.find(s.ledgerIdentity),"unresolved")});
+  await t("an unknown identity resolves to nothing, not to a guess",()=>eq(m0.find("account:9999"),null));
+
+  suite="the break, and its evidence";
+  await t("the open cash difference is found",()=>{const b=m0.find("break:CASE-4187");ok(b,"no break");eq(b.statementLine,"INT-0210");eq(b.amount,142.18)});
+  await t("it carries evidence, named",()=>{const b=m0.find("break:CASE-4187");ok(b.evidence.length>=2,"evidence missing");ok(/Custodian statement page/.test(b.evidence.map(e=>e.label).join("|")))});
+  await t("it is classified, not merely flagged",()=>ok(/Timing/.test(m0.find("break:CASE-4187").classification)));
+  await t("nothing has resolved it yet, and the field says so",()=>{const b=m0.find("break:CASE-4187");eq(b.resolvedBy,null);eq(b.condition,"exception")});
+  await t("the entity-level residual is the break",()=>{eq(m0.residual.actual,-142.18);eq(m0.residual.open,1)});
+
+  suite="staging refuses an under-declared draft";
+  const S=(patch)=>B.stage(Object.assign(fullDraft(),patch),SCOPE);
+  const labels=(r)=>r.issues.map(i=>i.label).join(" · ");
+  await t("a complete draft stages (positive control)",()=>{const r=S({});ok(r.ok,labels(r))});
+  await t("an out-of-balance draft is refused",()=>{const r=S({lines:[{code:"1100",debit:142.18},{code:"4200",credit:100}]});ok(!r.ok);ok(/Out of balance/.test(labels(r)),labels(r))});
+  await t("a one-line draft is refused",()=>{const r=S({lines:[{code:"1100",debit:142.18}]});ok(!r.ok);ok(/at least two lines/.test(labels(r)),labels(r))});
+  await t("balanced arithmetic is not permission — no rationale, no stage",()=>{const r=S({rationale:"   "});ok(!r.ok);ok(/Rationale not recorded/.test(labels(r)),labels(r))});
+  await t("no evidence attached, no stage",()=>{const r=S({attachments:[]});ok(!r.ok);ok(/No evidence attached/.test(labels(r)),labels(r))});
+  await t("a hard-closed period refuses the posting date",()=>{const r=B.stage(fullDraft(),{entity:"MER-FUND-I",basis:"STAT",period:"2026-05"});ok(!r.ok);ok(/hard-closed/.test(labels(r)),labels(r))});
+
+  suite="staged closes the projected residual, never the actual";
+  const staged=S({}).journal;
+  const m1=B.select(Object.assign({},SCOPE,{staged:[staged]}));
+  await t("the staged journal is flagged staged, not posted",()=>{eq(staged.status,"staged");eq(staged.condition,"provisional")});
+  await t("the projected residual closes",()=>{eq(m1.residual.projected,0);eq(m1.find("break:CASE-4187").projectedResidual,0)});
+  await t("the actual residual does not move",()=>{eq(m1.residual.actual,-142.18);eq(m1.find("break:CASE-4187").actualResidual,-142.18)});
+  await t("the break says which one closed it",()=>eq(m1.find("break:CASE-4187").resolvedBy,"staged"));
+  await t("the account sheet keeps the two closings apart",()=>{const a=m1.accountSheet("1100");eq(a.closing,96881.5);eq(a.projectedClosing,97023.68);ok(a.closing!==a.projectedClosing,"the two closings merged")});
+  await t("the ledger marks the staged line pending and leaves the posted proof alone",()=>{const r=m1.glRows.filter(x=>x.ref==="JE-1090");ok(r.length===2,"staged lines missing from the ledger");ok(r.every(x=>x.staged),"a staged line reads as posted");eq(m1.proof.actual.debits,m0.proof.actual.debits)});
+
+  suite="the trial balance proves itself";
+  await t("openings prove to zero",()=>eq(sum(m0.accounts,a=>a.opening),0));
+  await t("the actual trial balance proves to zero",()=>eq(sum(m0.accounts,a=>a.closing),0));
+  await t("the projected trial balance also proves to zero",()=>eq(sum(m1.accounts,a=>a.projectedClosing),0));
+  await t("posted lines balance and say so",()=>{ok(m0.proof.actual.balanced,"posted lines do not balance");eq(m0.proof.actual.debits,m0.proof.actual.credits)});
+  await t("the TB names the accounts a staged journal would move, and prints no projected balance in the balance column",()=>{const moved=m1.trialBalance.filter(r=>r.moved).map(r=>r.code).sort();eq(moved.join(","),"1100,4200");const cash=m1.trialBalance.filter(r=>r.code==="1100")[0];eq(cash.balance,96881.5);eq(cash.projectedBalance,97023.68)});
+  await t("a void journal is in neither total",()=>{ok(!m0.accounts.some(a=>a.rows.some(r=>r.ref==="JE-1072")),"void line counted");ok(B.JOURNALS.some(j=>j.ref==="JE-1072"),"the void journal was deleted rather than retained")});
+
+  suite="the reviewed payload is one object";
+  const payload=B.reviewPayload(m1,staged,{snapshotId:"SNAP-2026-06-26-01",actor:"R. Alvarez · Controller"});
+  await t("the rationale travels inside it",()=>ok(/never accrued/.test(payload.rationale||""),String(payload.rationale)));
+  await t("the evidence travels inside it",()=>{eq(payload.attachments.length,1);eq(payload.attachments[0].ref,"CS-0626 p.4")});
+  await t("the snapshot it was approved against travels inside it",()=>{eq(payload.snapshotId,"SNAP-2026-06-26-01");eq(payload.approvedBy,"R. Alvarez · Controller")});
+  await t("it names the break it resolves, by identity",()=>eq(payload.resolves,"break:CASE-4187"));
+  await t("it carries the scope the figures were read in",()=>{eq(payload.scope.entity,"MER-FUND-I");eq(payload.scope.basis,"STAT");eq(payload.scope.period,"2026-06")});
+  await t("a payload whose lines changed is not the payload that was signed",()=>{const other=B.reviewPayload(m1,Object.assign({},staged,{lines:[{code:"1100",debit:200},{code:"4200",credit:200}]}),{snapshotId:"SNAP-2026-06-26-01"});ok(JSON.stringify(other.journal)!==JSON.stringify(payload.journal),"two different entries produced one signature")});
+
+  suite="submit · the receipt posts, not the click";
+  {
+    const I=await loadInstructions(fakeStorage());
+    const decl=()=>({action:"journal.post",label:"Post JE-1090",endpoint:"POST /books/journals",idempotencyKey:"journal.post:JE-1090:v1:SNAP-2026-06-26-01",payload});
+    const a=I.submit(decl());
+    await t("a submitted instruction is in flight, not landed",()=>{eq(a.state,"inflight");eq(a.idempotencyKey,"journal.post:JE-1090:v1:SNAP-2026-06-26-01")});
+    await t("a second click on the same key mints no second instruction",()=>{const b=I.submit(decl());ok(b.deduped,"not deduped");eq(b.id,a.id);eq(I.list().length,1)});
+    await t("ok:true with an adapter id is confirmed, and the id comes from the adapter",()=>{const s=I.settle(a.id,{ok:true,id:"JRNL-JE-1090-R1"});eq(s.state,"landed");eq(s.receipt.id,"JRNL-JE-1090-R1")});
+    const b=I.submit({action:"journal.post",idempotencyKey:"k-refused"});
+    await t("a refusal WITH a reason is a decision",()=>{const s=I.settle(b.id,{ok:false,reason:"June statutory window closed at 18:00Z."});eq(s.state,"rejected");ok(/18:00Z/.test(s.reason))});
+    const c=I.submit({action:"journal.post",idempotencyKey:"k-silent"});
+    await t("a refusal WITHOUT a reason is not",()=>{const s=I.settle(c.id,{ok:false});eq(s.state,"unlanded");ok(/without a reason/.test(s.reason))});
+    const d=I.submit({action:"journal.post",idempotencyKey:"k-nothing"});
+    await t("no answer at all is unlanded",()=>{const s=I.settle(d.id,undefined);eq(s.state,"unlanded");ok(/not an acknowledgement/.test(s.reason))});
+    const e=I.submit({action:"journal.post",idempotencyKey:"k-unreceipted"});
+    await t("landed without a receipt stays unresolved",()=>{const s=I.settle(e.id,{ok:true});eq(s.state,"landed");eq(s.receipt.id,null);ok(s.receipt.unreceipted);ok(I.unresolved().some(x=>x.id===e.id),"an unreceipted landing left the tray")});
+    await t("a retry carries the same key with a higher attempt",()=>{const r=I.retry(d.id);eq(r.state,"inflight");eq(r.idempotencyKey,"k-nothing");eq(r.receipt.attempt,2)});
+  }
+
+  suite="the actual residual closes only on the receipt";
+  {
+    const posted=Object.assign({},staged,{status:"posted",condition:"confirmed",receipt:"JRNL-JE-1090-R1"});
+    const m2=B.select(Object.assign({},SCOPE,{staged:[posted]}));
+    await t("the actual residual closes",()=>{eq(m2.residual.actual,0);eq(m2.residual.open,0)});
+    await t("the break says a posting closed it",()=>{const b=m2.find("break:CASE-4187");eq(b.resolvedBy,"posted");eq(b.condition,"reconciled")});
+    await t("the account sheet's actual closing now carries the entry",()=>{const a=m2.accountSheet("1100");eq(a.closing,97023.68);eq(a.closing,a.projectedClosing)});
+    await t("the posted entry is no longer pending on the ledger",()=>ok(m2.glRows.filter(r=>r.ref==="JE-1090").every(r=>!r.staged),"still pending after the receipt"));
+    await t("the trial balance still proves",()=>eq(sum(m2.accounts,a=>a.closing),0));
+  }
+
+  suite="an instruction outlives the screen";
+  {
+    const shared=fakeStorage();
+    const first=await loadInstructions(shared);
+    first.submit({action:"journal.post",label:"Post JE-1090",idempotencyKey:"journal.post:JE-1090:v1:SNAP-01"});
+    const second=await loadInstructions(shared);   // the operator navigated; a new page loaded
+    const carried=second.list()[0];
+    await t("it is still there after the screen closed",()=>{eq(second.list().length,1);eq(carried.idempotencyKey,"journal.post:JE-1090:v1:SNAP-01")});
+    await t("an in-flight instruction comes back UNLANDED, never landed",()=>{eq(carried.state,"unlanded");ok(/fate is unknown/.test(carried.reason),carried.reason)});
+    await t("it is marked as carried over",()=>ok(carried.restored));
+    await t("it is still unresolved, so the tray keeps it on screen",()=>ok(second.unresolved().some(i=>i.id===carried.id)));
+    const memory=await loadInstructions({getItem(){throw new Error("denied")},setItem(){throw new Error("denied")},removeItem(){}});
+    await t("durability is declared, never assumed",()=>{eq(memory.durable.kind,"memory");ok(/only as long as this page/.test(memory.durable.note));eq(second.durable.kind,"sessionStorage")});
+  }
+
+  suite="scope survives the walk";
+  await t("the scope is labelled once and read everywhere",()=>{eq(m1.scope.label,"Meridian Fund I LP · STAT · June 2026");eq(m1.scope.entityLabel,"Meridian Fund I LP")});
+  await t("switching basis names what it excludes rather than dropping it",()=>{const g=B.select(Object.assign({},SCOPE,{basis:"GAAP"}));eq(g.excluded.length,1);eq(g.excluded[0].ref,"JE-1060");ok(!g.glRows.some(r=>r.ref==="JE-1060"),"an excluded journal still posted")});
+  await t("a basis that changes nothing says so instead of faking a difference",()=>ok(/STAT-only/.test(B.SCOPES.basis.filter(b=>b.id==="GAAP")[0].note)));
+  await t("a closed period is declared closed",()=>{const p=B.select(Object.assign({},SCOPE,{period:"2026-05"}));eq(p.time.periodState,"hard-closed")});
+  await t("another entity is another set of books, with an honest zero",()=>{const s=B.select({entity:"MER-SPV-ALPHA",basis:"STAT",period:"2026-06"});eq(s.breaks.length,0);eq(s.residual.actual,0);eq(sum(s.accounts,a=>a.closing),0)});
+
+  const bad=rows.filter(r=>!r.ok).length;
+  document.getElementById("sum").textContent=bad?`${bad} FAILED of ${rows.length}`:`all ${rows.length} assertions pass`;
+  document.getElementById("sum").style.color=bad?"var(--red,#B54B42)":"var(--green,#3E7A5E)";
+  document.title=(bad?"FAIL":"PASS")+" — books loop ("+rows.length+")";
+  window.__testResults={total:rows.length,failed:bad,rows};
+}
+main();
+</script>
+</body>
+</html>

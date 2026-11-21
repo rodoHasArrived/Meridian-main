@@ -325,7 +325,8 @@ public sealed partial class SettingsViewModel : BindableBase
         : "Standard keeps the full shell summary and spacing for review-heavy sessions.";
 
     /// <summary>
-    /// Whether Windows notifications are enabled.
+    /// Whether pop-up notifications are shown. Applied to the live notification settings at once and
+    /// saved with the operator's preferences, not with the host configuration file.
     /// The XAML NotificationSettingsPanel binds its Opacity to
     /// <see cref="NotificationsPanelOpacity"/> which is derived from this flag.
     /// </summary>
@@ -334,10 +335,9 @@ public sealed partial class SettingsViewModel : BindableBase
         get => _isNotificationsEnabled;
         set
         {
-            if (SetProperty(ref _isNotificationsEnabled, value))
+            if (SetNotificationChoice(ref _isNotificationsEnabled, value, (settings, on) => settings.Enabled = on))
             {
                 RaisePropertyChanged(nameof(NotificationsPanelOpacity));
-                MarkDirty();
             }
         }
     }
@@ -416,6 +416,7 @@ public sealed partial class SettingsViewModel : BindableBase
     public void Initialize()
     {
         LoadDesktopPreferences();
+        LoadNotificationPreferences();
         _ = LoadConfigAsync();
         RefreshCapabilityToggles();
         ConfigPath = _configService.ConfigPath;
@@ -729,7 +730,6 @@ public sealed partial class SettingsViewModel : BindableBase
             var settings = config.Settings ?? new AppSettingsDto();
             ApiBaseUrl = config.IBClientPortal?.BaseUrl ?? ApiEndpointDefaults.LocalApiBaseUrl;
             StatusRefreshInterval = settings.StatusRefreshIntervalSeconds.ToString();
-            IsNotificationsEnabled = settings.NotificationsEnabled;
             SelectedShellDensityMode = settings.CompactMode ? ShellDensityMode.Compact : ShellDensityMode.Standard;
             ThemeIndex = string.Equals(settings.Theme, "Dark", StringComparison.OrdinalIgnoreCase) ? 2 : string.Equals(settings.Theme, "Light", StringComparison.OrdinalIgnoreCase) ? 1 : 0;
             AccentColorIndex = 0;
@@ -769,7 +769,7 @@ public sealed partial class SettingsViewModel : BindableBase
     }
 
     private async Task SaveConfigAsync() => await SaveOrApplyConfigAsync("Configuration Saved");
-    private async Task ApplyConfigAsync() => await SaveOrApplyConfigAsync("Configuration Applied");
+    private async Task ApplyConfigAsync() => await SaveOrApplyConfigAsync("Configuration Saved");
     private async Task SaveOrApplyConfigAsync(string messageTitle)
     {
         var validation = await RefreshValidationAsync();
@@ -779,11 +779,25 @@ public sealed partial class SettingsViewModel : BindableBase
             return;
         }
 
-        var existingConfig = await _configService.LoadConfigFromDiskAsync();
-        var updatedConfig = BuildConfigDtoFromSettings(existingConfig);
-        await _configService.WriteConfigAsync(updatedConfig);
-        HasUnsavedChanges = false;
-        _notificationService.ShowNotification(messageTitle, "Settings have been written to disk.", NotificationType.Success);
+        try
+        {
+            var existingConfig = await _configService.LoadConfigFromDiskAsync();
+            var updatedConfig = BuildConfigDtoFromSettings(existingConfig);
+            await _configService.WriteConfigAsync(updatedConfig);
+            HasUnsavedChanges = false;
+            _notificationService.ShowNotification(messageTitle,
+                "Settings have been written to disk. Host activation is not confirmed; inspect the setting activation banner.", NotificationType.Success);
+        }
+        catch (Meridian.Ui.Shared.Services.UiConfigurationValidationException failure)
+        {
+            _notificationService.ShowNotification("Configuration not saved",
+                string.Join(Environment.NewLine, failure.Errors.SelectMany(entry => entry.Value.Select(message => $"{entry.Key}: {message}"))), NotificationType.Error);
+        }
+        catch (Exception failure) when (failure is IOException or InvalidDataException or UnauthorizedAccessException or System.Text.Json.JsonException)
+        {
+            _notificationService.ShowNotification("Configuration not saved",
+                "The source configuration could not be read or validated. Repair or restore it explicitly before retrying. Your edits remain unsaved.", NotificationType.Error);
+        }
     }
 
     private async Task<WpfServices.ConfigServiceValidationResult> RefreshValidationAsync()
@@ -833,11 +847,6 @@ public sealed partial class SettingsViewModel : BindableBase
     }
 
     // ── Test / support ────────────────────────────────────────────────────────
-
-    private void SendTestNotification()
-    {
-        _notificationService.ShowNotification("Test Notification", "This is a test notification from Meridian.", NotificationType.Info);
-    }
 
     private async Task TestConnectionAsync(CancellationToken ct = default)
     {
@@ -954,7 +963,12 @@ public sealed class FeatureCapabilityToggleViewModel : BindableBase
             }
 
             RaisePropertyChanged(nameof(StateText));
-            _gate.SetEnabled(CapabilityKey, value);
+            // A property setter cannot await, and persisting the override can wait on the
+            // configuration file lock, so the save runs off the UI thread. A failed save is
+            // logged and shown to the operator by the guard.
+            _ = global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(
+                () => _gate.SetEnabledAsync(CapabilityKey, value),
+                nameof(IsEnabled));
         }
     }
 

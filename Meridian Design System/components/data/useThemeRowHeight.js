@@ -1,13 +1,14 @@
 // Meridian useThemeRowHeight — resolves the effective table row height from the density
-// token (--theme-row-height: 32 compact · 40 cozy · 48 spacious) so virtualization math
+// token (--theme-row-height: 26 terminal · 28 dense · 36 standard · 44 review) so
+// virtualization math
 // stays in sync with the CSS and with DensityToggle. Pass an explicit override to opt out;
 // otherwise the hook re-reads the token whenever body[data-theme-density] changes.
 import React from "react";
 
 function readRowHeight() {
-  if (typeof document === "undefined" || !document.body) return 40;
+  if (typeof document === "undefined" || !document.body) return 36;
   const v = parseFloat(getComputedStyle(document.body).getPropertyValue("--theme-row-height"));
-  return Number.isFinite(v) && v > 0 ? v : 40;
+  return Number.isFinite(v) && v > 0 ? v : 36;
 }
 
 export function useThemeRowHeight(override) {

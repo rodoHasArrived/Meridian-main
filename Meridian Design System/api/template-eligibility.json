@@ -1,0 +1,1412 @@
+{
+  "$schema": "meridian/template-eligibility/1",
+  "authored": true,
+  "note": "Hand-authored judgment, machine-checked. Eligibility is a design decision per screen and cannot be generated; scripts/check_template_eligibility.py validates completeness, reason codes and the reference scan, and regenerates the adoption block in docs/METRICS.md.",
+  "contract": "guidelines/TEMPLATE_CONTRACT.md",
+  "release": "4.3.0",
+  "classifiedOn": "2026-11-11",
+  "unit": "template directory (the unit the picker counts), not .dc.html entry",
+  "primitives": {
+    "ctx": "WorkspaceContextBar / WorkspaceContextProvider",
+    "sel": "LinkedSelectionProvider",
+    "tim": "TimeContextProvider",
+    "obj": "ObjectHeader",
+    "dec": "DecisionFlowProvider",
+    "grd": "ActionGuardList",
+    "con": "ContinuityFrame",
+    "fig": "AnalyticalFigure",
+    "dat": "Datum",
+    "cap": "Capsule"
+  },
+  "exemptionReasons": {
+    "no-analytical-context": "No entity, book, basis, period, scenario or currency scope changes the data or its meaning on this screen.",
+    "filters-not-context": "The controls here are query filters over a fixed corpus, not an analytical context that changes what a value means.",
+    "single-surface": "Selection stays inside one isolated widget; no second plane responds to it.",
+    "static-content": "Content is first-load-only or local; there is no remote evidence with a useful last-known-good state.",
+    "no-visualization": "No visualization on this screen supports interpretation, comparison, export or a decision.",
+    "no-reference-line": "No zero, target, prior period, tolerance or parity reference carries analytical meaning here.",
+    "single-time-role": "One unambiguous timestamp; no two time roles can disagree.",
+    "no-active-object": "A list, wall or form with no single identifiable financial object in play.",
+    "unguarded-edit": "No consequential action with ordered prerequisites.",
+    "cannot-fail": "No action here can be blocked by policy, period, authority or evidence.",
+    "not-configurable": "Modules are permanent sections, not genuinely movable, resizable or replaceable."
+  },
+  "totals": {
+    "templates": 40,
+    "entries": 49,
+    "primitives": 10,
+    "cells": 400,
+    "eligibleCells": 244,
+    "conformingCells": 24,
+    "adoptionPct": 9.8
+  },
+  "adoption": {
+    "ctx": {
+      "primitive": "WorkspaceContextBar / WorkspaceContextProvider",
+      "eligible": 29,
+      "conforming": 5,
+      "pct": 17.2,
+      "referencedByIneligible": 0
+    },
+    "sel": {
+      "primitive": "LinkedSelectionProvider",
+      "eligible": 34,
+      "conforming": 3,
+      "pct": 8.8,
+      "referencedByIneligible": 0
+    },
+    "tim": {
+      "primitive": "TimeContextProvider",
+      "eligible": 31,
+      "conforming": 2,
+      "pct": 6.5,
+      "referencedByIneligible": 0
+    },
+    "obj": {
+      "primitive": "ObjectHeader",
+      "eligible": 33,
+      "conforming": 5,
+      "pct": 15.2,
+      "referencedByIneligible": 0
+    },
+    "dec": {
+      "primitive": "DecisionFlowProvider",
+      "eligible": 21,
+      "conforming": 1,
+      "pct": 4.8,
+      "referencedByIneligible": 0
+    },
+    "grd": {
+      "primitive": "ActionGuardList",
+      "eligible": 24,
+      "conforming": 1,
+      "pct": 4.2,
+      "referencedByIneligible": 0
+    },
+    "con": {
+      "primitive": "ContinuityFrame",
+      "eligible": 32,
+      "conforming": 4,
+      "pct": 12.5,
+      "referencedByIneligible": 0
+    },
+    "fig": {
+      "primitive": "AnalyticalFigure",
+      "eligible": 14,
+      "conforming": 1,
+      "pct": 7.1,
+      "referencedByIneligible": 0
+    },
+    "dat": {
+      "primitive": "Datum",
+      "eligible": 20,
+      "conforming": 2,
+      "pct": 10.0,
+      "referencedByIneligible": 0
+    },
+    "cap": {
+      "primitive": "Capsule",
+      "eligible": 6,
+      "conforming": 0,
+      "pct": 0.0,
+      "referencedByIneligible": 0
+    }
+  },
+  "templates": {
+    "accounting-workstation": {
+      "archetype": "Investigate",
+      "entries": [
+        "AccountingWorkstation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "adapter-operations": {
+      "archetype": "Monitor",
+      "entries": [
+        "AdapterOperations.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "grd",
+        "con",
+        "cap"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "fig": "no-visualization",
+        "dat": "no-reference-line"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "cap",
+        "con",
+        "ctx",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "alerting-workstation": {
+      "archetype": "Monitor",
+      "entries": [
+        "AlertingWorkstation.dc.html"
+      ],
+      "eligible": [
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "ctx": "filters-not-context",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "alm-review": {
+      "archetype": "Investigate",
+      "entries": [
+        "AlmReview.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "ctx": 2,
+        "sel": 2,
+        "obj": 1,
+        "con": 1,
+        "fig": 5,
+        "dat": 7
+      },
+      "conforming": [
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel"
+      ],
+      "unmigrated": [
+        "tim"
+      ],
+      "stray": []
+    },
+    "analytical-workbench": {
+      "archetype": "Investigate",
+      "entries": [
+        "AnalyticalWorkbench.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat",
+        "cap"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "cap",
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "asset-sheet": {
+      "archetype": "Report",
+      "entries": [
+        "AssetSheet.dc.html"
+      ],
+      "eligible": [],
+      "exempt": {
+        "ctx": "no-analytical-context",
+        "sel": "single-surface",
+        "tim": "single-time-role",
+        "obj": "no-active-object",
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "con": "static-content",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [],
+      "stray": []
+    },
+    "basket-builder": {
+      "archetype": "Compose",
+      "entries": [
+        "BasketBuilder.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "tim": "single-time-role",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "fig",
+        "grd",
+        "obj",
+        "sel"
+      ],
+      "stray": []
+    },
+    "blank-workstation": {
+      "archetype": "Start",
+      "entries": [
+        "BlankWorkstation.dc.html"
+      ],
+      "eligible": [],
+      "exempt": {
+        "ctx": "no-analytical-context",
+        "sel": "single-surface",
+        "tim": "single-time-role",
+        "obj": "no-active-object",
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "con": "static-content",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [],
+      "stray": []
+    },
+    "charting-workstation": {
+      "archetype": "Investigate",
+      "entries": [
+        "ChartingWorkstation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat",
+        "cap"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "cap",
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "close-management": {
+      "archetype": "Monitor",
+      "entries": [
+        "CloseManagement.dc.html",
+        "CloseTieOut.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "ctx": 2,
+        "sel": 2,
+        "obj": 2,
+        "con": 1,
+        "dat": 3
+      },
+      "conforming": [
+        "con",
+        "ctx",
+        "dat",
+        "obj",
+        "sel"
+      ],
+      "unmigrated": [
+        "dec",
+        "grd",
+        "tim"
+      ],
+      "stray": []
+    },
+    "dashboard-workstation": {
+      "archetype": "Monitor",
+      "entries": [
+        "DashboardWorkstation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "con",
+        "fig",
+        "dat",
+        "cap"
+      ],
+      "exempt": {
+        "obj": "no-active-object",
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "cap",
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "field-formula": {
+      "archetype": "Compose",
+      "entries": [
+        "FieldFormula.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "obj",
+        "dec",
+        "grd"
+      ],
+      "exempt": {
+        "tim": "single-time-role",
+        "con": "static-content",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "sel"
+      ],
+      "stray": []
+    },
+    "ingestion-operations": {
+      "archetype": "Monitor",
+      "entries": [
+        "IngestionOperations.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "interaction-depth": {
+      "archetype": "Investigate",
+      "entries": [
+        "InteractionDepth.dc.html"
+      ],
+      "eligible": [
+        "sel",
+        "con",
+        "fig",
+        "cap"
+      ],
+      "exempt": {
+        "ctx": "filters-not-context",
+        "tim": "single-time-role",
+        "obj": "no-active-object",
+        "dec": "unguarded-edit",
+        "grd": "unguarded-edit",
+        "dat": "no-reference-line"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "cap",
+        "con",
+        "fig",
+        "sel"
+      ],
+      "stray": []
+    },
+    "investment-event-ledger": {
+      "archetype": "Investigate",
+      "entries": [
+        "InvestmentEventLedger.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "ops-wall": {
+      "archetype": "Monitor",
+      "entries": [
+        "OpsWall.dc.html"
+      ],
+      "eligible": [
+        "tim",
+        "con",
+        "cap"
+      ],
+      "exempt": {
+        "ctx": "filters-not-context",
+        "sel": "single-surface",
+        "obj": "no-active-object",
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "fig": "no-visualization",
+        "dat": "no-reference-line"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "cap",
+        "con",
+        "tim"
+      ],
+      "stray": []
+    },
+    "ownership-graph": {
+      "archetype": "Investigate",
+      "entries": [
+        "OwnershipGraph.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "reconciliation": {
+      "archetype": "Investigate",
+      "entries": [
+        "Reconciliation.dc.html",
+        "ReconciliationException.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "ctx": 2,
+        "sel": 2,
+        "tim": 1,
+        "obj": 1,
+        "con": 1
+      },
+      "conforming": [
+        "con",
+        "ctx",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "unmigrated": [
+        "dat",
+        "dec",
+        "grd"
+      ],
+      "stray": []
+    },
+    "report-library": {
+      "archetype": "Report",
+      "entries": [
+        "ReportLibrary.dc.html"
+      ],
+      "eligible": [
+        "sel",
+        "obj"
+      ],
+      "exempt": {
+        "ctx": "filters-not-context",
+        "tim": "single-time-role",
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "con": "static-content",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "obj",
+        "sel"
+      ],
+      "stray": []
+    },
+    "report-pack": {
+      "archetype": "Report",
+      "entries": [
+        "ReportPack.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "tim",
+        "obj",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "sel": "single-surface",
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "con": "static-content",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "tim"
+      ],
+      "stray": []
+    },
+    "report-scheduler": {
+      "archetype": "Compose",
+      "entries": [
+        "ReportScheduler.dc.html"
+      ],
+      "eligible": [
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "ctx": "no-analytical-context",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "security-master-registry": {
+      "archetype": "Investigate",
+      "entries": [
+        "SecurityDetail.dc.html",
+        "SecurityMasterRegistry.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "session-start": {
+      "archetype": "Start",
+      "entries": [
+        "SessionStart.dc.html"
+      ],
+      "eligible": [],
+      "exempt": {
+        "ctx": "no-analytical-context",
+        "sel": "single-surface",
+        "tim": "single-time-role",
+        "obj": "no-active-object",
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "con": "static-content",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [],
+      "stray": []
+    },
+    "settings-admin": {
+      "archetype": "Admin",
+      "entries": [
+        "SettingsAdmin.dc.html"
+      ],
+      "eligible": [
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "ctx": "no-analytical-context",
+        "sel": "single-surface",
+        "tim": "single-time-role",
+        "obj": "no-active-object",
+        "dec": "unguarded-edit",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "grd"
+      ],
+      "stray": []
+    },
+    "strategy-formation": {
+      "archetype": "Compose",
+      "entries": [
+        "StrategyBuilder.dc.html",
+        "StrategyFormation.dc.html",
+        "StrategyOnboarding.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "ctx": 1,
+        "tim": 1,
+        "obj": 1,
+        "dec": 1,
+        "grd": 2,
+        "con": 1
+      },
+      "conforming": [
+        "con",
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "tim"
+      ],
+      "unmigrated": [
+        "sel"
+      ],
+      "stray": []
+    },
+    "strategy-governance": {
+      "archetype": "Admin",
+      "entries": [
+        "StrategyGovernance.dc.html"
+      ],
+      "eligible": [
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "ctx": "filters-not-context",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "strategy-runs": {
+      "archetype": "Investigate",
+      "entries": [
+        "BacktestBuilder.dc.html",
+        "BacktestCompare.dc.html",
+        "CoveredCallLab.dc.html",
+        "RunLedger.dc.html",
+        "StrategyRuns.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "fig",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "trading-desk": {
+      "archetype": "Compose",
+      "entries": [
+        "TradingDesk.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": []
+    },
+    "amx-governance": {
+      "archetype": "Admin",
+      "entries": [
+        "AmxGovernance.dc.html"
+      ],
+      "eligible": [
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "ctx": "filters-not-context",
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-governance; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "backtest-builder": {
+      "archetype": "Compose",
+      "entries": [
+        "BacktestBuilder.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "fig",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx renders strategy/benchmark EquityCurve, DrawdownChart with a -6% threshold, and return Histogram; these require figure and reference contracts. Existing form/draft/data prerequisites retain the strategy-formation eligibility. Fixed panels are not configurable. Adoption scans only the .dc.html entry, so imported JSX names are not counted as conformance."
+    },
+    "backtest-compare": {
+      "archetype": "Investigate",
+      "entries": [
+        "BacktestCompare.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx compares two selected immutable runs, KPI deltas, overlaid equity paths, drawdown and return distributions. Context, linked selection, clocks, object, continuity, figure and datum contracts apply; the permanent fixed panels have no working move/resize/replace controls, so Capsule is exempt. Adoption scans only the .dc.html entry."
+    },
+    "books-loop": {
+      "archetype": "Investigate",
+      "entries": [
+        "BooksLoop.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "ctx": 2
+      },
+      "conforming": [
+        "ctx"
+      ],
+      "unmigrated": [
+        "con",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: BooksLoop.dc.html carries shared entity/basis/period scope and selected identities across tie-out, draft journal, ledger, trial balance and account sheet; stage/review/submit is guarded. Actual/projected residual zero and debit-credit parity are meaningful references, so Datum is eligible. There is no plotted visualization or configurable module. Only actual entry references count as adoption."
+    },
+    "covered-call-lab": {
+      "archetype": "Compose",
+      "entries": [
+        "CoveredCallLab.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "fig",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx compares strategy and underlying EquityCurve, with overwrite/model parameters and time-bounded option-chain evidence. Figure and comparator/reference contracts apply. Fixed request/result panels do not qualify as configurable Capsules. Adoption scans only the .dc.html entry."
+    },
+    "family-office": {
+      "archetype": "Investigate",
+      "entries": [
+        "FamilyOffice.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "con",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "fig",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows ownership-graph; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "journaling-workstation": {
+      "archetype": "Investigate",
+      "entries": [
+        "JournalingWorkstation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx joins journal entry, posting history and statement reconciliation; balanced debit/credit arithmetic and reconciliation parity are meaningful references, so Datum is eligible. No plotted figure or configurable module is present. Imported JSX names are not counted as entry conformance."
+    },
+    "position-detail": {
+      "archetype": "Investigate",
+      "entries": [
+        "PositionDetail.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "fig",
+        "dat"
+      ],
+      "exempt": {
+        "dec": "unguarded-edit",
+        "grd": "cannot-fail",
+        "con": "static-content",
+        "cap": "not-configurable"
+      },
+      "references": {
+        "obj": 1
+      },
+      "conforming": [
+        "obj"
+      ],
+      "unmigrated": [
+        "ctx",
+        "dat",
+        "fig",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: PositionDetail.dc.html switches two holdings/compare mode and propagates entity, portfolio, book, basis and object to multiple work/evidence planes. Trade/posting/valuation/as-of/calculation times coexist; RollforwardTrace supports interpretation, with opening/prior-period and reconciliation-parity references. Context, linked selection, time, object, figure and datum contracts are eligible. Content is a fixed local positions-data.js snapshot with no remote refresh, writes or configurable modules, so continuity, decision, guards and Capsule remain exempt. Actual ObjectHeader entry reference is the only claimed adoption."
+    },
+    "reconciliation-workstation": {
+      "archetype": "Investigate",
+      "entries": [
+        "ReconciliationWorkstation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "split-pane-reconciliation": {
+      "archetype": "Investigate",
+      "entries": [
+        "Split Pane Reconciliation.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con",
+        "dat"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dat",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows reconciliation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "strategy-builder": {
+      "archetype": "Compose",
+      "entries": [
+        "StrategyBuilder.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "tim",
+        "obj",
+        "dec",
+        "grd",
+        "con"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "con",
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "sel",
+        "tim"
+      ],
+      "stray": [],
+      "classificationNote": "4.3.0 import audit: workflow eligibility follows strategy-formation; references are scanned from this entry. Retained compatibility screens are included without claiming migration."
+    },
+    "strategy-onboarding": {
+      "archetype": "Compose",
+      "entries": [
+        "StrategyOnboarding.dc.html"
+      ],
+      "eligible": [
+        "ctx",
+        "sel",
+        "obj",
+        "dec",
+        "grd"
+      ],
+      "exempt": {
+        "fig": "no-visualization",
+        "dat": "no-reference-line",
+        "cap": "not-configurable",
+        "tim": "single-time-role",
+        "con": "static-content"
+      },
+      "references": {},
+      "conforming": [],
+      "unmigrated": [
+        "ctx",
+        "dec",
+        "grd",
+        "obj",
+        "sel"
+      ],
+      "stray": [],
+      "classificationNote": "Source review: screen.jsx is a local four-step strategy setup form with selected universe/fields/template and review-before-run prerequisites. Those support context, linked selection, object, decision and guards. It has no competing timestamp roles, retained remote evidence, analytical plot/reference, or configurable module; those remain exempt. Imported JSX names are not counted as entry conformance."
+    }
+  }
+}

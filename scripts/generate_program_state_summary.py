@@ -21,11 +21,9 @@ PROGRAM_STATE_DATA = "docs/roadmap/data/program-state.yml"
 ROADMAP_ITEMS_DATA = "docs/roadmap/data/roadmap-items.yml"
 DEFAULT_JSON_OUT = "docs/status/program-state-summary.json"
 DEFAULT_MD_OUT = "docs/status/program-state-summary.md"
-# v3 orders rows by wave then rank via the shared roadmap sort key. Changing the ordering of a
-# generated output is a semantic change, which docs/roadmap/schema-versioning.md classifies as
-# major; this generator carries no separate renderer version, so the summary schema version is
-# the one consumers have to distinguish v2 lexicographic ordering from v3 wave/rank ordering.
-SUMMARY_SCHEMA_VERSION = "program-state-summary/v3"
+# v4 retains v3 wave/rank order and exposes structured scope, decision/PR references and
+# retained detail links. Scope status counts derive from current item fields.
+SUMMARY_SCHEMA_VERSION = "program-state-summary/v4"
 
 
 def _as_list(value: Any) -> list[Any]:
@@ -85,6 +83,9 @@ def load_program_state(root: Path) -> tuple[dict[str, Any], list[dict[str, str]]
                 "Evidence Posture": str(item.get("evidence_posture", "")),
                 "Evidence": _evidence_links(item),
                 "Last Reviewed": str(item.get("last_reviewed", "")),
+                "Decisions": _join(item.get("decision_ids")),
+                "PR References": _join(item.get("pr_references")),
+                "Status Detail": str(item.get("status_detail", "")),
             }
         )
 
@@ -99,6 +100,19 @@ def load_program_state(root: Path) -> tuple[dict[str, Any], list[dict[str, str]]
 
 
 def render_markdown(program: dict[str, Any], rows: list[dict[str, str]]) -> str:
+    scope = program.get("active_scope", {})
+    scope_text = ""
+    if isinstance(scope, dict) and scope:
+        selected = set(scope.get("roadmap_items", []))
+        scope_rows = [row for row in rows if row["ID"] in selected]
+        counts = {status: sum(row["Status"] == status for row in scope_rows) for status in sorted({row["Status"] for row in scope_rows})}
+        scope_text = (
+            "## Active Scope\n\n"
+            + "; ".join(f"{status}: {count}" for status, count in counts.items()) + ".\n\n"
+            + "Work queue (priority only; adds no dependency): " + " → ".join(scope.get("work_queue", [])) + ".\n\n"
+            + "Decisions: " + ", ".join(scope.get("decision_ids", [])) + ".\n\n"
+            + "Bounded roadmap acceptance does not certify a release. Current item statuses appear below.\n\n"
+        )
     table_rows = [
         [
             row["ID"],
@@ -119,6 +133,7 @@ def render_markdown(program: dict[str, Any], rows: list[dict[str, str]]) -> str:
         "This file is generated from `docs/roadmap/data/program-state.yml` and "
         "`docs/roadmap/data/roadmap-items.yml`.\n\n"
         f"Snapshot date: {program.get('snapshot_date', '-')}\n\n"
+        + scope_text
         + markdown_table(
             [
                 "ID",
@@ -154,6 +169,7 @@ def render_json(program: dict[str, Any], rows: list[dict[str, str]]) -> str:
             "activeUiLane": str(program.get("active_ui_lane", "")),
             "retainedSupportLane": str(program.get("retained_support_lane", "")),
             "mobileLane": str(program.get("mobile_lane", "")),
+            "activeScope": program.get("active_scope", {}),
         },
         "items": rows,
     }

@@ -3,6 +3,8 @@
 export { ChartCard } from "./ChartCard";
 export type { ChartCardProps, ChartReadoutItem } from "./ChartCard";
 
+export type { ChartA11yProps, ChartAccessibleData } from "./chart-a11y";
+
 export { CandleChart } from "./CandleChart";
 export type { CandleChartProps, Candle, CandleOverlay } from "./CandleChart";
 
@@ -31,3 +33,21 @@ export {
   nearestTimestampIndex
 } from "./chart-sync";
 export type { ChartSyncState, ChartSyncApi, ChartCrosshairSync } from "./chart-sync";
+
+export { ComparisonPlate, PlateGrid } from "./ComparisonPlate";
+export type { ComparisonPlateProps, PlateGridProps, PlateSpec } from "./ComparisonPlate";
+
+export {
+  SelectionCompareProvider,
+  CompareToggle,
+  CompareTray,
+  CompareSheet,
+  useSelectionCompare
+} from "./SelectionCompare";
+export type {
+  SelectionCompareProviderProps,
+  CompareItem,
+  CompareToggleProps,
+  CompareTrayProps,
+  CompareSheetProps
+} from "./SelectionCompare";

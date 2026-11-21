@@ -1,9 +1,13 @@
+using System.Net;
+using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.SecurityMaster;
 using Meridian.Contracts.SecurityMaster;
+using Meridian.Infrastructure.Adapters.Alpaca;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Storage.SecurityMaster;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging.Abstractions;
 using NSubstitute;
 using Xunit;
@@ -190,6 +194,70 @@ public sealed class CorporateActionIngestOrchestratorTests
         result.Staged.Should().Be(1, "single-source announcements stay staged for operator review");
         result.Proposals.Should().ContainSingle();
         commandService.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task IngestAsync_LegacyEmptyFetch_HasUnknownCoverageAndVisibleWarning()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out _, new LegacyEmptyProvider());
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.Proposals.Should().BeEmpty();
+        result.FetchOutcomes.Should().ContainSingle().Which.Status.Should().Be(CorporateActionFetchStatus.Unknown);
+        result.Errors.Should().ContainSingle().Which.Should().Contain("coverage-unreported");
+    }
+
+    [Fact]
+    public async Task IngestAsync_CompleteEmptyAndFailedEmpty_RemainDistinctInInbox()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out _,
+            new OutcomeProvider("complete", CorporateActionFetchResult.Complete([])),
+            new OutcomeProvider("failed", CorporateActionFetchResult.Failed("unauthorized", 401)));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+        var inbox = new CorporateActionInboxState();
+        inbox.Record(result);
+
+        result.FetchOutcomes.Select(outcome => outcome.Status).Should().Equal(
+            CorporateActionFetchStatus.Complete, CorporateActionFetchStatus.Failed);
+        result.Errors.Should().ContainSingle().Which.Should().StartWith("failed/");
+        inbox.GetInbox().FetchOutcomes.Should().BeEquivalentTo(result.FetchOutcomes);
+    }
+
+    [Fact]
+    public async Task IngestAsync_PartialProvider_WithholdsObservationsWithCoverageWarning()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out var commands,
+            new OutcomeProvider("partial", new CorporateActionFetchResult(
+                [Dividend(securityId, "partial", 0.24m)], CorporateActionFetchStatus.Partial,
+                [new("rate-limited", 429, TimeSpan.FromSeconds(20), "splits")])));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.FetchOutcomes.Should().ContainSingle().Which.Failures.Should().ContainSingle()
+            .Which.RetryAfter.Should().Be(TimeSpan.FromSeconds(20));
+        result.Errors.Should().ContainSingle().Which.Should().Contain("Partial").And.Contain("splits:rate-limited");
+        result.Staged.Should().Be(0);
+        result.Applied.Should().Be(0);
+        result.Proposals.Should().BeEmpty();
+        result.Errors.Should().ContainSingle().Which.Should().Contain("1 observation(s) withheld");
+        commands.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task IngestAsync_ProviderException_DoesNotExposeExceptionText()
+    {
+        var securityId = Guid.NewGuid();
+        var orchestrator = CreateOrchestrator(securityId, EmptyEventStore(securityId), out _, new ThrowingProvider("nasdaq"));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.FetchOutcomes.Should().ContainSingle().Which.Status.Should().Be(CorporateActionFetchStatus.Failed);
+        result.Errors.Should().ContainSingle().Which.Should().Contain("transport-error").And.NotContain("upstream unavailable");
     }
 
     [Fact]
@@ -437,6 +505,175 @@ public sealed class CorporateActionIngestOrchestratorTests
             .Should().Be(CorporateActionProviderReleaseStatusDto.ReviewOnly);
     }
 
+    [Fact]
+    public async Task IngestAsync_IncompleteAlpacaFetch_IsReportedAndOtherObservationsStayReviewOnly()
+    {
+        var securityId = Guid.NewGuid();
+        // Page one succeeds and names a next page; page two fails.
+        var alpaca = CreateAlpacaProvider(request =>
+            request.RequestUri!.Query.Contains("page_token=", StringComparison.Ordinal)
+                ? new HttpResponseMessage(HttpStatusCode.InternalServerError)
+                : AlpacaJson(
+                    """{"corporate_actions":{"cash_dividends":[{"ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":"next-1"}"""));
+        var orchestrator = CreateDurableOrchestrator(
+            securityId,
+            out var recordedRequests,
+            alpaca,
+            new StubProvider("finnhub", Dividend(securityId, "finnhub", 0.24m)));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        var error = result.Errors.Should().ContainSingle().Subject;
+        error.Should().StartWith("alpaca/ACME:");
+        error.Should().Contain("incomplete");
+        error.Should().Contain("1 observation(s) withheld");
+        error.Should().NotContain("test-key").And.NotContain("test-secret");
+        result.Applied.Should().Be(0);
+        result.Staged.Should().Be(1, "the other provider's observation is still staged for review");
+        result.Proposals.Should().ContainSingle().Which.ObservationSource.Should().Be("finnhub");
+        result.Proposals.Should().OnlyContain(proposal =>
+            !proposal.AutoApplied
+            && proposal.ProviderReleaseStatus == CorporateActionProviderReleaseStatusDto.ReviewOnly);
+        recordedRequests.Should().ContainSingle();
+        recordedRequests.Should().OnlyContain(request =>
+            request.ProviderIdentity.ProviderId == "finnhub"
+            && request.ProviderIdentity.ReleaseStatus == CorporateActionProviderReleaseStatusDto.ReviewOnly);
+    }
+
+    [Fact]
+    public async Task IngestAsync_AlpacaWithoutCredentials_IsReportedUnavailableNotAsNoActions()
+    {
+        var securityId = Guid.NewGuid();
+        var alpaca = CreateAlpacaProvider(
+            _ => throw new InvalidOperationException("no request is expected without credentials"),
+            keyId: string.Empty,
+            secretKey: string.Empty);
+        var orchestrator = CreateOrchestrator(
+            securityId,
+            EmptyEventStore(securityId),
+            out var commandService,
+            alpaca);
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        var error = result.Errors.Should().ContainSingle().Subject;
+        error.Should().StartWith("alpaca/ACME:");
+        error.Should().Contain("unavailable");
+        result.Proposals.Should().BeEmpty();
+        result.Applied.Should().Be(0);
+        result.Staged.Should().Be(0);
+        commandService.Requests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task IngestAsync_CompleteEmptyAlpacaFetch_ReportsNoError()
+    {
+        var securityId = Guid.NewGuid();
+        var alpaca = CreateAlpacaProvider(_ => AlpacaJson("""{"corporate_actions":{},"next_page_token":null}"""));
+        var orchestrator = CreateDurableOrchestrator(securityId, out var recordedRequests, alpaca);
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.Errors.Should().BeEmpty("a provider with no actions is not a failed fetch");
+        result.Proposals.Should().BeEmpty();
+        recordedRequests.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task IngestAsync_CompleteAlpacaFetch_StagesObservationAsReviewOnly()
+    {
+        var securityId = Guid.NewGuid();
+        var alpaca = CreateAlpacaProvider(_ => AlpacaJson(
+            """{"corporate_actions":{"cash_dividends":[{"ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":null}"""));
+        var orchestrator = CreateDurableOrchestrator(securityId, out var recordedRequests, alpaca);
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        result.Errors.Should().BeEmpty();
+        result.Applied.Should().Be(0);
+        var proposal = result.Proposals.Should().ContainSingle().Subject;
+        proposal.ObservationSource.Should().Be("alpaca");
+        proposal.AutoApplied.Should().BeFalse();
+        proposal.ProviderReleaseStatus.Should().Be(CorporateActionProviderReleaseStatusDto.ReviewOnly);
+        recordedRequests.Should().ContainSingle().Which.ProviderIdentity.ReleaseStatus
+            .Should().Be(CorporateActionProviderReleaseStatusDto.ReviewOnly);
+    }
+
+    [Theory]
+    [InlineData(CorporateActionFetchStatus.Incomplete, "incomplete")]
+    [InlineData(CorporateActionFetchStatus.Unavailable, "unavailable")]
+    public async Task IngestAsync_NotCompleteFetchOutcome_IsAddedToErrorsAndStagesNothingFromThatProvider(
+        CorporateActionFetchStatus status,
+        string expectedWord)
+    {
+        var securityId = Guid.NewGuid();
+        var outcome = status == CorporateActionFetchStatus.Incomplete
+            ? CorporateActionFetchResult.Incomplete("synthetic page failure.", withheldObservationCount: 3)
+            : CorporateActionFetchResult.Unavailable("synthetic outage.");
+        var orchestrator = CreateOrchestrator(
+            securityId,
+            EmptyEventStore(securityId),
+            out var commandService,
+            new OutcomeProvider("provider-a", outcome),
+            new StubProvider("provider-b", Dividend(securityId, "provider-b", 0.24m)));
+
+        var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());
+
+        var error = result.Errors.Should().ContainSingle().Subject;
+        error.Should().StartWith("provider-a/ACME:");
+        error.Should().Contain(expectedWord).And.Contain(outcome.Reason!);
+        result.Proposals.Should().ContainSingle().Which.WinningSource.Should().Be("provider-b");
+        result.Proposals.Should().OnlyContain(proposal =>
+            !proposal.AutoApplied
+            && proposal.ProviderReleaseStatus == CorporateActionProviderReleaseStatusDto.ReviewOnly);
+        commandService.Requests.Should().BeEmpty();
+    }
+
+    private static AlpacaCorporateActionProvider CreateAlpacaProvider(
+        Func<HttpRequestMessage, HttpResponseMessage> respond,
+        string keyId = "test-key",
+        string secretKey = "test-secret")
+    {
+        var factory = Substitute.For<IHttpClientFactory>();
+        var handler = new StubHttpHandler(respond);
+        factory.CreateClient("alpaca-corp-actions").Returns(_ => new HttpClient(handler, disposeHandler: false));
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["ALPACA_KEY_ID"] = keyId,
+                ["ALPACA_SECRET_KEY"] = secretKey,
+            })
+            .Build();
+        return new AlpacaCorporateActionProvider(
+            factory,
+            configuration,
+            NullLogger<AlpacaCorporateActionProvider>.Instance);
+    }
+
+    private static HttpResponseMessage AlpacaJson(string body) =>
+        new(HttpStatusCode.OK) { Content = new StringContent(body, Encoding.UTF8, "application/json") };
+
+    private sealed class StubHttpHandler(Func<HttpRequestMessage, HttpResponseMessage> respond) : HttpMessageHandler
+    {
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+            => Task.FromResult(respond(request));
+    }
+
+    private sealed class OutcomeProvider(string providerId, CorporateActionFetchResult outcome)
+        : ICorporateActionProvider
+    {
+        public string ProviderId => providerId;
+
+        public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => throw new InvalidOperationException("Coverage-aware ingestion must use the outcome API.");
+
+        public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(outcome);
+    }
+
     private static CorporateActionIngestOrchestrator CreateOrchestrator(
         Guid securityId,
         ISecurityMasterEventStore eventStore,
@@ -584,6 +821,10 @@ public sealed class CorporateActionIngestOrchestratorTests
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionCommand>>(commands);
+
+        public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(CorporateActionFetchResult.Complete(commands));
     }
 
     private sealed class AcceptanceEligibleStubProvider(
@@ -598,6 +839,19 @@ public sealed class CorporateActionIngestOrchestratorTests
         public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
             string ticker, Guid securityId, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<CorporateActionCommand>>(commands);
+
+        public Task<CorporateActionFetchResult> FetchWithOutcomeAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => Task.FromResult(CorporateActionFetchResult.Complete(commands));
+    }
+
+    private sealed class LegacyEmptyProvider : ICorporateActionProvider
+    {
+        public string ProviderId => "legacy";
+
+        public Task<IReadOnlyList<CorporateActionCommand>> FetchAsync(
+            string ticker, Guid securityId, CancellationToken ct = default)
+            => Task.FromResult<IReadOnlyList<CorporateActionCommand>>([]);
     }
 
     private sealed class ThrowingProvider(string providerId) : ICorporateActionProvider

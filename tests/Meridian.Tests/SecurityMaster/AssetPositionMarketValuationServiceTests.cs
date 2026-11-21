@@ -106,6 +106,46 @@ public sealed class AssetPositionMarketValuationServiceTests
     }
 
     [Fact]
+    public async Task PreservesDeclaredCleanQuotationAndSettlementEvidenceWithoutReinterpretingUnits()
+    {
+        var f = new AssetPositionValuationFixture();
+        f.Selection = f.Selection with
+        {
+            Quotation = new SecurityPriceQuotationEvidence(SecurityPriceBasis.Clean,
+                SecurityQuotationConvention.CurrencyPerUnit, SecurityQuoteStatus.Evaluated,
+                f.Request.ValuationDate.AddDays(1), "Retained regular settlement")
+        };
+        var result = await f.ValueAsync();
+        result.Status.Should().Be("Ready", "the declared currency-per-unit quotation is consistent: {0}", JsonSerializer.Serialize(result.Blockers));
+        result.MarketValue.Should().Be(24.691357802469135780m);
+        result.Diagnostics.Should().Contain(item => item.Contains("Clean; CurrencyPerUnit; Evaluated")
+            && item.Contains("2026-01-02") && item.Contains("Retained regular settlement"));
+    }
+
+    [Theory]
+    [InlineData("dirty")]
+    [InlineData("unit-conflict")]
+    [InlineData("missing-settlement")]
+    public async Task RefusesDirtyOrInconsistentDeclaredQuotationEvidence(string failure)
+    {
+        var f = new AssetPositionValuationFixture();
+        f.Selection = f.Selection with
+        {
+            Quotation = new SecurityPriceQuotationEvidence(
+                failure == "dirty" ? SecurityPriceBasis.Dirty : SecurityPriceBasis.Clean,
+                failure == "unit-conflict" ? SecurityQuotationConvention.Per100Face : SecurityQuotationConvention.CurrencyPerUnit,
+                SecurityQuoteStatus.Evaluated, failure == "missing-settlement" ? default : f.Request.ValuationDate,
+                "Retained settlement")
+        };
+        var result = await f.ValueAsync();
+        result.Status.Should().Be("Blocked");
+        result.MarketValue.Should().BeNull();
+        result.UnrealizedPnl.Should().BeNull();
+        result.Blockers.Should().Contain(blocker => blocker.Code == (failure == "dirty"
+            ? "PriceBasisRequiresNormalization" : "QuotationEvidenceMismatch"));
+    }
+
+    [Fact]
     public async Task MissingCarryingAmountDoesNotBecomeAnInventedCostBasis()
     {
         var f = new AssetPositionValuationFixture();

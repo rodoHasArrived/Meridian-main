@@ -46,6 +46,28 @@ public enum SecurityIdentifierKind
     /// </summary>
     ListingId,
     /// <summary>
+    /// Unique Transaction Identifier (ISO 23897) for regulatory derivatives reporting — up to 52
+    /// upper-case alphanumeric characters whose first 20 are the generating entity's LEI. Names
+    /// exactly one trade, so it participates in duplicate detection like other canonical kinds.
+    /// </summary>
+    Uti,
+    /// <summary>
+    /// Unique Product Identifier (ISO 4914), issued by the ANNA Derivatives Service Bureau — 12
+    /// characters: "QZ", nine digits/consonants, and an ISO 7064 MOD 31,30 check character. Names an
+    /// OTC derivative <em>product</em>, so many contracts legitimately share one value.
+    /// </summary>
+    Upi,
+    /// <summary>
+    /// IHS Markit RED reference-entity code (RED6) — six alphanumeric characters naming a CDS
+    /// reference entity. Shared by every contract on that entity.
+    /// </summary>
+    MarkitRedEntity,
+    /// <summary>
+    /// IHS Markit RED pair code (RED9) — nine alphanumeric characters: the six-character entity code
+    /// plus a three-character reference-obligation suffix. Shared by every contract on that pair.
+    /// </summary>
+    MarkitRedPair,
+    /// <summary>
     /// Read-tolerance member: a kind written by a newer node that this node does not recognize.
     /// Rows carrying it stay readable (mixed-version rollout) but cannot be written back as-is —
     /// the command mapping rejects <see cref="Unknown"/> so unrecognized kinds are never silently

@@ -1,3 +1,4 @@
+import type React from "react";
 /** White paper card — mirrors `CardStyle` (1px border, 8px radius, whisper shadow). The outermost surface primitive. */
 export interface PanelSurfaceProps extends React.HTMLAttributes<HTMLDivElement> {
   /** Use the raised off-white surface (metric tiles, inspector rails). @default false */
@@ -8,4 +9,4 @@ export interface PanelSurfaceProps extends React.HTMLAttributes<HTMLDivElement> 
   flat?: boolean;
   children?: React.ReactNode;
 }
-export declare function PanelSurface(props: PanelSurfaceProps): JSX.Element;
+export declare function PanelSurface(props: PanelSurfaceProps): React.JSX.Element;

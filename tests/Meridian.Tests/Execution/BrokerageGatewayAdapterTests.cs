@@ -32,6 +32,37 @@ public sealed class BrokerageGatewayAdapterTests
             NullLogger<BrokerageGatewayAdapter>.Instance);
     }
 
+    // ── CancelAsync ────────────────────────────────────────────────────
+
+    [Fact]
+    public async Task CancelAsync_CallerCancellation_Propagates()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var gateway = CreateMockGateway();
+        gateway.CancelOrderAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns<Task<ExecutionReport>>(_ => Task.FromCanceled<ExecutionReport>(cts.Token));
+        await using var adapter = CreateAdapter(gateway);
+
+        var act = () => adapter.CancelAsync("ord-1", cts.Token);
+
+        await act.Should().ThrowAsync<OperationCanceledException>(
+            "a cancelled caller must not be told the broker refused the cancel");
+    }
+
+    [Fact]
+    public async Task CancelAsync_GatewayFailure_ReturnsFalse()
+    {
+        var gateway = CreateMockGateway();
+        gateway.CancelOrderAsync("ord-1", Arg.Any<CancellationToken>())
+            .Returns<Task<ExecutionReport>>(_ => Task.FromException<ExecutionReport>(new HttpRequestException("broker down")));
+        await using var adapter = CreateAdapter(gateway);
+
+        var cancelled = await adapter.CancelAsync("ord-1");
+
+        cancelled.Should().BeFalse();
+    }
+
     // ── ValidateOrderAsync ─────────────────────────────────────────────
 
     [Fact]

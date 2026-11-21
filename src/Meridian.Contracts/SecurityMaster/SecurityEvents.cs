@@ -40,8 +40,16 @@ public static class SecurityMasterEventPayloads
     /// </summary>
     public const string EconomicDefinition = "SecurityEconomicDefinition";
 
-    /// <summary>The current <see cref="EconomicDefinition"/> payload version.</summary>
-    public const int EconomicDefinitionVersion = EconomicTermsSchema.Current;
+    /// <summary>
+    /// The current <see cref="EconomicDefinition"/> event version. Version 3 carries the complete
+    /// shared term modules; the nested economic-terms codec remains <see cref="EconomicTermsSchema.Current"/>.
+    /// Event versions advance independently so older replay readers refuse richer events.
+    /// </summary>
+    public const int EconomicDefinitionVersion = 3;
+
+    // Events written before explicit family/version columns may rely on shape or type-only
+    // metadata. Their historical inference must not advance whenever the current writer does.
+    private const int UnversionedEconomicDefinitionVersion = 2;
 
     /// <summary>
     /// The flat projection record written before the economic definition existed. Still replayed
@@ -129,7 +137,7 @@ public static class SecurityMasterEventPayloads
         => IsEconomicDefinitionShape(payload) ? EconomicDefinition : LegacyProjection;
 
     private static int DefaultVersionFor(string type)
-        => type == EconomicDefinition ? EconomicDefinitionVersion : LegacyProjectionVersion;
+        => type == EconomicDefinition ? UnversionedEconomicDefinitionVersion : LegacyProjectionVersion;
 
     private static string? ReadMetadataString(JsonElement metadata, string key)
         => metadata.ValueKind == JsonValueKind.Object

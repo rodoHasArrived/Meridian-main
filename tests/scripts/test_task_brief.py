@@ -20,7 +20,7 @@ class TaskBriefTests(unittest.TestCase):
         # interpreters. A permanent ai/ insertion selects ai/tests as `tests`
         # in workers even though the parent already imported the repo package.
         root = Path(__file__).resolve().parents[2]
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             probe = Path(directory) / "probe_imports.py"
             probe.write_text(
                 "from pathlib import Path\n"
@@ -46,7 +46,7 @@ class TaskBriefTests(unittest.TestCase):
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
 
     def setUp(self):
-        self.temp = tempfile.TemporaryDirectory()
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
         self.addCleanup(self.temp.cleanup)
         self.root = Path(self.temp.name)
         self.brief = {
@@ -92,7 +92,7 @@ class TaskBriefTests(unittest.TestCase):
                 validate_brief(self.root, {**self.brief, "ownedPaths": [path]})
 
     def test_symlink_owned_path_escape_rejected(self):
-        with tempfile.TemporaryDirectory() as outside:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as outside:
             (self.root / "escape").symlink_to(outside, target_is_directory=True)
             with self.assertRaisesRegex(ValueError, "escapes"):
                 validate_brief(self.root, {**self.brief, "ownedPaths": ["escape/future.py"]})

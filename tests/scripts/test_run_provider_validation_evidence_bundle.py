@@ -33,7 +33,7 @@ class RunProviderValidationEvidenceBundleTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output_root = root / "bundle-output"
             date_stamp = "2026-05-01"
@@ -75,7 +75,7 @@ class RunProviderValidationEvidenceBundleTests(unittest.TestCase):
         if pwsh is None:
             self.skipTest("pwsh is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             output_root = root / "bundle-output"
             date_stamp = "2026-05-01"

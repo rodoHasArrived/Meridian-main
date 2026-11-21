@@ -21,6 +21,7 @@ erDiagram
         numeric_18_8_ annual_rate_applied
         timestamp_with_time_zone recorded_at
         numeric_24_8_ pik_interest_amount
+        boolean pik_capitalization_deferred
     }
     security_master_bond_accrual_convention_projection {
         uuid security_id PK,FK
@@ -87,6 +88,85 @@ erDiagram
         numeric_28_10_ premium_amount
         text primary_identifier_value
         bigint version
+    }
+    security_master_cash_dividend_attestation_declaration_history {
+        text tenant_id PK
+        text company_id PK
+        uuid declaration_id
+        bigint revision PK
+        uuid ledger_book_id
+        timestamp_with_time_zone recorded_at
+        jsonb payload
+        character_64_ payload_hash
+    }
+    security_master_cash_dividend_attestation_declarations {
+        text tenant_id PK
+        text company_id PK
+        uuid declaration_id
+        bigint revision
+        uuid ledger_book_id
+        boolean enabled
+        text principal_id
+        jsonb payload
+        character_64_ payload_hash
+    }
+    security_master_cash_dividend_attestation_event_aliases {
+        text tenant_id PK
+        text company_id PK
+        text provider_id PK
+        text source_event_id PK
+        text source_event_version
+        character_64_ source_evidence_hash
+        text related_event_key
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_cash_dividend_attestation_postings {
+        uuid posting_id PK
+        uuid attestation_id FK
+        uuid case_id FK
+        uuid projection_id FK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        uuid period_id
+        uuid journal_entry_id
+        timestamp_with_time_zone posted_at
+        jsonb payload
+        character_64_ payload_hash
+    }
+    security_master_cash_dividend_attestation_reservations {
+        uuid reservation_id PK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        uuid case_id FK
+        text posting_idempotency_key
+        text related_event_key
+        date budget_month
+        numeric_38_18_ gross_usd
+        numeric whole_event_gross_usd
+        character_64_ economic_fingerprint
+        timestamp_with_time_zone reserved_at
+    }
+    security_master_cash_dividend_attestations {
+        uuid attestation_id PK
+        uuid case_id FK
+        uuid projection_id FK
+        uuid reservation_id FK
+        text tenant_id
+        text company_id
+        uuid ledger_book_id
+        uuid declaration_id
+        bigint declaration_revision
+        bigint bound_case_version
+        text attested_by
+        timestamp_with_time_zone attested_at
+        jsonb payload
+        character_64_ payload_hash
+        jsonb projection_payload
+        character_64_ projection_hash
+        timestamp_with_time_zone voided_at
+        text voided_by
     }
     security_master_cash_sweep_projection {
         uuid security_id PK
@@ -445,6 +525,18 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_custom_asset_profile_field_projection {
+        uuid security_id PK
+        text custom_profile_id
+        integer profile_version
+        text field_key PK
+        text value_kind
+        text text_value
+        numeric numeric_value
+        boolean boolean_value
+        jsonb raw_value
+        bigint version
+    }
     security_master_data_vendor_entitlements {
         uuid entitlement_id PK
         text vendor_name
@@ -662,6 +754,39 @@ erDiagram
     security_master_loan_event_position_seq {
         text catalogued_object
     }
+    security_master_loan_index_fixing {
+        uuid fixing_id PK
+        text index_name
+        date observation_date
+        integer revision
+        numeric_24_10_ declared_value
+        text declared_unit
+        numeric_18_10_ rate_fraction
+        text source_ref
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
+    security_master_loan_pik_capitalization_projection {
+        uuid loan_id PK
+        date capitalization_date PK
+        date period_start
+        date period_end
+        numeric_24_8_ amount
+        timestamp_with_time_zone recorded_at
+    }
+    security_master_loan_rate_reset_projection {
+        uuid loan_id PK
+        date effective_date PK
+        text reset_kind
+        text index_name
+        date fixing_observation_date
+        numeric_18_10_ observed_rate
+        numeric_18_6_ spread_bps
+        numeric_18_10_ all_in_rate
+        text source_ref
+        uuid fixing_id
+        integer fixing_revision
+    }
     security_master_loan_servicing_projection {
         uuid loan_id PK
         bigint aggregate_version
@@ -679,6 +804,10 @@ erDiagram
         date last_payment_date
         bigint servicing_revision
         timestamp_with_time_zone updated_at
+        numeric_24_2_ prepaid_interest
+        numeric_24_2_ unapplied_cash
+        numeric_24_8_ pik_interest_accrued_unpaid
+        date last_pik_capitalization_date
     }
     security_master_loan_snapshot {
         uuid loan_id PK
@@ -724,6 +853,8 @@ erDiagram
         numeric_18_8_ effective_rate_floor
         numeric_18_8_ effective_rate_cap
         numeric_18_8_ prepayment_penalty_rate
+        jsonb pik_capitalization_json
+        jsonb rate_reset_schedule_json
     }
     security_master_money_market_fund_projection {
         uuid security_id PK
@@ -1243,6 +1374,7 @@ erDiagram
         text description
         text created_by
         timestamp_with_time_zone created_at
+        text rate_policy
     }
     security_master_security_events {
         bigint global_sequence PK
@@ -1285,6 +1417,25 @@ erDiagram
     }
     security_master_security_governance_events_global_sequence_seq {
         text catalogued_object
+    }
+    security_master_security_identifier_revisions {
+        uuid security_id PK,FK
+        text identifier_kind PK
+        text identifier_value PK
+        timestamp_with_time_zone valid_from PK
+        integer revision PK
+        text change_kind
+        text normalized_identifier_value
+        text provider
+        text normalized_provider
+        boolean is_primary
+        timestamp_with_time_zone valid_to
+        text source
+        numeric_5_4_ confidence
+        boolean manual_override
+        text recorded_by
+        timestamp_with_time_zone recorded_at
+        timestamp_with_time_zone history_available_from
     }
     security_master_security_identifiers {
         uuid security_id PK,FK
@@ -1338,6 +1489,9 @@ erDiagram
         text fund_profile_id
         text field_value
         boolean field_value_recorded
+        bigint base_version
+        text field_base_value
+        boolean field_base_recorded
     }
     security_master_security_master_terms_capability_floor {
         boolean singleton PK
@@ -1390,6 +1544,8 @@ erDiagram
         text recorded_by
         timestamp_with_time_zone recorded_at
         text price_unit
+        jsonb quotation_evidence
+        numeric price_exact
     }
     security_master_security_snapshots {
         uuid security_id PK
@@ -1673,12 +1829,19 @@ erDiagram
         text primary_identifier_value
         bigint version
     }
+    security_master_cash_dividend_attestation_reservations ||--o{ security_master_cash_dividend_attestations : "cash_dividend_attestations_reservation_id_fkey"
+    security_master_cash_dividend_attestations ||--o{ security_master_cash_dividend_attestation_postings : "cash_dividend_attestation_postings_attestation_id_fkey"
     security_master_cash_transaction ||--o{ security_master_payment_allocation : "payment_allocation_cash_transaction_id_fkey"
     security_master_cash_transaction ||--o{ security_master_reconciliation_result : "reconciliation_result_cash_transaction_id_fkey"
     security_master_commitment_guarantee_projection ||--o{ security_master_commitment_guarantee_covenant_projection : "commitment_guarantee_covenant_projection_security_id_fkey"
     security_master_corporate_action_case_accounting_approvals ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_approval_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_cash_dividend_attestation_postings : "cash_dividend_attestation_postings_projection_id_fkey"
+    security_master_corporate_action_case_accounting_projections ||--o{ security_master_cash_dividend_attestations : "cash_dividend_attestations_projection_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_projection_id_fkey"
     security_master_corporate_action_case_accounting_projections ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_projection_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_cash_dividend_attestation_postings : "cash_dividend_attestation_postings_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_cash_dividend_attestation_reservations : "cash_dividend_attestation_reservations_case_id_fkey"
+    security_master_corporate_action_processing_cases ||--o{ security_master_cash_dividend_attestations : "cash_dividend_attestations_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_approvals : "corporate_action_case_accounting_approvals_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_postings : "corporate_action_case_accounting_postings_case_id_fkey"
     security_master_corporate_action_processing_cases ||--o{ security_master_corporate_action_case_accounting_projections : "corporate_action_case_accounting_projections_case_id_fkey"
@@ -1751,6 +1914,7 @@ erDiagram
     security_master_securities ||--o{ security_master_security_alias_revisions : "security_alias_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_aliases : "security_aliases_security_id_fkey"
     security_master_securities ||--o{ security_master_security_cashflow_source_assignments : "security_cashflow_source_assignments_security_id_fkey"
+    security_master_securities ||--o{ security_master_security_identifier_revisions : "security_identifier_revisions_security_id_fkey"
     security_master_securities ||--o{ security_master_security_identifiers : "security_identifiers_security_id_fkey"
     security_master_securities ||--o{ security_master_security_operator_overrides : "security_operator_overrides_security_id_fkey"
     security_master_securities ||--o{ security_master_security_price_selection_receipts : "security_price_selection_receipts_security_id_fkey"

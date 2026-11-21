@@ -33,9 +33,8 @@ public sealed record GoldenBar(
     long Volume);
 
 /// <summary>
-/// Ledger posting context for the scenario; maps onto
-/// <c>CorporateActionLedgerPostingContext</c>. A null context on the scenario exercises the
-/// bridge's default path (position quantity 0 — see CA-DEF-006).
+/// Historical ledger posting context for the scenario. A null context exercises the retired
+/// poster fixture's default path (position quantity 0 — see CA-DEF-006).
 /// </summary>
 public sealed record GoldenPostingContext(
     decimal PositionQuantity,

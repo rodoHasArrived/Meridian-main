@@ -1,3 +1,4 @@
+import { humanizeIdentifiersInText } from "@/lib/display-labels";
 import { Progress } from "@/components/ui/progress";
 import { cn } from "@/lib/utils";
 import type { RiskGuardrail } from "@/types";
@@ -52,7 +53,7 @@ export function GuardrailPanelBody({
     return (
       <ul className="list-disc space-y-1 pl-6 text-sm text-foreground">
         {activeGuardrails.map((guardrail) => (
-          <li key={guardrail}>{guardrail}</li>
+          <li key={guardrail}>{humanizeIdentifiersInText(guardrail)}</li>
         ))}
       </ul>
     );

@@ -155,6 +155,10 @@ public sealed record ReportingOutputManifest(
     ImmutableArray<IReadOnlyDictionary<string, string>> CertifiedDatasetRows = default,
     CertifiedPartnersCapitalProjection? CertifiedPartnersCapital = null)
 {
+    /// <summary>Stable classification for terminal failures that are safe to replay.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? FailureCode { get; init; }
+
     /// <summary>Optional documented, quantified methodology effects retained with this run.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public ImmutableArray<ReportingIncomeMethodologyEvidence> IncomeMethodologyEvidence { get; init; }
@@ -201,7 +205,12 @@ public sealed record ReportingJobContract(
     ReportingAccessScope? ImmutableAccessScope = null,
     ReportingCertifiedSnapshotScope? CertifiedSnapshot = null,
     ReportingAuthoritativeSourceCheckpoint? AuthoritativeSource = null,
-    string? GovernedRunSeriesId = null);
+    string? GovernedRunSeriesId = null)
+{
+    /// <summary>Server-resolved durable operation identity; never supplied by the generic reporting HTTP contract.</summary>
+    public string? DurableOperationId { get; init; }
+    public string? OperationRequestHash { get; init; }
+}
 
 public sealed record ReportingScheduleContract(
     string ScheduleId,
@@ -260,6 +269,8 @@ public sealed class ReportingRunCreateClaimException : InvalidOperationException
 /// <summary>Stores reporting run manifests and audit trails, including tenant-scoped reads and creation claims.</summary>
 public interface IReportingRunStore
 {
+    /// <summary>True only when create leases and fencing are durable across independent processes.</summary>
+    bool SupportsDurableCreateClaims => false;
     IReadOnlyList<ReportingRunSnapshot> ListRuns(int limit = 25);
     IReadOnlyList<ReportingRunSnapshot> ListRuns(string tenantId, int limit = 25)
     {

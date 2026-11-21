@@ -3,6 +3,7 @@ using System.Text;
 using System.Text.Json;
 using FluentAssertions;
 using Meridian.Identity.Auth;
+using Meridian.Infrastructure.Adapters.Core;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -113,17 +114,52 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public async Task GetRateLimitHistory_StatesThatHistoryIsNotRetained()
+    public async Task GetRateLimitHistory_ReportsBoundedProcessLifetimeRetention()
     {
-        var response = await _providerReadClient.GetAsync("/api/providers/synthetic/rate-limit-history?hours=12");
+        // The ring is process-wide. Use an isolated provider key so parallel provider tests
+        // cannot make this empty-history assertion depend on their quota observations.
+        var provider = $"history-empty-{Guid.NewGuid():N}";
+        var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.Content.Headers.ContentType!.MediaType.Should().Be("application/json");
+        var json = await DeserializeAsync(response);
+        json["provider"].GetString().Should().Be(provider);
+        json["periodHours"].GetInt32().Should().Be(12);
+        json["isAvailable"].GetBoolean().Should().BeTrue("an empty retained period does not mean the history service is unavailable");
+        json["history"].ValueKind.Should().Be(JsonValueKind.Array);
+        json["history"].GetArrayLength().Should().Be(0);
+        json["timestamp"].GetDateTimeOffset().Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
+        json["message"].GetString().Should().Contain("Process-lifetime")
+            .And.Contain("bounded to the latest 1024 observations across providers")
+            .And.Contain("Cleared on host restart")
+            .And.Contain("older observations may be evicted");
+    }
+
+    [Fact]
+    public async Task GetRateLimitHistory_ReturnsRetainedQuotaAndActualRotationEvidence()
+    {
+        var provider = $"history-observed-{Guid.NewGuid():N}";
+        var resetAt = DateTimeOffset.UtcNow.AddMinutes(1);
+        ProviderRateLimitHistory.Shared.Record(provider,
+            new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
+                TimeSpan.FromMinutes(1), 1, DateTimeOffset.UtcNow, resetAt),
+            nextProvider: "stooq", httpStatus: 429);
+
+        var response = await _providerReadClient.GetAsync($"/api/providers/{provider}/rate-limit-history?hours=12");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var json = await DeserializeAsync(response);
-        json["provider"].GetString().Should().Be("synthetic");
-        json["periodHours"].GetInt32().Should().Be(12);
-        json["isAvailable"].GetBoolean().Should().BeFalse();
-        json["history"].GetArrayLength().Should().Be(0);
-        json["message"].GetString().Should().Contain("not retained");
+        json["isAvailable"].GetBoolean().Should().BeTrue();
+        json["history"].GetArrayLength().Should().Be(1);
+        var retained = json["history"][0];
+        retained.GetProperty("requestsUsed").GetInt32().Should().Be(5);
+        retained.GetProperty("usageRatio").GetDouble().Should().Be(1);
+        retained.GetProperty("wasRateLimited").GetBoolean().Should().BeTrue();
+        retained.GetProperty("resetAt").GetDateTimeOffset().Should().Be(resetAt);
+        retained.GetProperty("eventType").GetString().Should().Be("rotated");
+        retained.GetProperty("nextProvider").GetString().Should().Be("stooq");
+        retained.GetProperty("httpStatus").GetInt32().Should().Be(429);
     }
 
     #endregion

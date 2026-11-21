@@ -30,7 +30,7 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
         self.policy = resolver.load_conflict_policy()
 
     def validate_fixture(self, policy):
-        with tempfile.TemporaryDirectory() as temporary:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
             root = Path(temporary)
             # Only inert files are needed to prove that reviewed producer paths
             # exist; none of these copied scripts are executed.
@@ -60,6 +60,8 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
                     profile = command[command.index("--profile") + 1]
                     required.update("build/scripts/docs/" + automation.SCRIPT_CONFIG[name]["script"]
                                     for name in automation.PROFILE_CONFIG[profile])
+            if command[:2] == ("npm", "run"):
+                required.add("package.json#scripts." + command[2])
             if command[:2] == ("npm", "--prefix") and command[-2:] == ("run", "build"):
                 required.add(command[2] + "/package.json#scripts.build")
         recovery = self.policy["conflict_recovery"]
@@ -105,6 +107,20 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
                      "docs/diagrams/uml/Use Case Diagram - Meridian.svg", "src/Example/README.md"):
             with self.subTest(path=path):
                 self.assertEqual(resolver.conflict_strategy(path, self.policy), "manual")
+
+    def test_source_contract_recovery_preserves_physical_and_reviewed_baselines(self):
+        for path in ("database/manifest/contracts.json", "database/manifest/dependencies.json",
+                     "docs/generated/database/contracts/ledger-contracts-page-99.md"):
+            with self.subTest(path=path):
+                self.assertEqual("regenerate", resolver.conflict_strategy(path, self.policy))
+        for path in ("database/manifest/catalog.json", "database/manifest/migrations.json",
+                     "database/manifest/policies.json"):
+            with self.subTest(path=path):
+                self.assertEqual("manual", resolver.conflict_strategy(path, self.policy))
+                self.assertIsNotNone(runner.protected_content(path, b"reviewed", self.policy))
+        path = "docs/source/generated/source-hash-manifest.json"
+        self.assertEqual("reviewed-hashes", resolver.conflict_strategy(path, self.policy))
+        self.assertIsNotNone(runner.protected_content(path, b"reviewed", self.policy))
 
     def test_missing_strategy_catalog_fails_closed(self):
         policy = copy.deepcopy(self.policy)

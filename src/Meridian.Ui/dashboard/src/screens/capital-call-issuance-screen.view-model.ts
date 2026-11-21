@@ -11,6 +11,7 @@ import {
   type RunCapitalCallIssuanceIntakeRequest
 } from "@/lib/api/capital-call-issuance.api";
 import type { ManualJournalEntryDraft } from "@/types";
+import { formatNumber } from "@/lib/format";
 
 export type CapitalCallAllocationBasisChoice = "pro-rata-uncalled" | "pro-rata-total-commitment";
 
@@ -244,7 +245,7 @@ export interface CapitalCallSkipView {
 }
 
 function formatAmount(value: number, currency: string): string {
-  return `${value.toLocaleString("en-US", { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
+  return `${formatNumber(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })} ${currency}`;
 }
 
 function toAssessmentView(assessment: AutomatedJournalEvidenceAssessment): CapitalCallAssessmentView {
@@ -467,7 +468,7 @@ export function useCapitalCallIssuanceViewModel(
 
   const submitLabel = armed ? "Confirm — queue issuance drafts" : "Queue issuance drafts";
   const armedNotice = armed
-    ? "This drafts one governed journal entry per allocated commitment into the manual-journal approval queue. Nothing is posted. Select Confirm to proceed."
+    ? "This drafts one journal entry per allocated commitment into the manual-journal approval queue. Nothing is posted. Select Confirm to proceed."
     : null;
 
   return useMemo(() => ({

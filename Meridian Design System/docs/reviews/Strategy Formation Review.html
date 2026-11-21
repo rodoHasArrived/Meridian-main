@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Strategy Formation — interface review</title>
+<link rel="stylesheet" href="../../styles.css">
+<style id="__om-edit-overrides"></style>
+<style>
+body{margin:0;background:var(--bg);color:var(--text-secondary);font-family:var(--font-body);font-size:var(--type-body);line-height:var(--lh-body)}
+a{color:var(--link,#2A5F96);text-decoration:none}a:hover{color:var(--link-hover,#1F4A76)}
+code{font-family:var(--font-data);font-size:12px;color:var(--text-primary)}
+.masthead{background:var(--topbar-bg);color:var(--topbar-text)}
+.masthead .in{max-width:1120px;margin:0 auto;padding:14px 32px;display:flex;align-items:baseline;gap:14px}
+.masthead .t{font-weight:600;letter-spacing:.14em;font-size:13px}
+.masthead .v{margin-left:auto;font-family:var(--font-data);font-size:11px;color:var(--topbar-text-muted)}
+.page{max-width:1120px;margin:0 auto;padding:0 32px 80px}
+.lede{background:var(--bg-medium);border-bottom:1px solid var(--border);margin-bottom:8px}
+.lede .in{max-width:1120px;margin:0 auto;padding:40px 32px}
+.lede h1{font-family:var(--font-display);font-size:28px;line-height:36px;font-weight:600;color:var(--text-primary);margin:0 0 10px}
+.lede p{max-width:78ch;margin:0 0 10px;text-wrap:pretty}
+.eyebrow{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted)}
+.tally{display:flex;border:1px solid var(--border);background:var(--bg-light);margin-top:24px}
+.tally div{flex:1;padding:14px 16px;border-right:1px solid var(--border-divider)}
+.tally div:last-child{border-right:none}
+.tally .v{font-family:var(--font-data);font-size:24px;font-weight:600;color:var(--text-primary);font-variant-numeric:tabular-nums}
+.tally .l{font-size:11px;font-weight:600;font-variant:all-small-caps;letter-spacing:.05em;color:var(--text-muted)}
+h2.sec{font-family:var(--font-display);font-size:var(--type-section);line-height:var(--lh-section);font-weight:600;color:var(--text-primary);margin:56px 0 4px;padding-top:22px;border-top:1px solid var(--border-strong);display:flex;justify-content:space-between;align-items:baseline}
+h2.sec .idx{font-family:var(--font-data);font-size:11px;color:var(--text-muted);font-weight:400}
+.sub-lede{margin:0 0 20px;color:var(--text-muted);font-size:13px;max-width:80ch;text-wrap:pretty}
+.f{border:1px solid var(--border);background:var(--bg-light);margin-bottom:-1px}
+.f__hd{display:flex;align-items:center;gap:10px;padding:11px 16px;border-bottom:1px solid var(--border-divider);background:var(--bg-medium)}
+.f__id{font-family:var(--font-data);font-size:11px;color:var(--text-muted);letter-spacing:.04em}
+.f__t{font-weight:600;color:var(--text-primary);font-size:14px}
+.f__body{padding:14px 16px;display:grid;grid-template-columns:1fr 1fr;gap:0 28px}
+.f__body p{margin:0 0 9px;text-wrap:pretty;font-size:13px;line-height:20px}
+.f__body p:last-child{margin-bottom:0}
+.chip{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;padding:2px 7px;border-radius:2px;white-space:nowrap}
+.chip--blocked{color:var(--severity-blocked-fg);border:1px solid var(--severity-blocked-bd);background:var(--severity-blocked-bg)}
+.chip--action{color:var(--severity-action-fg);border:1px solid var(--severity-action-bd);background:var(--severity-action-bg)}
+.chip--review{color:var(--severity-review-fg);border:1px solid var(--severity-review-bd);background:var(--severity-review-bg)}
+.chip--done{color:var(--severity-ready-fg,#225840);border:1px solid var(--severity-ready-bd,rgba(46, 118, 85, 0.36));background:var(--severity-ready-bg,rgba(46, 118, 85, 0.1))}
+.f__hd .chip{margin-left:auto}
+.ev{background:var(--surface-well,#FCFBF8);border:1px solid var(--border-divider);padding:9px 12px;font-family:var(--font-data);font-size:11px;line-height:18px;color:var(--text-secondary);margin:0 0 9px;white-space:pre-wrap;overflow-x:auto}
+.ev b{color:var(--text-primary);font-weight:600}
+.ev .neg{color:var(--severity-blocked-fg)}
+.col .h{font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.07em;color:var(--text-muted);margin:0 0 7px;padding-bottom:5px;border-bottom:1px solid var(--border-divider)}
+table.rm{width:100%;border-collapse:collapse;border:1px solid var(--border);background:var(--bg-light);font-size:13px}
+table.rm th{text-align:left;font-size:10px;font-weight:600;font-variant:all-small-caps;letter-spacing:.06em;color:var(--text-muted);padding:8px 12px;background:var(--bg-medium);border-bottom:1px solid var(--border-strong);white-space:nowrap}
+table.rm td{padding:9px 12px;border-top:1px solid var(--border-divider);vertical-align:top;line-height:19px}
+table.rm td.p{font-family:var(--font-data);font-size:11.5px;color:var(--text-primary);white-space:nowrap}
+table.rm td.n{font-family:var(--font-data);font-variant-numeric:tabular-nums;text-align:right;white-space:nowrap;color:var(--text-secondary)}
+table.rm td.w{color:var(--text-muted);font-size:12.5px}
+.note{border-left:3px solid var(--brand-signal,#C56343);background:var(--bg-medium);padding:12px 16px;margin-top:28px;font-size:13px;line-height:20px;max-width:82ch;text-wrap:pretty}
+@media (max-width:900px){.f__body{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="masthead"><div class="in"><span class="t">MERIDIAN DESIGN SYSTEM</span><span class="v">STRATEGY FORMATION · INTERFACE REVIEW · 2026-09-20</span></div></div>
+<div class="lede"><div class="in">
+<p class="eyebrow">Review · <code>templates/strategy-formation/</code> · StrategyFormation · StrategyOnboarding · StrategyBuilder · <b style="color:var(--severity-ready-fg,#225840)">F-01 · F-02 · F-05 · F-06 implemented</b></p>
+<h1>The screen is well-modelled and badly budgeted.</h1>
+<p>The data model underneath Formation is the strongest in the suite: gates recomputed from live values, a material hash, hash-bound acknowledgment, freshness derived rather than stored. Almost none of that rigour reaches the eye. The interface spends its best real estate restating <em>which object you are looking at</em> and its worst on <em>the decision you came to make</em>.</p>
+<p>Twelve findings below, none of which require a new component. They are budget, arbitration, and affordance problems: vertical space spent on identity, one fact counted three different ways in three different places, and gates that describe a blockage without offering a way through it. Graded on the system's ladder: <b>Blocked</b> = the user is misinformed or stuck; <b>Action</b> = real friction with a known fix; <b>Review</b> = a judgement call worth making deliberately.</p>
+<div class="tally">
+<div><div class="v">~300<span style="font-size:14px">px</span></div><div class="l">Chrome above the first input</div></div>
+<div><div class="v">3</div><div class="l">Counts of one gate state</div></div>
+<div><div class="v">1<span style="font-size:14px"> / 9</span></div><div class="l">Guard kinds that offer remediation</div></div>
+<div><div class="v">2</div><div class="l">Worksheets for one worksheet</div></div>
+</div></div></div>
+<div class="page">
+
+<h2 class="sec">Vertical budget<span class="idx">§1 · F-01 – F-03</span></h2>
+<p class="sub-lede">At 1920×1080 the first editable field sits below three stacked identity statements. On a 1440×900 laptop — the actual desk machine — the Mandate form opens off-screen, and the user's first act on a compose screen is to scroll.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-01</span><span class="f__t">Three headers say the same thing before the form starts</span><span class="chip chip--done">Implemented</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">WorkstationTopbar          48px
+WorkspaceContextBar        40px
+Eyebrow "Strategy Executor · Formation"
+h1 "Strategy formation"    52px
+ObjectHeader STR-0007 v3   86px
+Stage header + blurb       ~70px
+<b>= ~296px before field one</b>
+<span class="neg">Viewport left for the form at 900px: ~560px</span></p>
+<p>The eyebrow, the <code>h1</code> and the <code>ObjectHeader</code> are three renderings of one idea. <code>ObjectHeader</code> already carries type, id, name, version and condition — it is the component built for exactly this, and it is the one that gets pushed down.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Delete the eyebrow and the <code>h1</code> from the scroll flow. The module is already named in the topbar (<code>moduleLabel="Strategy Formation"</code>) and in the breadcrumb; naming it a third time in 22px display type buys nothing. Keep <code>ObjectHeader</code> as the page's sole title — set <code>labelled-by</code> to it for the a11y name.</p>
+<p>Let <code>collapse="auto"</code> on <code>WorkspaceContextBar</code> actually collapse on scroll rather than reserving 40px permanently.</p>
+<p><b>Recovers ~130px</b> — enough to put Mandate's five fields and the consequence bar on one screen at 900px.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-02</span><span class="f__t">Gate state is counted three ways, and no two agree on screen</span><span class="chip chip--done">Implemented</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">status bar     <b>GATES 4/6 clear</b>
+ObjectHeader   <b>Blocking gates 3</b>
+rail           <b>Gates · Mandate</b> (this stage only)</p>
+<p>All three are correct and mutually unreadable: four of six <em>stages</em> have no blocking issue, three <em>issues</em> are blocking, and the rail scopes to the current stage. A reader cannot get from "4/6" to "3" without knowing that one stage holds two issues.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Pick one unit — <b>issues</b>, not stages — and state it once. Status bar: <code>3 blocking · 1 warning</code>. <code>ObjectHeader</code>'s exceptions field should name the stages, not count anything: <code>Blocking · Universe, Portfolio rules</code>, clickable (the <code>onOpenExceptions</code> jump already exists and is good).</p>
+<p>The rail keeps its per-stage scope but gains the global figure in its label so the two are visibly nested: <code>Gates · Mandate (0 of 3 blocking)</code>.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-03</span><span class="f__t">Proof freshness is stated four times in three vocabularies</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">context bar    DATA <span class="neg">Stale</span>
+ObjectHeader   <span class="neg">0 of 4 run proofs current</span>
+ContinuityFrame  state=<b>stale</b>
+Builder badge  <b>freshBadge(...)</b></p>
+<p>Four surfaces, one derived fact (<code>freshnessFor</code>). "Stale", "0 of 4 current", a frame state and a badge variant are four encodings of the same boolean-plus-count, and the user has to learn that they are one thing.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p><code>ContinuityFrame</code> owns freshness — it is the component with the retry affordance and the coverage sentence. Everywhere else becomes a reference, not a restatement: the context bar's <code>DATA</code> cell and the <code>ObjectHeader</code> coverage field should both read from it and both scroll-link to it on click.</p>
+<p>Say the consequence, not the state: <b>"4 proofs stale — dataset changed"</b> beats "Stale" in every one of the four places.</p></div>
+</div></div>
+
+<h2 class="sec">Arbitration<span class="idx">§2 · F-04 – F-06</span></h2>
+<p class="sub-lede">Where two things compete for one slot, the screen currently declines to choose: reversible and irreversible actions share a button, stages of wildly different heights share a container, and blocking issues share a presentation with satisfied ones.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-04</span><span class="f__t">The stage body resizes under the user between stages</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev"><b>.sf-panel{display:none}</b>
+.sf-panel[data-on="true"]{display:grid}
+
+Mandate   5 controls   ~330px
+Universe  9 controls   ~470px
+Review    grid+ack+log ~560px</p>
+<p>Panels are <code>display:none</code> siblings, so the stage container takes the height of whichever panel is live. Advancing a stage moves the <code>DecisionConsequenceBar</code> — the primary button — to a new vertical position each time, and the rail's guard list jumps with it.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Give <code>.sf-stagebody</code> a fixed viewport (<code>min-height</code> at the tallest panel, or a scroll region) and pin <code>DecisionConsequenceBar</code> to its bottom edge. The primary action should occupy the same pixels at every step — it is the one control the user hits six times in a row.</p>
+<p>Same for the rail: reserve the guard list's height so satisfied and blocked states do not shift the two panels beneath it.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-05</span><span class="f__t">"Continue" and "Checkpoint → v4" are the same button</span><span class="chip chip--done">Implemented</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">stages 1–5  primary = <b>Continue · Thesis</b>
+            reversibility = <b>null</b>
+stage 6     primary = <b>Checkpoint strategy → v4</b>
+            reversibility = <b>supersedable</b></p>
+<p>One is free navigation between panels of a form. The other writes an immutable snapshot, bumps the version, and drives a lifecycle transition to <code>validating</code> → <code>ready-for-review</code>/<code>blocked</code>. They are rendered identically, in the same slot, in the same weight.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Navigation is not a decision. Demote <code>Continue</code> to a quiet stepper affordance beside the stage title (or rely on the rail, which already navigates), and reserve the <code>DecisionConsequenceBar</code> primary slot for the single irreversible act on the screen.</p>
+<p>That also lets the bar state the consequence honestly at every stage: while composing, it can carry the <em>blocking-issue count and what checkpointing would do</em> instead of a next-panel label.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-06</span><span class="f__t">Guards describe the blockage; one in nine offers a way through</span><span class="chip chip--done">Implemented</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">remediation: i.code === "worksheet-error"
+  ? { label: "Open in Builder", actionId: "builder" }
+  : <span class="neg">undefined</span></p>
+<p>Every other blocking issue renders as a sentence with a <code>reason</code> of <code>Field · mandate.benchmark</code> and no affordance — even though the issue object already carries the exact path of the field that would resolve it.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Every guard with a <code>path</code> gets a remediation: <b>"Go to field →"</b> that jumps to the owning stage and focuses that input. The data to do it is already in the issue; only the wiring is missing.</p>
+<p>This is the single highest-value change on the list. It converts the guard rail from a report into the screen's primary navigation — which is what a gated compose flow wants it to be.</p></div>
+</div></div>
+
+<h2 class="sec">Affordance<span class="idx">§3 · F-07 – F-10</span></h2>
+<p class="sub-lede">Four places where the interface asks the user to know something it could show them: the shape of a filter, the cost of an edit, the meaning of a signature, and which of two worksheets is the real one.</p>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-07</span><span class="f__t">One worksheet, two incompatible renderings</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">Formation · Portfolio rules
+  stack of bare Inputs + <b>✓ / ▲</b> glyph
+Builder
+  <b>WorksheetGrid</b> + cell inspector
+  (statement · formula · functions · note)</p>
+<p>The same <code>portfolioRules.worksheet</code> cells, addressed the same way (<code>B5</code>), presented as a form in one screen and a grid in the other. Formation's version cannot show cell dependencies, cannot show the inspector, and teaches a cell model the rest of the suite does not use.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Pick one. Preferred: embed the real <code>WorksheetGrid</code> read-only in the Portfolio-rules stage with the existing "Open in Strategy Builder →" as the edit path. The user then learns one worksheet idiom, and Formation's stage stays about <em>rules in words</em> — which is what its blurb promises.</p>
+<p>If inline editing must stay, at least carry the <code>▲</code> cells' messages into the guard rail so a broken cell is a gate, not a footnote under an input.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-08</span><span class="f__t">Universe filters are a regex the user has to guess</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">placeholder  <b>RATING &gt;= BBB-</b>
+parse        /^([A-Z_]+)\s*(&gt;=|&lt;=|=|between)\s*(.+)$/i
+on failure   <span class="neg">"Format: FIELD &gt;= value"</span></p>
+<p>No field vocabulary, no operator list, no value validation, and no feedback on what a filter does. A user who does not already know the field names cannot author a filter, and one who does cannot tell whether <code>RATING &gt;= BBB-</code> matched 900 names or nine.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Three controls instead of one string: field <code>Select</code> (from the chosen dataset's schema), operator <code>SegmentedControl</code>, value input typed to the field. The free-text box can stay as a power path, but it should not be the only path.</p>
+<p>Then make each chip earn its place: <code>RATING ≥ BBB- · −412 names</code>. A filter list that does not show what it removes is a list of assertions.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-09</span><span class="f__t">A material edit charges its cost silently</span><span class="chip chip--blocked">Blocked</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p>Changing <code>universe.datasetId</code> stales every run proof attached to the strategy. The warning is a sentence of body copy at the top of the stage — "editing them stales every run proof" — and the consequence lands silently in a rail panel and a context-bar cell the user is not looking at.</p>
+<p class="ev">before  4 proofs · <b>current</b>
+after   0 of 4 <span class="neg">current</span>   ← no acknowledgement,
+                        no undo, no diff</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Mark material fields persistently — a Datum on the label, not prose in a paragraph — so the user knows which controls are expensive <em>before</em> touching them.</p>
+<p>On change, surface the charge inline and reversibly: <b>"Dataset changed — 4 run proofs stale · Revert"</b>. The store already has the previous value; the only missing piece is an undo affordance at the point of the edit rather than a state change three panels away.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-10</span><span class="f__t">The most consequential act on the screen is the smallest control</span><span class="chip chip--review">Review</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p>Acknowledgment binds a named actor to an exact formation hash — the record a reviewer later approves. It renders as a sentence and a 28px <code>sm</code> button inside a bordered strip, visually lighter than the Mandate name field.</p>
+<p class="ev">.sf-ack  1px border, 12px text
+Button   variant=primary <b>size=sm</b></p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Give the review stage the weight of its content: show the hash being signed as a Datum, the actor, and — the missing piece — <b>what changed since the last acknowledgment</b>. "Stale, re-acknowledge" tells the user their signature lapsed but not what moved underneath it.</p>
+<p>A two-column diff of the eight <code>reviewItems</code> against the acknowledged snapshot would make this gate self-evidencing instead of self-asserting.</p></div>
+</div></div>
+
+<h2 class="sec">Layout under pressure<span class="idx">§4 · F-11 – F-12</span></h2>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-11</span><span class="f__t">The rail gives equal weight to act-now, evidence, and metadata</span><span class="chip chip--review">Review</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">ActionGuardList    what blocks you
+ContinuityFrame    the proof
+TimeContextPanel   as-of / evidence-at /
+                   calculated-at sources</p>
+<p>Three cards, identical treatment, stacked in authoring order. The third is provenance metadata that a user consults roughly once per session; it occupies the same visual budget as the list of things stopping them from finishing.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>Rank them. Guards stay expanded and sticky. <code>ContinuityFrame</code> stays expanded while a proof is stale and collapses to one line when current. <code>TimeContextPanel</code> collapses to a single summary row — three timestamps agreeing is a one-line fact.</p></div>
+</div></div>
+
+<div class="f"><div class="f__hd"><span class="f__id">F-12</span><span class="f__t">Below 1180px the gates fall below the fold entirely</span><span class="chip chip--action">Action</span></div>
+<div class="f__body">
+<div class="col"><p class="h">What is there</p>
+<p class="ev">@media (max-width:1180px){
+  .sf-grid{grid-template-columns:210px 1fr}
+  .sf-rail{<b>grid-column:1 / -1</b>;flex-direction:row}
+}</p>
+<p>The rail reflows to a full-width row <em>after</em> the stage body — so on the narrower of the two supported desk widths, the guard list sits below a 500px form. The thing that tells you why you cannot proceed is the last thing on the page.</p></div>
+<div class="col"><p class="h">What to do</p>
+<p>At the breakpoint, promote guards <em>above</em> the stage body as a single-line summary bar (<code>ActionGuardList show-summary</code> already supports this), and let only <code>ContinuityFrame</code> and <code>TimeContextPanel</code> drop below. Stage navigation can become a horizontal stepper at the same width, which recovers the 210px column for the form.</p></div>
+</div></div>
+
+<h2 class="sec">Order of work<span class="idx">§5</span></h2>
+<p class="sub-lede">Ranked by what a user feels, not by effort. The first four change the screen's character; the rest are hygiene.</p>
+<table class="rm">
+<thead><tr><th>#</th><th>Change</th><th>Touches</th><th>Effort</th><th>Why first</th></tr></thead>
+<tbody>
+<tr><td class="p">F-06</td><td>Guard remediation for every issue with a <code>path</code></td><td class="p">stageGuards()</td><td class="n">S</td><td class="w">Turns the gate rail into navigation. Data already exists.</td></tr>
+<tr><td class="p">F-01</td><td>Collapse three headers into ObjectHeader</td><td class="p">template</td><td class="n">S</td><td class="w">~130px back; form opens above the fold on a laptop.</td></tr>
+<tr><td class="p">F-05</td><td>Split navigation from the irreversible act</td><td class="p">consequence bar</td><td class="n">M</td><td class="w">Stops training users to click through a versioning decision.</td></tr>
+<tr><td class="p">F-02</td><td>One gate unit, stated once</td><td class="p">status · header · rail</td><td class="n">S</td><td class="w">Three disagreeing counts is worse than no count.</td></tr>
+<tr><td class="p">F-09</td><td>Material-edit cost shown inline with undo</td><td class="p">universe stage</td><td class="n">M</td><td class="w">The model's best idea is currently invisible at the moment it fires.</td></tr>
+<tr><td class="p">F-04</td><td>Fixed stage viewport, pinned consequence bar</td><td class="p">CSS</td><td class="n">S</td><td class="w">Six clicks in a row on a moving target.</td></tr>
+<tr><td class="p">F-12</td><td>Guards above the fold at ≤1180px</td><td class="p">CSS</td><td class="n">S</td><td class="w">Half the desk fleet is on the narrow layout.</td></tr>
+<tr><td class="p">F-08</td><td>Structured filter authoring + match counts</td><td class="p">universe stage</td><td class="n">M</td><td class="w">Currently unusable without prior field knowledge.</td></tr>
+<tr><td class="p">F-03</td><td>ContinuityFrame owns freshness; others reference</td><td class="p">4 surfaces</td><td class="n">S</td><td class="w">Cheap coherence win.</td></tr>
+<tr><td class="p">F-07</td><td>One worksheet idiom</td><td class="p">rules stage</td><td class="n">M</td><td class="w">Consistency with Builder and Field &amp; Formula.</td></tr>
+<tr><td class="p">F-11</td><td>Rank the rail; collapse time context</td><td class="p">rail</td><td class="n">S</td><td class="w">Reclaims attention for guards.</td></tr>
+<tr><td class="p">F-10</td><td>Acknowledgment diff since last signature</td><td class="p">review stage</td><td class="n">L</td><td class="w">Highest ceiling, highest cost — worth doing properly.</td></tr>
+</tbody>
+</table>
+
+<p class="note"><b>Not in scope, worth raising.</b> Stages have no keyboard shortcuts while every screen in the app map has one — a six-step flow is exactly where <code>⌥1–6</code> earns its keep. And there is no visible dirty state: edits write straight to the store, so "saved" and "unsaved" are indistinguishable, which makes the checkpoint button's meaning harder to learn than it needs to be.</p>
+</div>
+</body>
+</html>

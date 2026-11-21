@@ -67,6 +67,19 @@ internal sealed class BrokerageOrderRecoveryJournal(FileBrokerageOrderRecoverySt
         }
     }
 
+    internal void RetainUnsentRejection(OrderState state)
+    {
+        if (!IsDispatched(state.OrderId))
+            return;
+        if (state.Status != OrderStatus.Rejected || state.FilledQuantity != 0m)
+            throw new InvalidOperationException("Only a proved unsent, unfilled rejection can clear dispatch uncertainty.");
+        lock (_sync)
+        {
+            store?.Save(new RetainedBrokerageOrder(state, null, false));
+            SetRecoveryRequired(state.OrderId, false);
+        }
+    }
+
     internal long CaptureVersion(string orderId)
     {
         lock (_sync)

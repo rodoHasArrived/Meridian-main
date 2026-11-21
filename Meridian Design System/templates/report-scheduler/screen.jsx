@@ -5,8 +5,8 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button, Badge,
-  DenseDataTable, SeverityBadge, EventTimeline, Timestamp,
-} = window.MeridianDesignSystem_4f61be;
+  DataGrid, SeverityBadge, EventTimeline, Timestamp,
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NOW = Date.UTC(2026, 6, 2, 14, 32, 8);
@@ -67,20 +67,20 @@ function ReportSchedulerScreen() {
           <PanelSurface flat style={{ padding: 12 }}>
             <Eyebrow>Scheduled packs</Eyebrow>
             <div style={{ marginTop: 10 }}>
-              <DenseDataTable
-                selectedIndex={selected}
-                onRowClick={(_, i) => setSelected(i)}
+              <DataGrid
+                activeKey={pack.id}
+                onRowClick={(_row, _key, i) => setSelected(i)}
                 rows={PACKS}
                 columns={[
                   { key: "name", label: "Pack" },
                   { key: "cadence", label: "Schedule" },
-                  { key: "recipients", label: "Recipients", render: (r) => (
+                  { key: "recipients", label: "Recipients", cell: (r) => (
                     <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
                       {r.recipients.map((x) => <Badge key={x} variant="neutral">{x}</Badge>)}
                     </div>
                   )},
-                  { key: "lastStatus", label: "Last run", render: (r) => <SeverityBadge status={STATUS_BADGE[r.lastStatus]} label={r.lastStatus} /> },
-                  { key: "next", label: "Next run", align: "right", render: (r) => <Timestamp value={r.next} format="relative" /> },
+                  { key: "lastStatus", label: "Last run", cell: (r) => <SeverityBadge status={STATUS_BADGE[r.lastStatus]} label={r.lastStatus} /> },
+                  { key: "next", label: "Next run", align: "right", cell: (r) => <Timestamp value={r.next} format="relative" /> },
                 ]}
               />
             </div>

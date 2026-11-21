@@ -7,11 +7,11 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-panel{background:var(--card-surface,#FBFAF8);border:1px solid var(--border,#E4E3DE);}
-.mds-panel--raised{background:var(--card-surface-raised,#F6F4F0);}
-.mds-panel--elevated{border:1px solid var(--border,#E4E3DE);}
+.mds-panel{background:var(--card-surface,#F8F7F3);border:1px solid var(--border,#D2CDC3);}
+.mds-panel--raised{background:var(--card-surface-raised,#FCFBF8);}
+.mds-panel--elevated{border:1px solid var(--border,#D2CDC3);}
 .mds-panel--flat{border:none;}
-.mds-panel--strong{border-color:var(--border-strong,#AFABA1);}
+.mds-panel--strong{border-color:var(--border-strong,#AAA49A);}
 `;
   const el = document.createElement("style");
   el.setAttribute("data-mds", "panel");

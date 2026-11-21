@@ -12,13 +12,16 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
 {
     private readonly ISecurityMasterQueryService? _securityMasterQueryService;
     private readonly IAssetOperationsQueryService? _assetOperationsQueryService;
+    private readonly ISecurityActualCashActivitySource? _actualCashActivitySource;
 
     public SecurityMasterAccountingEventSourceAdapter(
         ISecurityMasterQueryService? securityMasterQueryService = null,
-        IAssetOperationsQueryService? assetOperationsQueryService = null)
+        IAssetOperationsQueryService? assetOperationsQueryService = null,
+        ISecurityActualCashActivitySource? actualCashActivitySource = null)
     {
         _securityMasterQueryService = securityMasterQueryService;
         _assetOperationsQueryService = assetOperationsQueryService;
+        _actualCashActivitySource = actualCashActivitySource;
     }
 
     public async Task<SecurityMasterAccountingEventRequest?> BuildRequestAsync(
@@ -103,6 +106,14 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return null;
         }
 
+        // Without a source the request carries no actual activity, exactly as before. With one,
+        // an empty result is still passed: it states that no income or principal cash was reported.
+        var actualActivity = _actualCashActivitySource is null
+            ? null
+            : await _actualCashActivitySource
+                .GetActualActivityAsync(resolvedPositions, periodStart, periodEnd, ct)
+                .ConfigureAwait(false);
+
         return new SecurityMasterAccountingEventRequest(
             request.RunId,
             periodStart,
@@ -110,6 +121,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             securities,
             resolvedPositions,
             FactorSchedule: factorSchedule.Count > 0 ? factorSchedule : null,
+            ActualActivity: actualActivity,
             AmountTolerance: request.AmountTolerance);
     }
 
@@ -338,8 +350,34 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
                     || HasTypedFactorSchedule(definition)
                     // A securitized instrument without typed history must surface missing
                     // coverage, including older economic records with no history module.
-                    || ResolveAccountingAssetClass(definition) == SecurityAccountingInstrumentClasses.AssetBackedSecurity),
+                    || ResolveAccountingAssetClass(definition) == SecurityAccountingInstrumentClasses.AssetBackedSecurity)
+            {
+                CouponRateUnit = ReadDeclaredCouponRateUnit(definition),
+                TermsAssetClass = ResolveTermsAssetClass(definition)
+            },
             ToAccountingRule(definition));
+    }
+
+    // The catalog class whose flat terms (and rate-field unit defaults) the record carries.
+    private static string? ResolveTermsAssetClass(SecurityEconomicDefinitionRecord definition)
+    {
+        var name = string.IsNullOrWhiteSpace(definition.LegacyAssetClass) ? definition.TypeName : definition.LegacyAssetClass;
+        return SecurityAssetClassCatalog.TryGet(name, out var descriptor) ? descriptor.AssetClass : null;
+    }
+
+    // The coupon unit the record declares in its retained flat terms' scheduleConventions block
+    // (readable under ADR-024 increment 4a), or null when it declares none or cannot be read here.
+    private static RateUnit? ReadDeclaredCouponRateUnit(SecurityEconomicDefinitionRecord definition)
+    {
+        if (ResolveTermsAssetClass(definition) is not { } assetClass)
+            return null;
+        if (definition.LegacyAssetSpecificTerms is not { } retained)
+            return SecurityRecordRateUnit.ReadEconomic(definition.EconomicTerms);
+
+        var declared = SecurityVersionedTerms.ReadDeclaredScheduleConventions(assetClass, retained);
+        return declared.Status == SecurityDeclaredConventionsStatus.Declared
+            ? RateUnitNormalizer.ParseCouponRateUnit(declared.Block.CouponRateUnit)
+            : SecurityRecordRateUnit.Read(assetClass, retained);
     }
 
     private static SecurityAccountingRule? ToAccountingRule(SecurityEconomicDefinitionRecord definition)
@@ -637,14 +675,22 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     /// which the event service's own gate rejects as SM_UNSUPPORTED_ACCOUNTING_INSTRUMENT at Info —
     /// the correct outcome for an instrument this first accounting slice does not cover.
     /// </para>
+    /// <para>
+    /// The sub-type is read through <see cref="ClassificationLabelReader"/>: an event retained before
+    /// the label helpers may still carry <c>OtherSubType "x"</c>, which is decoded here rather than
+    /// rewritten in the stored event.
+    /// </para>
     /// </summary>
     private static string ResolveAccountingAssetClass(SecurityEconomicDefinitionRecord definition)
-        => SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
-               definition.TypeName,
-               definition.SubType,
-               definition.AssetClass)
-           ?? definition.SubType
-           ?? definition.AssetClass;
+    {
+        var subType = ClassificationLabelReader.NormalizeRequired(definition.SubType);
+        return SecurityAssetClassCatalog.ResolveAccountingInstrumentClass(
+                   definition.TypeName,
+                   subType,
+                   definition.AssetClass)
+               ?? subType
+               ?? definition.AssetClass;
+    }
 
     private static string? NormalizeCouponType(string? couponType)
     {

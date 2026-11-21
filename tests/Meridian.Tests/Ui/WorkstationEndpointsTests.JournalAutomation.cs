@@ -191,6 +191,13 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task CapitalCallIssuanceIntake_LandsGovernedDraftsInApprovalQueue()
     {
+        var request = CapitalCallIssuanceRequest() with
+        {
+            EntityId = CapitalIntakeAuthorityFixture.EntityId,
+            TenantId = "tenant-test",
+            CompanyId = "tenant-test"
+        };
+        var capitalAuthority = CapitalIntakeAuthorityFixture.Issuance(request);
         var configurationStore = new InMemoryAccountingConfigurationStore();
         await configurationStore.SaveAsync(new AccountingConfigurationWorkspaceDto(
             "fund-alpha",
@@ -225,11 +232,13 @@ public sealed partial class WorkstationEndpointsTests
         var workbench = new ManualJournalEntryWorkbenchService(
             draftStore,
             configuration,
-            new InMemoryAccountingActionAuditStore());
+            new InMemoryAccountingActionAuditStore(),
+            privateCapitalStore: capitalAuthority);
         var runner = new AutomatedJournalIntakeRunner(
             new AutomatedJournalDraftIntakeService(workbench, draftStore, configuration),
             new FeeScheduleAccrualEventProducer(),
-            manualJournalWorkbench: workbench);
+            manualJournalWorkbench: workbench,
+            privateCapitalStore: capitalAuthority);
         await using var app = await CreateAppAsync(
             services => services.AddSingleton(runner),
             mapLedgerApi: true,
@@ -237,7 +246,7 @@ public sealed partial class WorkstationEndpointsTests
 
         using var response = await app.GetTestClient().PostAsJsonAsync(
             UiApiRoutes.LedgerJournalAutomationCapitalCallIssuanceIntake,
-            CapitalCallIssuanceRequest(),
+            request,
             CapitalCallRequestJsonOptions);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -248,6 +257,9 @@ public sealed partial class WorkstationEndpointsTests
 
         var drafts = await draftStore.ListAsync("fund-alpha", tenantId: "tenant-test", companyId: "tenant-test");
         drafts.Should().HaveCount(2);
+        drafts.SelectMany(draft => draft.ValidationIssues)
+            .Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(issue => $"{issue.Code}: {issue.Message}").Should().BeEmpty();
         drafts.Should().OnlyContain(
             draft => draft.Status == ManualJournalEntryStatusDto.Draft,
             "capital-call issuance must land in the approval queue, never post");
@@ -273,6 +285,27 @@ public sealed partial class WorkstationEndpointsTests
     [Fact]
     public async Task CapitalCallFundingIntake_LandsGovernedDraftsInApprovalQueue()
     {
+        var originalRequest = CapitalCallFundingRequest();
+        var request = originalRequest with
+        {
+            EntityId = CapitalIntakeAuthorityFixture.EntityId,
+            TenantId = "tenant-test",
+            CompanyId = "tenant-test",
+            Fundings = originalRequest.Fundings.Select((funding, index) => funding with
+            {
+                FundingReceiptId = $"retained-bank-receipt-{index + 1}",
+                BankLineId = (index == 0 ? CapitalIntakeAuthorityFixture.FirstBankId
+                    : CapitalIntakeAuthorityFixture.SecondBankId).ToString("D")
+            }).ToArray()
+        };
+        var approvedIssuance = CapitalCallIssuanceRequest() with
+        {
+            EntityId = request.EntityId,
+            TenantId = request.TenantId,
+            CompanyId = request.CompanyId
+        };
+        var capitalAuthority = CapitalIntakeAuthorityFixture.Issuance(approvedIssuance, postedIssuance: true);
+        var bankSource = CapitalIntakeAuthorityFixture.BankSource(600_000m, request.ReceivedDate);
         var configurationStore = new InMemoryAccountingConfigurationStore();
         await configurationStore.SaveAsync(CapitalCallFundingTestData.Workspace(
             "fund-alpha",
@@ -285,7 +318,9 @@ public sealed partial class WorkstationEndpointsTests
         var workbench = new ManualJournalEntryWorkbenchService(
             draftStore,
             configuration,
-            new InMemoryAccountingActionAuditStore());
+            new InMemoryAccountingActionAuditStore(),
+            bankTransactionSource: bankSource,
+            privateCapitalStore: capitalAuthority);
         // The fixture ledger holds a posted 600k/400k issuance for call-1, layered onto the
         // workbench projection so the funding run can corroborate the open receivable.
         var callEffectiveDate = new DateOnly(2026, 3, 15);
@@ -306,7 +341,9 @@ public sealed partial class WorkstationEndpointsTests
         var runner = new AutomatedJournalIntakeRunner(
             new AutomatedJournalDraftIntakeService(workbench, draftStore, configuration),
             new FeeScheduleAccrualEventProducer(),
-            manualJournalWorkbench: activitySource);
+            manualJournalWorkbench: activitySource,
+            privateCapitalStore: capitalAuthority,
+            bankTransactionSource: bankSource);
         await using var app = await CreateAppAsync(
             services => services.AddSingleton(runner),
             mapLedgerApi: true,
@@ -314,7 +351,7 @@ public sealed partial class WorkstationEndpointsTests
 
         using var response = await app.GetTestClient().PostAsJsonAsync(
             UiApiRoutes.LedgerJournalAutomationCapitalCallFundingIntake,
-            CapitalCallFundingRequest(),
+            request,
             CapitalCallRequestJsonOptions);
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -325,6 +362,9 @@ public sealed partial class WorkstationEndpointsTests
 
         var drafts = await draftStore.ListAsync("fund-alpha", tenantId: "tenant-test", companyId: "tenant-test");
         drafts.Should().HaveCount(2);
+        drafts.SelectMany(draft => draft.ValidationIssues)
+            .Where(issue => issue.Severity == AccountingConfigurationValidationSeverityDto.Critical)
+            .Select(issue => $"{issue.Code}: {issue.Message}").Should().BeEmpty();
         drafts.Should().OnlyContain(
             draft => draft.Status == ManualJournalEntryStatusDto.Draft,
             "capital-call funding must land in the approval queue, never post");

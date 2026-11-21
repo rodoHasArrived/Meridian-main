@@ -8,6 +8,7 @@
 //   "?"       — single key, ignored while typing in a field
 // ShortcutSheet renders automatically inside the provider: "?" or ctrl+/ opens it.
 import React from "react";
+import { useOverlayFocus } from "./useOverlayFocus";
 import { Kbd } from "./Kbd";
 
 let injected = false;
@@ -15,24 +16,24 @@ function inject() {
   if (injected || typeof document === "undefined") return;
   injected = true;
   const css = `
-.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(14,17,19,.5));z-index:70;
+.mds-hotkeys-sheet{position:fixed;inset:0;background:var(--scrim, rgba(17,23,29,.5));z-index:var(--z-hotkey,400);
   display:flex;align-items:flex-start;justify-content:center;padding-top:9vh;
   animation:mds-hotkeys-fade var(--motion-base,150ms) var(--ease-standard,ease-out);}
 @keyframes mds-hotkeys-fade{from{opacity:0}to{opacity:1}}
 .mds-hotkeys-panel{width:520px;max-width:92vw;max-height:76vh;overflow-y:auto;
-  background:var(--bg-light,#FBFAF8);border:1px solid var(--border-strong,#AFABA1);
+  background:var(--bg-light,#F8F7F3);border:1px solid var(--border-strong,#AAA49A);
   box-shadow:var(--shadow-menu);font-family:var(--font-body);}
 .mds-hotkeys-hd{display:flex;align-items:center;justify-content:space-between;padding:12px 16px;
-  border-bottom:1px solid var(--border,#E4E3DE);position:sticky;top:0;background:var(--bg-light,#FBFAF8);}
-.mds-hotkeys-title{font-size:13px;font-weight:600;color:var(--text-primary,#22252A);}
+  border-bottom:1px solid var(--border,#D2CDC3);position:sticky;top:0;background:var(--bg-light,#F8F7F3);}
+.mds-hotkeys-title{font-size:13px;font-weight:600;color:var(--text-primary,#20252B);}
 .mds-hotkeys-x{appearance:none;border:none;background:transparent;cursor:pointer;font-size:16px;
-  color:var(--text-muted,#5E666F);padding:2px 6px;}
-.mds-hotkeys-x:focus-visible{outline:var(--focus-ring,2px solid #A85436);}
+  color:var(--text-muted,#606870);padding:2px 6px;}
+.mds-hotkeys-x:focus-visible{outline:var(--focus-ring,2px solid #2D6FB3);}
 .mds-hotkeys-group{padding:10px 16px 4px;font-size:10px;font-weight:600;
-  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#5E666F);}
+  font-variant:all-small-caps;letter-spacing:.04em;color:var(--text-muted,#606870);}
 .mds-hotkeys-row{display:flex;align-items:center;justify-content:space-between;gap:12px;
-  padding:6px 16px;font-size:12px;color:var(--text-secondary,#4E5258);}
-.mds-hotkeys-row+.mds-hotkeys-row{border-top:1px solid var(--border-divider,#DAD8D3);}
+  padding:6px 16px;font-size:12px;color:var(--text-secondary,#535C65);}
+.mds-hotkeys-row+.mds-hotkeys-row{border-top:1px solid var(--border-divider,#E2DED5);}
 .mds-hotkeys-keys{display:flex;gap:4px;align-items:center;flex:none;}
 `;
   const el = document.createElement("style");
@@ -64,6 +65,8 @@ function eventKey(e) {
 export function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Keyboard shortcuts" }) {
   inject();
   const [open, setOpen] = React.useState(false);
+  const sheetRef = React.useRef(null);
+  useOverlayFocus(sheetRef, sheet && open, ".mds-hotkeys-panel");
   const parsed = React.useMemo(
     () => bindings.map((b) => ({ ...b, parsed: parseBinding(b.keys) })),
     [bindings]
@@ -132,8 +135,8 @@ export function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Key
     entry.items.push(b);
   }
   return (
-    <div className="mds-hotkeys-sheet" onClick={() => setOpen(false)}>
-      <div className="mds-hotkeys-panel" role="dialog" aria-label={sheetTitle} onClick={(e) => e.stopPropagation()}>
+    <div ref={sheetRef} className="mds-hotkeys-sheet" onClick={() => setOpen(false)}>
+      <div className="mds-hotkeys-panel" role="dialog" aria-modal="true" aria-label={sheetTitle} onClick={(e) => e.stopPropagation()}>
         <div className="mds-hotkeys-hd">
           <span className="mds-hotkeys-title">{sheetTitle}</span>
           <button type="button" className="mds-hotkeys-x" aria-label="Close" onClick={() => setOpen(false)}>×</button>
@@ -153,7 +156,7 @@ export function HotkeysProvider({ bindings = [], sheet = true, sheetTitle = "Key
             ))}
           </React.Fragment>
         ))}
-        <div className="mds-hotkeys-row" style={{ borderTop: "1px solid var(--border, #E4E3DE)" }}>
+        <div className="mds-hotkeys-row" style={{ borderTop: "1px solid var(--border, #D2CDC3)" }}>
           <span>Show this sheet</span>
           <span className="mds-hotkeys-keys"><Kbd>?</Kbd></span>
         </div>

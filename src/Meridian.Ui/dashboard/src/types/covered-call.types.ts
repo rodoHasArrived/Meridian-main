@@ -121,6 +121,7 @@ export interface CoveredCallMetrics {
 }
 
 export interface CoveredCallRunResult {
+  providerProvenance?: import("./provider-provenance").ProviderProvenanceReceipt | null;
   runId: string;
   underlyingSymbol: string;
   from: string;
@@ -170,6 +171,11 @@ export interface CoveredCallChainRow {
   volume: number;
   meetsAllFilters: boolean;
   rejectReason: string | null;
+  deltaAvailable?: boolean;
+  openInterestAvailable?: boolean;
+  volumeAvailable?: boolean;
+  multiplier?: number | null;
+  spreadFraction?: number | null;
 }
 
 export interface CoveredCallChainPreview {
@@ -179,4 +185,10 @@ export interface CoveredCallChainPreview {
   candidates: CoveredCallChainRow[];
   totalContractsScanned: number;
   filtersPassed: number;
+  filters?: CoveredCallChainPreviewRequest | null;
+  coverageKnown?: boolean;
+  requestedExpirations?: string[];
+  loadedExpirations?: string[];
+  snapshotTimes?: string[];
+  maxStrikesPerExpiration?: number | null;
 }

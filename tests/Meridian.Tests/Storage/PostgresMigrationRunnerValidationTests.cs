@@ -137,6 +137,80 @@ public sealed class PostgresMigrationRunnerValidationTests
     }
 
     [Fact]
+    public void FindUnappliedScriptBelowHighestApplied_AllowsAFreshSchema()
+    {
+        var refusal = PostgresMigrationRunner.FindUnappliedScriptBelowHighestApplied(
+            [("001_a.sql", 1), ("002_b.sql", 2)],
+            new Dictionary<string, int>(StringComparer.Ordinal),
+            "Test");
+
+        refusal.Should().BeNull();
+    }
+
+    [Fact]
+    public void FindUnappliedScriptBelowHighestApplied_AllowsAppendedScriptsAndHistoricalGaps()
+    {
+        // 061 and 063 were never shipped: the gap itself is not an error, only filling it in.
+        var refusal = PostgresMigrationRunner.FindUnappliedScriptBelowHighestApplied(
+            [("060_a.sql", 60), ("062_b.sql", 62), ("064_c.sql", 64), ("069_new.sql", 69)],
+            new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                ["060_a.sql"] = 60,
+                ["062_b.sql"] = 62,
+                ["064_c.sql"] = 64,
+            },
+            "Test");
+
+        refusal.Should().BeNull();
+    }
+
+    [Fact]
+    public void FindUnappliedScriptBelowHighestApplied_AllowsAppliedScriptsWhoseFilesWereRemoved()
+    {
+        var refusal = PostgresMigrationRunner.FindUnappliedScriptBelowHighestApplied(
+            [("064_c.sql", 64)],
+            new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                ["060_a.sql"] = 60,
+                ["064_c.sql"] = 64,
+            },
+            "Test");
+
+        refusal.Should().BeNull();
+    }
+
+    [Fact]
+    public void FindUnappliedScriptBelowHighestApplied_RefusesAReusedRetiredOrdinal()
+    {
+        var refusal = PostgresMigrationRunner.FindUnappliedScriptBelowHighestApplied(
+            [("060_a.sql", 60), ("061_reused.sql", 61), ("062_b.sql", 62), ("063_reused.sql", 63), ("064_c.sql", 64)],
+            new Dictionary<string, int>(StringComparer.Ordinal)
+            {
+                ["060_a.sql"] = 60,
+                ["062_b.sql"] = 62,
+                ["064_c.sql"] = 64,
+            },
+            "Security Master");
+
+        refusal.Should().NotBeNull();
+        refusal.Should().StartWith("Security Master migration ordinals are append-only");
+        refusal.Should().Contain("'061_reused.sql', '063_reused.sql'");
+        refusal.Should().Contain("'064_c.sql' (ordinal 064)");
+        refusal.Should().Contain("database/migration-reservations.json");
+    }
+
+    [Fact]
+    public void FindUnappliedScriptBelowHighestApplied_AllowsAnUnappliedScriptAboveTheHighestEvenWhenTheLedgerHasGaps()
+    {
+        var refusal = PostgresMigrationRunner.FindUnappliedScriptBelowHighestApplied(
+            [("001_a.sql", 1), ("005_b.sql", 5)],
+            new Dictionary<string, int>(StringComparer.Ordinal) { ["001_a.sql"] = 1 },
+            "Test");
+
+        refusal.Should().BeNull();
+    }
+
+    [Fact]
     public async Task EnsureMigratedAsync_ThrowsWhenConnectionStringMissing()
     {
         var runner = new PostgresMigrationRunner(new PostgresMigrationRunnerOptions

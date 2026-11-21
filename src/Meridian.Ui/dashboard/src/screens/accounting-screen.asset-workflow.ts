@@ -91,17 +91,17 @@ export function useAssetAccountingWorkflow({ draft, active, sessionIdentity = nu
       if (result.postedJournal) setPosted({ key: selected.scopeKey, receipt: result.postedJournal });
       if (recovered) { setReviewNote(recovered.request.notes ?? ""); setStatusText("An unresolved command is retained. Review its identity and retry that same command."); }
     }).catch(error => {
-      if (!controller.signal.aborted && current.current.loadKey === selected.loadKey) setErrorText(describeApiError(error, "Governed asset workflow is unavailable. This draft remains read-only.").summary);
+      if (!controller.signal.aborted && current.current.loadKey === selected.loadKey) setErrorText(describeApiError(error, "The asset workflow is unavailable. This draft remains read-only.").summary);
     }).finally(() => { if (!controller.signal.aborted && current.current.loadKey === selected.loadKey) setLoading(false); });
     return () => controller.abort();
   }, [active, load, loadKey, reloadCount, sessionIdentity]);
 
   const blockedReason = (action: AssetAction): string | null => {
-    if (!scope || !capability) return loading ? "Loading authenticated asset workflow capabilities." : "The governed asset workflow is unavailable; generic approval, posting and corrections are unavailable. Reload retained workflow.";
+    if (!scope || !capability) return loading ? "Loading authenticated asset workflow capabilities." : "The asset workflow is unavailable; generic approval, posting and corrections are unavailable. Reload retained workflow.";
     if (!sessionIdentity) return "Authenticated session identity is unavailable. Refresh the session before a decision.";
-    if (retainedPostPending && !capability.hasPendingPost) return "Retained posting intent requires a fresh matching recovery projection.";
+    if (retainedPostPending && !capability.hasPendingPost) return "Retained posting intent requires a fresh matching recovery snapshot.";
     if (capability.hasPendingPost && action !== "Post") return "Resolve the retained command before another decision.";
-    if (busyAction) return "A governed asset command is in progress.";
+    if (busyAction) return "An asset workflow command is in progress.";
     if (currentPending && currentPending.request.action !== action) return "Resolve the retained command before another decision.";
     if (action === "Approve" ? capability.canApprove !== true : capability.canPost !== true) return (action === "Approve" ? capability.approveBlockedReason : capability.postBlockedReason) || "This action is unavailable for the current authenticated operator.";
     if (action === "Post" && !capability.approval) return "A verified retained independent approval receipt is required for posting.";

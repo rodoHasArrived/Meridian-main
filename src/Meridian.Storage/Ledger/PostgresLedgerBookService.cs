@@ -20,13 +20,16 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
     private readonly ILedgerJournalStore _store;
     private readonly IOperatorInboxService? _operatorInbox;
+    private readonly IConsolidationBookPolicyValidator? _consolidationPolicies;
 
     public PostgresLedgerBookService(
         ILedgerJournalStore store,
-        IOperatorInboxService? operatorInbox = null)
+        IOperatorInboxService? operatorInbox = null,
+        IConsolidationBookPolicyValidator? consolidationPolicies = null)
     {
         _store = store ?? throw new ArgumentNullException(nameof(store));
         _operatorInbox = operatorInbox;
+        _consolidationPolicies = consolidationPolicies;
     }
 
     public async Task<LedgerBookDto> CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default)
@@ -48,10 +51,31 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
         var existing = await _store
             .ListLedgerBooksAsync(fundProfileId, request.FundStructureNodeId, request.FundStructureNodeKind, ct)
             .ConfigureAwait(false);
-        var existingForBasis = existing.FirstOrDefault(book => book.AccountingBasis == accountingBasis);
-        if (existingForBasis is not null)
+        static bool Dedicated(FundStructureNodeKindDto kind, AccountingBasisKindDto basis, string id, string version)
+            => kind == FundStructureNodeKindDto.Fund && basis == AccountingBasisKindDto.Primary &&
+                (id, version) is ("consolidation-v1", "w10-v1") or ("consolidation-v2", "w10-v2") or
+                    ("consolidation-v3", "w10-v3") or ("consolidation-v4", "w10-v4");
+        var dedicated = Dedicated(request.FundStructureNodeKind, accountingBasis, accountingPolicyId, accountingPolicyVersion);
+        if (dedicated)
         {
-            return MapBook(existingForBasis);
+            var named = existing.SingleOrDefault(book => book.AccountingBasis == accountingBasis &&
+                string.Equals(book.DisplayName, displayName, StringComparison.OrdinalIgnoreCase));
+            if (named is not null)
+            {
+                if (named.AccountingPolicyId != accountingPolicyId || named.AccountingPolicyVersion != accountingPolicyVersion ||
+                    !string.Equals(named.BaseCurrency, baseCurrency, StringComparison.OrdinalIgnoreCase))
+                    throw new LedgerBookValidationException("The reporting-book name already belongs to different policy or currency terms.");
+                return MapBook(named);
+            }
+            var validator = _consolidationPolicies ?? throw new LedgerBookValidationException("Governed consolidation policy validation is required to create an additional dedicated reporting book.");
+            await validator.ValidateAsync(accountingPolicyId, accountingPolicyVersion, ct).ConfigureAwait(false);
+        }
+        else
+        {
+            var existingForBasis = existing.FirstOrDefault(book => book.AccountingBasis == accountingBasis &&
+                !Dedicated(book.FundStructureNodeKind, book.AccountingBasis, book.AccountingPolicyId, book.AccountingPolicyVersion));
+            if (existingForBasis is not null)
+                return MapBook(existingForBasis);
         }
 
         var now = DateTimeOffset.UtcNow;
@@ -445,6 +469,7 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
 
         var reason = RequireText(request.Reason, nameof(request.Reason));
         var approvalReference = RequireText(request.ApprovalReference, nameof(request.ApprovalReference));
+        PreparerAttestationApprovalBoundary.RequireOrdinaryReference(approvalReference, nameof(request.ApprovalReference));
         var evidence = request.EvidenceLinks
             .Where(static link => !string.IsNullOrWhiteSpace(link))
             .Select(static link => link.Trim())
@@ -862,7 +887,14 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             VendorId: FirstTag(tags, "vendorId"),
             ProjectId: metadata.ProjectId ?? FirstTag(tags, "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            AccountingArrangementId = FirstTag(tags, "accountingArrangementId"),
+            AccountingArrangementRevisionId = FirstTag(tags, "accountingArrangementRevisionId"),
+            ChartAccountNodeId = FirstTag(tags, "chartAccountNodeId"),
+            AccountBindingRevisionId = FirstTag(tags, "accountBindingRevisionId"),
+            IntercompanyTransactionId = FirstTag(tags, "intercompanyTransactionId"),
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags, ""),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags, "")
         };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
@@ -895,7 +927,14 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             VendorId: dimensions.VendorId,
             ProjectId: dimensions.ProjectId)
         {
-            PositionId = dimensions.PositionId
+            PositionId = dimensions.PositionId,
+            AccountingArrangementId = dimensions.AccountingArrangementId,
+            AccountingArrangementRevisionId = dimensions.AccountingArrangementRevisionId,
+            ChartAccountNodeId = dimensions.ChartAccountNodeId,
+            AccountBindingRevisionId = dimensions.AccountBindingRevisionId,
+            IntercompanyTransactionId = dimensions.IntercompanyTransactionId,
+            IntercompanyAgreementId = dimensions.IntercompanyAgreementId,
+            IntercompanyAgreementVersion = dimensions.IntercompanyAgreementVersion
         };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
@@ -936,7 +975,14 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             VendorId: FirstTag(tags, prefix + "vendorId"),
             ProjectId: FirstTag(tags, prefix + "projectId"))
         {
-            PositionId = positionId
+            PositionId = positionId,
+            AccountingArrangementId = FirstTag(tags, prefix + "accountingArrangementId"),
+            AccountingArrangementRevisionId = FirstTag(tags, prefix + "accountingArrangementRevisionId"),
+            ChartAccountNodeId = FirstTag(tags, prefix + "chartAccountNodeId"),
+            AccountBindingRevisionId = FirstTag(tags, prefix + "accountBindingRevisionId"),
+            IntercompanyTransactionId = FirstTag(tags, prefix + "intercompanyTransactionId"),
+            IntercompanyAgreementId = LedgerAgreementDimensions.ReadId(tags, prefix),
+            IntercompanyAgreementVersion = LedgerAgreementDimensions.ReadVersion(tags, prefix)
         };
 
         return HasAnyDimension(dimensionSet) ? dimensionSet : null;
@@ -982,9 +1028,11 @@ public sealed class PostgresLedgerBookService : ILedgerBookService
             dimensions.ProjectId ?? string.Empty,
             string.Join("\u001d", externalGl));
 
-        return dimensions.PositionId.HasValue
+        var withPosition = dimensions.PositionId.HasValue
             ? $"{key}\u001epositionId={dimensions.PositionId.Value:D}"
             : key;
+        return LedgerAccountingArrangementDimensions.AppendSignature(
+            LedgerAgreementDimensions.AppendSignature(withPosition, dimensions.IntercompanyAgreementId, dimensions.IntercompanyAgreementVersion, "\u001e"), dimensions, "\u001e");
     }
 
     private static LedgerBookDto MapBook(LedgerBookRecord record)

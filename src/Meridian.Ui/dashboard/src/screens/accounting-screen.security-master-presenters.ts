@@ -8,8 +8,11 @@ import type {
   SecurityIdentityIdentifierRowViewModel,
   ReferenceDataEndpointRowViewModel,
   SecurityScheduleDetailFieldViewModel,
+  SecurityScheduleEventType,
+  SecuritySchedulePostingStatus,
 } from "./accounting-screen.view-model";
 import type { SecurityAliasEntry, SecurityIdentifierEntry, SecurityMasterConflict } from "@/types";
+import { formatUtcDate } from "@/lib/format";
 
 interface ReferenceDataRoutePostureCounts {
   totalCount: number;
@@ -138,7 +141,7 @@ export function formatSecurityDate(value: string | null | undefined): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }
 
 export function formatSecurityDateRange(from: string | null | undefined, to: string | null | undefined): string {
@@ -158,7 +161,7 @@ export function formatConflictDate(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
     ? value
-    : date.toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric", timeZone: "UTC" });
+    : formatUtcDate(date);
 }
 
 export function formatSecurityConflictField(value: string): string {
@@ -235,4 +238,32 @@ export function referenceDataStatusTone(status: ReferenceDataEndpointProbeResult
   }
 
   return "default";
+}
+
+export function formatSecurityScheduleEventType(eventType: SecurityScheduleEventType): string {
+  const labels: Record<string, string> = {
+    Coupon: "Coupon",
+    Principal: "Principal",
+    Paydown: "Paydown",
+    Maturity: "Maturity",
+    Call: "Call",
+    Put: "Holder put",
+    CallNoticeDeadline: "Issuer call notice deadline",
+    PutNoticeDeadline: "Holder put notice deadline",
+    Distribution: "Distribution",
+    FactorUpdate: "Factor update"
+  };
+
+  return labels[eventType] ?? eventType;
+}
+
+export function formatSecuritySchedulePostingStatus(status: SecuritySchedulePostingStatus): string {
+  const labels: Record<string, string> = {
+    Posted: "Posted",
+    Pending: "Pending",
+    Variance: "Variance review",
+    Forecast: "Forecast"
+  };
+
+  return labels[status] ?? status;
 }

@@ -5,6 +5,10 @@ import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
 import type { ManualJournalEntryWorkbenchViewModel } from "@/screens/accounting-screen.view-model";
+import { usesTrackedCaps } from "@/design-system/label-case";
+import { Input } from "@/components/ui/input";
+import { ManualJournalIntercompanyDimensions } from "./accounting-screen.journal-intercompany-dimensions";
+import { IntercompanyJournalReference } from "@/components/accounting/intercompany-journal-reference";
 
 export function focusManualJournalCell(lineId: string, column: string): void {
   const existing = document.getElementById(`manual-je-${column}-${lineId}`);
@@ -82,7 +86,7 @@ export function ManualJournalHealthBar({
         {view.blockingIssueCount > 0 ? <Button size="sm" variant="ghost" onClick={() => focusManualJournalValidationTarget(view, null)}>Show {view.blockingIssueCount} blocker{view.blockingIssueCount === 1 ? "" : "s"}</Button> : null}
       </div>
       <div className="accounting-journal-health-actions">
-        <Button size="sm" variant="outline" busy={view.saveBusy} disabled={hasInvalidAmountEdits || Boolean(view.draft.assetAccountingDraft)} disabledReason={view.draft.assetAccountingDraft ? "This retained asset draft is immutable. Repair its governed source before creating another candidate." : hasInvalidAmountEdits ? invalidAmountReason : null} onClick={() => void view.save()}>Save draft</Button>
+        <Button size="sm" variant="outline" busy={view.saveBusy} disabled={hasInvalidAmountEdits || Boolean(view.draft.assetAccountingDraft)} disabledReason={view.draft.assetAccountingDraft ? "This retained asset draft is immutable. Repair its source before creating another candidate." : hasInvalidAmountEdits ? invalidAmountReason : null} onClick={() => void view.save()}>Save draft</Button>
         <Button size="sm" variant="outline" busy={view.validateBusy} disabled={hasInvalidAmountEdits || !!view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost} disabledReason={view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost ? "Resolve the retained asset command before validation." : hasInvalidAmountEdits ? invalidAmountReason : null} onClick={() => void view.validate()}>Validate</Button>
         <Button size="sm" busy={view.submitBusy} disabled={!view.canSubmit || hasInvalidAmountEdits || !!view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost} disabledReason={view.assetWorkflow?.pendingAction || view.assetWorkflow?.hasPendingPost ? "Resolve the retained asset command before submission." : hasInvalidAmountEdits ? invalidAmountReason : view.submitDisabledReason} onClick={() => void view.submit()}>{view.draft.assetAccountingDraft ? "Submit for review" : "Submit approval"}</Button>
       </div>
@@ -141,6 +145,16 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
             <DimensionField label="Cost center" value={view.draft.dimensions?.costCenterId ?? ""} placeholder="Journal-level cost center" onChange={(value) => view.updateDraftDimensions({ costCenterId: value })} />
           </div>
           <p className="text-xs text-muted-foreground">Blank line values inherit journal scope where available. Dimension edits invalidate the current validation and are autosaved as draft changes.</p>
+          <IntercompanyJournalReference key={`${selectedLine.lineId}:${selectedLine.dimensions?.intercompanyAgreementId ?? ""}:${selectedLine.dimensions?.intercompanyAgreementVersion ?? ""}`} line={selectedLine}
+            entityId={selectedLine.entityId ?? view.draft.entityId ?? ""} onApply={patch => {
+              const next = patch.dimensions;
+              const changed = next && (next.intercompanyAgreementId !== selectedLine.dimensions?.intercompanyAgreementId
+                || next.intercompanyAgreementVersion !== selectedLine.dimensions?.intercompanyAgreementVersion
+                || next.counterpartyId !== selectedLine.dimensions?.counterpartyId);
+              view.updateLine(selectedLine.lineId, changed ? { ...patch, dimensions: { ...next, accountingArrangementId: null, accountingArrangementRevisionId: null } } : patch);
+            }} />
+          <p className="text-xs text-muted-foreground">Applying a different legal agreement or counterparty clears the accounting arrangement selection. Select a compatible accounting arrangement before posting an intercompany-role line.</p>
+          <ManualJournalIntercompanyDimensions key={`${view.draft.journalEntryId}:${selectedLine.lineId}`} view={view} line={selectedLine} />
           <TechnicalDetails label="Line system details">
             <dl className="grid gap-2 text-xs">
               <div><dt className="text-muted-foreground">Line ID</dt><dd className="mt-1 break-all font-mono text-foreground">{selectedLine.lineId}</dd></div>
@@ -150,7 +164,7 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
           </TechnicalDetails>
           <div className="rounded border border-border/70 bg-background/50 p-2">
             <label className="space-y-1 text-sm">
-              <span className="text-xs font-semibold uppercase text-muted-foreground">Security Master picker</span>
+              <span className="text-xs font-semibold text-muted-foreground">Security Master picker</span>
               <div className="flex gap-2">
                 <input className="min-h-9 min-w-0 flex-1 rounded border border-border bg-background px-2" value={view.securitySearchQuery} placeholder="Ticker, ISIN, CUSIP, FIGI, name" onChange={(event) => view.updateSecuritySearchQuery(event.target.value)} />
                 <Button size="icon" variant="outline" busy={view.securitySearchBusy} aria-label="Search Security Master" onClick={() => void view.searchSecurityMaster()}><Search className="h-3.5 w-3.5" aria-hidden="true" /></Button>
@@ -158,7 +172,7 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
             </label>
             <p role="status" className={cn("mt-2 text-xs", view.securitySearchErrorText ? "text-danger" : "text-muted-foreground")}>{view.securitySearchStatusText}</p>
             <div className="mt-2 space-y-2">
-              {view.securitySearchResults.map((security) => <button key={security.securityId} type="button" className="w-full rounded border border-border/70 bg-secondary/30 px-3 py-2 text-left hover:border-primary/50 hover:bg-primary/10" onClick={() => view.selectSecurity(selectedLine.lineId, security)}><span className="block font-semibold text-foreground">{security.displayName}</span><span className="mt-1 block font-mono text-[11px] text-muted-foreground">{security.securityId} / {security.classification.assetClass} / {security.classification.primaryIdentifierValue}</span></button>)}
+              {view.securitySearchResults.map((security) => <button key={security.securityId} type="button" className="w-full rounded border border-border/70 bg-secondary/30 px-3 py-2 text-left hover:border-primary/50 hover:bg-primary/10" onClick={() => view.selectSecurity(selectedLine.lineId, security)}><span className="block font-semibold text-foreground">{security.displayName}</span><span className="mt-1 block font-mono text-xs text-muted-foreground">{security.securityId} / {security.classification.assetClass} / {security.classification.primaryIdentifierValue}</span></button>)}
             </div>
             {selectedLine.securityId ? <Button className="mt-2" size="sm" variant="ghost" onClick={() => view.clearSecurity(selectedLine.lineId)}><X className="h-3.5 w-3.5" aria-hidden="true" />Clear security</Button> : null}
           </div>
@@ -171,8 +185,8 @@ export function ManualJournalDimensionsInspector({ view }: { view: ManualJournal
 function DimensionField({ label, value, placeholder, onChange }: { label: string; value: string; placeholder: string; onChange: (value: string | null) => void }) {
   return (
     <label className="space-y-1">
-      <span className="text-xs font-semibold uppercase text-muted-foreground">{label}</span>
-      <input className="min-h-9 w-full rounded border border-border bg-background px-2 font-mono" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value || null)} />
+      <span className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "uppercase")}>{label}</span>
+      <Input className="min-h-9 w-full font-mono" value={value} placeholder={placeholder} onChange={(event) => onChange(event.target.value || null)} />
     </label>
   );
 }

@@ -103,9 +103,50 @@ public sealed class SecurityMasterAssetClassSupportTests
     }
 
     [Theory]
+    [InlineData("deposit", "Deposit")]        // the catalog lookup is case-insensitive; the codec now agrees
+    [InlineData("MBS", "StructuredCredit")]   // a registered alias names its catalog class
+    public async Task CreateAsync_AliasOrCasingOfACatalogClass_PersistsTheCanonicalClass(string submitted, string canonical)
+    {
+        var securityId = Guid.NewGuid();
+        var eventStore = Substitute.For<ISecurityMasterEventStore>();
+        var snapshotStore = Substitute.For<ISecurityMasterSnapshotStore>();
+        var store = Substitute.For<ISecurityMasterStore>();
+        var rebuilder = new SecurityMasterAggregateRebuilder(eventStore, snapshotStore);
+        var service = new SecurityMasterService(
+            eventStore,
+            snapshotStore,
+            store,
+            rebuilder,
+            new SecurityMasterOptions { SnapshotIntervalVersions = 50, ResolveInactiveByDefault = true },
+            NullLogger<SecurityMasterService>.Instance);
+
+        var detail = await service.CreateAsync(
+            new CreateSecurityRequest(
+                securityId,
+                submitted,
+                JsonSerializer.SerializeToElement(new { displayName = "Alias Test Security", currency = "USD", issuerName = "Meridian Treasury" }),
+                CreateAssetSpecificTerms(canonical),
+                new[]
+                {
+                    new SecurityIdentifierDto(
+                        SecurityIdentifierKind.InternalCode, $"ALIAS-{securityId:N}", true, DateTimeOffset.UtcNow.AddDays(-1), null, null)
+                },
+                DateTimeOffset.UtcNow,
+                "test",
+                "codex",
+                null,
+                "alias canonicalization"),
+            CancellationToken.None);
+
+        detail.AssetClass.Should().Be(canonical);
+        await store.Received(1).UpsertProjectionAsync(
+            Arg.Is<SecurityProjectionRecord>(projection => projection.AssetClass == canonical),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
     [InlineData("ExchangeTradedFund")] // planned in the pack registry, not a catalog class
     [InlineData("Equitiy")]            // a typo
-    [InlineData("equity")]             // the switch is case-sensitive; lowercase is not a catalog class
     public async Task CreateAsync_UnrecognizedAssetClass_IsRefusedInsteadOfPersistingAsOtherSecurity(string assetClass)
     {
         // Read tolerance must not become write tolerance. Amend and deactivate refuse an

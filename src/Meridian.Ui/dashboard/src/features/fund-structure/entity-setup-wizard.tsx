@@ -150,7 +150,7 @@ export function EntitySetupWizard() {
               <CardTitle id="entity-setup-title" className="flex items-center gap-2 text-base">
                 <Network className="h-4 w-4" aria-hidden="true" /> Entity setup wizard
               </CardTitle>
-              <CardDescription>Shared /api/fund-structure workflow for organization, lane, fund, entity, vehicle, portfolio, ownership, and account handoff setup.</CardDescription>
+              <CardDescription>One setup flow for organization, business, fund, entity, vehicle, portfolio, ownership, and account setup.</CardDescription>
             </div>
             <Badge variant={!preview ? "outline" : blockingCount > 0 ? "warning" : "success"}>
               {!preview ? "Not validated" : `${blockingCount} blockers`}
@@ -185,7 +185,7 @@ export function EntitySetupWizard() {
               <Field label="Owner percent" value={fields.beneficialOwnerPercent} onChange={update("beneficialOwnerPercent")} />
             </div>
           </fieldset>
-          <TechnicalDetails label="Advanced structure and handoff">
+          <TechnicalDetails label="Advanced structure and account">
             <div className="grid gap-3 md:grid-cols-3">
               <SelectField label="Lifecycle event" value={fields.lifecycleEventKind} values={lifecycleEventKinds} onChange={updateSelect("lifecycleEventKind")} />
               <Field label="Lifecycle summary" value={fields.lifecycleEventSummary} onChange={update("lifecycleEventSummary")} />
@@ -193,8 +193,8 @@ export function EntitySetupWizard() {
               <Field label="Vehicle name" value={fields.vehicleName} onChange={update("vehicleName")} />
               <Field label="Portfolio code" value={fields.portfolioCode} onChange={update("portfolioCode")} />
               <Field label="Portfolio name" value={fields.portfolioName} onChange={update("portfolioName")} />
-              <Field label="Account handoff code" value={fields.accountCode} onChange={update("accountCode")} />
-              <Field label="Account handoff name" value={fields.accountDisplayName} onChange={update("accountDisplayName")} />
+              <Field label="Account code" value={fields.accountCode} onChange={update("accountCode")} />
+              <Field label="Account name" value={fields.accountDisplayName} onChange={update("accountDisplayName")} />
             </div>
           </TechnicalDetails>
           <div className="flex flex-wrap gap-2">

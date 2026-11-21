@@ -245,11 +245,6 @@ public sealed partial class AnalysisExportService
         _ => Convert.ToBoolean(v)
     };
 
-    private static DateTimeOffset? ConvertToDateTimeOffset(object? v) => v switch
-    {
-        DateTimeOffset dto => dto,
-        DateTime dt => new DateTimeOffset(dt),
-        string s when DateTimeOffset.TryParse(s, out var parsed) => parsed,
-        _ => null
-    };
+    private static DateTimeOffset? ConvertToDateTimeOffset(object? value) =>
+        value is not null && TryParseTimestamp(value, out var timestamp) ? timestamp : null;
 }

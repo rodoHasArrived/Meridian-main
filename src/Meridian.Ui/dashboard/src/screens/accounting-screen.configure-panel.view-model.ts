@@ -31,6 +31,7 @@ export const CONFIGURE_SECTION_LINKS: readonly ConfigureSectionLink[] = [
   { id: "chart", label: "Chart", anchorId: "configure-section-chart", description: "Chart account authoring" },
   { id: "mappings", label: "Mappings", anchorId: "configure-section-mappings", description: "Tenant admin, dimensions, and external GL" },
   { id: "rules", label: "Rules", anchorId: "configure-section-rules", description: "Posting rules studio" },
+  { id: "agreements", label: "Agreements", anchorId: "configure-section-agreements", description: "Intercompany terms, evidence and independent review" },
   { id: "activation", label: "Activation", anchorId: "configure-section-activation", description: "Validation and activation gate" }
 ];
 

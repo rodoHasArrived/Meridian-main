@@ -3,7 +3,7 @@
 // stay lowercase (`useX`), so they'd otherwise be bundle-internal. Consume as:
 //
 //   const { useTableState, useTableColumns, useRowSelection, useAsyncTableData } =
-//     window.MeridianDesignSystem_4f61be.TableHooks;
+//     window.MeridianDesignSystem_205d17.TableHooks;
 import { useTableState } from "./useTableState.js";
 import { useTableColumns } from "./useTableColumns.js";
 import { useRowSelection } from "./useRowSelection.js";

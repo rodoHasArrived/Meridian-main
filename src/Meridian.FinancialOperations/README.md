@@ -6,10 +6,178 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-10-14
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.FinancialOperations
+
+Mapped CSV intake preserves the `coupon`, `interest` and `principal` classifications and explicit
+receipt metadata through `StatementCanonicalRecord` into the canonical artifact. Reversal references
+retain the original provider payment ID; splits name an obligation or projected flow rather than
+guessing by an amount alone. The artifact writer keeps the legacy column order and emits the extended
+receipt suffix only when needed. New optional DTO fields omit null from JSON, preserving legacy
+serialization when absent. Canonical ingestion then validates identity and payment conservation before
+the queue can consume this evidence. This transport does not approve an expectation or post a journal.
+See [receipt import evidence](../../docs/operators/reconciliation-operations.md).
+
+Mapped statement CSV rejects malformed quotes, null characters and rows whose field count differs
+from the reviewed header. Validation and preview report blocking diagnostics, and commit refuses the
+whole document before retaining evidence. Valid quoted delimiters and escaped quotes retain their
+exact financial meaning. `StatementImportServiceTests.CsvMalformedTail_BlocksWholeImportThenAllowsCorrectedReplay`
+proves a valid prefix cannot make a malformed tail complete and that a corrected retry retains exact
+source bytes and remains idempotent after service restart.
+
+Statement transaction reconciliation pairs retained external IDs first within the authorized account
+and statement window. Economic, date, and identity conflicts preserve both evidence references
+for review. Transactions with an ID missing on either side can use a unique configured fallback
+pair or settlement group. Competing candidates become one ambiguity break with the associated
+source evidence. Recovered Alpaca FILL activity carries its provider identity to the journal.
+Historical Meridian-generated fill IDs have no provider identity and remain eligible for fallback.
+Casework keeps its existing operator review and approved adjustment path.
+
+The intercompany obligation monitor enriches the existing posted balance schedule with canonical
+legal expiry, coverage, lifecycle and guarantee observations. Its default expiry horizon is 30
+calendar days; retained source versions distinguish current, stale and unavailable evidence. The
+close companion remains advisory and does not change existing schedule blockers, journal controls
+or exact consolidation rule versions. See
+[monitoring boundaries](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#obligation-monitoring-and-structured-legal-terms).
+
+Expiry warnings follow continuous approved legal coverage across effective-date boundaries, retaining
+gaps and termination instead of reporting superseded raw end dates.
+
+`BondIncomeService` resolves actual account/book/lot and adopted US GAAP policy before previewing or
+preparing `bond-income-us-gaap-v1` instructions. Eligible direct costs, purchased accrued interest,
+coupon income, premium/discount and observed indexation remain separate. Coupon recognition prepares
+signed receivable/payable and source-verified cash clearing through the canonical event spine and
+atomic posting boundary. Raw model economics remain separate from versioned ten-decimal booked
+targets and their retained rounding residuals. Native cash retains its currency minor units. See [policy adoption and review](../../docs/operators/bond-workflows.md).
+
+Held coupon accrual uses contractual earned interest rather than a new purchaser's ex-coupon
+invoice adjustment. Terminal principal pins earned rights independently of bank cash timing;
+later cash and typed reversals verify the original entitlement, source allocation and complete
+native journal history. Unreconciled manual coupon accounting blocks further clearing. Exact
+canonical noncash amortization remains distinct from coupon recognition and cash consumption.
+
+Explicit acquisition-captured accrual v2 separates the active period from earlier unpaid earned
+coupons, retains purchased-interest rounding adjustments at their native boundary and keeps clean
+EIR recurrence independent of receivable/payable balances. Legacy preparation refuses unsafe lag
+windows without reinterpreting prior instructions or reversal authority. Generated posting always
+uses the canonical human-origin gate before storage and the existing independent approval checks.
+
+Intercompany accounting profiles link to the canonical legal registry through exact approved
+GUID/version/payload-hash pins. Legal terms and independent legal approval remain in that registry;
+profiles own operational templates, party-book/account mappings and bounded validity only. Native
+legal line dimensions and accounting-profile dimensions remain separate through storage, review,
+source evidence and both workstations. See [the implementation plan](../../docs/engineering/plans/intercompany-entity-controls.md).
+
+`ConsolidationTransitionService` reviews membership cutover into a new empty dedicated reporting
+book. Source/mapping/rate changes stale the preview; independent approval preserves old history and
+opens the new gross-derived target without carrying old overlays. Former-member exposures remain
+gross and explicitly non-eliminable; unapproved member or replacement-book changes remain blocked.
+
+`IntercompanyBalanceScheduleService` projects actual posted due-to/due-from amounts with
+approved agreement/account revisions and separately approved legacy attribution receipts.
+It follows authorized counterpart and consolidation source books, keeps opposing creditor/debtor
+directions separate, and reports missing mappings explicitly. Terms supply no balances.
+The close cockpit consumes this structured schedule instead of intercompany keywords.
+NetSuite guarded export review retains its schedule hash and rechecks mapping completeness
+and freshness alongside the existing external NetSuite evidence requirements.
+
+`IntercompanyFeeAccrualSourceBuilder` builds the fixed management-fee source draft with direction from the
+agreement's declared roles and detects overlapping posted fees; `IntercompanyLedgerPostingAuthority`
+re-resolves every fee slice's authority before review or posting. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
+`IntercompanyLedgerPostingAuthority` also re-reads every fixing a floating accrual pinned, so a value
+re-approved after drafting stops the draft before review or posting; the source builder retains the
+computation's own rule version. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+`IntercompanyBalanceConfirmationRules` and `IntercompanyBalanceConfirmationService` pin both sides'
+posted schedule balances for one approved accounting profile at a date, then record confirm, dispute
+and resolve steps against the exact version and balance digest shown. Advisory only; close is
+unchanged. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+`IntercompanyAccrualSourceBuilder` reads compounding facts (posted accrued-interest balance and standing
+accrual windows) and re-verifies them before review or posting. See [periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
+
+`IntercompanyAccrualScheduleRules` hold the maker-checker transitions of accrual schedules: active only once
+someone other than the proposer approves, rejected or disabled with a reason. See
+[opt-in accrual schedules](../../docs/domain/intercompany-agreements.md#opt-in-accrual-schedules).
+
+Intercompany services own approved accounting-profile revisions and governed counterpart templates;
+canonical legal terms and independent review remain in Application/FundStructure.
+Consolidation dispatches exact book policy versions: retained v1, stable-role/N-entity v2, whole-book
+reporting translation v3, and separately enabled income elimination v4. Legacy adoption may create
+reviewed overlay reclassification but never changes source journals. Missing authority blocks output.
+See [versioned consolidation](../../docs/domain/intercompany-consolidation.md); current tests and
+Windows evidence remain separate from source implementation status.
+
+Unreadable operations-close snapshots report the exception type without the workflow path,
+identity or exception payload. Reviewed posting candidates require trusted human authority before
+store access; nonhuman and undefined origins cannot append a journal.
+
+`AccountingPostingCandidatePostService.PostAttestedCashDividendCandidateAsync` is a distinct,
+default-denied cash-dividend path requiring a live native producer lease. It rebuilds the retained
+candidate through existing accounting authority, checks the declared receivable/income account
+roles and current open-period version, then retains `PreparerAttested` and `Posted` stages with the
+journal in the native transaction. It creates no ordinary `ApprovalId` or `Approved` stage and grants
+no lot, correction, short-position or FX authority. Ordinary candidate posting still requires an
+independent reviewer.
+
+New non-lot corporate-action candidates retain the unique active Security Master ticker selected
+by the server. The existing candidate engine uses that retained authority on mapped accounts and
+native lineage; caller-selected symbols remain refused. Cash-dividend posting checks the exact
+retained symbol and Security Master version again through the native lease transaction. Missing,
+ambiguous or changed symbol authority blocks posting; historical ordinary drafts with no retained
+symbol keep their existing rebuild behavior. The native lineage guard remains authoritative.
+
+Operations Continuity refuses reserved W14 preparer-assertion references when disposing a break
+or reopening a controlled workflow. These refusals preserve the current workflow state and its
+ordinary approval requirements; legacy opaque references still do not prove independent review.
+
+Journal construction and accounting/reporting projections carry optional agreement ID/version
+provenance through the existing dimensions. Conditional hash/grouping suffixes retain legacy
+identities for unreferenced lines. Legal provenance alone grants no accrual or settlement authority. Accounting profiles and
+account-role controls govern counterpart drafts and versioned consolidation, while native
+legal-only lines retain their separate advisory coverage. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+`IntercompanyAccrualSourceBuilder` holds the pure pieces of the governed loan-interest accrual
+(ADR-028): profile authority by day, principal read from posted `Loan`-profile journals, posted-window
+overlap detection and the evidence-pinned source draft. It posts nothing; the counterpart still
+arrives through `IntercompanyProposalDraftBuilder` after the source journal commits.
+Counterpart and counterpart-reversal drafts label their treasury context with
+`IntercompanyProposalDraftBuilder.MirrorFundEventType`; it classifies the draft and is not a fund event.
+
+The asset-accounting event spine freezes an optional canonical redemption disposal instruction
+at projection and requires the same instruction at drafting. Selections are compared by their
+retained ordinal; every selection and instruction field remains exact. Approved candidates reuse the
+existing atomic disposal authority to relieve full quantities and bases together with their
+journal. Historical events omit the optional member and preserve their retained fingerprints.
+Adopted bond scheduled principal uses its separate governed paydown instruction to preserve
+scheduled basis relief without also applying disposal treatment.
+
+The reconciliation engine rethrows caller cancellation during Security Master lookups instead of logging a warning per remaining security and returning a partial lookup.
+
+`AccountingSystemIntegrationService.GetLatestImportAsync` returns the latest persisted import; when
+none exists it returns an unpersisted `Previewed` result and does not cache it, so the GET-backed
+latest-import and latest-reconciliation reads have no side effects.
+
+`PrivateCapitalLifecycleService` coordinates commitment revision review, effective approved terms,
+pro-rata call previews, and retention of the exact reviewed plan over `IPrivateCapitalStore`.
+Previews allocate over posted calls effective by the notice date, then validate the full approved
+commitment/issuance timeline, including future reductions and later posted calls.
+The first slice supports one fund/book/currency per call. It does not reserve capacity at preview
+or post journals itself. Missing evidence and unmatched historical capital activity block adoption
+until opening reconciliation; no legacy commitment balances are guessed or automatically migrated.
+Approved retained terms establish the source-backed investor/capital-account mapping for this slice;
+an approved capital account cannot be rebound to a different investor across commitments.
+
+Canonical Operations Continuity commits retain a versioned snapshot of all five required close
+gates in the same audit/state transaction. Snapshot-bearing events use an explicit v1 hash envelope;
+events without snapshots preserve their original canonical hash bytes. Upgraded readers verify
+mixed chains and reject mutated, stripped or unknown snapshot formats. Readers must deploy with
+the new writer; older hash validators intentionally refuse the new envelope. Legacy audit events
+and nontransactional paths remain explicit history gaps, with no reconstructed or backfilled task
+counts. Burndown observations retain workflow versions and break across missing coverage.
 
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
@@ -19,7 +187,7 @@ IB Flex remote retrieval resolves the guarded legacy-runtime credential-store ke
 cannot use unassigned credentials after rollback. Hosts without that guard, authoritative configuration
 or vault service keep file parsing available while remote retrieval remains unavailable.
 
-New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Settlement verification requests the retained analytics model version. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
+New declared-bond amortization previews select `canonical-lot-amortization-v5`, using the same coupon, stub, accrual and discount-time calculator as analytics. Settlement verification requests the retained analytics model version. Quote-derived receipts also retain the immutable price selector and its pricing-account scope, then replay that selector instead of substituting a manual clean price. The selector must agree with the hash-bound price-selection manifest entry; missing or inaccessible quote evidence blocks verification. Optional replay fields are omitted for manual-input receipts, preserving their retained fingerprints. Existing review, period controls, balanced posting and immutable lot/journal boundaries remain authoritative.
 
 `CanonicalLotAmortizationService.PreviewExtendedAsync` explicitly selects v3 remaining-face
 amortization and/or automatic yield-to-worst. It retains the complete comparison for independent
@@ -30,6 +198,12 @@ liability credits/debits to positive retained quantities. The atomic store certi
 cash/liability/result economics; approvals, period control and exact replay remain shared.
 Projection retains explicit direction before drafting; the candidate cannot change it or use an
 opposite-side position. The canonical relief guard also checks the carrying account's type.
+A short-correction reversal must invert the posted journal line for line:
+`ShortCorrectionGuard.IsExactInverse` consumes each reversal line at most once, so duplicate
+economic lines need distinct inverses and one reversal line cannot satisfy two posted lines.
+
+The camt.053 and BAI2 connectors emit the closing booked balance by default; only an explicit
+`StatementBalanceRole.Opening` (used by shadow onboarding) emits the opening balance instead.
 
 All six shipped statement connectors capture executed mapping semantics at parse time. Display labels and review notes do not change that fingerprint; fields, activity mappings, culture, date formats and CSV options do. The retained import supplies comparison proof on replay. Legacy artifact upgrade verifies the original shape and adopts retained bytes without inventing mapping evidence.
 
@@ -143,6 +317,30 @@ date; readiness uses the latest capture for every required date, while earlier r
 replayable. Independent reviewer decisions bind the current data revision. Frozen packets include
 blocked states and complete retained history; they confer no accounting authority.
 
+The `OnboardingWorkspaceService.Shadow` partial adds shadow-mode onboarding (W11-SHADOW-001). An owner
+designates the workspace's ledger book as a shadow book. Incumbent opening balances are imported
+through `OpeningBalances/OnboardingOpeningSources.cs` (camt.053 OPBD / BAI2 010 via
+`StatementBalanceRole.Opening`, an administrator opening-pack CSV, or a retained GL trial balance)
+into a separate opening comparison lineage. Each import records `OpeningKinds`, the required kinds it
+supplies, and compares only those; complementary sources combine, using the latest import per source
+kind, and readiness lists any required kind no source covers. Explanations clear a difference only for its exact
+amounts; `MeridianError` never clears and `Timing` lapses after its reversal date. A parallel-run
+certificate requires reconciled opening balances, every required period clean and independent
+review. Only an independent designated reviewer can promote, with a certificate that still matches
+the current revision, and every step is recorded in a hash-chained audit trail.
+`OnboardingBookOfRecordGuard` implements `IBookOfRecordGuard` over retained workspaces.
+`OnboardingWorkspaceRetention` holds the retention rules every store applies: hash chains verify on read,
+history only grows, versions advance once, and scope and final decisions are fixed.
+`PostgresOnboardingWorkspaceStore` retains workspaces in `ledger.onboarding_workspaces` (`V_ledger_072`).
+A partial unique index lets at most one workspace per tenant hold a ledger book in shadow mode or
+promote it, across processes, and retained rows cannot be deleted.
+`FinancialOperationsCommandCenterReadService` adds a `shadow-agreement` close-readiness contributor when
+a book-of-record guard is composed:
+
+- a book of record is `Ready`
+- a shadow book or withdrawn trial is `Blocked`, with clean-period and unexplained-difference figures
+- an unreadable status is `Unavailable`
+
 `AccountingSystemIntegrationService.Onboarding` adds a read-only capture seam over an already
 retained import and explicitly selected certified mapping. Existing GL reconciliation runs against
 a private retained ledger snapshot. Mapping content and full decimal payloads are retained without
@@ -161,6 +359,13 @@ Ambiguous interrupted starts retain their claim and require recovery instead of 
 `OperationsContinuityWorkflowService.StartPreparedWorkflowAsync` supplies the atomic fresh workflow
 and exact-identity recovery boundary. Focused proof lives in `AccountingCloseServicesTests.Preparation`
 and `OperationsContinuityWorkflowServiceTests.PreparedStart`.
+
+`OperationsReviewedAutomationProjection` owns the read-only automation review stages, allowed and
+prohibited action guidance, and evidence-linked artifacts projected by
+`OperationsContinuityWorkflowService`. The workflow service retains transition, audit, posting,
+and close authority; the projection consumes retained state without writing it. Focused proof
+lives in `OperationsReviewedAutomationProjectionTests`, with service integration covered by
+`OperationsContinuityWorkflowServiceTests`.
 
 Statement reconciliation composition supplies the shared `IAtomicFileWriter` to the canonical
 statement store so committed imports use Storage-owned directory durability without an
@@ -197,16 +402,22 @@ FX, but this delivery does not extend the event spine's cross-currency workflow.
 disposal relief is supplied by the separate PR #3050 implementation; these amortization corrections
 preserve that relief path and its retained acquisition facts.
 
-`FundAdministration/RecurringJournalState.cs` and `FileRecurringJournalStore` own versioned
+`FundAdministration/RecurringJournalState.cs` and `RecurringJournalDocumentSession` own versioned
 recurring schedules and templates, exact source evidence, one claim per schedule/effective date,
-and retained outcome history. A process-independent filesystem lease spans claim, intake and
-completion; retries preserve the deterministic draft identity. Changed definitions block existing
+and retained outcome history. `PostgresRecurringJournalStore` (selected when a ledger database is
+configured) holds a PostgreSQL advisory lock across claim, intake and completion, so runners on
+separate hosts share one authority; `FileRecurringJournalStore` uses a filesystem lease for hosts
+sharing one data root. Retries preserve the deterministic draft identity. Changed definitions block existing
 claims until exact retained definitions are explicitly restored with an actor and reason.
+Calculated source additions also require a write-once evidence digest on the occurrence, retained
+independently of the journal draft. An unpinned pre-existing calculated draft requires trusted
+provenance repair; recovery cannot adopt its contents as authority.
 Initialization is explicit, and missing or corrupt initialized state fails closed. The runtime
 uses the existing PostgreSQL ledger for authoritative periods and governed reopens; the historical
 `FundAdministrationControlService` calendar and lock methods remain in-memory primitives, not
 runtime authority. See [Recurring Journal](../../docs/domain/recurring-journal.md) and
-`RecurringJournalStoreTests` / `RecurringJournalRunnerTests` for recovery and evidence boundaries.
+`RecurringJournalStoreTests` / `RecurringJournalPostgresStoreTests` / `RecurringJournalRunnerTests`
+for recovery and evidence boundaries.
 
 OFX account identity is scoped to the containing bank, credit-card or investment statement.
 The parser does not borrow an account from a sibling statement or unrelated row. Missing,
@@ -437,7 +648,8 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 
 - `src/Meridian.FinancialOperations` - registered source module root.
 - `OperationsContinuity/OperationsContinuityWorkflow.cs` - account-period close workflow aggregate, gates, checklist state, audit evidence, and close-readiness posture inputs.
-- `OperationsContinuity/OperationsContinuityWorkflowService.cs` - command transitions, optimistic version checks, audit writes, ledger-post coordination, and DTO projection.
+- `OperationsContinuity/OperationsContinuityWorkflowService.cs` - command transitions, optimistic version checks, audit writes, ledger-post coordination, and captured-state reads.
+- `OperationsContinuity/OperationsWorkflowReadModelBuilder.cs` - read-only DTO, checklist, dashboard, and evidence-package composition from captured workflow state and its loaded audit timeline; the service retains storage access and close-readiness policy.
 - `OperationsContinuity/OperationsContinuityRepositories.cs` - in-memory and file-backed workflow/audit stores plus transactional commit store contracts.
 - `OperationsContinuity/PostgresOperationsContinuityStore.cs` - PostgreSQL workflow snapshot, audit timeline, and transactional ledger-post commit store.
 - `OperationsContinuity/OperationsStatusDerivationService.cs` - deterministic status derivation from gate/sub-state posture through the F# operations rules.
@@ -445,7 +657,7 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `OperationsContinuity/OperationsApprovalPolicyMatrixService.cs` - server-owned approval-policy matrix, governed rule upsert validation, audit-event construction, and file-backed policy persistence.
 - `OperationsContinuity/OperationsCloseCalendarService.cs` - account-close calendar projection, governed due-date/owner overrides, and audit-event construction backed by Financial Operations policy.
 - `PrivateCapital/PrivateCapitalActivityProjectionBuilder.cs` - Financial Operations-owned private-capital activity projection over manual-journal drafts, posted ledger events, report-pack workflow records, bank evidence, readiness, evidence categories, report-output posture, and payment-intent workflow status.
-- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness.
+- `PrivateCapital/PrivateCapitalCloseCockpitService.cs` - private-capital close cockpit proof projection for partner capital tie-outs, expense/fee/allocation review, management-company operating records, NAV support packages, administrator-versus-Meridian shadow NAV tie-outs, close-control checklist evidence, close-package evidence, approval history, and period-lock readiness. When the period has recurring or calculated journal occurrences it also adds a lane that is ready only once each is posted or recorded as needing no draft.
 - `AccountingClose/` - deterministic journal posting, trial-balance projection, roll-forward,
   FX translation, source-linked audit rows, and period-close evidence gates.
 - `AccountingClose/AccountingCloseManagementService.cs` - close-period plan projection over
@@ -465,6 +677,9 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
   dimension-scoped package requests, certification state, validation issues, retained package
   history, evidence-backed package certification, independent certifier enforcement, and
   restatement workflow metadata.
+- `AccountingClose/AccountingReportPackageService.Dimensions.cs` - the report package service's
+  dimension normalization, matching, conflict detection, scoped keys, and retained scope hash.
+  The partial shares package certification state without changing dimension or hash semantics.
 - Ledger/AccountingPolicyService.cs - accounting-basis policy creation, resolution, listing,
   and projection metadata stamping for ledger writes.
 - Ledger/AccountingJournalDraftService.cs - source-backed journal draft construction, ledger-book scope propagation, treasury-context validation, typed evidence metadata, and posting-command preparation before durable ledger append.
@@ -474,8 +689,15 @@ This module belongs to the Design Module layer. Keep changes within that ownersh
 - `Ledger/TextJournal/` - ledger-compatible text-journal parsing, validation, report rendering,
   and CLI-facing report service backed by the Meridian double-entry ledger engine.
 - `AccountingSystem/AccountingSystemIntegrationService.cs` - provider-neutral external GL import, latest-import retention, ledger-truth reconciliation, provider availability projection, and read-only posting posture.
+- `AccountingSystem/ExternalGlPostingService.cs` and `ExternalGlPostingDispatcher.cs` retain exact approved journal packages and reconcile provider receipts. The dispatcher queries the retained provider key before replay.
+- `AccountingSystem/AccountingSystemIntegrationStateStore.cs` - optional atomic file retention of latest imports, mapping profiles and export packages across restarts; without it the service keeps them for the process lifetime only.
 - `AccountingSystem/AccountingSystemIntegrationService.Reconciliation.cs` - provider report balance projection, requested-period activity, currency identity checks, and reconciliation read models.
 - `Reconciliation/StatementRunWorkflowService.cs` - statement-run workflow that imports canonical statements, matches rows against Meridian's internal book through the shared sided `StatementMatchingEngine`, and persists linked breaks and case materialization for shared UI consumers. Rows with no internal counterpart — and internal records missing from the statement — surface as genuine breaks instead of self-matches.
+- `Reconciliation/StatementMatchEvidenceBuilder.cs` retains signed normalized operands, rule evidence,
+  and exact decimal residuals for candidates and accepted groups. The run retains the executed
+  tolerance profile by ID, version, statement date, and comparison fingerprint. The v4 comparison
+  revision covers external transaction identity, date-window, ambiguity, and execution-price rules.
+  Legacy v3 runs retain their original evidence and comparison fingerprint.
 - `Reconciliation/StatementRunMatchingService.cs` - normalizes imported statement rows and projects the sided `StatementMatchingEngine` results into break records and per-row match outcomes for the live workflow; `ToleranceBreached` is computed from the actual variance.
 - `Reconciliation/InternalReconciliationBook.cs` - the internal-book seam (`IInternalReconciliationBookSource`) supplying the positions, cash balances, and ledger transactions a statement run is reconciled against; the default `EmptyInternalReconciliationBookSource` yields honest unmatched breaks until a real source is registered.
 - `Reconciliation/Connectors/StatementIngressLimits.cs` - the single PRD-010 ingress bound shared by
@@ -524,7 +746,7 @@ Use this README to understand the module before editing source files. Update the
 
 Statement reconciliation also lives here. Broker/custodian statement intake, mapping profiles, validation, duplicate detection, matching, break classification, reconciliation decision journals, statement-run persistence, and durable case materialization are Financial Operations behavior. Application commands and shared UI services invoke the module workflow, but they do not own reconciliation state, matching rules, or statement-run persistence.
 
-The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
+The statement connector library (`Reconciliation/Connectors/`, ADR-018) extends that intake seam: connectors parse CSV, OFX, uploaded or Web-Service-fetched IB Flex XML, and Alpaca snapshot sources into canonical records classified per kind (position, transaction, cash balance, fee, dividend), driven by declarative, operator-editable mapping-profile documents rather than code. Institutional bank cash statements are also ingested directly by the profile-less ISO 20022 camt.053 and BAI2 connectors (content-sniffed, closing-balance and signed entries mapped straight to canonical records) so most bank statements reconcile without hand-conversion. Commit renders a deterministic canonical-CSV artifact and hands it to `IStatementRunWorkflowService`, so the downstream matching, break, and case pipeline is unchanged and duplicate-key idempotency is preserved. A sibling `canonical-evidence.json` records the ownership-checked fund account the import was committed for (the retained directory is keyed by fund account as well as content, so importing the same statement for another fund account cannot overwrite that owner) and retains provider account margin, activity subtype and cursor completeness, option lifecycle, tax-lot, and securities-borrow evidence without widening the legacy reconciliation CSV seam. Profiles record the last accepted column layout for format-drift warnings, and fetch-capable connectors reuse the existing brokerage gateways and provider credential store — never a new secret store. Alpaca activity retrieval pages to a bounded complete cursor and fails closed if the provider cannot prove continuity. IB Flex uses the documented v3 request/retrieve flow with bounded polling and trusted-host enforcement. Persisted schedules retain an explicit broker/custodian source classification, support operator run-now and background cadence, and default legacy snapshots to broker; a failed fetch records only the exception type and advances a separate attempt/cadence watermark so provider or configuration failures do not retry every scheduler tick while the last-successful-fetch cursor remains available for recovery.
 
 Statement ingress is bounded (PRD-010). Before this bound a caller-supplied `StatementSourceDocument`
 sized the parse rather than the operator: `Camt053StatementConnector` built a whole-document
@@ -1013,6 +1235,9 @@ book, period version, accounting policy, and promoted rule pack, rejects any cli
 and appends Drafted only after Rules Studio returns a balanced approval-gated candidate. Generic
 `AssetAccounting.*` candidate requests are rejected so callers cannot bypass this server-owned
 authority path.
+Amortization may resolve its exact event and evidence from retained position lineage history,
+bound to the same current position version, security and ledger book. Unretained or mismatched
+occurrences remain blocked; a reviewed preparation does not grant posting authority.
 For the MBS factor-paydown model, candidate creation re-resolves the persisted holder role, book
 position, factor economic state, and projection lineage, reruns the Instruments projector, and uses
 the server amount for Rules Studio. Missing or stale projection state, cross-book identity, evidence
@@ -1029,6 +1254,11 @@ matches that ledger book, and a period owned by that book before calling the jou
 for the same `(ledger book aggregate, source event)` return the existing journal, while the same
 economic event may still produce separate GAAP, cash, tax, statutory, or primary postings because
 each basis uses its own ledger-book aggregate.
+A new amortization batch, reversals included, also awaits the optional `termsCapabilityCheck`
+before the Approved lifecycle stage is appended and its posting transaction opens; `LedgerFeatureRegistration` (Application) passes the Security
+Master terms capability verifier's `VerifyAsync` when one is registered, because this layer cannot
+reference it. An exact replay of a retained amortization journal is still served, and other intents
+are not gated.
 Canonical asset acquisition and disposal candidates additionally require the Postgres atomic
 tax-lot journal store. Acquisition creates the new lot in the journal transaction; disposal consumes
 explicit selected lot ids under exact expected-version/open-quantity CAS. Both paths retain the
@@ -1116,6 +1346,11 @@ summary review stages. These artifacts are review rows backed by retained workfl
 do not create a path for assistant-origin posting, approval, payment release, report publication, or
 evidence deletion.
 
+## Audit hardening (2026-11)
+
+- **Statement reconciliation cancellation.** `StatementReconciliationOrchestrator` rethrows caller cancellation instead of writing a durable `Failed` checkpoint. The checkpoint stays at its last completed stage, so the run can resume.
+- **Daily reconciliation runs.** `ReconciliationRunOrchestrator` keys runs as `recon:<yyyy-MM-dd>:<CCY>`, so runs for different base currencies never share a cached result. Capture is serialized per key: concurrent first runs capture once, and a slow capture for one key never blocks cached lookups or captures for another.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`
@@ -1125,6 +1360,7 @@ evidence deletion.
 <!-- source-roadmap-traceability:begin module=SRC-DESIGN-FINANCIAL-OPERATIONS -->
 | Roadmap item | Title |
 | --- | --- |
+| `W14-ATTEST-001` | Single-principal attestation for governed approvals in the single-operator envelope |
 | `W9-GOV-008` | Route-level authorization, fail-closed tenancy, and hash-chained accounting audit |
 | `W4-RECON-001` | Portfolio ledger reconciliation readiness |
 | `W5-ACCT-001` | Accounting records and operational evidence |
@@ -1140,6 +1376,10 @@ evidence deletion.
 | `W10-RECON-004` | Operator-taught match rules with promotion gate |
 | `W10-PERF-001` | Portfolio and investor return measurement |
 | `W10-CONSOL-001` | Intercompany elimination on consolidated ledger views |
+| `W12-ICAGREE-001` | Intercompany accounting profiles and legacy attribution |
+| `W12-ENTITY-001` | Effective entity lifecycle and audited book-control migration |
+| `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
+| `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
 ## TODO checklist
@@ -1152,7 +1392,7 @@ evidence deletion.
 
 ```bash
 dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
-dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
+dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityWorkflowServiceTests|FullyQualifiedName~OperationsReviewedAutomationProjectionTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
 dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~OperationsContinuityEndpoints_ApprovalPolicy|FullyQualifiedName~OperationsContinuityEndpoints_CloseCalendar|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
@@ -1181,6 +1421,16 @@ the same isolated configuration workspace as the Rules Studio store.
 
 `OperationsContinuityWorkflow`, `OperationsContinuityWorkflowService`, workflow repository/store contracts and implementations, status derivation, audit hashing, `OperationsApprovalPolicyMatrixService`, `IOperationsApprovalPolicyMatrixService`, `OperationsCloseCalendarService`, and `IOperationsCloseCalendarService` moved from `src/Meridian.Application/OperationsContinuity` into this module. Statement reconciliation models, contracts, services, repositories, orchestration, mapping/tolerance profiles, matching engines, break classification, decision journals, and statement-run workflow services moved from `src/Meridian.Application/Reconciliation` into this module. `ReconciliationEngineService` moved from `src/Meridian.Application/Services` into this module and now consumes the contracts-owned Security Master query surface. Accounting close services moved out of the legacy Application accounting-close folder into `AccountingClose/`. Payment approval and bank-transaction services moved out of the legacy Application banking folder into `Banking/`. Accounting policy/projection services and ledger text-journal parser/reporting services moved out of the legacy Application ledger folder into `Ledger/`. `AccountingSystemIntegrationService` and `PrivateCapitalCloseCockpitService` moved from `src/Meridian.Ui.Shared/Services` into this module. Application composition, command handlers, and UI services consume these module services but do not own their workflow state, policy implementation, reconciliation state, matching rules, statement-run persistence, portfolio-vs-ledger reconciliation engine behavior, external-GL reconciliation, bank-side transaction state, accounting policy/projection behavior, ledger text-journal semantics, accounting-close projections, private-capital close proof, or posting-disable posture.
 
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyConfirmationClosePolicyRules` and `IntercompanyConfirmationClosePolicyService` hold the maker-checker
+lifecycle of a book's confirmation close policy (ADR-032): propose with a reason, approval by someone else,
+reject or disable with a reason, at most one proposed or active policy per book. `IntercompanyConfirmationCloseGate`
+evaluates an active policy at the selected period end through `IIntercompanyBalanceConfirmationSummarySource`
+(implemented by `IntercompanyBalanceConfirmationService`). `FinancialOperationsCommandCenterReadService` adds the
+`intercompany-confirmation` contributor only for a book with an active policy: `Blocked` for a listed finding,
+`Ready` otherwise, `Unavailable` when the period or confirmation status cannot be read. The advisory list is unchanged.
+
 ## Change rules
 
 Preserve the module boundary declared in `docs/source/data/source-modules.yml` and update the nearest docs when behavior or workflow semantics change.
@@ -1190,3 +1440,21 @@ Preserve the module boundary declared in `docs/source/data/source-modules.yml` a
 - `docs/source/README.md`
 - `docs/source/generated/source-module-index.md`
 - `docs/architecture/module-map.md`
+
+### Configured posting accounts and automatic policy authority
+
+`ConfiguredLedgerAccountResolver` exposes the shared chart lookup through Contracts. It requires
+an exact owner/book/configuration revision and one active account with the expected classification
+and compatible account/instrument bindings; no account name or numeric prefix infers a type.
+Execution and direct lending consume this seam without introducing another chart.
+`AccountingAutomaticPostingPolicyValidator` resolves the exact effective policy/rule and requires
+retained evidence, `AllowsAutoPosting=true` and `RequiresApproval=false`. Its authority lease uses
+the existing policy mutation gate and remains held through a new posting, preventing a rule edit
+from racing the append. This is separate from the human candidate review workflow, whose approval
+requirements remain unchanged. Ledger storage independently checks the durable operator grant.
+
+Automatic fill grants retain immutable policy snapshots. `AcquireRetainedPolicyAuthorityLeaseAsync`
+restores an absent policy version after process restart under the existing policy mutation gate; it
+compares exact policy content (excluding creation time) when the version already exists and refuses
+to overwrite changed content. The matching lease remains held through each new append. Grant
+revocation and exact effective source-rule authority are independently checked in PostgreSQL.

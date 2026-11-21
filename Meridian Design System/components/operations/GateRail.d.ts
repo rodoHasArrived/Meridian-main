@@ -1,3 +1,4 @@
+import * as React from "react";
 /**
  * Gate rail — the operations pipeline as a connected horizontal stepper. Mirrors the
  * operator gate model (`OperationsGateKey`: BrokerIngest, SecurityMaster, LedgerPosting,
@@ -28,4 +29,4 @@ export interface GateRailProps {
   gates: GateRailGate[];
   className?: string;
 }
-export declare function GateRail(props: GateRailProps): JSX.Element;
+export declare function GateRail(props: GateRailProps): React.JSX.Element;

@@ -10,7 +10,7 @@ export interface SparklineProps {
   height?: number;
   /** @default "line" */
   variant?: "line" | "area" | "bar";
-  /** Series color. @default var(--chart-equity, #3A7A56) */
+  /** Series color. @default var(--chart-equity, #2E7655) */
   color?: string;
   /** Line stroke width. @default 1.5 */
   strokeWidth?: number;
@@ -18,14 +18,14 @@ export interface SparklineProps {
   baseline?: number | null;
 }
 
-const DOWN = "var(--chart-drawdown, #A8443C)";
+const DOWN = "var(--chart-drawdown, #B54B42)";
 
 export function Sparkline({
   points = [],
   width = 80,
   height = 28,
   variant = "line",
-  color = "var(--chart-equity, #3A7A56)",
+  color = "var(--chart-equity, #2E7655)",
   strokeWidth = 1.5,
   baseline = null
 }: SparklineProps) {

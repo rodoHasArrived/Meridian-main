@@ -5,11 +5,11 @@
 
 const {
   WorkstationTopbar, NavRail, StatusBar, PanelSurface, Eyebrow, Button,
-  DenseDataTable, SeverityBadge, StatusBanner, EmptyState, SkeletonTable,
+  DataGrid, SeverityBadge, StatusBanner, EmptyState, SkeletonTable,
   SplitPane, Toolbar, ToolbarGroup, ToolbarSpacer, Input, SegmentedControl,
   Timestamp, Delta, DiffView, KeyValueGrid, FreshnessIndicator, ToastProvider,
   HotkeysProvider,
-} = window.MeridianDesignSystem_4f61be;
+} = window.MeridianDesignSystem_205d17;
 const { useState } = React;
 
 const NOW = Date.UTC(2026, 6, 2, 14, 32, 8);
@@ -57,16 +57,17 @@ function AlertingWorkstationScreen() {
       </PanelSurface>
     );
     return (
-      <DenseDataTable
-        selectedIndex={selected}
+      <DataGrid
+        rowKey="index"
+        activeKey={selected}
         onRowClick={(_, i) => setSelected(i)}
         columns={[
           { key: "id", label: "Alert" },
-          { key: "severity", label: "Severity", render: (r) => <SeverityBadge status={r.severity} /> },
+          { key: "severity", label: "Severity", cell: (r) => <SeverityBadge status={r.severity} /> },
           { key: "rule", label: "Rule" },
           { key: "scope", label: "Scope" },
-          { key: "state", label: "State", render: (r) => <SeverityBadge status={r.state === "Open" ? "NeedsAttention" : r.state === "Acked" ? "InReview" : "Complete"} label={r.state} /> },
-          { key: "fired", label: "Fired", align: "right", render: (r) => <Timestamp value={r.fired} format="relative" /> },
+          { key: "state", label: "State", cell: (r) => <SeverityBadge status={r.state === "Open" ? "NeedsAttention" : r.state === "Acked" ? "InReview" : "Complete"} label={r.state} /> },
+          { key: "fired", label: "Fired", align: "right", cell: (r) => <Timestamp value={r.fired} format="relative" /> },
         ]}
         rows={rows}
       />

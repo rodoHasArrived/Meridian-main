@@ -15,18 +15,13 @@ public sealed class TickerStripViewModelTests
         {
             var remoteClient = new FakeRemoteWorkstationClient
             {
-                Quote = new TickerStripViewModel.TickerStripQuoteDto
-                {
-                    Bid = 502.10m,
-                    Ask = 502.15m,
-                    Last = 502.12m
-                }
+                Quote = CreateQuotesResponse("SPY", bid: 502.10m, ask: 502.15m, sessionLast: 502.12m)
             };
             using var viewModel = CreateViewModel(remoteClient);
 
             await viewModel.PollSymbolAsync("SPY");
 
-            remoteClient.LastGetEndpoint.Should().Be("/api/live/SPY/quote");
+            remoteClient.LastGetEndpoint.Should().Be("/api/data/quotes/SPY");
             viewModel.Items.Should().ContainSingle();
             viewModel.Items[0].Symbol.Should().Be("SPY");
             viewModel.Items[0].BidText.Should().Be("502.10");
@@ -36,18 +31,13 @@ public sealed class TickerStripViewModelTests
     }
 
     [Fact]
-    public void PollSymbolAsync_UsesPriceFallbackWhenLastIsMissing()
+    public void PollSymbolAsync_UsesMidPriceFallbackWhenNoSessionTradeIsAvailable()
     {
         WpfTestThread.Run(async () =>
         {
             var remoteClient = new FakeRemoteWorkstationClient
             {
-                Quote = new TickerStripViewModel.TickerStripQuoteDto
-                {
-                    Bid = 185.01m,
-                    Ask = 185.04m,
-                    Price = 185.03m
-                }
+                Quote = CreateQuotesResponse("MSFT", bid: 185.02m, ask: 185.04m, sessionLast: null)
             };
             using var viewModel = CreateViewModel(remoteClient);
 
@@ -68,7 +58,7 @@ public sealed class TickerStripViewModelTests
 
             await viewModel.PollSymbolAsync("SPY");
 
-            remoteClient.LastGetEndpoint.Should().Be("/api/live/SPY/quote");
+            remoteClient.LastGetEndpoint.Should().Be("/api/data/quotes/SPY");
             viewModel.Items.Should().BeEmpty();
         });
     }
@@ -90,6 +80,65 @@ public sealed class TickerStripViewModelTests
         });
     }
 
+    [Fact]
+    public void PollSymbolAsync_WhenServerHasNoQuoteYet_DoesNotMutateTickerItems()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var remoteClient = new FakeRemoteWorkstationClient
+            {
+                Quote = new QuotesResponse("SPY", Quote: null, Timestamp: DateTimeOffset.UtcNow)
+            };
+            using var viewModel = CreateViewModel(remoteClient);
+
+            await viewModel.PollSymbolAsync("SPY");
+
+            remoteClient.LastGetEndpoint.Should().Be("/api/data/quotes/SPY");
+            viewModel.Items.Should().BeEmpty();
+        });
+    }
+
+    /// <summary>
+    /// Builds the payload shape <c>GET /api/data/quotes/{symbol}</c> returns
+    /// (<see cref="QuotesResponse"/> wrapping a <see cref="QuoteDataResponse"/>).
+    /// </summary>
+    private static QuotesResponse CreateQuotesResponse(string symbol, decimal bid, decimal ask, decimal? sessionLast)
+    {
+        var timestamp = new DateTimeOffset(2026, 1, 5, 15, 30, 0, TimeSpan.Zero);
+        var session = sessionLast is { } last
+            ? new SessionStatsDto(
+                SessionDate: "2026-01-05",
+                Open: last,
+                High: last,
+                Low: last,
+                Last: last,
+                Volume: 100,
+                Vwap: last,
+                TradeCount: 1,
+                Change: 0m,
+                ChangePercent: 0m,
+                FirstTradeAt: timestamp,
+                LastTradeAt: timestamp)
+            : null;
+
+        return new QuotesResponse(
+            Symbol: symbol,
+            Quote: new QuoteDataResponse(
+                Symbol: symbol,
+                Timestamp: timestamp,
+                BidPrice: bid,
+                BidSize: 100,
+                AskPrice: ask,
+                AskSize: 100,
+                MidPrice: (bid + ask) / 2m,
+                Spread: ask - bid,
+                SequenceNumber: 1,
+                StreamId: null,
+                Venue: null,
+                Session: session),
+            Timestamp: timestamp);
+    }
+
     private static TickerStripViewModel CreateViewModel(IRemoteWorkstationClient remoteClient)
         => new(
             WpfServices.MessagingService.Instance,
@@ -97,13 +146,41 @@ public sealed class TickerStripViewModelTests
             WpfServices.ConfigService.Instance,
             remoteClient);
 
+    [Fact]
+    public void PollAllSymbolsAsync_DoesNotOverlapAndReleasesGuardAfterCompletion()
+    {
+        WpfTestThread.Run(async () =>
+        {
+            var gate = new TaskCompletionSource(TaskCreationOptions.RunContinuationsAsynchronously);
+            var remoteClient = new FakeRemoteWorkstationClient
+            {
+                ResponseGate = gate,
+                Quote = CreateQuotesResponse("SPY", bid: 99m, ask: 101m, sessionLast: 100m)
+            };
+            using var viewModel = CreateViewModel(remoteClient);
+            viewModel.UpdateSymbol("SPY", 99m, 101m, 100m, true);
+
+            var firstPoll = viewModel.PollAllSymbolsAsync();
+            firstPoll.IsCompleted.Should().BeFalse();
+            await viewModel.PollAllSymbolsAsync();
+            remoteClient.GetInvocationCount.Should().Be(1, "a timer tick must not overlap the pending read");
+
+            gate.SetResult();
+            await firstPoll;
+            await viewModel.PollAllSymbolsAsync();
+            remoteClient.GetInvocationCount.Should().Be(2, "completed polling must release its guard");
+        });
+    }
+
     private sealed class FakeRemoteWorkstationClient : IRemoteWorkstationClient
     {
         public string BaseUrl { get; private set; } = "http://remote.test";
         public bool IsSuccess { get; init; } = true;
-        public TickerStripViewModel.TickerStripQuoteDto? Quote { get; init; }
+        public QuotesResponse? Quote { get; init; }
         public string? LastGetEndpoint { get; private set; }
         public bool LastCancellationWasRequested { get; private set; }
+        public TaskCompletionSource? ResponseGate { get; init; }
+        public int GetInvocationCount { get; private set; }
 
         public void Configure(string serviceUrl, int timeoutSeconds = 30, int backfillTimeoutMinutes = 60)
             => BaseUrl = serviceUrl;
@@ -124,19 +201,22 @@ public sealed class TickerStripViewModelTests
             where T : class
             => Task.FromResult<T?>(null);
 
-        public Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
+        public async Task<ApiResponse<T>> GetWithResponseAsync<T>(string endpoint, CancellationToken ct = default)
             where T : class
         {
             LastGetEndpoint = endpoint;
+            GetInvocationCount++;
             LastCancellationWasRequested = ct.IsCancellationRequested;
             ct.ThrowIfCancellationRequested();
+            if (ResponseGate is not null)
+                await ResponseGate.Task.WaitAsync(ct);
 
             if (!IsSuccess || Quote is null || Quote is not T typedQuote)
             {
-                return Task.FromResult(ApiResponse<T>.Fail("Remote unavailable", statusCode: 503));
+                return ApiResponse<T>.Fail("Remote unavailable", statusCode: 503);
             }
 
-            return Task.FromResult(ApiResponse<T>.Ok(typedQuote));
+            return ApiResponse<T>.Ok(typedQuote);
         }
 
         public Task<T?> PostAsync<T>(string endpoint, object? body = null, CancellationToken ct = default)

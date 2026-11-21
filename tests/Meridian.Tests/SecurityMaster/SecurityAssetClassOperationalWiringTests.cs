@@ -175,7 +175,74 @@ public sealed class SecurityAssetClassOperationalWiringTests
             descriptor.SupportsProfileBackedTerms.Should().BeTrue();
         }
 
-        SecurityAssetPackRegistry.ProfileClassificationKeywords.Keys.Should().BeEquivalentTo(SecurityAssetClassCatalog.AssetClasses);
+        // The lookup is derived from what each class declares, and is exactly the reviewed set.
+        SecurityAssetPackRegistry.ProfileAssetClasses.Should().BeEquivalentTo(new Dictionary<string, string>
+        {
+            ["structured-credit-io-po"] = "StructuredCredit",
+            ["private-fund-interest"] = "PrivateFundInterest",
+            ["private-company-equity"] = "PrivateCompanyEquity",
+            ["real-estate-holding"] = "RealEstateHolding",
+            ["commitment-guarantee"] = "CommitmentGuarantee"
+        });
+        SecurityAssetClassCatalog.All.SelectMany(static descriptor => descriptor.ReclassifyingProfileIds)
+            .Should().OnlyHaveUniqueItems("a profile id resolves to one class");
+    }
+
+    [Fact]
+    public void RoutingKeys_AreOwnedByEachClass_AndAreTheNameAliasesAndDeclaredLabels()
+    {
+        // The classification labels each class declares; these four sets were a class-name switch in
+        // the pack registry and are unchanged in content.
+        var declaredLabels = new Dictionary<string, string[]>(StringComparer.Ordinal)
+        {
+            ["PrivateFundInterest"] = ["PrivateFunds"],
+            ["PrivateCompanyEquity"] = ["PrivateEquity"],
+            ["RealEstateHolding"] = ["RealEstate", "RealEstateInterest"],
+            ["CommitmentGuarantee"] = ["UnfundedCommitment", "Guarantee"]
+        };
+
+        foreach (var descriptor in SecurityAssetClassCatalog.All)
+        {
+            descriptor.ClassificationLabels.Should().Equal(
+                declaredLabels.GetValueOrDefault(descriptor.AssetClass, []), descriptor.AssetClass);
+            descriptor.RoutingKeys.Should().Equal(
+                [descriptor.AssetClass, .. descriptor.Aliases ?? [], .. descriptor.ClassificationLabels], descriptor.AssetClass);
+            SecurityAssetClassCatalog.ClassesOwningRoutingKey(descriptor.AssetClass)
+                .Should().Contain(owner => owner.Descriptor.AssetClass == descriptor.AssetClass);
+        }
+
+        // No key routes to two classes, so metadata that names a class names exactly one.
+        var owners = SecurityAssetClassCatalog.All
+            .SelectMany(static descriptor => descriptor.RoutingKeys.Select(key => (
+                Key: new string(key.Where(char.IsLetterOrDigit).ToArray()).ToUpperInvariant(), descriptor.AssetClass)))
+            .GroupBy(static pair => pair.Key, static pair => pair.AssetClass)
+            .Where(static group => group.Distinct().Count() > 1)
+            .Select(static group => $"{group.Key}: {string.Join(", ", group.Distinct())}");
+        owners.Should().BeEmpty();
+    }
+
+    [Theory]
+    [InlineData("Real Estate", "RealEstate", true)]
+    [InlineData("real-estate", "RealEstate", true)]
+    [InlineData("REALESTATE", "RealEstate", true)]
+    [InlineData("RealEstateFund", "RealEstate", false)]
+    [InlineData("Estate", "RealEstate", false)]
+    [InlineData(null, "RealEstate", false)]
+    public void MatchesRoutingKey_ComparesTheWholeLabel_IgnoringCaseAndPunctuation(string? value, string key, bool expected)
+        => SecurityAssetClassCatalog.MatchesRoutingKey(value, key).Should().Be(expected);
+
+    [Fact]
+    public void ClassesOwningRoutingKey_ResolvesNamesAliasesAndLabels_AndNothingForUnknownText()
+    {
+        SecurityAssetClassCatalog.ClassesOwningRoutingKey("Private Equity").Should().ContainSingle()
+            .Which.Should().Match<(SecurityAssetClassDescriptor Descriptor, string RoutingKey)>(owner =>
+                owner.Descriptor.AssetClass == "PrivateCompanyEquity" && owner.RoutingKey == "PrivateEquity");
+        SecurityAssetClassCatalog.ClassesOwningRoutingKey("MBS").Should().ContainSingle()
+            .Which.Descriptor.AssetClass.Should().Be("StructuredCredit");
+        SecurityAssetClassCatalog.ClassesOwningRoutingKey("Guarantee").Should().ContainSingle()
+            .Which.Descriptor.AssetClass.Should().Be("CommitmentGuarantee");
+        SecurityAssetClassCatalog.ClassesOwningRoutingKey("guaranteed note").Should().BeEmpty("a key is matched whole");
+        SecurityAssetClassCatalog.ClassesOwningRoutingKey(" ").Should().BeEmpty();
     }
 
     [Fact]

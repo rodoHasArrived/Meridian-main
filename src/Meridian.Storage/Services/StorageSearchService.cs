@@ -330,8 +330,9 @@ public sealed class StorageSearchService : IStorageSearchService
 
         // Date specific: "January 15th", "on 2024-01-15"
         var dateMatch = Regex.Match(naturalQuery, @"(\d{4}-\d{2}-\d{2})");
-        if (dateMatch.Success && DateTimeOffset.TryParse(dateMatch.Groups[1].Value, out var date))
+        if (dateMatch.Success && DateOnly.TryParse(dateMatch.Groups[1].Value, out var dateOnly))
         {
+            var date = new DateTimeOffset(dateOnly.ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc));
             query.SetDateRange(date, date.AddDays(1));
         }
 

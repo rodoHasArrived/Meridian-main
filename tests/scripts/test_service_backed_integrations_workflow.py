@@ -23,7 +23,8 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         cls.steps = cls.job["steps"]
 
     def test_same_implementation_runs_for_pr_merge_group_and_certification(self):
-        self.assertEqual(self.ci["on"]["pull_request"]["branches"], ["main"])
+        self.assertIn("pull_request", self.ci["on"])
+        self.assertFalse(self.ci["on"]["pull_request"], "Integration coverage applies to PRs targeting any branch")
         self.assertIn("merge_group", self.ci["on"])
         for event in ("pull_request", "merge_group"):
             config = self.ci["on"][event] or {}
@@ -64,24 +65,43 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertEqual(set(connections.values()), {"Host=localhost;Port=5432;Database=meridian;Username=postgres;Password=meridian-certification"})
         self.assertEqual(self.job["env"]["MERIDIAN_DISABLE_DOCKER_TESTS"], "false")
 
-    def test_restore_and_test_failures_never_short_circuit_the_other_project(self):
+    def test_restore_and_test_failures_never_short_circuit_the_other_projects(self):
         independent = [step for step in self.steps if step.get("id") in
-                       {"restore-meridian", "restore-direct-lending", "test-meridian", "test-direct-lending"}]
+                       {"restore-meridian", "restore-direct-lending", "restore-demo",
+                        "test-meridian", "test-direct-lending", "test-demo"}]
         self.assertEqual([step["id"] for step in independent],
-                         ["restore-meridian", "restore-direct-lending", "test-meridian", "test-direct-lending"])
+                         ["restore-meridian", "restore-direct-lending", "restore-demo",
+                          "test-meridian", "test-direct-lending", "test-demo"])
         for step in independent:
             # !cancelled() overrides GitHub's implicit success() status check;
             # the sole prerequisite is SDK availability, never another suite's result.
             self.assertEqual(step["if"], "${{ !cancelled() && steps.dotnet.outcome == 'success' }}")
             self.assertNotIn("continue-on-error", step)
             self.assertEqual(step["run"].count("dotnet "), 1)
-        self.assertIn("tests/Meridian.Tests/Meridian.Tests.csproj", independent[2]["run"])
-        self.assertIn("tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj", independent[3]["run"])
+        projects = {
+            "meridian": "tests/Meridian.Tests/Meridian.Tests.csproj",
+            "direct-lending": "tests/Meridian.DirectLending.Tests/Meridian.DirectLending.Tests.csproj",
+            "demo": "tests/Meridian.Demo.Tests/Meridian.Demo.Tests.csproj",
+        }
+        for name, path in projects.items():
+            for action in ("restore", "test"):
+                step = next(step for step in independent if step["id"] == f"{action}-{name}")
+                self.assertIn(f"dotnet {action} {path}", step["run"])
+
+    def test_moved_demo_cases_keep_service_backed_coverage_and_distinct_evidence(self):
+        demo = next(step for step in self.steps if step.get("id") == "test-demo")
+        self.assertIn('--filter "Category=Integration&Category!=LiveProvider"', demo["run"])
+        self.assertIn('--collect:"XPlat Code Coverage"', demo["run"])
+        self.assertIn("--settings tests/coverlet.runsettings", demo["run"])
+        self.assertIn("--results-directory artifacts/test-results/production-certification/demo-integrations",
+                      demo["run"])
+        self.assertIn('--logger "trx;LogFilePrefix=demo-integrations"', demo["run"])
+        self.assertIn("--no-restore", demo["run"])
 
     def test_validation_and_evidence_run_even_after_test_failure(self):
         validate = next(step for step in self.steps if "validate-test-results.py" in step.get("run", ""))
         self.assertEqual(validate["if"], "always()")
-        for prefix in ("meridian-integrations", "direct-lending-integrations"):
+        for prefix in ("meridian-integrations", "direct-lending-integrations", "demo-integrations"):
             self.assertIn(f"--require-trx-prefix {prefix}", validate["run"])
         evidence = next(step for step in self.steps if "pg_dump" in step.get("run", ""))
         upload = next(step for step in self.steps if step.get("uses", "").startswith("actions/upload-artifact@"))
@@ -100,7 +120,7 @@ class ServiceBackedIntegrationsWorkflowTests(unittest.TestCase):
         self.assertIn("exit 1", step["run"])
         self.assertNotIn("continue-on-error", gate)
         self.assertEqual(self.ci["jobs"]["quality-gate"]["needs"],
-                         ["verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
+                         ["changes", "verify-dotnet", "verify-browser", "verify-docs", "verify-workflows"])
 
     def test_reuse_requires_explicit_producer_outputs_and_validated_bytes(self):
         inputs = self.shared["on"]["workflow_call"]["inputs"]

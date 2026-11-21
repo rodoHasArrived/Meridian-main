@@ -9,13 +9,15 @@ using Meridian.Infrastructure.Contracts;
 using Meridian.Infrastructure.DataSources;
 using Meridian.Infrastructure.Http;
 using Meridian.Infrastructure.Utilities;
+using Meridian.Contracts.SecurityMaster;
 using Serilog;
 
 namespace Meridian.Infrastructure.Adapters.Fred;
 
 /// <summary>
 /// Historical provider for FRED economic time series.
-/// FRED observations are normalized into synthetic daily bars where OHLC are all equal to the observation value.
+/// Legacy chart clients can request explicitly synthetic bars. Fixed-income consumers use
+/// GetRateObservationsAsync, which preserves units and vintage evidence without OHLC conversion.
 /// </summary>
 [DataSource("fred", "FRED Economic Data", DataSourceType.Historical, DataSourceCategory.Free,
     Priority = 28, Description = "Federal Reserve Economic Data time series mapped to synthetic daily bars")]
@@ -26,7 +28,7 @@ namespace Meridian.Infrastructure.Adapters.Fred;
     EnvironmentVariables = new[] { "FRED_API_KEY", "FRED__APIKEY" },
     DisplayName = "API Key",
     Description = "FRED API key from https://fred.stlouisfed.org/docs/api/api_key.html")]
-public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
+public sealed partial class FredHistoricalDataProvider : BaseHistoricalDataProvider, ISecurityRateObservationProvider
 {
     private const string ApiBaseUrl = "https://api.stlouisfed.org/fred";
     private readonly string? _apiKey;
@@ -57,9 +59,9 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await Http.GetAsync(
+            using var response = await ExecuteGetAsync(
                 $"{ApiBaseUrl}/series/observations?series_id=GDP&api_key={Uri.EscapeDataString(_apiKey)}&file_type=json&limit=1",
-                ct).ConfigureAwait(false);
+                "GDP", "availability", ct).ConfigureAwait(false);
 
             return response.IsSuccessStatusCode;
         }
@@ -81,8 +83,6 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
         if (string.IsNullOrWhiteSpace(_apiKey))
             throw new InvalidOperationException("FRED API key is required. Set FRED_API_KEY environment variable.");
 
-        await WaitForRateLimitSlotAsync(ct).ConfigureAwait(false);
-
         var normalizedSeriesId = NormalizeSymbol(symbol);
         var url = BuildRequestUrl(normalizedSeriesId, from, to);
 
@@ -90,7 +90,7 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
 
         try
         {
-            using var response = await Http.GetAsync(url, ct).ConfigureAwait(false);
+            using var response = await ExecuteGetAsync(url, symbol, "history", ct).ConfigureAwait(false);
             var httpResult = await HandleHttpResponseAsync(response, normalizedSeriesId, "economic observations", ct).ConfigureAwait(false);
 
             if (httpResult.IsNotFound)
@@ -132,6 +132,74 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
 
     protected override string NormalizeSymbol(string symbol)
         => symbol.Trim().ToUpperInvariant();
+
+    /// <summary>Dedicated rate/fixing ingress. FRED's realtime dates are vintages, never fabricated publication timestamps.</summary>
+    public async Task<IReadOnlyList<SecurityRateObservationDto>> GetRateObservationsAsync(
+        string seriesId, DateOnly? from, DateOnly? to, CancellationToken ct = default)
+    {
+        ThrowIfDisposed();
+        ValidateSymbol(seriesId);
+        if (string.IsNullOrWhiteSpace(_apiKey))
+            throw new InvalidOperationException("FRED API key is required. Configure the connection before loading rate observations.");
+        var normalized = NormalizeSymbol(seriesId);
+        using var metadataResponse = await ExecuteGetAsync(
+            $"{ApiBaseUrl}/series?series_id={Uri.EscapeDataString(normalized)}&api_key={Uri.EscapeDataString(_apiKey)}&file_type=json",
+            normalized, "typed series metadata", ct).ConfigureAwait(false);
+        metadataResponse.EnsureSuccessStatusCode();
+        var metadata = JsonSerializer.Deserialize<FredSeriesResponse>(await metadataResponse.Content.ReadAsStringAsync(ct).ConfigureAwait(false));
+        var series = metadata?.Series?.SingleOrDefault() ?? throw new InvalidOperationException("FRED did not return a unique series with units.");
+        var unit = series.Units?.Trim() switch
+        {
+            "Percent" => SecurityRateUnit.Percent,
+            "Basis Points" => SecurityRateUnit.BasisPoints,
+            { } units when units.StartsWith("Index", StringComparison.OrdinalIgnoreCase) => SecurityRateUnit.IndexLevel,
+            _ => throw new InvalidOperationException($"FRED units '{series.Units}' are not a supported rate or index convention. Review the series before ingestion.")
+        };
+        // lin retains the original level; transformations are explicit evidence, never heuristics.
+        using var response = await ExecuteGetAsync(BuildRequestUrl(normalized, from, to) + "&units=lin",
+            normalized, "typed rate observations", ct).ConfigureAwait(false);
+        var result = await HandleHttpResponseAsync(response, normalized, "typed rate observations", ct).ConfigureAwait(false);
+        if (result.IsNotFound)
+            return [];
+        if (result.IsRateLimited)
+            throw new RateLimitException($"FRED rate limit exceeded for {normalized}", provider: Name,
+                symbol: normalized, retryAfter: result.RetryAfter ?? TimeSpan.FromSeconds(60));
+        if (!result.IsSuccess)
+            throw new InvalidOperationException($"Unable to load FRED rate observations: {result.ErrorMessage}");
+        var payload = DeserializeResponse<FredObservationsResponse>(await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false), normalized);
+        var retrievedAt = DateTimeOffset.UtcNow;
+        var kind = normalized.StartsWith("DGS", StringComparison.Ordinal) || normalized.StartsWith("GS", StringComparison.Ordinal)
+            ? SecurityRateObservationKind.TreasuryConstantMaturityYield
+            : normalized is "SOFR" or "EFFR" or "DFF" or "OBFR" or "SOFR30DAYAVG" or "SOFR90DAYAVG" or "SOFR180DAYAVG"
+                ? SecurityRateObservationKind.ObservedFixing
+                : SecurityRateObservationKind.EconomicObservation;
+        return (payload?.Observations ?? []).Where(observation =>
+                DateOnly.TryParseExact(observation.Date, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) &&
+                (!from.HasValue || date >= from.Value) && (!to.HasValue || date <= to.Value) &&
+                decimal.TryParse(observation.Value, NumberStyles.Float, CultureInfo.InvariantCulture, out _))
+            .Select(observation => new SecurityRateObservationDto(Name, normalized,
+                decimal.Parse(observation.Value!, NumberStyles.Float, CultureInfo.InvariantCulture), observation.Value!, unit,
+                series.Units!, DateOnly.ParseExact(observation.Date!, "yyyy-MM-dd", CultureInfo.InvariantCulture),
+                PublishedAt: null, ParseVintage(observation.RealtimeStart), ParseVintage(observation.RealtimeEnd),
+                retrievedAt, "lin (untransformed provider level)", kind,
+                Currency: kind is SecurityRateObservationKind.ObservedFixing or SecurityRateObservationKind.TreasuryConstantMaturityYield ? "USD" : null))
+            .OrderBy(observation => observation.ObservationDate).ThenBy(observation => observation.VintageDate).ToArray();
+    }
+
+    private static DateOnly? ParseVintage(string? value)
+        => DateOnly.TryParseExact(value, "yyyy-MM-dd", CultureInfo.InvariantCulture, DateTimeStyles.None, out var date) ? date : null;
+
+    private sealed class FredSeriesResponse
+    {
+        [JsonPropertyName("seriess")]
+        public List<FredSeries>? Series { get; set; }
+    }
+
+    private sealed class FredSeries
+    {
+        [JsonPropertyName("units")]
+        public string? Units { get; set; }
+    }
 
     private string BuildRequestUrl(string seriesId, DateOnly? from, DateOnly? to)
     {
@@ -193,5 +261,11 @@ public sealed class FredHistoricalDataProvider : BaseHistoricalDataProvider
 
         [JsonPropertyName("value")]
         public string? Value { get; set; }
+
+        [JsonPropertyName("realtime_start")]
+        public string? RealtimeStart { get; set; }
+
+        [JsonPropertyName("realtime_end")]
+        public string? RealtimeEnd { get; set; }
     }
 }

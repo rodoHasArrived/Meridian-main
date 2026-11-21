@@ -429,7 +429,7 @@ class ActionsReportTests(unittest.TestCase):
         import subprocess
         import sys
         import tempfile
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             root = Path(directory)
             plain = root / "source.json"
             compressed = root / "source.json.gz"
@@ -777,7 +777,7 @@ class UpstreamCiMetricsTests(unittest.TestCase):
                 status="queued", conclusion=None, started_at=None, completed_at=None,
                 runner_id=0, runner_name="", steps=[])]),
         ])
-        with tempfile.TemporaryDirectory() as directory:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as directory:
             input_path = Path(directory) / "runs.json"
             output_path = Path(directory) / "nested" / "summary.json"
             input_path.write_text(json.dumps(payload), encoding="utf-8")

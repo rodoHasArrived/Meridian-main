@@ -1,8 +1,10 @@
 using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
+using System.Text.Json;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Artifacts;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 
@@ -16,6 +18,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
     private readonly IStrategyRepository _repository;
     private readonly ILogger<BacktestStudioRunOrchestrator> _logger;
     private readonly IReadOnlyDictionary<StrategyRunEngine, IBacktestStudioEngine> _engines;
+    private readonly StrategyArtifactRegistry? _artifacts;
     private readonly ConcurrentDictionary<string, BacktestStudioRunHandle> _runHandles = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, Task> _monitorTasks = new(StringComparer.Ordinal);
     private readonly CancellationTokenSource _shutdown = new();
@@ -23,13 +26,15 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
     public BacktestStudioRunOrchestrator(
         IStrategyRepository repository,
         IEnumerable<IBacktestStudioEngine> engines,
-        ILogger<BacktestStudioRunOrchestrator> logger)
+        ILogger<BacktestStudioRunOrchestrator> logger,
+        StrategyArtifactRegistry? artifacts = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         ArgumentNullException.ThrowIfNull(engines);
 
         _engines = engines.ToDictionary(static engine => engine.Engine);
+        _artifacts = artifacts;
     }
 
     /// <summary>
@@ -45,10 +50,7 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             throw new ArgumentException(validationError, nameof(request));
         }
 
-        var engine = ResolveEngine(request.Engine);
-        var handle = await engine.StartAsync(request, ct).ConfigureAwait(false);
-
-        var computedSweepHash = ComputeSweepDefinitionHash(request.SweepObjective, request.Parameters);
+        var computedSweepHash = ComputeSweepDefinitionHash(request);
         if (!string.IsNullOrWhiteSpace(request.SweepDefinitionHash) &&
             !string.Equals(request.SweepDefinitionHash, computedSweepHash, StringComparison.Ordinal))
         {
@@ -56,6 +58,16 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
                 "Backtest Studio run request {StrategyId} supplied a sweep definition hash that did not match the canonical value. Persisting canonical hash.",
                 request.StrategyId);
         }
+
+        var engine = ResolveEngine(request.Engine);
+        string? artifactId = null;
+        if (_artifacts is not null && request.Strategy is { } strategy)
+        {
+            var artifact = StrategyArtifact.FromCode(request.StrategyId, strategy,
+                request.Parameters ?? new Dictionary<string, string>(), request.NativeRequest, request.DatasetReference);
+            artifactId = await _artifacts.RetainAsync(artifact, ct).ConfigureAwait(false);
+        }
+        var handle = await engine.StartAsync(request, ct).ConfigureAwait(false);
 
         var entry = StrategyRunEntry.StartWithEvidence(
             request.StrategyId,
@@ -78,6 +90,8 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
             SweepObjective = request.SweepObjective
         };
 
+        if (artifactId is not null)
+            entry = entry.WithStrategyArtifact(artifactId);
         await _repository.RecordRunAsync(entry, ct).ConfigureAwait(false);
         _runHandles[handle.RunId] = handle;
 
@@ -235,30 +249,48 @@ public sealed class BacktestStudioRunOrchestrator : IAsyncDisposable
         throw new InvalidOperationException($"Backtest Studio run '{runId}' is not being tracked by the orchestrator.");
     }
 
-    private static string? ComputeSweepDefinitionHash(string? objective, IReadOnlyDictionary<string, string>? parameters)
+    private static string? ComputeSweepDefinitionHash(BacktestStudioRunRequest request)
     {
-        if (string.IsNullOrWhiteSpace(objective) && (parameters is null || parameters.Count == 0))
+        if (string.IsNullOrWhiteSpace(request.SweepId))
         {
             return null;
         }
 
         var builder = new StringBuilder();
-        builder.Append(objective?.Trim() ?? string.Empty);
-        builder.Append('|');
-        if (parameters is not null)
+        // A sweep definition binds invariant assumptions. Point values belong to ParameterSet
+        // and its retained input hash, not the experiment key: including them split every grid.
+        void Append(string? value) => builder.Append(value?.Length ?? 0).Append(':').Append(value).Append(';');
+        Append(request.StrategyId);
+        Append(request.Engine.ToString());
+        Append(request.SweepObjective?.Trim());
+        Append(request.DatasetReference);
+        Append(request.FeedReference);
+        Append(request.BenchmarkSymbol);
+        Append(JsonSerializer.Serialize(request.NativeRequest, BacktestSweepFingerprintJsonContext.Default.BacktestRequest));
+        Append("external-options");
+        Append((request.ExternalEngineOptions?.Count ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        if (request.ExternalEngineOptions is not null)
         {
-            foreach (var pair in parameters.OrderBy(static p => p.Key, StringComparer.Ordinal))
+            foreach (var pair in request.ExternalEngineOptions.OrderBy(static p => p.Key, StringComparer.Ordinal))
             {
-                builder.Append(pair.Key).Append('=').Append(pair.Value).Append(';');
+                Append(pair.Key);
+                Append(pair.Value);
+            }
+        }
+        Append("parameter-dimensions");
+        Append((request.Parameters?.Count ?? 0).ToString(System.Globalization.CultureInfo.InvariantCulture));
+        if (request.Parameters is not null)
+        {
+            foreach (var key in request.Parameters.Keys.OrderBy(static key => key, StringComparer.Ordinal))
+            {
+                Append(key);
             }
         }
 
-        // Deliberately NOT routed through Sha256Digest (which lowercases): this hash is persisted
-        // on StrategyRunEntry.SweepDefinitionHash and StrategyRunReadService groups sweep runs by
-        // $"{SweepId}|{SweepDefinitionHash}" under StringComparer.Ordinal, so changing the casing
-        // would split each existing sweep into a pre-change and a post-change group (#2691).
+        // Versioned deliberately: legacy point hashes remain inspectable but never gain a
+        // claim of comparable window/cost assumptions retroactively.
         var bytes = SHA256.HashData(Encoding.UTF8.GetBytes(builder.ToString()));
-        return Convert.ToHexString(bytes);
+        return "sweep-v2:" + Convert.ToHexString(bytes);
     }
 
 }

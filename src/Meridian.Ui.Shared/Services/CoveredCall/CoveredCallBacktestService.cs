@@ -8,6 +8,7 @@ using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
+using Meridian.Strategies.Artifacts;
 using Meridian.Strategies.Models;
 using Meridian.Ui.Shared.Contracts;
 using Meridian.Ui.Shared.Evidence;
@@ -39,6 +40,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
     private readonly ILogger<CoveredCallBacktestService> _logger;
     private readonly TimeProvider _timeProvider;
     private readonly IEvidenceArtifactStore? _evidenceArtifactStore;
+    private readonly StrategyArtifactRegistry? _strategyArtifacts;
 
     private static readonly BoundedChannelOptions RunQueueOptions = new(capacity: 512)
     {
@@ -93,7 +95,8 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         IMemoryCache resultCache,
         ILoggerFactory loggerFactory,
         TimeProvider? timeProvider = null,
-        IEvidenceArtifactStore? evidenceArtifactStore = null)
+        IEvidenceArtifactStore? evidenceArtifactStore = null,
+        StrategyArtifactRegistry? strategyArtifacts = null)
     {
         _engineFactory = engineFactory ?? throw new ArgumentNullException(nameof(engineFactory));
         _chainFactory = chainFactory ?? throw new ArgumentNullException(nameof(chainFactory));
@@ -104,6 +107,7 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
         _logger = loggerFactory.CreateLogger<CoveredCallBacktestService>();
         _timeProvider = timeProvider ?? TimeProvider.System;
         _evidenceArtifactStore = evidenceArtifactStore;
+        _strategyArtifacts = strategyArtifacts;
 
         _configuredConcurrency = Math.Max(1, options.CurrentValue.MaxConcurrentRuns);
         _concurrency = new SemaphoreSlim(_configuredConcurrency, _configuredConcurrency);
@@ -548,7 +552,15 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
             UnderlyingPrice: preview.UnderlyingPrice,
             Candidates: rows,
             TotalContractsScanned: preview.Candidates.Count,
-            FiltersPassed: passed);
+            FiltersPassed: passed)
+        {
+            Filters = request,
+            CoverageKnown = preview.CoverageKnown,
+            RequestedExpirations = preview.RequestedExpirations,
+            LoadedExpirations = preview.LoadedExpirations,
+            SnapshotTimes = preview.SnapshotTimes,
+            MaxStrikesPerExpiration = preview.MaxStrikesPerExpiration
+        };
     }
 
     // ------------------------------------------------------------------ //
@@ -621,12 +633,47 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 state.Scope,
                 runId,
                 paramSet);
+            var dataRoot = _options.CurrentValue.DataRootOverride ?? "./data";
+            var backtestRequest = new BacktestRequest(
+                From: request.From,
+                To: request.To,
+                Symbols: [request.UnderlyingSymbol.Trim().ToUpperInvariant()],
+                InitialCash: request.InitialCash,
+                DataRoot: dataRoot,
+                RiskFreeRate: request.RiskFreeRate)
+            {
+                LedgerJournalScopeId = runId
+            };
+            if (_strategyArtifacts is not null)
+            {
+                var configuration = request with
+                {
+                    UnderlyingSymbol = request.UnderlyingSymbol.Trim().ToUpperInvariant(),
+                    Label = null,
+                    OperatorAcceptanceCriteria = [],
+                    RetainedEvidenceReferences = [],
+                    AccountingRecordReferences = [],
+                    ApprovalReferences = [],
+                    PaperValidationReferences = [],
+                    GovernedReportReferences = []
+                };
+                var artifact = new StrategyArtifact(initialEntry.StrategyId, StrategyAuthoringRoute.Code,
+                    StrategyArtifact.CodeRevision(typeof(CoveredCallOverwriteStrategy)),
+                    new Dictionary<string, string>
+                    {
+                        ["configuration"] = System.Text.Json.JsonSerializer.Serialize(
+                            configuration, CoveredCallJsonContext.Default.CoveredCallBacktestRequest)
+                    },
+                    backtestRequest.Symbols!, "equity-bars+option-chain", backtestRequest.ToRealismDescriptor().ToCanonicalString());
+                initialEntry = initialEntry.WithStrategyArtifact(await _strategyArtifacts.RetainAsync(artifact, hostCt)
+                    .ConfigureAwait(false));
+            }
             await _runRepository.RecordRunAsync(initialEntry, hostCt).ConfigureAwait(false);
 
             // Build chain provider (eager materialisation).
             var maxDteForWindow = request.MaxDte ?? 365;
             var chainProvider = await _chainFactory
-                .CreateAsync(request.UnderlyingSymbol, request.From, request.To, maxDteForWindow, state.Cts.Token)
+                .CreateAsync(request.UnderlyingSymbol, request.From, request.To, maxDteForWindow, state.Scope.TenantId, state.Cts.Token)
                 .ConfigureAwait(false);
 
             // Build strategy. The strategy assumes the underlying is pre-held in ctx.Positions, so
@@ -643,16 +690,6 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
                 ? (IBacktestStrategy)new UnderlyingSeedingStrategy(innerStrategy, request.UnderlyingSymbol, request.InitialUnderlyingShares)
                 : innerStrategy;
 
-            // Build engine.
-            var dataRoot = _options.CurrentValue.DataRootOverride ?? "./data";
-            var backtestRequest = new BacktestRequest(
-                From: request.From,
-                To: request.To,
-                Symbols: new[] { request.UnderlyingSymbol.Trim().ToUpperInvariant() },
-                InitialCash: request.InitialCash,
-                DataRoot: dataRoot,
-                RiskFreeRate: request.RiskFreeRate);
-
             var engine = _engineFactory(backtestRequest);
 
             state.Phase = RunPhase.Running;
@@ -668,7 +705,32 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
             // Project results.
             var equityCurve = innerStrategy.Metrics?.EquityCurve ?? [];
-            var result = CoveredCallRunProjection.ToResult(runId, request, innerStrategy, equityCurve);
+            var receipt = backtestResult.ProviderProvenance ?? ResearchProviderProvenance.Create(
+                backtestRequest, state.StartedAt ?? _timeProvider.GetUtcNow(), _timeProvider.GetUtcNow());
+            receipt = receipt with
+            {
+                StartedUtc = state.StartedAt ?? receipt.StartedUtc,
+                DataSemantics = "Simulated research using a current options snapshot across historical dates",
+                ReproductionUnavailableReason = "The exact replay dataset and options snapshots were not retained for reproduction."
+            };
+            if (chainProvider is CoveredCallChainProviderAdapter { Provenance: { } optionsProvenance })
+            {
+                var optionSources = optionsProvenance.Sources;
+                receipt = receipt with
+                {
+                    Capability = "HistoricalMarketDataReplay, OptionsChain",
+                    RoutingDecision = "Local replay and options chain failover",
+                    Providers = receipt.Providers.AddRange(optionSources),
+                    FallbackChain = [.. optionSources.Select(source => source.ProviderId)],
+                    FallbackOccurred = optionsProvenance.FallbackOccurred,
+                    ValidationProfile = receipt.ValidationProfile with
+                    {
+                        Version = "covered-call-replay/v1", OptionsStrikeRange = optionsProvenance.StrikeRange
+                    }
+                };
+            }
+            backtestResult = backtestResult with { ProviderProvenance = receipt };
+            var result = CoveredCallRunProjection.ToResult(runId, request, innerStrategy, equityCurve) with { ProviderProvenance = receipt };
 
             // Retain terminal outputs separately from the immutable input parameter set so the
             // repository can verify the original request hash across the whole lifecycle.
@@ -1037,6 +1099,14 @@ public sealed class CoveredCallBacktestService : ICoveredCallBacktestService, IH
 
     private static (bool Pass, string? Reason) ApplyFilters(OptionCandidateInfo opt, OptionsOverwriteParams p)
     {
+        if (!opt.DeltaAvailable || !double.IsFinite(opt.Delta))
+            return (false, "Delta unavailable");
+        if (!opt.OpenInterestAvailable && p.MinOpenInterest > 0)
+            return (false, "Open interest unavailable");
+        if (!opt.VolumeAvailable && p.MinVolume > 0)
+            return (false, "Volume unavailable");
+        if (opt.Ask < opt.Bid)
+            return (false, "Crossed quote");
         if (!OptionsOverwriteFilters.PassesLiquidityFilter(opt, p))
         {
             if (opt.Bid <= 0m)

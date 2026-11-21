@@ -1,5 +1,7 @@
+import { formatTimestamp as formatDisplayTimestamp } from "@/lib/format";
+import { DetailFieldItem } from "@/components/meridian/detail-pane";
 import { useCallback, useEffect, useMemo, useState } from "react";
-import { Activity, Power, RefreshCcw, RotateCcw } from "lucide-react";
+import { Activity, Power, RotateCcw } from "lucide-react";
 import {
   getLatestRuntimeShutdownReceipt,
   getRuntimeLifecycle,
@@ -15,9 +17,12 @@ import type {
 } from "@/types";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { PanelReload } from "@/components/ui/panel-reload";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { useVisibleInterval } from "@/hooks/use-visible-interval";
 import { cn } from "@/lib/utils";
+import { usesTrackedCaps } from "@/design-system/label-case";
 
 type PendingAction = "shutdown" | "restart";
 
@@ -54,12 +59,11 @@ export function LifecycleControlPanel() {
   useEffect(() => {
     const controller = new AbortController();
     void refresh(controller.signal);
-    const interval = window.setInterval(() => void refresh(controller.signal), 5_000);
-    return () => {
-      controller.abort();
-      window.clearInterval(interval);
-    };
+    return () => controller.abort();
   }, [refresh]);
+
+  // Paused while the tab is hidden; refreshes once on return.
+  useVisibleInterval(() => refresh(), 5_000);
 
   useEffect(() => {
     if (
@@ -164,7 +168,7 @@ export function LifecycleControlPanel() {
             )}
           </div>
           <div className="rounded-md border border-border/70 bg-background/35 px-4 py-3">
-            <div className="text-xs font-semibold uppercase tracking-[0.12em] text-muted-foreground">Last shutdown receipt</div>
+            <div className="text-xs font-semibold text-muted-foreground">Last shutdown receipt</div>
             {latestReceipt ? (
               <dl className="mt-3 grid gap-2 text-xs">
                 <ReceiptFact label="Outcome" value={latestReceipt.outcome} />
@@ -179,10 +183,7 @@ export function LifecycleControlPanel() {
         </div>
 
         <div className="flex flex-wrap justify-end gap-2">
-          <Button type="button" variant="outline" size="sm" disabled={loading || submitting} onClick={() => void refresh()}>
-            <RefreshCcw className={cn("h-3.5 w-3.5", loading && "animate-spin")} aria-hidden="true" />
-            Refresh
-          </Button>
+          <PanelReload reload={() => (submitting ? undefined : refresh())} failed={error !== null} busy={loading || submitting} what="runtime lifecycle status" />
           <Button type="button" variant="outline" size="sm" disabled={controlsDisabled} onClick={() => setPendingAction("restart")}>
             <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
             Restart Meridian
@@ -232,7 +233,7 @@ export function LifecycleControlPanel() {
 function LifecycleFact({ label, value, mono = false }: { label: string; value: string; mono?: boolean }) {
   return (
     <div className="rounded-md border border-border/70 bg-background/35 px-3 py-2.5">
-      <div className="text-[10px] uppercase tracking-[0.12em] text-muted-foreground">{label}</div>
+      <div className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</div>
       <div className={cn("mt-1 truncate text-sm font-semibold text-foreground", mono && "font-mono text-xs")}>{value}</div>
     </div>
   );
@@ -252,7 +253,7 @@ function LifecycleCheckRow({ check }: { check: RuntimeLifecycleCheck }) {
 }
 
 function ReceiptFact({ label, value }: { label: string; value: string }) {
-  return <div className="flex justify-between gap-3"><dt className="text-muted-foreground">{label}</dt><dd className="text-right font-medium text-foreground">{value}</dd></div>;
+  return <DetailFieldItem label={label} value={value} />;
 }
 
 function lifecycleTone(readiness?: string) {
@@ -286,7 +287,7 @@ function formatUptime(seconds?: number) {
 
 function formatTimestamp(value: string) {
   const timestamp = new Date(value);
-  return Number.isNaN(timestamp.valueOf()) ? value : timestamp.toLocaleString();
+  return Number.isNaN(timestamp.valueOf()) ? value : formatDisplayTimestamp(timestamp);
 }
 
 function shortIdentifier(value?: string | null) {

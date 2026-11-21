@@ -20,7 +20,7 @@ class ArtifactRetentionModuleTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             output_root = Path(temp_dir) / "artifacts" / "publish"
             oldest = self._create_artifact(output_root / "run-1", age_days=3)
             retained = self._create_artifact(output_root / "run-2", age_days=2)
@@ -44,7 +44,7 @@ class ArtifactRetentionModuleTests(unittest.TestCase):
         if powershell is None:
             self.skipTest("PowerShell is not available")
 
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             output_root = Path(temp_dir) / "artifacts" / "publish"
             active = self._create_artifact(output_root / "active-run", age_days=30)
             stale = self._create_artifact(output_root / "stale-run", age_days=20)

@@ -54,7 +54,7 @@ public sealed class SecurityInstrumentTermsEndpointsTests
     [Fact]
     public void Projection_DistinguishesMissingNullZeroFalseAndAmbiguousAliasesWithoutCoercion()
     {
-        var detail = Detail(Guid.NewGuid(), "Bond", """{"couponRate":0,"maturity":null,"parValue":100,"parvalue":101,"callable":false,"spreadBps":"25"}""");
+        var detail = Detail(Guid.NewGuid(), "Bond", """{"termsFormat":"flat","couponRate":0,"maturity":null,"parValue":100,"parvalue":101,"callable":false,"spreadBps":"25"}""");
         var result = SecurityInstrumentTermsReadService.Project(detail, null, null, Effective);
         result.Fields.Single(field => field.Key == "couponRate").ValueText.Should().Be("0");
         result.Fields.Single(field => field.Key == "couponRate").State.Should().Be(SecurityInstrumentTermState.Present);
@@ -71,7 +71,7 @@ public sealed class SecurityInstrumentTermsEndpointsTests
     public void Projection_PreservesOverpreciseValuesButDoesNotMarkThemValidDecimals()
     {
         const string exact = "0.1234567890123456789012345678901";
-        var result = SecurityInstrumentTermsReadService.Project(Detail(Guid.NewGuid(), "Bond", "{\"couponRate\":" + exact + "}"), null, null, Effective);
+        var result = SecurityInstrumentTermsReadService.Project(Detail(Guid.NewGuid(), "Bond", "{\"termsFormat\":\"flat\",\"couponRate\":" + exact + "}"), null, null, Effective);
         var field = result.Fields.Single(field => field.Key == "couponRate");
         field.ValueText.Should().Be(exact);
         field.State.Should().Be(SecurityInstrumentTermState.Invalid);
@@ -80,7 +80,7 @@ public sealed class SecurityInstrumentTermsEndpointsTests
     [Fact]
     public void Projection_WithholdsForeignOrDifferentVersionProvenanceAndBindsFingerprintToTerms()
     {
-        var detail = Detail(Guid.NewGuid(), "Option", """{"expiry":"2027-06-15","strike":123.45678901234567890123456789,"underlyingId":"SPX"}""");
+        var detail = Detail(Guid.NewGuid(), "Option", """{"termsFormat":"flat","expiry":"2027-06-15","strike":123.45678901234567890123456789,"underlyingId":"SPX"}""");
         var result = SecurityInstrumentTermsReadService.Project(detail, Economic(detail) with { Version = 8 }, null, Effective);
         result.Source.Status.Should().Be(SecurityInstrumentTermsSourceStatus.VersionMismatch);
         result.Source.ProvenanceJson.Should().BeNull();
@@ -130,11 +130,68 @@ public sealed class SecurityInstrumentTermsEndpointsTests
     [Fact]
     public void Projection_UsesSharedScheduleDiagnosticsAndKeepsInvalidSourceRows()
     {
-        const string terms = """{"assetClassTermsVersion":3,"principalSchedule":[{"paymentDate":"2028-01-01","amount":-1}]}""";
+        const string terms = """{"termsFormat":"flat","assetClassTermsVersion":3,"principalSchedule":[{"paymentDate":"2028-01-01","amount":-1}]}""";
         var result = SecurityInstrumentTermsReadService.Project(Detail(Guid.NewGuid(), "Bond", terms), null, null, Effective);
         result.Diagnostics.Should().Contain(message => message.Contains("SM_SCHEDULE_", StringComparison.Ordinal));
         result.AssetSpecificTermsJson.Should().Be(terms);
         result.Status.Should().Be(SecurityInstrumentTermsStatus.ReviewRequired);
+    }
+
+    [Fact]
+    public void Projection_UndeclaredCurrentPayloadIsInspectableWithoutInferringOrStampingItsFamily()
+    {
+        const string terms = """{"couponRate":5.25,"maturity":"2031-06-15"}""";
+        var detail = Detail(Guid.NewGuid(), "Bond", terms);
+        var result = SecurityInstrumentTermsReadService.Project(detail, Economic(detail), null, Effective);
+        result.Status.Should().Be(SecurityInstrumentTermsStatus.Unsupported);
+        result.TermsFormat.Should().Be("Undeclared");
+        result.AssetSpecificTermsJson.Should().Be(terms);
+        result.Diagnostics.Should().Contain(message => message.Contains("not declare a termsFormat", StringComparison.Ordinal));
+        result.Fields.Single(field => field.Key == "couponRate").ValueText.Should().Be("5.25");
+    }
+
+    [Fact]
+    public void Projection_ToleratedReadDefaultsStayMissingWithoutInventingSourceValuesOrReadErrors()
+    {
+        var detail = Detail(Guid.NewGuid(), "Bond", """{"termsFormat":"flat","maturity":"2031-06-15"}""");
+        var result = SecurityInstrumentTermsReadService.Project(detail, Economic(detail), null, Effective);
+        var callable = result.Fields.Single(field => field.Key == "isCallable");
+        callable.State.Should().Be(SecurityInstrumentTermState.Missing);
+        callable.ValueText.Should().BeNull();
+        callable.ValidationMessage.Should().Contain("canonical reader declares absence as 'false'");
+        result.Diagnostics.Should().NotContain(message => message.Contains("/isCallable", StringComparison.Ordinal));
+        result.Fields.Single(field => field.Key == "subclass").ValueText.Should().BeNull();
+        result.Diagnostics.Should().NotContain(message => message.Contains("/subclass", StringComparison.Ordinal));
+        result.Status.Should().Be(SecurityInstrumentTermsStatus.Ready);
+    }
+
+    [Theory]
+    [InlineData(2, "Percent", SecurityInstrumentTermUnitStatus.Explicit)]
+    [InlineData(1, null, SecurityInstrumentTermUnitStatus.Unspecified)]
+    public void Projection_RecordRateUnitsFollowTheCanonicalVersionGate(int version, string? expectedUnit, SecurityInstrumentTermUnitStatus expectedStatus)
+    {
+        var terms = JsonSerializer.Serialize(new { termsFormat = "flat", assetClassTermsVersion = version, interestRate = 4.5m, rateUnit = "Percent", depositType = "Term", institutionName = "Retained bank" });
+        var detail = Detail(Guid.NewGuid(), "Deposit", terms);
+        var result = SecurityInstrumentTermsReadService.Project(detail, Economic(detail), null, Effective);
+        var rate = result.Fields.Single(field => field.Key == "interestRate");
+        rate.ValueText.Should().Be("4.5");
+        rate.Unit.Should().Be(expectedUnit);
+        rate.UnitStatus.Should().Be(expectedStatus);
+        rate.UnitPath.Should().Be(expectedUnit is null ? null : "/assetSpecificTerms/rateUnit");
+    }
+
+    [Fact]
+    public void Projection_ReadOnlyCalculationCompanionsAndNewWorkflowTermsRemainVisible()
+    {
+        const string terms = """{"termsFormat":"flat","assetClassTermsVersion":5,"maturity":"2031-06-15","cashFlowContract":{"schemaVersion":1},"bondWorkflow":{"lookbackBusinessDays":2,"floatingMethod":"Simple"}}""";
+        var detail = Detail(Guid.NewGuid(), "Bond", terms);
+        var result = SecurityInstrumentTermsReadService.Project(detail, Economic(detail), null, Effective);
+        var companion = result.Fields.Single(field => field.Key == "cashFlowContract");
+        companion.IsDeclared.Should().BeTrue();
+        companion.State.Should().Be(SecurityInstrumentTermState.Present);
+        result.Fields.Single(field => field.Key == "bondWorkflow").Children
+            .Single(field => field.Key == "lookbackBusinessDays").ValueText.Should().Be("2");
+        result.AssetSpecificTermsJson.Should().Be(terms);
     }
 
     [Theory]

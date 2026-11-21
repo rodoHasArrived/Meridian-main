@@ -1,3 +1,4 @@
+import { utcToday } from "@/lib/local-date";
 import type {
   SecurityAssetProfileDefinition,
   SecurityAssetProfileFieldDefinition
@@ -57,13 +58,17 @@ export function createProfileBackedSecurityState(
  * superseded predecessor is the only version write-time validation accepts. The window check
  * applies to Approved versions too: a freshly approved profile whose effectiveFrom is still in
  * the future cannot back a write today and must not enable the form.
+ *
+ * "Today" is the UTC calendar day on purpose: asset-profile governance resolves effective windows
+ * against the server's UTC date, so the operator's local day would disagree with it around
+ * midnight.
  */
 export function isWriteSelectableAssetProfile(
   profile: SecurityAssetProfileDefinition,
   today: Date = new Date()
 ): boolean {
   if (profile.status !== "Approved" && profile.status !== "Superseded") return false;
-  const isoToday = today.toISOString().slice(0, 10);
+  const isoToday = utcToday(today);
   return profile.effectiveFrom <= isoToday
     && (profile.effectiveTo == null || isoToday <= profile.effectiveTo);
 }

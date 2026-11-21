@@ -42,6 +42,7 @@ public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolio
     private readonly Func<ILiveFeedAdapter?>? _liveFeedAccessor;
     private readonly Func<bool> _paperMatchingIsAuthoritative;
     private readonly Func<LiveBrokeragePortfolioSyncService?>? _livePortfolioAccessor;
+    private readonly PaperObservationFreshnessPolicy _paperObservationFreshness;
 
     /// <summary>
     /// How old a quote or trade may be and still price an order. A stalled feed keeps
@@ -61,8 +62,12 @@ public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolio
         Func<DateTimeOffset>? clock = null,
         Func<ILiveFeedAdapter?>? liveFeedAccessor = null,
         Func<bool>? paperMatchingIsAuthoritative = null,
-        Func<LiveBrokeragePortfolioSyncService?>? livePortfolioAccessor = null)
+        Func<LiveBrokeragePortfolioSyncService?>? livePortfolioAccessor = null,
+        PaperObservationFreshnessPolicy? paperObservationFreshness = null)
     {
+        // Must be the policy the paper gateways were composed with: this provider predicts what
+        // the matcher will do, so it has to drop exactly the observations the matcher drops.
+        _paperObservationFreshness = paperObservationFreshness ?? PaperObservationFreshnessPolicy.Disabled;
         _aggregatePortfolio = aggregatePortfolio ?? throw new ArgumentNullException(nameof(aggregatePortfolio));
         _portfolioState = portfolioState;
         _registry = registry;
@@ -114,7 +119,7 @@ public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolio
         // would otherwise be refused as unmeasurable while the engine evaluates it normally.
         if (_paperMatchingIsAuthoritative() && _liveFeedAccessor?.Invoke() is { } feed)
         {
-            var observed = PaperMarketObservation.Capture(feed, symbol).ResolveAggressiveReferencePrice(side);
+            var observed = _paperObservationFreshness.Capture(feed, symbol).ResolveAggressiveReferencePrice(side);
             if (observed is > 0m)
             {
                 return observed;
@@ -166,8 +171,10 @@ public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolio
     /// Reconstruction was the bug. Every accessor above filters its sources through
     /// <see cref="DefaultMarkMaxAge"/>, because valuing risk off a stalled feed is how a symbol
     /// cached before an outage measures a 1,000-share order at a price the market left behind.
-    /// The matcher applies no such filter: <see cref="PaperMarketObservation.Capture"/> takes the
-    /// feed's cached last trade, bar, and quote as they are. So a six-minute-old print at 130 with
+    /// By default the matcher applies no such filter: <see cref="PaperMarketObservation.Capture"/> takes the
+    /// feed's cached last trade, bar, and quote as they are. (When the gateways are configured with
+    /// an observation freshness window, this provider captures through that same
+    /// <see cref="PaperObservationFreshnessPolicy"/>, so the two still agree.) So a six-minute-old print at 130 with
     /// a fresh 100 ask fires a buy stop at 125 immediately, while an age-filtered reconstruction
     /// drops that print, falls to the 100 ask, and approves the order as resting. Reconstructing
     /// the precedence <i>and</i> the freshness policy correctly is not something to get right
@@ -201,7 +208,7 @@ public sealed class AggregatePortfolioExposureProvider : IAccountScopedPortfolio
         // it unbounded. Agreeing with an engine that is not running is not a safety property.
         if (_paperMatchingIsAuthoritative() && _liveFeedAccessor?.Invoke() is { } feed)
         {
-            var observed = PaperMarketObservation.Capture(feed, symbol).ResolveStopTriggerPrice(side);
+            var observed = _paperObservationFreshness.Capture(feed, symbol).ResolveStopTriggerPrice(side);
             if (observed is > 0m)
             {
                 return observed;

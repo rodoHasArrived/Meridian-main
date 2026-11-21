@@ -65,6 +65,27 @@ public sealed class ConfigJsonSchemaGenerator
             return;
         }
 
+        // Keys the sample config carries that are not bound to AppConfig. They must be declared
+        // because the root sets additionalProperties=false; their contents are owned by other
+        // components (the editor, the desktop shell, Serilog), so they stay open objects.
+        properties["$schema"] = new JsonObject
+        {
+            ["type"] = "string",
+            ["description"] = "Path or URL of the JSON Schema used for editor validation."
+        };
+
+        properties["Settings"] = new JsonObject
+        {
+            ["type"] = new JsonArray("object", "null"),
+            ["description"] = "Desktop application preferences (theme, notifications, service URLs). Not bound to AppConfig."
+        };
+
+        properties["Serilog"] = new JsonObject
+        {
+            ["type"] = new JsonArray("object", "null"),
+            ["description"] = "Serilog logging configuration, read by Serilog.Settings.Configuration."
+        };
+
         properties["TenantScopeEnforcement"] = new JsonObject
         {
             ["type"] = new JsonArray("string", "null"),
@@ -124,7 +145,13 @@ public sealed class ConfigJsonSchemaGenerator
                     ["items"] = CreateTypedSchema("string")
                 },
                 ["GoldenCopySource"] = AllowNull(CreateTypedSchema("string")),
+                ["GovernanceProfile"] = new JsonObject
+                {
+                    ["type"] = "string",
+                    ["enum"] = new JsonArray("Standard", "Institutional")
+                },
                 ["RequireIndependentReviewer"] = CreateTypedSchema("boolean"),
+                ["RequireIndependentProfileApprover"] = CreateTypedSchema("boolean"),
                 ["MaxBulkResolveBatch"] = CreateTypedSchema("integer"),
                 ["RequireGovernedTermAmendments"] = CreateTypedSchema("boolean")
             }
@@ -148,7 +175,8 @@ public sealed class ConfigJsonSchemaGenerator
                     ["properties"] = new JsonObject
                     {
                         ["AllowScaffoldMarketFills"] = CreateTypedSchema("boolean"),
-                        ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number")
+                        ["ScaffoldMarketFillPrice"] = CreateTypedSchema("number"),
+                        ["MaxObservationAgeSeconds"] = AllowNull(CreateTypedSchema("integer"))
                     }
                 },
                 ["Costs"] = new JsonObject
@@ -446,9 +474,9 @@ public sealed class ConfigJsonSchemaGenerator
             // Extension-data catch-alls preserve unmodeled sections at runtime; they are
             // not declared configuration surface and must not appear in the schema.
             .Where(p => p.GetCustomAttribute<JsonExtensionDataAttribute>() is null)
-            // Ignored members may support in-process compatibility aliases, but they are
-            // not accepted by the JSON configuration contract.
-            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>() is null)
+            // Always-ignored members may be compatibility aliases. Conditional write omission
+            // still accepts the member on input and must retain its configuration schema.
+            .Where(p => p.GetCustomAttribute<JsonIgnoreAttribute>()?.Condition != JsonIgnoreCondition.Always)
             .OrderBy(p => p.Name, StringComparer.Ordinal);
 
     private string GetDefinitionName(Type type)
@@ -481,7 +509,7 @@ public sealed class ConfigJsonSchemaGenerator
 
     private static bool AllowsNull(Type type, NullabilityInfo nullability)
         => Nullable.GetUnderlyingType(type) != null
-           || (type.IsClass && nullability.ReadState != NullabilityState.NotNull);
+           || ((type.IsClass || type.IsInterface) && nullability.ReadState != NullabilityState.NotNull);
 
     private static JsonObject AllowNull(JsonNode schema)
         => new()
@@ -526,9 +554,14 @@ public sealed class ConfigJsonSchemaGenerator
 
     private static bool TryGetDictionaryValueType(Type type, out Type valueType)
     {
-        var dictionaryInterface = type.IsGenericType && type.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+        var dictionaryInterface = type.IsGenericType
+            && (type.GetGenericTypeDefinition() == typeof(Dictionary<,>)
+                || type.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                || type.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>))
             ? type
-            : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(IDictionary<,>));
+            : type.GetInterfaces().FirstOrDefault(i => i.IsGenericType
+                && (i.GetGenericTypeDefinition() == typeof(IDictionary<,>)
+                    || i.GetGenericTypeDefinition() == typeof(IReadOnlyDictionary<,>)));
 
         if (dictionaryInterface != null && dictionaryInterface.GetGenericArguments()[0] == typeof(string))
         {

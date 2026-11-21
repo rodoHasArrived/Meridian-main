@@ -15,7 +15,7 @@ density — carried forward unchanged; the colour did not.
 
 | Reference | What it contributes |
 | --- | --- |
-| `uploads/ChatGPT Image Apr 24, 2026, 03_58_29 PM.png` | Workstation mood reference: persistent chrome, KPI-to-evidence flow, chart/table pairing, and compact operational framing. |
+| Workstation mood image (retired raw upload; last tracked copy at `38b13715`) | Workstation mood reference: persistent chrome, KPI-to-evidence flow, chart/table pairing, and compact operational framing. |
 | `scraps/acct-ledger.png` | Accounting density reference for ledger rows, balances, and inspection surfaces. |
 | `scraps/acct-template-check.png` | Accounting template check for reconciliation and journal-entry composition. |
 | `components/` | Reusable React primitives, data tables, charts, shell chrome, and accounting widgets for package consumers. |

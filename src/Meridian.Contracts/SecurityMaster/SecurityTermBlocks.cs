@@ -47,7 +47,7 @@ public static class SecurityTermBlocks
         if (SecurityAssetTermsSchema.Field(assetClass, key) is not { } declared
             || !string.Equals(declared.Key, key, StringComparison.Ordinal)
             || declared.Type is not (SecurityAssetTermFieldType.Object or SecurityAssetTermFieldType.Array)
-            || declared.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass))
+            || (declared.AuthoringEnabled && declared.SinceTermsVersion <= SecurityAssetClassCatalog.GetTermsVersion(assetClass)))
         {
             return false;
         }
@@ -127,7 +127,7 @@ public static class SecurityTermBlocks
         try
         {
             ScheduleTermsWriteRules.EnsureAmendmentDoesNotPromoteStrayContainers(assetClass, currentTerms, patched);
-            ScheduleTermsWriteRules.Validate(assetClass, patched);
+            ScheduleTermsWriteRules.Validate(assetClass, patched, currentTerms);
         }
         catch (InvalidOperationException exception)
         {

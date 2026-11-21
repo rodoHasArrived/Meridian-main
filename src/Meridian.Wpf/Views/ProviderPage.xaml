@@ -1,7 +1,9 @@
 <Page x:Class="Meridian.Wpf.Views.ProviderPage"
+        FontFamily="{DynamicResource MeridianBodyFontFamily}"
       xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
       xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
       xmlns:workstation="clr-namespace:Meridian.Wpf.Workstation.Controls"
+      xmlns:activation="clr-namespace:Meridian.Wpf.Controls"
       Background="{DynamicResource ShellWindowBackgroundBrush}"
       Loaded="OnPageLoaded"
       Unloaded="OnPageUnloaded"
@@ -108,13 +110,17 @@
                 </Grid>
             </Border>
 
-            <workstation:WorkstationStatePanelControl Grid.Row="1"
-                                                       State="{Binding BackfillPostureState}"
-                                                       Margin="0,0,0,14"
-                                                       AutomationProperties.AutomationId="ProviderBackfillPostureCard"
-                                                       TitleAutomationId="ProviderBackfillPostureTitle"
-                                                       DetailAutomationId="ProviderBackfillPostureDetail"
-                                                       EvidenceAutomationId="ProviderBackfillPostureEvidence" />
+            <StackPanel Grid.Row="1">
+                <activation:ProviderActivationPanel DataContext="{Binding Activation}" />
+                <workstation:WorkstationStatePanelControl State="{Binding BackfillPostureState}"
+                                                           Margin="0,0,0,14"
+                                                           AutomationProperties.AutomationId="ProviderBackfillPostureCard"
+                                                           TitleAutomationId="ProviderBackfillPostureTitle"
+                                                           DetailAutomationId="ProviderBackfillPostureDetail"
+                                                           EvidenceAutomationId="ProviderBackfillPostureEvidence" />
+                <TextBlock Text="{Binding HostSettingsMessage}" Style="{StaticResource CardDescriptionStyle}"
+                           TextWrapping="Wrap" AutomationProperties.LiveSetting="Polite" />
+            </StackPanel>
 
             <TabControl Grid.Row="2"
                         AutomationProperties.AutomationId="ProviderBackfillWorkbench"
@@ -338,7 +344,9 @@
                                                 <GridViewColumn Header="Surface" DisplayMemberBinding="{Binding Surface}" Width="90" />
                                                 <GridViewColumn Header="Status" DisplayMemberBinding="{Binding Status}" Width="100" />
                                                 <GridViewColumn Header="Connection / reachability" DisplayMemberBinding="{Binding ConnectionPosture}" Width="260" />
-                                                <GridViewColumn Header="Requests" DisplayMemberBinding="{Binding RequestUsage}" Width="100" />
+                                                <GridViewColumn Header="Quota usage" DisplayMemberBinding="{Binding RequestUsage}" Width="140" />
+                                                <GridViewColumn Header="Backfill attempts" DisplayMemberBinding="{Binding BackfillAttempts}" Width="120" />
+                                                <GridViewColumn Header="Daily quota" DisplayMemberBinding="{Binding DailyUsage}" Width="140" />
                                                 <GridViewColumn Header="Remaining" DisplayMemberBinding="{Binding Remaining}" Width="90" />
                                                 <GridViewColumn Header="Reset countdown" DisplayMemberBinding="{Binding ResetCountdown}" Width="120" />
                                                 <GridViewColumn Header="Failure / reason" DisplayMemberBinding="{Binding FailureReason}" Width="260" />
@@ -354,6 +362,7 @@
                                                AutomationProperties.AutomationId="ProviderRateLimitHistoryPosture" />
                                 </StackPanel>
                             </Border>
+                            <workstation:ProviderQuotaEditorControl Margin="0,12,0,0" />
                         </StackPanel>
                     </ScrollViewer>
                 </TabItem>

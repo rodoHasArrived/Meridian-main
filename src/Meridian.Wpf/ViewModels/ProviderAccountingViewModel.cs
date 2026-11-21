@@ -16,7 +16,7 @@ namespace Meridian.Wpf.ViewModels;
 /// </summary>
 public sealed class ProviderAccountingViewModel : BindableBase
 {
-    public const string HistoryUnavailableText = "Unavailable — runtime rate-limit history is not retained.";
+    public const string HistoryGuidance = "Load quota settings for seven UTC days of retained daily totals.";
 
     private readonly IProviderDiagnosticsApiClient _apiClient;
     private readonly TimeProvider _timeProvider;
@@ -93,7 +93,7 @@ public sealed class ProviderAccountingViewModel : BindableBase
     public bool HasError => !string.IsNullOrWhiteSpace(ErrorMessage);
     public bool HasRegistrationFailures => RegistrationFailures.Count > 0;
     public bool HasRateLimits => RateLimits.Count > 0;
-    public string HistoryPosture => HistoryUnavailableText;
+    public string HistoryPosture => HistoryGuidance;
 
     public async Task StartAsync(CancellationToken ct = default)
     {
@@ -166,7 +166,7 @@ public sealed class ProviderAccountingViewModel : BindableBase
         RegistrationTitle = report.IsHealthy
             ? "Provider registration healthy"
             : $"{RegistrationFailures.Count} provider registration failure{(RegistrationFailures.Count == 1 ? string.Empty : "s")}";
-        RegistrationSummary = $"{report.RegisteredModuleCount} registered, {report.SkippedModuleCount} skipped, {report.DiscoveredSourceCount} discovered sources. Reported {report.GeneratedAt:yyyy-MM-dd HH:mm:ss 'UTC'}.";
+        RegistrationSummary = $"{report.RegisteredModuleCount} registered, {report.SkippedModuleCount} skipped, {report.DiscoveredSourceCount} discovered sources. Reported {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(report.GeneratedAt, "yyyy-MM-dd HH:mm:ss")}.";
         OnPropertyChanged(nameof(HasRegistrationFailures));
     }
 
@@ -187,7 +187,7 @@ public sealed class ProviderAccountingViewModel : BindableBase
 
         RateLimitSummary = RateLimits.Count == 0
             ? "No provider runtime exposed a current rate-limit snapshot."
-            : $"{RateLimits.Count} current provider surface{(RateLimits.Count == 1 ? string.Empty : "s")} observed {response.Timestamp:yyyy-MM-dd HH:mm:ss 'UTC'}.";
+            : $"{RateLimits.Count} current provider surface{(RateLimits.Count == 1 ? string.Empty : "s")} observed {Meridian.Ui.Services.FormatHelpers.FormatDisplayTimestamp(response.Timestamp, "yyyy-MM-dd HH:mm:ss")}.";
         OnPropertyChanged(nameof(HasRateLimits));
     }
 
@@ -216,7 +216,7 @@ public sealed class ProviderAccountingViewModel : BindableBase
             ? $"Current rate-limit reason: {reason ?? "reason unavailable"}."
             : reason is not null
                 ? $"Current runtime reason: {reason}."
-                : "Last rate-limit failure unavailable — history is not retained.";
+                : "No current failure reported. See quota settings for daily totals.";
         var retryPosture = !provider.StateAvailable
             ? "Retry posture unavailable until runtime diagnostics are exposed."
             : !provider.IsRateLimited
@@ -231,15 +231,25 @@ public sealed class ProviderAccountingViewModel : BindableBase
             FormatToken(provider.Surface),
             provider.StateAvailable ? provider.IsRateLimited ? "Rate limited" : "Available" : "State unavailable",
             provider.RequestsInWindow is { } requests
-                ? $"{requests} / {provider.MaxRequestsPerWindow}"
-                : $"Unavailable / {provider.MaxRequestsPerWindow}",
-            provider.RemainingRequests?.ToString() ?? "Unavailable",
+                ? $"{requests} / {provider.MaxRequestsPerWindow} {provider.QuotaUnit}"
+                : $"Unavailable / {provider.MaxRequestsPerWindow} {provider.QuotaUnit}",
+            provider.RemainingRequests is { } remaining ? $"{remaining} {provider.QuotaUnit}" : "Unavailable",
             provider.ResetAt,
             resetCountdown,
             failureText,
             retryPosture,
             connectionPosture,
-            HistoryUnavailableText);
+            HistoryGuidance)
+        {
+            BackfillAttempts = provider.BackfillAttemptsInWindow is { } attempts && provider.BackfillAttemptWindowSeconds is { } window
+                ? $"{attempts} per {window:g}s"
+                : "Unavailable",
+            DailyUsage = !provider.StateAvailable
+                ? "Unavailable"
+                : provider.DailyMaximum is { } daily
+                    ? $"{provider.DailyUnitsUsed?.ToString() ?? "Unavailable"} / {daily} {provider.QuotaUnit}"
+                    : "No daily cap reported"
+        };
     }
 
     public static string FormatResetCountdown(DateTimeOffset? resetAt, DateTimeOffset now)
@@ -358,6 +368,8 @@ public sealed class ProviderRateLimitPresentation : BindableBase
     public string RetryPosture { get; }
     public string ConnectionPosture { get; }
     public string HistoryPosture { get; }
+    public string BackfillAttempts { get; init; } = "Unavailable";
+    public string DailyUsage { get; init; } = "Unavailable";
 
     public void UpdateCountdown(DateTimeOffset now)
         => ResetCountdown = ProviderAccountingViewModel.FormatResetCountdown(ResetAt, now);

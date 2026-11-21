@@ -17,7 +17,7 @@ SPEC.loader.exec_module(ratchet)
 
 def count(sources: dict[str, str]) -> dict[str, int]:
     """Run the detector over a throwaway repo containing exactly these sources."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir)
         for rel, text in sources.items():
             path = root / rel
@@ -115,7 +115,7 @@ public static class TextPrimitives
 
 def clones(sources: dict[str, str]) -> dict[str, list[tuple[str, str]]]:
     """Run the body scan over a throwaway repo that owns the canonical helpers."""
-    with tempfile.TemporaryDirectory() as temp_dir:
+    with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
         root = Path(temp_dir)
         staged = {"src/Meridian.Contracts/Text/TextPrimitives.cs": FAKE_TEXT_PRIMITIVES}
         staged.update(sources)
@@ -414,7 +414,7 @@ class BodyCloneDetectionTests(unittest.TestCase):
 
     def test_a_partially_parsed_canonical_home_fails_closed(self):
         # Two of three owners parsing must not silently retire the third's protection.
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             home = root / "src" / "Meridian.Contracts" / "Text"
             home.mkdir(parents=True)
@@ -531,7 +531,7 @@ class BodyCloneDetectionTests(unittest.TestCase):
     def test_a_missing_canonical_home_fails_closed(self):
         # A moved TextPrimitives must not silently disable the scan and let the
         # baseline read as an improvement.
-        with tempfile.TemporaryDirectory() as temp_dir:
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temp_dir:
             root = Path(temp_dir)
             (root / "src" / "A").mkdir(parents=True)
             (root / "src" / "A" / "Thing.cs").write_text(

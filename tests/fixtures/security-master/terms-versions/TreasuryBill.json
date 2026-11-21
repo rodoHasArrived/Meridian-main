@@ -25,6 +25,36 @@
           "required": true
         }
       ]
+    },
+    {
+      "termsVersion": 2,
+      "fields": [
+        {
+          "key": "auctionDate",
+          "type": "Date",
+          "required": false
+        },
+        {
+          "key": "cusip",
+          "type": "String",
+          "required": false
+        },
+        {
+          "key": "discountRate",
+          "type": "Decimal",
+          "required": false
+        },
+        {
+          "key": "maturity",
+          "type": "Date",
+          "required": true
+        },
+        {
+          "key": "rateUnit",
+          "type": "String",
+          "required": false
+        }
+      ]
     }
   ]
 }

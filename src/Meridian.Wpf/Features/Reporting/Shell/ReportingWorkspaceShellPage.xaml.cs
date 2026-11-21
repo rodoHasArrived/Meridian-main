@@ -21,6 +21,9 @@ public partial class ReportingWorkspaceShellPage : ReportingWorkspaceShellPageBa
     }
 
     private async void OnPageLoaded(object sender, RoutedEventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => PageLoadedCoreAsync(sender, e), nameof(OnPageLoaded)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task PageLoadedCoreAsync(object sender, RoutedEventArgs e)
     {
         ViewModel.RefreshRequested += OnRefreshRequested;
         ViewModel.Start();
@@ -36,7 +39,14 @@ public partial class ReportingWorkspaceShellPage : ReportingWorkspaceShellPageBa
     }
 
     private async void OnRefreshRequested(object? sender, EventArgs e)
+        => await global::Meridian.Wpf.Services.AsyncHandlerGuard.RunAsync(() => RefreshRequestedCoreAsync(sender, e), nameof(OnRefreshRequested)).ConfigureAwait(true);
+
+    private async System.Threading.Tasks.Task RefreshRequestedCoreAsync(object? sender, EventArgs e)
         => await ViewModel.RefreshAsync().ConfigureAwait(true);
+
+    /// <inheritdoc />
+    protected override Task RefreshShellInPlaceAsync()
+        => ViewModel.RefreshAsync();
 
     private void OnPaneDropRequested(object? sender, PaneDropEventArgs e)
         => OpenDroppedPane(ReportingDockManager, e);

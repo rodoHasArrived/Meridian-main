@@ -1,8 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, Navigate, useSearchParams } from "react-router-dom";
 import { LotsTrackerPanel, SecurityDetailsPanel } from "@/components/meridian/security-details-tracker";
 import { SecurityPassportEditorLauncher } from "@/components/meridian/security-passport-editor-launcher";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -30,13 +29,19 @@ import { AssetPassportSummary } from "@/components/meridian/asset-passport-summa
 import { useAssetDetailResource } from "./asset-detail-resource";
 import { AssetDetailEvents } from "./asset-detail-events";
 import { SecurityInstrumentTerms } from "@/components/meridian/security-instrument-terms";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { StatusBanner } from "@/components/ui/status-banner";
+import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
+import { appendRecordWorkspaceContext, readRecordWorkspaceContext } from "@/lib/record-workspace-context";
+import { bondWorkflowRoute, isBondAssetClass, resolveBondWorkflowAction } from "@/lib/fixed-income-navigation";
+import { BondSettlementPanel } from "@/components/meridian/bond-settlement-panel";
 
 const assetSearchSuggestions = ["AAPL", "MSFT", "US91282CHT18"];
 const assetDetailReadinessCues = [
   { label: "Identity", value: "Identifiers, aliases, and current status" },
   {
     label: "Passport",
-    value: "Governed edits, approvals, and trust evidence"
+    value: "Controlled edits, approvals, and trust evidence"
   },
   { label: "Lots", value: "Open lots, cost basis, and accounting impact" },
   {
@@ -69,7 +74,7 @@ const assetDetailNextActions = [
     id: "security-master",
     label: "Open Security Master",
     href: WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster,
-    detail: "Review governed identity, approvals, and passport posture."
+    detail: "Review the security's identity, approvals, and passport status."
   },
   {
     id: "live-quotes",
@@ -220,7 +225,7 @@ function AssetSearchPanel({
                 <>
                   <div className="font-semibold text-foreground">Search results</div>
                   <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                    Select a result to open governed identity, passport, lot, and trading parameters without leaving the
+                    Select a result to open its identity, passport, lot, and trading parameters without leaving the
                     operator workflow.
                   </p>
                   {searching ? (
@@ -264,7 +269,7 @@ function AssetSearchPanel({
               )}
             </div>
             <div className="rounded-md border border-border/70 bg-background/70 px-3 py-3">
-              <div className="font-mono text-[10px] font-semibold uppercase tracking-[0.14em] text-muted-foreground">
+              <div className="font-mono text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">
                 Review areas
               </div>
               <div className="mt-2 grid gap-2">
@@ -291,7 +296,7 @@ function AssetSearchPanel({
                       {view.symbol}
                     </Button>
                   </div>
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{view.detail}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{view.detail}</p>
                 </li>
               ))}
             </ul>
@@ -307,7 +312,7 @@ function AssetSearchPanel({
                   >
                     {action.label}
                   </Link>
-                  <p className="mt-1 text-[11px] leading-5 text-muted-foreground">{action.detail}</p>
+                  <p className="mt-1 text-xs leading-5 text-muted-foreground">{action.detail}</p>
                 </li>
               ))}
             </ul>
@@ -330,10 +335,15 @@ const detailTabs = [
 
 function AssetDetailPanel({ securityId }: { securityId: string }) {
   const [params, setParams] = useSearchParams();
+  const requestedBondAction = resolveBondWorkflowAction(params.get("bondAction"));
   const entryResource = useAssetDetailResource(securityId, getSecurityDetail);
   const identityResource = useAssetDetailResource(securityId, getSecurityIdentity);
   const eventsResource = useAssetDetailResource(securityId, getCorporateActions);
   const tradingResource = useAssetDetailResource(securityId, getTradingParameters);
+  const recordEntry = entryResource.status === "ready" && entryResource.data?.securityId.toLowerCase() === securityId.toLowerCase() ? entryResource.data : null;
+  const record = instrumentRecordIdentity(recordEntry, identityResource.status === "ready" ? identityResource.data : null);
+  const recordContext = useRecordWorkspaceContext(record, { securityId, bondAction: requestedBondAction ? "" : null });
+  const inheritedContext = readRecordWorkspaceContext(params.toString());
   const requestedTab = params.get("tab") === "details-lots" ? "holdings" : params.get("tab");
   const activeTab = detailTabs.some((tab) => tab.id === requestedTab) ? requestedTab! : "overview";
   const [visitedTabs, setVisitedTabs] = useState(() => new Set([activeTab]));
@@ -363,7 +373,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
         </CardHeader>
       </Card>
     );
-  if (entryResource.status === "error" || !entryResource.data || entryResource.data.securityId !== securityId) {
+  if (entryResource.status === "error" || !entryResource.data || entryResource.data.securityId.toLowerCase() !== securityId.toLowerCase()) {
     const notFound = entryResource.error instanceof ApiError && entryResource.error.status === 404;
     return (
       <Card className="panel-surface">
@@ -426,6 +436,15 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
     />
   );
 
+  const quotes = workstationRouteWithQuery("dataQuotes", { symbol: record?.scope?.symbol });
+  const registry = workstationRouteWithQuery("accountingSecurityMaster", { securityId });
+  const linkedInstrument = inheritedContext?.record.scope?.securityId;
+  const linkedTicker = inheritedContext?.record.scope?.symbol;
+  const navigationContext = inheritedContext && (linkedInstrument === securityId || (!linkedInstrument && linkedTicker && linkedTicker === record?.scope?.symbol)) ? inheritedContext : recordContext;
+  const relatedHref = (route: string) => navigationContext ? appendRecordWorkspaceContext(route, navigationContext) ?? route : route;
+  const isBond = isBondAssetClass(entry.classification.assetClass);
+  if (isBond && requestedBondAction) return <Navigate to={relatedHref(bondWorkflowRoute(entry.securityId, requestedBondAction))} replace />;
+
   return (
     <ScreenLayout
       title={overview.displayName}
@@ -445,24 +464,25 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           >
             Reload asset
           </Button>
-          <Badge variant={overview.statusTone} dot>
-            {overview.statusLabel}
-          </Badge>
           <Button asChild size="sm" variant="outline">
             <Link
-              to={workstationRouteWithQuery("dataQuotes", {
-                symbol: overview.symbol
-              })}
+              to={relatedHref(quotes)}
             >
               Live quotes
             </Link>
           </Button>
           <Button asChild size="sm" variant="outline">
-            <Link to={workstationRouteWithQuery("accountingSecurityMaster", { securityId })}>Open Security Master</Link>
+            <Link to={relatedHref(registry)}>Open Security Master</Link>
           </Button>
+          {isBond ? <>
+            <Button asChild size="sm" variant="outline"><Link to={relatedHref(bondWorkflowRoute(entry.securityId, "analytics"))}>Bond analytics</Link></Button>
+            <Button asChild size="sm" variant="outline"><Link to={relatedHref(bondWorkflowRoute(entry.securityId, "migration"))}>Convention migration</Link></Button>
+          </> : null}
         </>
       }
     >
+      {requestedBondAction && !isBond ? <StatusBanner tone="warning" title="Bond workflow unavailable for this instrument" detail={`The selected Security Master record is ${entry.classification.assetClass}. Select a bond to use analytics or convention migration.`} /> : null}
+      {record ? <RecordIdentitySpine record={record} context={recordContext} /> : null}
       <AssetSwitcher
         securityId={securityId}
         symbol={overview.symbol}
@@ -473,6 +493,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
             next.set("securityId", target.securityId);
             next.set("symbol", target.symbol);
             next.delete("query");
+            if (target.securityId !== securityId) next.delete("bondAction");
             return next;
           })
         }
@@ -577,8 +598,8 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
           ) : null}
         </TabPanel>
         <TabPanel>
-          {activeTab === "trading-parameters" ? (
-            <Card className="panel-surface">
+          {keepTab("trading-parameters") ? (
+            <div className="space-y-4"><Card className="panel-surface">
               <CardHeader>
                 <CardTitle>Trading parameters</CardTitle>
                 <CardDescription>
@@ -627,6 +648,8 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
                 )}
               </CardContent>
             </Card>
+            {isBond ? <details className="rounded border border-border p-4"><summary className="cursor-pointer font-semibold">Prepare bond settlement</summary><div className="mt-4"><BondSettlementPanel key={entry.securityId} securityId={entry.securityId} termsVersion={identity?.securityId === entry.securityId ? identity.version : null} /></div></details> : null}
+            </div>
           ) : null}
         </TabPanel>
         <TabPanel>
