@@ -11,6 +11,12 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui/dashboard
 
+Record identity panels retain internal record IDs in the expandable Technical identity details;
+operator identifiers remain visible. Cash Ladder keeps its engine version in Projection details.
+Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
+and groups missing comparison context into one explicit notice. Screenshot readiness checks
+exercise the current Match Workbench's retained case evidence.
+
 Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
 The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
 Workstation backfill receipts show the submission estimate, waiting states, observed providers,

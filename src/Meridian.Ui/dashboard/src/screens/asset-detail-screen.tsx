@@ -363,7 +363,7 @@ function AssetDetailPanel({ securityId }: { securityId: string }) {
         <StatusBanner tone="warning" title="Bond workflow unavailable for this instrument"
           detail={`The selected Security Master record is ${entry.classification.assetClass}. Select a bond to use analytics or convention migration.`} />
       ) : null}
-      {record ? <RecordIdentitySpine record={record} context={recordContext} showRecordId={false} /> : null}
+      {record ? <RecordIdentitySpine record={record} context={recordContext} /> : null}
       <Tabs
         tabs={[
           { id: "overview", label: "Overview" },

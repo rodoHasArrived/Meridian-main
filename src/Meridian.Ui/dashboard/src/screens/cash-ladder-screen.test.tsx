@@ -52,10 +52,14 @@ describe("Cash Ladder request scope", () => {
     getOperations.mockResolvedValue(operations());
     const user = userEvent.setup();
     const { container } = render(view("account-a"));
+    const engineVersion = await screen.findByText("engine-A");
+    expect(engineVersion).not.toBeVisible();
+    await user.click(screen.getByText("Projection details"));
+    expect(engineVersion).toBeVisible();
+    const chartInspector = screen.getByRole("region", { name: "Projected cash by bucket inspector" });
+    expect(chartInspector).toHaveTextContent("Projection through 2026-07-11 · Base projection.");
+    expect(chartInspector).not.toHaveTextContent("engine-A");
     await user.click(await screen.findByRole("button", { name: /Week A/ }));
-    const engineDetails = screen.getByText("Projection engine", { exact: true }).closest("details");
-    expect(engineDetails).not.toHaveAttribute("open");
-    expect(engineDetails).toHaveTextContent(projection.engineVersion);
     const table = within(screen.getByRole("table", { name: "Cash ladder contributing flows" }));
     expect(table.getByRole("link", { name: "Bond A" })).toHaveAttribute("href", "/portfolio/asset-detail?securityId=bond");
     expect(table.getByRole("link", { name: "Security Master evidence" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond&tab=evidence");
