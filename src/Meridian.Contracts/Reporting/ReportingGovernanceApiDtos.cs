@@ -9,7 +9,7 @@ namespace Meridian.Contracts.Reporting;
 /// </summary>
 public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
 
-/// <summary>Human approval rationale plus the required optimistic concurrency token.</summary>
+/// <summary>Human approval rationale, concurrency token, and an optional reference to server-verified review evidence.</summary>
 public sealed record ReportingGovernanceApprovalRequestDto(
     long ExpectedVersion,
     string DecisionNote,

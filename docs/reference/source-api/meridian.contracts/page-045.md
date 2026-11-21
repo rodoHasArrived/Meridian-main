@@ -315,7 +315,7 @@ Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceApprovalRe
 
 Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:13](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L13).
 
-Human approval rationale plus the required optimistic concurrency token.
+Human approval rationale, concurrency token, and an optional reference to server-verified review evidence.
 
 ```csharp
 public sealed record ReportingGovernanceApprovalRequestDto(long ExpectedVersion, string DecisionNote, string? ReviewEvidenceId = null);

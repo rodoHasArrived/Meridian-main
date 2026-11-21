@@ -60,7 +60,7 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
     [InlineData("/api/config/data-sources")]
     public async Task OwnedCompositions_AllowNonSecretSettingsAndEnvironmentNameReferences(string route)
     {
-        var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
+        var config = new AppConfig(Alpaca: new(UseSandbox: false), ProviderModules: new ProviderModulesConfig(new()
         {
             ["alpaca"] = new(Credentials: new() { ["keyId"] = "ALPACA_KEY_ID", ["secretKey"] = "ALPACA_SECRET_KEY" })
         }));
@@ -69,9 +69,11 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var retained = new CoreConfigStore(ConfigPath).LoadRequired();
-        retained.ProviderModules!.Modules!["alpaca"].Credentials!["keyId"].Should().Be("ALPACA_KEY_ID");
+        var credentials = retained.ProviderModules!.Modules!["alpaca"].Credentials!;
+        credentials["keyId"].Should().Be("ALPACA_KEY_ID");
+        credentials["secretKey"].Should().Be("ALPACA_SECRET_KEY");
         if (route.EndsWith("/alpaca", StringComparison.Ordinal))
-            retained.Alpaca!.Feed.Should().Be("sip");
+            retained.Alpaca!.UseSandbox.Should().BeTrue();
         else
             retained.DataSources!.Sources!.Single().Description.Should().Be("ApiKey is a configuration field name, not a submitted credential.");
     }
@@ -198,7 +200,7 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         {
             keyId = field == "alpaca-key" ? "synthetic-submitted-key" : null,
             secretKey = field == "alpaca-secret" ? "synthetic-submitted-secret" : null,
-            feed = "sip",
+            feed = "iex",
             useSandbox = true
         };
         return route.EndsWith("/alpaca", StringComparison.Ordinal) ? alpaca : new

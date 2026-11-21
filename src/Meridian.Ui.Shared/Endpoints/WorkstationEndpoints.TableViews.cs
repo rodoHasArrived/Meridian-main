@@ -188,7 +188,7 @@ public static partial class WorkstationEndpoints
         Add([UserPermission.ViewTrades],
             "portfolio-brokerage-accounts", "portfolio-brokerage-positions",
             "trading-positions", "trading-orders", "trading-fills", "trading-execution-audit", "trading-execution-blotter",
-            "trading-broker-order-discrepancies", "trading-broker-affected-runs",
+            "trading-broker-order-discrepancies", "trading-broker-affected-runs", "instrument-dossier-positions",
             "account-balance-history",
             // Mirrors /api/execution/journal/* and /api/portfolio/cash-ladder/comparison.
             "execution-journal", "portfolio-cash-ladder-comparison");
@@ -199,6 +199,8 @@ public static partial class WorkstationEndpoints
             "accounting-capital-command-centers", "accounting-capital-investor-accounts");
         Add([UserPermission.ViewDirectLending],
             "accounting-payment-intents");
+        Add([UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance],
+            "book-income-receipts");
         Add([UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending,
                 UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance],
             "accounting-reconciliation-breaks", "margin-prime-summary", "margin-account-positions", "accounting-statement-schedules",
@@ -207,7 +209,7 @@ public static partial class WorkstationEndpoints
             "break-occurrence-age-data");
         Add([UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports],
             "accounting-period-comparison", "accounting-period-closing-balance-comparison", "accounting-ledger-search", "accounting-mark-preview",
-            "accounting-payment-evidence-workflows", "accounting-private-capital-events", "accounting-private-capital-activity",
+            "accounting-payment-evidence-workflows", "accounting-private-capital-events", "accounting-private-capital-activity", "instrument-dossier-ledger",
             "accounting-private-capital-subledgers", "accounting-private-capital-subledger", "accounting-private-capital-ledger-impacts",
             "accounting-private-capital-report-outputs", "accounting-prepared-deadlines",
             "close-task-progress-data", "close-checklist-progress-data");
