@@ -77,7 +77,7 @@ public sealed class StrategyRunReadServiceTests
         var ledger = new Meridian.Ledger.Ledger();
         var tags = Meridian.Contracts.Operations.MarketDataInputEvidenceTags.Create([
             new(ProviderId: "fixture", EventReference: "other-fill", ObservedAt: time, Repaired: false, GapFilled: false,
-                QualityScore: .95, QualityAssessedAt: time, AssessmentFrom: date, AssessmentTo: date)]);
+                QualityScore: .95, QualityAssessedAt: time, AssessmentFrom: date, AssessmentTo: date, QualityThreshold: .8)]);
         ledger.PostLines(time, "unrelated synthetic trade", [(LedgerAccounts.Cash, 1m, 0m), (LedgerAccounts.RealizedGain, 0m, 1m)],
             new JournalEntryMetadata(FillId: Guid.NewGuid(), Tags: tags));
         run = run with { Metrics = run.Metrics! with { Ledger = ledger } };
