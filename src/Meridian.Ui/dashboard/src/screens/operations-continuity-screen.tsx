@@ -21,7 +21,7 @@ import {
 import { DenseDataTable, EntitySummary, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { useFundScopeNarrowingContext } from "@/lib/operating-scope/fund-scope-context";
-import { CloseRecordIdentifiers, closeCalendarColumns } from "./operations-continuity-screen.close-calendar-columns";
+import { CloseRecordIdentifiers, closeCalendarColumns } from "@/screens/operations-continuity-screen.close-calendar-columns";
 import { eyebrowClassName } from "@/design-system/label-case";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";

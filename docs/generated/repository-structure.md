@@ -6797,6 +6797,7 @@ Meridian-main
 │   │   │   ├── OrderExecutionAudit.cs
 │   │   │   ├── OrderFillContext.cs
 │   │   │   ├── OrderFillProcessor.cs
+│   │   │   ├── OrderIntentJournal.cs
 │   │   │   ├── OrderManagementLifecycleCoordinator.cs
 │   │   │   ├── OrderRiskSizingPolicy.cs
 │   │   │   ├── OrderStateTable.cs
@@ -6829,6 +6830,7 @@ Meridian-main
 │   │   │   ├── OrderManagementHostedService.cs
 │   │   │   ├── OrderPreviewService.cs
 │   │   │   ├── PaperLedgerIntegrityBreak.cs
+│   │   │   ├── PaperOrderEvidenceReader.cs
 │   │   │   ├── PaperPosition.cs
 │   │   │   ├── PaperSessionDtos.cs
 │   │   │   ├── PaperSessionJournalBatch.cs
@@ -6873,6 +6875,7 @@ Meridian-main
 │   │   ├── OrderManagementSystem.KillSwitch.cs
 │   │   ├── OrderManagementSystem.Lifecycle.cs
 │   │   ├── OrderManagementSystem.Modifications.cs
+│   │   ├── OrderManagementSystem.OrderIntents.cs
 │   │   ├── OrderManagementSystem.PendingAmendments.cs
 │   │   ├── OrderManagementSystem.Recovery.cs
 │   │   ├── OrderManagementSystem.Retention.cs
@@ -6924,6 +6927,7 @@ Meridian-main
 │   │   ├── Meridian.Execution.Sdk.csproj
 │   │   ├── Models.cs
 │   │   ├── OrderCommandAuthority.cs
+│   │   ├── OrderIntent.cs
 │   │   ├── OrderSizingMetadata.cs
 │   │   ├── OrderSubmissionRefusal.cs
 │   │   ├── PositionExtensions.cs
@@ -8884,8 +8888,10 @@ Meridian-main
 │   │   │   │   ├── DesignerDocumentStrategy.cs
 │   │   │   │   ├── DesignerExpression.cs
 │   │   │   │   ├── DesignerLiveFields.cs
+│   │   │   │   ├── DesignerPaperExecution.cs
 │   │   │   │   ├── DesignerSessionClock.cs
-│   │   │   │   └── DesignerStrategyPlan.cs
+│   │   │   │   ├── DesignerStrategyPlan.cs
+│   │   │   │   └── DesignerStrategyVersion.cs
 │   │   │   ├── Strategies
 │   │   │   │   ├── BuyAndHoldLiveStrategy.cs
 │   │   │   │   └── MovingAverageCrossoverLiveStrategy.cs
@@ -8970,6 +8976,7 @@ Meridian-main
 │   │   │   ├── JsonlPromotionRecordStore.cs
 │   │   │   ├── JsonlStrategyDesignRepository.cs
 │   │   │   ├── JsonlStrategyRunLedgerArchive.cs
+│   │   │   ├── ScopedStrategyDesignStore.cs
 │   │   │   └── StrategyRunStore.cs
 │   │   ├── GlobalUsings.cs
 │   │   ├── Meridian.Strategies.csproj
@@ -10582,7 +10589,7 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.private-capital-readiness.tsx
 │   │   │   │   │   ├── reporting-screen.production-surface.test.ts
 │   │   │   │   │   ├── reporting-screen.production-surface.ts
-│   │   │   │   │   ├── reporting-screen.report-writer-datasets.ts
+│   │   │   │   │   ├── reporting-screen.report-writer-dataset.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-filters.tsx
 │   │   │   │   │   ├── reporting-screen.report-writer-formula-references.test.ts
 │   │   │   │   │   ├── reporting-screen.report-writer-helpers.test.ts
@@ -10660,6 +10667,7 @@ Meridian-main
 │   │   │   │   │   ├── statement-import-screen.tsx
 │   │   │   │   │   ├── strategy-designer-backtest.test.ts
 │   │   │   │   │   ├── strategy-designer-backtest.ts
+│   │   │   │   │   ├── strategy-designer-hosted.ts
 │   │   │   │   │   ├── strategy-designer-screen.copy.ts
 │   │   │   │   │   ├── strategy-designer-screen.test.tsx
 │   │   │   │   │   ├── strategy-designer-screen.tsx
@@ -10720,6 +10728,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.journal.test.tsx
 │   │   │   │   │   ├── trading-screen.journal.tsx
 │   │   │   │   │   ├── trading-screen.linked-context.ts
+│   │   │   │   │   ├── trading-screen.live-authorization-revoke.tsx
 │   │   │   │   │   ├── trading-screen.operator-focus.ts
 │   │   │   │   │   ├── trading-screen.order-authority.test.tsx
 │   │   │   │   │   ├── trading-screen.order-authority.ts
@@ -10728,6 +10737,7 @@ Meridian-main
 │   │   │   │   │   ├── trading-screen.order-ticket-state.ts
 │   │   │   │   │   ├── trading-screen.order-ticket-text.ts
 │   │   │   │   │   ├── trading-screen.paper-reconciliation.tsx
+│   │   │   │   │   ├── trading-screen.pending-paper-intent.ts
 │   │   │   │   │   ├── trading-screen.promotion-evidence.ts
 │   │   │   │   │   ├── trading-screen.readiness-summary.ts
 │   │   │   │   │   ├── trading-screen.server-preview.test.tsx
@@ -11161,6 +11171,7 @@ Meridian-main
 │   │   │   ├── ExecutionEndpoints.Audit.cs
 │   │   │   ├── ExecutionEndpoints.cs
 │   │   │   ├── ExecutionEndpoints.Metadata.cs
+│   │   │   ├── ExecutionEndpoints.PaperIntents.cs
 │   │   │   ├── ExecutionEndpoints.PaperSessionReconciliation.cs
 │   │   │   ├── ExecutionEndpoints.Positions.cs
 │   │   │   ├── ExecutionEndpoints.Sessions.cs
@@ -11519,6 +11530,7 @@ Meridian-main
 │   │   │   ├── DemoTenantBlueprint.cs
 │   │   │   ├── DemoTenantProvisioner.cs
 │   │   │   ├── DemoWorkspaceSeeder.cs
+│   │   │   ├── DesignerBacktestService.cs
 │   │   │   ├── DesktopLaunchTicketService.cs
 │   │   │   ├── DesktopWorkstationLaunchService.cs
 │   │   │   ├── DirectLendingOperationsReadService.cs
@@ -13710,6 +13722,7 @@ Meridian-main
 │   │   │   ├── BrokerageOrderPlacementGateTests.cs
 │   │   │   ├── BrokerageOrderRecoveryJournalTests.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.cs
+│   │   │   ├── BrokerageOrderRecoveryTests.FaultReplay.cs
 │   │   │   ├── BrokerageOrderRecoveryTests.Retention.cs
 │   │   │   ├── BrokerageValidationEvaluatorTests.cs
 │   │   │   ├── BrokerOrderSweepTests.cs
@@ -15311,6 +15324,7 @@ Meridian-main
 │   │   │   ├── DataOperationsAssuranceServiceTests.cs
 │   │   │   ├── DegradedModeEvaluationTests.cs
 │   │   │   ├── DemoTenantProvisionerTests.cs
+│   │   │   ├── DesignerPaperRehearsalTests.cs
 │   │   │   ├── DesktopLaunchTicketServiceTests.cs
 │   │   │   ├── DiagnosticsEndpointsTests.cs
 │   │   │   ├── DirectLendingEndpointsTests.cs

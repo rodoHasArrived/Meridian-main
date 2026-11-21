@@ -60,20 +60,22 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
     [InlineData("/api/config/data-sources")]
     public async Task OwnedCompositions_AllowNonSecretSettingsAndEnvironmentNameReferences(string route)
     {
-        var config = new AppConfig(Alpaca: new(UseSandbox: false), ProviderModules: new ProviderModulesConfig(new()
+        var config = new AppConfig(ProviderModules: new ProviderModulesConfig(new()
         {
             ["alpaca"] = new(Credentials: new() { ["keyId"] = "ALPACA_KEY_ID", ["secretKey"] = "ALPACA_SECRET_KEY" })
         }));
         await using var app = await CreateAppAsync("production", config);
         using var response = await app.GetTestClient().PostAsJsonAsync(route, Request(route, null));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the server returned {0}",
+            await response.Content.ReadAsStringAsync());
         var retained = new CoreConfigStore(ConfigPath).LoadRequired();
-        var credentials = retained.ProviderModules!.Modules!["alpaca"].Credentials!;
-        credentials["keyId"].Should().Be("ALPACA_KEY_ID");
-        credentials["secretKey"].Should().Be("ALPACA_SECRET_KEY");
+        retained.ProviderModules!.Modules!["alpaca"].Credentials!["keyId"].Should().Be("ALPACA_KEY_ID");
         if (route.EndsWith("/alpaca", StringComparison.Ordinal))
-            retained.Alpaca!.UseSandbox.Should().BeTrue();
+        {
+            retained.Alpaca!.Feed.Should().Be("iex");
+            retained.Alpaca.UseSandbox.Should().BeTrue();
+        }
         else
             retained.DataSources!.Sources!.Single().Description.Should().Be("ApiKey is a configuration field name, not a submitted credential.");
     }

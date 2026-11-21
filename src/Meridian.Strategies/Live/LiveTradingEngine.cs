@@ -5,6 +5,7 @@ using Meridian.Execution.Live;
 using Meridian.Execution.Services;
 using Meridian.Contracts.Operations;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Artifacts;
 using Meridian.Strategies.Live.Designer;
@@ -40,6 +41,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
     private readonly StrategyLifecycleManager _lifecycleManager;
     private readonly ExecutionAuditTrailService? _auditTrail;
     private readonly BrokerageConfiguration? _brokerageConfiguration;
+    private readonly DesignerPaperExecution? _designerPaper;
     private readonly StrategyArtifactRegistry? _artifacts;
     private readonly StrategyLiveAuthorizationService? _liveAuthorizations;
     private readonly CancellationTokenSource _engineCts = new();
@@ -72,7 +74,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         BrokerageConfiguration? brokerageConfiguration = null,
         Meridian.Execution.Services.PortfolioRegistry? portfolioRegistry = null,
         StrategyArtifactRegistry? artifacts = null,
-        StrategyLiveAuthorizationService? liveAuthorizations = null)
+        StrategyLiveAuthorizationService? liveAuthorizations = null,
+        DesignerPaperExecution? designerPaper = null)
     {
         _catalog = catalog ?? throw new ArgumentNullException(nameof(catalog));
         _feed = feed ?? throw new ArgumentNullException(nameof(feed));
@@ -89,6 +92,7 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
         _auditTrail = auditTrail;
         _brokerageConfiguration = brokerageConfiguration;
         _portfolioRegistry = portfolioRegistry;
+        _designerPaper = designerPaper;
         _artifacts = artifacts;
         _liveAuthorizations = liveAuthorizations;
     }
@@ -235,6 +239,20 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     ct).ConfigureAwait(false);
             }
 
+            PaperRunOrderContext? paperOrders = null;
+            if (run.ParameterSet?.ContainsKey(DesignerStrategyVersion.VersionKey) == true)
+            {
+                if (_designerPaper is null || _orderManager is not OrderManagementSystem oms ||
+                    _orderGateway.Mode != Meridian.Execution.Models.ExecutionMode.Paper)
+                    return await DeferAsync(run, "Scoped Designer paper execution is unavailable on this host.", ct)
+                        .ConfigureAwait(false);
+
+                var prepared = await _designerPaper.PrepareAsync(run, oms, universe.ToArray(), ct).ConfigureAwait(false);
+                if (prepared.Context is null)
+                    return await DeferAsync(run, prepared.Blocker!, ct).ConfigureAwait(false);
+                paperOrders = prepared.Context;
+            }
+
             var fillQueueCapacity = Math.Max(1, _options.FillReportQueueCapacity);
             var context = new LiveStrategyExecutionContext(_orderGateway, _feedAdapter, _portfolioState, universe);
             var restorePaused = run.TerminalStatus == Meridian.Contracts.Workstation.StrategyRunStatus.Paused;
@@ -252,7 +270,8 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                 _auditTrail,
                 _loggerFactory.CreateLogger<LiveStrategyRunSession>(),
                 useSynchronousFillFallback: _orderManager is not OrderManagementSystem,
-                fillReportQueueCapacity: fillQueueCapacity);
+                fillReportQueueCapacity: fillQueueCapacity,
+                paperOrders: paperOrders);
 
             var activeRun = new ActiveRun(session, fillQueueCapacity);
             session.SetLifecycleControlGate(activeRun.ControlGate);

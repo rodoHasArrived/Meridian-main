@@ -557,7 +557,7 @@ public sealed record LedgerImpactPreviewDto(int DraftEntryCount, decimal NetDebi
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerJournalLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:670](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L670).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:675](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L675).
 
 Shared journal row for workstation audit surfaces.
 
@@ -589,7 +589,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:618](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L618).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:623](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L623).
 
 Shared ledger rollup for workstation Accounting and audit surfaces.
 
@@ -601,7 +601,7 @@ public sealed record LedgerSummary(string LedgerReference, string RunId, DateTim
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerTrialBalanceLine</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:646](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L646).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:651](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L651).
 
 Shared trial-balance row for workstation ledger views.
 
@@ -613,7 +613,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string BalanceExact =&gt; …;</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:664](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L664) |  |
+| <code>public string BalanceExact =&gt; …;</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:669](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L669) |  |
 
 ## MarginCertificationRequestDto
 

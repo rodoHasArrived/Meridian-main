@@ -1689,6 +1689,12 @@ public static partial class WorkstationEndpoints
         var readService = context.RequestServices.GetService<StrategyRunReadService>();
         var portfolio = context.RequestServices.GetService<IPortfolioState>();
         var oms = context.RequestServices.GetService<IOrderManager>();
+        if (oms is Meridian.Execution.OrderManagementSystem { ScopedPaperBook: { } paper } &&
+            !await ExecutionEndpoints.CanAccessScopedPaperBookAsync(context, paper, UserPermission.ViewTrades).ConfigureAwait(false))
+        {
+            portfolio = null;
+            oms = null;
+        }
         var brokerageConfiguration = context.RequestServices.GetService<BrokerageConfiguration>();
         var quoteCollector = context.RequestServices.GetService<QuoteCollector>();
         var tradeCollector = context.RequestServices.GetService<TradeDataCollector>();

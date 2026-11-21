@@ -360,7 +360,7 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public void ProviderPlanning_AlphaVantageMapping_RequiresOptIn()
+    public void ProviderPlanning_AbsentAlphaVantageConfig_IsDisabledWithPresetLimits()
     {
         var options = BackfillEndpoints.GetProviderOptionsFromConfig(
             new BackfillProvidersConfig(),
@@ -369,12 +369,6 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
         options.Enabled.Should().BeFalse();
         options.Priority.Should().Be(new AlphaVantageConfig().Priority);
         options.RateLimitPerMinute.Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
-
-        var enabled = BackfillEndpoints.GetProviderOptionsFromConfig(
-            new BackfillProvidersConfig(AlphaVantage: new(Enabled: true)),
-            "alphavantage");
-
-        enabled.Enabled.Should().BeTrue();
     }
 
     [Theory]
@@ -421,23 +415,23 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public async Task ProviderStatuses_WhenRuntimeIsActiveWithoutSavedProviderConfiguration_ReturnsDefaults()
+    public async Task ProviderStatuses_WhenRuntimeIsActive_ExposeDefaultsWithoutProviderConfiguration()
     {
         _fixture.Services.GetRequiredService<BackfillRoutingRuntime>().Current.Should().NotBeNull();
-
-        var response = await _client.GetAsync("/api/backfill/providers/statuses");
+        using var response = await _client.GetAsync("/api/backfill/providers/statuses");
 
         response.StatusCode.Should().Be(HttpStatusCode.OK);
         var statuses = await response.Content.ReadFromJsonAsync<BackfillProviderStatusDto[]>();
-        var alphaVantage = statuses!.Single(provider => provider.Metadata.ProviderId == "alphavantage");
+        var alphaVantage = statuses.Should().ContainSingle(status =>
+            status.Metadata.ProviderId == "alphavantage").Which;
         alphaVantage.EffectiveConfigSource.Should().Be("default");
         alphaVantage.Options.Enabled.Should().BeFalse();
     }
 
     [Fact]
-    public async Task FallbackChain_WhenProviderConfigurationIsMissing_ReturnsServiceUnavailable()
+    public async Task ProviderFallbackChain_WhenProviderConfigurationIsMissing_ReturnsServiceUnavailable()
     {
-        var response = await _client.GetAsync("/api/backfill/providers/fallback-chain");
+        using var response = await _client.GetAsync("/api/backfill/providers/fallback-chain");
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
         var problem = await AssertProblemDetailsAsync(

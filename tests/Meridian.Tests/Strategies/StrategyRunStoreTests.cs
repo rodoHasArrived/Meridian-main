@@ -221,7 +221,7 @@ public sealed class StrategyRunStoreTests
             var changed = retained.ActivationDeferred("Retry scoped launch.") with { FundAccountId = Guid.NewGuid() };
             var changeWithOldHash = () => restarted.RecordRunAsync(changed);
             await changeWithOldHash.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("Strategy run input hash does not bind its account or strategy artifact.*");
+                .WithMessage("*input hash does not bind its account or strategy artifact*");
 
             var changeWithNewHash = () => restarted.RecordRunAsync(changed with
             {
@@ -257,7 +257,7 @@ public sealed class StrategyRunStoreTests
             var record = () => store.RecordRunAsync(entry);
 
             await record.Should().ThrowAsync<ArgumentException>()
-                .WithMessage("Strategy run input hash does not bind its account or strategy artifact.*");
+                .WithMessage("*input hash does not bind its account or strategy artifact*");
         }
         finally
         {

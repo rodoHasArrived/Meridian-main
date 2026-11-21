@@ -11,6 +11,8 @@ using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Models;
 using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
+using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Routing;
@@ -50,6 +52,12 @@ public static partial class WorkstationEndpoints
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDrafts), async (HttpContext context) =>
         {
+            if (context.RequestServices.GetService<ScopedStrategyDesignStore>() is { } scoped)
+            {
+                var ownedDrafts = await scoped.ListAsync(ResolveDesignerScope(context), context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(ownedDrafts, jsonOptions);
+            }
+
             var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
             if (repository is null)
             {
@@ -60,11 +68,21 @@ public static partial class WorkstationEndpoints
             return Results.Json(drafts, jsonOptions);
         })
         .WithName("GetStrategyDesignerDrafts").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<IReadOnlyList<StrategyDesignDraftSummary>>(200)
         .Produces(501);
 
         group.MapGet(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerDraftById), async (string documentId, HttpContext context) =>
         {
+            if (context.RequestServices.GetService<ScopedStrategyDesignStore>() is { } scoped)
+            {
+                var ownedDraft = await scoped.GetAsync(ResolveDesignerScope(context), documentId, revision: null,
+                    context.RequestAborted).ConfigureAwait(false);
+                return ownedDraft is null
+                    ? Results.NotFound(new { error = "Strategy design draft was not found." })
+                    : Results.Json(ownedDraft, jsonOptions);
+            }
+
             var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
             if (repository is null)
             {
@@ -77,6 +95,7 @@ public static partial class WorkstationEndpoints
                 : Results.Json(document, jsonOptions);
         })
         .WithName("GetStrategyDesignerDraft").RequireAnyPermission(UserPermission.ViewStrategies, UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope()
         .Produces<StrategyDesignDocument>(200)
         .Produces(404)
         .Produces(501);
@@ -94,20 +113,37 @@ public static partial class WorkstationEndpoints
             }
 
             var service = context.RequestServices.GetService<StrategyDesignService>();
-            var repository = context.RequestServices.GetService<IStrategyDesignRepository>();
-            if (service is null || repository is null)
+            if (service is null)
             {
                 return StrategyDesignerUnavailable(jsonOptions);
             }
 
             var document = service.Normalize(request.Document);
             var validation = service.Validate(document);
-            if (validation.IsValid && context.RequestServices.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>() is { } artifacts)
+            if (context.RequestServices.GetService<ScopedStrategyDesignStore>() is { } scoped)
             {
-                await artifacts.RetainAsync(Meridian.Strategies.Artifacts.StrategyArtifact.FromDesigner(document),
-                    context.RequestAborted).ConfigureAwait(false);
+                if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                    return Results.Unauthorized();
+
+                var saved = await scoped.SaveAsync(ResolveDesignerScope(context), actor, document,
+                    request.ExpectedRevision, context.RequestAborted).ConfigureAwait(false);
+                if (saved is null)
+                    return Results.Conflict(new { error = "The saved draft changed. Reopen the latest revision before saving." });
+                document = saved;
             }
-            await repository.SaveAsync(document, context.RequestAborted).ConfigureAwait(false);
+            else if (context.RequestServices.GetService<IStrategyDesignRepository>() is { } repository)
+            {
+                if (validation.IsValid && context.RequestServices.GetService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>() is { } artifacts)
+                {
+                    await artifacts.RetainAsync(Meridian.Strategies.Artifacts.StrategyArtifact.FromDesigner(document),
+                        context.RequestAborted).ConfigureAwait(false);
+                }
+                await repository.SaveAsync(document, context.RequestAborted).ConfigureAwait(false);
+            }
+            else
+            {
+                return StrategyDesignerUnavailable(jsonOptions);
+            }
             var response = new StrategyDesignDraftSaveResponse(
                 document,
                 StrategyDesignService.CreateDraftSummary(document),
@@ -116,9 +152,12 @@ public static partial class WorkstationEndpoints
             return Results.Json(response, jsonOptions);
         })
         .WithName("SaveStrategyDesignerDraft").RequirePermission(UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<StrategyDesignDraftSaveResponse>(200)
         .Produces(400)
         .Produces(403)
+        .Produces(409)
         .Produces(501);
 
         group.MapPost(WorkstationSubroute(UiApiRoutes.WorkstationStrategyDesignerValidate), (StrategyDesignDocument? document, HttpContext context) =>
@@ -195,16 +234,20 @@ public static partial class WorkstationEndpoints
                 return Results.BadRequest(new { error = evidenceValidationError });
             }
 
-            if (request.FundAccountId is { } account &&
-                (account == Guid.Empty || !await EndpointAuthorization.HasScopedPermissionAsync(
-                    context, UserPermission.ExecuteTrades, AccessScopeKindDto.Account, account, ct).ConfigureAwait(false)))
-                return EndpointHelpers.Forbidden();
-
             var service = context.RequestServices.GetService<StrategyDesignService>();
             if (service is null)
             {
                 return StrategyDesignerUnavailable(jsonOptions);
             }
+
+            if (context.RequestServices.GetService<ScopedStrategyDesignStore>() is { } scopedStore)
+                return await RunScopedDesignerAsync(request, evidenceLoop!, scopedStore, service, context, jsonOptions, ct)
+                    .ConfigureAwait(false);
+
+            if (request.FundAccountId is { } account &&
+                (account == Guid.Empty || !await EndpointAuthorization.HasScopedPermissionAsync(
+                    context, UserPermission.ExecuteTrades, AccessScopeKindDto.Account, account, ct).ConfigureAwait(false)))
+                return EndpointHelpers.Forbidden();
 
             var document = service.Normalize(request.Document);
             var preview = service.Preview(document);
@@ -365,10 +408,79 @@ public static partial class WorkstationEndpoints
             }, jsonOptions);
         })
         .WithName("RunStrategyDesignerBacktest").RequirePermission(UserPermission.ManageStrategies)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy)
         .Produces<StrategyDesignRunBacktestResponse>(200)
         .Produces(400)
         .Produces(403)
         .Produces(503);
+    }
+
+    private static StrategyRunRepositoryScope ResolveDesignerScope(HttpContext context)
+    {
+        var scope = ResolveStrategyRunReadScope(context);
+        return new StrategyRunRepositoryScope(scope.TenantId, scope.CompanyId);
+    }
+
+    private static async Task<IResult> RunScopedDesignerAsync(
+        StrategyDesignRunBacktestRequest request,
+        StrategyRunEvidenceLoop evidenceLoop,
+        ScopedStrategyDesignStore store,
+        StrategyDesignService designService,
+        HttpContext context,
+        JsonSerializerOptions jsonOptions,
+        CancellationToken ct)
+    {
+        if (request.FundAccountId is not { } accountId || accountId == Guid.Empty ||
+            request.From is not { } from || request.To is not { } to ||
+            string.IsNullOrWhiteSpace(request.Document.DocumentId) || string.IsNullOrWhiteSpace(request.Document.Revision))
+            return Results.BadRequest(new { error = "Save the design and select an execution account and historical dates before running." });
+
+        if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            return Results.Unauthorized();
+
+        if (await ExecutionEndpoints.RequireExecutionFundAccountAccessAsync(accountId, UserPermission.ManageStrategies,
+                context, jsonOptions).ConfigureAwait(false) is { } denied)
+            return denied;
+
+        var scope = ResolveDesignerScope(context);
+        var document = await store.GetAsync(scope, request.Document.DocumentId, revision: null, ct).ConfigureAwait(false);
+        if (document is null || !string.Equals(document.Revision, request.Document.Revision, StringComparison.Ordinal))
+            return Results.Conflict(new { error = "Reopen the latest saved revision before running the design." });
+
+        var service = context.RequestServices.GetService<DesignerBacktestService>();
+        if (service is null)
+            return StrategyDesignerUnavailable(jsonOptions);
+
+        var preview = designService.Preview(document);
+        preview = preview with { Trace = preview.Trace.Where(static step => step.StepId != "quant-script").ToArray() };
+        try
+        {
+            var run = await service.RunAsync(document, scope, actor, accountId, from, to, evidenceLoop, ct).ConfigureAwait(false);
+            var runMetrics = run.Metrics!.Metrics;
+            var metrics = new Dictionary<string, string>
+            {
+                ["Fill count"] = run.Metrics.Fills.Count.ToString(CultureInfo.InvariantCulture),
+                ["Net P&L"] = runMetrics.NetPnl.ToString(CultureInfo.InvariantCulture),
+                ["Final equity"] = runMetrics.FinalEquity.ToString(CultureInfo.InvariantCulture)
+            };
+            var response = CreateBacktestResponse(document, preview, run.RunId, metrics, null,
+                StrategyRunReadService.MapBiasDisclosure(run.Metrics.BiasDisclosure)) with
+            {
+                StrategyVersionSha256 = DesignerStrategyVersion.Read(run),
+                DataSnapshotSha256 = run.ParameterSet?.GetValueOrDefault(DesignerStrategyVersion.DataSnapshotKey),
+                DataProvenanceToken = run.DataProvenanceToken,
+                ProviderProvenance = run.ProviderProvenance,
+                PromotionCandidatePath = string.Equals(run.DataProvenanceToken, "real", StringComparison.Ordinal)
+                    ? $"/api/promotion/evaluate/{run.RunId}" : null
+            };
+            return Results.Json(response, jsonOptions);
+        }
+        catch (DesignerBacktestBlockedException ex)
+        {
+            return Results.Json(CreateBacktestResponse(document, preview, null, new Dictionary<string, string>(), ex.Message),
+                jsonOptions, statusCode: StatusCodes.Status400BadRequest);
+        }
     }
 
     private static StrategyDesignRunBacktestResponse CreateBacktestResponse(

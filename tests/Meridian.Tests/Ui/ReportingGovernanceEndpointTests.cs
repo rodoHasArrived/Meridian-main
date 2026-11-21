@@ -28,7 +28,7 @@ public sealed class ReportingGovernanceEndpointTests
     };
 
     [Fact]
-    public void MutationContracts_AllowOnlyDecisionInputsAndAReviewEvidenceReference()
+    public void MutationContracts_ContainNoCallerControlledAuthorityOrEvidencePayloads()
     {
         AssertOnlyProperties<ReportingGovernanceVersionRequestDto>("ExpectedVersion");
         AssertOnlyProperties<ReportingGovernanceApprovalRequestDto>("ExpectedVersion", "DecisionNote", "ReviewEvidenceId");
