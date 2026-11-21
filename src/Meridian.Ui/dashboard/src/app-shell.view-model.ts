@@ -229,7 +229,7 @@ export function buildAppShellViewState({
 
 export function resolveAppShellLocation(pathname: string): AppShellLocation {
   const normalized = pathname.split(/[?#]/, 1)[0]?.replace(/\/+$/, "") || "/";
-  return normalized === "/"
+  return normalized === "/" || normalized === "/today"
     ? { kind: "home" }
     : { kind: "workspace", workspaceKey: normalizeWorkspacePath(pathname) };
 }

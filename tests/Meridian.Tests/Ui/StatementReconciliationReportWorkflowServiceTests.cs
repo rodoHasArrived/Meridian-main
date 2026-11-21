@@ -8,6 +8,8 @@ using Meridian.FinancialOperations.Reconciliation;
 using Meridian.FinancialOperations.Reconciliation.Connectors;
 using Meridian.Reporting;
 using Meridian.Strategies.Services;
+using Meridian.DataIntegration.Reconciliation;
+using Meridian.Storage.Archival;
 using Meridian.Ui.Shared.Evidence;
 using Meridian.Ui.Shared.Services;
 using Microsoft.Extensions.DependencyInjection;
@@ -31,6 +33,47 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
         Path.GetTempPath(),
         "meridian-statement-reconciliation-report-tests",
         Guid.NewGuid().ToString("N"));
+
+    [Fact]
+    public async Task ReviewedRowAcceptance_creates_one_scoped_blocking_case_and_retains_row_outcome_on_retry()
+    {
+        var catalog = new StatementMappingProfileCatalog(new FileStatementMappingProfileStore(_root));
+        var registry = new StatementConnectorRegistry([new CsvStatementConnector(catalog)]);
+        var store = new JsonCanonicalStatementStore(_root, new AtomicFileWriterAdapter());
+        var runs = StatementRunWorkflowService.CreateEphemeralForTesting(store,
+            new JsonReconciliationCaseStore(_root, new AtomicFileWriterAdapter()),
+            new JsonReconciliationBreakStore(_root, new AtomicFileWriterAdapter()),
+            new CsvBrokerStatementService(store), new StatementReconciliationContextAdapter(new StatementReconciliationService()));
+        var imports = new StatementImportService(registry, catalog, runs, _root);
+        var queue = new FileReconciliationBreakQueueRepository(_root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var service = CreateService(imports, new FakeEvidenceRetainer(), runs, queue);
+        var request = BuildCommand().Import with
+        {
+            Document = new StatementSourceDocument("review.csv", "account,symbol,quantity,price,cashAmount,activityType,tradeDate,currency\nexternal-alpha,AAPL,1,100,0,position,2026-06-30,USD"u8.ToArray()),
+            ConnectorId = null, AccountingScope = AccountingScope,
+            TenantId = QueueScope.TenantId, CompanyId = QueueScope.CompanyId, AllowAcceptAsBreak = true
+        };
+        var preview = await imports.PreviewReviewAsync(request);
+        preview.Rows.Single().CanAcceptAsBreak.Should().BeTrue();
+        var command = new StatementReconciliationReportStartCommand(request with
+        {
+            ReviewId = preview.ReviewId,
+            RowDispositions = [new(preview.Rows[0].RowId, "AcceptAsBreak", "Operator requests retained classification review.")]
+        }, QueueScope.TenantId, QueueScope.CompanyId);
+
+        var first = await service.StartAsync(command);
+        first.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        var rowCase = (await queue.GetAllAsync(QueueScope)).Single(item => item.SourceType == "statement-import-review");
+        rowCase.FundProfileId.Should().Be(AccountingScope.FundProfileId);
+        rowCase.LedgerBookId.Should().Be(AccountingScope.LedgerBookId);
+        rowCase.BlockedOutputs.Should().Contain("PeriodClose");
+        first.ImportResult!.RowOutcomes.Single().CaseIds.Should().Contain(rowCase.BreakId);
+        first.ImportResult.RowOutcomes.Single().Status.Should().Be("AcceptedAsBreak");
+
+        await service.StartAsync(command);
+        (await queue.GetAllAsync(QueueScope)).Count(item => item.SourceType == "statement-import-review").Should().Be(1);
+        (await queue.GetAuditHistoryAsync(QueueScope, rowCase.BreakId)).Count(item => item.EventType == "CaseCreated").Should().Be(1);
+    }
 
     [Fact]
     public async Task StartAsync_CleanStatement_RetainsReportsAndIsIdempotentAcrossRestart()

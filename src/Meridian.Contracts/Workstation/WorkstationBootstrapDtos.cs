@@ -360,7 +360,11 @@ public sealed record WorkstationTradingPositionRow(
     string? MarketValue = null,
     string? Currency = null,
     string? Weight = null,
-    string? WeightBasis = null);
+    string? WeightBasis = null,
+    string? AveragePriceExact = null,
+    string? MarkPriceExact = null,
+    string? UnrealizedPnlExact = null,
+    string? ExposureExact = null);
 
 /// <summary>
 /// A single open-order row shown in the trading workstation orders table.

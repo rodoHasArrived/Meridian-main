@@ -676,7 +676,10 @@ public sealed record LedgerTrialBalanceLine(
     [property: JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null,
     [property: JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null,
     [property: JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    public string BalanceExact => Balance.ToString(System.Globalization.CultureInfo.InvariantCulture);
+}
 
 /// <summary>
 /// Shared journal row for workstation audit surfaces.

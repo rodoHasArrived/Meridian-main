@@ -201,7 +201,7 @@ export function positionRecordIdentity(
 function validateOrigin(value: string | null, kind: RecordKind): string | null {
   if (!value || value.length > 4096 || /[\\\s]/.test(value)) return null;
   const path = value.split(/[?#]/, 1)[0];
-  return originPaths[kind].includes(path) ? value : null;
+  return originPaths[kind].includes(path) || kind === "instrument" && /^\/records\/instrument\/[a-z0-9_-]+$/i.test(path) ? value : null;
 }
 
 function readIdentity(value: unknown): RecordIdentity | null {

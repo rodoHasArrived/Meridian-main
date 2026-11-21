@@ -34,7 +34,7 @@ public sealed partial class WorkstationEndpointsTests
                 ResolvedBy: "browser-supplied-actor",
                 ResolutionNote: "Statement evidence reconciled.",
                 OperatorRationale: "Reviewed retained statement and ledger evidence.",
-                ActionOrigin: OperationsActionOriginDto.AutomationSuggestion));
+                ActionOrigin: OperationsActionOriginDto.AutomationSuggestion) { ExpectedVersion = item.Version });
 
         response.StatusCode.Should().Be(
             HttpStatusCode.OK,
@@ -66,7 +66,7 @@ public sealed partial class WorkstationEndpointsTests
                 ReconciliationBreakQueueStatus.Resolved,
                 ResolvedBy: "browser-supplied-actor",
                 ResolutionNote: "Statement evidence reconciled.",
-                OperatorRationale: "Reviewed retained statement and ledger evidence."));
+                OperatorRationale: "Reviewed retained statement and ledger evidence.") { ExpectedVersion = item.Version });
 
         response.StatusCode.Should().Be(
             HttpStatusCode.ServiceUnavailable,
@@ -92,7 +92,7 @@ public sealed partial class WorkstationEndpointsTests
             ReconciliationBreakQueueStatus.Resolved,
             ResolvedBy: "browser-supplied-actor",
             ResolutionNote: "Statement evidence reconciled.",
-            OperatorRationale: "Reviewed retained statement and ledger evidence.");
+            OperatorRationale: "Reviewed retained statement and ledger evidence.") { ExpectedVersion = item.Version };
         var route = UiApiRoutes.ReconciliationBreakResolve.Replace(
             "{breakId}",
             item.BreakId,
@@ -140,6 +140,81 @@ public sealed partial class WorkstationEndpointsTests
         handoff.Commands[1].Should().BeEquivalentTo(
             retainedCommand,
             options => options.WithStrictOrdering());
+    }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ResolveReconciliationBreak_PreUpgradeLegacyReceipt_ShouldResumeExactPendingOrCompletedCommand(bool completed)
+    {
+        var original = BuildStatementQueueItem("statement-authority-upgrade-replay");
+        // Golden v1 identity was recorded before optional version/taxonomy fields existed.
+        // It is intentionally independent of the current adapter's hashing implementation.
+        const string originalInputHash = "6175d038d730ce744dcc3b872535b0c12275f2491699f34f808d0b531ab0dde4";
+        const string originalCommandId = "statement-legacy-resolve:" + originalInputHash;
+        var request = new ResolveReconciliationBreakRequest(
+            original.BreakId,
+            ReconciliationBreakQueueStatus.Resolved,
+            ResolvedBy: "browser-supplied-actor",
+            ResolutionNote: "Statement evidence reconciled.",
+            OperatorRationale: "Reviewed retained statement and ledger evidence.");
+        var originalCommand = new ReconciliationCaseworkCommand(
+            BreakId: original.BreakId,
+            Action: ReconciliationCaseworkAction.Resolve,
+            Actor: "ops-user",
+            CommandId: originalCommandId,
+            CorrelationId: "statement-legacy-resolve:" + originalInputHash[..16],
+            Source: "workstation-statement-legacy-resolve-adapter",
+            ExpectedVersion: original.Version,
+            Reason: request.OperatorRationale,
+            Note: request.ResolutionNote,
+            RootCauseCode: original.RootCauseCode,
+            ResolutionCode: "LegacyResolved",
+            EvidenceLinks: original.EvidenceLinks,
+            ActionOrigin: OperationsActionOriginDto.HumanOperator);
+        var repository = new RecordingStatementQueueRepository(original);
+        repository.SetCurrent(original with
+        {
+            Status = ReconciliationBreakQueueStatus.Resolved,
+            LifecycleState = ReconciliationCaseLifecycleState.Resolved,
+            Version = original.Version + 2,
+            EvidenceLinks =
+            [
+                .. original.EvidenceLinks!,
+                completed
+                    ? StatementCaseworkHandoffObligation.CreateCompletedMarker(originalCommandId)
+                    : StatementCaseworkHandoffObligation.CreatePendingMarker(originalCommandId)
+            ]
+        }, new ReconciliationBreakQueueAuditEvent(
+            EventId: "pre-upgrade-legacy-resolution",
+            BreakId: original.BreakId,
+            EventType: "ResolutionSet",
+            PreviousStatus: original.Status,
+            NewStatus: ReconciliationBreakQueueStatus.Resolved,
+            PreviousLifecycleState: original.LifecycleState,
+            NewLifecycleState: ReconciliationCaseLifecycleState.Resolved,
+            OccurredAt: original.LastUpdatedAt,
+            AssignedTo: original.AssignedTo,
+            ReviewedBy: original.ReviewedBy,
+            ResolvedBy: "ops-user",
+            Note: request.ResolutionNote,
+            BeforePayload: JsonSerializer.Serialize(original, ServerJsonOptions),
+            CommandId: originalCommandId));
+        var handoff = new RecordingStatementCaseworkHandoffService(original);
+        await using var app = await CreateAppAsync(services =>
+        {
+            services.AddSingleton<IReconciliationBreakQueueRepository>(repository);
+            services.AddSingleton<IStatementReconciliationCaseworkHandoffService>(handoff);
+        });
+
+        var response = await app.GetTestClient().PostAsJsonAsync(
+            UiApiRoutes.ReconciliationBreakResolve.Replace("{breakId}", original.BreakId, StringComparison.Ordinal),
+            request);
+
+        response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+        repository.LegacyResolveCalls.Should().Be(0);
+        handoff.Commands.Should().ContainSingle().Which.Should().BeEquivalentTo(
+            originalCommand, options => options.WithStrictOrdering());
     }
 
     private static ReconciliationBreakQueueItem BuildStatementQueueItem(string breakId)

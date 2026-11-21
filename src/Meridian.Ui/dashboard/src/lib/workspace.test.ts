@@ -229,7 +229,7 @@ describe("workspace metadata", () => {
       "Operations Record"
     );
     expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/journal-entries/detail", workspaceForKey("accounting")))
-      .toBe("Journal Entries / Detail");
+      .toBe("Journal entries / Detail");
     expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/approvals/inbox", workspaceForKey("accounting")))
       .toBe("Approvals / Inbox");
     expect(resolveWorkstationRouteBreadcrumbLabel("/accounting/exceptions", workspaceForKey("accounting")))

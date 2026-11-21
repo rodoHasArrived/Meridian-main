@@ -15,6 +15,144 @@ namespace Meridian.Tests.Strategies;
 public sealed class ReconciliationBreakQueueRepositoryTests
 {
     [Fact]
+    public async Task StartReview_checks_supplied_versions_and_preserves_exact_replay_and_legacy_compatibility()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var current = (await repo.GetByIdAsync(scope, item.BreakId))!;
+        var request = new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "Investigate")
+        {
+            ExpectedVersion = current.Version
+        };
+
+        var stale = await repo.StartReviewAsync(scope, request with { ExpectedVersion = current.Version - 1 });
+        stale.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Conflict);
+        stale.Item!.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
+
+        var reviewed = await repo.StartReviewAsync(scope, request);
+        reviewed.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        (await repo.StartReviewAsync(scope, request)).Should().BeEquivalentTo(reviewed);
+
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with { BreakId = "legacy-review-compatible" };
+        await repo.CreateIfMissingAsync(legacy);
+        (await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(legacy.BreakId, "alice", "alice", "Legacy review")))
+            .Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+    }
+
+    [Fact]
+    public async Task GuardedResolve_returns_current_record_without_mutation_on_stale_version()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            TenantId = scope.TenantId,
+            CompanyId = scope.CompanyId
+        };
+        await repo.CreateIfMissingAsync(scope, item);
+        var review = await repo.StartReviewAsync(scope, new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "Investigate"));
+        var request = new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "alice", "Evidence reviewed", "Evidence reviewed");
+
+        var stale = await repo.ResolveAsync(scope, request with { ExpectedVersion = review.Item!.Version - 1 });
+
+        stale.ErrorCode.Should().Be(ReconciliationBreakQueueTransitionErrorCode.ConcurrencyConflict);
+        stale.Item!.Version.Should().Be(review.Item.Version);
+        stale.Outcome.State.Should().Be(OperationTerminalState.Blocked);
+        (await repo.GetByIdAsync(scope, item.BreakId))!.Status.Should().Be(ReconciliationBreakQueueStatus.InReview);
+        (await repo.GetAuditHistoryAsync(item.BreakId)).Should().NotContain(entry => entry.EventType == "Resolved");
+    }
+
+    [Fact]
+    public async Task Bulk_execute_refuses_changes_after_the_reviewed_preview()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var current = (await repo.GetByIdAsync(scope, item.BreakId))!;
+        var preview = new ReconciliationBulkCaseworkRequest(
+            [item.BreakId], ReconciliationCaseworkAction.Assign, "alice", "reviewed-preview", "reviewed-correlation", "test", "reviewed-preview", true, false, Assignee: "bob")
+        {
+            ExpectedVersions = new Dictionary<string, long> { [item.BreakId] = current.Version }
+        };
+        (await repo.ApplyBulkCaseworkAsync(scope, preview)).Results.Single().WouldSucceed.Should().BeTrue();
+        await repo.ApplyCaseworkCommandAsync(scope, new ReconciliationCaseworkCommand(
+            item.BreakId, ReconciliationCaseworkAction.ChangePriority, "alice", "priority-change", "priority-change", "test", current.Version, Priority: ReconciliationCasePriority.High));
+
+        var execute = await repo.ApplyBulkCaseworkAsync(scope, preview with { CommandId = "reviewed-execute", IdempotencyKey = "reviewed-execute", DryRun = false });
+
+        execute.SucceededCount.Should().Be(0);
+        execute.Results.Single().Error.Should().Contain("version conflict");
+        (await repo.GetByIdAsync(scope, item.BreakId))!.AssignedTo.Should().BeNull();
+    }
+
+    [Fact]
+    public async Task ScopedResolve_commits_taxonomy_fields_with_the_guarded_decision()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var review = await repo.StartReviewAsync(scope, new ReviewReconciliationBreakRequest(item.BreakId, "alice", "alice", "Investigate"));
+        var request = new ResolveReconciliationBreakRequest(item.BreakId, ReconciliationBreakQueueStatus.Resolved, "bob", "evidence: reviewed retained proof", "Evidence reviewed")
+        {
+            ExpectedVersion = review.Item!.Version,
+            RootCauseCode = "BrokerCashTiming",
+            ResolutionCode = "EvidenceAccepted"
+        };
+
+        var result = await repo.ResolveAsync(scope, request);
+
+        result.Status.Should().Be(ReconciliationBreakQueueTransitionStatus.Success);
+        result.Item!.RootCauseCode.Should().Be("BrokerCashTiming");
+        result.Item.ResolutionCode.Should().Be("EvidenceAccepted");
+        (await repo.ResolveAsync(scope, request)).Should().BeEquivalentTo(result,
+            "the exact confirmed decision replays its receipt without a second mutation");
+    }
+
+    [Fact]
+    public async Task ScopedBulk_legacy_unversioned_request_preserves_existing_adapter_behavior()
+    {
+        var repo = CreateRepository(out _);
+        var scope = new ReconciliationBreakQueueScope("tenant-reviewed", "company-reviewed");
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with { TenantId = scope.TenantId, CompanyId = scope.CompanyId };
+        await repo.CreateIfMissingAsync(scope, item);
+        var request = new ReconciliationBulkCaseworkRequest(
+            [item.BreakId], ReconciliationCaseworkAction.Assign, "alice", "missing-versions", "missing-versions", "test", "missing-versions", false, false, Assignee: "bob");
+
+        var result = await repo.ApplyBulkCaseworkAsync(scope, request);
+
+        result.SucceededCount.Should().Be(1);
+        (await repo.GetByIdAsync(scope, item.BreakId))!.AssignedTo.Should().Be("bob");
+    }
+
+    [Fact]
+    public void Permitted_commands_share_lifecycle_and_role_guards()
+    {
+        var item = CreateItem(ReconciliationBreakQueueStatus.Resolved) with { LifecycleState = ReconciliationCaseLifecycleState.Resolved, ResolvedBy = "alice" };
+        FileReconciliationBreakQueueRepository.GetPermittedCommands(item, "alice", true, true, false)
+            .Single(command => command.Action == "SignOff").Enabled.Should().BeFalse();
+        FileReconciliationBreakQueueRepository.GetPermittedCommands(item, "bob", false, true, false)
+            .Should().OnlyContain(command => !command.Enabled && command.DisabledReason!.Contains("permission"));
+        FileReconciliationBreakQueueRepository.GetPermittedCommands(item, "bob", true, true, false)
+            .Single(command => command.Action == "SignOff").Enabled.Should().BeTrue();
+        var investigating = item with
+        {
+            Status = ReconciliationBreakQueueStatus.InReview,
+            LifecycleState = ReconciliationCaseLifecycleState.Investigating
+        };
+        foreach (var action in new[] { "SetRootCause", "SetResolution" })
+        {
+            FileReconciliationBreakQueueRepository.GetPermittedCommands(investigating, "bob", true, true, false)
+                .Single(command => command.Action == action).Enabled.Should().BeTrue();
+            FileReconciliationBreakQueueRepository.GetPermittedCommands(item, "bob", true, true, false)
+                .Single(command => command.Action == action).Enabled.Should().BeFalse("resolved casework stays immutable");
+        }
+    }
+
+    [Fact]
     public async Task ResolveAsync_rejects_transition_preconditions_and_failure_modes()
     {
         var repo = CreateRepository(out _);
@@ -2779,6 +2917,144 @@ public sealed class ReconciliationBreakQueueRepositoryTests
         var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
         (await restarted.GetByIdAsync(item.BreakId)).Should().BeEquivalentTo(before);
         (await restarted.GetAuditHistoryAsync(item.BreakId)).Should().BeEquivalentTo(auditBefore);
+    }
+
+    [Fact]
+    public async Task Persistence_omits_wire_only_case_projections_while_api_json_retains_them()
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            Measures = [new(ReconciliationBreakMeasureKindDto.Value, 100m, 110m, 10m, 1m, "USD")],
+            ToleranceBand = 1m,
+            PermittedCommands = [new("Resolve", true, null)]
+        };
+        await repo.CreateIfMissingAsync(item);
+        var snapshot = JsonNode.Parse(await File.ReadAllTextAsync(Path.Combine(root, "reconciliation-break-queue.json")))!;
+        var stored = snapshot["items"]!.AsArray().Single()!.AsObject();
+        stored.ContainsKey("varianceExact").Should().BeFalse();
+        stored.ContainsKey("toleranceBandExact").Should().BeFalse();
+        stored.ContainsKey("permittedCommands").Should().BeFalse();
+        var measure = stored["measures"]!.AsArray().Single()!.AsObject();
+        foreach (var name in new[] { "expectedExact", "actualExact", "varianceExact", "toleranceExact" })
+            measure.ContainsKey(name).Should().BeFalse();
+
+        var api = JsonSerializer.SerializeToNode(item, new JsonSerializerOptions(JsonSerializerDefaults.Web))!;
+        api["varianceExact"]!.GetValue<string>().Should().Be("10");
+        api["toleranceBandExact"]!.GetValue<string>().Should().Be("1");
+        api["permittedCommands"]!.AsArray().Should().ContainSingle();
+        api["measures"]!.AsArray().Single()!["expectedExact"]!.GetValue<string>().Should().Be("100");
+    }
+
+    [Fact]
+    public async Task PreUpgrade_schema_six_snapshot_preserves_original_raw_hash_on_read_and_rejects_tampering()
+    {
+        var repo = CreateRepository(out var root);
+        var item = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            Measures = [new(ReconciliationBreakMeasureKindDto.Value, 100m, 110m, 10m, 1m, "USD")],
+            ToleranceBand = 1m
+        };
+        await repo.CreateIfMissingAsync(item);
+        var path = Path.Combine(root, "reconciliation-break-queue.json");
+        // Construct the historical JSON shape and hash using raw nodes, never the current typed
+        // serializer. A reader that reintroduces new DTO getters must fail this original hash.
+        await RewriteSnapshotWithValidEnvelopeHashAsync(path, StripWireFields);
+        var originalBytes = await File.ReadAllTextAsync(path);
+        var original = JsonNode.Parse(originalBytes)!;
+        original["schemaVersion"]!.GetValue<int>().Should().Be(6);
+        var originalHash = original["contentHashSha256"]!.GetValue<string>();
+        original["contentHashSha256"] = null;
+        Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(original.ToJsonString())))
+            .ToLowerInvariant().Should().Be(originalHash);
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+
+        var loaded = await restarted.GetByIdAsync(item.BreakId);
+        loaded.Should().NotBeNull();
+        loaded!.VarianceExact.Should().Be("10");
+        loaded.Measures.Should().ContainSingle().Which.ExpectedExact.Should().Be("100");
+        (await File.ReadAllTextAsync(path)).Should().Be(originalBytes, "reading a valid schema-6 snapshot must not rewrite or re-hash it");
+
+        var damaged = JsonNode.Parse(originalBytes)!;
+        damaged["items"]!.AsArray().Single()!["variance"] = 999m;
+        await File.WriteAllTextAsync(path, damaged.ToJsonString());
+        var tampered = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+        var read = () => tampered.GetByIdAsync(item.BreakId);
+        await read.Should().ThrowAsync<InvalidDataException>().WithMessage("*content hash verification*");
+
+        static void StripWireFields(JsonNode? node)
+        {
+            if (node is JsonArray array)
+            {
+                foreach (var child in array) StripWireFields(child);
+                return;
+            }
+            if (node is not JsonObject obj) return;
+            foreach (var key in new[] { "varianceExact", "toleranceBandExact", "permittedCommands", "expectedExact", "actualExact", "toleranceExact" })
+                obj.Remove(key);
+            foreach (var (name, value) in obj.ToArray())
+            {
+                if ((name is "beforePayload" or "afterPayload") && value is JsonValue scalar && scalar.TryGetValue<string>(out var payload))
+                {
+                    var retained = JsonNode.Parse(payload);
+                    StripWireFields(retained);
+                    var historical = retained!.ToJsonString();
+                    obj[name] = historical;
+                    obj[name + "Hash"] = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(historical))).ToLowerInvariant();
+                }
+                else StripWireFields(value);
+            }
+        }
+    }
+
+    [Fact]
+    public async Task CreateOrMigrateAsync_PreUpgradeTypedMeasureHash_ShouldReplayAfterRestartWithoutChangingCasework()
+    {
+        var repo = CreateRepository(out var root);
+        var legacy = CreateItem(ReconciliationBreakQueueStatus.Open) with
+        {
+            BreakId = "statement:typed-measure-legacy",
+            SourceType = "statement",
+            SourceSystem = "custodian",
+            DataProvenanceToken = "real",
+            SourceReference = "statement-row-1",
+            SourceImportId = "import-upgrade",
+            SourceBreakId = "source-row-1",
+            SourceFingerprint = "old-fingerprint",
+            ToleranceBand = 1m,
+            Measures = [new(ReconciliationBreakMeasureKindDto.Value, 100m, 110m, 10m, 1m, "USD")],
+            BlockedOutputs = ["FinalReport", "PeriodClose"],
+            AssignedTo = "controller-a"
+        };
+        await repo.CreateIfMissingAsync(legacy);
+        await repo.StartReviewAsync(new ReviewReconciliationBreakRequest(legacy.BreakId, "controller-a", "controller-a", "Retain investigation."));
+        var incoming = legacy with { BreakId = "statement:typed-measure-current", SourceFingerprint = "new-fingerprint" };
+        (await repo.CreateOrMigrateAsync(incoming, legacy.BreakId)).Should().BeFalse();
+        var retained = await repo.GetByIdAsync(incoming.BreakId);
+
+        // Golden digest uses the original v1 measure wire shape, before *Exact display getters.
+        // Seed that pre-upgrade migration binding without calling the current input hasher.
+        const string preUpgradeHash = "d5f9caa75913caadb14f8d10add47268fcd289afa3f3476485f2e40e0a122a36";
+        await RewriteSnapshotWithValidEnvelopeHashAsync(
+            Path.Combine(root, "reconciliation-break-queue.json"), document =>
+            {
+                var migration = document["auditEvents"]!.AsArray().Single(node =>
+                    node!["eventType"]!.GetValue<string>() == "BreakIdMigrated");
+                migration!["commandId"] = "migrate-create:" + preUpgradeHash;
+            });
+        var restarted = new FileReconciliationBreakQueueRepository(root, NullLogger<FileReconciliationBreakQueueRepository>.Instance);
+
+        (await restarted.CreateOrMigrateAsync(incoming, legacy.BreakId)).Should().BeFalse(
+            "an unchanged typed source comparison must match the immutable pre-upgrade migration binding");
+        (await restarted.GetByIdAsync(incoming.BreakId)).Should().BeEquivalentTo(retained);
+        (await restarted.GetByIdAsync(incoming.BreakId))!.LifecycleState.Should().Be(ReconciliationCaseLifecycleState.Investigating);
+        (await restarted.GetAuditHistoryAsync(incoming.BreakId)).Should().Contain(entry => entry.EventType == "CreateReplayAccepted");
+
+        var changed = incoming with { Measures = [new(ReconciliationBreakMeasureKindDto.Value, 100m, 111m, 11m, 1m, "USD")] };
+        var conflict = () => restarted.CreateOrMigrateAsync(changed, legacy.BreakId);
+        await conflict.Should().ThrowAsync<InvalidOperationException>(
+            "the compatibility fix must continue rejecting a changed material comparison");
+        (await restarted.GetByIdAsync(incoming.BreakId)).Should().BeEquivalentTo(retained);
     }
 
     [Theory]

@@ -653,7 +653,7 @@ describe("accounting-screen reconciliation view model", () => {
     expect(rows[0]).toMatchObject({
       breakId: "run-42:cash",
       actionBusy: true,
-      varianceLabel: "+$500.00",
+      varianceLabel: "+500.00 Unit unavailable",
       varianceTone: "success",
       statusBadgeVariant: "danger",
       ownerLabel: "Unassigned",
@@ -770,6 +770,34 @@ describe("accounting-screen reconciliation view model", () => {
     expect(row.varianceTone).toBe("default");
     expect(row.rowAriaLabel).not.toContain("999");
     expect(row.rowAriaLabel).not.toContain("$");
+  });
+
+  it("preserves retained exact quantity residuals and tolerances over rounded numeric fields", () => {
+    const item: ReconciliationBreakQueueItem = { ...breakQueue[0], variance: -999,
+      measures: [{ kind: "Quantity", expected: 1, expectedExact: "1.0000000000000000000000000000", actual: 1,
+        actualExact: "1.0000000000000000000000000001", variance: 0,
+        varianceExact: "0.0000000000000000000000000001", tolerance: 0,
+        toleranceExact: "0.0000000000000000000000000001", unit: "Shares" }] };
+    const state = buildReconciliationBreakQueueState({ breakQueue: [item], selectedBreakId: item.breakId,
+      loading: false, loadError: null, action: null, actionError: null });
+
+    expect(state.rows[0].varianceLabel).toBe("+0.0000000000000000000000000001 Shares");
+    expect(state.rows[0].varianceTone).toBe("success");
+    expect(state.rows[0].rowAriaLabel).not.toContain("999");
+    expect(state.selectedDetail?.fields).toContainEqual({ label: "Tolerance band", value: "0.0000000000000000000000000001 Shares" });
+  });
+
+  it("does not revive numeric residual or tolerance fields when exact observations are explicitly unavailable", () => {
+    const item: ReconciliationBreakQueueItem = { ...breakQueue[0], variance: 999, toleranceBand: 100,
+      measures: [{ kind: "Value", expected: 10, actual: 20, actualExact: null, variance: 10,
+        varianceExact: "10", tolerance: 5, toleranceExact: null, unit: "EUR" }] };
+    const state = buildReconciliationBreakQueueState({ breakQueue: [item], selectedBreakId: item.breakId,
+      loading: false, loadError: null, action: null, actionError: null });
+
+    expect(state.rows[0].varianceLabel).toBe("Unavailable");
+    expect(state.rows[0].varianceTone).toBe("default");
+    expect(state.selectedDetail?.fields).toContainEqual({ label: "Tolerance band", value: "Unavailable" });
+    expect(state.rows[0].rowAriaLabel).not.toContain("999");
   });
 
   it("derives reconciliation resolve dialog labels and validation state", () => {

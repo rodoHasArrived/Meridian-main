@@ -54,6 +54,13 @@ export const accountingPayload: AccountingScenarioPayload = {
   breakQueue: [
     {
       breakId: "run-42:cash",
+      version: 1,
+      permittedCommands: [
+        { action: "Resolve", enabled: true, disabledReason: null },
+        { action: "Assign", enabled: true, disabledReason: null },
+        { action: "Waive", enabled: true, disabledReason: null }
+      ],
+      measures: [{ kind: "Value", expected: 120000, actual: 120500, variance: 500, tolerance: 1, unit: "USD" }],
       runId: "run-42",
       strategyName: "Paper Index Mean Reversion",
       category: "AmountMismatch",
@@ -68,7 +75,6 @@ export const accountingPayload: AccountingScenarioPayload = {
       resolvedBy: null,
       resolvedAt: null,
       resolutionNote: null,
-      version: 1,
       lifecycleState: "Open",
       evidenceLinks: ["journal:je-cash-1"]
     }

@@ -1,6 +1,8 @@
 import { caseQueueResidual, caseQueueTolerance } from "@/lib/reconciliation-measure-presentation";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
+import { formatExactDecimal, parseExactDecimal } from "@/lib/exact-financial-value";
+import { caseResidual } from "./reconciliation-case-values";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 import {
   evidenceWorkbenchPath,
@@ -43,7 +45,7 @@ import type {
   ReconciliationBreakQueueItem,
   StatementRunSummary,
 } from "@/types";
-import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, pluralizeCount, formatCurrency, formatPrefixedCurrency } from "@/lib/format";
 import {
   TIE_OUT_EPSILON,
   usableAmount,
@@ -928,15 +930,16 @@ export function buildReconciliationBreakRows(
     const typed = (item.measures?.length ?? 0) > 0 || item.statementEvidence != null;
     const residual = typed ? caseQueueResidual(item) : null;
     const varianceLabel = residual ? `${residual.amount}${residual.unit ? ` ${residual.unit}` : ""}`
-      : formatSignedCurrency(item.variance, { minimumFractionDigits: 2, zeroLabel: "$0" });
+      : `${formatExactDecimal(caseResidual(item), { signed: true }) ?? "Not recorded"} Unit unavailable`;
     const unavailable = typed && (residual?.amount === "Unavailable" || residual?.amount === "Multiple");
+    const variance = parseExactDecimal(caseResidual(item))?.coefficient;
 
     return {
       ...item,
       actionBusy,
       financeLabel,
       varianceLabel,
-      varianceTone: unavailable ? "default" : item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
+      varianceTone: unavailable || variance == null ? "default" : variance > 0n ? "success" : variance < 0n ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
       detectedAtLabel: formatAccountingDate(item.detectedAt),
       lastUpdatedAtLabel: formatAccountingDate(item.lastUpdatedAt),
@@ -1123,7 +1126,7 @@ function reconciliationSlaStateLabel(state: ReconciliationBreakQueueItem["slaSta
   }
 }
 
-function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {
+export function buildReconciliationBreakRoutingHref(routingTarget: string | null | undefined): string | null {
   const trimmedTarget = routingTarget?.trim();
   if (!trimmedTarget) {
     return null;

@@ -30,7 +30,7 @@ export function matchesLedgerAmountManifestGuard(route: string | null | undefine
 
 export function hasExactRetainedSource(packet: EvidencePacket, proof: LedgerAmountProof, item: LedgerAmountProofEvidence): boolean {
   if (!matchesLedgerAmountManifestGuard(item.route, item.contentHash, proof.subjectId, proof.scope) || !Array.isArray(packet.nodes)) return false;
-  const reportAmount = proof.subjectId.startsWith("report:");
+  const reportAmount = proof.subjectId.startsWith("report:") || proof.subjectId.startsWith("trial-balance:");
   const sourceScope = reportAmount ? item.sourceScope : proof.scope;
   const sourceSubjectId = reportAmount ? item.sourceSubjectId : proof.subjectId;
   if (!sourceScope || !sourceSubjectId) return false;
@@ -40,6 +40,7 @@ export function hasExactRetainedSource(packet: EvidencePacket, proof: LedgerAmou
       sourceScope.fundProfileId !== proof.scope.fundProfileId || sourceScope.ledgerBookId !== proof.scope.ledgerBookId ||
       !guid.test(sourceScope.periodId) || parts.length !== 3 || !guid.test(parts[0]!) || !guid.test(parts[1]!) ||
       (parts[2] !== "debit" && parts[2] !== "credit")) return false;
+    if (proof.subjectId.startsWith("trial-balance:") && sourceScope.periodId !== proof.scope.periodId) return false;
   }
   // A report guard addresses the report; the source artifact retains its original posting period.
   // Uri.EscapeDataString also escapes these characters which encodeURIComponent leaves intact.

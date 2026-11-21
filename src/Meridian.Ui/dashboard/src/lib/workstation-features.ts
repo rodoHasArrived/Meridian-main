@@ -59,7 +59,6 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
     feature("tradingOrders", "Orders", "Review trading orders and their execution status.", ["order status", "executions", "fills"]),
     feature("tradingPositions", "Positions", "Inspect trading positions and current exposure.", ["holdings", "open positions"]),
     feature("tradingRisk", "Risk", "Review trading risk and the limits affecting execution.", ["risk limits", "exposure", "buying power"]),
-    feature("tradingReadiness", "Readiness", "Review paper cockpit blockers, operator work items, and promotion evidence.", ["ready to trade", "trading blockers", "paper trading checks"], { paletteLabel: "Readiness console" })
   ],
   portfolio: [
     feature("portfolio", "Overview", "Review portfolio holdings, exposure, and performance.", [], { match: "exact" }),
@@ -121,6 +120,8 @@ export const WORKSPACE_NAVIGATION_FEATURES: Readonly<Record<WorkspaceKey, readon
 
 /** Existing deep-link views and useful wired routes outside the primary rail. */
 const FEATURE_SHORTCUTS: readonly WorkstationFeatureDefinition[] = [
+  { id: "today", label: "Today", description: "Review the ranked operator queue across workspaces.", keywords: ["daily control tower", "home", "queue"], route: "/today" },
+  { id: "operational-readiness", label: "Operational readiness", description: "Review cross-workspace blockers and next actions in Today.", keywords: ["readiness console", "ready to trade", "trading blockers", "paper trading checks"], route: "/today?view=readiness" },
   { id: "accounting-bond-analytics", label: "Bond analytics", description: "Select a bond to calculate price, yield, accrued interest, duration, convexity and DV01.", keywords: ["fixed income", "bond yield", "duration", "convexity", "dv01"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}?tab=evidence&bondAction=analytics`, capabilityIds: ["bond-analytics-migration"] },
   { id: "accounting-bond-conventions", label: "Bond convention migration", description: "Select a bond, preview convention differences and stage a draft for independent review.", keywords: ["coupon units", "bond migration", "day count", "conventions"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}?tab=evidence&bondAction=migration`, capabilityIds: ["bond-analytics-migration"] },
   { id: "accounting-bond-ladders", label: "Issuer and maturity ladders", description: "Browse retained bonds by issuer or maturity window, then open instrument details.", keywords: ["bond ladder", "issuer ladder", "maturity ladder", "fixed income"], route: `${WORKSTATION_ROUTE_CATALOG.accountingSecurityMaster}#bond-ladders`, capabilityIds: ["issuer-maturity-ladders"] },

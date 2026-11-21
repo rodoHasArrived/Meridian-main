@@ -24,7 +24,7 @@ it("opens the exact scoped evidence with keyboard and restores focus on Escape",
   const trigger = screen.getByRole("button", { name: "Inspect evidence for USD 25" });
   trigger.focus();
   await user.keyboard("{Enter}");
-  expect(await screen.findByRole("dialog", { name: "Amount evidence" })).toBeInTheDocument();
+  expect(await screen.findByRole("dialog", { name: "Amount passport" })).toBeInTheDocument();
   expect(await screen.findByText("No retained evidence is available for this subject.")).toBeInTheDocument();
   expect(getJson).toHaveBeenCalledWith(expect.stringContaining("/journal-entry/entry-1/packet?ledgerBookId=book-1"),
     expect.objectContaining({ allowDevelopmentFallback: false }));

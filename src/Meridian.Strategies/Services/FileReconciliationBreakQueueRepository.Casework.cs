@@ -161,6 +161,63 @@ public static class StatementCaseworkHandoffObligation
 
 public sealed partial class FileReconciliationBreakQueueRepository
 {
+    /// <summary>
+    /// Availability to open a decision form. Required form inputs are validated on submission;
+    /// lifecycle, human-origin and immutable-state restrictions use the mutation validator.
+    /// </summary>
+    public static IReadOnlyList<ReconciliationPermittedCommandDto> GetPermittedCommands(
+        ReconciliationBreakQueueItem item,
+        string actor,
+        bool canMutate,
+        bool humanOperator,
+        bool privileged)
+    {
+        return new[]
+        {
+            ("Assign", ReconciliationCaseworkAction.Assign),
+            ("TransitionStatus", ReconciliationCaseworkAction.TransitionStatus),
+            ("Resolve", ReconciliationCaseworkAction.Resolve),
+            ("Dismiss", ReconciliationCaseworkAction.Resolve),
+            ("Waive", ReconciliationCaseworkAction.Waive),
+            ("Supersede", ReconciliationCaseworkAction.Supersede),
+            ("SignOff", ReconciliationCaseworkAction.SignOff),
+            ("Reopen", ReconciliationCaseworkAction.Reopen),
+            ("SetRootCause", ReconciliationCaseworkAction.SetRootCause),
+            ("SetResolution", ReconciliationCaseworkAction.SetResolution)
+        }.Select(entry =>
+        {
+            string? reason = null;
+            if (!canMutate)
+            {
+                reason = "Requires ManageDirectLending, ModifySecurityMaster, or AdminMaintenance permission.";
+            }
+            else if (entry.Item2 == ReconciliationCaseworkAction.Reopen && !privileged)
+            {
+                reason = "Requires privileged workflow reopen permission.";
+            }
+            else
+            {
+                var candidate = new ReconciliationCaseworkCommand(
+                    item.BreakId, entry.Item2, actor, "availability", "availability", "availability",
+                    item.Version, Reason: "Decision reason supplied in the form.", Assignee: actor,
+                    Status: entry.Item2 == ReconciliationCaseworkAction.TransitionStatus ? ReconciliationCaseLifecycleState.Investigating : null,
+                    ActionOrigin: humanOperator ? OperationsActionOriginDto.HumanOperator : OperationsActionOriginDto.AutomationSuggestion,
+                    Privileged: privileged);
+                var validation = ValidateCaseworkCommand(item, candidate);
+                if (validation is not null && (
+                    validation.ErrorCode is ReconciliationBreakQueueTransitionErrorCode.IllegalTransition
+                        or ReconciliationBreakQueueTransitionErrorCode.MaterialActionRequiresHumanOperator
+                        or ReconciliationBreakQueueTransitionErrorCode.ReopenNotAllowed
+                        or ReconciliationBreakQueueTransitionErrorCode.ResolverSignerConflict
+                    || StatementCaseworkHandoffObligation.HasPending(item)))
+                {
+                    reason = validation.Error;
+                }
+            }
+            return new ReconciliationPermittedCommandDto(entry.Item1, reason is null, reason);
+        }).ToArray();
+    }
+
     private async Task AppendMaterialActionDeniedAuditAsync(
         ReconciliationBreakQueueItem item,
         string actor,
@@ -260,7 +317,7 @@ public sealed partial class FileReconciliationBreakQueueRepository
             $"legacy-start-review:{inputHash}",
             $"legacy-start-review:{inputHash}",
             "legacy-reconciliation-start-review",
-            ExpectedVersion: 0,
+            ExpectedVersion: request.ExpectedVersion ?? 0,
             Reason: request.ReviewNote ?? "Review started.",
             Assignee: request.AssignedTo,
             Status: ReconciliationCaseLifecycleState.Investigating,
@@ -277,13 +334,14 @@ public sealed partial class FileReconciliationBreakQueueRepository
             $"legacy-resolve:{inputHash}",
             $"legacy-resolve:{inputHash}",
             "legacy-reconciliation-resolve",
-            ExpectedVersion: 0,
+            ExpectedVersion: request.ExpectedVersion ?? 0,
             Reason: request.OperatorRationale,
             Status: ReconciliationCaseLifecycleState.Resolved,
             Note: request.ResolutionNote,
+            RootCauseCode: request.Status == ReconciliationBreakQueueStatus.Dismissed ? "DismissedFalsePositive" : request.RootCauseCode,
             ResolutionCode: request.Status == ReconciliationBreakQueueStatus.Dismissed
                 ? "DismissedFalsePositive"
-                : "LegacyResolved",
+                : request.ResolutionCode ?? "LegacyResolved",
             StatusTransition: ReconciliationCaseLifecycleState.Resolved,
             ActionOrigin: request.ActionOrigin,
             ApprovalActor: request.ResolvedBy);
@@ -445,18 +503,32 @@ public sealed partial class FileReconciliationBreakQueueRepository
             item.AsOfDate,
             item.ToleranceProfileId,
             item.ToleranceBand,
+            // Pin the v1 canonical input to material measure fields. Additive workstation-only
+            // getters (such as exact decimal display strings) must not change retained migration hashes.
             Measures = (item.Measures ?? [])
                 .OrderBy(static measure => measure.Kind)
                 .ThenBy(static measure => measure.Unit, StringComparer.Ordinal)
+                .Select(static measure => new
+                {
+                    measure.Kind,
+                    measure.Expected,
+                    measure.Actual,
+                    measure.Variance,
+                    measure.Tolerance,
+                    measure.Unit,
+                    measure.UnavailableReason
+                })
                 .ToArray(),
             BlockedOutputs = (item.BlockedOutputs ?? [])
                 .OrderBy(static output => output, StringComparer.Ordinal)
                 .ToArray()
         };
-        var basePayload = $"meridian.reconciliation-break-create.v1\n{JsonSerializer.Serialize(materialInput, _jsonOptions)}";
-        return HashPayload(item.StatementEvidence is { } statementEvidence
-            ? $"{basePayload}\n{JsonSerializer.Serialize(statementEvidence, _jsonOptions)}"
-            : basePayload)!;
+        var payload = $"meridian.reconciliation-break-create.v1\n{JsonSerializer.Serialize(materialInput, _jsonOptions)}";
+        if (item.StatementEvidence is { } statementEvidence)
+            payload += $"\n{JsonSerializer.Serialize(statementEvidence, _jsonOptions)}";
+        if (item.InstrumentId is { } instrumentId)
+            payload += $"\ninstrument:{instrumentId:D}";
+        return HashPayload(payload)!;
     }
 
     private string ComputeRetainedCreateInputHash(

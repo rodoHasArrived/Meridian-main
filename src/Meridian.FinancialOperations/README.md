@@ -193,6 +193,14 @@ the new writer; older hash validators intentionally refuse the new envelope. Leg
 and nontransactional paths remain explicit history gaps, with no reconstructed or backfilled task
 counts. Burndown observations retain workflow versions and break across missing coverage.
 
+Statement import reviews retain normalized row identities, exact decimal display values, source and
+executed-mapping hashes, and the authorized tenant/company/account/period/accounting scope. Commits
+revalidate that binding before applying explicit row dispositions. Exclusions require reasons and
+cannot bypass parse, account, currency, or size errors; sources with supplemental financial evidence
+remain non-excludable until exact dependent-row mapping exists. Paged row outcomes retain the
+executing actor and disposition receipt. Physical source row numbers remain unavailable when the
+connector has not supplied them.
+
 Accounting provider discovery translates the typed ownership-required refusal into an explicit disabled
 row while retaining unrelated provider rows. Configuration and storage failures remain errors. Default
 QuickBooks, Xero and NetSuite imports cannot consume owned credentials until their runtime selects an

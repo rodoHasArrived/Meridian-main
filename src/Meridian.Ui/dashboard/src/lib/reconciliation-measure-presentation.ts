@@ -8,9 +8,16 @@ export function displayAmount(value: string | number | null, signed = false): st
   return `${sign}${formatExactMagnitude(decimal, decimal.scale).text}`;
 }
 
-export function retainedResidual(measure: ReconciliationBreakMeasure): number | null {
-  if (measure.unavailableReason || !Number.isFinite(measure.actual) || !Number.isFinite(measure.expected)) return null;
-  return Number.isFinite(measure.variance) ? measure.variance : null;
+/** An explicit unavailable measure stays unavailable; numeric fields support older hosts only. */
+export function caseMeasureAmount(measure: ReconciliationBreakMeasure, field: "expected" | "actual" | "variance" | "tolerance"): string | number | null {
+  const exact = measure[`${field}Exact`];
+  return exact === undefined ? measure[field] : exact;
+}
+
+export function retainedResidual(measure: ReconciliationBreakMeasure): string | number | null {
+  if (measure.unavailableReason || !parseExactDecimal(caseMeasureAmount(measure, "actual")) || !parseExactDecimal(caseMeasureAmount(measure, "expected"))) return null;
+  const residual = caseMeasureAmount(measure, "variance");
+  return parseExactDecimal(residual) ? residual : null;
 }
 
 export function measureUnit(unit: string): string {
@@ -18,26 +25,33 @@ export function measureUnit(unit: string): string {
 }
 
 export function caseQueueTolerance(item: ReconciliationBreakQueueItem): string | null {
+  if (item.statementEvidence) {
+    const { residuals } = item.statementEvidence.match;
+    if (residuals.length > 1) return "Multiple measure tolerances";
+    if (residuals.length === 0 || residuals[0].tolerance == null) return "Unavailable";
+    return `${displayAmount(residuals[0].tolerance)} ${measureUnit(residuals[0].unit)}`;
+  }
   const measures = item.measures ?? [];
   if (measures.length === 0) return null;
   if (measures.length > 1) return "Multiple measure tolerances";
   const measure = measures[0];
-  return measure.tolerance == null ? "Unavailable" : `${displayAmount(measure.tolerance)} ${measureUnit(measure.unit)}`;
+  const tolerance = caseMeasureAmount(measure, "tolerance");
+  return tolerance == null ? "Unavailable" : `${displayAmount(tolerance)} ${measureUnit(measure.unit)}`;
 }
 
 export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount: string; unit: string | null } {
   if (item.statementEvidence) {
     const { residuals } = item.statementEvidence.match;
     if (residuals.length > 1) return { amount: "Multiple", unit: null };
-    if (residuals.length === 1) return { amount: displayAmount(residuals[0].residual, true), unit: residuals[0].unit };
+    if (residuals.length === 1) return { amount: displayAmount(residuals[0].residual, true), unit: measureUnit(residuals[0].unit) };
     return { amount: "Unavailable", unit: null };
   }
   const measures = item.measures ?? [];
   const reported = measures.filter((measure) => retainedResidual(measure) != null);
   if (reported.length > 1) return { amount: "Multiple", unit: null };
-  if (reported.length === 1) return { amount: displayAmount(reported[0].variance, true), unit: measureUnit(reported[0].unit) };
+  if (reported.length === 1) return { amount: displayAmount(retainedResidual(reported[0]), true), unit: measureUnit(reported[0].unit) };
   return measures.length > 0
     ? { amount: "Unavailable", unit: null }
-    : { amount: displayAmount(item.variance, true), unit: "Unit unavailable" };
+    : { amount: displayAmount(item.varianceExact === undefined ? item.variance : item.varianceExact, true), unit: "Unit unavailable" };
 }
 

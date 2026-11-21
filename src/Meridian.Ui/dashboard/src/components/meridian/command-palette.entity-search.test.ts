@@ -26,7 +26,7 @@ const instrument: WorkstationRecordSearchHit = {
   status: "Active",
   scope: "Security Master catalog",
   asOfPosture: "Current reference",
-  href: "/accounting/security-master/detail?securityId=sec-aapl"
+  href: "/records/instrument/sec-aapl?recordScope=1&tab=positions"
 };
 
 const response = { items: [instrument], isPartial: false };

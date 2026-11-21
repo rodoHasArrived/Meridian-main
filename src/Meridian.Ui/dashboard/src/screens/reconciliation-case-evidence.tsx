@@ -17,6 +17,7 @@ import { lifecycleStateLabel } from "./reconciliation-break-lifecycle";
 import { isStatementHandoffMarker } from "./reconciliation-casework-command";
 import { originalComparisonScope, sourceObservationAge, sourceRunChangeLabel } from "./reconciliation-source-observation";
 import "@/styles/reconciliation-workbench.css";
+import { caseMeasureAmount } from "./reconciliation-case-values";
 
 const MEASURE_LABELS: Record<ReconciliationBreakMeasure["kind"], string> = {
   Value: "Value",
@@ -47,12 +48,13 @@ export function ReconciliationMatchCandidate({ item }: { item: ReconciliationBre
   </section>;
 }
 
-function ResidualAmount({ label, unit, value, asOf, basis }: {
-  label: string; unit: string; value: string | number | null; asOf?: string | null; basis?: string;
+function ResidualAmount({ label, unit, value, asOf, basis, monetary = true }: {
+  label: string; unit: string; value: string | number | null; asOf?: string | null; basis?: string; monetary?: boolean;
 }) {
   const amount = parseExactDecimal(value);
   if (!amount) return "Unavailable";
   const displayValue = displayAmount(value, true);
+  if (!monetary || !/^[A-Z]{3}$/.test(unit)) return <span className="min-w-0 [overflow-wrap:anywhere]">{displayValue}</span>;
   return <AmountPassportTrigger compact selection={{
     label, displayValue, unit, currency: /^[A-Z]{3}$/.test(unit) ? unit : null,
     origin: "calculated", zero: amount.units === 0n, asOf, basis,
@@ -123,12 +125,12 @@ function StatementMatchComparison({ evidence, prior, grouped = false }: {
 function compareColumns(statement: boolean, prior: ReconciliationBreakQueueItem | null, asOf?: string | null): DenseDataTableColumn<ReconciliationBreakMeasure>[] {
   const columns: DenseDataTableColumn<ReconciliationBreakMeasure>[] = [
     { id: "measure", label: "Measure", rowHeader: true, render: (measure) => <>{MEASURE_LABELS[measure.kind]}<span className="block text-xs font-normal text-muted-foreground">{measureUnit(measure.unit)}</span></> },
-    { id: "observed", label: statement ? "Statement" : "Observed", numeric: true, render: (measure) => displayAmount(measure.actual) },
-    { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(measure.expected) },
+    { id: "observed", label: statement ? "Statement" : "Observed", numeric: true, render: (measure) => displayAmount(caseMeasureAmount(measure, "actual")) },
+    { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(caseMeasureAmount(measure, "expected")) },
     { id: "residual", label: "Residual", numeric: true, render: (measure) => <>
       <ResidualAmount label={`${MEASURE_LABELS[measure.kind]} residual`} unit={measureUnit(measure.unit)} value={retainedResidual(measure)}
-        asOf={asOf} basis={statement ? "Statement minus ledger" : "Observed minus expected"} />
-      {measure.tolerance != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(measure.tolerance)}</span> : null}
+        monetary={measure.kind !== "Quantity"} asOf={asOf} basis={statement ? "Statement minus ledger" : "Observed minus expected"} />
+      {caseMeasureAmount(measure, "tolerance") != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(caseMeasureAmount(measure, "tolerance"))}</span> : null}
     </> }
   ];
   if (prior) {
@@ -226,7 +228,7 @@ export function ReconciliationCaseEvidence({ item, relatedRows = [], onOpenCase,
           {(statementEvidence?.match.residuals.length ?? measures.length) > 0 ? <p className="text-xs text-muted-foreground">Residual = {statement ? "statement − ledger" : "observed − expected"}</p> : null}
         </div>
         {statementEvidence ? <StatementMatchComparison evidence={statementEvidence} prior={comparable ? baseline?.statementEvidence : null} /> : measures.length > 0 ? <>
-          <DenseDataTable columns={compareColumns(statement, comparable ? baseline : null, item.asOfDate)} rows={measures}
+          <DenseDataTable columns={compareColumns(statement, comparable ? baseline ?? null : null, item.asOfDate)} rows={measures}
             getRowId={(measure) => `${measure.kind}:${measure.unit}:${measures.indexOf(measure)}`} ariaLabel="Retained residual components"
             emptyText="No retained residual components."
             caption="The retained residual is the observed amount minus the expected amount in the supplied unit." />

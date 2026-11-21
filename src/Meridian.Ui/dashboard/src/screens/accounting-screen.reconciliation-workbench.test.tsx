@@ -176,7 +176,7 @@ describe("Reconciliation workbench", () => {
     unmount();
     renderWorkbench(undefined, { ...services, readResult }, offlineVisits, scoped);
     await user.click(within(bulkBar()).getByRole("button", { name: "Check batch outcome" }));
-    await user.click(await within(bulkBar()).findByText("Retained batch queue result"));
+    expect(await within(bulkBar()).findByRole("region", { name: "Retained batch queue result" })).toBeVisible();
     expect(within(bulkBar()).getByRole("list", { name: "Per-case batch results" })).toHaveTextContent("cash-1 · Recorded · Open");
     expect(readResult).toHaveBeenCalledExactlyOnceWith(services.execute.mock.calls[0][0].commandId);
     expect(services.execute).toHaveBeenCalledOnce();

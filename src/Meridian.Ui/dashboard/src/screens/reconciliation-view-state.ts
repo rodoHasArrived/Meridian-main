@@ -25,7 +25,8 @@ const queryKeys = {
 export const RECONCILIATION_VIEW_QUERY_KEYS = Object.values(queryKeys);
 /** The break queue's hideable columns (C4); hidden ones travel in the link so saved views keep them. */
 export const RECONCILIATION_QUEUE_HIDEABLE_COLUMNS = ["category", "owner", "updated", "source"] as const;
-const scopeKeys = ["fundAccountId", "symbol", "runId", "provider", "from", "to", "date", "asOf"];
+const scopeKeys = ["fundAccountId", "fundId", "fundProfileId", "entityId", "companyId", "organizationId",
+  "symbol", "runId", "provider", "from", "to", "date", "asOf"];
 
 export function readReconciliationViewState(search: string) {
   const params = new URLSearchParams(search);

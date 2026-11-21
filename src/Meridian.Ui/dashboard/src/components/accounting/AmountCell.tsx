@@ -10,7 +10,7 @@ export interface AmountCellProps {
   value: number | string;
   /** Currency code (USD, EUR, GBP, JPY, CHF…). Omit for a bare number. */
   currency?: string;
-  /** Decimal places. @default 2 */
+  /** Decimal places; currency minor units when supplied, otherwise two. */
   decimals?: number;
   /**
    * Color tone:
@@ -38,7 +38,7 @@ export interface AmountCellProps {
 export function AmountCell({
   value,
   currency,
-  decimals = 2,
+  decimals,
   mode = "plain",
   parens = false,
   zeroDash = false,
