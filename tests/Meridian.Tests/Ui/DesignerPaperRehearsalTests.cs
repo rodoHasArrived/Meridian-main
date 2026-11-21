@@ -112,7 +112,20 @@ public sealed class DesignerPaperRehearsalTests
         var cache = new LiveCache();
         var hub = new LiveMarketEventHub();
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, liveFeed: cache);
-        var portfolio = new PaperTradingPortfolio(100_000m);
+        // The OMS book is deliberately unrelated to the prepared per-run paper session.
+        var portfolio = new PaperTradingPortfolio(250_000m);
+        portfolio.ApplyFill(new ExecutionSdk.ExecutionReport
+        {
+            OrderId = "unrelated-global-holding",
+            ReportType = ExecutionSdk.ExecutionReportType.Fill,
+            OrderStatus = ExecutionSdk.OrderStatus.Filled,
+            Symbol = "FOREIGN",
+            Side = ExecutionSdk.OrderSide.Buy,
+            OrderQuantity = 7m,
+            FilledQuantity = 7m,
+            FillPrice = 3m,
+            Timestamp = DateTimeOffset.UtcNow
+        });
         var canonicalPublisher = Substitute.For<ITradeEventPublisher>();
         await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
             portfolioState: portfolio, auditTrail: audit, sessionPersistence: sessions,
@@ -257,6 +270,33 @@ public sealed class DesignerPaperRehearsalTests
                 break;
             await Task.Delay(20, timeout.Token);
         }
+
+        var nativeReceipt = sessions.GetActivePortfolio(sessionId)!.CapturePositionAccountingEvidence();
+        nativeReceipt.CoveredFinancialAccountIds.Should().Equal(AccountId.ToString("D"));
+        var nativeAccount = nativeReceipt.Accounts.Should().ContainSingle().Subject;
+        nativeAccount.AccountId.Should().Be(AccountId.ToString("D"));
+        nativeAccount.FunctionalCurrency.Should().Be("USD");
+        nativeAccount.Cash.Should().Be(100_000m - 10m * 102m - 1m);
+        nativeAccount.Positions.Should().ContainSingle().Which.Symbol.Should().Be(Symbol);
+        nativeReceipt.Positions.Should().ContainSingle().Which.StrategyRunId.Should().Be(paper.RunId);
+
+        var paperObservationContext = new PaperRunOrderContext(Tenant, Company, AccountId,
+            new ExecutionSdk.StrategyOrderAuthority(paper.StrategyId, paper.RunId, outcome.StrategyVersionSha256!,
+                paper.AuditReference!, sessionId), sessions);
+        var quoteCache = new LiveCache();
+        var quoteSource = new DesignerPaperPortfolioState(paperObservationContext, quoteCache);
+        foreach (var (bid, ask) in new[] { (0m, 206m), (104m, 102m) })
+        {
+            quoteCache.RecordQuote(Symbol, new BboQuotePayload(DateTimeOffset.UtcNow, Symbol, bid, 1, ask, 1, null, null, ++tick));
+            quoteSource.CapturePositionAccountingEvidence().Accounts.Single().AccountingEquity.Should()
+                .Be(nativeAccount.AccountingEquity, "an incomplete or crossed quote cannot invent a positive midpoint mark");
+        }
+        quoteCache.RecordQuote(Symbol, new BboQuotePayload(DateTimeOffset.UtcNow, Symbol, 102m, 1, 104m, 1, null, null, ++tick));
+        quoteSource.CapturePositionAccountingEvidence().Accounts.Single().AccountingEquity.Should()
+            .Be(100_000m - 10m * 102m - 1m + 10m * 103m);
+
+        // A current accepted price marks the run's defensive projection, never the durable fill.
+        cache.RecordTrade(Symbol, new Trade(DateTimeOffset.UtcNow, Symbol, 103m, 1000, AggressorSide.Buy, ++tick));
         var stopped = await engine.StopRunWithOutcomeAsync(paper.RunId, timeout.Token);
         stopped.Should().NotBeNull();
         stopped!.State.Should().Be(OperationTerminalState.Succeeded,
@@ -274,6 +314,31 @@ public sealed class DesignerPaperRehearsalTests
         var retainedOrder = retainedOrders.Should().ContainSingle().Which.Admission!;
         retainedOrder.AuthorityDecision!.Origin.Should().Be(ExecutionSdk.OrderCommandOrigin.StrategyRun);
         retainedOrder.OrderState!.StrategyArtifactId.Should().BeNull();
+        retainedOrder.OrderState.AccountingRunId.Should().Be(paper.RunId);
+        var handoff = retainedOrders.Single().Handoffs.Should().ContainSingle().Subject.Fill;
+        handoff.RunId.Should().Be(paper.RunId);
+        handoff.AccountingRunId.Should().Be(paper.RunId);
+        var completedPaper = (await repository.GetRunByIdAsync(paper.RunId, timeout.Token))!;
+        completedPaper.Metrics!.Request.InitialCash.Should().Be(sourceRun.Metrics.Request.InitialCash);
+        completedPaper.Metrics.Metrics.InitialCapital.Should().Be(100_000m);
+        completedPaper.Metrics.Metrics.FinalEquity.Should().Be(100_000m - 10m * 102m - 1m + 10m * 103m);
+        completedPaper.Metrics.Fills.Should().ContainSingle().Which.FillId.Should().Be(handoff.FillId);
+        var paperSnapshot = completedPaper.Metrics.Snapshots.Should().ContainSingle().Subject;
+        paperSnapshot.Cash.Should().Be(nativeAccount.Cash);
+        paperSnapshot.TotalEquity.Should().Be(completedPaper.Metrics.Metrics.FinalEquity);
+        paperSnapshot.FunctionalCurrency.Should().Be("USD");
+        paperSnapshot.Positions.Keys.Should().Equal(Symbol);
+        paperSnapshot.Accounts.Keys.Should().Equal(AccountId.ToString("D"));
+        var positionEvidence = paperSnapshot.AccountingPositions.Should().ContainSingle().Subject;
+        positionEvidence.StrategyRunId.Should().Be(paper.RunId);
+        positionEvidence.FinancialAccountId.Should().Be(AccountId.ToString("D"));
+        positionEvidence.Currency.Should().Be("USD");
+        positionEvidence.SecurityId.Should().BeNull("this fixture has no canonical security-admission gate");
+        positionEvidence.Quantity.Should().BeNull();
+        positionEvidence.MonetaryBasis.Should().BeNull();
+        positionEvidence.CoverageFailure.Should().Contain("identity");
+        Action observeClosedSession = () => quoteSource.CapturePositionAccountingEvidence();
+        observeClosedSession.Should().Throw<InvalidOperationException>();
         await canonicalPublisher.DidNotReceive().PublishAsync(Arg.Any<TradeExecutedEvent>());
         (await client.GetAsync($"/api/execution/sessions/{sessionId}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
         (await client.GetAsync($"/api/execution/sessions/{sessionId}/reconciliation")).StatusCode.Should().Be(HttpStatusCode.NotFound);

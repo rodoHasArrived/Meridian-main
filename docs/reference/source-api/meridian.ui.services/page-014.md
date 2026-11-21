@@ -582,7 +582,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.ServiceUrlChangedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:814](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L814).
+Source: [src/Meridian.Ui.Services/Services/ApiClientService.cs:831](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L831).
 
 Event args for service URL changes.
 
@@ -594,8 +594,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:816](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L816) |  |
-| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:817](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L817) |  |
+| <code>public string OldUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:833](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L833) |  |
+| <code>public string NewUrl { get; init; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ApiClientService.cs:834](../../../../src/Meridian.Ui.Services/Services/ApiClientService.cs#L834) |  |
 
 ## SessionState
 

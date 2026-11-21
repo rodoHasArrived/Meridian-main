@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullCorporateActionCaseAccountingService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionCaseAccountingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:232](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L232).
+
+Rejects corporate-action accounting mutations when the accounting service is unavailable.
+
+```csharp
+public sealed class NullCorporateActionCaseAccountingService : ICorporateActionCaseAccountingService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionAccountingProjectionMutationResultDto&gt; AttachProjectionAsync(AttachCorporateActionAccountingProjectionRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:239](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L239) |  |
+| <code>public Task&lt;CorporateActionAccountingApprovalResultDto&gt; ApproveAsync(ApproveCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:242](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L242) |  |
+| <code>public Task&lt;CorporateActionAccountingPostingResultDto&gt; PostAsync(PostCorporateActionCaseAccountingRequestDto request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:245](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L245) |  |
+
+## NullCorporateActionCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:144](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L144).
+
+Rejects corporate-action appends when their command service is unavailable.
+
+```csharp
+public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:146](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L146) |  |
+
 ## NullCorporateActionOperationsService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionOperationsService</code>. Kind: `class`.
@@ -1012,34 +1050,3 @@ Declared public members:
 | <code>public SecurityMasterDataQualityService(ISecurityMasterStore securityStore, ISecurityMasterQualityReportStore reportStore, ILogger&lt;SecurityMasterDataQualityService&gt; logger, IEnumerable&lt;ISecurityCoverageSymbolSource&gt;? coverageSources = null, Meridian.Contracts.SecurityMaster.ISecurityResolver? securityResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L46) |  |
 | <code>public async Task&lt;SecurityMasterQualityReportDto&gt; RunQualityChecksAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:60](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L60) |  |
 | <code>public Task&lt;SecurityMasterQualityReportDto?&gt; GetLatestReportAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs:100](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDataQualityService.cs#L100) |  |
-
-## SecurityMasterDraftProposalDto
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:11](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L11).
-
-A machine-proposed security-master draft for an unmastered symbol. The operator reviews and submits it through the normal create workflow — this service never writes.
-
-```csharp
-public sealed record SecurityMasterDraftProposalDto(string Symbol, bool Resolved, Guid ProposedSecurityId, string AssetClass, string? DisplayName, string? Exchange, string? Currency, IReadOnlyList<SecurityIdentifierDto> Identifiers, string SourceSystem, string Provenance, string? Notes);
-```
-
-## SecurityMasterDraftProposalService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L30).
-
-Pre-builds security-master drafts for coverage gaps flagged by the RC001 sweep, using the shared symbol-resolution spine (canonical registry first, then OpenFIGI) for identifiers and display metadata. Drafts are explicitly marked machine-proposed so downstream provenance never mistakes them for operator-entered data.
-
-```csharp
-public sealed class SecurityMasterDraftProposalService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterDraftProposalService(ILogger&lt;SecurityMasterDraftProposalService&gt; logger, ISymbolResolver? symbolResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L38) |  |
-| <code>public async Task&lt;SecurityMasterDraftProposalDto&gt; BuildDraftAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L46) |  |

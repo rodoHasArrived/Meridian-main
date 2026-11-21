@@ -353,96 +353,41 @@ public sealed partial class InMemoryDirectLendingService
     }
 
     public Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
+        => ReconcileAsync(loanId, new ReconcileLoanRequest(0m, 0), ct, metadata);
+
+    public Task<ReconciliationRunDto?> ReconcileAsync(Guid loanId, ReconcileLoanRequest request, CancellationToken ct = default, DirectLendingCommandMetadataDto? metadata = null)
     {
+        request = LoanCashReconciliation.Normalize(request);
+        ct.ThrowIfCancellationRequested();
         lock (_gate)
         {
             if (!_loans.ContainsKey(loanId))
-            {
-                throw new DirectLendingCommandException(new DirectLendingCommandError(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
-            }
+                throw new DirectLendingCommandException(new(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found."));
             var runId = DirectLendingServiceSupport.CreateRunIdentity(loanId, "reconciliation", metadata);
             var existing = GetList(_reconciliationRuns, loanId).FirstOrDefault(item => item.ReconciliationRunId == runId);
             if (existing is not null)
+            {
+                LoanCashReconciliation.EnsureReplay(existing, request);
                 return Task.FromResult<ReconciliationRunDto?>(existing);
-            var latestProjection = GetList(_projectionRuns, loanId).OrderByDescending(static x => x.GeneratedAt).FirstOrDefault();
-            if (latestProjection is null)
-            {
-                latestProjection = CreateProjectionLocked(loanId, null);
             }
-
-            var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "Completed");
-            var flows = _projectedCashFlows.TryGetValue(latestProjection.ProjectionRunId, out var projected) ? projected : [];
-            var cashTransactions = GetList(_cashTransactions, loanId);
-            var results = new List<ReconciliationResultDto>();
-
-            foreach (var flow in flows)
+            var projection = GetList(_projectionRuns, loanId).OrderByDescending(static item => item.GeneratedAt).FirstOrDefault()
+                ?? CreateProjectionLocked(loanId, null);
+            var observedAt = DateTimeOffset.UtcNow;
+            var asOf = DateOnly.FromDateTime(observedAt.UtcDateTime);
+            var flows = _projectedCashFlows.TryGetValue(projection.ProjectionRunId, out var projected) ? projected : [];
+            var results = LoanCashReconciliation.Match(runId, loanId, asOf, observedAt, flows,
+                GetList(_cashTransactions, loanId), GetList(_paymentAllocations, loanId), request).ToList();
+            results.Add(new(Guid.NewGuid(), runId, loanId, null, null, "LedgerCoverageUnavailable", null, null, null,
+                asOf, null, "CanonicalRole:population", null, ["The in-memory demonstration has no authoritative journal population."], observedAt)
+            { MeasurementKind = "ledger-balance:population", AsOfDate = asOf });
+            var run = new ReconciliationRunDto(runId, loanId, projection.ProjectionRunId, observedAt, observedAt, "Completed")
             {
-                var cash = cashTransactions.FirstOrDefault(x =>
-                    DirectLendingServiceSupport.IsIncomingReceipt(x) && x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
-                var result = new ReconciliationResultDto(
-                    Guid.NewGuid(),
-                    runId,
-                    loanId,
-                    flow.ProjectedCashFlowId,
-                    cash?.CashTransactionId,
-                    cash is null ? "MissingCash" : "Matched",
-                    flow.Amount,
-                    cash?.Amount,
-                    cash is null ? flow.Amount : 0m,
-                    flow.DueDate,
-                    cash?.SettlementDate,
-                    cash is null ? "ExpectedFlowVsCash" : "ExactAmountDate",
-                    "{\"amountTolerance\":0,\"dateToleranceDays\":0}",
-                    cash is null ? ["Projected flow did not match cash transaction."] : ["Matched."],
-                    DateTimeOffset.UtcNow);
-                results.Add(result);
-
-                if (cash is null)
-                {
-                    _reconciliationExceptions.Add(new ReconciliationExceptionDto(
-                        Guid.NewGuid(),
-                        result.ReconciliationResultId,
-                        "MissingCash",
-                        "High",
-                        "Open",
-                        null,
-                        null,
-                        DateTimeOffset.UtcNow,
-                        null));
-                }
-            }
-
-            foreach (var cash in cashTransactions.Where(cash => flows.All(flow => flow.DueDate != cash.SettlementDate || flow.Amount != cash.Amount)))
-            {
-                var result = new ReconciliationResultDto(
-                    Guid.NewGuid(),
-                    runId,
-                    loanId,
-                    null,
-                    cash.CashTransactionId,
-                    "UnexpectedCash",
-                    null,
-                    cash.Amount,
-                    cash.Amount,
-                    null,
-                    cash.SettlementDate,
-                    "UnexpectedCash",
-                    "{\"amountTolerance\":0,\"dateToleranceDays\":0}",
-                    ["Cash transaction did not match any projected flow."],
-                    DateTimeOffset.UtcNow);
-                results.Add(result);
-                _reconciliationExceptions.Add(new ReconciliationExceptionDto(
-                    Guid.NewGuid(),
-                    result.ReconciliationResultId,
-                    "UnexpectedCash",
-                    "Medium",
-                    "Open",
-                    null,
-                    null,
-                    DateTimeOffset.UtcNow,
-                    null));
-            }
-
+                RequestHash = LoanCashReconciliation.RequestHash(request),
+                AsOfDate = asOf,
+                AmountTolerance = request.AmountTolerance,
+                DateToleranceDays = request.DateToleranceDays
+            };
+            _reconciliationExceptions.AddRange(LoanCashReconciliation.Exceptions(results, observedAt));
             _reconciliationResults[runId] = results;
             GetList(_reconciliationRuns, loanId).Add(run);
             return Task.FromResult<ReconciliationRunDto?>(run);

@@ -6,10 +6,14 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-21
 ---
 
 # src/Meridian.Ui.Services
+
+`ApiClientService.PostArtifactAsync` uses the existing authenticated endpoint session and mutation
+headers to return server artifact bytes. The desktop posted-ledger CSV action consumes it without
+reformatting journal amounts or treating authorization failures as fixture data.
 
 The existing accounting agreement workspace/client carries optional structured legal declarations,
 dates-only schedule previews and explicit external-review attestations through the native host API.

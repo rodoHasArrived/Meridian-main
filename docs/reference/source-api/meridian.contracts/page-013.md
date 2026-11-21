@@ -54,7 +54,7 @@ public sealed record BackfillThrottleEvent(string Provider, string Reason, DateT
 
 Qualified name: <code>Meridian.Contracts.Backfill.HistoricalSessionEvidence</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:44](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L44).
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:49](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L49).
 
 Sources of expected exchange sessions for historical coverage, when available.
 
@@ -66,14 +66,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string UsEquities = &quot;us-equity-sessions-v1&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:46](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L46) |  |
-| <code>public static bool IsUsEquityListing(string? mic) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:48](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L48) |  |
+| <code>public const string UsEquities = &quot;us-equity-sessions-v1&quot;;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:51](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L51) |  |
+| <code>public static bool IsUsEquityListing(string? mic) =&gt; …;</code> | [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:53](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L53) |  |
 
 ## HistoricalSessionSchedule
 
 Qualified name: <code>Meridian.Contracts.Backfill.HistoricalSessionSchedule</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:52](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L52).
+Source: [src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs:57](../../../../src/Meridian.Contracts/Backfill/BackfillBatchReceipt.cs#L57).
 
 The session dates supported by a positively identified exchange calendar.
 

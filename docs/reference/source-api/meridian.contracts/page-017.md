@@ -576,7 +576,7 @@ public sealed record CreateLoanRequest(Guid? LoanId, string FacilityName, Borrow
 
 Qualified name: <code>Meridian.Contracts.DirectLending.CreateServicerReportBatchRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:254](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L254).
+Source: [src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs:269](../../../../src/Meridian.Contracts/DirectLending/DirectLendingWorkflowDtos.cs#L269).
 
 ```csharp
 public sealed record CreateServicerReportBatchRequest(string ServicerName, string ReportType, string SourceFormat, DateOnly ReportAsOfDate, string? FileName, string? FileHash, string? Notes, IReadOnlyList<ServicerPositionReportLineImportDto>? PositionLines, IReadOnlyList<ServicerTransactionReportLineImportDto>? TransactionLines);

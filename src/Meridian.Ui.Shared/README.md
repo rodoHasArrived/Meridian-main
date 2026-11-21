@@ -11,6 +11,28 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+Strategy reconciliation endpoints pass trusted tenant/company scope through creation, result-ID,
+latest-result and history reads. Foreign or malformed scoped runs return not found before posted
+accounting sources are queried. Canonical run journals retain their explicit securities-role and
+chart-reference evidence for native comparisons; missing source coverage remains unavailable.
+Run-attributed postings cannot prove complete account cash or NAV: those comparisons carry scope
+coverage reasons rather than amount variances, while their supported position quantities and basis
+remain independently comparable. Account/book stock reconciliation uses the existing three-way lane.
+Run selection requires trusted execution attribution, not a caller-supplied strategy label. Retained
+legacy metrics can support audit display while their scoped reconciliation measurements stay unavailable.
+
+Guarded strategy-run evidence and vault reads require a resolvable retained run identity before
+selecting their account policy. A missing repository or unknown run fails closed. Versioned
+Designer runs retain the tenant/company and account `ViewTrades` checks; known unversioned run
+records keep their existing evidence policy, as do other evidence subject kinds.
+
+Reconciliation queues expose a monetary total only when every break supplies one comparable typed
+money measure in the same retained currency. Quantity-only, legacy, mixed-currency and unverified
+account rows retain counts and an unavailable explanation instead of a dollar total. The nullable
+`ComparableBreakAmountTotal`, `BreakAmountCurrency` and `BreakAmountUnavailableReason` fields carry
+this distinction; the legacy scalar is only a compatibility field. Ledger-impact previews are
+omitted when this comparison evidence is unavailable.
+
 Asset Detail reads full canonical terms through `SecurityInstrumentTermsEndpoints` and
 `SecurityInstrumentTermsReadService`. The schema-guided read preserves exact scalar JSON text,
 all nested/unknown properties and raw blocks, with version/fingerprint and matching source evidence.
@@ -2383,7 +2405,7 @@ migration kind before the execution service can retain certified status.
 providers, uses QuickBooks Online when local OAuth client id, client secret, refresh token, and
 company realm id config are present, falls back to `quickbooks-fixture` otherwise, registers
 read-only `xero-fixture` and `netsuite-fixture` import mappings, exposes planned live Xero and
-NetSuite rows with posting disabled, retains the latest import in process by tenant/company/fund/book,
+NetSuite rows with posting disabled, persists the latest import by tenant/company/fund/book in the configured external-GL state directory,
 and compares external trial-balance evidence against Meridian-owned ledger truth when the ledger
 store is available. The reconciliation response carries provider-side refs, Meridian ledger refs,
 and package posture for external import, Meridian ledger support, and the GL tie-out. Import,
@@ -4387,3 +4409,7 @@ evidence prevents duplicates across retries and restart.
 Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
 retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
 rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.
+
+## Whole-journal downloads
+
+`POST /api/ledger/periods/{periodId}/journal-export` preserves ledger-read, `ExportData`, authenticated tenant/company and retained book-ownership checks. Its existing CSV/Parquet request optionally accepts `from`, `to` and `journalEntryIds`; defaults select the whole period. A single reporting capture supplies period state and every selected journal. Changed period versions require refresh, missing selected IDs reject the entire download, and response headers retain the source snapshot and exact artifact SHA-256. These neutral downloads grant no external-posting authority.

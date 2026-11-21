@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityFieldProvenanceRecord
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L81).
+
+A persisted field-level provenance row: the durable form of SecurityFieldProvenance, keyed by (security, field path, origin). OriginReference points back at the artifact that asserted the attribution — the conflict id for conflict resolutions, the revision id for operator field edits — so lineage is traceable to its governing record.
+
+```csharp
+public sealed record SecurityFieldProvenanceRecord(Guid SecurityId, string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence, string Origin, string? OriginReference, DateTimeOffset RecordedAt, long? SourceVersion = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityFieldProvenance ToFieldProvenance() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L99) | Projects the durable row onto the display-level field-provenance shape. |
+
+## SecurityForwardCurve
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurve</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L15).
+
+Projected fixings for one floating-rate index, as observed on AsOfDate. A floating leg resets each period at the curve&#x27;s rate for the period&#x27;s accrual start date, linearly interpolated between points and held flat beyond the first and last point.
+
+```csharp
+public sealed record SecurityForwardCurve(string IndexName, DateOnly AsOfDate, IReadOnlyList<SecurityForwardCurvePoint> Points, string? Source = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public BondCalculationInput? RetainedInput { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L23) | The immutable stored curve version behind these projected fixings, when retained. |
+| <code>public decimal? RateAt(DateOnly resetDate);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:25](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L25) | The projected fixing for a reset on resetDate; null when the curve has no points. |
+| <code>public const string RateSourcePrefix = &quot;forwardCurve:&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L61) | The prefix of every Describe label, and so of a curve-projected leg&#x27;s RateSource. |
+| <code>public string Describe() =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L70) | A short provenance label for projections: forwardCurve:{index}@{yyyy-MM-dd}, then ({source}) when a source is known. The date is written in the invariant culture, so TryReadAsOf reads it back on any host. |
+| <code>public static bool TryReadAsOf(string? rateSource, out DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:80](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L80) | Reads the curve&#x27;s as-of date back from a Describe label, such as a leg&#x27;s RateSource. The date is the first @yyyy-MM-dd that ends the label or is followed by the (source) suffix, so an index name or source that itself contains @ still reads. False for any other label. |
+
+## SecurityForwardCurveJsonContext
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurveJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:118](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L118).
+
+Supplies forward curves for floating-rate cash-flow projection. Hosts without one keep the flat-forward projection (last fixing plus spread). The stored implementation is StoredSecurityForwardCurveProvider in Application, reading ISecurityCurveStore.
+
+```csharp
+public sealed partial class SecurityForwardCurveJsonContext : JsonSerializerContext;
+```
+
+## SecurityForwardCurvePoint
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityForwardCurvePoint</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/SecurityForwardCurve.cs#L8).
+
+A projected index fixing for a reset date. Rates above 1 are read as percentages.
+
+```csharp
+public sealed record SecurityForwardCurvePoint(DateOnly Date, decimal Rate);
+```
+
 ## SecurityHistoryRequest
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityHistoryRequest</code>. Kind: `record`.
@@ -785,70 +849,3 @@ Report-first inventory of the active CustomAsset records pinned to one reclassif
 ```csharp
 public sealed record SecurityMasterProfilePromotionReportDto(DateTimeOffset GeneratedAt, string ProfileId, string TargetAssetClass, int SecuritiesScanned, int AlreadyPromotedCount, int CandidateCount, int ReadyCount, int BlockedCount, IReadOnlyList<SecurityMasterProfilePromotionCandidateDto> Candidates);
 ```
-
-## SecurityMasterProvenanceReader
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProvenanceReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L109).
-
-Typed reader for the Security Master provenance JSON ({ sourceSystem, sourceRecordId, asOf, updatedBy, reason } — the shape the F# snapshot serializer writes). Reads are tolerant: a missing or malformed document yields UnknownSource rather than failing the row.
-
-```csharp
-public static class SecurityMasterProvenanceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string UnknownSource = &quot;Unknown&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:111](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L111) |  |
-| <code>public static SecurityRecordProvenance Read(JsonElement provenance);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:113](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L113) |  |
-
-## SecurityMasterQualityReportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterQualityReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L37).
-
-```csharp
-public sealed record SecurityMasterQualityReportDto(DateTimeOffset RunAt, int SecuritiesScanned, int ViolationCount, IReadOnlyList<DataQualityRuleViolationDto> Violations)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int? UntaggedTermsPayloadCount { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterDataQuality.cs#L52) | How many stored securities rows — active and inactive — carry asset-specific terms with no declared termsFormat tag: the ADR-024 decision-5 retirement gate (select count(*) from securities where asset_specific_terms-&gt;&gt;&#x27;termsFormat&#x27; is null), measured per deployment so the shape rule&#x27;s remaining backlog is evidence instead of a guess. The tag drains organically: every write stamps it, so the count only falls. Null on reports persisted before the gauge existed. (One deliberate strictness over the SQL: a non-string tag also counts as untagged here; validation separately rejects it.) |
-
-## SecurityMasterReportingReference
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterReportingReference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L41).
-
-Frozen reference-data input used by reporting. Event coordinates are populated when the reference was rebuilt from the Security Master event stream.
-
-```csharp
-public sealed record SecurityMasterReportingReference(SecurityDetailDto Detail, SecurityEconomicDefinitionRecord? EconomicDefinition, DateTimeOffset AsOfUtc, SecurityMasterReportingResolutionMode ResolutionMode, long? EventGlobalSequence = null, long? EventStreamVersion = null, DateTimeOffset? EventTimestamp = null);
-```
-
-## SecurityMasterReportingResolutionMode
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterReportingResolutionMode</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L19).
-
-How a reporting reference was resolved.
-
-```csharp
-public enum SecurityMasterReportingResolutionMode
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>HistoricalEvent</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L22) | The detail and economic definition were rebuilt from a historical event. |
-| <code>CurrentProjectionFallback</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L28) | The security has no event history, so the current projection was used for compatibility. This mode is useful for draft output but is not certifiable. |
-| <code>LegacyQueryFallback</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityMasterReportingQueryService.cs#L34) | The query implementation does not expose a point-in-time reporting contract. Detail was resolved as-of where supported, but economic terms may be current. This is not certifiable. |

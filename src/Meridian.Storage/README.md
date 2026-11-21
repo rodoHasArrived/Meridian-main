@@ -11,6 +11,11 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Storage
 
+Backfill batch receipts optionally retain market-data input evidence. The existing content address
+binds repair purpose, repair operation identity and quality snapshot before rows receive that
+revision ID. Tampering with those facts invalidates the receipt. Older receipts omit the optional
+member and keep their existing content addresses; absent quality or repair status remains unknown.
+
 The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
 Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
 business folders compile through linked items in `Meridian.Storage.Accounting`. The workflow

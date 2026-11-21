@@ -289,7 +289,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.DataQualityMonitor</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:184](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L184).
+Source: [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:187](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L187).
 
 Monitors and scores data quality across all stored data. Provides multi-dimensional quality assessment and alerting.
 
@@ -301,12 +301,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DataQualityMonitor(DataGapAnalyzer gapAnalyzer, string dataRoot, QualityMonitorOptions? options = null, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:192](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L192) |  |
-| <code>public async Task&lt;QualityScore&gt; CalculateScoreAsync(string symbol, DateOnly? startDate = null, DateOnly? endDate = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:207](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L207) | Calculate quality score for a symbol. |
-| <code>public Task&lt;IReadOnlyList&lt;QualityAlert&gt;&gt; GetAlertsAsync(double? minScoreThreshold = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:262](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L262) | Get quality alerts for symbols below threshold. |
-| <code>public QualityScore? GetCachedScore(string symbol);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:300](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L300) | Get cached quality score for a symbol. |
-| <code>public IReadOnlyDictionary&lt;string, QualityScore&gt; GetAllScores();</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:308](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L308) | Get all cached quality scores. |
-| <code>public void ClearCache();</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:316](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L316) | Clear all cached scores. |
+| <code>public DataQualityMonitor(DataGapAnalyzer gapAnalyzer, string dataRoot, QualityMonitorOptions? options = null, ILogger? log = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:195](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L195) |  |
+| <code>public async Task&lt;QualityScore&gt; CalculateScoreAsync(string symbol, DateOnly? startDate = null, DateOnly? endDate = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:210](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L210) | Calculate quality score for a symbol. |
+| <code>public Task&lt;IReadOnlyList&lt;QualityAlert&gt;&gt; GetAlertsAsync(double? minScoreThreshold = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:266](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L266) | Get quality alerts for symbols below threshold. |
+| <code>public QualityScore? GetCachedScore(string symbol);</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:304](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L304) | Get cached quality score for a symbol. |
+| <code>public Meridian.Contracts.Operations.MarketDataInputEvidence? GetCachedInputEvidence(string symbol) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:310](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L310) | Captures the assessment already known at observation time; never performs a later lookup while posting. |
+| <code>public IReadOnlyDictionary&lt;string, QualityScore&gt; GetAllScores();</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:318](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L318) | Get all cached quality scores. |
+| <code>public void ClearCache();</code> | [src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs:326](../../../../src/Meridian.Infrastructure/Adapters/Core/GapAnalysis/DataQualityMonitor.cs#L326) | Clear all cached scores. |
 
 ## EnvironmentCredentialResolver
 

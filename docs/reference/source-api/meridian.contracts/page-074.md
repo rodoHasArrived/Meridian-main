@@ -6,6 +6,65 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterGridDefinitionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDefinitionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1483](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1483).
+
+```csharp
+public sealed record ReportWriterGridDefinitionDto(string GridId, string Title, ReportWriterGridKindDto Kind, IReadOnlyList<string>? RowFields = null, IReadOnlyList<string>? ColumnFields = null, IReadOnlyList<ReportWriterMetricDefinitionDto>? Metrics = null, IReadOnlyList<ReportWriterFormulaDefinitionDto>? Formulas = null, int? TopN = null, string? SortBy = null, bool SortDescending = true, IReadOnlyList<ReportWriterFilterDefinitionDto>? Filters = null, IReadOnlyList<ReportWriterFormatRuleDto>? FormatRules = null, ReportWriterChartDefinitionDto? Chart = null);
+```
+
+## ReportWriterGridDiffCellDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffCellDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1622](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1622).
+
+```csharp
+public sealed record ReportWriterGridDiffCellDto(string Column, string? PriorValue, string? CurrentValue, string? Delta, ReportWriterDiffDirectionDto Direction);
+```
+
+## ReportWriterGridDiffDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1636](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1636).
+
+```csharp
+public sealed record ReportWriterGridDiffDto(string GridId, string Title, IReadOnlyList<ReportWriterGridColumnDto> Columns, IReadOnlyList<ReportWriterGridDiffRowDto> Rows, IReadOnlyList<string> Warnings, int AddedRowCount, int RemovedRowCount, int ChangedRowCount, int UnchangedRowCount);
+```
+
+## ReportWriterGridDiffRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1629](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1629).
+
+```csharp
+public sealed record ReportWriterGridDiffRowDto(string RowKey, ReportWriterDiffRowStateDto State, IReadOnlyDictionary<string, string> PriorValues, IReadOnlyDictionary<string, string> CurrentValues, IReadOnlyList<ReportWriterGridDiffCellDto> Cells);
+```
+
+## ReportWriterGridKindDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridKindDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1432](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1432).
+
+```csharp
+public enum ReportWriterGridKindDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Detail = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1434](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1434) |  |
+| <code>Pivot = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1435](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1435) |  |
+| <code>TopN = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1436](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1436) |  |
+| <code>Contribution = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1437](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1437) |  |
+
 ## ReportWriterGridLineageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridLineageDto</code>. Kind: `record`.
@@ -176,7 +235,7 @@ public sealed record ResolveBreakCase(Guid WorkflowId, FundWorkflowCommandMetada
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResolveReconciliationBreakRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1084](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1084).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1091](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1091).
 
 Request to resolve or dismiss a break with audit metadata.
 
@@ -188,9 +247,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public long? ExpectedVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1094](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1094) | Version inspected by the operator for a guarded decision. Legacy adapters may omit it. |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? RootCauseCode { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1097](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1097) |  |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ResolutionCode { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1100](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1100) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public long? ExpectedVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1101](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1101) | Version inspected by the operator for a guarded decision. Legacy adapters may omit it. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? RootCauseCode { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1104](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1104) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ResolutionCode { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1107](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1107) |  |
 
 ## ResolveSecurityMasterMappings
 
@@ -250,7 +309,7 @@ public sealed record ReviewOnboardingWorkspaceRequestDto(int ExpectedVersion, in
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReviewReconciliationBreakRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1069](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1069).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1076](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1076).
 
 Request to move a break into active review and assign an operator.
 
@@ -262,7 +321,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public long? ExpectedVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1078](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1078) | Optional compatibility extension. Browser casework supplies the version it reviewed. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public long? ExpectedVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:1085](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L1085) | Optional compatibility extension. Browser casework supplies the version it reviewed. |
 
 ## RevokePreparerAttestationRequestDto
 
@@ -278,7 +337,7 @@ public sealed record RevokePreparerAttestationRequestDto(Guid CommandId, Guid Re
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunAttributionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:981](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L981).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:998](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L998).
 
 Complete attribution breakdown for one run.
 
@@ -290,7 +349,7 @@ public sealed record RunAttributionSummary(string RunId, StrategyRunMode Mode, d
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashFlowSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1028](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1028).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1045](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1045).
 
 Cash-flow projection summary for a strategy run. Includes both the raw historical entries and a time-bucketed cash ladder computed by the F# CashLadder.build module.
 
@@ -302,7 +361,7 @@ public sealed record RunCashFlowSummary(string RunId, DateTimeOffset AsOf, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunCashLadder</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1014](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1014).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1031](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1031).
 
 Time-bucketed forward view of projected cash flows for one run.
 
@@ -314,7 +373,7 @@ public sealed record RunCashLadder(DateTimeOffset AsOf, string Currency, int Buc
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:807](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L807).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:824](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L824).
 
 Normalized cross-mode run comparison DTO that includes the full set of BacktestMetrics fields plus equity curve data and parentage chain info. Returned by GET /api/strategies/runs/compare?ids=a,b. Defined nonfinite outcomes retain the SDK&#x27;s named JSON values: positive infinity for loss-free profit factor or downside-free Sortino, and NaN for unavailable XIRR.
 
@@ -326,15 +385,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMixHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:851](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L851) |  |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:853](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L853) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:855](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L855) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceMixHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:868](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L868) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:870](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L870) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:872](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L872) |  |
 
 ## RunComparisonRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunComparisonRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:859](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L859).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:876](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L876).
 
 Request to compare multiple strategy runs side by side.
 
@@ -346,7 +405,7 @@ public sealed record RunComparisonRequest(IReadOnlyList<string> RunIds, IReadOnl
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunDiffRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:864](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L864).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:881](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L881).
 
 Request to diff two strategy runs.
 
@@ -358,7 +417,7 @@ public sealed record RunDiffRequest(string BaseRunId, string TargetRunId);
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:952](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L952).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:969](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L969).
 
 A single executed fill from a strategy run.
 
@@ -370,7 +429,7 @@ public sealed record RunFillEntry(Guid FillId, Guid OrderId, string Symbol, long
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunFillSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:963](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L963).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:980](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L980).
 
 Trade-level fill list for one run.
 
@@ -382,7 +441,7 @@ public sealed record RunFillSummary(string RunId, StrategyRunMode Mode, int Tota
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1201](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1201).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1218](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1218).
 
 Lot history for a single strategy run, optionally filtered to one symbol.
 
@@ -394,7 +453,7 @@ public sealed record RunLotSummary(string RunId, int TotalOpenLots, int TotalClo
 
 Qualified name: <code>Meridian.Contracts.Workstation.RunPortfolioDrillInSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1043](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1043).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1060](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1060).
 
 Composite portfolio drill-in payload that keeps attribution, drawdown, cash-flow, and trade slices aligned under one additive, versioned contract.
 
@@ -514,7 +573,7 @@ public sealed record SecurityIdentityDrillInDto(Guid SecurityId, string DisplayN
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterAccountingIssueDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:332](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L332).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L339).
 
 Structured posture or reconciliation issue from Security Master-driven accounting.
 
@@ -533,75 +592,3 @@ The canonical-merge outcome of a publish, with an operator-facing explanation an
 ```csharp
 public sealed record SecurityMasterCanonicalMergeOutcomeDto(SecurityMasterCanonicalMergeOutcomeKind Outcome, string Detail, long? CanonicalVersion);
 ```
-
-## SecurityMasterCanonicalMergeOutcomeKind
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L156).
-
-What publishing an approved revision did to the canonical (golden) record.
-
-```csharp
-public enum SecurityMasterCanonicalMergeOutcomeKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotApplicable</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:159](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L159) | The revision changes no asset-specific term (an annotation path, or a clear). |
-| <code>OverlayOnly</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L162) | The approved value stays an overlay annotation; the canonical terms are unchanged. |
-| <code>AlreadyCanonical</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L165) | The canonical terms already held the approved value; no amendment was appended. |
-| <code>Merged</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L168) | The approved value was merged into the canonical terms. |
-
-## SecurityMasterChangeHistoryItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterChangeHistoryItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:209](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L209).
-
-```csharp
-public sealed record SecurityMasterChangeHistoryItemDto(string ChangeId, long StreamVersion, string EventType, DateTimeOffset ChangedAtUtc, DateTimeOffset? EffectiveAtUtc, string Actor, string Origin, string SourceSystem, string? SourceRecordId, string? Reason, string Summary, IReadOnlyList<string> ChangedFields, string ChangedFieldsSummary);
-```
-
-## SecurityMasterConflictAssessmentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictAssessmentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:160](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L160).
-
-```csharp
-public sealed record SecurityMasterConflictAssessmentDto(SecurityMasterConflict Conflict, string? CurrentWinningValue, string? ChallengerValue, string CurrentWinningSource, string ChallengerSource, SecurityMasterConflictRecommendationKind Recommendation, string RecommendedResolution, string RecommendedWinner, SecurityMasterImpactSeverity ImpactSeverity, string ImpactSummary, string ImpactDetail, bool IsBulkEligible, string? BulkIneligibilityReason = null);
-```
-
-## SecurityMasterConflictAuthorityDecision
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictAuthorityDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:195](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L195).
-
-Deterministic conflict-authority decision: the default winner the policy computes, the rule that selected it, and whether the conflict remains eligible for bulk resolution.
-
-```csharp
-public sealed record SecurityMasterConflictAuthorityDecision(string PolicyWinnerSource, string Rule, string Rationale, bool IsBulkEligible);
-```
-
-## SecurityMasterConflictRecommendationKind
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictRecommendationKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L41).
-
-```csharp
-public enum SecurityMasterConflictRecommendationKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>PreserveWinner = 0</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L43) |  |
-| <code>Challenger = 1</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L44) |  |
-| <code>DismissAsEquivalent = 2</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L45) |  |
-| <code>ManualReview = 3</code> | [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L46) |  |

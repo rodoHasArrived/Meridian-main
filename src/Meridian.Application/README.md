@@ -11,12 +11,31 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Application
 
+Reconnection and automatic gap remediation stamp an opaque repair-operation reference onto their
+backfill request. The historical writer binds that purpose and the assessment known at ingestion
+to its existing flushed batch receipt. Ordinary backfills do not infer historical repair status.
+The live market-event tap captures the same assessment snapshot with the feed-cache update so paper
+fills never attach a quality score fetched later during accounting.
+
+Loan reconciliation now consumes eligible nonvoid incoming receipts and their retained allocations
+once, by currency and due date. Current durable and synthetic allocation aliases share a matcher;
+PRD-115 principal prepayments, prepaid interest and unapplied cash retain their explained dispositions,
+and outgoing refunds cannot satisfy projected receipts. Optional amount/day tolerances are pinned
+to the retryable command; omitted requests preserve exact matching. Canonical balance comparisons
+use the registered loan account roles, an atomic exact-book journal capture and any pinned configured
+chart revision, including PIK, prepaid-interest and unapplied-cash balances. Missing role, currency or
+book evidence stays unavailable. A changed canonical security reference or incompatible chart history
+cannot hide earlier carrying legs: the comparison reports unavailable with its captured journal IDs.
+Migration `012_direct_lending_reconciliation_evidence.sql` retains
+new request/source evidence across restarts while leaving legacy evidence unknown.
+
 `SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
 instrument-position projection to registered valuation models. It resolves retained-only dated
 Security Master terms, validates their economic window, checks position/state identity and all
 book/policy/account/currency boundaries, and replays the exact golden-copy receipt for quoted
 prices. Stale or mismatched evidence blocks amounts. Supported long holder share/unit conventions
-and original-face DCF delegate to existing kernels; multiplier/notional and ambiguous signed
+and original-face DCF delegate to existing kernels; any retained current factor is reconciled with
+the model amount even when current face is absent. Multiplier/notional and ambiguous signed
 conventions require dedicated adapters. DCF dirty values withhold P/L without a compatible
 carrying/accrual basis. The comparison is market value less retained carrying amount, separate
 from posted ledger, realized, tax-cost or total-return P/L. `KnownAt` is refused because projection

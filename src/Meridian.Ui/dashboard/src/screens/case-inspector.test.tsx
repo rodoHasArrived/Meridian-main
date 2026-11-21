@@ -5,6 +5,7 @@ import { axe } from "jest-axe";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/lib/api-errors";
 import { CaseInspector, CaseVariance, caseChanges } from "./case-inspector";
+import { caseResidual } from "./reconciliation-case-values";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
 import type { ReconciliationBreakQueueItem, ReconciliationCaseworkOperationResult, ReconciliationCaseworkCommand } from "@/types";
 
@@ -83,6 +84,60 @@ describe("shared case inspector", () => {
     const after = { ...before, measures: [{ ...before.measures[0], varianceExact: "0.0010000000000000000000000002" }] };
     expect(caseChanges(before, after)).toEqual([{ label: "Variance", before: "0.0010000000000000000000000001", after: "0.0010000000000000000000000002" }]);
     expect(caseChanges(before, { ...before, measures: [{ ...before.measures[0], varianceExact: "0.00100000000000000000000000010" }] })).toEqual([]);
+  });
+
+  it("preserves small quantity residuals and tolerance precision in the inspector and queue primitive", async () => {
+    const quantity: ReconciliationBreakQueueItem = { ...record, measures: [{ kind: "Quantity", expected: 1, actual: 1.0001, actualExact: "1.00010001",
+      variance: 0.0001, varianceExact: "0.00010001", tolerance: 0.00001, toleranceExact: "0.0000000000000000000000000001", unit: "Shares" }] };
+    const { rerender } = setup(quantity);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    const comparison = within(screen.getByRole("region", { name: "Comparison" }));
+    expect(comparison.getByText("+0.00010001 Shares")).toBeInTheDocument();
+    expect(comparison.getByText("0.0000000000000000000000000001 Shares")).toBeInTheDocument();
+    expect(comparison.queryByRole("button", { name: /Amount passport/ })).not.toBeInTheDocument();
+    rerender(<MemoryRouter><CaseVariance item={quantity} /></MemoryRouter>);
+    expect(screen.getByText("+0.00010001 Shares")).toBeInTheDocument();
+    expect(screen.queryByText(/0\.00 Shares/)).not.toBeInTheDocument();
+  });
+
+  it("keeps all retained quantity and basis dimensions visible instead of selecting one scalar residual", async () => {
+    const multiple: ReconciliationBreakQueueItem = { ...record, measures: [
+      { kind: "Quantity", expected: 1, actual: 2, variance: 1, tolerance: 0, unit: "Shares" },
+      { kind: "CostBasis", expected: 100, actual: 110, variance: 10, tolerance: 0.01, unit: "EUR" }
+    ] };
+    const { rerender } = setup(multiple);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    const comparison = within(screen.getByRole("table", { name: "Retained residual components" }));
+    expect(comparison.getByRole("rowheader", { name: /Quantity\s*Shares/ })).toBeVisible();
+    expect(comparison.getByRole("rowheader", { name: /Cost basis\s*EUR/ })).toBeVisible();
+    expect(comparison.queryByRole("button", { name: /Inspect Quantity residual/ })).not.toBeInTheDocument();
+    rerender(<MemoryRouter><CaseVariance item={multiple} /></MemoryRouter>);
+    expect(screen.getByText("Multiple")).toBeInTheDocument();
+    rerender(<MemoryRouter><CaseVariance item={{ ...record, measures: [{ ...record.measures![0], actualExact: null }] }} /></MemoryRouter>);
+    expect(screen.getByText("Unavailable")).toBeInTheDocument();
+    expect(screen.queryByText(/500/)).not.toBeInTheDocument();
+  });
+
+  it.each([false, true])("keeps incomplete quantity coverage visible beside zero basis without a scalar money header (reversed: %s)", async (reversed) => {
+    const measures: NonNullable<ReconciliationBreakQueueItem["measures"]> = [
+      { kind: "Quantity", expected: null, actual: null, variance: null, tolerance: 0.01,
+        unit: "Shares", unavailableReason: "Native quantity coverage is unavailable." },
+      { kind: "CostBasis", expected: 100, actual: 100, variance: 0, tolerance: 0.01, unit: "EUR" }
+    ];
+    const mixed: ReconciliationBreakQueueItem = { ...record, variance: 0, measures: reversed ? measures.slice().reverse() : measures };
+    const { rerender } = setup(mixed);
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    const comparison = within(screen.getByRole("table", { name: "Retained residual components" }));
+    const quantity = within(comparison.getByRole("row", { name: /Quantity\s*Shares/ }));
+    expect(quantity.getAllByText("Unavailable")).toHaveLength(3);
+    const basis = within(comparison.getByRole("row", { name: /Cost basis\s*EUR/ }));
+    expect(basis.getAllByText("100")).toHaveLength(2);
+    expect(basis.getByRole("button", { name: /Inspect Cost basis residual 0/ })).toBeVisible();
+    expect(caseResidual(mixed)).toBeNull();
+    rerender(<MemoryRouter><CaseVariance item={mixed} /></MemoryRouter>);
+    expect(screen.getByText("Multiple")).toBeInTheDocument();
+    expect(screen.queryByText(/0(?:\.00)? EUR/)).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Amount passport/ })).not.toBeInTheDocument();
   });
 
   it("opens a visible form and sends the exact loaded version and decision fields before showing a receipt", async () => {

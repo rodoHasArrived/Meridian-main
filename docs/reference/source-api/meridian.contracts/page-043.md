@@ -224,6 +224,65 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs:68](../../../../src/Meridian.Contracts/Operations/PreparerAttestationApprovalBoundary.cs#L68) |  |
 
+## MarketDataInputEvidence
+
+Qualified name: <code>Meridian.Contracts.Operations.MarketDataInputEvidence</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:7](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L7).
+
+Source and quality facts captured with the market observation. Null means unassessed.
+
+```csharp
+public sealed record MarketDataInputEvidence(string? ProviderId = null, string? EventReference = null, DateTimeOffset? ObservedAt = null, string? DatasetId = null, string? BackfillRevisionId = null, string? ContentHash = null, bool? Repaired = null, bool? GapFilled = null, string? RepairReceiptId = null, double? QualityScore = null, DateTimeOffset? QualityAssessedAt = null, DateOnly? AssessmentFrom = null, DateOnly? AssessmentTo = null, double? QualityThreshold = null, string? EvidenceIssue = null);
+```
+
+## MarketDataInputEvidenceJsonContext
+
+Qualified name: <code>Meridian.Contracts.Operations.MarketDataInputEvidenceJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:127](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L127).
+
+```csharp
+public partial class MarketDataInputEvidenceJsonContext : JsonSerializerContext;
+```
+
+## MarketDataInputEvidenceTags
+
+Qualified name: <code>Meridian.Contracts.Operations.MarketDataInputEvidenceTags</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:29](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L29).
+
+Immutable source snapshots retained inside existing journal metadata.
+
+```csharp
+public static class MarketDataInputEvidenceTags
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string VersionTag = &quot;marketData.input.version&quot;;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:31](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L31) |  |
+| <code>public const string InputsTag = &quot;marketData.input.v1&quot;;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:32](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L32) |  |
+| <code>public static IReadOnlyList&lt;MarketDataInputEvidence&gt;? Freeze(IReadOnlyList&lt;MarketDataInputEvidence&gt;? inputs);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:34](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L34) |  |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; Create(IEnumerable&lt;MarketDataInputEvidence&gt;? inputs);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:59](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L59) |  |
+| <code>public static IReadOnlyDictionary&lt;string, string&gt; ToTags(IEnumerable&lt;MarketDataInputEvidence&gt;? inputs) =&gt; …;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:71](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L71) |  |
+| <code>public static MarketDataInputEvidence ForObservation(MarketDataInputEvidence input, DateOnly observedDate) =&gt; …;</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:74](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L74) | A symbol/range assessment cannot certify an observation outside that retained window. |
+| <code>public static IReadOnlyList&lt;MarketDataInputEvidence&gt; Read(IReadOnlyDictionary&lt;string, string&gt;? tags);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:81](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L81) | Missing, unsupported or malformed evidence remains unassessed. |
+| <code>public static IReadOnlyList&lt;MarketDataQualityWarningDto&gt; BuildWarnings(IEnumerable&lt;IReadOnlyList&lt;MarketDataInputEvidence&gt;?&gt; logicalFills, double minimumQualityScore =.8d);</code> | [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:94](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L94) | The caller supplies one source population per logical fill, deduplicating cost journals. |
+
+## MarketDataQualityWarningDto
+
+Qualified name: <code>Meridian.Contracts.Operations.MarketDataQualityWarningDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs:25](../../../../src/Meridian.Contracts/Operations/MarketDataInputEvidence.cs#L25).
+
+Dependence warning for distinct fills, without attributing an invented P&amp;L amount.
+
+```csharp
+public sealed record MarketDataQualityWarningDto(string Kind, string Message, int AffectedFillCount, IReadOnlyList<MarketDataInputEvidence> Evidence);
+```
+
 ## OperationalCaseApproval
 
 Qualified name: <code>Meridian.Contracts.Operations.OperationalCaseApproval</code>. Kind: `record`.
@@ -836,65 +895,3 @@ The CSV alternative replaces Basket.Legs and uses the same validated header.
 ```csharp
 public sealed record OptionAssessmentImportRequest(BrokerOptionAssessment Assessment, string SourceFileName, string SourceContentBase64, string SourceContentType = "application/octet-stream", string? LegsCsv = null, string? CorrectsAssessmentId = null);
 ```
-
-## OptionAssessmentLeg
-
-Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentLeg</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:34](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L34).
-
-Exact proposed basket terms; unrestricted strategy names do not confer support.
-
-```csharp
-public sealed record OptionAssessmentLeg(string LegId, string InstrumentType, string Symbol, string Side, string PositionIntent, string Ratio, string Currency, string? UnderlyingSymbol = null, string? Right = null, string? Expiration = null, string? Strike = null, string? Multiplier = null, string? Exchange = null, string? Deliverable = null);
-```
-
-## OptionAssessmentValidation
-
-Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentValidation</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:10](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L10).
-
-Canonical matching and format validation only. Never computes option margin or permission.
-
-```csharp
-public static partial class OptionAssessmentValidation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const int MaxLegs = 50;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:12](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L12) |  |
-| <code>public static string ExactDecimal(string? value, string name, bool positive = false);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:24](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L24) |  |
-| <code>public static BrokerOptionAssessment Normalize(BrokerOptionAssessment value, string? legsCsv = null);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:46](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L46) |  |
-| <code>public static string BasketFingerprint(BrokerOptionAssessment assessment) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:110](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L110) |  |
-| <code>public static string Digest(byte[] bytes);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:113](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L113) |  |
-| <code>public static byte[] CanonicalBytes&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:118](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L118) |  |
-| <code>public static IReadOnlyList&lt;OptionAssessmentLeg&gt; ParseLegsCsv(string csv);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:175](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L175) |  |
-
-## OptionChainSnapshotDto
-
-Qualified name: <code>Meridian.Contracts.Options.OptionChainSnapshotDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:33](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L33).
-
-```csharp
-public sealed record OptionChainSnapshotDto(string OptionChainId, string UnderlyingSymbol, DateOnly ExpiryDate, DateTimeOffset LastUpdatedUtc, int ContractCount, IReadOnlyList<OptionSeriesDto> Series);
-```
-
-## OptionContractReferenceDto
-
-Qualified name: <code>Meridian.Contracts.Options.OptionContractReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:5](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L5).
-
-```csharp
-public sealed record OptionContractReferenceDto(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, long Version)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityOptionRight? Right =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:23](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L23) | PutCall as a typed right, or null when the stored text names neither. The raw text stays on PutCall. |

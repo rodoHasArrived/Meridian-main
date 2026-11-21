@@ -11,6 +11,10 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+`DataQualityMonitor` retains the date range and alert threshold with each cached symbol assessment.
+`GetCachedInputEvidence` snapshots the assessment already known when an observation is captured;
+it does not assess a historical fill later or claim that a symbol/range score is a per-row score.
+
 Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
 `DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual
 observations in memory. Durable history records route observations independently of the shared
@@ -106,7 +110,7 @@ Alpha Vantage history/search/corporate actions share five requests per minute an
 25-request rolling 24-hour cap by default; its published daily limit names no reset boundary.
 `ProviderQuotas:AlphaVantage` can declare the actual account limits and `NoDailyLimit`.
 Short and daily admission charge the full cost atomically; cancelled waits charge neither.
-A backfill waiting for capacity releases its admission slot so other calls can use reserved quota.
+A backfill using reserved headroom releases its admission slot while waiting for capacity so other calls can use the reserve.
 Pacing rounds positive waits up to milliseconds, including nonintegral paid-plan intervals.
 Effective account profiles cannot differ across capabilities sharing a credential and quota group.
 Registry state survives provider recreation/disposal within the process. It is not persisted across

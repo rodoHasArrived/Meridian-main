@@ -6,6 +6,74 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationSessionPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:178](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L178).
+
+Typed payload returned by GET /api/workstation/session. ActiveWorkspace uses the canonical browser shell roots: trading, portfolio, accounting, reporting, strategy, data, or settings.
+
+```csharp
+public sealed record WorkstationSessionPayload(string DisplayName, string Role, string Environment, string ActiveWorkspace, int CommandCount, WorkstationRunDigest? LatestRun, WorkstationSessionWorkspaceSummary WorkspaceSummary);
+```
+
+## WorkstationSessionWorkspaceSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSessionWorkspaceSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:166](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L166).
+
+Workspace-level summary embedded inside WorkstationSessionPayload.
+
+```csharp
+public sealed record WorkstationSessionWorkspaceSummary(int TotalRuns, int ActiveRuns, int ReviewRuns, int LedgerCoverage, int PortfolioCoverage);
+```
+
+## WorkstationStrategyPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:334](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L334).
+
+Typed payload returned by GET /api/workstation/strategy.
+
+```csharp
+public sealed record WorkstationStrategyPayload(IReadOnlyList<WorkstationMetricCard> Metrics, IReadOnlyList<WorkstationStrategyRunCard> Runs, IReadOnlyList<WorkstationModeComparisonGroup> Comparisons, IReadOnlyList<WorkstationTimelineCard> Timeline, WorkstationStrategyWorkspaceSummary Workspace, WorkstationPlotToolPayload? PlotTool = null);
+```
+
+## WorkstationStrategyRunCard
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyRunCard</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:90](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L90).
+
+```csharp
+public sealed record WorkstationStrategyRunCard(string Id, string StrategyName, string Engine, string Mode, string Status, string Dataset, string Window, string Pnl, string Sharpe, string LastUpdated, string Notes, string? PromotionState, string? LedgerReference, string? PortfolioId, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, WorkstationSecurityCoveragePayload SecurityCoverage, WorkstationRunDrillInLinks DrillIn, BiasDisclosureDto? BiasDisclosure = null, decimal? MaxDrawdown = null, IReadOnlyList<decimal>? TrendValues = null, IReadOnlyList<string>? TrendDates = null, string? SearchText = null);
+```
+
+## WorkstationStrategyWorkspaceSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyWorkspaceSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:194](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L194).
+
+Workspace-level summary embedded inside WorkstationStrategyPayload.
+
+```csharp
+public sealed record WorkstationStrategyWorkspaceSummary(int TotalRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, int PromotionCandidates);
+```
+
+## WorkstationTableExportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableExportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs:37](../../../../src/Meridian.Contracts/Workstation/WorkstationTableViewDtos.cs#L37).
+
+```csharp
+public sealed record WorkstationTableExportDto(string Filename, string Csv, int RowCount, DateTimeOffset AsOf);
+```
+
 ## WorkstationTableExportRequest
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableExportRequest</code>. Kind: `record`.

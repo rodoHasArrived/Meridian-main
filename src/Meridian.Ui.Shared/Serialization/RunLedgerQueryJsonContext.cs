@@ -14,4 +14,9 @@ internal partial class RunLedgerQueryJsonContext : JsonSerializerContext;
 
 public sealed record RunLedgerExportRequest(
     string Format = "csv",
-    IReadOnlyDictionary<string, string>? AccountMapping = null);
+    IReadOnlyDictionary<string, string>? AccountMapping = null)
+{
+    public DateOnly? From { get; init; }
+    public DateOnly? To { get; init; }
+    public IReadOnlyList<Guid>? JournalEntryIds { get; init; }
+}

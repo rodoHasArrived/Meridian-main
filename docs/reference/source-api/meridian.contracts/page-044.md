@@ -6,6 +6,68 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OptionAssessmentLeg
+
+Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentLeg</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionVisualizationDtos.cs:34](../../../../src/Meridian.Contracts/Options/OptionVisualizationDtos.cs#L34).
+
+Exact proposed basket terms; unrestricted strategy names do not confer support.
+
+```csharp
+public sealed record OptionAssessmentLeg(string LegId, string InstrumentType, string Symbol, string Side, string PositionIntent, string Ratio, string Currency, string? UnderlyingSymbol = null, string? Right = null, string? Expiration = null, string? Strike = null, string? Multiplier = null, string? Exchange = null, string? Deliverable = null);
+```
+
+## OptionAssessmentValidation
+
+Qualified name: <code>Meridian.Contracts.Options.OptionAssessmentValidation</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:10](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L10).
+
+Canonical matching and format validation only. Never computes option margin or permission.
+
+```csharp
+public static partial class OptionAssessmentValidation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const int MaxLegs = 50;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:12](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L12) |  |
+| <code>public static string ExactDecimal(string? value, string name, bool positive = false);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:24](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L24) |  |
+| <code>public static BrokerOptionAssessment Normalize(BrokerOptionAssessment value, string? legsCsv = null);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:46](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L46) |  |
+| <code>public static string BasketFingerprint(BrokerOptionAssessment assessment) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:110](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L110) |  |
+| <code>public static string Digest(byte[] bytes);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:113](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L113) |  |
+| <code>public static byte[] CanonicalBytes&lt;T&gt;(T value) =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:118](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L118) |  |
+| <code>public static IReadOnlyList&lt;OptionAssessmentLeg&gt; ParseLegsCsv(string csv);</code> | [src/Meridian.Contracts/Options/OptionAssessmentValidation.cs:175](../../../../src/Meridian.Contracts/Options/OptionAssessmentValidation.cs#L175) |  |
+
+## OptionChainSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Options.OptionChainSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:33](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L33).
+
+```csharp
+public sealed record OptionChainSnapshotDto(string OptionChainId, string UnderlyingSymbol, DateOnly ExpiryDate, DateTimeOffset LastUpdatedUtc, int ContractCount, IReadOnlyList<OptionSeriesDto> Series);
+```
+
+## OptionContractReferenceDto
+
+Qualified name: <code>Meridian.Contracts.Options.OptionContractReferenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:5](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L5).
+
+```csharp
+public sealed record OptionContractReferenceDto(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, long Version)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SecurityOptionRight? Right =&gt; …;</code> | [src/Meridian.Contracts/Options/OptionReferenceDtos.cs:23](../../../../src/Meridian.Contracts/Options/OptionReferenceDtos.cs#L23) | PutCall as a typed right, or null when the stored text names neither. The raw text stays on PutCall. |
+
 ## OptionScreenCandidate
 
 Qualified name: <code>Meridian.Contracts.Options.OptionScreenCandidate</code>. Kind: `record`.
@@ -699,43 +761,3 @@ Enum declarations:
 | <code>Created</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:37](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L37) |  |
 | <code>Rejected</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:38](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L38) |  |
 | <code>Blocked</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:39](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L39) |  |
-
-## PlaidWebhookEventDto
-
-Qualified name: <code>Meridian.Contracts.Plaid.PlaidWebhookEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:253](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L253).
-
-```csharp
-public sealed record PlaidWebhookEventDto(string EventId, string ItemId, string WebhookType, string WebhookCode, DateTimeOffset ReceivedAt, string? PayloadHash = null, bool Duplicate = false);
-```
-
-## AcceptPrivateCapitalImport
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.AcceptPrivateCapitalImport</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:42](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L42).
-
-```csharp
-public sealed record AcceptPrivateCapitalImport(Guid BatchId, string Fingerprint, Guid CommandId);
-```
-
-## CreatePrivateCapitalCommitment
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.CreatePrivateCapitalCommitment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:16](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L16).
-
-```csharp
-public sealed record CreatePrivateCapitalCommitment(Guid CommandId, Guid HolderEntityId, Guid VehicleSecurityId, string Currency, string SourceReference, PrivateCapitalEvidence Evidence);
-```
-
-## PreviewPrivateCapitalImport
-
-Qualified name: <code>Meridian.Contracts.PrivateCapital.PreviewPrivateCapitalImport</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs:34](../../../../src/Meridian.Contracts/PrivateCapital/PrivateCapitalRecordDtos.cs#L34).
-
-```csharp
-public sealed record PreviewPrivateCapitalImport(IReadOnlyList<PrivateCapitalSnapshotInput>? Rows, string? Csv, PrivateCapitalEvidence Evidence, string Rationale);
-```

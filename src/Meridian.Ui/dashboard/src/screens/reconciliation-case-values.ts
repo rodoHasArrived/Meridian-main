@@ -1,18 +1,13 @@
+import { caseMeasureAmount, caseQueueResidual, retainedResidual } from "@/lib/reconciliation-measure-presentation";
 import type { ReconciliationBreakMeasure, ReconciliationBreakQueueItem } from "@/types";
+export { caseMeasureAmount } from "@/lib/reconciliation-measure-presentation";
 
 export function caseMeasure(item: ReconciliationBreakQueueItem): ReconciliationBreakMeasure | undefined {
   return item.measures?.find((entry) => entry.kind === "Value") ?? item.measures?.[0];
 }
 
 export function caseResidualUnit(item: ReconciliationBreakQueueItem): string | undefined {
-  const retained = item.statementEvidence?.match.residuals;
-  return retained?.length === 1 ? retained[0].unit : caseMeasure(item)?.unit;
-}
-
-/** An explicit unavailable measure stays unavailable; numeric fields support older hosts only. */
-export function caseMeasureAmount(measure: ReconciliationBreakMeasure, field: "expected" | "actual" | "variance" | "tolerance"): string | number | null {
-  const exact = measure[`${field}Exact`];
-  return exact === undefined ? measure[field] : exact;
+  return caseQueueResidual(item).unit ?? undefined;
 }
 
 export function caseResidual(item: ReconciliationBreakQueueItem): string | number | null {
@@ -20,8 +15,10 @@ export function caseResidual(item: ReconciliationBreakQueueItem): string | numbe
     const residuals = item.statementEvidence.match.residuals;
     return residuals.length === 1 ? residuals[0].residual : null;
   }
-  const measure = caseMeasure(item);
-  return measure ? caseMeasureAmount(measure, "variance") : item.varianceExact ?? item.variance;
+  if (item.measures?.length) {
+    return item.measures.length === 1 ? retainedResidual(item.measures[0]) : null;
+  }
+  return item.varianceExact === undefined ? item.variance : item.varianceExact;
 }
 
 export function caseTolerance(item: ReconciliationBreakQueueItem): string | number | null | undefined {

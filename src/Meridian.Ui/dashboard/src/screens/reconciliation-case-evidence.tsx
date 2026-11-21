@@ -6,7 +6,9 @@ import { Select } from "@/components/ui/select";
 import { StatusBanner } from "@/components/ui/status-banner";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
-import { formatExactMagnitude, parseExactDecimal } from "@/lib/exact-decimal";
+import { parseExactDecimal } from "@/lib/exact-decimal";
+import { displayAmount, retainedResidual, measureUnit } from "@/lib/reconciliation-measure-presentation";
+export { caseQueueResidual, caseQueueTolerance } from "@/lib/reconciliation-measure-presentation";
 import { getReconciliationBreakAudit } from "@/lib/api/statement-connectors.api";
 import { evidenceWorkbenchPath } from "@/lib/workspace";
 import type { ReconciliationBreakMeasure, ReconciliationBreakQueueItem, RetainedStatementCaseEvidence, StatementMatchAllocation, StatementMatchResidual } from "@/types";
@@ -22,39 +24,6 @@ const MEASURE_LABELS: Record<ReconciliationBreakMeasure["kind"], string> = {
   Quantity: "Quantity",
   CostBasis: "Cost basis"
 };
-
-function displayAmount(value: string | number | null, signed = false): string {
-  const decimal = parseExactDecimal(value);
-  if (!decimal) return "Unavailable";
-  const sign = decimal.units === 0n ? "" : decimal.negative ? "−" : signed ? "+" : "";
-  return `${sign}${formatExactMagnitude(decimal, decimal.scale).text}`;
-}
-
-function retainedResidual(measure: ReconciliationBreakMeasure): string | number | null {
-  if (measure.unavailableReason || !parseExactDecimal(caseMeasureAmount(measure, "actual")) || !parseExactDecimal(caseMeasureAmount(measure, "expected"))) return null;
-  const residual = caseMeasureAmount(measure, "variance");
-  return parseExactDecimal(residual) ? residual : null;
-}
-
-function measureUnit(unit: string): string {
-  return !unit || unit === "currency" ? "Currency unavailable" : unit;
-}
-
-export function caseQueueResidual(item: ReconciliationBreakQueueItem): { amount: string; unit: string | null } {
-  if (item.statementEvidence) {
-    const { residuals } = item.statementEvidence.match;
-    if (residuals.length > 1) return { amount: "Multiple", unit: null };
-    if (residuals.length === 1) return { amount: displayAmount(residuals[0].residual, true), unit: residuals[0].unit };
-    return { amount: "Unavailable", unit: null };
-  }
-  const measures = item.measures ?? [];
-  const reported = measures.filter((measure) => retainedResidual(measure) != null);
-  if (reported.length > 1) return { amount: "Multiple", unit: null };
-  if (reported.length === 1) return { amount: displayAmount(caseMeasureAmount(reported[0], "variance"), true), unit: measureUnit(reported[0].unit) };
-  return measures.length > 0
-    ? { amount: "Unavailable", unit: null }
-    : { amount: displayAmount(item.varianceExact ?? item.variance, true), unit: "Unit unavailable" };
-}
 
 function CaseFact({ label, children }: { label: string; children?: ReactNode }) {
   return <div><dt>{label}</dt><dd>{children ?? "Unavailable"}</dd></div>;
@@ -79,12 +48,13 @@ export function ReconciliationMatchCandidate({ item }: { item: ReconciliationBre
   </section>;
 }
 
-function ResidualAmount({ label, unit, value, asOf, basis }: {
-  label: string; unit: string; value: string | number | null; asOf?: string | null; basis?: string;
+function ResidualAmount({ label, unit, value, asOf, basis, monetary = true }: {
+  label: string; unit: string; value: string | number | null; asOf?: string | null; basis?: string; monetary?: boolean;
 }) {
   const amount = parseExactDecimal(value);
   if (!amount) return "Unavailable";
   const displayValue = displayAmount(value, true);
+  if (!monetary || !/^[A-Z]{3}$/.test(unit)) return <span className="min-w-0 [overflow-wrap:anywhere]">{displayValue}</span>;
   return <AmountPassportTrigger compact selection={{
     label, displayValue, unit, currency: /^[A-Z]{3}$/.test(unit) ? unit : null,
     origin: "calculated", zero: amount.units === 0n, asOf, basis,
@@ -159,7 +129,7 @@ function compareColumns(statement: boolean, prior: ReconciliationBreakQueueItem 
     { id: "expected", label: statement ? "Ledger" : "Expected", numeric: true, render: (measure) => displayAmount(caseMeasureAmount(measure, "expected")) },
     { id: "residual", label: "Residual", numeric: true, render: (measure) => <>
       <ResidualAmount label={`${MEASURE_LABELS[measure.kind]} residual`} unit={measureUnit(measure.unit)} value={retainedResidual(measure)}
-        asOf={asOf} basis={statement ? "Statement minus ledger" : "Observed minus expected"} />
+        monetary={measure.kind !== "Quantity"} asOf={asOf} basis={statement ? "Statement minus ledger" : "Observed minus expected"} />
       {caseMeasureAmount(measure, "tolerance") != null ? <span className="block text-xs font-normal text-muted-foreground">Tolerance {displayAmount(caseMeasureAmount(measure, "tolerance"))}</span> : null}
     </> }
   ];

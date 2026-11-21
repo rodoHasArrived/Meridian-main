@@ -2,6 +2,7 @@ using Meridian.Contracts.Backfill;
 using Meridian.Contracts.Domain;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Operations;
 using Meridian.Domain.Events;
 using Meridian.Ledger;
 using Meridian.Platform.Scheduling;
@@ -21,28 +22,46 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
     private readonly HashSet<string> _unverified = new(StringComparer.OrdinalIgnoreCase);
     private readonly Dictionary<string, BackfillBatchReceipt> _consumedRevisions = new(StringComparer.Ordinal);
     private readonly Dictionary<string, (DateTimeOffset At, JournalEvidenceReference Reference)?> _lastPriceEvidence = new(StringComparer.OrdinalIgnoreCase);
+    private readonly Dictionary<string, (DateTimeOffset At, IReadOnlyList<MarketDataInputEvidence> Inputs)> _lastPriceInputs = new(StringComparer.OrdinalIgnoreCase);
+    private IReadOnlyList<MarketDataInputEvidence> _currentInputs = [];
     private MarketEvent? _currentEvent;
     private JournalEvidenceReference? _currentEvidence;
 
     public async IAsyncEnumerable<MarketEvent> VerifyAsync(
         IAsyncEnumerable<MarketEvent> events, [EnumeratorCancellation] CancellationToken ct)
     {
-        DateTimeOffset? verificationTime = null;
-        var verifiedRows = new HashSet<(string Source, string Feed, string Instrument, string Hash)>();
+        // All equal-time candidates are known before choosing a retained revision. Otherwise
+        // file enumeration order decides which quality assessment accompanies an identical bar.
+        var window = new List<MarketEvent>();
+        DateTimeOffset? timestamp = null;
         await foreach (var item in events.WithCancellation(ct).ConfigureAwait(false))
         {
-            if (item.Timestamp != verificationTime)
+            if (timestamp.HasValue && timestamp != item.Timestamp)
             {
-                verificationTime = item.Timestamp;
-                verifiedRows.Clear();
+                await foreach (var verified in VerifyWindowAsync(window, ct).ConfigureAwait(false))
+                    yield return verified;
+                window.Clear();
             }
+            timestamp = item.Timestamp;
+            window.Add(item);
+        }
+        if (window.Count > 0)
+            await foreach (var verified in VerifyWindowAsync(window, ct).ConfigureAwait(false))
+                yield return verified;
+    }
 
+    private async IAsyncEnumerable<MarketEvent> VerifyWindowAsync(IReadOnlyList<MarketEvent> window,
+        [EnumeratorCancellation] CancellationToken ct)
+    {
+        var selected = new Dictionary<(string Source, string Feed, string Instrument, string Hash), MarketEvent>();
+        var order = new List<(MarketEvent Item, (string Source, string Feed, string Instrument, string Hash)? Key)>();
+        foreach (var item in window)
+        {
             if (item.BackfillRevisionId is not { } id)
             {
-                yield return item;
+                order.Add((item, null));
                 continue;
             }
-
             var retained = await ReadBatchAsync(id, ct).ConfigureAwait(false);
             if (retained is not null &&
                 string.Equals(retained.Receipt.Instrument, item.Symbol, StringComparison.OrdinalIgnoreCase) &&
@@ -52,18 +71,22 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
                 var hash = BackfillBatchRevision.HashRow(item);
                 if (retained.RowHashes.Contains(hash))
                 {
-                    // A crash may leave the same stamped row in a partition twice before its
-                    // receipt is sealed. Range refreshes can also overlap without revising it.
-                    if (verifiedRows.Add((retained.Receipt.ServingProvider!, retained.Receipt.Feed,
-                            retained.Receipt.Instrument, hash)))
-                        yield return item;
+                    var key = (retained.Receipt.ServingProvider!, retained.Receipt.Feed, retained.Receipt.Instrument, hash);
+                    if (!selected.TryGetValue(key, out var previous))
+                    {
+                        selected.Add(key, item);
+                        order.Add((item, key));
+                    }
+                    else if (StringComparer.Ordinal.Compare(item.BackfillRevisionId, previous.BackfillRevisionId) < 0)
+                        selected[key] = item;
                     continue;
                 }
             }
-
             _unverified.Add(item.EffectiveSymbol);
-            yield return item with { BackfillRevisionId = null };
+            order.Add((item with { BackfillRevisionId = null }, null));
         }
+        foreach (var item in order)
+            yield return item.Key is { } key ? selected[key] : item.Item;
     }
 
     public void Observe(MarketEvent item)
@@ -71,6 +94,9 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
         _currentEvent = item;
         _currentEvidence = null;
         var symbol = item.EffectiveSymbol;
+        var input = new MarketDataInputEvidence(ProviderId: item.Source,
+            EventReference: FormattableString.Invariant($"{item.Source}:{symbol}:{item.Type}:{item.Sequence}:{item.Timestamp:O}"),
+            ObservedAt: item.Timestamp);
         DateOnly? date = item.Payload switch
         {
             HistoricalBar bar => bar.SessionDate,
@@ -93,6 +119,15 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
         if (item.BackfillRevisionId is { } id && _batchCache.GetValueOrDefault(id) is { } batch)
         {
             var receipt = batch.Receipt;
+            input = (receipt.InputEvidence ?? input) with
+            {
+                ProviderId = receipt.ServingProvider,
+                EventReference = input.EventReference,
+                ObservedAt = item.Timestamp,
+                BackfillRevisionId = receipt.RevisionId,
+                ContentHash = receipt.ContentHash,
+                DatasetId = receipt.Feed
+            };
             _consumedRevisions.TryAdd(id, receipt);
             _currentEvidence = new JournalEvidenceReference(
                 id, $"backfill://batches/{id}", "Backfill batch", receipt.ServingProvider!,
@@ -100,8 +135,11 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
                 SourceReference: id, EffectiveDate: date, SubjectType: "Instrument");
         }
 
+        input = MarketDataInputEvidenceTags.ForObservation(input, date ?? DateOnly.FromDateTime(item.Timestamp.UtcDateTime));
+        _currentInputs = MarketDataInputEvidenceTags.Freeze([input])!;
         if (item.Payload is HistoricalBar or Trade or BboQuotePayload)
         {
+            _lastPriceInputs[symbol] = (item.Timestamp, _currentInputs);
             // A later unstamped mark cannot inherit evidence from a previous backfilled price.
             _lastPriceEvidence[symbol] = _currentEvidence is { } evidence ? (item.Timestamp, evidence) : null;
         }
@@ -115,6 +153,14 @@ internal sealed class BacktestInputEvidence(string dataRoot, HistoricalSessionSc
 
         return _lastPriceEvidence.GetValueOrDefault(symbol) is { } item && item.At <= priceTimestamp
             ? [item.Reference] : [];
+    }
+
+    public IReadOnlyList<MarketDataInputEvidence> PriceInputEvidence(string symbol, DateTimeOffset priceTimestamp)
+    {
+        if (_currentEvent is { } observed && observed.Timestamp == priceTimestamp &&
+            string.Equals(observed.EffectiveSymbol, symbol, StringComparison.OrdinalIgnoreCase))
+            return _currentInputs;
+        return _lastPriceInputs.TryGetValue(symbol, out var mark) && mark.At <= priceTimestamp ? mark.Inputs : [];
     }
 
     public async Task<BacktestInputCoverage> CompleteAsync(

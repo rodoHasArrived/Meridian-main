@@ -1,7 +1,8 @@
+import { caseQueueResidual, caseQueueTolerance } from "@/lib/reconciliation-measure-presentation";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { getRunReviewPacketPath } from "@/lib/api";
-import { formatExactDecimal } from "@/lib/exact-financial-value";
-import { caseResidual, caseResidualUnit } from "./reconciliation-case-values";
+import { formatExactDecimal, parseExactDecimal } from "@/lib/exact-financial-value";
+import { caseResidual } from "./reconciliation-case-values";
 import type { ApiErrorDisplay } from "@/lib/api-errors";
 import {
   evidenceWorkbenchPath,
@@ -917,12 +918,6 @@ export function buildReconciliationBreakRows(
   selectedBreakId: string | null = null
 ): ReconciliationBreakRowViewModel[] {
   return breakQueue.map((item) => {
-    const unit = caseResidualUnit(item)?.trim();
-    const residual = formatExactDecimal(caseResidual(item), {
-      currency: unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined, signed: true
-    });
-    const varianceLabel = (item.statementEvidence?.match.residuals.length ?? 0) > 1 ? "Multiple"
-      : residual === null ? "Not recorded" : `${residual} ${unit || "Unit unavailable"}`;
     const actionBusy = action?.breakId === item.breakId;
     const assignBusy = actionBusy && action?.command === "assign";
     const resolveBusy = actionBusy && action?.command === "resolve";
@@ -932,13 +927,19 @@ export function buildReconciliationBreakRows(
     const canDismiss = !action && item.status !== "Dismissed";
     const isSelected = item.breakId === selectedBreakId;
     const financeLabel = financeBreakLabel(item.category);
+    const typed = (item.measures?.length ?? 0) > 0 || item.statementEvidence != null;
+    const residual = typed ? caseQueueResidual(item) : null;
+    const varianceLabel = residual ? `${residual.amount}${residual.unit ? ` ${residual.unit}` : ""}`
+      : `${formatExactDecimal(caseResidual(item), { signed: true }) ?? "Not recorded"} Unit unavailable`;
+    const unavailable = typed && (residual?.amount === "Unavailable" || residual?.amount === "Multiple");
+    const variance = parseExactDecimal(caseResidual(item))?.coefficient;
 
     return {
       ...item,
       actionBusy,
       financeLabel,
       varianceLabel,
-      varianceTone: item.variance > 0 ? "success" : item.variance < 0 ? "danger" : "default",
+      varianceTone: unavailable || variance == null ? "default" : variance > 0n ? "success" : variance < 0n ? "danger" : "default",
       statusBadgeVariant: reconciliationBreakStatusBadgeVariant(item.status),
       detectedAtLabel: formatAccountingDate(item.detectedAt),
       lastUpdatedAtLabel: formatAccountingDate(item.lastUpdatedAt),
@@ -1007,7 +1008,7 @@ function buildReconciliationBreakDetail(row: ReconciliationBreakRowViewModel): R
       { label: "Updated", value: row.lastUpdatedAtLabel },
       { label: "Exception route", value: formatReconciliationMetadata(row.exceptionRoute, "Unrouted") },
       { label: "Tolerance profile", value: formatReconciliationMetadata(row.toleranceProfileId, "Unassigned") },
-      { label: "Tolerance band", value: row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand) },
+      { label: "Tolerance band", value: caseQueueTolerance(row) ?? (row.toleranceBand == null ? "Policy default" : formatPrefixedCurrency(row.toleranceBand)) },
       { label: "Priority", value: formatReconciliationMetadata(row.priority, "Normal") },
       { label: "Urgency", value: buildReconciliationExceptionUrgency(row) },
       { label: "SLA tone", value: formatReconciliationMetadata(row.slaBadgeTone, "info") },

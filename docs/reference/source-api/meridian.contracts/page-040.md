@@ -160,7 +160,7 @@ public sealed record LinkIntercompanyCounterpartRequest(Guid RequestId, Guid Tar
 
 Qualified name: <code>Meridian.Contracts.Ledger.LockClosePeriodRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:399](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L399).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:403](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L403).
 
 ```csharp
 public sealed record LockClosePeriodRequestDto(Guid WorkflowId, long ExpectedWorkflowVersion, string Actor, string Rationale, string ReportPackId, IReadOnlyList<string>? EvidenceLinks = null, IReadOnlyList<OperationsChecklistControlApprovalDto>? ChecklistControlApprovals = null, string? CorrelationId = null, string? ClosePackageId = null, string? ClosePackageManifestId = null, string? ClosePackageRetainedManifestRoute = null, OperationsActionOriginDto ActionOrigin = OperationsActionOriginDto.HumanOperator, bool PrepareClosingEntriesOnly = false, [property : JsonIgnore] string? ControllerRole = null, CloseReadinessScopeDto? CloseScope = null)
@@ -170,8 +170,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:417](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L417) |  |
-| <code>public IReadOnlyList&lt;OperationsChecklistControlApprovalDto&gt; ChecklistControlApprovals { get; init; } = ChecklistControlApprovals??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:420](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L420) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:421](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L421) |  |
+| <code>public IReadOnlyList&lt;OperationsChecklistControlApprovalDto&gt; ChecklistControlApprovals { get; init; } = ChecklistControlApprovals??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:424](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L424) |  |
 
 ## ManualJournalEntryDraftDto
 
@@ -292,7 +292,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Ledger.ManualJournalEntryWorkbenchDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:937](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L937).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:941](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L941).
 
 ```csharp
 public sealed record ManualJournalEntryWorkbenchDto(string FundProfileId, Guid? LedgerBookId, DateTimeOffset LoadedAtUtc, IReadOnlyList<LedgerBookDto> LedgerBooks, IReadOnlyList<ChartOfAccountsNodeDto> ChartOfAccounts, IReadOnlyList<ManualJournalEntryDraftDto> Drafts, IReadOnlyList<AccountingActionAuditEventDto> AuditTrail, PrivateCapitalActivityProjectionDto? PrivateCapitalActivity = null);
@@ -312,7 +312,7 @@ public sealed record ManualJournalLineCurrencyDto(string Currency, [property : J
 
 Qualified name: <code>Meridian.Contracts.Ledger.MaterialityPolicyDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:188](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L188).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:192](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L192).
 
 ```csharp
 public sealed record MaterialityPolicyDto(string PolicyId, decimal AmountThreshold, decimal PercentThreshold, string Currency, string ReviewRole, bool RequiresLateAdjustmentApproval);
@@ -322,7 +322,7 @@ public sealed record MaterialityPolicyDto(string PolicyId, decimal AmountThresho
 
 Qualified name: <code>Meridian.Contracts.Ledger.NavPackageDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:837](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L837).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:841](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L841).
 
 ```csharp
 public sealed record NavPackageDto(string PackageId, string FundProfileId, Guid? LedgerBookId, string PeriodId, LedgerDimensionSetDto Dimensions, decimal Nav, string Currency, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> EvidenceLinks, ReportCertificationDto? Certification = null, RestatementWorkflowDto? Restatement = null);

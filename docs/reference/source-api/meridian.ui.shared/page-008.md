@@ -462,8 +462,16 @@ Qualified name: <code>Meridian.Ui.Shared.Serialization.RunLedgerExportRequest</c
 Source: [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:15](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L15).
 
 ```csharp
-public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null);
+public sealed record RunLedgerExportRequest(string Format = "csv", IReadOnlyDictionary<string, string>? AccountMapping = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DateOnly? From { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:19](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L19) |  |
+| <code>public DateOnly? To { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:20](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L20) |  |
+| <code>public IReadOnlyList&lt;Guid&gt;? JournalEntryIds { get; init; }</code> | [src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs:21](../../../../src/Meridian.Ui.Shared/Serialization/RunLedgerQueryJsonContext.cs#L21) |  |
 
 ## W4AcceptanceFilter
 

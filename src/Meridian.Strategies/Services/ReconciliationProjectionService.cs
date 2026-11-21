@@ -4,7 +4,7 @@ using Meridian.FSharp.Ledger;
 namespace Meridian.Strategies.Services;
 
 /// <summary>Builds portfolio, ledger, cash, and statement checks from normalized reconciliation inputs.</summary>
-public sealed class ReconciliationProjectionService
+public sealed partial class ReconciliationProjectionService
 {
     public IReadOnlyList<PortfolioLedgerCheckDto> BuildChecks(ReconciliationNormalizedInputs inputs)
     {
@@ -16,17 +16,34 @@ public sealed class ReconciliationProjectionService
 
         if (portfolio is not null && ledger is not null)
         {
-            var ledgerCash = ledger.TrialBalance
-                .Where(static line => string.Equals(line.AccountName, "Cash", StringComparison.OrdinalIgnoreCase))
-                .Sum(static line => line.Balance);
+            if (ledger.BalanceComparisonUnavailableReason is not null)
+            {
+                checks.Add(CreateCoverageCheck("cash-balance", "Account cash population coverage", true, false,
+                    portfolio.AsOf, ledger.AsOf, "summary", "account-stock-population", string.Empty));
+                checks.Add(CreateCoverageCheck("net-equity", "Account net asset population coverage", true, false,
+                    portfolio.AsOf, ledger.AsOf, "summary", "account-stock-population", string.Empty));
+            }
+            else
+            {
+                var ledgerCash = ledger.TrialBalance
+                    .Where(static line => string.Equals(line.AccountName, "Cash", StringComparison.OrdinalIgnoreCase))
+                    .Sum(static line => line.Balance);
 
-            checks.Add(CreateAmountCheck("cash-balance", "Portfolio cash vs ledger cash", portfolio.Cash, ledgerCash, portfolio.AsOf, ledger.AsOf));
+                checks.Add(CreateAmountCheck("cash-balance", "Portfolio cash vs ledger cash", portfolio.Cash, ledgerCash, portfolio.AsOf, ledger.AsOf));
 
-            var ledgerNetEquity = ledger.AssetBalance - ledger.LiabilityBalance;
-            checks.Add(CreateAmountCheck("net-equity", "Portfolio total equity vs ledger net assets", portfolio.TotalEquity, ledgerNetEquity, portfolio.AsOf, ledger.AsOf));
+                var ledgerNetEquity = ledger.HistoricalCostNetAssets ?? ledger.AssetBalance - ledger.LiabilityBalance;
+                if (ledger.HasUnresolvedValuation)
+                    checks.Add(CreateCoverageCheck("historical-cost-equity-unavailable", "Historical-cost net asset evidence", true, false,
+                        portfolio.AsOf, ledger.AsOf, "summary", "ledger", string.Empty));
+                else
+                    checks.Add(CreateAmountCheck("net-equity", "Portfolio equity excluding unrealized P&L vs ledger historical-cost net assets",
+                        portfolio.TotalEquity - portfolio.UnrealizedPnl, ledgerNetEquity, portfolio.AsOf, ledger.AsOf));
+            }
         }
 
-        var portfolioPositions = portfolio?.Positions ?? [];
+        var portfolioPositions = portfolio is not null && (portfolio.HasRetainedAccountingPositionPopulation || portfolio.AccountingPositions.Count > 0)
+            ? portfolio.AccountingPositions.Where(static row => row.Quantity != 0m).Select(static row => new ReconciliationPositionInput(row.Symbol, row.IsShort)).ToArray()
+            : portfolio?.Positions ?? [];
         var longSymbols = new HashSet<string>(
             portfolioPositions.Where(static position => !position.IsShort).Select(static position => position.Symbol),
             StringComparer.OrdinalIgnoreCase);
@@ -35,14 +52,25 @@ public sealed class ReconciliationProjectionService
             StringComparer.OrdinalIgnoreCase);
 
         var ledgerTrialBalance = ledger?.TrialBalance ?? [];
+        var knownClosed = (ledger?.AccountingPositions ?? []).GroupBy(static row => (row.Symbol.ToUpperInvariant(), row.IsShort))
+            .Where(static group => group.All(static row => row.Quantity == 0m && row.MonetaryBasis == 0m && row.CoverageFailure is null))
+            .Select(static group => group.Key).ToHashSet();
         var ledgerLongSymbols = new HashSet<string>(
-            ledgerTrialBalance
-                .Where(static line => string.Equals(line.AccountName, "Securities", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(line.Symbol))
+            ledger?.AccountingPositions is { Count: > 0 } longEvidence
+                ? longEvidence.Where(row => !row.IsShort && !knownClosed.Contains((row.Symbol.ToUpperInvariant(), false)))
+                    .Select(static row => row.Symbol)
+                : ledgerTrialBalance
+                .Where(line => string.Equals(line.AccountName, "Securities", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(line.Symbol)
+                    && !knownClosed.Contains((line.Symbol.ToUpperInvariant(), false)))
                 .Select(static line => line.Symbol!),
             StringComparer.OrdinalIgnoreCase);
         var ledgerShortSymbols = new HashSet<string>(
-            ledgerTrialBalance
-                .Where(static line => string.Equals(line.AccountName, "Short Securities Payable", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(line.Symbol))
+            ledger?.AccountingPositions is { Count: > 0 } shortEvidence
+                ? shortEvidence.Where(row => row.IsShort && !knownClosed.Contains((row.Symbol.ToUpperInvariant(), true)))
+                    .Select(static row => row.Symbol)
+                : ledgerTrialBalance
+                .Where(line => string.Equals(line.AccountName, "Short Securities Payable", StringComparison.OrdinalIgnoreCase) && !string.IsNullOrWhiteSpace(line.Symbol)
+                    && !knownClosed.Contains((line.Symbol.ToUpperInvariant(), true)))
                 .Select(static line => line.Symbol!),
             StringComparer.OrdinalIgnoreCase);
 
@@ -121,12 +149,13 @@ public sealed class ReconciliationProjectionService
         DateTimeOffset? actualAsOf,
         string categoryHint,
         string missingSourceHint,
-        string actualKind) =>
+        string actualKind,
+        string expectedSource = "portfolio") =>
         new()
         {
             CheckId = checkId,
             Label = label,
-            ExpectedSource = "portfolio",
+            ExpectedSource = expectedSource,
             ActualSource = "ledger",
             ExpectedAmount = 0m,
             ActualAmount = 0m,
@@ -170,6 +199,12 @@ public sealed class ReconciliationProjectionService
 
         if (hasCashData && hasLedgerData)
         {
+            if (ledger!.BalanceComparisonUnavailableReason is not null)
+                return
+                [
+                    CreateCoverageCheck("bank-net-vs-ledger-cash", "Bank cash population coverage", true, false,
+                        null, ledger.AsOf, "bank", "account-stock-population", string.Empty, expectedSource: "bank")
+                ];
             return
             [
                 CreateAmountCheck(

@@ -66,7 +66,7 @@ public sealed record JournalEntryTemplateLineDto(string LineId, string AccountPa
 
 Qualified name: <code>Meridian.Contracts.Ledger.LateAdjustmentRequestDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:292](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L292).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:296](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L296).
 
 ```csharp
 public sealed record LateAdjustmentRequestDto(string RequestId, Guid JournalEntryId, string RequestedBy, DateTimeOffset RequestedAtUtc, decimal Amount, string Currency, string Reason, ManualJournalEntryStatusDto ApprovalState, MaterialityPolicyDto MaterialityPolicy, IReadOnlyList<string>? EvidenceLinks = null, string? DecidedBy = null, DateTimeOffset? DecidedAtUtc = null, string? DecisionNotes = null)
@@ -76,7 +76,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:307](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L307) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:311](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L311) |  |
 
 ## LedgerAccountingArrangementDimensions
 

@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PaperMatchOutcome
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchOutcome</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:6](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L6).
+
+Outcome kind of one paper-matching evaluation.
+
+```csharp
+public enum PaperMatchOutcome
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Filled</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:9](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L9) | The order fills now at PaperMatchResult.FillPrice. |
+| <code>Resting</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:12](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L12) | The order does not fill against the current observation and rests. |
+| <code>NoMarketData</code> | [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:15](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L15) | No usable market data has been observed for the symbol. |
+
+## PaperMatchResult
+
+Qualified name: <code>Meridian.Execution.PaperMatching.PaperMatchResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs:28](../../../../src/Meridian.Execution/PaperMatching/PaperOrderMatchingPolicy.cs#L28).
+
+Result of one paper-matching evaluation.
+
+```csharp
+public readonly record struct PaperMatchResult(PaperMatchOutcome Outcome, decimal? FillPrice, bool StopTriggered);
+```
+
 ## PaperObservationFreshnessPolicy
 
 Qualified name: <code>Meridian.Execution.PaperMatching.PaperObservationFreshnessPolicy</code>. Kind: `class`.
@@ -141,7 +173,7 @@ Declared public members:
 | <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:345](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L345) |  |
 | <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:423](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L423) |  |
 | <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:436](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L436) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:705](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L705) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:708](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L708) |  |
 
 ## SecurityMasterGate
 
@@ -172,8 +204,14 @@ Source: [src/Meridian.Execution/ISecurityMasterGate.cs:8](../../../../src/Meridi
 Result from a Security Master gate check for an order symbol.
 
 ```csharp
-public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null);
+public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? SecurityId { get; init; }</code> | [src/Meridian.Execution/ISecurityMasterGate.cs:12](../../../../src/Meridian.Execution/ISecurityMasterGate.cs#L12) | The stable identity resolved by this admission check, when available. |
 
 ## PaperFinancingApiJsonContext
 
@@ -199,7 +237,7 @@ public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount,
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1431](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1431).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1467](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1467).
 
 Defines one account within a multi-account paper trading session.
 
@@ -393,8 +431,16 @@ Qualified name: <code>Meridian.Execution.Services.CanonicalPaperPositionRecovery
 Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs:9](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs#L9).
 
 ```csharp
-public sealed record CanonicalPaperPositionRecovery(string Symbol, IReadOnlyList<CanonicalPaperLotRecovery> Lots, decimal ObservedPrice, DateTimeOffset ObservedAtUtc, string ObservationSource);
+public sealed record CanonicalPaperPositionRecovery(string Symbol, IReadOnlyList<CanonicalPaperLotRecovery> Lots, decimal ObservedPrice, DateTimeOffset ObservedAtUtc, string ObservationSource)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? AccountingSecurityId { get; init; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs:13](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs#L13) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? AccountingRunId { get; init; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs:15](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs#L15) |  |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;Guid&gt;? AccountingFillIds { get; init; }</code> | [src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs:17](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.CanonicalRecovery.cs#L17) |  |
 
 ## CreatePaperSessionDto
 
@@ -847,24 +893,4 @@ Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:24](../../../../src
 
 ```csharp
 public sealed record JournalAttribution(string? StrategyId, string? RunId, string? Tag, decimal GrossRealizedPnl, decimal? NetRealizedPnl);
-```
-
-## JournalOpeningEvidence
-
-Qualified name: <code>Meridian.Execution.Services.JournalOpeningEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:23](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L23).
-
-```csharp
-public sealed record JournalOpeningEvidence(bool IsComplete, bool IsFlat, DateTimeOffset ObservedAt, string Source);
-```
-
-## JournalOrder
-
-Qualified name: <code>Meridian.Execution.Services.JournalOrder</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/ExecutionJournal.cs:26](../../../../src/Meridian.Execution/Services/ExecutionJournal.cs#L26).
-
-```csharp
-public sealed record JournalOrder(string OrderId, string Scope, Guid AccountId, string Symbol, string Side, string Status, decimal Quantity, decimal FilledQuantity, decimal? AverageFillPrice, string? StrategyId, string? RunId, string? Tag, DateTimeOffset CreatedAt, DateTimeOffset UpdatedAt, IReadOnlyList<ExecutionJournalEntry> Events, string? AttemptId = null);
 ```

@@ -598,7 +598,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingCloseReadinessItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:890](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L890).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:894](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L894).
 
 ```csharp
 public sealed record AccountingCloseReadinessItemDto(string ItemId, string Category, string Label, AccountingReadinessStateDto State, string Summary, string RequiredAction, int BlockingIssueCount, IReadOnlyList<string>? EvidenceLinks = null, IReadOnlyList<AccountingConfigurationValidationIssueDto>? BlockingIssues = null, Guid? LedgerBookId = null, LedgerDimensionSetDto? Dimensions = null)
@@ -608,9 +608,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:903](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L903) |  |
-| <code>public IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; BlockingIssues { get; init; } = BlockingIssues??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:906](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L906) |  |
-| <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:909](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L909) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:907](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L907) |  |
+| <code>public IReadOnlyList&lt;AccountingConfigurationValidationIssueDto&gt; BlockingIssues { get; init; } = BlockingIssues??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:910](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L910) |  |
+| <code>public LedgerDimensionSetDto Dimensions { get; init; } = Dimensions?? new LedgerDimensionSetDto(BookId : LedgerBookId?.ToString(&quot;D&quot;));</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:913](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L913) |  |
 
 ## AccountingConfigurationStatusDto
 

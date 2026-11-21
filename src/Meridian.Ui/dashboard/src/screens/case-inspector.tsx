@@ -4,6 +4,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { FinancialValue } from "@/components/meridian/financial-value";
+import { caseQueueResidual, measureUnit } from "@/lib/reconciliation-measure-presentation";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { ApiError, describeApiError } from "@/lib/api-errors";
 import {
@@ -17,7 +18,7 @@ import { reconciliationBreakAuditEndpoint } from "@/lib/workstation-endpoints";
 import { sourceObservationLabel, sourceObservationAge } from "./reconciliation-source-observation";
 import { buildReconciliationBreakRoutingHref } from "./accounting-screen.reconciliation.view-model";
 import { caseMeasure, caseMeasureAmount, caseResidual, caseResidualUnit, caseTolerance } from "./reconciliation-case-values";
-import { equalExactDecimals } from "@/lib/exact-financial-value";
+import { equalExactDecimals, parseExactDecimal } from "@/lib/exact-financial-value";
 import { ReconciliationCaseEvidence, ReconciliationMatchCandidate } from "./reconciliation-case-evidence";
 import { ReconciliationCaseDiscussion } from "./accounting-screen.case-discussion";
 import { BreakAuditTimeline, type BreakAuditLoader } from "./accounting-screen.reconciliation-audit-timeline";
@@ -298,11 +299,11 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
         <dl className="mt-3 grid gap-2 sm:grid-cols-2"><Fact label="Owner" value={item.assigneeDisplayName ?? item.assignedTo ?? "Unassigned"} />
           <Fact label="Due" value={item.slaDueAt ?? "Not recorded"} /><Fact label="Version" value={String(item.version ?? "Not recorded")} /></dl></header>
       <TechnicalDetails label="Case identifiers">
-        <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} />
+        <dl className="grid gap-2 sm:grid-cols-2"><Fact label="Case ID" value={item.breakId} /><Fact label="Run" value={item.runId} />
           <Fact label="Fund account" value={item.fundAccountId ?? "Not recorded"} /><Fact label="Accounting period" value={item.accountingPeriodId ?? "Not recorded"} /></dl>
       </TechnicalDetails>
       <section aria-label="Comparison" className="rounded border border-border p-3">
-        {item.statementEvidence ? <ReconciliationCaseEvidence item={item} relatedRows={relatedCases} onOpenCase={onOpenCase}
+        {item.statementEvidence || (item.measures?.length ?? 0) > 1 ? <ReconciliationCaseEvidence item={item} relatedRows={relatedCases} onOpenCase={onOpenCase}
           comparisonBreakId={comparisonBreakId} onComparisonChange={onComparisonChange} /> : <>
         <h4 className="text-sm font-semibold">Disagreement</h4>
         {!hasComparison ? <p className="my-2 text-sm">Comparison unavailable: {missingComparison}</p> : null}
@@ -378,14 +379,21 @@ export function CaseInspector({ caseId, initialCase, onChanged, services = defau
 }
 
 function Fact({ label, value }: { label: string; value: string }) { return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd className="text-sm">{value}</dd></div>; }
+function unitPrecision(value: string | number | null | undefined, unit?: string) {
+  return unit && !/^[A-Z]{3}$/.test(unit) && !["currency", "Unit unavailable", "Currency unavailable"].includes(unit)
+    ? parseExactDecimal(value)?.scale : undefined;
+}
 function ValueFact({ label, value, unit, reason, signed, conditionContextId }: { label: string; value?: string | number | null; unit?: string; reason: string; signed?: boolean; conditionContextId?: string }) {
-  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd><FinancialValue value={value} currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={unit || "Unit unavailable"} reason={reason} signed={signed} conditionContextId={conditionContextId} /></dd></div>;
+  return <div><dt className="text-xs text-muted-foreground">{label}</dt><dd><FinancialValue value={value} currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined}
+    unit={unit ? measureUnit(unit) : "Unit unavailable"} decimals={unitPrecision(value, unit)} reason={reason} signed={signed} conditionContextId={conditionContextId} /></dd></div>;
 }
 
 export function CaseVariance({ item }: { item: ReconciliationBreakQueueItem }) {
   const unit = caseResidualUnit(item);
-  if ((item.statementEvidence?.match.residuals.length ?? 0) > 1) return <span>Multiple</span>;
-  return <FinancialValue value={caseResidual(item)} signed
+  const residual = caseQueueResidual(item);
+  if (residual.amount === "Multiple" || residual.amount === "Unavailable") return <span>{residual.amount}</span>;
+  const value = caseResidual(item);
+  return <FinancialValue value={value} signed decimals={unitPrecision(value, unit)}
     currency={unit && /^[A-Z]{3}$/.test(unit) ? unit : undefined} unit={unit || "Unit unavailable"}
     reason="A verified data condition was not supplied for this case measure." />;
 }

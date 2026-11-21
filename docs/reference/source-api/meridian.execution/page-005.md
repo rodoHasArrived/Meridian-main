@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SessionTcaReport
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:388](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L388).
+
+TCA report over a paper/live session fill tape.
+
+```csharp
+public sealed record SessionTcaReport(string SessionId, string StrategyId, DateTimeOffset GeneratedAtUtc, SessionTcaCostSummary CostSummary, IReadOnlyList<SessionSymbolTcaSummary> SymbolSummaries, IReadOnlyList<SessionTcaFillOutlier> Outliers, SessionTcaExecutionQuality ExecutionQuality);
+```
+
+## SessionTcaReporter
+
+Qualified name: <code>Meridian.Execution.Services.SessionTcaReporter</code>. Kind: `class`.
+
+Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:12](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L12).
+
+Generates a Transaction Cost Analysis (TCA) report from a paper/live session fill tape. Computes commission attribution, per-symbol cost breakdowns, outlier detection, and execution-quality statistics (time-to-fill, limit-price improvement). This is a post-processing pass over the session&#x27;s persisted ExecutionReport history; it requires no market data beyond the fills and orders already recorded by the session.
+
+```csharp
+public static class SessionTcaReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SessionTcaReport Generate(string sessionId, string strategyId, IReadOnlyList&lt;ExecutionReport&gt; fills, IReadOnlyList&lt;OrderState&gt;? orders = null);</code> | [src/Meridian.Execution/Services/SessionTcaReporter.cs:33](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L33) | Generates a SessionTcaReport for sessionId from the session&#x27;s fill history. Only reports of type ExecutionReportType.Fill or ExecutionReportType.PartialFill with a fill price and positive filled quantity contribute. Report sequences whose per-order quantities are cumulative (as emitted by brokers that report running totals, e.g. the IB gateway) are converted to incremental quantities before aggregation. orders is optional and enriches the report with time-to-fill and limit-price-improvement statistics. Returns a zero-valued report when no usable fills exist. |
+
 ## SimulatedFillHandoff
 
 Qualified name: <code>Meridian.Execution.Services.SimulatedFillHandoff</code>. Kind: `record`.
@@ -20,7 +50,7 @@ public sealed record SimulatedFillHandoff(TradeExecutedEvent Fill, string Receip
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1407](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1407).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1443](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1443).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 

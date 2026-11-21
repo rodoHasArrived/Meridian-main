@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ConnectionLease
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:213](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L213).
+
+Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
+
+```csharp
+public sealed class ConnectionLease(NpgsqlConnection connection, bool ownsConnection, NpgsqlTransaction? transaction = null, SemaphoreSlim? gate = null) : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
+| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
+
+## CorporateActionCalendarReadSet
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCalendarReadSet</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs#L8).
+
+```csharp
+public sealed record CorporateActionCalendarReadSet(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases, IReadOnlyList<CorporateActionEvidenceDto> Evidence);
+```
+
 ## CorporateActionCashDividendPostingLease
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease</code>. Kind: `class`.
@@ -918,33 +948,3 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;StructuredCreditProjectionRow&gt;&gt; GetByCollateralTypeAsync(string collateralType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L15) |  |
 | <code>Task&lt;IReadOnlyList&lt;StructuredCreditFactorScheduleRow&gt;&gt; GetFactorScheduleAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:18](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L18) | The tranche&#x27;s dated factor points in the order the terms document declares them. |
 | <code>Task&lt;StructuredCreditFactorScheduleRow?&gt; GetFactorAsOfAsync(Guid securityId, DateOnly asOfDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs:25](../../../../src/Meridian.Storage/SecurityMaster/IStructuredCreditReferenceProjectionStore.cs#L25) | The latest factor point effective on or before asOfDate, or null when the schedule starts after that date. The relational counterpart of the resolver&#x27;s in-memory FactorAsOf walk, resolved in one indexed read. |
-
-## ISwapReferenceProjectionStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ISwapReferenceProjectionStore</code>. Kind: `interface`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:6](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L6).
-
-Queries swap reference projections by security, swap type, and maturity.
-
-```csharp
-public interface ISwapReferenceProjectionStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;SwapProjectionRow?&gt; GetSwapAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:8](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L8) |  |
-| <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetBySwapTypeAsync(string swapType, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:9](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L9) |  |
-| <code>Task&lt;IReadOnlyList&lt;SwapProjectionRow&gt;&gt; GetMaturingBeforeAsync(DateOnly beforeDate, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/ISwapReferenceProjectionStore.cs#L10) |  |
-
-## MoneyMarketFundProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.MoneyMarketFundProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IMoneyMarketFundReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record MoneyMarketFundProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? FundFamily, bool SweepEligible, int? WeightedAverageMaturityDays, bool LiquidityFeeEligible, string PrimaryIdentifierValue, long Version);
-```

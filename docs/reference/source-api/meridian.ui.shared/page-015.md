@@ -703,6 +703,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public async Task&lt;IReadOnlyLedger?&gt; ReadAsync(StrategyRunEntry run, StrategyRunReadScope scope, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:16](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L16) |  |
+| <code>public IChartOfAccounts? GetPostingChart(IReadOnlyLedger ledger, DateTimeOffset? asOf = null);</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:119](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L119) |  |
+| <code>public string? GetBalanceComparisonUnavailableReason(IReadOnlyLedger ledger) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs:145](../../../../src/Meridian.Ui.Shared/Services/PostedStrategyRunLedgerSource.cs#L145) |  |
 
 ## PostgresManualJournalMutationRecoveryStore
 
