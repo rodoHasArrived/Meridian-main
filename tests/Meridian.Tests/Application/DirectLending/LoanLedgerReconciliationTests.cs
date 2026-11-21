@@ -95,12 +95,13 @@ public sealed class LoanLedgerReconciliationTests
         var principalAccount = chart.Resolve(LedgerAccountRole.LoanPrincipal, state.LoanId.ToString("D"), "SYNLOAN");
         var cashAccount = chart.Resolve(LedgerAccountRole.Cash, state.LoanId.ToString("D"));
         var journalId = Guid.NewGuid();
+        const string description = "Synthetic loan funding";
         var principalLine = new LedgerEntry(Guid.NewGuid(), journalId, ObservedAt,
             configured ? principalAccount with { Name = "Configured principal" } : principalAccount,
-            principal, 0m, "Synthetic principal", currency: new("USD", "USD", principal, 0m, 1m))
+            principal, 0m, description, currency: new("USD", "USD", principal, 0m, 1m))
         { ChartAccount = configured ? new("principal-node", "synthetic-r7", "synthetic-code") : chart.GetPostingReference(principalAccount) };
-        var entry = new JournalEntry(journalId, ObservedAt, "Synthetic loan funding", [principalLine,
-            new(Guid.NewGuid(), journalId, ObservedAt, cashAccount, 0m, principal, "Synthetic funding", currency: new("USD", "USD", 0m, principal, 1m))],
+        var entry = new JournalEntry(journalId, ObservedAt, description, [principalLine,
+            new(Guid.NewGuid(), journalId, ObservedAt, cashAccount, 0m, principal, description, currency: new("USD", "USD", 0m, principal, 1m))],
             new(EffectiveDate: AsOf, FinancialAccountId: state.LoanId.ToString("D")));
         var book = new LedgerBookRecord(bookId, "synthetic-fund", Guid.NewGuid(), FundStructureNodeKindDto.Fund,
             "Synthetic book", "USD", ObservedAt, ObservedAt, AccountingBasis: configured ? AccountingBasisKindDto.Gaap : AccountingBasisKindDto.Primary);
