@@ -262,7 +262,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ConfigEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L21).
+Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L22).
 
 Extension methods for registering configuration API endpoints. Shared between web dashboard and desktop application hosts.
 
@@ -274,7 +274,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:26](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L26) | Maps all configuration-related API endpoints. |
+| <code>public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L27) | Maps all configuration-related API endpoints. |
 
 ## ConfigureAccrualScheduleInput
 
