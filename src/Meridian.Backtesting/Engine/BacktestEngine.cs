@@ -215,7 +215,9 @@ public sealed class BacktestEngine(
         var portfolio = new SimulatedPortfolio(accounts, request.DefaultBrokerageAccountId, commissionModel, ledger, startTimestamp, lotConventions)
         {
             FailOnLedgerIntegrityBreak = request.FailOnLedgerIntegrityBreak,
-            MarketDataEvidence = inputEvidence.PriceEvidence
+            MarketDataEvidence = inputEvidence.PriceEvidence,
+            MarketDataInputEvidence = inputEvidence.PriceInputEvidence,
+            SecurityIdentity = symbol => resolvedIdentities.GetValueOrDefault(symbol)?.SecurityId
         };
         if (canonicalActions is not null)
             portfolio.ConfigureCanonicalActions(canonicalActions);

@@ -293,8 +293,12 @@ public sealed partial class StrategyRunReadService
 
     private static StrategyRunReplayProvenanceDto? BuildReplayProvenance(StrategyRunEntry run)
     {
+        var warnings = BuildMarketDataWarnings(run);
+        var assessed = run.Metrics is { } metrics && ((metrics.Fills?.Count ?? 0) > 0 ||
+            metrics.Ledger?.Journal.Any(journal => journal.Metadata.FillId.HasValue) == true);
         if (run.Metrics is not { EngineMetadata.InputCoverage: { } coverage })
-            return null;
+            return !assessed ? null : new StrategyRunReplayProvenanceDto([], [], null, null)
+            { DataQualityWarnings = warnings };
 
         var revisions = coverage.Revisions
             .Where(static row => Sha256Digest.IsCanonical(row.RevisionId) && Sha256Digest.IsCanonical(row.ContentHash))
@@ -303,7 +307,7 @@ public sealed partial class StrategyRunReadService
                 PublicReplayGranularity(row.Granularity)))
             .ToArray();
         var sourceMixHash = coverage.SourceMixHash;
-        if (sourceMixHash is null && revisions.Length == 0)
+        if (sourceMixHash is null && revisions.Length == 0 && !assessed)
             return null;
 
         string? completedInputHash = null;
@@ -329,7 +333,26 @@ public sealed partial class StrategyRunReadService
             .OrderBy(static row => row.Symbol, StringComparer.Ordinal)
             .ThenBy(static row => row.Source, StringComparer.Ordinal)
             .ToArray() ?? [];
-        return new StrategyRunReplayProvenanceDto(sourceMix, revisions, sourceMixHash, completedInputHash);
+        return new StrategyRunReplayProvenanceDto(sourceMix, revisions, sourceMixHash, completedInputHash)
+        { DataQualityWarnings = assessed ? warnings : null };
+    }
+
+    private static IReadOnlyList<MarketDataQualityWarningDto> BuildMarketDataWarnings(StrategyRunEntry run)
+    {
+        if (run.Metrics is not { } metrics) return [];
+        var observed = (metrics.Ledger?.Journal ?? []).Where(journal => journal.Metadata.FillId.HasValue)
+            .GroupBy(journal => journal.Metadata.FillId!.Value)
+            .ToDictionary(group => group.Key, group => (IReadOnlyList<MarketDataInputEvidence>)group.SelectMany(journal =>
+                MarketDataInputEvidenceTags.Read(journal.Metadata.Tags)).Distinct().ToArray());
+        var fills = metrics.Fills ?? [];
+        var expectedIds = fills.Where(fill => fill.FillId != Guid.Empty).Select(fill => fill.FillId).ToHashSet();
+        var sources = expectedIds.Order().Select(id => (IReadOnlyList<MarketDataInputEvidence>?)
+            observed.GetValueOrDefault(id) ?? []).ToList();
+        // Join on identity: another journal's clean evidence cannot substitute for a missing fill.
+        foreach (var fill in fills.Where(fill => fill.FillId == Guid.Empty)) sources.Add([]);
+        foreach (var pair in observed.Where(pair => !expectedIds.Contains(pair.Key)))
+            sources.Add(pair.Key == Guid.Empty ? [] : pair.Value);
+        return MarketDataInputEvidenceTags.BuildWarnings(sources);
     }
 
     private static string PublicReplayProviderId(string? source) =>

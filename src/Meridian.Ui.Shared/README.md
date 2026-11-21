@@ -4342,3 +4342,7 @@ evidence prevents duplicates across retries and restart.
 Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
 retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
 rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.
+
+## Whole-journal downloads
+
+`POST /api/ledger/periods/{periodId}/journal-export` preserves ledger-read, `ExportData`, authenticated tenant/company and retained book-ownership checks. Its existing CSV/Parquet request optionally accepts `from`, `to` and `journalEntryIds`; defaults select the whole period. A single reporting capture supplies period state and every selected journal. Changed period versions require refresh, missing selected IDs reject the entire download, and response headers retain the source snapshot and exact artifact SHA-256. These neutral downloads grant no external-posting authority.

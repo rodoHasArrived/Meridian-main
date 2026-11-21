@@ -2,6 +2,7 @@ using System.Globalization;
 using System.Text;
 using System.Text.Json;
 using Meridian.Ledger;
+using Meridian.Contracts.Integrity;
 using Meridian.Storage.Ledger;
 using Parquet;
 using Parquet.Data;
@@ -32,9 +33,9 @@ public static class LedgerJournalExporter
     {
         var rows = BuildRows(ledger, accountMapping, query, postingMetadata);
         var result = new StringBuilder();
-        result.AppendLine(string.Join(',', Columns));
+        result.Append(string.Join(',', Columns)).Append("\r\n");
         foreach (var row in rows)
-            result.AppendLine(string.Join(',', row.Select(SpreadsheetFormulaGuard.EscapeCsvCell)));
+            result.Append(string.Join(',', row.Select(SpreadsheetFormulaGuard.EscapeCsvCell))).Append("\r\n");
         return Encoding.UTF8.GetBytes(result.ToString());
     }
 
@@ -77,6 +78,36 @@ public static class LedgerJournalExporter
     {
         var (ledger, metadata) = BuildPostedSnapshot(records, ledgerBookId);
         return ExportParquetAsync(ledger, accountMapping, ct: ct, postingMetadata: metadata);
+    }
+
+    internal static string ComputeSourceSha256(IReadOnlyList<LedgerJournalEntryRecord> records)
+    {
+        // Hash original values, not formula-escaped CSV cells, which are deliberately not invertible.
+        var source = JsonSerializer.SerializeToElement(records.ToArray(), LedgerJournalExportJsonContext.Default.LedgerJournalEntryRecordArray);
+        using var stream = new MemoryStream();
+        using (var writer = new Utf8JsonWriter(stream)) WriteCanonical(source, writer);
+        return Sha256Digest.Compute(stream.ToArray());
+
+        static void WriteCanonical(JsonElement element, Utf8JsonWriter writer)
+        {
+            if (element.ValueKind == JsonValueKind.Object)
+            {
+                writer.WriteStartObject();
+                foreach (var property in element.EnumerateObject().OrderBy(property => property.Name, StringComparer.Ordinal))
+                {
+                    writer.WritePropertyName(property.Name);
+                    WriteCanonical(property.Value, writer);
+                }
+                writer.WriteEndObject();
+            }
+            else if (element.ValueKind == JsonValueKind.Array)
+            {
+                writer.WriteStartArray();
+                foreach (var item in element.EnumerateArray()) WriteCanonical(item, writer);
+                writer.WriteEndArray();
+            }
+            else element.WriteTo(writer);
+        }
     }
 
     private static (IReadOnlyLedger Ledger, IReadOnlyDictionary<Guid, string> Metadata) BuildPostedSnapshot(IReadOnlyList<LedgerJournalEntryRecord> records, Guid? ledgerBookId)
