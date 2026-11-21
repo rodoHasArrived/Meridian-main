@@ -319,7 +319,18 @@ public sealed record LedgerPeriodTrialBalanceLineDto(
     string? RuleVersion = null,
     string? SourceEventId = null,
     Guid? SourceJournalEntryId = null,
-    LedgerDimensionSetDto? Dimensions = null);
+    LedgerDimensionSetDto? Dimensions = null)
+{
+    // Additive exact presentation values keep existing numeric consumers compatible.
+    public string BalanceExact => Balance.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public string DebitTotalExact => DebitTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public string CreditTotalExact => CreditTotal.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    public IReadOnlyList<Guid> JournalEntryIds { get; init; } = [];
+    public IReadOnlyList<Guid> LedgerEntryIds { get; init; } = [];
+    public string? BalanceProofSubjectId { get; init; }
+    public LedgerAmountScopeDto? BalanceProofScope { get; init; }
+    public string? BalanceProofCurrency { get; init; }
+}
 
 public sealed record LedgerPeriodSummaryDto(
     Guid PeriodId,
@@ -360,6 +371,9 @@ public sealed record LedgerJournalEntryLineDto(
 
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public LedgerJournalLineCurrencyDto? Currency { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AmountPassportReferenceDto? AmountPassport { get; init; }
 }
 
 public sealed record LedgerJournalLineChartAccountDto(string NodeId, string Revision, string? AccountCode);

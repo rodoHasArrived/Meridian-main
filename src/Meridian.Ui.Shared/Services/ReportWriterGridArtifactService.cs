@@ -2,6 +2,7 @@ using System.Text;
 using System.Text.Json;
 using System.Globalization;
 using Meridian.Contracts.Workstation;
+using Meridian.Documents;
 using Meridian.Reporting;
 using Meridian.Storage.Export;
 
@@ -143,20 +144,135 @@ public sealed class ReportWriterGridArtifactService
         return Encoding.UTF8.GetBytes(builder.ToString());
     }
 
+    private const int PdfPreviewRowLimit = 28;
+    private const string DisplayNumberFormat = "#,##0.############################";
+
+    private sealed record GridExportColumn(string Key, string Label, bool IsNumeric);
+
+    private static GridExportColumn[] BuildExportColumns(ReportWriterGridRenderDto grid)
+    {
+        var columns = grid.Columns.Select(column => new GridExportColumn(
+            column.Key, ResolveExportLabel(grid, column), column.Role is "metric" or "formula")).ToArray();
+        var duplicateLabels = columns.GroupBy(static column => column.Label, StringComparer.OrdinalIgnoreCase)
+            .Where(static group => group.Count() > 1)
+            .Select(static group => group.Key)
+            .ToHashSet(StringComparer.OrdinalIgnoreCase);
+        return columns.Select(column => duplicateLabels.Contains(column.Label)
+            ? column with { Label = $"{column.Label} ({column.Key})" }
+            : column).ToArray();
+    }
+
+    private static string ResolveExportLabel(ReportWriterGridRenderDto grid, ReportWriterGridColumnDto column)
+    {
+        var label = string.IsNullOrWhiteSpace(column.Label) ? column.Key : column.Label;
+        if (column.Role == "metric")
+        {
+            var metric = grid.Lineage?.Metrics
+                .Where(metric => string.Equals(column.Key, metric.Name, StringComparison.OrdinalIgnoreCase)
+                    || grid.Kind == ReportWriterGridKindDto.Pivot && column.Key.EndsWith($":{metric.Name}", StringComparison.OrdinalIgnoreCase))
+                .MaxBy(static metric => metric.Name.Length);
+            if (metric is not null)
+            {
+                var sourceLabel = ReportWriterDatasetSourceService.GetFieldLabel(metric.SourceField == "*" ? metric.Name : metric.SourceField);
+                var metricLabel = metric.Function switch
+                {
+                    "Count" when metric.SourceField == "*" => "Row count",
+                    "Count" => $"Count of {sourceLabel}",
+                    "Average" => $"Average {sourceLabel}",
+                    "Min" => $"Minimum {sourceLabel}",
+                    "Max" => $"Maximum {sourceLabel}",
+                    _ => sourceLabel
+                };
+                if (string.Equals(label, metric.Name, StringComparison.OrdinalIgnoreCase))
+                    return metricLabel;
+                if (column.Key.Length > metric.Name.Length + 1 && grid.Kind == ReportWriterGridKindDto.Pivot)
+                {
+                    var pivotKey = column.Key[..^(metric.Name.Length + 1)];
+                    var pivotLabel = string.Join(" / ", pivotKey.Split('|')
+                        .Select(static part => string.IsNullOrWhiteSpace(part) ? "(blank)" : part));
+                    if (string.Equals(label, $"{pivotLabel} {metric.Name}", StringComparison.Ordinal)
+                        || string.Equals(label, column.Key, StringComparison.Ordinal))
+                        return $"{pivotLabel} {metricLabel}";
+                }
+            }
+        }
+        return string.Equals(label, column.Key, StringComparison.OrdinalIgnoreCase)
+            ? ReportWriterDatasetSourceService.GetFieldLabel(column.Key)
+            : label;
+    }
+
+    private static decimal? ReadNumber(GridExportColumn column, string value) =>
+        column.IsNumeric && decimal.TryParse(value, NumberStyles.Number, CultureInfo.InvariantCulture, out var number)
+            ? number
+            : null;
+
+    private static string FormatNumber(decimal value) =>
+        value.ToString(DisplayNumberFormat, CultureInfo.InvariantCulture);
+
     private static byte[] BuildXlsx(ReportWriterGridRenderDto grid, ReportBrandingThemeDto? brandingTheme)
     {
-        var headers = grid.Columns.Select(static column => column.Key).ToArray();
-        var rows = grid.Rows
-            .Select(row => headers
-                .Select(header => row.Values.TryGetValue(header, out var value) ? value : null)
-                .Cast<object?>()
-                .ToArray())
-            .Cast<IReadOnlyList<object?>>()
-            .ToArray();
+        var columns = BuildExportColumns(grid);
+        var headers = columns.Select(static column => column.Label).ToArray();
+        var widths = headers.Select(static label => label.Length).ToArray();
+        var rows = new IReadOnlyList<object?>[grid.Rows.Count];
+        var precisionTextCount = 0;
+        for (var rowIndex = 0; rowIndex < grid.Rows.Count; rowIndex++)
+        {
+            var values = grid.Rows[rowIndex].Values;
+            var cells = new object?[columns.Length];
+            for (var index = 0; index < columns.Length; index++)
+            {
+                var column = columns[index];
+                if (!values.TryGetValue(column.Key, out var text) || string.IsNullOrWhiteSpace(text))
+                    continue;
+
+                if (ReadNumber(column, text) is { } value)
+                {
+                    text = FormatNumber(value);
+                    // Excel keeps 15 significant digits. Text preserves values beyond that limit.
+                    if (decimal.TryParse(value.ToString("G15", CultureInfo.InvariantCulture),
+                            NumberStyles.Float, CultureInfo.InvariantCulture, out var rounded) && rounded == value)
+                    {
+                        cells[index] = value;
+                    }
+                    else
+                    {
+                        cells[index] = text;
+                        precisionTextCount++;
+                    }
+                }
+                else
+                {
+                    cells[index] = text;
+                }
+                widths[index] = Math.Max(widths[index], text.Length);
+            }
+            rows[rowIndex] = cells;
+        }
+
+        var labels = columns.GroupBy(static column => column.Key, StringComparer.Ordinal)
+            .ToDictionary(static group => group.Key, static group => group.First().Label, StringComparer.Ordinal);
+        var validationRows = BuildValidationRows(grid);
+        if (precisionTextCount > 0)
+        {
+            validationRows =
+            [
+                .. validationRows,
+                new object?[]
+                {
+                    "xlsx-numeric-precision", "Info",
+                    $"{precisionTextCount.ToString(CultureInfo.InvariantCulture)} numeric cell(s) use exact text to preserve values beyond Excel's 15 significant digits."
+                }
+            ];
+        }
 
         return XlsxWorkbookWriter.CreateWorkbook(
         [
-            new XlsxWorksheet("ReportWriterGrid", headers, rows),
+            new XlsxWorksheet("ReportWriterGrid", headers, rows)
+            {
+                Columns = columns.Select((column, index) =>
+                    new XlsxColumnLayout(Math.Clamp(widths[index] + 2, 12, 60), column.IsNumeric)).ToArray()
+            },
             new XlsxWorksheet(
                 "Lineage",
                 ["Field", "Value"],
@@ -164,11 +280,11 @@ public sealed class ReportWriterGridArtifactService
             new XlsxWorksheet(
                 "DataDictionary",
                 ["Key", "Label", "Role", "Source field", "Data type", "Generated", "Description"],
-                BuildDataDictionaryRows(grid)),
+                BuildDataDictionaryRows(grid, labels)),
             new XlsxWorksheet(
                 "Validation",
                 ["Check", "Status", "Detail"],
-                BuildValidationRows(grid)),
+                validationRows),
             new XlsxWorksheet(
                 "Branding",
                 ["Field", "Value"],
@@ -178,73 +294,50 @@ public sealed class ReportWriterGridArtifactService
 
     private static byte[] BuildPdf(ReportWriterGridRenderDto grid, ReportBrandingThemeDto? brandingTheme)
     {
-        var headers = grid.Columns.Select(static column => column.Key).ToArray();
-        var content = new StringBuilder();
-        var (red, green, blue) = NormalizePdfColor(brandingTheme?.PrimaryColor);
-        content.AppendLine($"{red} {green} {blue} rg");
-        content.AppendLine("72 742 468 34 re f");
-        content.AppendLine("BT");
-        content.AppendLine("/F1 12 Tf");
-        content.AppendLine("1 1 1 rg");
-        content.AppendLine("1 0 0 1 84 764 Tm");
-        content.AppendLine($"({EscapePdfText(BuildPdfHeader(grid, brandingTheme))}) Tj");
-        content.AppendLine("0 0 0 rg");
-        content.AppendLine("/F1 9 Tf");
-        var y = 724;
-        if (brandingTheme is not null)
+        var columns = BuildExportColumns(grid);
+        var headers = columns.Select(static column => column.Label).ToArray();
+        var rows = grid.Rows.Take(PdfPreviewRowLimit).Select(row => (IReadOnlyList<string>)columns.Select(column =>
         {
-            AppendPdfLine(content, $"Branding theme {brandingTheme.ThemeId} | {brandingTheme.Name} | {brandingTheme.FirmName}", ref y);
-            if (!string.IsNullOrWhiteSpace(brandingTheme.LogoUri))
-            {
-                AppendPdfLine(content, $"Logo {brandingTheme.LogoUri.Trim()}", ref y);
-            }
-        }
-
-        AppendPdfLine(content, $"Grid {grid.GridId} | {grid.Kind} | rows {grid.Rows.Count} | columns {grid.Columns.Count}", ref y);
-        if (grid.Lineage is not null)
-        {
-            AppendPdfLine(
-                content,
-                $"Lineage input {grid.Lineage.InputRowCount} | filtered {grid.Lineage.FilteredInputRowCount} | output {grid.Lineage.OutputRowCount}",
-                ref y);
-        }
-
+            var value = row.Values.TryGetValue(column.Key, out var cell) ? cell : string.Empty;
+            return ReadNumber(column, value) is { } number ? FormatNumber(number) : value;
+        }).ToArray()).ToArray();
+        var tables = new List<ReportDocumentTable> { new(grid.Title, headers, rows) };
         if (grid.Warnings.Count > 0)
         {
-            AppendPdfLine(content, $"Warnings {grid.Warnings.Count}: {string.Join("; ", grid.Warnings.Take(2))}", ref y);
+            tables.Add(new ReportDocumentTable("Warnings", ["Detail"],
+                grid.Warnings.Select(static warning => (IReadOnlyList<string>)[warning]).ToArray()));
         }
 
-        AppendPdfLine(content, string.Join(" | ", headers), ref y);
-        foreach (var row in grid.Rows.Take(28))
+        var header = new List<ReportDocumentField>
         {
-            var values = headers.Select(header => row.Values.TryGetValue(header, out var value) ? value : "");
-            AppendPdfLine(content, string.Join(" | ", values), ref y);
-        }
-
-        if (grid.Rows.Count > 28)
+            new("Grid", $"{grid.GridId} · {grid.Kind}"),
+            new("Rows", $"{rows.Length.ToString(CultureInfo.InvariantCulture)} shown of {grid.Rows.Count.ToString(CultureInfo.InvariantCulture)}")
+        };
+        if (grid.Lineage is { } lineage)
         {
-            AppendPdfLine(content, $"... {grid.Rows.Count - 28} additional row(s) retained in JSON/CSV/XLSX exports.", ref y);
+            header.Add(new("Lineage", FormattableString.Invariant(
+                $"{lineage.InputRowCount} input · {lineage.FilteredInputRowCount ?? lineage.InputRowCount} filtered · {lineage.OutputRowCount} output")));
         }
-
-        if (!string.IsNullOrWhiteSpace(brandingTheme?.FooterText))
+        if (brandingTheme is not null)
         {
-            AppendPdfLine(content, brandingTheme.FooterText.Trim(), ref y);
+            header.Add(new("Branding theme", $"{brandingTheme.Name} ({brandingTheme.ThemeId})"));
+            if (!string.IsNullOrWhiteSpace(brandingTheme.LogoUri))
+                header.Add(new("Logo", brandingTheme.LogoUri.Trim()));
         }
-
         if (!string.IsNullOrWhiteSpace(brandingTheme?.Disclaimer))
         {
-            AppendPdfLine(content, brandingTheme.Disclaimer.Trim(), ref y);
+            tables.Add(new ReportDocumentTable("Disclaimer", ["Detail"], [[brandingTheme.Disclaimer.Trim()]]));
         }
 
-        content.AppendLine("ET");
-        return BuildSinglePagePdf(content.ToString());
-    }
-
-    private static void AppendPdfLine(StringBuilder content, string value, ref int y)
-    {
-        content.AppendLine($"1 0 0 1 72 {y} Tm");
-        content.AppendLine($"({EscapePdfText(TruncatePdfLine(value))}) Tj");
-        y -= 14;
+        var moreRows = grid.Rows.Count > PdfPreviewRowLimit
+            ? FormattableString.Invariant($"{grid.Rows.Count - PdfPreviewRowLimit} additional row(s) available in XLSX.")
+            : null;
+        var footer = string.Join(" · ", new[] { moreRows, brandingTheme?.FooterText?.Trim() }
+            .Where(static note => !string.IsNullOrWhiteSpace(note)));
+        var model = new ReportDocumentModel(grid.Title, header, tables, FooterNote: footer);
+        return new ClientGradeReportRenderer().RenderGridPdf(model,
+            columns.Select(static column => column.IsNumeric).ToArray(),
+            brandingTheme?.FirmName, NormalizeHexColor(brandingTheme?.PrimaryColor, "#1F4E79"));
     }
 
     private static IReadOnlyList<IReadOnlyList<object?>> BuildLineageRows(ReportWriterGridRenderDto grid)
@@ -277,12 +370,13 @@ public sealed class ReportWriterGridArtifactService
         return rows;
     }
 
-    private static IReadOnlyList<IReadOnlyList<object?>> BuildDataDictionaryRows(ReportWriterGridRenderDto grid) =>
+    private static IReadOnlyList<IReadOnlyList<object?>> BuildDataDictionaryRows(
+        ReportWriterGridRenderDto grid, IReadOnlyDictionary<string, string> labels) =>
         (grid.DataDictionary ?? BuildDataDictionary(grid))
-            .Select(static field => (IReadOnlyList<object?>)
+            .Select(field => (IReadOnlyList<object?>)
             [
                 field.Key,
-                field.Label,
+                labels.GetValueOrDefault(field.Key, field.Label),
                 field.Role,
                 field.SourceField,
                 field.DataType,
@@ -477,26 +571,6 @@ public sealed class ReportWriterGridArtifactService
             : value;
     }
 
-    private static string TruncatePdfLine(string value) =>
-        value.Length <= 110 ? value : string.Concat(value.AsSpan(0, 107), "...");
-
-    private static string BuildPdfHeader(ReportWriterGridRenderDto grid, ReportBrandingThemeDto? brandingTheme) =>
-        brandingTheme is null
-            ? grid.Title
-            : $"{brandingTheme.FirmName} - {grid.Title}";
-
-    private static (string Red, string Green, string Blue) NormalizePdfColor(string? value)
-    {
-        var normalized = NormalizeHexColor(value, "#1F4E79");
-        var red = Convert.ToInt32(normalized.Substring(1, 2), 16) / 255m;
-        var green = Convert.ToInt32(normalized.Substring(3, 2), 16) / 255m;
-        var blue = Convert.ToInt32(normalized.Substring(5, 2), 16) / 255m;
-        return (
-            red.ToString("0.###", CultureInfo.InvariantCulture),
-            green.ToString("0.###", CultureInfo.InvariantCulture),
-            blue.ToString("0.###", CultureInfo.InvariantCulture));
-    }
-
     private static string NormalizeHexColor(string? value, string fallback)
     {
         if (string.IsNullOrWhiteSpace(value))
@@ -510,51 +584,6 @@ public sealed class ReportWriterGridArtifactService
                && normalized.Skip(1).All(Uri.IsHexDigit)
             ? normalized
             : fallback;
-    }
-
-    private static string EscapePdfText(string value) =>
-        value
-            .Replace("\\", "\\\\", StringComparison.Ordinal)
-            .Replace("(", "\\(", StringComparison.Ordinal)
-            .Replace(")", "\\)", StringComparison.Ordinal);
-
-    private static byte[] BuildSinglePagePdf(string contentStream)
-    {
-        var objects = new[]
-        {
-            "<< /Type /Catalog /Pages 2 0 R >>",
-            "<< /Type /Pages /Kids [3 0 R] /Count 1 >>",
-            "<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 4 0 R >> >> /Contents 5 0 R >>",
-            "<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>",
-            $"<< /Length {Encoding.ASCII.GetByteCount(contentStream)} >>\nstream\n{contentStream}\nendstream"
-        };
-
-        var builder = new StringBuilder();
-        var offsets = new List<int>(objects.Length + 1) { 0 };
-        builder.AppendLine("%PDF-1.4");
-        for (var index = 0; index < objects.Length; index++)
-        {
-            offsets.Add(Encoding.ASCII.GetByteCount(builder.ToString()));
-            builder.AppendLine($"{index + 1} 0 obj");
-            builder.AppendLine(objects[index]);
-            builder.AppendLine("endobj");
-        }
-
-        var xrefOffset = Encoding.ASCII.GetByteCount(builder.ToString());
-        builder.AppendLine("xref");
-        builder.AppendLine($"0 {objects.Length + 1}");
-        builder.AppendLine("0000000000 65535 f ");
-        foreach (var offset in offsets.Skip(1))
-        {
-            builder.AppendLine($"{offset:0000000000} 00000 n ");
-        }
-
-        builder.AppendLine("trailer");
-        builder.AppendLine($"<< /Size {objects.Length + 1} /Root 1 0 R >>");
-        builder.AppendLine("startxref");
-        builder.AppendLine(xrefOffset.ToString(CultureInfo.InvariantCulture));
-        builder.AppendLine("%%EOF");
-        return Encoding.ASCII.GetBytes(builder.ToString());
     }
 
     private static string NormalizeFormat(string? format) =>

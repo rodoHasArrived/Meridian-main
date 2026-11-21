@@ -6,13 +6,49 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSheetRow
+
+Qualified name: <code>Meridian.Wpf.ViewModels.DataSheetRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs:16](../../../../src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs#L16).
+
+One row in the data-sheet tab.
+
+```csharp
+public sealed record DataSheetRow(string Date, string XValue, string YValue);
+```
+
+## DataSourceRow
+
+Qualified name: <code>Meridian.Wpf.ViewModels.DataSourceRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1034](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1034).
+
+```csharp
+public sealed class DataSourceRow(DataSourceConfigDto source) : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1041](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1041) |  |
+| <code>public string Name =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1042](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1042) |  |
+| <code>public string Provider =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1043](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1043) |  |
+| <code>public string Type =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1044](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1044) |  |
+| <code>public string? Description =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1045](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1045) |  |
+| <code>public int Priority =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1046](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1046) |  |
+| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1047](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1047) |  |
+| <code>public string ActivationState { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1048](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1048) |  |
+| <code>public string ActivationDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:1049](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L1049) |  |
+
 ## DataSourcesViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.DataSourcesViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L21).
+Source: [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L24).
 
-ViewModel for the Data Sources configuration page. Owns all state and commands so that the code-behind is thinned to lifecycle wiring and secret-input/ComboBox-tag helpers only.
+ViewModel for the Data Sources configuration page. Edits the authoritative host configuration and displays runtime activation evidence.
 
 ```csharp
 public sealed class DataSourcesViewModel : BindableBase
@@ -22,68 +58,72 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DataSourcesViewModel(WpfServices.ConfigService configService, WpfServices.FirstRunService firstRunService, ILogger&lt;DataSourcesViewModel&gt;? logger = null);</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L102) |  |
-| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; DataSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L128) |  |
-| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; RealTimeSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L129) |  |
-| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; HistoricalSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L130) |  |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L134) |  |
-| <code>public IAsyncRelayCommand RetryConfigurationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L135) |  |
-| <code>public IRelayCommand AddSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L136) |  |
-| <code>public IRelayCommand&lt;string&gt; EditSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L137) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; DeleteSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L138) |  |
-| <code>public IAsyncRelayCommand&lt;DataSourceConfigDto&gt; ToggleSourceEnabledCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L139) |  |
-| <code>public IAsyncRelayCommand SaveSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L140) |  |
-| <code>public IRelayCommand CancelEditCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L141) |  |
-| <code>public bool FailoverEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L145) |  |
-| <code>public string FailoverTimeoutText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L155) |  |
-| <code>public string FailoverTimeoutError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:165](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L165) |  |
-| <code>public bool IsFailoverTimeoutErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L171) |  |
-| <code>public string SourceCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L179) |  |
-| <code>public bool IsNoSourcesVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L185) |  |
-| <code>public bool IsEditPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L193) |  |
-| <code>public string EditPanelTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L203) |  |
-| <code>public bool IsSaving { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:209](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L209) |  |
-| <code>public bool CanSaveSource { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L219) |  |
-| <code>public string SourceSetupReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L229) |  |
-| <code>public string SourceSetupReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L235) |  |
-| <code>public string SourceSetupScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:241](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L241) |  |
-| <code>public string SourceNameText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L249) |  |
-| <code>public string SourceNameError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L259) |  |
-| <code>public bool IsSourceNameErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L265) |  |
-| <code>public string PriorityText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L271) |  |
-| <code>public string PriorityError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:281](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L281) |  |
-| <code>public bool IsPriorityErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:287](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L287) |  |
-| <code>public string DescriptionText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:293](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L293) |  |
-| <code>public string SymbolsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:299](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L299) |  |
-| <code>public string SelectedProvider { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:309](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L309) |  |
-| <code>public string SelectedType { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L325) |  |
-| <code>public string AlpacaFeed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:336](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L336) |  |
-| <code>public string AlpacaEnvironmentTag { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:347](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L347) |  |
-| <code>public string PolygonFeed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:353](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L353) |  |
-| <code>public bool IsIBPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:366](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L366) |  |
-| <code>public bool IsAlpacaPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:372](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L372) |  |
-| <code>public bool IsPolygonPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:378](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L378) |  |
-| <code>public string IBHost { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:386](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L386) |  |
-| <code>public string IBPort { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:387](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L387) |  |
-| <code>public string IBClientId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:388](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L388) |  |
-| <code>public bool IBPaperTrading { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:389](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L389) |  |
-| <code>public bool IBSubscribeDepth { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:390](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L390) |  |
-| <code>public bool IBTickByTick { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:391](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L391) |  |
-| <code>public bool AlpacaSandbox { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:395](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L395) |  |
-| <code>public bool AlpacaSubscribeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:404](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L404) |  |
-| <code>public bool PolygonDelayed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:408](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L408) |  |
-| <code>public bool PolygonSubscribeTrades { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L409) |  |
-| <code>public bool PolygonSubscribeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:410](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L410) |  |
-| <code>public bool PolygonSubscribeAggregates { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:411](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L411) |  |
-| <code>public DataSourceConfigDto? SelectedDefaultRealTimeSource { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:415](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L415) |  |
-| <code>public DataSourceConfigDto? SelectedDefaultHistoricalSource { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:425](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L425) |  |
-| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:437](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L437) |  |
-| <code>public bool IsStatusError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:438](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L438) |  |
-| <code>public bool IsStatusVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L439) |  |
-| <code>public bool IsConfigurationRecoveryVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:440](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L440) |  |
-| <code>public string ConfigurationRecoveryTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:445](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L445) |  |
-| <code>public string ConfigurationRecoveryDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:450](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L450) |  |
-| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:463](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L463) |  |
+| <code>public DataSourcesViewModel(ProviderConfigurationApiClient client, WpfServices.FirstRunService firstRunService, ILogger&lt;DataSourcesViewModel&gt;? logger = null);</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:106](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L106) |  |
+| <code>public ObservableCollection&lt;DataSourceRow&gt; DataSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L135) |  |
+| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; RealTimeSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L136) |  |
+| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; HistoricalSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L137) |  |
+| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L141) |  |
+| <code>public IAsyncRelayCommand RetryConfigurationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L142) |  |
+| <code>public IRelayCommand AddSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L143) |  |
+| <code>public IRelayCommand&lt;string&gt; EditSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L144) |  |
+| <code>public IAsyncRelayCommand&lt;string&gt; DeleteSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L145) |  |
+| <code>public IAsyncRelayCommand&lt;DataSourceRow&gt; ToggleSourceEnabledCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L146) |  |
+| <code>public IAsyncRelayCommand SaveSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L147) |  |
+| <code>public IRelayCommand CancelEditCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L148) |  |
+| <code>public IRelayCommand OpenProviderCredentialsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L149) |  |
+| <code>public ProviderActivationViewModel Activation { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L150) |  |
+| <code>public bool FailoverEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L154) |  |
+| <code>public string FailoverTimeoutText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L164) |  |
+| <code>public string FailoverTimeoutError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:174](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L174) |  |
+| <code>public bool IsFailoverTimeoutErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:180](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L180) |  |
+| <code>public string SourceCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L188) |  |
+| <code>public bool IsNoSourcesVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:194](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L194) |  |
+| <code>public bool IsEditPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:202](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L202) |  |
+| <code>public string EditPanelTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L212) |  |
+| <code>public bool IsSaving { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:218](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L218) |  |
+| <code>public bool IsEditFormEnabled =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:234](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L234) |  |
+| <code>public bool CanSaveSource { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:236](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L236) |  |
+| <code>public string SourceSetupReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:246](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L246) |  |
+| <code>public string SourceSetupReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:252](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L252) |  |
+| <code>public string SourceSetupScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:258](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L258) |  |
+| <code>public string SourceNameText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L266) |  |
+| <code>public string SourceNameError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:276](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L276) |  |
+| <code>public bool IsSourceNameErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:282](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L282) |  |
+| <code>public string PriorityText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:288](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L288) |  |
+| <code>public string PriorityError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L298) |  |
+| <code>public bool IsPriorityErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L304) |  |
+| <code>public string DescriptionText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:310](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L310) |  |
+| <code>public string SymbolsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:316](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L316) |  |
+| <code>public string SelectedProvider { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:326](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L326) |  |
+| <code>public string SelectedType { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:342](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L342) |  |
+| <code>public string AlpacaFeed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:353](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L353) |  |
+| <code>public string AlpacaEnvironmentTag { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:363](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L363) |  |
+| <code>public string PolygonFeed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L369) |  |
+| <code>public bool IsIBPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:382](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L382) |  |
+| <code>public bool IsAlpacaPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:388](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L388) |  |
+| <code>public bool IsPolygonPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L394) |  |
+| <code>public string IBHost { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:402](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L402) |  |
+| <code>public string IBPort { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L403) |  |
+| <code>public string IBClientId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:404](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L404) |  |
+| <code>public bool IBPaperTrading { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:405](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L405) |  |
+| <code>public bool IBSubscribeDepth { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:406](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L406) |  |
+| <code>public bool IBTickByTick { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:407](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L407) |  |
+| <code>public bool AlpacaSandbox { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:411](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L411) |  |
+| <code>public bool AlpacaSubscribeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:420](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L420) |  |
+| <code>public bool PolygonDelayed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:424](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L424) |  |
+| <code>public bool PolygonSubscribeTrades { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:425](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L425) |  |
+| <code>public bool PolygonSubscribeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:426](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L426) |  |
+| <code>public bool PolygonSubscribeAggregates { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:427](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L427) |  |
+| <code>public DataSourceConfigDto? SelectedDefaultRealTimeSource { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:431](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L431) |  |
+| <code>public DataSourceConfigDto? SelectedDefaultHistoricalSource { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:441](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L441) |  |
+| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:453](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L453) |  |
+| <code>public bool IsStatusError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:454](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L454) |  |
+| <code>public bool IsStatusVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:455](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L455) |  |
+| <code>public bool IsConfigurationRecoveryVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:456](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L456) |  |
+| <code>public string ConfigurationRecoveryTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:461](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L461) |  |
+| <code>public string ConfigurationRecoveryDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:466](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L466) |  |
+| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:474](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L474) |  |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:523](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L523) |  |
 
 ## DataWorkspaceShellViewModel
 
@@ -270,7 +310,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.DryRunResultViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:119](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L119).
+Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:142](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L142).
 
 View model for dry-run backfill plan result items.
 
@@ -282,9 +322,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:121](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L121) |  |
-| <code>public string SelectedProvider { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:122](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L122) |  |
-| <code>public string FallbackSequence { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:123](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L123) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:144](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L144) |  |
+| <code>public string SelectedProvider { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:145](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L145) |  |
+| <code>public string FallbackSequence { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:146](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L146) |  |
 
 ## EquityCurvePoint
 
@@ -596,7 +636,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.FallbackChainViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:83](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L83).
+Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:106](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L106).
 
 View model for fallback chain preview items.
 
@@ -608,14 +648,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Priority { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:93](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L93) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:94](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L94) |  |
-| <code>public string DataTypes { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:95](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L95) |  |
-| <code>public string HealthStatus { get; set; } = &quot;unknown&quot;;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:96](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L96) |  |
-| <code>public string RateLimitUsage { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:97](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L97) |  |
-| <code>public string ConfigSource { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:98](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L98) |  |
-| <code>public Brush HealthBrush =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:100](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L100) |  |
-| <code>public Brush ConfigSourceBrush =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:108](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L108) |  |
+| <code>public string Priority { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:116](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L116) |  |
+| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:117](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L117) |  |
+| <code>public string DataTypes { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:118](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L118) |  |
+| <code>public string HealthStatus { get; set; } = &quot;unknown&quot;;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:119](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L119) |  |
+| <code>public string RateLimitUsage { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:120](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L120) |  |
+| <code>public string ConfigSource { get; set; } = &quot;default&quot;;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:121](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L121) |  |
+| <code>public Brush HealthBrush =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:123](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L123) |  |
+| <code>public Brush ConfigSourceBrush =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:131](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L131) |  |
 
 ## FeatureCapabilityToggleViewModel
 
@@ -1754,50 +1794,3 @@ Declared public members:
 | <code>RetentionValidationResult ValidateRetentionPolicy(RetentionPolicy policy);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:724](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L724) |  |
 | <code>Task&lt;RetentionDryRunResult&gt; PerformDryRunAsync(RetentionPolicy policy, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:726](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L726) |  |
 | <code>Task&lt;RetentionAuditReport&gt; ExecuteRetentionCleanupAsync(RetentionDryRunResult dryRun, bool verifyChecksums, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:728](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L728) |  |
-
-## IScheduleManagerClient
-
-Qualified name: <code>Meridian.Wpf.ViewModels.IScheduleManagerClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs:311](../../../../src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs#L311).
-
-Defines backfill and maintenance schedule discovery, templates, and cron-expression validation.
-
-```csharp
-public interface IScheduleManagerClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;List&lt;BackfillSchedule&gt;?&gt; GetBackfillSchedulesAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs#L313) |  |
-| <code>Task&lt;List&lt;MaintenanceSchedule&gt;?&gt; GetMaintenanceSchedulesAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs:315](../../../../src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs#L315) |  |
-| <code>Task&lt;List&lt;ScheduleTemplate&gt;?&gt; GetBackfillTemplatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs:317](../../../../src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs#L317) |  |
-| <code>Task&lt;CronValidationResult?&gt; ValidateCronExpressionAsync(string cronExpression, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/ScheduleManagerViewModel.cs#L319) |  |
-
-## ISymbolMappingClient
-
-Qualified name: <code>Meridian.Wpf.ViewModels.ISymbolMappingClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:11](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L11).
-
-Defines canonical-to-provider symbol mapping lookup, editing, testing, and CSV import and export.
-
-```csharp
-public interface ISymbolMappingClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>IReadOnlyList&lt;MappingProviderInfo&gt; Providers { get; }</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:13](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L13) |  |
-| <code>Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:15](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L15) |  |
-| <code>IReadOnlyList&lt;SymbolMapping&gt; GetMappings();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L17) |  |
-| <code>SymbolMapping? GetMapping(string canonicalSymbol);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L19) |  |
-| <code>Dictionary&lt;string, string&gt; TestMapping(string canonicalSymbol);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L21) |  |
-| <code>Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L23) |  |
-| <code>Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:25](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L25) |  |
-| <code>Task&lt;int&gt; ImportFromCsvAsync(string csvContent, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L27) |  |
-| <code>string ExportToCsv();</code> | [src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs:29](../../../../src/Meridian.Wpf/ViewModels/SymbolMappingViewModel.cs#L29) |  |

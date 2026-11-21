@@ -2,9 +2,11 @@
 // exactly one module under ./types/; add new declarations there, not here.
 export * from "./types/accounting-onboarding";
 export * from "./types/accounting-integration";
+export type * from "./types/amount-passport";
 export * from "./types/audit-integrity";
 export * from "./types/account-oversight";
 export * from "./types/instrument-accounting";
+export * from "./types/income-receipt-queue.types";
 export type * from "./types/intercompany-agreements";
 export type * from "./types/intercompany-obligations";
 export type * from "./types/intercompany-fees";
@@ -31,6 +33,7 @@ export * from "./types/corporate-action-inbox";
 export * from "./types/provider-accounting";
 export * from "./types/provider-integration-provenance";
 export * from "./types/provider-integration-identity";
+export * from "./types/provider-provenance";
 export * from "./types/report-amount-proof";
 export * from "./types/reporting-governance";
 export * from "./types/reporting-income-comparison";

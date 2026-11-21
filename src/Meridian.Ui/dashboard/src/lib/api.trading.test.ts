@@ -8,6 +8,7 @@ import {
   createExecutionManualOverride,
   deleteWorkflowPreset,
   evaluatePromotion,
+  revokeLiveAuthorization,
   getAlpacaConnectionStatus,
   getAccountingWorkspace,
   getBrokerageHouseholdPortfolio,
@@ -179,6 +180,11 @@ describe("trading endpoint wiring", () => {
           manualOverrideId: "override-42"
         })
       })
+    );
+    await revokeLiveAuthorization("promotion / 1", "Withdraw approval");
+    expect(fetchMock).toHaveBeenCalledWith(
+      "/api/promotion/live-authorizations/promotion%20%2F%201/revoke",
+      expect.objectContaining({ method: "POST", body: JSON.stringify({ reason: "Withdraw approval" }) })
     );
   });
 

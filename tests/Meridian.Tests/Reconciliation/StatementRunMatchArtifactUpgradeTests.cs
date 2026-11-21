@@ -126,6 +126,8 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
         var replayed = await CreateWorkflow().CreateAsync(request, timeout.Token);
 
         replayed.Import.ImportId.Should().Be(runId);
+        replayed.ExecutedTolerancePolicy.Should().BeNull();
+        (await CreateWorkflow().GetAsync(runId, timeout.Token))!.CaseMatchEvidence.Should().BeNull();
         var retained = await new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter()).GetAsync(runId, timeout.Token);
         retained!.MatchGroups.Should().BeNull("a legacy artifact is adopted as written, never rewritten under its retained hash");
     }
@@ -150,6 +152,7 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
         var recovered = await CreateWorkflow().CreateAsync(request, timeout.Token);
 
         recovered.Import.ImportId.Should().Be(runId);
+        recovered.ExecutedTolerancePolicy.Should().BeNull();
         var repository = new FileStatementRunRecoveryRepository(_root);
         var checkpoint = await repository.GetAsync(runId, timeout.Token);
         checkpoint!.Stage.Should().Be(StatementRunRecoveryStage.Completed);
@@ -174,7 +177,15 @@ public sealed class StatementRunMatchArtifactUpgradeTests : IDisposable
         var store = new FileStatementRunMatchArtifactStore(_root, new AtomicFileWriterAdapter());
         var current = await store.GetAsync(runId, ct);
         current!.MatchGroups.Should().NotBeNull("new runs must retain match groups");
-        var legacy = current with { MatchGroups = null };
+        var legacy = current with
+        {
+            MatchGroups = null,
+            ExecutedTolerancePolicy = null,
+            CaseMatchEvidence = null,
+            MatchGroupAllocations = null,
+            SourceComparisonPolicyFingerprint = StatementRunComparisonEvidence.PolicyFingerprint(StatementToleranceProfile.Default,
+                current.SourceComparisonMappingFingerprint, legacy: true)
+        };
         var artifactPath = Path.Combine(
             _root,
             "reconciliation",

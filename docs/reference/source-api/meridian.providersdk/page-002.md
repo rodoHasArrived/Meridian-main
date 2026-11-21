@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSourceAttributeExtensions
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceAttributeExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.ProviderSdk/DataSourceAttribute.cs:154](../../../../src/Meridian.ProviderSdk/DataSourceAttribute.cs#L154).
+
+Extension methods for DataSourceAttribute discovery.
+
+```csharp
+public static class DataSourceAttributeExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static DataSourceAttribute? GetDataSourceAttribute(this Type type);</code> | [src/Meridian.ProviderSdk/DataSourceAttribute.cs:159](../../../../src/Meridian.ProviderSdk/DataSourceAttribute.cs#L159) | Gets the DataSourceAttribute from a type, if present. |
+| <code>public static DataSourceMetadata? GetDataSourceMetadata(this Type type);</code> | [src/Meridian.ProviderSdk/DataSourceAttribute.cs:167](../../../../src/Meridian.ProviderSdk/DataSourceAttribute.cs#L167) | Gets the DataSourceMetadata from a type, if decorated with DataSourceAttribute. |
+| <code>public static bool IsDataSource(this Type type);</code> | [src/Meridian.ProviderSdk/DataSourceAttribute.cs:178](../../../../src/Meridian.ProviderSdk/DataSourceAttribute.cs#L178) | Checks if a type is a data source (has DataSourceAttribute and is a concrete class). Accepts types implementing IDataSource or any recognized provider interface (IHistoricalDataProvider, IMarketDataClient, ISymbolSearchProvider, ICorporateActionProvider). |
+
+## DataSourceCapabilities
+
+Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceCapabilities</code>. Kind: `enum`.
+
+Source: [src/Meridian.ProviderSdk/IDataSource.cs:170](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L170).
+
+Bitwise capabilities supported by a data source.
+
+```csharp
+public enum DataSourceCapabilities : long
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>None = 0</code> | [src/Meridian.ProviderSdk/IDataSource.cs:172](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L172) |  |
+| <code>RealtimeTrades = 1L&lt;&lt;0</code> | [src/Meridian.ProviderSdk/IDataSource.cs:176](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L176) | Real-time trade prints. |
+| <code>RealtimeQuotes = 1L&lt;&lt;1</code> | [src/Meridian.ProviderSdk/IDataSource.cs:179](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L179) | Real-time BBO quotes. |
+| <code>RealtimeDepthL1 = 1L&lt;&lt;2</code> | [src/Meridian.ProviderSdk/IDataSource.cs:182](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L182) | Level 1 market depth. |
+| <code>RealtimeDepthL2 = 1L&lt;&lt;3</code> | [src/Meridian.ProviderSdk/IDataSource.cs:185](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L185) | Level 2 market depth. |
+| <code>RealtimeDepthL3 = 1L&lt;&lt;4</code> | [src/Meridian.ProviderSdk/IDataSource.cs:188](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L188) | Level 3 market depth (full order book). |
+| <code>RealtimeAggregateBars = 1L&lt;&lt;5</code> | [src/Meridian.ProviderSdk/IDataSource.cs:191](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L191) | Real-time aggregate bars. |
+| <code>HistoricalDailyBars = 1L&lt;&lt;10</code> | [src/Meridian.ProviderSdk/IDataSource.cs:196](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L196) | Historical daily bars. |
+| <code>HistoricalIntradayBars = 1L&lt;&lt;11</code> | [src/Meridian.ProviderSdk/IDataSource.cs:199](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L199) | Historical intraday bars (minute, hourly). |
+| <code>HistoricalTicks = 1L&lt;&lt;12</code> | [src/Meridian.ProviderSdk/IDataSource.cs:202](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L202) | Historical tick data. |
+| <code>HistoricalAdjustedPrices = 1L&lt;&lt;13</code> | [src/Meridian.ProviderSdk/IDataSource.cs:205](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L205) | Split/dividend adjusted prices. |
+| <code>HistoricalDividends = 1L&lt;&lt;14</code> | [src/Meridian.ProviderSdk/IDataSource.cs:208](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L208) | Historical dividend data. |
+| <code>HistoricalSplits = 1L&lt;&lt;15</code> | [src/Meridian.ProviderSdk/IDataSource.cs:211](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L211) | Historical split data. |
+| <code>HistoricalCorporateActions = 1L&lt;&lt;16</code> | [src/Meridian.ProviderSdk/IDataSource.cs:214](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L214) | Historical corporate actions. |
+| <code>HistoricalEarnings = 1L&lt;&lt;17</code> | [src/Meridian.ProviderSdk/IDataSource.cs:217](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L217) | Historical earnings data. |
+| <code>SupportsBackfill = 1L&lt;&lt;20</code> | [src/Meridian.ProviderSdk/IDataSource.cs:222](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L222) | Supports historical data backfill. |
+| <code>SupportsStreaming = 1L&lt;&lt;21</code> | [src/Meridian.ProviderSdk/IDataSource.cs:225](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L225) | Supports real-time streaming (push). |
+| <code>SupportsPolling = 1L&lt;&lt;22</code> | [src/Meridian.ProviderSdk/IDataSource.cs:228](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L228) | Supports polling (pull). |
+| <code>SupportsWebSocket = 1L&lt;&lt;23</code> | [src/Meridian.ProviderSdk/IDataSource.cs:231](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L231) | Supports WebSocket connections. |
+| <code>SupportsBatchRequests = 1L&lt;&lt;24</code> | [src/Meridian.ProviderSdk/IDataSource.cs:234](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L234) | Supports batch/bulk requests. |
+| <code>SupportsSymbolSearch = 1L&lt;&lt;25</code> | [src/Meridian.ProviderSdk/IDataSource.cs:237](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L237) | Supports symbol search/lookup. |
+| <code>SupportsMultiSubscription = 1L&lt;&lt;26</code> | [src/Meridian.ProviderSdk/IDataSource.cs:240](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L240) | Supports multiple simultaneous subscriptions. |
+| <code>ExchangeTimestamps = 1L&lt;&lt;30</code> | [src/Meridian.ProviderSdk/IDataSource.cs:245](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L245) | Provides exchange-level timestamps. |
+| <code>SequenceNumbers = 1L&lt;&lt;31</code> | [src/Meridian.ProviderSdk/IDataSource.cs:248](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L248) | Provides sequence numbers for ordering. |
+| <code>TradeConditions = 1L&lt;&lt;32</code> | [src/Meridian.ProviderSdk/IDataSource.cs:251](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L251) | Provides trade condition codes. |
+| <code>ParticipantIds = 1L&lt;&lt;33</code> | [src/Meridian.ProviderSdk/IDataSource.cs:254](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L254) | Provides market maker/participant IDs. |
+| <code>ConsolidatedTape = 1L&lt;&lt;34</code> | [src/Meridian.ProviderSdk/IDataSource.cs:257](../../../../src/Meridian.ProviderSdk/IDataSource.cs#L257) | Provides consolidated tape. |
+
 ## DataSourceCapabilityContracts
 
 Qualified name: <code>Meridian.Infrastructure.DataSources.DataSourceCapabilityContracts</code>. Kind: `class`.
@@ -930,27 +994,3 @@ Declared public members:
 | <code>string DisplayName { get; }</code> | [src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs:12](../../../../src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs#L12) |  |
 | <code>AccountingSystemProviderCapabilities Capabilities { get; }</code> | [src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs:14](../../../../src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs#L14) |  |
 | <code>Task&lt;AccountingSystemImportDetailDto&gt; ImportAsync(AccountingSystemImportRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs:16](../../../../src/Meridian.ProviderSdk/AccountingSystem/IAccountingSystemProvider.cs#L16) |  |
-
-## IBDataLineage
-
-Qualified name: <code>Meridian.ProviderSdk.IBDataLineage</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:151](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L151).
-
-Complete, entitlement-aware lineage for an Interactive Brokers request or subscription.
-
-```csharp
-public sealed record IBDataLineage(int RequestId, string Service, string Symbol, string? Exchange, string? MarketRuleIds, string? MinimumIncrements, string? Subscription, IBMarketDataAvailability Availability, bool IsDelayed, string Status, DateTimeOffset ObservedAt);
-```
-
-## IBDataResult
-
-Qualified name: <code>Meridian.ProviderSdk.IBDataResult</code>. Kind: `record`.
-
-Source: [src/Meridian.ProviderSdk/IProviderDataReadService.cs:169](../../../../src/Meridian.ProviderSdk/IProviderDataReadService.cs#L169).
-
-Storage-facing, normalized provider result. Snapshot identities are stable across retries and restarts; NormalizedPayload is the portable serialized read model and lineage is retained separately so consumers need not recover it from an opaque payload.
-
-```csharp
-public sealed record IBDataResult(string TenantId, string CompanyId, string ResultIdentity, string ProviderFamily, string Capability, string RequestIdentity, string? SubscriptionIdentity, string? Symbol, string? AccountId, DateTimeOffset CapturedAt, ProviderDataRequestStatus LifecycleStatus, string NormalizedPayload, IBDataLineage Lineage);
-```

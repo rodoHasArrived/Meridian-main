@@ -87,3 +87,6 @@ export function ownedCredentialConnections(rows: ProviderRoutingConnection[], pr
 export function credentialOwnershipKey(row: ProviderRoutingConnection): string {
   return JSON.stringify([row.providerFamilyId, row.connectionId, row.tenantId, row.externalAccountId, row.credentialEnvironment]);
 }
+export function supportsProviderDraft(providerId: string) {
+  return ["alpaca", "polygon", "tiingo", "finnhub"].includes(providerId.toLowerCase());
+}

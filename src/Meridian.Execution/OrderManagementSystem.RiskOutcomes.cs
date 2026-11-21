@@ -555,6 +555,7 @@ public sealed partial class OrderManagementSystem
             CreatedAt = DateTimeOffset.UtcNow,
             LastUpdatedAt = DateTimeOffset.UtcNow,
             StrategyId = request.StrategyId,
+            IntentId = request.IntentId,
             // Fund scope survives a rejection: a parked order's state is built here, and
             // cancelling one withdraws its approval — authorized against this field.
             FundAccountId = request.FundAccountId,

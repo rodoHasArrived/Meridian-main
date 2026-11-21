@@ -4,12 +4,13 @@ import { StatStrip } from "@/components/meridian/stat-strip";
 import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import type {
   AppShellAttentionState,
   AppShellTrustStripState,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import { updateWorkstationSearch } from "@/lib/workstation-close-routing";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -88,7 +89,11 @@ function DailyControlTowerQueue({
   const fundAccountId = viewModel.operatingScope.fundAccountId;
   // The shared inbox's read, filters and in-flight / unconfirmed command live above the Source
   // filter (in the shell), so filtering inbox rows out of the grid never drops a pending command.
-  const [queueSource, setQueueSource] = useState<TodayQueueSource>("all");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const sourceQuery = new URLSearchParams(location.search).get("source");
+  const queueSource: TodayQueueSource = sourceQuery === "workspace" || sourceQuery === "inbox" ? sourceQuery : "all";
+  const setQueueSource = (value: TodayQueueSource) => navigate({ search: updateWorkstationSearch(location.search, "source", value === "all" ? null : value), hash: location.hash });
   // Triage-in-place: the operator inspects any row without leaving Today. A workspace signal
   // shows its evidence; an inbox item shows its triage actions. Falls back to the leading
   // decision's row (or the first visible row) until one is chosen or when it leaves the grid.
@@ -448,4 +453,3 @@ function WorkspaceEvidenceRail({ row }: { row: Extract<TodayQueueRow, { source: 
 }
 
 const SEEDED_INBOX_REASON = /^Seeded read-only inbox\./i;
-

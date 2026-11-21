@@ -1,8 +1,9 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { Route, Routes, useLocation } from "react-router-dom";
 import * as api from "@/lib/api";
+import { readRecordWorkspaceContext, withoutRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import { AssetDetailScreen } from "@/screens/asset-detail-screen";
 import { renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import type { CorporateAction, SecurityIdentityDrillIn, SecurityMasterEntry, TradingParameters } from "@/types";
@@ -179,6 +180,11 @@ describe("AssetDetailScreen", () => {
     expect(screen.getByText("No corporate actions recorded for this security.")).toBeInTheDocument();
 
     const user = userEvent.setup();
+    const identity = within(screen.getByRole("region", { name: "Instrument identity" }));
+    expect(identity.getByText("Ticker AAPL")).toBeVisible();
+    expect(identity.getByText("sec-aapl")).not.toBeVisible();
+    await user.click(identity.getByText("Technical identity"));
+    expect(identity.getByText("sec-aapl")).toBeVisible();
     await user.click(screen.getByRole("tab", { name: "Passport" }));
     expect(await screen.findByTestId("security-passport-editor")).toBeInTheDocument();
 
@@ -200,9 +206,16 @@ describe("AssetDetailScreen", () => {
     vi.mocked(api.getSecurityDetail).mockResolvedValue(bondEntry);
     await renderScreen("/portfolio/asset-detail?securityId=bond-1");
 
-    expect(screen.getByRole("link", { name: "Bond analytics" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-1&tab=evidence&bondAction=analytics");
-    expect(screen.getByRole("link", { name: "Convention migration" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-1&tab=evidence&bondAction=migration");
-    expect(screen.getByRole("link", { name: "Open Security Master" })).toHaveAttribute("href", "/accounting/security-master?securityId=bond-1");
+    for (const [name, query] of [
+      ["Bond analytics", "?securityId=bond-1&tab=evidence&bondAction=analytics"],
+      ["Convention migration", "?securityId=bond-1&tab=evidence&bondAction=migration"],
+      ["Open Security Master", "?securityId=bond-1"]
+    ]) {
+      const url = new URL(screen.getByRole("link", { name }).getAttribute("href")!, "https://meridian.local");
+      expect(url.pathname).toBe("/accounting/security-master");
+      expect(withoutRecordWorkspaceContext(url.search)).toBe(query);
+      expect(readRecordWorkspaceContext(url.search)?.origin).toBe("/portfolio/asset-detail?securityId=bond-1");
+    }
   });
 
   it.each(["analytics", "migration"])("resolves an exact holding identity before opening %s", async (action) => {

@@ -77,6 +77,8 @@ internal sealed class ConfigurationChangeTracker
         var root = path.Split('.')[0];
         if (root.Equals("Symbols", StringComparison.OrdinalIgnoreCase))
             return ConfigurationChangeImpact.Live;
+        if (path.Equals("Alpaca.Feed", StringComparison.OrdinalIgnoreCase))
+            return ConfigurationChangeImpact.RestartHost;
         if (root.Equals("DataSource", StringComparison.OrdinalIgnoreCase)
             || root.Equals("Alpaca", StringComparison.OrdinalIgnoreCase)
             || root.Equals("IB", StringComparison.OrdinalIgnoreCase)
@@ -95,8 +97,41 @@ internal sealed class ConfigurationChangeTracker
     private static Dictionary<string, string> Fingerprints(AppConfig config)
     {
         var fields = new Dictionary<string, string>(StringComparer.Ordinal);
-        Flatten(JsonSerializer.SerializeToNode(config, AppConfigJsonOptions.Write), "", fields);
+        // A first provider edit can materialize the complete section. Compare the
+        // adapter defaults that already apply so unchanged pacing does not require restart.
+        Flatten(JsonSerializer.SerializeToNode(WithBackfillDefaults(config), AppConfigJsonOptions.Write), "", fields);
         return fields;
+    }
+
+    private static AppConfig WithBackfillDefaults(AppConfig config)
+    {
+        var backfill = config.Backfill ?? new BackfillConfig();
+        var providers = backfill.Providers ?? new BackfillProvidersConfig();
+        var alphaVantage = providers.AlphaVantage ?? new AlphaVantageConfig(Enabled: false);
+        var openFigi = providers.OpenFigi ?? new OpenFigiConfig();
+        return config with
+        {
+            Backfill = backfill with
+            {
+                Providers = providers with
+                {
+                    Alpaca = providers.Alpaca ?? new(Feed: string.Empty),
+                    Yahoo = providers.Yahoo ?? new(),
+                    Nasdaq = providers.Nasdaq ?? new(),
+                    Stooq = providers.Stooq ?? new(),
+                    Tiingo = providers.Tiingo ?? new(),
+                    Polygon = providers.Polygon ?? new(),
+                    AlphaVantage = alphaVantage with { TierId = alphaVantage.TierId ?? "free" },
+                    Finnhub = providers.Finnhub ?? new(),
+                    TwelveData = providers.TwelveData ?? new(),
+                    OpenFigi = openFigi with
+                    {
+                        RateLimitPerMinute = openFigi.RateLimitPerMinute ??
+                            (openFigi.TierId == "authenticated" ? BackfillProviderCatalog.OpenFigiAuthenticatedPerMinute : BackfillProviderCatalog.OpenFigiPerMinute)
+                    }
+                }
+            }
+        };
     }
 
     private static void Flatten(JsonNode? node, string path, Dictionary<string, string> fields)

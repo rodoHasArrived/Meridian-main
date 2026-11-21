@@ -778,8 +778,8 @@ public sealed class ReportPackWorkflowServiceTests
             row.Values["sector"] == "Rates" &&
             row.Values["US:marketValue"] == "40" &&
             row.Values["US:pnl"] == "-2" &&
-            row.Values["EU:marketValue"] == "0" &&
-            row.Values["EU:pnl"] == "0" &&
+            row.Values["EU:marketValue"] == "" &&
+            row.Values["EU:pnl"] == "" &&
             row.Values["returnPct"] == "-5");
         grid.Lineage.Should().NotBeNull();
         grid.Lineage!.SourceFields.Should().Equal("marketValue", "pnl", "region", "sector");
@@ -4400,11 +4400,11 @@ public sealed class ReportPackWorkflowServiceTests
                 Grids:
                 [
                     new ReportWriterGridDefinitionDto(
-                        "strategy-pivot",
-                        "Strategy Pivot",
+                        "account-pivot",
+                        "Account Pivot",
                         ReportWriterGridKindDto.Pivot,
-                        RowFields: ["strategy"],
-                        Metrics: [new ReportWriterMetricDefinitionDto("marketValue", "marketValue")])
+                        RowFields: ["account"],
+                        Metrics: [new ReportWriterMetricDefinitionDto("debit", "debit")])
                 ],
                 AccessPolicy: new ReportAccessPolicyDto(
                     ReportAccessModeDto.Restricted,
@@ -4466,10 +4466,10 @@ public sealed class ReportPackWorkflowServiceTests
                         "audit-source-grid",
                         "Audit Source Grid",
                         ReportWriterGridKindDto.Pivot,
-                        RowFields: ["kind"],
+                        RowFields: ["account"],
                         Metrics:
                         [
-                            new ReportWriterMetricDefinitionDto("grossExposure", "grossExposure", ReportWriterAggregateFunctionDto.Sum, "Gross exposure")
+                            new ReportWriterMetricDefinitionDto("debit", "debit", ReportWriterAggregateFunctionDto.Sum, "Debit")
                         ])
                 ]),
             "report.author",
@@ -4489,7 +4489,6 @@ public sealed class ReportPackWorkflowServiceTests
                 draft.Definition.TemplateId.Name,
                 new DateOnly(2026, 5, 5),
                 JobId: "audit-visible-run",
-                DatasetSourceId: "portfolio-reporting-cuts",
                 Parameters: BuildEndpointScheduleRunParameters()),
             ServerJsonOptions);
 
@@ -4677,14 +4676,22 @@ public sealed class ReportPackWorkflowServiceTests
         var workbookXml = await workbookReader.ReadToEndAsync();
         workbookXml.Should().Contain("DataDictionary");
         workbookXml.Should().Contain("Validation");
+        xlsAliasWorkbook.Should().Equal(workbook);
+        using var clientWorkbook = new ClosedXML.Excel.XLWorkbook(new MemoryStream(workbook));
+        var sheet = clientWorkbook.Worksheet("ReportWriterGrid");
+        sheet.Cell("A1").GetString().Should().Be("Account");
+        sheet.Cell("B1").GetString().Should().Be("Debit");
+        var cashRow = sheet.RowsUsed().Single(row => row.Cell(1).GetString() == "Cash");
+        cashRow.Cell(2).GetDouble().Should().Be(100);
+        cashRow.Cell(3).GetDouble().Should().Be(0);
 
         pdfResponse.StatusCode.Should().Be(HttpStatusCode.OK);
         pdfResponse.Content.Headers.ContentType?.MediaType.Should().Be("application/pdf");
         pdfResponse.Content.Headers.ContentDisposition?.FileName.Should().Be($"{run.Run.RunId}-account-balance.pdf");
         var pdf = await pdfResponse.Content.ReadAsByteArrayAsync();
-        pdf.Should().StartWith(System.Text.Encoding.ASCII.GetBytes("%PDF-1.4"));
-        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Account Balance");
-        System.Text.Encoding.ASCII.GetString(pdf).Should().Contain("Cash | 100 | 0 | 100");
+        pdf.Should().StartWith(System.Text.Encoding.ASCII.GetBytes("%PDF-"));
+        var repeatedPdf = await client.GetByteArrayAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/account-balance?format=pdf");
+        repeatedPdf.Should().Equal(pdf);
     }
 
     [Fact]
@@ -4703,11 +4710,11 @@ public sealed class ReportPackWorkflowServiceTests
                 Grids:
                 [
                     new ReportWriterGridDefinitionDto(
-                        "private-sector-pnl",
-                        "Private Sector P&L",
+                        "private-account-balance",
+                        "Private Account Balance",
                         ReportWriterGridKindDto.Pivot,
-                        RowFields: ["sector"],
-                        Metrics: [new ReportWriterMetricDefinitionDto("pnl", "pnl")])
+                        RowFields: ["account"],
+                        Metrics: [new ReportWriterMetricDefinitionDto("debit", "debit")])
                 ],
                 AccessPolicy: new ReportAccessPolicyDto(ReportAccessModeDto.Private, OwnerPrincipalId: "owner.user")),
             "owner.user",
@@ -4744,12 +4751,12 @@ public sealed class ReportPackWorkflowServiceTests
             await runResponse.Content.ReadAsStringAsync());
         var run = await runResponse.Content.ReadFromJsonAsync<ReportingRunResultDto>(ServerJsonOptions);
         run.Should().NotBeNull();
-        run!.Run.GeneratedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "private-sector-pnl");
+        run!.Run.GeneratedReportWriterGrids.Should().ContainSingle(grid => grid.GridId == "private-account-balance");
 
         client.DefaultRequestHeaders.Remove("X-Meridian-Test-User");
         client.DefaultRequestHeaders.Add("X-Meridian-Test-User", "viewer.user");
 
-        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/private-sector-pnl");
+        var response = await client.GetAsync($"/api/fund-structure/reporting/runs/{run.Run.RunId}/report-writer-grids/private-account-balance");
 
         response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }

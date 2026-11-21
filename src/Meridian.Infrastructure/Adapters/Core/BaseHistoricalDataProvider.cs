@@ -37,7 +37,7 @@ namespace Meridian.Infrastructure.Adapters.Core;
 /// </remarks>
 [ImplementsAdr("ADR-001", "Base historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
-public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IDisposable
+public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRateLimitAwareProvider, IBackfillRequestMeteredProvider, IDisposable
 {
     private static readonly JsonSerializerOptions ReflectionJsonOptions = new()
     {
@@ -92,6 +92,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     public virtual TimeSpan RateLimitDelay => TimeSpan.Zero;
     public virtual int MaxRequestsPerWindow => int.MaxValue;
     public virtual TimeSpan RateLimitWindow => TimeSpan.FromHours(1);
+    protected virtual bool HasKnownQuota => true;
 
     /// <summary>
     /// Consolidated capability flags for this provider.
@@ -244,9 +245,11 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     /// <summary>
     /// Wait for a rate limit slot before making a request.
     /// </summary>
-    protected async Task WaitForRateLimitSlotAsync(CancellationToken ct)
+    protected Task WaitForRateLimitSlotAsync(CancellationToken ct)
     {
-        await RequestRateLimiter.WaitForSlotAsync(ct).ConfigureAwait(false);
+        var scope = HistoricalBackfillRequestScope.Current;
+        return RequestRateLimiter.WaitForUnitsAsync(1, scope?.HeadroomPercent(this) ?? 0,
+            scope is null ? null : wait => scope.Throttled(Name, "quota-admission", wait), ct);
     }
 
     /// <summary>
@@ -299,6 +302,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
                 Math.Max(info.UsageRatio, budget.DailyMaximum is { } maximum ? (double)budget.DailyUnitsUsed!.Value / maximum : 0),
                 dailyLimited ? "daily-quota" : budget.UnitsInWindow >= budget.Maximum ? "window-quota" : info.IsLimited ? "provider-response" : null)
             {
+                QuotaKnown = HasKnownQuota,
                 QuotaUnit = budget.Unit,
                 DailyUnitsUsed = budget.DailyUnitsUsed,
                 DailyMaximum = budget.DailyMaximum,
@@ -352,6 +356,7 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
     protected async Task<HttpResponseMessage> ExecuteGetAsync(string url, string symbol, string dataType, CancellationToken ct)
     {
         ThrowIfDisposed();
+        var observation = HistoricalBackfillRequestScope.Current;
         using var cancellation = CancellationTokenSource.CreateLinkedTokenSource(ct, _lifetime.Token);
         Log.Debug("Requesting {Provider} {DataType} for {Symbol}: {Url}", Name, dataType, symbol, RedactSensitiveQueryParameters(url));
 
@@ -366,13 +371,19 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
             // Quota waiting observes caller cancellation; the network attempt gets its
             // own fresh timeout only after it is admitted by the shared limiter.
             var response = await _requestTimeoutPipeline.ExecuteAsync(
-                async sendToken => await Http.SendAsync(request, sendToken).ConfigureAwait(false),
+                async sendToken =>
+                {
+                    observation?.RequestStarted(Name);
+                    return await Http.SendAsync(request, sendToken).ConfigureAwait(false);
+                },
                 token).ConfigureAwait(false);
             var retryAfter = HttpResiliencePolicy.ExtractRetryAfter(response, _timeProvider);
             if (response.StatusCode == System.Net.HttpStatusCode.TooManyRequests ||
                 (!response.IsSuccessStatusCode && retryAfter.HasValue))
             {
                 RecordRateLimitHit(retryAfter ?? TimeSpan.FromSeconds(60));
+                if (response.StatusCode != System.Net.HttpStatusCode.TooManyRequests)
+                    observation?.Throttled(Name, "provider-backoff", retryAfter);
                 _responsesWithCooldown.Add(response, new object());
                 RaiseRateLimitHit(GetRateLimitInfo());
             }

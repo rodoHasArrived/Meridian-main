@@ -6,6 +6,80 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## GapAnalysisResult
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalysisResult</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:94](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L94).
+
+Gap analysis result with visual timeline data.
+
+```csharp
+public sealed record GapAnalysisResult(string Symbol, DateOnly Date, int TotalGaps, TimeSpan TotalGapDuration, double DataAvailabilityPercent, IReadOnlyList<DataGap> Gaps, IReadOnlyList<TimelineEntry> Timeline, DateTimeOffset AnalyzedAt);
+```
+
+## GapAnalyzer
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalyzer</code>. Kind: `class`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:13](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L13).
+
+Analyzes data gaps and generates visual timelines for data availability. Tracks gaps in real-time and provides historical gap analysis.
+
+```csharp
+public sealed class GapAnalyzer : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event Action&lt;DataGap&gt;? OnGapDetected;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:31](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L31) | Event raised when a significant gap is detected. |
+| <code>public GapAnalyzer(GapAnalyzerConfig? config = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:33](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L33) |  |
+| <code>public void RegisterSymbolLiquidity(string symbol, LiquidityProfile profile);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:46](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L46) | Registers a liquidity profile for a symbol, adjusting gap detection thresholds. |
+| <code>public LiquidityProfile GetSymbolLiquidity(string symbol);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:58](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L58) | Gets the liquidity profile for a symbol, defaulting to LiquidityProfile.High. |
+| <code>[MethodImpl(MethodImplOptions.AggressiveInlining)] public void RecordEvent(string symbol, string eventType, DateTimeOffset timestamp, long? sequenceNumber = null, string? provider = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:70](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L70) | Records an event timestamp for gap detection. Uses per-symbol liquidity thresholds when registered, falling back to global config. |
+| <code>public GapAnalysisResult AnalyzeGaps(string symbol, DateOnly date, string? eventType = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:120](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L120) | Analyzes gaps for a specific symbol and date, generating a timeline. |
+| <code>public IReadOnlyList&lt;DataGap&gt; GetGapsForSymbolDate(string symbol, DateOnly date, string? eventType = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:146](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L146) | Gets all gaps for a specific symbol and date. |
+| <code>public IReadOnlyList&lt;DataGap&gt; GetGapsForDate(DateOnly date);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:162](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L162) | Gets all gaps for a specific date across all symbols. |
+| <code>public IReadOnlyList&lt;DataGap&gt; GetRecentGaps(int count = 100);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:174](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L174) | Gets recent gaps across all symbols. |
+| <code>public GapStatistics GetStatistics(DateOnly? date = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:186](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L186) | Gets gap statistics for a date. |
+| <code>public IReadOnlyList&lt;string&gt; GetSymbolsWithSignificantGaps(DateOnly date, TimeSpan threshold);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:235](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L235) | Gets symbols with gaps exceeding a threshold. |
+| <code>public IReadOnlyList&lt;TimelineEntry&gt; GenerateTimeline(string symbol, DateOnly date, IReadOnlyList&lt;DataGap&gt;? gaps = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:247](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L247) | Generates a visual timeline for a symbol/date. |
+| <code>public void ResetSymbol(string symbol, string? eventType = null);</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:309](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L309) | Resets gap tracking for a symbol. |
+| <code>public long TotalGapsDetected =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:331](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L331) | Gets total gaps detected count. |
+| <code>public long TotalEventsProcessed =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:336](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L336) | Gets total events processed count. |
+| <code>public void Dispose();</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:451](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L451) |  |
+
+## GapAnalyzerConfig
+
+Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapAnalyzerConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:538](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L538).
+
+Configuration for gap analysis.
+
+```csharp
+public sealed record GapAnalyzerConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int GapThresholdSeconds { get; init; } = 60;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:543](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L543) | Minimum gap duration in seconds to be considered a gap. |
+| <code>public int TradingStartHour { get; init; } = 13;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:548](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L548) | Trading start hour (UTC). |
+| <code>public int TradingStartMinute { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:553](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L553) | Trading start minute. |
+| <code>public int TradingEndHour { get; init; } = 20;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:558](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L558) | Trading end hour (UTC). |
+| <code>public int TradingEndMinute { get; init; } = 0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:563](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L563) | Trading end minute. |
+| <code>public long ExpectedEventsPerHour { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:568](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L568) | Expected events per hour for estimation. |
+| <code>public bool IncludeExtendedHours { get; init; } = true;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:573](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L573) | Include pre-market and after-hours in timeline. |
+| <code>public double PreMarketHours { get; init; } = 5.5;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:578](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L578) | Pre-market hours before regular trading. |
+| <code>public double AfterHoursHours { get; init; } = 4.0;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:583](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L583) | After-hours duration after regular trading. |
+| <code>public int MaxGapsPerSymbol { get; init; } = 1000;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:588](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L588) | Maximum gaps to retain per symbol. |
+| <code>public int RetentionDays { get; init; } = 30;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:593](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L593) | Days to retain gap history. |
+| <code>public static GapAnalyzerConfig Default =&gt; …;</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs:595](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/GapAnalyzer.cs#L595) |  |
+
 ## GapSeverity
 
 Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.GapSeverity</code>. Kind: `enum`.
@@ -847,50 +921,4 @@ Timeline entry for visualizing data availability.
 
 ```csharp
 public sealed record TimelineEntry(DateTimeOffset Start, DateTimeOffset End, TimelineEntryType Type, long EventCount, string? Details);
-```
-
-## TimelineEntryType
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.TimelineEntryType</code>. Kind: `enum`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:82](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L82).
-
-Type of timeline entry.
-
-```csharp
-public enum TimelineEntryType : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DataPresent</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:84](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L84) |  |
-| <code>Gap</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:85](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L85) |  |
-| <code>MarketClosed</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:86](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L86) |  |
-| <code>PreMarket</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:87](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L87) |  |
-| <code>AfterHours</code> | [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:88](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L88) |  |
-
-## WeeklyQualityReport
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyQualityReport</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:337](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L337).
-
-Weekly data quality report.
-
-```csharp
-public sealed record WeeklyQualityReport(DateOnly WeekStart, DateOnly WeekEnd, DateTimeOffset GeneratedAt, IReadOnlyList<DailyQualityReport> DailyReports, double AverageScore, double ScoreTrend, IReadOnlyList<string> TopIssues, IReadOnlyList<string> Improvements, IReadOnlyList<string> Recommendations, WeeklyStatistics Statistics);
-```
-
-## WeeklyStatistics
-
-Qualified name: <code>Meridian.DataIntegration.Monitoring.DataQuality.WeeklyStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs:384](../../../../src/Meridian.DataIntegration/Monitoring/DataQuality/DataQualityModels.cs#L384).
-
-Weekly statistics.
-
-```csharp
-public sealed record WeeklyStatistics(long TotalEvents, long EventsPerDay, int TotalGaps, int GapsPerDay, int TotalAnomalies, double AverageScore, double BestDayScore, double WorstDayScore, DateOnly BestDay, DateOnly WorstDay);
 ```
