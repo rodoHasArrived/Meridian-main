@@ -8,6 +8,7 @@ using Meridian.Execution.PaperMatching;
 using Meridian.Execution.Sdk;
 using Meridian.Execution.Serialization;
 using Microsoft.Extensions.Logging.Abstractions;
+using OrderSide = Meridian.Execution.Sdk.OrderSide;
 
 namespace Meridian.Tests.Execution;
 
