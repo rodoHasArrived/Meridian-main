@@ -1914,6 +1914,9 @@ valuation schedules, retained batch posting and period commands remain available
 
 ## Financial values and guarded decisions
 
+The [Financial value and Amount passport pattern](../../../docs/engineering/financial-value-pattern.md)
+defines the shared presentation and provenance contract.
+
 `FinancialValue` accepts exact decimal text (or null), currency/unit, a source-backed condition,
 reason, optional basis/freshness, and an exact scoped amount selection. Missing is distinct from
 zero. Currency minor units follow the shared ledger policy, including JPY and KWD. A value's
