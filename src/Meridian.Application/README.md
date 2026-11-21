@@ -11,6 +11,16 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Application
 
+Loan reconciliation now consumes eligible nonvoid incoming receipts and their retained allocations
+once, by currency and due date. Current durable and synthetic allocation aliases share a matcher;
+PRD-115 principal prepayments, prepaid interest and unapplied cash retain their explained dispositions,
+and outgoing refunds cannot satisfy projected receipts. Optional amount/day tolerances are pinned
+to the retryable command; omitted requests preserve exact matching. Canonical balance comparisons
+use the registered loan account roles, an atomic exact-book journal capture and any pinned configured
+chart revision, including PIK, prepaid-interest and unapplied-cash balances. Missing role, currency or
+book evidence stays unavailable. Migration `012_direct_lending_reconciliation_evidence.sql` retains
+new request/source evidence across restarts while leaving legacy evidence unknown.
+
 Native intercompany legal rules validate structured declarations without turning them into accrual
 or settlement calculations. The shared preview reuses schedule/day-count/calendar kernels for
 dates only. The separate pure `IntercompanyAccrualPreviewService` (ADR-028) reuses the same schedule
