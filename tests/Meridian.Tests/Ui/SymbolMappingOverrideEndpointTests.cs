@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Application.Composition.Features;
+using Meridian.Application.UI;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Catalog;
 using Meridian.Identity.Auth;
@@ -132,7 +133,7 @@ public sealed class SymbolMappingOverrideEndpointTests
             var builder = WebApplication.CreateBuilder(new WebApplicationOptions { EnvironmentName = Environments.Development });
             builder.WebHost.UseTestServer();
             builder.Services.AddSingleton<ICanonicalSymbolRegistry>(Registry);
-            builder.Services.AddSingleton(new Meridian.Ui.Shared.Services.ConfigStore(Path.Combine(_directory, "appsettings.json")));
+            builder.Services.AddSingleton(new ConfigStore(Path.Combine(_directory, "appsettings.json")));
             builder.Services.AddRateLimiter(options =>
                 options.AddPolicy(UiEndpoints.MutationRateLimitPolicy, _ => RateLimitPartition.GetNoLimiter("test")));
             var app = builder.Build();
