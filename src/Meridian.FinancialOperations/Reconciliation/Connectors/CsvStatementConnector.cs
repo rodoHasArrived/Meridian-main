@@ -323,7 +323,8 @@ public sealed class CsvStatementConnector(
             Guid? Identity(string name)
             {
                 var text = Read(name);
-                if (text is null) return null;
+                if (text is null)
+                    return null;
                 if (!Guid.TryParse(text, out var value) || value == Guid.Empty)
                     throw new InvalidDataException($"Receipt metadata '{name}' requires a nonempty GUID.");
                 return value;
@@ -378,9 +379,14 @@ public sealed class CsvStatementConnector(
                 if (total != Math.Abs(record.CashAmount))
                     throw new InvalidDataException("Receipt allocations must conserve the entire source payment.");
             }
-            return record with { RelatedTransactionId = related ?? reverses ?? record.RelatedTransactionId,
-                SecurityId = Identity("securityId"), ReceiptAllocations = allocations,
-                ObligationKey = obligationKey, ProjectedCashFlowId = projectedCashFlowId };
+            return record with
+            {
+                RelatedTransactionId = related ?? reverses ?? record.RelatedTransactionId,
+                SecurityId = Identity("securityId"),
+                ReceiptAllocations = allocations,
+                ObligationKey = obligationKey,
+                ProjectedCashFlowId = projectedCashFlowId
+            };
         }
         catch (Exception exception) when (exception is JsonException or InvalidDataException or InvalidOperationException or OverflowException)
         {

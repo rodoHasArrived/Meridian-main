@@ -489,10 +489,14 @@ public static partial class WorkstationEndpoints
 
         private int? Match(string id, string? identifier = null, string? label = null)
         {
-            if (SameId(id, query)) return 0;
-            if (SameId(identifier, query) || SameId(label, query)) return 1;
-            if (query.Length < 2) return null;
-            if (StartsWith(id) || StartsWith(identifier)) return 2;
+            if (SameId(id, query))
+                return 0;
+            if (SameId(identifier, query) || SameId(label, query))
+                return 1;
+            if (query.Length < 2)
+                return null;
+            if (StartsWith(id) || StartsWith(identifier))
+                return 2;
             return StartsWith(label) ? 3 : null;
         }
 

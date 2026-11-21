@@ -4708,6 +4708,7 @@ describe("AccountingScreen", () => {
   });
 
   it("renders operational exception workbench with queue, comment, audit, and workflow handoffs", async () => {
+    const user = userEvent.setup();
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
 
     await renderAccountingScreen(data, "/accounting/exceptions");
@@ -4728,9 +4729,10 @@ describe("AccountingScreen", () => {
     );
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).not.toHaveTextContent("run-42:cash");
-    const breakMetadata = screen.getByText("Break metadata").closest("details");
-    expect(breakMetadata).not.toHaveAttribute("open");
-    expect(within(screen.getByRole("region", { name: "Reconciliation break detail for run-42:cash" })).getByText("run-42:cash")).toBeVisible();
+    const detail = within(screen.getByRole("region", { name: "Reconciliation break detail for run-42:cash" }));
+    expect(detail.getByText("Break metadata").closest("details")).not.toHaveAttribute("open");
+    await user.click(detail.getByText("Evidence identifiers").closest("summary")!);
+    expect(detail.getByText("run-42:cash")).toBeVisible();
   });
 
   it("renders calibration tolerance profiles as selectable row-detail evidence", async () => {

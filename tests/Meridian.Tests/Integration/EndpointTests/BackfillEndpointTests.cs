@@ -339,7 +339,11 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
         var submissionId = Guid.NewGuid();
         using var submitted = await _client.PostAsJsonAsync("/api/backfill/run", new
         {
-            provider = "stooq", symbols, executionPolicy = "scheduled", scheduledAt, submissionId
+            provider = "stooq",
+            symbols,
+            executionPolicy = "scheduled",
+            scheduledAt,
+            submissionId
         });
         submitted.StatusCode.Should().Be(HttpStatusCode.Accepted);
         var receipt = await submitted.Content.ReadFromJsonAsync<JsonElement>();
@@ -355,13 +359,13 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
     }
 
     [Fact]
-    public void ProviderPlanning_DefaultAlphaVantageMapping_UsesCoreEnabledDefault()
+    public void ProviderPlanning_AbsentAlphaVantageOptionsAreDisabledAndKeepPresetPacing()
     {
         var options = BackfillEndpoints.GetProviderOptionsFromConfig(
             new BackfillProvidersConfig(),
             "alphavantage");
 
-        options.Enabled.Should().BeTrue();
+        options.Enabled.Should().BeFalse();
         options.Priority.Should().Be(new AlphaVantageConfig().Priority);
         options.RateLimitPerMinute.Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
     }
@@ -409,21 +413,45 @@ public sealed class BackfillEndpointTests : IDisposable, IClassFixture<EndpointT
             .Should().Be(new AlphaVantageConfig().RateLimitPerMinute);
     }
 
+    [Fact]
+    public async Task ProviderStatuses_WhenRoutingIsAvailable_ReturnsPresetOptionsForMissingConfiguration()
+    {
+        _fixture.Services.GetRequiredService<BackfillRoutingRuntime>().Current.Should().NotBeNull();
+        using var response = await _client.GetAsync("/api/backfill/providers/statuses");
+        response.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        var providers = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var alphaVantage = providers.EnumerateArray()
+            .Single(provider => provider.GetProperty("metadata").GetProperty("providerId").GetString() == "alphavantage");
+        alphaVantage.GetProperty("effectiveConfigSource").GetString().Should().Be("default");
+        alphaVantage.GetProperty("options").GetProperty("enabled").GetBoolean().Should().BeFalse();
+    }
+
     [Theory]
     [InlineData("/api/backfill/providers/statuses")]
     [InlineData("/api/backfill/providers/fallback-chain")]
-    public async Task ProviderPlanningRead_WhenProviderConfigurationIsMissing_ReturnsServiceUnavailable(
-        string route)
+    public async Task ProviderPlanningRead_WhenProviderConfigurationAndRuntimeAreMissing_ReturnsServiceUnavailable(string route)
     {
-        var response = await _client.GetAsync(route);
+        var fixture = new EndpointTestFixture();
+        await fixture.InitializeAsync();
+        try
+        {
+            fixture.Services.GetRequiredService<BackfillRoutingRuntime>().Dispose();
+            using var client = fixture.CreatePermittedClient(UserPermission.ViewHistoricalData);
+            using var response = await client.GetAsync(route);
 
-        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
-        var problem = await AssertProblemDetailsAsync(
-            response,
-            "https://meridian.io/errors/service-unavailable",
-            "Service Unavailable");
-        problem.GetProperty("service").GetString()
-            .Should().Be("backfill provider configuration");
+            response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+            var problem = await AssertProblemDetailsAsync(
+                response,
+                "https://meridian.io/errors/service-unavailable",
+                "Service Unavailable");
+            problem.GetProperty("service").GetString()
+                .Should().Be("backfill provider configuration");
+        }
+        finally
+        {
+            await fixture.DisposeAsync();
+        }
     }
 
     [Fact]

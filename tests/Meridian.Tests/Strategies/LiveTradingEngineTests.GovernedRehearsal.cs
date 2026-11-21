@@ -136,7 +136,8 @@ public sealed partial class LiveTradingEngineTests
             var livePromotion = new PromotionService(runs, new BacktestToLivePromoter(), history, NullLogger<PromotionService>.Instance,
                 controls, audit, config, trustEvidenceProvider: new PromotionTrustEvidenceStub(), liveAuthorizations: authorization);
             var approved = await livePromotion.ApproveAsync(RehearsalApproval(paper.RunId, RunType.Live, allow.OverrideId)
-                with { LiveAuthorization = grant }, ct);
+                with
+            { LiveAuthorization = grant }, ct);
             approved.Success.Should().BeTrue(approved.Reason);
             var live = (await runs.GetRunByIdAsync(approved.NewRunId!, ct))!;
             live.ParentRunId.Should().Be(paper.RunId);
@@ -169,8 +170,14 @@ public sealed partial class LiveTradingEngineTests
             await SendRehearsalPriceAsync(liveFeed, liveCache, symbol, 100m, DateTimeOffset.UtcNow, 1, ct);
             var order = broker.Requests.Should().ContainSingle().Subject;
             var filled = BuildFill(order) with { BrokerAccountId = RehearsalBroker.ExternalAccount, FillPrice = 100m, Commission = 1m };
-            var partial = filled with { ReportType = ExecutionSdk.ExecutionReportType.PartialFill, OrderStatus = ExecutionSdk.OrderStatus.PartiallyFilled,
-                FilledQuantity = 4m, Commission = 0.40m, BrokerActivityId = "rehearsal-fill-1" };
+            var partial = filled with
+            {
+                ReportType = ExecutionSdk.ExecutionReportType.PartialFill,
+                OrderStatus = ExecutionSdk.OrderStatus.PartiallyFilled,
+                FilledQuantity = 4m,
+                Commission = 0.40m,
+                BrokerActivityId = "rehearsal-fill-1"
+            };
             filled = filled with { Commission = 0.60m, BrokerActivityId = "rehearsal-fill-2" };
             await broker.PublishAsync(partial);
             await broker.PublishAsync(filled);
@@ -200,11 +207,23 @@ public sealed partial class LiveTradingEngineTests
             {
                 Evidence = "synthetic-verified",
                 Commit = Environment.GetEnvironmentVariable("GITHUB_SHA"),
-                Symbol = symbol, Account = account, OpeningCash = openingCash, Prices = prices, StrategyArtifactId = artifactId, ReplaySeed = replaySeed,
-                Backtest = research.RunId, Paper = paper.RunId, Live = live.RunId,
-                PaperDecision = paperApproval, LiveDecision = approved, Authorization = grant,
-                Reports = new[] { partial, filled }, ExecutionJournal = records, Reconciliation = reconciled,
-                ExpectedCash = 8_999m, ExpectedShares = 10m,
+                Symbol = symbol,
+                Account = account,
+                OpeningCash = openingCash,
+                Prices = prices,
+                StrategyArtifactId = artifactId,
+                ReplaySeed = replaySeed,
+                Backtest = research.RunId,
+                Paper = paper.RunId,
+                Live = live.RunId,
+                PaperDecision = paperApproval,
+                LiveDecision = approved,
+                Authorization = grant,
+                Reports = new[] { partial, filled },
+                ExecutionJournal = records,
+                Reconciliation = reconciled,
+                ExpectedCash = 8_999m,
+                ExpectedShares = 10m,
                 Accounting = receipts.Select(receipt => receipt.TradeEvent)
             }, ct);
         }

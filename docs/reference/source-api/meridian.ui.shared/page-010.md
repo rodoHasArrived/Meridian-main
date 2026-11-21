@@ -438,7 +438,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CoveredCall.CoveredCallBacktestService.CoveredCallCommand.Start</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1181](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1181).
+Source: [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs:1182](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs#L1182).
 
 ```csharp
 public sealed record Start(string RunId) : CoveredCallCommand(RunId);
@@ -506,8 +506,8 @@ Declared public members:
 | <code>public CoveredCallChainProviderFactory(OptionsChainService chainService, IOptionsMonitor&lt;CoveredCallBacktestOptions&gt; options, ILoggerFactory loggerFactory);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:25](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L25) |  |
 | <code>public ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:37](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L37) |  |
 | <code>public async ValueTask&lt;IOptionChainProvider&gt; CreateAsync(string underlyingSymbol, DateOnly from, DateOnly to, int maxDte, string? tenantId, CancellationToken ct);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:40](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L40) |  |
-| <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:166](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L166) |  |
-| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:244](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L244) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
+| <code>public async ValueTask&lt;CoveredCallChainPreviewResult&gt; PreviewAsync(string underlyingSymbol, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:169](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L169) |  |
+| <code>public static List&lt;OptionCandidateInfo&gt; ConvertCalls(OptionChainSnapshot snapshot, DateOnly scanDate);</code> | [src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs:247](../../../../src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallChainProviderFactory.cs#L247) | Converts the calls in an OptionChainSnapshot into strategy-side OptionCandidateInfo records. Surfaces only fields that are well-defined from a chain quote. |
 
 ## ICoveredCallBacktestService
 

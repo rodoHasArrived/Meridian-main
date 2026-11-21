@@ -90,7 +90,7 @@ describe("Portfolio Open positions controls", () => {
 
     await user.click(screen.getByRole("row", { name: "Inspect AAPL Short holding" }));
     const identity = within(screen.getByRole("region", { name: "Position identity" }));
-    expect(identity.getByText("AAPL · Short")).toBeVisible();
+    expect(identity.getByText("AAPL · Short", { selector: "strong" })).toBeVisible();
     expect(identity.getByText("Mark current")).toBeVisible();
     const asset = screen.getByRole("link", { name: "Open asset detail for AAPL" });
     const href = new URL(asset.getAttribute("href")!, "https://meridian.local");
