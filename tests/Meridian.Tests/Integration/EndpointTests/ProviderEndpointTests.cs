@@ -2,9 +2,10 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Core.IO;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
-using Meridian.Storage.Archival;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 
 namespace Meridian.Tests.Integration.EndpointTests;
@@ -16,16 +17,16 @@ namespace Meridian.Tests.Integration.EndpointTests;
 [Trait("Category", "Integration")]
 public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointTestFixture>
 {
+    private readonly EndpointTestFixture _fixture;
     private readonly HttpClient _dataSourceReadClient;
     private readonly HttpClient _providerReadClient;
     private readonly HttpClient _providerMutationClient;
     private readonly HttpClient _credentialMutationClient;
     private readonly HttpClient _actorlessCredentialMutationClient;
-    private readonly string _dataRoot;
 
     public ProviderEndpointTests(EndpointTestFixture fixture)
     {
-        _dataRoot = fixture.DataRoot;
+        _fixture = fixture;
         // The data-source reads declare ViewConfig or ManageProviders. This client holds only the
         // former, so the read stays proven for a caller who can look at configuration but not change it.
         _dataSourceReadClient = fixture.CreatePermittedClient(UserPermission.ViewConfig);
@@ -131,20 +132,23 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         json["isAvailable"].GetBoolean().Should().BeTrue("an empty retained period does not mean the history service is unavailable");
         json["history"].ValueKind.Should().Be(JsonValueKind.Array);
         json["history"].GetArrayLength().Should().Be(0);
-        json["timestamp"].GetDateTimeOffset().Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
         json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
         json["dailyRollups"].GetArrayLength().Should().Be(0);
-        json["message"].GetString().Should().Contain("held in memory").And.Contain("seven UTC dates");
+        json["timestamp"].GetDateTimeOffset().Should().BeCloseTo(DateTimeOffset.UtcNow, TimeSpan.FromMinutes(1));
+        json["message"].GetString().Should().Contain("Recent events are held in memory")
+            .And.Contain("last seven UTC dates across host restarts");
     }
 
     [Fact]
     public async Task GetRateLimitHistory_ReturnsRetainedQuotaAndActualRotationEvidence()
     {
         var provider = $"history-observed-{Guid.NewGuid():N}";
-        var resetAt = DateTimeOffset.UtcNow.AddMinutes(1);
+        var now = DateTimeOffset.UtcNow;
+        var resetAt = now.AddMinutes(1);
         var status = new RateLimitStatus(provider, 5, 5, TimeSpan.FromMinutes(1), true,
-            TimeSpan.FromMinutes(1), 1, DateTimeOffset.UtcNow, resetAt);
-        var history = ProviderRateLimitHistory.ForDataRoot(_dataRoot, new AtomicFileWriterAdapter());
+            TimeSpan.FromMinutes(1), 1, now, resetAt);
+        var history = ProviderRateLimitHistory.ForDataRoot(
+            _fixture.DataRoot, _fixture.Services.GetRequiredService<IAtomicFileWriter>());
         history.Record(provider, status, httpStatus: 429);
         history.Record(provider, status, nextProvider: "stooq");
 
@@ -164,6 +168,8 @@ public sealed class ProviderEndpointTests : IDisposable, IClassFixture<EndpointT
         rotation.GetProperty("nextProvider").GetString().Should().Be("stooq");
         json["dailyRollupsAvailable"].GetBoolean().Should().BeTrue();
         var dailyTotal = json["dailyRollups"].EnumerateArray().Should().ContainSingle().Which;
+        dailyTotal.GetProperty("dateUtc").Deserialize<DateOnly>().Should().Be(
+            DateOnly.FromDateTime(retained.GetProperty("timestamp").GetDateTimeOffset().UtcDateTime));
         dailyTotal.GetProperty("throttleCount").GetInt64().Should().Be(1);
         dailyTotal.GetProperty("rotationCount").GetInt64().Should().Be(1);
     }

@@ -32,7 +32,11 @@ public sealed partial class FileReconciliationBreakQueueRepository
             Reason: "Retained receipt or journal reversal reopened the linked receipt obligation.",
             Note: JsonSerializer.Serialize(new
             {
-                scope.TenantId, scope.CompanyId, request.LedgerBookId, request.AsOfDate, ReversalIds = reversalIds
+                scope.TenantId,
+                scope.CompanyId,
+                request.LedgerBookId,
+                request.AsOfDate,
+                ReversalIds = reversalIds
             }, _jsonOptions),
             EvidenceLinks: evidence, ActionOrigin: OperationsActionOriginDto.AutomationAssistant);
         var startedAt = DateTimeOffset.UtcNow;

@@ -498,16 +498,17 @@ export function ReconciliationBulkTriageBar({ triage, visibleCount }: { triage: 
       ) : null}
       {triage.receipt ? <div className="grid gap-2 border-t border-border pt-2">
         <p className="break-all text-xs text-muted-foreground">Batch command ID <code>{triage.receipt.commandId}</code></p>
-        {triage.receipt.result ? <TechnicalDetails label="Retained batch queue result">
+        {triage.receipt.result ? <section aria-label="Retained batch queue result" className="space-y-2">
+          <h4 className="text-sm font-semibold">Retained batch queue result</h4>
           <ul aria-label="Per-case batch results" className="space-y-1 break-all text-xs">
-            {triage.receipt.result.results.map((entry) => <li key={entry.breakId}>
+            {[...triage.receipt.result.results].sort((left, right) => Number(!right.succeeded) - Number(!left.succeeded)).map((entry) => <li key={entry.breakId}>
               <code>{entry.breakId}</code> · {entry.succeeded ? `Recorded${entry.item ? ` · ${entry.item.status}` : ""}` : entry.error ?? "Declined"}
             </li>)}
           </ul>
           <Button asChild size="sm" variant="outline" className="mt-2">
             <a href={reconciliationBreakBulkResultEndpoint(triage.receipt.commandId)} target="_blank" rel="noreferrer">Open batch receipt</a>
           </Button>
-        </TechnicalDetails> : null}
+        </section> : null}
         {triage.receipt.queueOnly ? <p role="status" className="text-sm">The queue result is retained. Statement handoff is still unconfirmed.</p> : null}
         {!triage.receipt.result || triage.receipt.queueOnly ? <Button size="sm" variant="outline" className="w-fit" disabled={triage.busy !== null} onClick={() => void triage.checkOutcome()}>Check batch outcome</Button> : null}
         {triage.receipt.queueOnly && triage.receipt.reviewed ? <Button size="sm" variant="outline" className="w-fit" disabled={triage.busy !== null} onClick={() => void triage.resume()}>Resume same batch</Button> : null}

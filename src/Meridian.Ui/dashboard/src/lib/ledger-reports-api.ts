@@ -41,8 +41,8 @@ export function getLedgerPeriodPnlSummary(periodId: string) {
   return apiGetJson<LedgerPeriodPnlSummary>(ledgerPeriodPnlSummaryEndpoint(periodId));
 }
 
-export function getLedgerPeriodJournalEntries(periodId: string) {
-  return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId));
+export function getLedgerPeriodJournalEntries(periodId: string, query: { instrumentId?: string | null; accountId?: string | null } = {}, options: ApiRequestOptions = {}) {
+  return apiGetJson<LedgerPostedJournalEntry[]>(ledgerPeriodJournalEntriesEndpoint(periodId, query), options);
 }
 
 export interface LedgerAccountRunningBalanceQuery {

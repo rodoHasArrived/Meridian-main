@@ -1,5 +1,5 @@
 // Statement connector library endpoints. Re-exported through @/lib/api.
-import type { ReconciliationBreakQueueAuditEvent, MarginControlCenter, MarginCertificationRequest, MarginCertificationResult, ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, ReconciliationBulkCaseworkResult, ReconciliationCalibrationSummary, StatementConnectorDescriptor, StatementFetchPreviewRequest, StatementFetchSchedule, StatementFetchScheduleUpsertRequest, StatementImportCommitResult, StatementImportPreview, StatementImportPreviewRequest, StatementImportSourceKind, StatementMappingProfile, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult, ResolveReconciliationBreakRequest, ReviewReconciliationBreakRequest } from "@/types";
+import type { ReconciliationBreakQueueAuditEvent, MarginControlCenter, MarginCertificationRequest, MarginCertificationResult, ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, ReconciliationBulkCaseworkResult, ReconciliationCalibrationSummary, StatementConnectorDescriptor, StatementFetchPreviewRequest, StatementFetchSchedule, StatementFetchScheduleUpsertRequest, StatementImportCommitResult, StatementImportPreview, StatementImportPreviewRequest, StatementImportSourceKind, StatementImportRowDisposition, StatementMappingProfile, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult, ResolveReconciliationBreakRequest, ReviewReconciliationBreakRequest } from "@/types";
 import { RECONCILIATION_API_ENDPOINTS, reconciliationBreakAssignEndpoint, reconciliationBreakAuditEndpoint, reconciliationBreakBulkDryRunEndpoint, reconciliationBreakBulkExecuteEndpoint, reconciliationBreakBulkResultEndpoint, reconciliationBreakBulkStatusEndpoint, reconciliationBreakCommentEndpoint, reconciliationBreakCommentsEndpoint, reconciliationBreakEndpoint, reconciliationBreakQueueEndpoint, reconciliationBreakReopenEndpoint, reconciliationBreakResolutionEndpoint, reconciliationBreakResolveEndpoint, reconciliationBreakReviewEndpoint, reconciliationBreakSupersedeEndpoint, reconciliationBreakRootCauseEndpoint, reconciliationBreakSignOffEndpoint, reconciliationBreakTransitionEndpoint, reconciliationBreakWaiveEndpoint, reconciliationStatementFetchScheduleEndpoint, reconciliationStatementFetchScheduleRunEndpoint, reconciliationStatementMappingProfileEndpoint, STATEMENT_CONNECTOR_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import { isApiError } from "@/lib/api-errors";
 import { deleteJson, getJson, postFormData, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
@@ -41,6 +41,7 @@ export function previewStatementImport(request: StatementImportPreviewRequest, o
   formData.append("fundAccountId", request.fundAccountId);
   formData.append("periodStart", request.periodStart);
   formData.append("periodEnd", request.periodEnd);
+  appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
   return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
 }
 
@@ -56,6 +57,8 @@ export function commitStatementImport(
     periodStart: string;
     periodEnd: string;
     toleranceProfileId?: string | null;
+    reviewId?: string | null;
+    rowDispositions?: StatementImportRowDisposition[];
   },
   options: ApiRequestOptions = {}
 ) {
@@ -70,6 +73,8 @@ export function commitStatementImport(
   formData.append("periodStart", request.periodStart);
   formData.append("periodEnd", request.periodEnd);
   appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
+  appendOptionalStatementFormField(formData, "reviewId", request.reviewId);
+  if (request.rowDispositions?.length) formData.append("rowDispositions", JSON.stringify(request.rowDispositions));
   return postFormData<StatementImportCommitResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.importCommit, formData, options);
 }
 
