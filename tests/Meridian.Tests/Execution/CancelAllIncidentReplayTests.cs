@@ -52,8 +52,11 @@ public sealed class CancelAllIncidentReplayTests : IDisposable
             await AppendAsync(audit, delta, timeout.Token);
             await AppendAsync(audit, new(header.IncidentId, 3, Snapshot: header with
             {
-                CompletedAt = row.ObservedAt, EvidenceStatus = "Complete", BrokerViewUnavailable = false,
-                BrokerViewError = null, Orders = [row]
+                CompletedAt = row.ObservedAt,
+                EvidenceStatus = "Complete",
+                BrokerViewUnavailable = false,
+                BrokerViewError = null,
+                Orders = [row]
             }), timeout.Token);
         }
 
@@ -119,7 +122,9 @@ public sealed class CancelAllIncidentReplayTests : IDisposable
             await AppendAsync(audit, final
                 ? new(header.IncidentId, 2, Snapshot: header with
                 {
-                    CompletedAt = row.ObservedAt, EvidenceStatus = "Complete", Orders = change == "drop" ? [] : [row]
+                    CompletedAt = row.ObservedAt,
+                    EvidenceStatus = "Complete",
+                    Orders = change == "drop" ? [] : [row]
                 })
                 : new(header.IncidentId, 2, Snapshot: header, Order: row), timeout.Token);
         }
@@ -150,18 +155,33 @@ public sealed class CancelAllIncidentReplayTests : IDisposable
 
     private static CancelAllIncident Header() => new()
     {
-        IncidentId = "cancel-retained-session-halt", StartedAt = new(2026, 11, 2, 14, 30, 0, TimeSpan.Zero),
-        GatewayId = "synthetic-broker", ExecutionMode = ExecutionMode.Paper, FundAccountId = AccountId,
-        BrokerScopeIdentity = "paper:account", Actor = "solo-operator", CorrelationId = "incident-replay"
+        IncidentId = "cancel-retained-session-halt",
+        StartedAt = new(2026, 11, 2, 14, 30, 0, TimeSpan.Zero),
+        GatewayId = "synthetic-broker",
+        ExecutionMode = ExecutionMode.Paper,
+        FundAccountId = AccountId,
+        BrokerScopeIdentity = "paper:account",
+        Actor = "solo-operator",
+        CorrelationId = "incident-replay"
     };
 
     private static CancelAllOrderOutcome Row() => new()
     {
-        ObservationKey = "local:resting", OrderId = "resting", BrokerOrderId = "broker-resting",
-        FundAccountId = AccountId, Symbol = "AAPL", Side = OrderSide.Buy,
-        InitialStatus = OrderStatus.Accepted, Status = OrderStatus.Cancelled,
-        InitialQuantity = 10m, InitialFilledQuantity = 0m, Quantity = 10m, FilledQuantity = 0m, RemainingQuantity = 0m,
-        Disposition = CancelAllOrderDisposition.ConfirmedCancelled, CancellationAttempted = true,
+        ObservationKey = "local:resting",
+        OrderId = "resting",
+        BrokerOrderId = "broker-resting",
+        FundAccountId = AccountId,
+        Symbol = "AAPL",
+        Side = OrderSide.Buy,
+        InitialStatus = OrderStatus.Accepted,
+        Status = OrderStatus.Cancelled,
+        InitialQuantity = 10m,
+        InitialFilledQuantity = 0m,
+        Quantity = 10m,
+        FilledQuantity = 0m,
+        RemainingQuantity = 0m,
+        Disposition = CancelAllOrderDisposition.ConfirmedCancelled,
+        CancellationAttempted = true,
         ObservedAt = new(2026, 11, 2, 14, 30, 1, TimeSpan.Zero)
     };
 

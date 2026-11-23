@@ -410,15 +410,20 @@ public sealed class ExecutionCancelIncidentEndpointsTests
         {
             Disposition = CancelAllOrderDisposition.Unknown,
             Status = OrderStatus.PendingCancel,
-            Quantity = null, FilledQuantity = null, RemainingQuantity = null, ResidualNotional = null,
-            RequiresReconciliation = true, ValuationCoverage = "Unavailable"
+            Quantity = null,
+            FilledQuantity = null,
+            RemainingQuantity = null,
+            ResidualNotional = null,
+            RequiresReconciliation = true,
+            ValuationCoverage = "Unavailable"
         };
         orders[1] = orders[1] with
         {
             HasUnconfirmedReplacement = true,
             CandidateBrokerOrderId = "candidate-broker-order",
             CandidateClientOrderId = "candidate-client-order",
-            RemainingQuantity = null, ResidualNotional = null,
+            RemainingQuantity = null,
+            ResidualNotional = null,
             ValuationCoverage = "Unavailable: unverified order sizing or successor exposure"
         };
         orders[2] = orders[2] with

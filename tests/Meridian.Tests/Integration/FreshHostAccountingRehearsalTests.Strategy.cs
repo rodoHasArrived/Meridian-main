@@ -73,9 +73,17 @@ public sealed partial class FreshHostAccountingRehearsalTests
         foreach (var item in checklist)
             await File.WriteAllTextAsync(Path.Combine(evidenceDirectory, item), JsonSerializer.Serialize(new
             {
-                Scenario = dataset, SourceRun = source.RunId, Artifact = artifact, Prices = prices,
-                InitialCash = 100000m, Quantity = 10m, Entry = 102m, Commission = 1m,
-                ExpectedCash = 98979m, Mark = 104m, ExpectedEquity = 100019m,
+                Scenario = dataset,
+                SourceRun = source.RunId,
+                Artifact = artifact,
+                Prices = prices,
+                InitialCash = 100000m,
+                Quantity = 10m,
+                Entry = 102m,
+                Commission = 1m,
+                ExpectedCash = 98979m,
+                Mark = 104m,
+                ExpectedEquity = 100019m,
                 ActualEquity = result.Metrics.FinalEquity
             }), ct);
         var promotion = new PromotionService(host.Runs, new BacktestToLivePromoter(), host.Promotions,
@@ -110,9 +118,14 @@ public sealed partial class FreshHostAccountingRehearsalTests
         var grant = new ExecutionAccountGrant(scope.AccountId, actor, ExecutionAccountGrantSources.StrategyRun, DateTimeOffset.UtcNow);
         return new(new Meridian.Execution.Sdk.OrderRequest
         {
-            ClientOrderId = orderId, FundAccountId = scope.AccountId, StrategyId = run.StrategyId,
-            Symbol = Symbol, Side = Meridian.Execution.Sdk.OrderSide.Buy,
-            Type = Meridian.Execution.Sdk.OrderType.Market, Quantity = 10m, LimitPrice = 102m
+            ClientOrderId = orderId,
+            FundAccountId = scope.AccountId,
+            StrategyId = run.StrategyId,
+            Symbol = Symbol,
+            Side = Meridian.Execution.Sdk.OrderSide.Buy,
+            Type = Meridian.Execution.Sdk.OrderType.Market,
+            Quantity = 10m,
+            LimitPrice = 102m
         }, OrderSubmissionAuthority.ForStrategyRun(actor, grant, run.RunId, run.ArtifactId));
     }
 

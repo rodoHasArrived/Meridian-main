@@ -113,8 +113,11 @@ public sealed class DesignerPaperRehearsalTests
             // Null omission retains the exact serialized authority used by historic intent hashes.
             JsonSerializer.Serialize(authority).Should().Be(JsonSerializer.Serialize(new
             {
-                authority.StrategyId, authority.RunId, authority.StrategyVersionSha256,
-                authority.ApprovalReference, authority.PaperSessionId
+                authority.StrategyId,
+                authority.RunId,
+                authority.StrategyVersionSha256,
+                authority.ApprovalReference,
+                authority.PaperSessionId
             }));
         }
         var intent = new ExecutionSdk.OrderIntent(Guid.NewGuid(), Tenant, Company, AccountId, "live-trading-engine",
@@ -138,7 +141,8 @@ public sealed class DesignerPaperRehearsalTests
         await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, liveFeed: cache);
         await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
             portfolioState: new PaperTradingPortfolio(100_000m), auditTrail: audit, sessionPersistence: sessions,
-            orderIntentHistory: history, options: options) { BindNativePaperSessions = true };
+            orderIntentHistory: history, options: options)
+        { BindNativePaperSessions = true };
         await oms.StartAsync(ct);
         var admitted = await oms.SubmitIntentAsync(intent, ct);
         admitted.Success.Should().BeTrue(admitted.ErrorMessage);
@@ -149,7 +153,8 @@ public sealed class DesignerPaperRehearsalTests
         await using var restartedGateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, liveFeed: cache);
         await using var restarted = new OrderManagementSystem(restartedGateway, NullLogger<OrderManagementSystem>.Instance,
             portfolioState: new PaperTradingPortfolio(100_000m), auditTrail: audit, sessionPersistence: sessions,
-            orderIntentHistory: new FileOperationalCaseHistoryStore(root), options: options) { BindNativePaperSessions = true };
+            orderIntentHistory: new FileOperationalCaseHistoryStore(root), options: options)
+        { BindNativePaperSessions = true };
         await restarted.StartAsync(ct);
         var replayed = await restarted.SubmitIntentAsync(intent, ct);
         replayed.Success.Should().BeTrue(replayed.ErrorMessage);

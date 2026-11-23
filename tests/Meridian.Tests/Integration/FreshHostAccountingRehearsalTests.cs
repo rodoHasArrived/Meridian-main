@@ -93,26 +93,38 @@ public sealed partial class FreshHostAccountingRehearsalTests
                 // Exact report and fill replay traverses the production idempotency boundaries.
                 var report = new ExecutionReport
                 {
-                    OrderId = fill.OrderId, ClientOrderId = fill.OrderId, Symbol = Symbol, Side = OrderSide.Buy,
-                    ReportType = ExecutionReportType.Fill, OrderStatus = OrderStatus.Filled,
-                    OrderQuantity = 10m, FilledQuantity = 10m, FillPrice = 102m, Commission = 1m,
+                    OrderId = fill.OrderId,
+                    ClientOrderId = fill.OrderId,
+                    Symbol = Symbol,
+                    Side = OrderSide.Buy,
+                    ReportType = ExecutionReportType.Fill,
+                    OrderStatus = OrderStatus.Filled,
+                    OrderQuantity = 10m,
+                    FilledQuantity = 10m,
+                    FillPrice = 102m,
+                    Commission = 1m,
                     Timestamp = fill.OccurredAt
                 };
                 await recovered.Oms.ReconcileRecoveryOrderAsync(report, ct);
                 await recovered.Consumer.PublishAsync(fill);
                 var stale = () => recovered.Oms.ReconcileRecoveryOrderAsync(report with
                 {
-                    ReportType = ExecutionReportType.PartialFill, OrderStatus = OrderStatus.PartiallyFilled,
-                    FilledQuantity = 4m, Commission = 0.4m, Timestamp = fill.OccurredAt.AddSeconds(-1)
+                    ReportType = ExecutionReportType.PartialFill,
+                    OrderStatus = OrderStatus.PartiallyFilled,
+                    FilledQuantity = 4m,
+                    Commission = 0.4m,
+                    Timestamp = fill.OccurredAt.AddSeconds(-1)
                 }, ct);
                 await stale.Should().ThrowAsync<InvalidDataException>();
                 await recovered.Oms.ReconcileRecoveryOrderAsync(report, ct);
                 await recovered.Consumer.PublishAsync(fill);
                 var changedEconomics = () => recovered.Consumer.PublishAsync(fill with { FillPrice = 103m });
-                await changedEconomics.Should().ThrowAsync<InvalidDataException>();
+                await changedEconomics.Should().ThrowExactlyAsync<InvalidOperationException>()
+                    .WithMessage($"Fill '{fill.FillId:D}' was replayed with different economic content.");
                 var wrongAccount = () => recovered.Accounting.PostAsync(fill with
                 {
-                    FillId = Guid.NewGuid(), FinancialAccountId = Guid.NewGuid().ToString("D")
+                    FillId = Guid.NewGuid(),
+                    FinancialAccountId = Guid.NewGuid().ToString("D")
                 }, scope.Context, scope.SecurityId, ct);
                 await wrongAccount.Should().ThrowAsync<InvalidOperationException>();
                 await AssertEconomicsAsync(recovered, scope, fill, ct);
@@ -145,7 +157,8 @@ public sealed partial class FreshHostAccountingRehearsalTests
         }
         finally
         {
-            if (Directory.Exists(root)) Directory.Delete(root, recursive: true);
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
         }
     }
 

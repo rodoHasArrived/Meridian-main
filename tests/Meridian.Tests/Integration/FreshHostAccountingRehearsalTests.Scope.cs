@@ -97,7 +97,8 @@ public sealed partial class FreshHostAccountingRehearsalTests
         await reference.Securities.UpsertProjectionAsync(reference.Security with
         {
             DisplayName = "Synthetic AAPL common equity",
-            PrimaryIdentifierKind = "Ticker", PrimaryIdentifierValue = Symbol,
+            PrimaryIdentifierKind = "Ticker",
+            PrimaryIdentifierValue = Symbol,
             Identifiers = [new SecurityIdentifierDto(SecurityIdentifierKind.Ticker, Symbol, true, formed)],
             CommonTerms = JsonSerializer.SerializeToElement(new { pricingSource = "Synthetic", accountingClassification = "Trading" }),
             AssetSpecificTerms = SecurityTermsEnvelope.StampDeclaredFormat(JsonSerializer.SerializeToElement(new { schemaVersion = 1 })),
@@ -109,9 +110,13 @@ public sealed partial class FreshHostAccountingRehearsalTests
             "mapping-v1", "Synthetic", Company);
         var options = new AutomatedTradeFillAccountingOptions
         {
-            Grant = grantReference, CashAccountPath = chart[0].Path, SecuritiesAccountPath = chart[1].Path,
-            RealizedGainAccountPath = chart[2].Path, RealizedLossAccountPath = chart[3].Path,
-            CommissionAccountPath = chart[4].Path, FeeAccountPath = chart[5].Path
+            Grant = grantReference,
+            CashAccountPath = chart[0].Path,
+            SecuritiesAccountPath = chart[1].Path,
+            RealizedGainAccountPath = chart[2].Path,
+            RealizedLossAccountPath = chart[3].Path,
+            CommissionAccountPath = chart[4].Path,
+            FeeAccountPath = chart[5].Path
         };
         var context = new TradeFillLedgerPostingContext("fresh-host-canonical/v2", book.LedgerBookId,
             period.PeriodId, book.LedgerBookId, book.AccountingPolicyId, book.AccountingPolicyVersion, period.Version, 2);

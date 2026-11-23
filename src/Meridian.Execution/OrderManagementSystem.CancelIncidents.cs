@@ -71,16 +71,29 @@ public sealed partial class OrderManagementSystem
 
         var observation = new CancelAllOrderOutcome
         {
-            ObservationKey = $"local:{orderId}", OrderId = orderId, BrokerOrderId = brokerOrderId,
-            FundAccountId = state?.FundAccountId, BrokerAccountId = state?.BrokerAccountId,
-            Symbol = state?.Symbol ?? brokerObservation?.Symbol, Side = state?.Side ?? brokerObservation?.Side,
+            ObservationKey = $"local:{orderId}",
+            OrderId = orderId,
+            BrokerOrderId = brokerOrderId,
+            FundAccountId = state?.FundAccountId,
+            BrokerAccountId = state?.BrokerAccountId,
+            Symbol = state?.Symbol ?? brokerObservation?.Symbol,
+            Side = state?.Side ?? brokerObservation?.Side,
             Operation = withdrawn ? "WithdrawEscalation" : "Cancel",
-            Disposition = disposition, InitialStatus = initial?.Status ?? status,
-            InitialQuantity = initial?.Quantity ?? quantity, InitialFilledQuantity = initial?.FilledQuantity ?? filled,
-            Status = status, Quantity = quantity, FilledQuantity = filled, RemainingQuantity = remaining,
-            CancellationAttempted = attempted, RequiresReconciliation = unresolved || disposition == CancelAllOrderDisposition.Unknown,
-            HasUnconfirmedReplacement = pending is not null, CandidateBrokerOrderId = pending?.CandidateBrokerOrderId,
-            CandidateClientOrderId = pending?.CandidateClientOrderId, ObservedAt = DateTimeOffset.UtcNow, Detail = detail
+            Disposition = disposition,
+            InitialStatus = initial?.Status ?? status,
+            InitialQuantity = initial?.Quantity ?? quantity,
+            InitialFilledQuantity = initial?.FilledQuantity ?? filled,
+            Status = status,
+            Quantity = quantity,
+            FilledQuantity = filled,
+            RemainingQuantity = remaining,
+            CancellationAttempted = attempted,
+            RequiresReconciliation = unresolved || disposition == CancelAllOrderDisposition.Unknown,
+            HasUnconfirmedReplacement = pending is not null,
+            CandidateBrokerOrderId = pending?.CandidateBrokerOrderId,
+            CandidateClientOrderId = pending?.CandidateClientOrderId,
+            ObservedAt = DateTimeOffset.UtcNow,
+            Detail = detail
         };
         observation = attempted || brokerObservation is not null || withdrawn
             ? await ValueCancellationObservationAsync(observation, state).ConfigureAwait(false)
@@ -107,17 +120,27 @@ public sealed partial class OrderManagementSystem
             : quantity is { } qty && filled >= 0m && filled <= qty ? qty - filled : (decimal?)null;
         return incident.ObserveAsync(new CancelAllOrderOutcome
         {
-            ObservationKey = $"broker:{original.OrderId}", OrderId = original.ClientOrderId ?? original.OrderId,
-            BrokerOrderId = original.OrderId, Symbol = original.Symbol, Side = original.Side,
+            ObservationKey = $"broker:{original.OrderId}",
+            OrderId = original.ClientOrderId ?? original.OrderId,
+            BrokerOrderId = original.OrderId,
+            Symbol = original.Symbol,
+            Side = original.Side,
             // A broker row has no fund-account attribution. Never borrow it from another order or
             // the account selected by the reader; account projections omit these unowned rows.
-            InitialStatus = original.Status, InitialQuantity = original.Quantity, InitialFilledQuantity = original.FilledQuantity,
-            Status = status, Quantity = quantity, FilledQuantity = filled, RemainingQuantity = remaining,
-            Disposition = disposition, CancellationAttempted = attempted,
+            InitialStatus = original.Status,
+            InitialQuantity = original.Quantity,
+            InitialFilledQuantity = original.FilledQuantity,
+            Status = status,
+            Quantity = quantity,
+            FilledQuantity = filled,
+            RemainingQuantity = remaining,
+            Disposition = disposition,
+            CancellationAttempted = attempted,
             RequiresReconciliation = uncertain || disposition == CancelAllOrderDisposition.Unknown,
             ResidualNotional = remaining == 0m && !uncertain ? 0m : null,
             ValuationCoverage = remaining == 0m && !uncertain ? "NoRemainingOrderQuantity" : "Unavailable: broker-only instrument and account basis",
-            ObservedAt = DateTimeOffset.UtcNow, Detail = detail
+            ObservedAt = DateTimeOffset.UtcNow,
+            Detail = detail
         });
     }
 
@@ -135,8 +158,14 @@ public sealed partial class OrderManagementSystem
         {
             using var deadline = new CancellationTokenSource(TimeSpan.FromMilliseconds(250));
             var token = deadline.Token;
-            var request = new OrderRequest { Symbol = state.Symbol, Side = state.Side, Type = state.Type,
-                Quantity = state.Quantity, FundAccountId = state.FundAccountId };
+            var request = new OrderRequest
+            {
+                Symbol = state.Symbol,
+                Side = state.Side,
+                Type = state.Type,
+                Quantity = state.Quantity,
+                FundAccountId = state.FundAccountId
+            };
             return await Task.Run(async () =>
             {
                 if (!await _instrumentCoverage.IsUsdEquityAsync(request, token).ConfigureAwait(false))
@@ -145,8 +174,13 @@ public sealed partial class OrderManagementSystem
                 var now = DateTimeOffset.UtcNow;
                 if (reference is not { Price: > 0m } || reference.ObservedAt > now || now - reference.ObservedAt >= TimeSpan.FromSeconds(30))
                     return outcome with { Currency = "USD", ValuationCoverage = "Unavailable: fresh executable-side quote" };
-                return outcome with { ResidualNotional = outcome.RemainingQuantity.Value * reference.Price,
-                    Currency = "USD", ValuationReference = reference, ValuationCoverage = "ObservedUsdEquityQuote" };
+                return outcome with
+                {
+                    ResidualNotional = outcome.RemainingQuantity.Value * reference.Price,
+                    Currency = "USD",
+                    ValuationReference = reference,
+                    ValuationCoverage = "ObservedUsdEquityQuote"
+                };
             }, token).WaitAsync(token).ConfigureAwait(false);
         }
         catch (Exception exception) when (exception is not OutOfMemoryException)

@@ -23,7 +23,8 @@ internal sealed class CancelAllIncidentRecorder(
     internal async Task<CancelAllOrderOutcome?> GetObservationAsync(string key)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
-        try { return _orders.GetValueOrDefault(key); }
+        try
+        { return _orders.GetValueOrDefault(key); }
         finally { _gate.Release(); }
     }
 
@@ -77,7 +78,8 @@ internal sealed class CancelAllIncidentRecorder(
     private async Task WriteAsync(CancelAllIncidentUpdate update, bool finalAttempt = false)
     {
         await _gate.WaitAsync().ConfigureAwait(false);
-        try { await WriteLockedAsync(update, finalAttempt).ConfigureAwait(false); }
+        try
+        { await WriteLockedAsync(update, finalAttempt).ConfigureAwait(false); }
         finally { _gate.Release(); }
     }
 
@@ -135,7 +137,8 @@ internal sealed class CancelAllIncidentRecorder(
         if (_retentionError == error)
             return;
         _retentionError = error;
-        try { logger.LogError("Cancel-all incident {IncidentId}: {EvidenceError}", IncidentId, error); }
+        try
+        { logger.LogError("Cancel-all incident {IncidentId}: {EvidenceError}", IncidentId, error); }
         catch (Exception loggingFailure) when (loggingFailure is not OutOfMemoryException) { }
     }
 

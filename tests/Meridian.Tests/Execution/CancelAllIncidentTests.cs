@@ -204,7 +204,8 @@ public sealed class CancelAllIncidentTests : IDisposable
             .GetField("_wal", BindingFlags.Instance | BindingFlags.NonPublic)!.GetValue(audit)!;
         wal.FlushFault = () => throw new IOException("Synthetic disk full during emergency halt");
         KillSwitchSweepResult result;
-        try { result = await oms.CancelAllAsync(timeout.Token).WaitAsync(timeout.Token); }
+        try
+        { result = await oms.CancelAllAsync(timeout.Token).WaitAsync(timeout.Token); }
         finally { wal.FlushFault = null; }
 
         gateway.CancelRequests.Should().BeEquivalentTo(["broker-first", "broker-second"]);
@@ -248,8 +249,13 @@ public sealed class CancelAllIncidentTests : IDisposable
         await oms.StartAsync(timeout.Token);
         var placed = await oms.PlaceOrderAsync(new OrderRequest
         {
-            ClientOrderId = "dollar-sized", Symbol = "AAPL", Side = OrderSide.Buy, Type = OrderType.Limit,
-            Quantity = 10m, LimitPrice = 150m, FundAccountId = AccountA,
+            ClientOrderId = "dollar-sized",
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m,
+            FundAccountId = AccountA,
             Metadata = new Dictionary<string, string> { ["notional"] = "1000" }
         }, timeout.Token);
         placed.Success.Should().BeTrue(placed.ErrorMessage);
@@ -288,7 +294,8 @@ public sealed class CancelAllIncidentTests : IDisposable
         gateway.RefuseToCancel.Add("broker-resting");
         coverage.Block = true;
         KillSwitchSweepResult result;
-        try { result = await oms.CancelAllAsync(timeout.Token).WaitAsync(timeout.Token); }
+        try
+        { result = await oms.CancelAllAsync(timeout.Token).WaitAsync(timeout.Token); }
         finally { coverage.Release.TrySetResult(false); }
 
         gateway.CancelRequests.Should().Equal("broker-resting");
@@ -346,13 +353,21 @@ public sealed class CancelAllIncidentTests : IDisposable
             await gateway.VerificationEntered.Task.WaitAsync(timeout.Token);
             await gateway.PublishReportAsync(new ExecutionReport
             {
-                OrderId = "broker-late-fill", GatewayOrderId = "broker-late-fill", ClientOrderId = "late-fill",
-                Symbol = "AAPL", Side = OrderSide.Buy, ReportType = ExecutionReportType.Cancelled,
-                OrderStatus = OrderStatus.Cancelled, OrderQuantity = 10m, FilledQuantity = cumulativeFill,
-                FillPrice = 151.25m, Timestamp = DateTimeOffset.UtcNow
+                OrderId = "broker-late-fill",
+                GatewayOrderId = "broker-late-fill",
+                ClientOrderId = "late-fill",
+                Symbol = "AAPL",
+                Side = OrderSide.Buy,
+                ReportType = ExecutionReportType.Cancelled,
+                OrderStatus = OrderStatus.Cancelled,
+                OrderQuantity = 10m,
+                FilledQuantity = cumulativeFill,
+                FillPrice = 151.25m,
+                Timestamp = DateTimeOffset.UtcNow
             });
             ExecutionReport delivered;
-            do { delivered = await oms.ExecutionReports.ReadAsync(timeout.Token); }
+            do
+            { delivered = await oms.ExecutionReports.ReadAsync(timeout.Token); }
             while (delivered.FilledQuantity == 0m);
             delivered.FilledQuantity.Should().Be(cumulativeFill);
             portfolio.Positions["AAPL"].ExactQuantity.Should().Be(cumulativeFill);
@@ -380,16 +395,30 @@ public sealed class CancelAllIncidentTests : IDisposable
     private static async Task PlaceAsync(OrderManagementSystem oms, SweepGateway gateway, string id, Guid account,
         CancellationToken ct)
     {
-        var placed = await oms.PlaceOrderAsync(new OrderRequest { ClientOrderId = id, Symbol = "AAPL",
-            Side = OrderSide.Buy, Type = OrderType.Limit, Quantity = 10m, LimitPrice = 150m, FundAccountId = account }, ct);
+        var placed = await oms.PlaceOrderAsync(new OrderRequest
+        {
+            ClientOrderId = id,
+            Symbol = "AAPL",
+            Side = OrderSide.Buy,
+            Type = OrderType.Limit,
+            Quantity = 10m,
+            LimitPrice = 150m,
+            FundAccountId = account
+        }, ct);
         placed.Success.Should().BeTrue(placed.ErrorMessage);
         gateway.BrokerOpenOrders.Add(BrokerOrder(id, $"broker-{id}"));
     }
 
     private static BrokerOrder BrokerOrder(string clientId, string brokerId) => new()
     {
-        OrderId = brokerId, ClientOrderId = clientId, Symbol = "AAPL", Side = OrderSide.Buy,
-        Type = OrderType.Limit, Quantity = 10m, LimitPrice = 150m, Status = OrderStatus.Accepted
+        OrderId = brokerId,
+        ClientOrderId = clientId,
+        Symbol = "AAPL",
+        Side = OrderSide.Buy,
+        Type = OrderType.Limit,
+        Quantity = 10m,
+        LimitPrice = 150m,
+        Status = OrderStatus.Accepted
     };
 
     private sealed record SessionQuote(OrderMarketReference Reference) : IOrderMarketReferenceSource, IOrderInstrumentCoverageSource
