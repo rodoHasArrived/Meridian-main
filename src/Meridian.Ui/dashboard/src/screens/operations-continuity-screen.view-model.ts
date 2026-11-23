@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { formatAmountWithCode, formatCurrency as formatCurrencyAmount, formatNumber, pluralizeCount } from "@/lib/format";
 import { formatDate, formatDateOnly } from "@/screens/operations-continuity-screen.date-format";
+import { operationsCaseVarianceLabel } from "./reconciliation-case-values";
 import {
   collectCloseWorkflowEvidenceLinks,
   collectCloseWorkflowChecklistControlApprovals,
@@ -2902,14 +2903,7 @@ function buildEscalationLabel(breakCase: OperationsBreakCase): string {
 }
 
 function buildVarianceLabel(breakCase: OperationsBreakCase): string {
-  const expected = formatDecimal(breakCase.expectedAmount);
-  const actual = formatDecimal(breakCase.actualAmount);
-  const variance = formatDecimal(breakCase.variance);
-  if (expected === "Not recorded" && actual === "Not recorded" && variance === "Not recorded") {
-    return "No amount variance";
-  }
-
-  return `Expected ${expected} / Actual ${actual} / Variance ${variance}`;
+  return operationsCaseVarianceLabel(breakCase);
 }
 
 function buildBreakSourceLabel(breakCase: OperationsBreakCase): string {

@@ -4,6 +4,7 @@ import { MemoryRouter } from "react-router-dom";
 import { describe, expect, it, vi } from "vitest";
 import type { ReconciliationBreakLineage, ReconciliationBreakQueueItem, RetainedStatementCaseEvidence } from "@/types";
 import { ReconciliationCaseEvidence, ReconciliationMatchCandidate } from "./reconciliation-case-evidence";
+import { caseVarianceLabel } from "./reconciliation-case-values";
 
 const lineage: ReconciliationBreakLineage = {
   lineageId: "cash-lineage", comparisonScopeId: "comparison-v1", occurrenceId: "first-cash-break", occurrenceNumber: 1,
@@ -124,6 +125,67 @@ describe("retained reconciliation case evidence", () => {
     expect(screen.getByText("cash-tolerance · Version unavailable")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review retained evidence" }).getAttribute("href")).toContain("subjectId=cash-break-20");
   });
+
+  it("rejects malformed exact observations instead of extracting an embedded number", () => {
+    const malformed = { ...item, measures: [{ ...item.measures![0],
+      expectedExact: "100", actualExact: "not recorded 500", varianceExact: "400" }] };
+    render(<MemoryRouter><ReconciliationCaseEvidence item={malformed} /></MemoryRouter>);
+    const table = within(screen.getByRole("table", { name: "Retained residual components" }));
+    expect(table.getAllByText("Unavailable")).toHaveLength(2);
+    expect(table.queryByText("500.00")).not.toBeInTheDocument();
+    expect(table.queryByRole("button", { name: /Inspect Value residual/ })).not.toBeInTheDocument();
+    expect(caseVarianceLabel(malformed)).toBe("Unavailable");
+  });
+
+  it("keeps a malformed retained statement residual unavailable in the queue and evidence", () => {
+    const malformed = { ...item, statementEvidence: { ...retainedMatch, match: { ...retainedMatch.match,
+      residuals: [{ ...retainedMatch.match.residuals[0], residual: "not recorded 500" }] } } };
+    render(<MemoryRouter><ReconciliationCaseEvidence item={malformed} /></MemoryRouter>);
+    const table = within(screen.getByRole("table", { name: "Exact residual components" }));
+    expect(table.getByText("Unavailable")).toBeInTheDocument();
+    expect(table.queryByRole("button", { name: /Inspect Net amount residual/ })).not.toBeInTheDocument();
+    expect(caseVarianceLabel(malformed)).toBe("Unavailable");
+  });
+
+  it("withholds unsafe legacy amounts without exact companions in retained evidence", () => {
+    const unsafe = { ...item, measures: [{ ...item.measures![0], expected: 9007199254740992,
+      actual: 9007199254740992, variance: 9007199254740992 }] };
+    render(<MemoryRouter><ReconciliationCaseEvidence item={unsafe} /></MemoryRouter>);
+    const table = within(screen.getByRole("table", { name: "Retained residual components" }));
+    expect(table.getAllByText("Unavailable")).toHaveLength(3);
+    expect(table.queryByText(/9,007,199,254,740,992/)).not.toBeInTheDocument();
+    expect(table.queryByRole("button", { name: /Inspect Value residual/ })).not.toBeInTheDocument();
+  });
+
+  it("keeps the same amount and unknown unit for a legacy scalar fallback", () => {
+    const legacy = { ...item, measures: [], variance: 500 };
+    render(<MemoryRouter><ReconciliationCaseEvidence item={legacy} /></MemoryRouter>);
+    expect(screen.getByText("+500.00")).toBeInTheDocument();
+    expect(caseVarianceLabel(legacy)).toBe("+500.00 Unit unavailable");
+  });
+
+  it("uses the same unknown currency and retained amount in statement evidence and queue", () => {
+    const unknownCurrency = { ...item, statementEvidence: { ...retainedMatch, match: { ...retainedMatch.match,
+      residuals: [{ measure: "Net amount", unit: "currency", sourceTotal: "600", ledgerTotal: "100", residual: "500", tolerance: "1" }] } } };
+    render(<MemoryRouter><ReconciliationCaseEvidence item={unknownCurrency} /></MemoryRouter>);
+    const table = within(screen.getByRole("table", { name: "Exact residual components" }));
+    expect(table.getByRole("rowheader")).toHaveTextContent("Currency unavailable");
+    expect(table.getByText("+500.00")).toBeInTheDocument();
+    expect(caseVarianceLabel(unknownCurrency)).toBe("+500.00 Currency unavailable");
+  });
+
+  it.each([ ["Quantity", "Unit unavailable"], ["Value", "Currency unavailable"] ] as const)(
+    "preserves a missing %s unit in the amount passport", async (kind, unitLabel) => {
+      const user = userEvent.setup();
+      const unknownUnit = { ...item, measures: [{ kind, unit: "", expected: 100, actual: 600, variance: 500, tolerance: 1 }] };
+      render(<MemoryRouter><ReconciliationCaseEvidence item={unknownUnit} /></MemoryRouter>);
+      const table = within(screen.getByRole("table", { name: "Retained residual components" }));
+      expect(table.getByRole("rowheader")).toHaveTextContent(unitLabel);
+      expect(caseVarianceLabel(unknownUnit)).toBe(`+500.00 ${unitLabel}`);
+      await user.click(table.getByRole("button", { name: new RegExp(`Inspect ${kind} residual`) }));
+      const passport = await screen.findByRole("dialog", { name: "Amount passport" });
+      expect(within(passport).getByText(unitLabel)).toBeInTheDocument();
+    });
 
   it("compares explicit earlier evidence only across matching lineage and comparison scopes", async () => {
     const user = userEvent.setup();

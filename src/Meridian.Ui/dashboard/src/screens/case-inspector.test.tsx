@@ -71,18 +71,86 @@ describe("shared case inspector", () => {
     const { rerender } = setup(precise);
     await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
     const comparison = screen.getByRole("region", { name: "Comparison" });
-    expect(within(comparison).getByText("9,007,199,254,740,993.13 USD")).toBeInTheDocument();
-    expect(within(comparison).getByText("9,007,199,254,740,994.13 USD")).toBeInTheDocument();
+    expect(within(comparison).getByText("9,007,199,254,740,993.125 USD")).toBeInTheDocument();
+    expect(within(comparison).getByText("9,007,199,254,740,994.126 USD")).toBeInTheDocument();
+    expect(within(comparison).getByText("+1.001 USD")).toBeInTheDocument();
+    expect(within(comparison).getByText("0.0000000000000000000000000001 USD")).toBeInTheDocument();
     rerender(<MemoryRouter><CaseVariance item={{ ...precise, measures: undefined }} /></MemoryRouter>);
-    expect(screen.getByText("+9,007,199,254,740,993.13 Unit unavailable")).toBeInTheDocument();
+    expect(screen.getByText("+9,007,199,254,740,993.125 Unit unavailable")).toBeInTheDocument();
+  });
+
+  it("keeps unsafe legacy numeric comparison amounts unavailable without exact companions", async () => {
+    setup({ ...record, measures: [{ ...record.measures![0],
+      expected: 9007199254740992, actual: 9007199254740992, variance: 9007199254740992 }] });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    const comparison = within(screen.getByRole("region", { name: "Comparison" }));
+    for (const label of ["Expected", "Actual", "Residual"]) {
+      const fact = comparison.getByText(label, { selector: "dt" }).parentElement!;
+      expect(fact).toHaveTextContent("Unavailable");
+    }
+    expect(comparison.getAllByText("The source amount exceeds the precision of this response. An exact amount is unavailable.").length).toBeGreaterThanOrEqual(2);
+    expect(comparison.queryByText("9,007,199,254,740,992.00 USD")).not.toBeInTheDocument();
+    expect(comparison.queryByText("+9,007,199,254,740,992.00 USD")).not.toBeInTheDocument();
   });
 
   it("detects exact fractional changes even when numeric compatibility fields compare equal", () => {
     const before = { ...record, measures: [{ ...record.measures![0], variance: 0.001,
-      varianceExact: "0.0010000000000000000000000001" }] };
-    const after = { ...before, measures: [{ ...before.measures[0], varianceExact: "0.0010000000000000000000000002" }] };
-    expect(caseChanges(before, after)).toEqual([{ label: "Variance", before: "0.0010000000000000000000000001", after: "0.0010000000000000000000000002" }]);
-    expect(caseChanges(before, { ...before, measures: [{ ...before.measures[0], varianceExact: "0.00100000000000000000000000010" }] })).toEqual([]);
+      varianceExact: "0.001000000000000000000000001" }] };
+    const after = { ...before, measures: [{ ...before.measures[0], varianceExact: "0.001000000000000000000000002" }] };
+    expect(caseChanges(before, after)).toEqual([{ label: "Variance", before: "0.001000000000000000000000001", after: "0.001000000000000000000000002" }]);
+    expect(caseChanges(before, { ...before, measures: [{ ...before.measures[0], varianceExact: "0.0010000000000000000000000010" }] })).toEqual([]);
+  });
+
+  it("reports separate exact residual components and units when multiple measures change", () => {
+    const before: ReconciliationBreakQueueItem = { ...record, measures: [
+      { ...record.measures![0], unit: "EUR", varianceExact: "0.0000000000000000000000000001" },
+      { kind: "Quantity", unit: "units", expected: 10, actual: 11, variance: 1, tolerance: 0, varianceExact: "1.000" }
+    ] };
+    const after = { ...before, measures: [
+      { ...before.measures![0], varianceExact: "0.0000000000000000000000000002" },
+      { ...before.measures![1], varianceExact: "2.000" }
+    ] };
+    expect(caseChanges(before, after)).toEqual([{
+      label: "Variance components",
+      before: "Value: 0.0000000000000000000000000001 EUR; Quantity: 1.000 units",
+      after: "Value: 0.0000000000000000000000000002 EUR; Quantity: 2.000 units"
+    }]);
+  });
+
+  it("reports a changed comparison unit even when the residual amount is equal", () => {
+    const after = { ...record, measures: [{ ...record.measures![0], unit: "EUR" }] };
+    expect(caseChanges(record, after)).toEqual([{
+      label: "Variance components", before: "Value: 500 USD", after: "Value: 500 EUR"
+    }]);
+  });
+
+  it("does not report equivalent decimal representations or reordered measure rows as conflicts", () => {
+    const before: ReconciliationBreakQueueItem = { ...record, measures: [
+      { ...record.measures![0], varianceExact: "500.00" },
+      { kind: "Quantity", unit: "units", expected: 10, actual: 11, variance: 1, tolerance: 0, varianceExact: "1.000" }
+    ] };
+    const after = { ...before, measures: [
+      { ...before.measures![1], varianceExact: "1.0" },
+      { ...before.measures![0], unit: " USD ", varianceExact: "500.0000" }
+    ] };
+    expect(caseChanges(before, after)).toEqual([]);
+  });
+
+  it("keeps unavailable money and available quantity in separate comparison rows", async () => {
+    setup({ ...record, measures: [
+      { ...record.measures![0], unit: "EUR", actualExact: null, unavailableReason: "Source amount unavailable." },
+      { kind: "Quantity", unit: "units", expected: 10, actual: 12, variance: 2, tolerance: 0 }
+    ] });
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    const comparison = within(screen.getByRole("region", { name: "Comparison" }));
+    const table = within(comparison.getByRole("table", { name: "Retained residual components" }));
+    const [money, quantity] = table.getAllByRole("row").slice(1);
+    expect(within(money).getByRole("rowheader")).toHaveTextContent("ValueEUR");
+    expect(within(money).getAllByText("Unavailable")).toHaveLength(2);
+    expect(within(quantity).getByRole("rowheader")).toHaveTextContent("Quantityunits");
+    expect(within(quantity).getByText("+2")).toBeVisible();
+    expect(comparison.queryByRole("heading", { name: "Disagreement" })).not.toBeInTheDocument();
+    expect(comparison.queryByText("+2.00 EUR")).not.toBeInTheDocument();
   });
 
   it("opens a visible form and sends the exact loaded version and decision fields before showing a receipt", async () => {
@@ -139,6 +207,26 @@ describe("shared case inspector", () => {
     expect(services.resolve).toHaveBeenCalledTimes(1);
     await user.click(screen.getByRole("button", { name: "Confirm resolve" }));
     await waitFor(() => expect(services.resolve).toHaveBeenLastCalledWith(expect.objectContaining({ expectedVersion: 2 })));
+  });
+
+  it("shows changed Value and Quantity components in the decision conflict review", async () => {
+    const original: ReconciliationBreakQueueItem = { ...record, measures: [record.measures![0],
+      { kind: "Quantity", unit: "units", expected: 10, actual: 11, variance: 1, tolerance: 0 }] };
+    const latest = { ...original, version: 2, measures: [
+      { ...original.measures![0], variance: 600 }, { ...original.measures![1], variance: 2 }
+    ] };
+    const { user, services } = setup(original);
+    services.resolve.mockResolvedValueOnce(result(latest, { transitionStatus: "Conflict", errorCode: "ConcurrencyConflict" }));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Resolve" })).toBeEnabled());
+    await user.click(screen.getByRole("button", { name: "Resolve" }));
+    await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Reviewed both measures");
+    await user.click(screen.getByRole("button", { name: "Confirm resolve" }));
+    const conflict = within(await screen.findByRole("alert", { name: "Case changed" }));
+    const row = conflict.getByRole("row", { name: /Variance components/ });
+    expect(within(row).getByText("Value: 500 USD; Quantity: 1 units")).toBeInTheDocument();
+    expect(within(row).getByText("Value: 600 USD; Quantity: 2 units")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Confirm resolve" })).toBeDisabled();
+    expect(services.resolve).toHaveBeenCalledTimes(1);
   });
 
   it("normalizes HTTP409 into a current-record comparison without retrying the decision", async () => {

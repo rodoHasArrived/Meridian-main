@@ -1614,7 +1614,9 @@ export interface ReconciliationLineItemViewModel {
   matchKey: string;
   title: string;
   meta: string;
+  /** Final display text from retained operands; count/status fallbacks remain text. Never parse this label. */
   amountLabel: string;
+  amountReason?: string;
   statusLabel: string;
   statusTone: "success" | "warning" | "danger";
 }
@@ -1630,6 +1632,9 @@ export interface ReconciliationComparisonViewState {
   ledgerBalanceLabel: string;
   varianceLabel: string;
   varianceTone: "default" | "success" | "warning";
+  summaryUnavailableReason?: string;
+  tieOutUnavailableReason?: string;
+  legacyPrecisionNotice?: string;
   rows: ReconciliationComparisonRowViewModel[];
   /** Per-line statement side. Transaction-level when an external GL reconciliation is loaded, else one line per run. */
   statementLines: ReconciliationLineItemViewModel[];
