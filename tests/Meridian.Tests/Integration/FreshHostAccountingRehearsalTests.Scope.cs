@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Meridian.Application.FundStructure;
+using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
