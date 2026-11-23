@@ -11,6 +11,11 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Ui.Shared
 
+Trial-balance amount proof authorizes the retained tenant/company, fund, book and period before
+interpreting a caller-supplied proof subject. Malformed subjects never load the journal population.
+Binding and retrieval use the verified book snapshot for the population digest and currency;
+immutable journal-prefix and retained-source checks continue to govern the returned evidence.
+
 Strategy reconciliation endpoints pass trusted tenant/company scope through creation, result-ID,
 latest-result and history reads. Foreign or malformed scoped runs return not found before posted
 accounting sources are queried. Canonical run journals retain their explicit securities-role and
