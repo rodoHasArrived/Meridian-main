@@ -1,5 +1,6 @@
-import { createLedgerAmountProofPacket } from "@/test/ledger-amount-proof-fixtures";
-import { getLedgerAmountProof } from "@/lib/ledger-amount-proof-api";
+import { createAmountPassport, passportIdentity } from "@/test/amount-passport-fixtures";
+import { getAmountPassport } from "@/lib/amount-passport-api";
+import { AmountPassportProvider } from "@/components/meridian/amount-passport";
 import { act, fireEvent, render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import type { ReactElement } from "react";
@@ -28,12 +29,15 @@ vi.mock("@/lib/api", async () => {
   return {
     ...actual,
     getOperationsCloseCalendar: vi.fn(),
+    getReconciliationBreakQueue: vi.fn(),
     getRunLedgerJournal: vi.fn(),
     getRunTrialBalance: vi.fn()
   };
 });
 
-vi.mock("@/lib/ledger-amount-proof-api", () => ({ getLedgerAmountProof: vi.fn() }));
+vi.mock("@/lib/amount-passport-api", async (importOriginal) => ({
+  ...await importOriginal<typeof import("@/lib/amount-passport-api")>(), getAmountPassport: vi.fn()
+}));
 
 vi.mock("@/lib/ledger-reports-api", () => ({
   getLedgerBooks: vi.fn(),
@@ -80,15 +84,16 @@ function mockPostedBook() {
 
 function mockPostedAmount() {
   mockPostedBook();
+  const identity = passportIdentity({ subjectId: "je-proof:line-proof:debit" });
+  identity.scope = { ...identity.scope, ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID, fundProfileId: "fund-alpha" };
+  const proofPacket = createAmountPassport(identity, "Cash debit", "500");
   vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockImplementation(async (periodId) => periodId === LEDGER_PERIOD_ID ? [{
     journalEntryId: "je-proof", periodId: LEDGER_PERIOD_ID, ledgerBookId: LEDGER_BOOK_ID,
     timestamp: "2026-07-31T00:00:00Z", description: "Scoped posting", totalDebits: 500, totalCredits: 500,
-    isBalanced: true, lines: [{ entryId: "line-proof", journalEntryId: "je-proof", timestamp: "2026-07-31T00:00:00Z",
+    isBalanced: true, lines: [{ entryId: "line-proof", journalEntryId: "je-proof", timestamp: "2026-07-31T00:00:00Z", amountPassport: proofPacket.reference,
       accountName: "Cash", accountType: "Asset", symbol: "AAPL", debit: 500, credit: 0, description: "Selected line" }]
   }] : []);
-  const proofPacket = createLedgerAmountProofPacket({ subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID,
-    periodId: LEDGER_PERIOD_ID, fundProfileId: "fund-alpha", amount: 500, currency: "USD", label: "Cash" });
-  vi.mocked(getLedgerAmountProof).mockResolvedValue(proofPacket);
+  vi.mocked(getAmountPassport).mockResolvedValue(proofPacket);
   return proofPacket;
 }
 
@@ -184,7 +189,8 @@ const data = {
 } as unknown as AccountingWorkspaceResponse;
 
 async function renderPage(node: ReactElement, route: string) {
-  const result = renderWithRouter(node, { initialEntries: [route] });
+  const result = renderWithRouter(<AmountPassportProvider enabled scopeKey="test" session="controller">{node}</AmountPassportProvider>,
+    { initialEntries: [route] });
   await waitForAsyncEffects();
   return result;
 }
@@ -214,7 +220,7 @@ describe("finance standard pages", () => {
   });
 
   it("renders the report preview and validation checkpoint tabs", async () => {
-    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview?runId=run-tb-1");
 
     expect(screen.getByRole("heading", { name: "Report Preview & Validation" })).toBeInTheDocument();
     expect(screen.getByRole("tab", { name: "Preview" })).toBeInTheDocument();
@@ -232,7 +238,7 @@ describe("finance standard pages", () => {
       }
     } as unknown as AccountingWorkspaceResponse;
 
-    await renderPage(<ReportPreviewValidationScreen data={readyData} />, "/reporting/preview");
+    await renderPage(<ReportPreviewValidationScreen data={readyData} />, "/reporting/preview?runId=run-tb-1");
 
     expect(screen.getByText("Ready to run")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Run report" })).toHaveAttribute(
@@ -333,6 +339,39 @@ describe("finance standard pages", () => {
     expect(screen.getAllByText("No report selected").length).toBeGreaterThan(0);
     expect(screen.queryByRole("link", { name: "Run report" })).not.toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Choose report" })).toHaveAttribute("href", "/reporting/library");
+  });
+
+  it("requires an explicit preview run instead of selecting the first recent run", async () => {
+    await renderPage(<ReportPreviewValidationScreen data={data.reporting} />, "/reporting/preview");
+    expect(screen.getByLabelText("Report run")).toHaveValue("");
+    expect(screen.queryByText("Open reconciliation break")).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Run report" })).not.toBeInTheDocument();
+    fireEvent.change(screen.getByLabelText("Report run"), { target: { value: "run-tb-1" } });
+    expect(await screen.findByRole("button", { name: "Run report" })).toBeDisabled();
+  });
+
+  it("names retained preview choices without exposing identifiers and preserves the exact selected run", async () => {
+    const retained = requireFirst(data.reporting.recentRuns, "reporting.recentRuns");
+    const previewData = {
+      ...data.reporting,
+      recentRuns: [
+        { ...retained, runId: "report-run-first", reportName: "Monthly statement", status: "Published", asOfDate: "2026-05-31" },
+        { ...retained, runId: "report-run-second", reportName: "Monthly statement", status: "Published", asOfDate: "2026-05-31" }
+      ]
+    };
+    await renderPage(<ReportPreviewValidationScreen data={previewData} />, "/reporting/preview");
+
+    const selector = screen.getByLabelText("Report run");
+    const second = within(selector).getByRole("option", { name: /Monthly statement.*Retained run 2/ });
+    expect(second).toHaveValue("report-run-second");
+    expect(within(selector).getAllByRole("option").every((option) => !option.textContent?.includes("report-run-"))).toBe(true);
+    fireEvent.change(selector, { target: { value: "report-run-second" } });
+
+    expect(selector).toHaveValue("report-run-second");
+    expect(screen.getByText("report-run-second", { exact: true })).not.toBeVisible();
+    fireEvent.click(screen.getByText("Run audit details", { exact: true }));
+    expect(screen.getByText("report-run-second", { exact: true })).toBeVisible();
+    expect(screen.queryByText("report-run-first", { exact: true })).not.toBeInTheDocument();
   });
 
   it("does not substitute reporting-workspace fixtures when run detail has no runId", async () => {
@@ -438,15 +477,12 @@ describe("finance standard pages", () => {
   it("selects a retained posting amount by entry identity and exact book, period and fund scope", async () => {
     const proofPacket = mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
-    expect(getLedgerAmountProof).not.toHaveBeenCalled();
+    expect(getAmountPassport).not.toHaveBeenCalled();
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    const drawer = await screen.findByRole("dialog", { name: "Cash debit $500.00 proof detail" });
-    expect(await within(drawer).findByRole("link", { name: "Open Retained journal line" })).toHaveAttribute("href", proofPacket.ledgerAmount!.evidence[0]!.route);
-    expect(getLedgerAmountProof).toHaveBeenCalledWith(expect.objectContaining({
-      subjectId: "je-proof:line-proof:debit", ledgerBookId: LEDGER_BOOK_ID, periodId: LEDGER_PERIOD_ID,
-      fundProfileId: "fund-alpha", amount: 500
-    }), expect.objectContaining({ signal: expect.any(AbortSignal) }));
-    fireEvent.keyDown(window, { key: "Escape" });
+    const drawer = await screen.findByRole("dialog", { name: "Amount passport" });
+    expect(await within(drawer).findByRole("link", { name: /^Retained journal line/ })).toHaveAttribute("href", proofPacket.evidence[0]!.href);
+    expect(getAmountPassport).toHaveBeenCalledWith(proofPacket.reference.identity, expect.objectContaining({ signal: expect.any(AbortSignal) }));
+    fireEvent.keyDown(within(drawer).getByRole("button", { name: "Close drawer" }), { key: "Escape" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
   });
 
@@ -454,7 +490,7 @@ describe("finance standard pages", () => {
     mockPostedAmount();
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
@@ -465,10 +501,10 @@ describe("finance standard pages", () => {
 
     const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it.each(["book", "period"] as const)("requires a fresh amount click after a %s scope round trip", async (scope) => {
@@ -497,7 +533,7 @@ describe("finance standard pages", () => {
     });
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
 
     const selector = () => document.getElementById(`ledger-${scope}-select`) as HTMLSelectElement;
     fireEvent.change(selector(), { target: { value: scope === "book" ? otherBookId : otherPeriodId } });
@@ -510,20 +546,20 @@ describe("finance standard pages", () => {
 
     const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
     fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it("discards pending evidence after a tab round trip until the operator selects the amount again", async () => {
     const proofPacket = mockPostedAmount();
     let completeProof!: (packet: typeof proofPacket) => void;
-    vi.mocked(getLedgerAmountProof).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
+    vi.mocked(getAmountPassport).mockImplementationOnce(() => new Promise((resolve) => { completeProof = resolve; }));
     await renderPage(<LedgerExplorerScreen data={data} />, "/accounting/ledger");
     fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
-    expect(screen.getByRole("dialog")).toHaveTextContent("Loading retained amount evidence");
-    const signal = vi.mocked(getLedgerAmountProof).mock.calls[0][1]?.signal;
+    expect(await screen.findByRole("dialog")).toHaveTextContent("Loading amount passport");
+    const signal = vi.mocked(getAmountPassport).mock.calls[0][1]?.signal;
 
     fireEvent.click(screen.getByRole("tab", { name: "Trial balance" }));
     await waitForAsyncEffects();
@@ -531,15 +567,15 @@ describe("finance standard pages", () => {
     fireEvent.click(screen.getByRole("tab", { name: "Ledger" }));
     await waitForAsyncEffects();
     await waitForAsyncEffects();
-    const amount = await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
+    await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" });
     await act(async () => { completeProof(proofPacket); });
 
     expect(screen.queryByRole("dialog")).not.toBeInTheDocument();
-    expect(screen.queryByRole("link", { name: "Open Retained journal line" })).not.toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(1);
-    fireEvent.click(amount);
-    expect(await screen.findByRole("link", { name: "Open Retained journal line" })).toBeInTheDocument();
-    expect(getLedgerAmountProof).toHaveBeenCalledTimes(2);
+    expect(screen.queryByRole("link", { name: /^Retained journal line/ })).not.toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(1);
+    fireEvent.click(await screen.findByRole("button", { name: "Inspect debit $500.00 for Cash in journal je-proof" }));
+    expect(await screen.findByRole("link", { name: /^Retained journal line/ })).toBeInTheDocument();
+    expect(getAmountPassport).toHaveBeenCalledTimes(2);
   });
 
   it("labels posted amounts in the book's currency and claims no evidence it does not have", async () => {
@@ -1359,13 +1395,104 @@ describe("finance standard pages", () => {
     expect(screen.queryByLabelText("Search by account, amount, journal ID, source, security, entity")).not.toBeInTheDocument();
   });
 
-  it("renders reconciliation match workbench as a focused clearing queue", async () => {
-    await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, "/accounting/reconciliation/match");
+  it("renders the shared case inspector in the reconciliation match workbench", async () => {
+    await renderPage(<ReconciliationMatchWorkbenchScreen data={data} />, `/accounting/reconciliation/match?reconciliationBreak=${encodeURIComponent(data.breakQueue[0].breakId)}`);
 
     expect(screen.getByRole("heading", { name: "Reconciliation Match Workbench" })).toBeInTheDocument();
     expect(screen.getAllByText("Cash variance needs review").length).toBeGreaterThan(0);
-    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", "/accounting/reconciliation");
-    expect(screen.getByRole("button", { name: "Record match decision" })).toBeDisabled();
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute("href", `/accounting/reconciliation?reconciliationBreak=${encodeURIComponent(data.breakQueue[0].breakId)}`);
+    expect(screen.getByRole("combobox", { name: "Case" })).toHaveValue(data.breakQueue[0].breakId);
+    expect(screen.getByRole("region", { name: "Case inspector" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Record match decision" })).not.toBeInTheDocument();
+  });
+
+  it("names duplicate case choices without exposing keys and preserves exact selection and evidence links", async () => {
+    const first = requireFirst(data.breakQueue, "reconciliation break");
+    const second = { ...first, breakId: "run-42:second-case" };
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={{ ...data, breakQueue: [first, second] }} />,
+      `/accounting/reconciliation/match?reconciliationBreak=${encodeURIComponent(first.breakId)}`
+    );
+
+    const selector = screen.getByRole("combobox", { name: "Case" });
+    const secondOption = within(selector).getByRole("option", { name: /Retained case 2$/ });
+    expect(secondOption).toHaveValue(second.breakId);
+    expect(within(selector).getAllByRole("option").every((option) =>
+      !option.textContent?.includes(first.breakId) && !option.textContent?.includes(second.breakId))).toBe(true);
+    fireEvent.change(selector, { target: { value: second.breakId } });
+
+    expect(selector).toHaveValue(second.breakId);
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", `/accounting/reconciliation?reconciliationBreak=${encodeURIComponent(second.breakId)}`);
+    expect(screen.getByRole("link", { name: "Retained evidence" })).toHaveAttribute(
+      "href", `/reporting/evidence?subjectKind=reconciliation-break&subjectId=${encodeURIComponent(second.breakId)}`);
+  });
+
+  it.each([
+    "runId=import-run&caseId=case%3Asource-break&breakId=source-break",
+    "caseId=case%3Asource-break",
+    "breakId=statement%3Aqueue-break",
+    "runId=import-run"
+  ])("opens the addressed statement break in Match with %s", async (query) => {
+    const priorBreak = requireFirst(data.breakQueue, "prior reconciliation break");
+    const importedBreak = {
+      ...priorBreak,
+      breakId: "statement:queue-break",
+      runId: "statement-reconciliation",
+      sourceBreakId: "source-break",
+      sourceImportId: "import-run",
+      reason: "Imported custodian cash differs from the ledger."
+    };
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={{ ...data, breakQueue: [...data.breakQueue, importedBreak] }} />,
+      `/accounting/reconciliation/match?${query}`
+    );
+
+    expect(within(screen.getByRole("region", { name: "Case inspector" })).getByRole("heading", { name: importedBreak.reason })).toBeInTheDocument();
+    expect(screen.queryByText(priorBreak.reason)).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Retained evidence" })).toHaveAttribute(
+      "href", "/reporting/evidence?subjectKind=reconciliation-break&subjectId=statement%3Aqueue-break"
+    );
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", "/accounting/reconciliation?reconciliationBreak=statement%3Aqueue-break"
+    );
+  });
+
+  it("reads the current queue when the imported case is absent from the workspace snapshot", async () => {
+    const importedBreak = {
+      ...requireFirst(data.breakQueue, "prior reconciliation break"),
+      breakId: "statement:queue-break",
+      runId: "statement-reconciliation",
+      sourceBreakId: "source-break",
+      sourceImportId: "import-run",
+      fundAccountId: "fund-alpha",
+      reason: "Newly published statement break."
+    };
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce([importedBreak]);
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={data} />,
+      "/accounting/reconciliation/match?runId=import-run&breakId=source-break&fundAccountId=fund-alpha"
+    );
+
+    expect(api.getReconciliationBreakQueue).toHaveBeenCalledWith(
+      undefined, "fund-alpha", { signal: expect.any(AbortSignal), allowDevelopmentFallback: false }
+    );
+    expect(within(screen.getByRole("region", { name: "Case inspector" })).getByRole("heading", { name: importedBreak.reason })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Open reconciliation casework" })).toHaveAttribute(
+      "href", "/accounting/reconciliation?reconciliationBreak=statement%3Aqueue-break&fundAccountId=fund-alpha"
+    );
+  });
+
+  it("reports an unavailable case without selecting a different break from the same run", async () => {
+    vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
+    await renderPage(
+      <ReconciliationMatchWorkbenchScreen data={data} />,
+      "/accounting/reconciliation/match?runId=run-42&caseId=case%3Amissing-break&breakId=missing-break"
+    );
+
+    expect(screen.getByText("Requested reconciliation break unavailable")).toBeInTheDocument();
+    expect(screen.queryByText(requireFirst(data.breakQueue, "prior reconciliation break").reason)).not.toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Retained evidence" })).not.toBeInTheDocument();
   });
 
   it("renders close calendar tasks", async () => {

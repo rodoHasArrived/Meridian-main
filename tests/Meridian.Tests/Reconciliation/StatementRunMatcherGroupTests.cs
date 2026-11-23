@@ -34,6 +34,10 @@ public sealed class StatementRunMatcherGroupTests
         split.Kind.Should().Be("Transaction");
         split.StatementEvidenceReferences.Should().Equal("IMP-1:1");
         split.InternalEvidenceReferences.Should().Equal("internal:journal:leg-a", "internal:journal:leg-b");
+        var allocations = result.GroupAllocations[split.MatchGroupId];
+        allocations.LedgerAllocations.Select(item => item.Amount).Should().Equal("-3000", "-2000");
+        allocations.Residuals.Should().ContainSingle(item => item.Measure == "Net amount" && item.Unit == "USD"
+            && item.SourceTotal == "-5000" && item.LedgerTotal == "-5000" && item.Residual == "0");
         var pair = result.MatchGroups.Should()
             .ContainSingle(group => group.RuleIds.Contains("statement-transaction-exact-v1"))
             .Subject;
@@ -41,6 +45,27 @@ public sealed class StatementRunMatcherGroupTests
         pair.InternalEvidenceReferences.Should().Equal("internal:journal:pair");
         result.Breaks.Should().ContainSingle("only the row with no internal counterpart breaks")
             .Which.Record.SourceReference.Should().Be("IMP-1:3");
+    }
+
+    [Fact]
+    public void Match_PreservesExactSignedGroupContributionsBeyondBinaryFloatPrecision()
+    {
+        var rows = Rows().Take(1).Select(item => item with { CashAmount = -9_007_199_254_740_992.123456m }).ToArray();
+        var ledger = Populations().LedgerTransactions.Take(2).ToArray();
+        ledger[0] = ledger[0] with { NetAmount = -9_007_199_254_740_991.123455m, EvidenceReference = "shared-journal" };
+        ledger[1] = ledger[1] with { NetAmount = -1.000001m, EvidenceReference = "shared-journal" };
+        var result = StatementRunMatcher.Match(Import(), rows, new([], [], ledger), StatementToleranceProfile.Default,
+            IdentityReconciliationFxRateProvider.Instance, "USD", CreatedAt);
+
+        var group = result.MatchGroups.Should().ContainSingle().Subject;
+        var evidence = result.GroupAllocations[group.MatchGroupId];
+        evidence.LedgerAllocations.Select(item => item.RecordId).Should().Equal(ledger.Select(item => item.TransactionId));
+        evidence.LedgerAllocations.Select(item => item.Amount).Should().Equal("-9007199254740991.123455", "-1.000001");
+        var amount = evidence.Residuals.Single(item => item.Measure == "Net amount");
+        amount.SourceTotal.Should().Be("-9007199254740992.123456");
+        amount.LedgerTotal.Should().Be(amount.SourceTotal);
+        decimal.Parse(amount.Residual, System.Globalization.CultureInfo.InvariantCulture).Should().Be(0m);
+        result.Breaks.Should().BeEmpty();
     }
 
     [Fact]

@@ -14,7 +14,7 @@ namespace Meridian.Tests.Infrastructure.Providers;
 /// Fixtures are the Market Data corporate-actions response as the real API returns it
 /// (identifiers shortened): one group per action type, numeric rates, and no currency.
 /// </summary>
-public sealed class AlpacaCorporateActionProviderTests
+public sealed partial class AlpacaCorporateActionProviderTests
 {
     private const string AppleActions =
         """
@@ -46,8 +46,9 @@ public sealed class AlpacaCorporateActionProviderTests
             && result.EvidenceHash!.Length == 64
             && result.EvidenceHash.All(character =>
                 (character >= '0' && character <= '9') || (character >= 'a' && character <= 'f'))
+            && result.SourceEvidence != null
             && result.EvidenceReference ==
-               $"alpaca://corporate-actions/announcements/{result.SourceEventId}/versions/{result.EvidenceHash}"
+               $"alpaca://corporate-actions/v1/{result.SourceEvidence.ProviderEventType}/{result.SourceEventId}/versions/alpaca-rest-v2/{result.EvidenceHash}"
             && result.ReleaseStatus == CorporateActionProviderReleaseStatusDto.ReviewOnly);
         results[0].Should().Match<Meridian.Infrastructure.Adapters.Core.CorporateActionCommand>(dividend =>
             dividend.ExDate == new DateOnly(2016, 2, 4) && dividend.Amount == 0.52m
@@ -72,8 +73,8 @@ public sealed class AlpacaCorporateActionProviderTests
         var provider = CreateSut(new RecordingHandler(_ => Json(
             """
             {"corporate_actions":{
-              "cash_dividends":[{"ex_date":"2023-12-01","id":"special","rate":2.5,"special":true,"symbol":"GE"}],
-              "reverse_splits":[{"ex_date":"2021-08-02","id":"reverse","new_cusip":"369604301","new_rate":1,"old_cusip":"369604103","old_rate":8,"symbol":"GE"}]},
+              "cash_dividends":[{"process_date":"2023-12-01","ex_date":"2023-12-01","id":"special","rate":2.5,"special":true,"symbol":"GE"}],
+              "reverse_splits":[{"process_date":"2021-08-02","ex_date":"2021-08-02","id":"reverse","new_cusip":"369604301","new_rate":1,"old_cusip":"369604103","old_rate":8,"symbol":"GE"}]},
              "next_page_token":null}
             """)));
 
@@ -89,8 +90,8 @@ public sealed class AlpacaCorporateActionProviderTests
     public async Task FetchAsync_PagedHistory_FollowsThePageToken()
     {
         var handler = new RecordingHandler(request => Json(request.RequestUri!.Query.Contains("page_token=next-1", StringComparison.Ordinal)
-            ? """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-05-10","id":"second","rate":0.25,"symbol":"AAPL"}]},"next_page_token":null}"""
-            : """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}"""));
+            ? """{"corporate_actions":{"cash_dividends":[{"process_date":"2024-05-10","ex_date":"2024-05-10","id":"second","rate":0.25,"symbol":"AAPL"}]},"next_page_token":null}"""
+            : """{"corporate_actions":{"cash_dividends":[{"process_date":"2024-02-09","ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}"""));
         var provider = CreateSut(handler);
 
         var results = await provider.FetchAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
@@ -106,10 +107,10 @@ public sealed class AlpacaCorporateActionProviderTests
             """
             {"corporate_actions":{
               "cash_dividends":[
-                {"ex_date":"2024-02-09","id":"other-symbol","rate":0.24,"symbol":"MSFT"},
-                {"ex_date":"2024-02-09","id":"no-rate","symbol":"AAPL"},
-                {"ex_date":"not-a-date","id":"bad-date","rate":0.24,"symbol":"AAPL"}],
-              "forward_splits":[{"ex_date":"2020-08-31","id":"no-ratio","new_rate":4,"symbol":"AAPL"}]},
+                {"process_date":"2024-02-09","ex_date":"2024-02-09","id":"other-symbol","rate":0.24,"symbol":"MSFT"},
+                {"process_date":"2024-02-09","ex_date":"2024-02-09","id":"no-rate","symbol":"AAPL"},
+                {"process_date":"not-a-date","ex_date":"not-a-date","id":"bad-date","rate":0.24,"symbol":"AAPL"}],
+              "forward_splits":[{"process_date":"2020-08-31","ex_date":"2020-08-31","id":"no-ratio","new_rate":4,"symbol":"AAPL"}]},
              "next_page_token":null}
             """)));
 
@@ -140,7 +141,7 @@ public sealed class AlpacaCorporateActionProviderTests
         var provider = CreateSut(new RecordingHandler(request =>
             request.RequestUri!.Query.Contains("page_token=", StringComparison.Ordinal)
                 ? new HttpResponseMessage(HttpStatusCode.TooManyRequests)
-                : Json("""{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}""")));
+                : Json("""{"corporate_actions":{"cash_dividends":[{"process_date":"2024-02-09","ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}""")));
 
         var results = await provider.FetchAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
 
@@ -170,7 +171,7 @@ public sealed class AlpacaCorporateActionProviderTests
     }
 
     private const string FirstPageWithNextToken =
-        """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}""";
+        """{"corporate_actions":{"cash_dividends":[{"process_date":"2024-02-09","ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"next-1"}""";
 
     [Theory]
     [InlineData(false)]
@@ -209,7 +210,7 @@ public sealed class AlpacaCorporateActionProviderTests
     {
         // Every page names the same next page, so following the token would never end.
         var handler = new RecordingHandler(_ => Json(
-            """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"loop"}"""));
+            """{"corporate_actions":{"cash_dividends":[{"process_date":"2024-02-09","ex_date":"2024-02-09","id":"first","rate":0.24,"symbol":"AAPL"}]},"next_page_token":"loop"}"""));
         var provider = CreateSut(handler);
 
         var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);
@@ -243,7 +244,7 @@ public sealed class AlpacaCorporateActionProviderTests
     {
         var provider = CreateSut(new RecordingHandler(request => Json(
             request.RequestUri!.Query.Contains("page_token=next-1", StringComparison.Ordinal)
-                ? """{"corporate_actions":{"cash_dividends":[{"ex_date":"2024-05-10","id":"second","rate":0.25,"symbol":"AAPL"}]},"next_page_token":null}"""
+                ? """{"corporate_actions":{"cash_dividends":[{"process_date":"2024-05-10","ex_date":"2024-05-10","id":"second","rate":0.25,"symbol":"AAPL"}]},"next_page_token":null}"""
                 : FirstPageWithNextToken)));
 
         var outcome = await provider.FetchWithOutcomeAsync("AAPL", Guid.NewGuid(), CancellationToken.None);

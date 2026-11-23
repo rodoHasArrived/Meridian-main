@@ -558,15 +558,33 @@ public sealed class ExecutionGovernanceEndpointsTests
     }
 
     [Fact]
+    public async Task SubmitOrder_RequiresFundAccountBeforeCallingOms()
+    {
+        var oms = Substitute.For<IOrderManager>();
+        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+
+        var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit",
+            JsonContent(new { clientOrderId = "missing-account", symbol = "AAPL", side = 0, type = 0, quantity = 1 }));
+
+        response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        await oms.DidNotReceive().SubmitAsync(Arg.Any<OrderSubmitCommand>(), Arg.Any<CancellationToken>());
+        await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task SubmitOrder_BrowserShapedTicket_ReachesOmsWithServerStampedIdentityOnly()
     {
         // The browser ticket (OrderSubmitRequest) sends no metadata; closing the run-authority path
         // must not change its route to the OMS.
         OrderRequest? forwarded = null;
         var oms = Substitute.For<IOrderManager>();
-        oms.PlaceOrderAsync(Arg.Do<OrderRequest>(request => forwarded = request), Arg.Any<CancellationToken>())
+        oms.SubmitAsync(Arg.Do<OrderSubmitCommand>((OrderSubmitCommand command) => forwarded = command.Order), Arg.Any<CancellationToken>())
             .Returns(new OrderResult { Success = true, OrderId = "browser-ticket-1" });
-        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
 
         var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
         {
@@ -575,7 +593,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             side = 0,
             type = 1,
             quantity = 1,
-            limitPrice = 190.25m
+            limitPrice = 190.25m,
+            fundAccountId = LiveFundAccountId
         }));
 
         response.StatusCode.Should().Be(HttpStatusCode.Created);
@@ -619,6 +638,54 @@ public sealed class ExecutionGovernanceEndpointsTests
         submitted.Authority.AccountGrant.Source.Should().Be(ExecutionAccountGrantSources.HttpPrincipal);
         submitted.Authority.RunId.Should().BeNull("a manual ticket never carries strategy-run authority");
         await oms.DidNotReceive().PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>());
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task SubmitPaperOrder_ExplicitSessionMustBelongToTheAuthorizedAccount(bool sameAccount)
+    {
+        var root = Path.Combine(Path.GetTempPath(), $"scoped-paper-ticket-{Guid.NewGuid():N}");
+        try
+        {
+            var store = new JsonlFilePaperSessionStore(root, NullLogger<JsonlFilePaperSessionStore>.Instance);
+            await using var persistence = new PaperSessionPersistenceService(
+                NullLogger<PaperSessionPersistenceService>.Instance, store,
+                resolveAccountCurrency: static (_, _) => Task.FromResult<string?>("USD"));
+            var retained = await persistence.CreateSessionAsync(new("scoped", null)
+            {
+                FinancialAccountId = (sameAccount ? LiveFundAccountId : Guid.NewGuid()).ToString("D")
+            });
+            OrderSubmitCommand? submitted = null;
+            var oms = Substitute.For<IOrderManager>();
+            oms.SubmitAsync(Arg.Do<OrderSubmitCommand>(command => submitted = command), Arg.Any<CancellationToken>())
+                .Returns(new OrderResult { Success = true, OrderId = "paper-ticket" });
+            var gateway = Substitute.For<IExecutionGateway>();
+            gateway.GatewayId.Returns("paper");
+            await using var app = await CreateAppAsync(services =>
+            {
+                RegisterFundAccountScope(services, LiveFundAccountId);
+                services.AddSingleton(oms);
+                services.AddSingleton(gateway);
+                services.AddSingleton(persistence);
+            });
+
+            var client = app.GetTestClient();
+            client.DefaultRequestHeaders.Add("X-Meridian-Actor", "ops");
+            var response = await client.PostAsync($"/api/execution/orders/submit?paperSessionId={Uri.EscapeDataString(retained.SessionId)}",
+                JsonContent(new { symbol = "AAPL", side = 0, type = 0, quantity = 1, fundAccountId = LiveFundAccountId }));
+
+            response.StatusCode.Should().Be(sameAccount ? HttpStatusCode.Created : HttpStatusCode.Forbidden);
+            if (sameAccount)
+                submitted!.Authority.SessionId.Should().Be(retained.SessionId);
+            else
+                submitted.Should().BeNull();
+        }
+        finally
+        {
+            if (Directory.Exists(root))
+                Directory.Delete(root, recursive: true);
+        }
     }
 
     [Fact]
@@ -745,13 +812,17 @@ public sealed class ExecutionGovernanceEndpointsTests
     {
         const string orderId = "client-order-1";
         var oms = Substitute.For<IOrderManager>();
-        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>()).Returns(new OrderResult
+        oms.SubmitAsync(Arg.Any<OrderSubmitCommand>(), Arg.Any<CancellationToken>()).Returns(new OrderResult
         {
             Success = false,
             OrderId = orderId,
             RequiresOrderReconciliation = requiresReconciliation
         });
-        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
 
         var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
         {
@@ -759,7 +830,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             symbol = "AAPL",
             side = 0,
             type = 0,
-            quantity = 1
+            quantity = 1,
+            fundAccountId = LiveFundAccountId
         }));
 
         response.StatusCode.Should().Be(expectedStatus);
@@ -774,16 +846,21 @@ public sealed class ExecutionGovernanceEndpointsTests
     public async Task SubmitOrder_WhenOrderManagerThrows_ReturnsUnconfirmedOutcome()
     {
         var oms = Substitute.For<IOrderManager>();
-        oms.PlaceOrderAsync(Arg.Any<OrderRequest>(), Arg.Any<CancellationToken>())
+        oms.SubmitAsync(Arg.Any<OrderSubmitCommand>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException<OrderResult>(new ArgumentException("Could not retain the acknowledgement.")));
-        await using var app = await CreateAppAsync(services => services.AddSingleton(oms));
+        await using var app = await CreateAppAsync(services =>
+        {
+            RegisterFundAccountScope(services, LiveFundAccountId);
+            services.AddSingleton(oms);
+        });
 
         var response = await app.GetTestClient().PostAsync("/api/execution/orders/submit", JsonContent(new
         {
             symbol = "AAPL",
             side = 0,
             type = 0,
-            quantity = 1
+            quantity = 1,
+            fundAccountId = LiveFundAccountId
         }));
 
         response.StatusCode.Should().Be(HttpStatusCode.BadGateway);
@@ -794,6 +871,7 @@ public sealed class ExecutionGovernanceEndpointsTests
     {
         await using var app = await CreateAppAsync(services =>
         {
+            RegisterFundAccountScope(services, LiveFundAccountId);
             services.AddSingleton<IExecutionGateway, PaperTradingGateway>();
             services.AddSingleton<IOrderManager>(sp => new OrderManagementSystem(
                 sp.GetRequiredService<IExecutionGateway>(), NullLogger<OrderManagementSystem>.Instance));
@@ -805,7 +883,8 @@ public sealed class ExecutionGovernanceEndpointsTests
             symbol = "AAPL",
             side = 0,
             type = 0,
-            quantity = 1
+            quantity = 1,
+            fundAccountId = LiveFundAccountId
         }));
 
         response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);

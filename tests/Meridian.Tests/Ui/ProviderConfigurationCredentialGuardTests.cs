@@ -5,6 +5,7 @@ using System.Threading.RateLimiting;
 using FluentAssertions;
 using Meridian.Application.Composition;
 using Meridian.Application.ProviderRouting;
+using Meridian.Contracts.Api;
 using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Endpoints;
@@ -17,6 +18,7 @@ using CoreConfigStore = Meridian.Application.UI.ConfigStore;
 
 namespace Meridian.Tests.Ui;
 
+[Collection(AlpacaCredentialEnvironmentCollection.Name)]
 public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-config-credential-guard", Guid.NewGuid().ToString("N"));
@@ -67,11 +69,15 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         await using var app = await CreateAppAsync("production", config);
         using var response = await app.GetTestClient().PostAsJsonAsync(route, Request(route, null));
 
-        response.StatusCode.Should().Be(HttpStatusCode.OK);
+        var responseBody = await response.Content.ReadAsStringAsync();
+        response.StatusCode.Should().Be(HttpStatusCode.OK, "the secret-free settings request should be accepted: {0}", responseBody);
         var retained = new CoreConfigStore(ConfigPath).LoadRequired();
         retained.ProviderModules!.Modules!["alpaca"].Credentials!["keyId"].Should().Be("ALPACA_KEY_ID");
         if (route.EndsWith("/alpaca", StringComparison.Ordinal))
-            retained.Alpaca!.Feed.Should().Be("sip");
+        {
+            retained.Alpaca!.Feed.Should().Be("iex");
+            retained.Alpaca.UseSandbox.Should().BeTrue();
+        }
         else
             retained.DataSources!.Sources!.Single().Description.Should().Be("ApiKey is a configuration field name, not a submitted credential.");
     }
@@ -119,6 +125,112 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         using var post = await app.GetTestClient().PostAsJsonAsync("/api/config", new { twelveData = new { apiKey = "synthetic-submitted-key" } });
         post.StatusCode.Should().Be(HttpStatusCode.MethodNotAllowed);
         (await File.ReadAllBytesAsync(ConfigPath)).Should().Equal(before);
+    }
+
+    [Fact]
+    public async Task EffectiveConfiguration_ReturnsTypedSettingsWithoutAnyProviderSecretOrOpaqueKey()
+    {
+        const string alpacaId = "fixture-alpaca-id-value";
+        const string alpacaSecret = "fixture-alpaca-secret-value";
+        const string polygonValue = "fixture-polygon-value";
+        const string moduleId = "fixture-private-module-id";
+        const string moduleSettingKey = "fixture-private-map-key";
+        const string moduleSettingValue = "fixture-private-map-value";
+        const string moduleVariableName = "FIXTURE_PROVIDER_VARIABLE_NAME";
+        const string extensionKey = "FixturePrivateExtension";
+        const string extensionValue = "fixture-private-extension-value";
+        const string portalValue = "fixture-private-portal-value";
+        const string sourceNotes = "fixture-private-source-notes";
+        const string exporterValue = "fixture-private-exporter-value";
+        const string storageValue = "fixture-private-storage-value";
+        const string environmentValue = "fixture-private-environment-value";
+        const string environmentName = "MDC_ALPACA_SECRET_KEY";
+        var config = new AppConfig(
+            Alpaca: new(KeyId: alpacaId, SecretKey: alpacaSecret, Feed: "sip"),
+            IBClientPortal: new(BaseUrl: $"https://example.invalid/portal?opaque={portalValue}"),
+            DataSources: new(Sources: [new("ordinary-source", "Synthetic fixture", Description: sourceNotes)]),
+            Backfill: new(Enabled: true, Provider: "polygon", Providers: new(Polygon: new(ApiKey: polygonValue))),
+            ProviderModules: new(new()
+            {
+                [moduleId] = new(Credentials: new() { ["opaque"] = moduleVariableName },
+                    Settings: new() { ["endpoint"] = moduleSettingValue, [moduleSettingKey] = "ordinary" })
+            }),
+            FeatureCapabilities: new(new() { ["fixture-private-feature-name"] = true }),
+            Symbols: [new("TEST")],
+            Storage: new(NamingConvention: storageValue, DatePartition: storageValue),
+            Tracing: new() { OtlpHeaders = exporterValue },
+            Pipeline: new(FinalFlushTimeoutSeconds: 37))
+        {
+            AdditionalSections = new()
+            {
+                [extensionKey] = JsonSerializer.SerializeToElement(new { parameters = new[] { new { opaque = extensionValue } } }),
+                ["providerModules.modules.fixture-smuggled-path"] = JsonSerializer.SerializeToElement(extensionValue)
+            }
+        };
+
+        await using var app = await CreateAppAsync("production");
+        // Seed a legacy retained file. Owned configuration writers reject plaintext credentials.
+        var retained = JsonSerializer.Serialize(config, AppConfigJsonOptions.Write);
+        await File.WriteAllTextAsync(ConfigPath, retained);
+        var previousEnvironment = Environment.GetEnvironmentVariable(environmentName);
+        Environment.SetEnvironmentVariable(environmentName, environmentValue);
+        try
+        {
+            using var client = app.GetTestClient();
+            using var response = await client.GetAsync(UiApiRoutes.ConfigEffective);
+            response.StatusCode.Should().Be(HttpStatusCode.OK);
+            var body = await response.Content.ReadAsStringAsync();
+            foreach (var canary in new[]
+            {
+                alpacaId, alpacaSecret, polygonValue, moduleId, moduleSettingKey, moduleSettingValue,
+                moduleVariableName, extensionKey, extensionValue, portalValue, sourceNotes, exporterValue,
+                storageValue, environmentValue, "fixture-private-feature-name", "fixture-smuggled-path"
+            })
+                body.Should().NotContain(canary);
+
+            using var document = JsonDocument.Parse(body);
+            var entries = document.RootElement.GetProperty("entries").EnumerateArray()
+                .ToDictionary(entry => entry.GetProperty("key").GetString()!, StringComparer.Ordinal);
+            string? Value(string path) => entries[path].GetProperty("value").GetString();
+            Value("alpaca.keyId").Should().Be("[set]");
+            Value("alpaca.secretKey").Should().Be("[set]");
+            Value("alpaca.feed").Should().Be("sip");
+            Value("backfill.provider").Should().Be("polygon");
+            Value("backfill.providers.polygon.apiKey").Should().Be("[set]");
+            Value("ibClientPortal.baseUrl").Should().Be("[set]");
+            Value("providerModules.modules.count").Should().Be("1");
+            Value("featureCapabilities.overrides.count").Should().Be("1");
+            Value("symbols.count").Should().Be("1");
+            Value("storage.namingConvention").Should().Be("[set]");
+            Value("storage.datePartition").Should().Be("[set]");
+            Value("pipeline.finalFlushTimeoutSeconds").Should().Be("37");
+            entries["pipeline.finalFlushTimeoutSeconds"].GetProperty("source").GetString().Should().Be("config");
+            entries["pipeline.finalFlushTimeoutSeconds"].TryGetProperty("impact", out _).Should().BeTrue();
+            entries["alpaca.secretKey"].GetProperty("source").GetString().Should().Be($"env:{environmentName}");
+            document.RootElement.GetProperty("environmentOverrides").EnumerateArray().Should().Contain(overrideEntry =>
+                overrideEntry.GetProperty("envVar").GetString() == environmentName
+                && overrideEntry.GetProperty("isSensitive").GetBoolean());
+            (await File.ReadAllTextAsync(ConfigPath)).Should().Be(retained);
+        }
+        finally
+        {
+            Environment.SetEnvironmentVariable(environmentName, previousEnvironment);
+        }
+    }
+
+    [Fact]
+    public async Task EffectiveConfiguration_MalformedRetainedSettingsDoNotExposeParserInput()
+    {
+        const string canary = "fixture-private-invalid-provider";
+        await using var app = await CreateAppAsync("production");
+        var retained = JsonSerializer.Serialize(new { dataSource = canary });
+        await File.WriteAllTextAsync(ConfigPath, retained);
+        using var client = app.GetTestClient();
+        using var response = await client.GetAsync(UiApiRoutes.ConfigEffective);
+
+        response.StatusCode.Should().Be(HttpStatusCode.ServiceUnavailable);
+        (await response.Content.ReadAsStringAsync()).Should().NotContain(canary);
+        (await File.ReadAllTextAsync(ConfigPath)).Should().Be(retained);
     }
 
     [Fact]
@@ -198,7 +310,7 @@ public sealed class ProviderConfigurationCredentialGuardTests : IDisposable
         {
             keyId = field == "alpaca-key" ? "synthetic-submitted-key" : null,
             secretKey = field == "alpaca-secret" ? "synthetic-submitted-secret" : null,
-            feed = "sip",
+            feed = "iex",
             useSandbox = true
         };
         return route.EndsWith("/alpaca", StringComparison.Ordinal) ? alpaca : new

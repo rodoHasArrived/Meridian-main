@@ -976,7 +976,11 @@ public static class AccountingPostingCommandValidator
                 // the leg's currency here discarded the transaction currency, both
                 // transaction-side amounts, and the FX rate on the way to the store, because
                 // every posting that reaches this path has dimensions and therefore gets rebuilt.
-                line.Currency);
+                line.Currency)
+            {
+                Memo = line.Memo,
+                ChartAccount = line.ChartAccount
+            };
         }
 
         return normalized ?? lines;

@@ -750,6 +750,7 @@ public sealed class RiskEscalationQueueService : IRiskEscalationQueue, IAsyncDis
     /// </summary>
     private static bool FingerprintMatches(OrderRequest parked, OrderRequest resubmitted) =>
         string.Equals(parked.ClientOrderId, resubmitted.ClientOrderId, StringComparison.OrdinalIgnoreCase) &&
+        parked.IntentId == resubmitted.IntentId &&
         string.Equals(parked.Symbol, resubmitted.Symbol, StringComparison.OrdinalIgnoreCase) &&
         parked.Side == resubmitted.Side &&
         parked.Type == resubmitted.Type &&

@@ -8,6 +8,7 @@ import { ApiError, describeApiError } from "@/lib/api-errors";
 import { createFactorPaydownDraft, prepareFactorPaydown } from "@/lib/api/factor-paydown.api";
 import type { AccountingBasisKind } from "@/types";
 import type { FactorPaydownDraftResult, FactorPaydownPreview, FactorPaydownRequest } from "@/types/factor-paydown";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
 import { TextArea } from "@/components/ui/text-area";
 import { Checkbox } from "@/components/ui/checkbox";
 
@@ -148,7 +149,29 @@ function FactorPaydownScopePanel({ bookId, periodId, periodVersion, fundProfileI
         {preview ? <section aria-label="Factor-paydown preview" className="space-y-3">
           <h3 className="text-sm font-semibold">Authoritative paydown preview</h3>
           {preview.request.scheduledPrincipal ? <p className="text-xs text-muted-foreground">Contractual scheduled-principal treatment under the adopted US GAAP income model. The server recomputes income and basis relief before retaining a review draft.</p> : null}
-          <dl className="grid grid-cols-2 gap-2 text-sm">{Object.entries(preview.result.components).map(([key, amount]) => <div key={key}><dt className="text-muted-foreground">{componentLabels[key] ?? key}</dt><dd className="font-mono">{String(amount)} {preview.result.instruction.currency}</dd></div>)}</dl>
+          <dl className="grid grid-cols-2 gap-2 text-sm">
+            {[["Prior factor", preview.result.instruction.priorFactor], ["New factor", preview.result.instruction.newFactor]].map(([label, value]) => (
+              <div key={label}><dt className="text-muted-foreground">{label}</dt><dd className="font-mono">
+                <AmountPassportTrigger selection={{ label, displayValue: value, unit: "factor", origin: "sourced",
+                  asOf: preview.request.effectiveDate, basis: accountingBasis,
+                  unavailableReason: "This prepared factor is scoped to the preview. The service did not issue an independently retained amount revision." }}>
+                  {value}
+                </AmountPassportTrigger>
+              </dd></div>
+            ))}
+            {Object.entries(preview.result.components).map(([key, amount]) => {
+              const label = componentLabels[key] ?? key;
+              const currency = preview.result.instruction.currency;
+              const displayValue = `${amount} ${currency}`;
+              return <div key={key}><dt className="text-muted-foreground">{label}</dt><dd className="font-mono">
+                <AmountPassportTrigger selection={{ label, displayValue, currency, unit: "currency", origin: "calculated",
+                  asOf: preview.request.effectiveDate, basis: accountingBasis,
+                  unavailableReason: "This server-calculated amount is scoped to the preview. The service did not issue a retained amount revision." }}>
+                  {displayValue}
+                </AmountPassportTrigger>
+              </dd></div>;
+            })}
+          </dl>
           <div className="overflow-x-auto"><table className="w-full text-left text-xs"><caption className="sr-only">Lot principal and remaining basis</caption><thead><tr><th scope="col">Lot</th><th scope="col">Principal repaid</th><th scope="col">Transaction basis after</th><th scope="col">Functional basis after</th></tr></thead><tbody>{preview.result.instruction.lots.map((lot) => <tr key={lot.expectedLot.lotId}><th scope="row" className="py-2 font-mono">{lot.expectedLot.lotId}</th><td>{String(lot.principal)}</td><td>{String(lot.transactionBasisAfter)}</td><td>{String(lot.functionalBasisAfter)}</td></tr>)}</tbody></table></div>
           <fieldset disabled={locked} className="space-y-3"><legend className="sr-only">Review draft confirmation</legend>
             <FormRow label="Paydown journal description" labelFor={`${id}-description`}><Input id={`${id}-description`} value={description} onChange={(event) => { setDescription(event.target.value); setConfirmed(false); }} /></FormRow>

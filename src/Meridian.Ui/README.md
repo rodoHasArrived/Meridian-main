@@ -18,10 +18,10 @@ before project evaluation; commit authored inputs and reviewed documentation, no
 mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
-symbol rollout, validation profiles and quota history, plus the cross-provider tolerance editor in
-data-quality watch. Data and Settings share pending activation
-status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
-shared-service READMEs for validation and runtime boundaries.
+symbol rollout, quota history, and a Data quality rules panel with retained profile changes. Data
+quality watch has a cross-provider tolerance editor. Data and Settings share pending activation
+status from the host. See the dashboard and shared-service READMEs for validation and runtime
+boundaries.
 
 The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
 

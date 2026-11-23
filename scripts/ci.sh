@@ -421,6 +421,11 @@ verify_workflows() {
   run_step "Validate test skip register" \
     "$python_cmd" build/scripts/ci/check-test-skip-register.py --summary
 
+  # A route or task that honestly refuses because nothing implements it (501, "not executed")
+  # must be owned by a roadmap row or a reasoned baseline entry, so the gap cannot go stale.
+  run_step "Validate unimplemented surfaces are roadmap-tracked" \
+    "$python_cmd" build/scripts/ci/check-unimplemented-surfaces.py --summary
+
   # Audit finding P9: ~65 of 75 tests/scripts suites were wired to no CI lane and several
   # had rotted unnoticed. The runner gates every suite except the tracked quarantine list
   # in build/scripts/ci/script-test-quarantine.json, which it prints on every run.

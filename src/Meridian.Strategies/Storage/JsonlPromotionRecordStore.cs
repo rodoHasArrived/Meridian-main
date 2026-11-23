@@ -153,9 +153,12 @@ public sealed class JsonlPromotionRecordStore : IPromotionRecordStore
         await AtomicFileWriter.AppendLinesAsync(_options.HistoryPath, [json], ct).ConfigureAwait(false);
     }
 
-    private async Task<FileStream> AcquireAuthorityLockAsync(CancellationToken ct)
+    private Task<FileStream> AcquireAuthorityLockAsync(CancellationToken ct) =>
+        AcquireAuthorityLockAsync(_options.AuthorityLockPath, ct);
+
+    internal static async Task<FileStream> AcquireAuthorityLockAsync(string lockPath, CancellationToken ct)
     {
-        Directory.CreateDirectory(_options.RootDirectory);
+        Directory.CreateDirectory(Path.GetDirectoryName(lockPath)!);
         var startedAt = Stopwatch.GetTimestamp();
 
         while (true)
@@ -164,7 +167,7 @@ public sealed class JsonlPromotionRecordStore : IPromotionRecordStore
             try
             {
                 return new FileStream(
-                    _options.AuthorityLockPath,
+                    lockPath,
                     FileMode.OpenOrCreate,
                     FileAccess.ReadWrite,
                     FileShare.None,

@@ -6,69 +6,6 @@ using Meridian.Ui.Services;
 namespace Meridian.Wpf.ViewModels;
 
 /// <summary>
-/// Defines canonical-to-provider symbol mapping lookup, editing, testing, and CSV import and export.
-/// </summary>
-public interface ISymbolMappingClient
-{
-    IReadOnlyList<MappingProviderInfo> Providers { get; }
-
-    Task LoadAsync(CancellationToken ct = default);
-
-    IReadOnlyList<SymbolMapping> GetMappings();
-
-    SymbolMapping? GetMapping(string canonicalSymbol);
-
-    Dictionary<string, string> TestMapping(string canonicalSymbol);
-
-    Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default);
-
-    Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default);
-
-    Task<int> ImportFromCsvAsync(string csvContent, CancellationToken ct = default);
-
-    string ExportToCsv();
-}
-
-/// <summary>
-/// Adapts the symbol-mapping service for desktop editing, provider lookup, testing, and CSV exchange.
-/// </summary>
-public sealed class SymbolMappingServiceClient : ISymbolMappingClient
-{
-    private readonly SymbolMappingService _service;
-
-    public SymbolMappingServiceClient()
-        : this(SymbolMappingService.Instance)
-    {
-    }
-
-    public SymbolMappingServiceClient(SymbolMappingService service)
-    {
-        _service = service;
-    }
-
-    public IReadOnlyList<MappingProviderInfo> Providers => SymbolMappingService.KnownProviders;
-
-    public Task LoadAsync(CancellationToken ct = default) => _service.LoadAsync(ct);
-
-    public IReadOnlyList<SymbolMapping> GetMappings() => _service.GetMappings();
-
-    public SymbolMapping? GetMapping(string canonicalSymbol) => _service.GetMapping(canonicalSymbol);
-
-    public Dictionary<string, string> TestMapping(string canonicalSymbol) => _service.TestMapping(canonicalSymbol);
-
-    public Task AddOrUpdateMappingAsync(SymbolMapping mapping, CancellationToken ct = default)
-        => _service.AddOrUpdateMappingAsync(mapping, ct);
-
-    public Task RemoveMappingAsync(string canonicalSymbol, CancellationToken ct = default)
-        => _service.RemoveMappingAsync(canonicalSymbol, ct);
-
-    public Task<int> ImportFromCsvAsync(string csvContent, CancellationToken ct = default)
-        => _service.ImportFromCsvAsync(csvContent, ct);
-
-    public string ExportToCsv() => _service.ExportToCsv();
-}
-
-/// <summary>
 /// Coordinates provider symbol mapping edits, tests, removals, and CSV exchange.
 /// </summary>
 public sealed class SymbolMappingViewModel : BindableBase
@@ -91,17 +28,18 @@ public sealed class SymbolMappingViewModel : BindableBase
     private bool _isBusy;
 
     public SymbolMappingViewModel()
-        : this(new SymbolMappingServiceClient())
+        : this(new SymbolMappingApiClient(ApiClientService.Instance))
     {
     }
 
     public SymbolMappingViewModel(ISymbolMappingClient mappingClient)
     {
         _mappingClient = mappingClient ?? throw new ArgumentNullException(nameof(mappingClient));
+        RefreshMappingsCommand = new AsyncRelayCommand(LoadAsync, () => !IsBusy);
         TestMappingCommand = new RelayCommand(TestMapping, CanTestMapping);
-        AddMappingCommand = new AsyncRelayCommand(() => AddMappingAsync(), CanAddMapping);
+        AddMappingCommand = new AsyncRelayCommand(AddMappingAsync, CanAddMapping);
         RequestRemoveMappingCommand = new RelayCommand<string>(RequestRemoveMapping, CanRequestRemoveMapping);
-        ConfirmRemoveMappingCommand = new AsyncRelayCommand(() => ConfirmRemoveMappingAsync(), CanConfirmRemoveMapping);
+        ConfirmRemoveMappingCommand = new AsyncRelayCommand(ConfirmRemoveMappingAsync, CanConfirmRemoveMapping);
         CancelRemoveMappingCommand = new RelayCommand(CancelRemoveMapping, CanConfirmRemoveMapping);
     }
 
@@ -114,6 +52,8 @@ public sealed class SymbolMappingViewModel : BindableBase
     public ObservableCollection<SymbolMappingTestResultItem> TestResults { get; } = new();
 
     public RelayCommand TestMappingCommand { get; }
+
+    public IAsyncRelayCommand RefreshMappingsCommand { get; }
 
     public IAsyncRelayCommand AddMappingCommand { get; }
 
@@ -248,9 +188,12 @@ public sealed class SymbolMappingViewModel : BindableBase
             {
                 RefreshCommandStates();
                 RefreshAddMappingPresentation();
+                OnPropertyChanged(nameof(CanExchangeCsv));
             }
         }
     }
+
+    public bool CanExchangeCsv => !IsBusy;
 
     public bool CanTestMapping() => !string.IsNullOrWhiteSpace(TestSymbol);
 
@@ -262,6 +205,8 @@ public sealed class SymbolMappingViewModel : BindableBase
 
     public async Task LoadAsync(CancellationToken ct = default)
     {
+        if (IsBusy)
+            return;
         IsBusy = true;
         StatusMessage = "Loading symbol mappings...";
 
@@ -272,6 +217,7 @@ public sealed class SymbolMappingViewModel : BindableBase
             RefreshMappings();
             StatusMessage = $"Loaded {Mappings.Count} custom mapping{(Mappings.Count == 1 ? "" : "s")}.";
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             StatusMessage = $"Failed to load mappings: {ex.Message}";
@@ -280,6 +226,13 @@ public sealed class SymbolMappingViewModel : BindableBase
         {
             IsBusy = false;
         }
+    }
+
+    public void Stop()
+    {
+        RefreshMappingsCommand.Cancel();
+        AddMappingCommand.Cancel();
+        ConfirmRemoveMappingCommand.Cancel();
     }
 
     public void TestMapping()
@@ -326,12 +279,7 @@ public sealed class SymbolMappingViewModel : BindableBase
 
         try
         {
-            var mapping = _mappingClient.GetMapping(canonical) ?? new SymbolMapping { CanonicalSymbol = canonical };
-            mapping.ProviderSymbols ??= new Dictionary<string, string>();
-            mapping.ProviderSymbols[providerId] = providerSymbol;
-            mapping.IsCustomMapping = true;
-
-            await _mappingClient.AddOrUpdateMappingAsync(mapping, ct).ConfigureAwait(true);
+            await _mappingClient.SetProviderSymbolAsync(canonical, providerId, providerSymbol, ct).ConfigureAwait(true);
 
             NewCanonicalSymbol = string.Empty;
             NewProviderSymbol = string.Empty;
@@ -340,6 +288,7 @@ public sealed class SymbolMappingViewModel : BindableBase
             RefreshMappings();
             StatusMessage = $"Saved {canonical} mapping for {providerId}.";
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             StatusMessage = $"Failed to save mapping: {ex.Message}";
@@ -381,6 +330,7 @@ public sealed class SymbolMappingViewModel : BindableBase
             RefreshMappings();
             StatusMessage = $"Removed mapping for {canonical}.";
         }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested) { }
         catch (Exception ex) when (ex is not OperationCanceledException)
         {
             StatusMessage = $"Failed to remove mapping: {ex.Message}";
@@ -423,11 +373,19 @@ public sealed class SymbolMappingViewModel : BindableBase
         }
     }
 
-    public string ExportCsv()
+    public async Task<string> ExportCsvAsync(CancellationToken ct = default)
     {
-        var csv = _mappingClient.ExportToCsv();
-        StatusMessage = $"Exported {Mappings.Count} mapping{(Mappings.Count == 1 ? "" : "s")} to CSV.";
-        return csv;
+        IsBusy = true;
+        try
+        {
+            var csv = await _mappingClient.ExportToCsvAsync(ct).ConfigureAwait(true);
+            StatusMessage = "Downloaded host symbol mappings for CSV export.";
+            return csv;
+        }
+        finally
+        {
+            IsBusy = false;
+        }
     }
 
     private void LoadProviderPresentation()
@@ -520,6 +478,7 @@ public sealed class SymbolMappingViewModel : BindableBase
 
     private void RefreshCommandStates()
     {
+        RefreshMappingsCommand.NotifyCanExecuteChanged();
         TestMappingCommand.NotifyCanExecuteChanged();
         AddMappingCommand.NotifyCanExecuteChanged();
         RequestRemoveMappingCommand.NotifyCanExecuteChanged();
@@ -550,7 +509,7 @@ public sealed class SymbolMappingViewModel : BindableBase
         return new SymbolMappingItem(
             NormalizeSymbol(mapping.CanonicalSymbol),
             providerTexts.Count > 0 ? string.Join(", ", providerTexts) : "(defaults only)",
-            mapping.UpdatedAt.ToString("MMM dd, yyyy"));
+            mapping.UpdatedAt == default ? "Unavailable" : mapping.UpdatedAt.ToString("MMM dd, yyyy"));
     }
 
     private static string NormalizeSymbol(string symbol)

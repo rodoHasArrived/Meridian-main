@@ -30,7 +30,11 @@ public sealed record WorkstationMetricCard(
     string? Source = null,
     NumberPassportReferenceDto? NumberPassport = null,
     [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] IReadOnlyList<WorkstationMetricHistoryPointDto>? History = null,
-    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? HistoryBasis = null);
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? HistoryBasis = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public AmountPassportReferenceDto? AmountPassport { get; init; }
+}
 
 /// <summary>
 /// One point of a metric's history, oldest first. <see cref="Value"/> is null when the retained source
@@ -356,7 +360,11 @@ public sealed record WorkstationTradingPositionRow(
     string? MarketValue = null,
     string? Currency = null,
     string? Weight = null,
-    string? WeightBasis = null);
+    string? WeightBasis = null,
+    string? AveragePriceExact = null,
+    string? MarkPriceExact = null,
+    string? UnrealizedPnlExact = null,
+    string? ExposureExact = null);
 
 /// <summary>
 /// A single open-order row shown in the trading workstation orders table.
@@ -458,7 +466,8 @@ public sealed record WorkstationTradingPayload(
     TradingOperatorReadinessDto Readiness,
     IReadOnlyList<WorkstationModeComparisonGroup> Comparisons,
     WorkstationRunDrillInLinks? DrillIn,
-    WorkstationManualOrderEntry? ManualOrderEntry = null);
+    WorkstationManualOrderEntry? ManualOrderEntry = null,
+    string? ScopedPaperOrderIntentKey = null);
 
 // ---------------------------------------------------------------------------
 // /api/workstation/accounting and /api/workstation/reporting (legacy alias: /api/workstation/governance)
@@ -1153,7 +1162,10 @@ public sealed record WorkstationDataBackfillRecord(
     string Provider,
     string Status,
     string Progress,
-    string UpdatedAt);
+    string UpdatedAt)
+{
+    public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }
+}
 
 /// <summary>
 /// Export row returned by the Data workspace bootstrap payload.

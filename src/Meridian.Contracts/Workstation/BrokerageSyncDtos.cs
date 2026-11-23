@@ -196,6 +196,9 @@ public sealed record BrokerageHouseholdPositionDto(
     /// <summary>ProviderReported, CostDerived, or Unavailable; a cost proxy is not an observed mark.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public string? ValuationBasis { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, AmountPassportReferenceDto>? AmountPassports { get; init; }
 }
 
 public sealed record BrokerageHouseholdPortfolioDto(
@@ -296,7 +299,14 @@ public sealed record FundAccountBrokerageSyncActivityDto(
     DateTimeOffset SyncedAt,
     string RawSnapshotPath,
     string ProjectionPath,
-    IReadOnlyList<FundAccountBrokerageCorporateActionDto>? CorporateActions = null);
+    IReadOnlyList<FundAccountBrokerageCorporateActionDto>? CorporateActions = null)
+{
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public BrokerageAmountPassportSnapshotDto? AmountPassportSnapshot { get; init; }
+}
+
+public sealed record BrokerageAmountPassportSnapshotDto(
+    AmountPassportScopeDto Scope, DateTimeOffset CapturedAt, DateTimeOffset AsOf, string ContentHash, bool IsComplete);
 
 [JsonConverter(typeof(JsonStringEnumConverter<ProviderLedgerReconciliationStatusDto>))]
 public enum ProviderLedgerReconciliationStatusDto

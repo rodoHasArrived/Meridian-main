@@ -11,6 +11,11 @@ last_reviewed: 2026-11-13
 
 # src/Meridian.Infrastructure
 
+Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
+`DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual
+observations in memory. Durable history records route observations independently of the shared
+admission budget and its vendor reset policy.
+
 NYSE direct data sources and unified streaming refuse activation in production, packaged and
 customer builds until their provider-wide credential path supports retained tenant/account
 ownership. Final host posture and direct-construction environment flags are checked before
@@ -72,6 +77,10 @@ The queued backfill worker fetches and stores daily bars only. A request for any
 
 `BackfillJobManager` applies request-progress updates and serializes the job under one lock, so parallel request workers cannot corrupt progress or fail a succeeded request. `GapsFilled` counts each filled date once.
 
+The active backfill route shares per-vendor admission, cooldown, and health across direct and queued jobs.
+The worker records a vendor attempt when it calls that adapter, retains provider attribution and fixed
+fallback codes, and counts a session as filled after its canonical-symbol bars reach storage.
+
 Alpaca streaming trade deduplication keys on trade id and venue as well as symbol, price, size and timestamp, so distinct prints with identical content are kept while a re-delivered message is still suppressed.
 
 The backfill worker's connectivity handler is documented as logging only; offline-queued requests resume on the worker's next poll (at most `EmptyPollMaxDelay`).
@@ -97,6 +106,7 @@ Alpha Vantage history/search/corporate actions share five requests per minute an
 25-request rolling 24-hour cap by default; its published daily limit names no reset boundary.
 `ProviderQuotas:AlphaVantage` can declare the actual account limits and `NoDailyLimit`.
 Short and daily admission charge the full cost atomically; cancelled waits charge neither.
+A backfill waiting for capacity releases its admission slot so other calls can use reserved quota.
 Pacing rounds positive waits up to milliseconds, including nonintegral paid-plan intervals.
 Effective account profiles cannot differ across capabilities sharing a credential and quota group.
 Registry state survives provider recreation/disposal within the process. It is not persisted across
@@ -136,15 +146,32 @@ The Alpaca gateway identifies the account by its account number, the identifier 
 verification records; the internal UUID from the same response is accepted as an alias on requests,
 answered under the name the caller used, declared as an alias on the catalog entry, and still
 forms the gateway's durable scope identity (trade-update inbox and OMS recovery journal).
-Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
-dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
+Alpaca corporate actions are read from all 16 documented Market Data `v1/corporate-actions`
+families: cash/stock dividends, forward/reverse/unit splits, spin-offs, cash/stock/mixed mergers,
+redemptions, name changes, worthless removals, rights distributions, partial calls, reorganizations
+and capital-gains distributions. Multi-security allocations and separate capital-gain components
+are retained in typed source payloads; types without an economic date explicitly identify their
+process-date staging placeholder and missing economic date. Stock dividends
+retain additional shares per held share; merger effective dates remain explicitly identified.
+Recipient symbols are source terms awaiting mastered-security resolution, never invented IDs.
+Native IDs plus family and canonical payload hashes identify observed revisions, and each staged
+proposal retains the original JSON record and its exact UTF-8 digest. Mapping version v2 appends
+new evidence-bearing revisions without rewriting historical proposals. Explicit currency is retained;
+unknown currency stays unknown. A refused or partly failed fetch returns
 nothing rather than a partial history. `FetchWithOutcomeAsync` reports that case as `Unavailable`
 (no credentials, or the first page failed) or `Incomplete` (a later page failed, a page token
 repeated, or the page limit was exceeded) so ingest can tell it from a provider with no actions;
 Alpha Vantage, Finnhub, Nasdaq Data Link, Tiingo and Twelve Data also report explicit HTTP,
 credential, decoding and record-level coverage outcomes. Legacy collection-only implementations
-report unknown coverage, which cannot certify that no actions exist. The provider is review-only: its records are staged for
-review and never applied automatically. Alpaca historical quotes, trades and auctions always use the
+report unknown coverage, which cannot certify that no actions exist. Alpaca coverage lists all 16
+requested and mapped endpoint families and the US/complete-data/process-date
+query window. REST snapshots cannot establish cancellation history, complete amendment history or
+announcement timeliness. Same-ID conflicting revisions within one traversal fail closed. The provider
+is review-only: its records are staged for review and never applied automatically. Broker corporate-action
+quantities preserve source signs, including removals and reversals without a trade side. Public-schema
+examples, independent issuer/exchange facts and synthetic broker activities are covered by
+[the corporate-action comparison tests](../../docs/testing/alpaca-corporate-action-coverage.md);
+live provider and account compatibility remain live-untested. Alpaca historical quotes, trades and auctions always use the
 symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
 send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
 auction range ends on the requested date, which Alpaca treats as inclusive. Order and
@@ -237,12 +264,11 @@ establish clearing. The optional fields preserve legacy artifact hashes when abs
 
 ## Purpose
 
-Provider validation profiles are retained per provider in `Backfill.ValidationProfiles` and
-applied when providers are constructed: daily-bar recency uses calendar-day tolerance,
-and Alpaca, Polygon and Robinhood boundary checks use future-skew, stale-event and latency
-tolerances. Profile edits require a host restart; loosening records a reason and atomic
-before/after audit evidence through the shared provider settings endpoint. Null stale-event
-threshold and zero maximum latency disable their respective optional checks.
+`Backfill.ValidationProfiles` holds each provider's calendar-day tolerance for daily-bar recency.
+The composite resolves each candidate through the shared provider lookup. Workstation jobs load
+the saved tolerance on start. At host startup, the factory captures the future-skew, stale-event,
+and latency tolerances used by Alpaca, Polygon, and Robinhood. Changes to those live thresholds
+take effect after restart. A null stale-event threshold or zero maximum latency disables that check.
 
 `StreamingFailoverService.ApplyConfiguration` swaps edited rule thresholds and backup lists (limited
 to providers with a live client) and the health-check interval without a restart, keeping each

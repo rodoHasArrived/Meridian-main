@@ -139,7 +139,6 @@ import type {
 import {
   buildReportAccessPolicy,
   buildReportWriterGridDefinition,
-  buildReportWriterPreviewRows,
   normalizeDraftText,
   normalizeIdentifierToken,
   parseReportTemplateVersion
@@ -299,7 +298,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     writerPreviewStatus,
     savingWriterDraftId,
     previewingWriterDraftId,
-    writerPreviewByGridId,
+    getWriterPreview,
     writerPreviousPreviewByGridId,
     writerCustomDatasetText,
     getWriterZoneTokens,
@@ -319,6 +318,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
     updateWriterFormatRule,
     handleWriterTokenDragStart,
     handleWriterZoneDrop,
+    placeWriterToken,
     removeWriterZoneToken,
     moveWriterZoneToken,
     resetWriterGrid,
@@ -1530,7 +1530,7 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
       ) : null}
 
       {isReportBuilderTaskMode ? (
-        <NewCustomReportBar templates={vm.templateRows} datasetSources={reportWriterDatasetSources} grids={newCustomWriterGrids} onGridsChange={setNewCustomWriterGrids} />
+              <NewCustomReportBar templates={vm.templateRows} grids={newCustomWriterGrids} onGridsChange={setNewCustomWriterGrids} />
       ) : null}
 
       {isReportBuilderTaskMode && writerGrids.length > 0 ? (
@@ -1546,11 +1546,12 @@ export function ReportingScreen({ data, accounting, onRefreshLivePortfolioViews 
               datasetSources={reportWriterDatasetSources}
               isSaving={savingWriterDraftId === grid.id}
               isPreviewing={previewingWriterDraftId === grid.id}
-              preview={writerPreviewByGridId[grid.id] ?? null}
+              preview={getWriterPreview(grid)}
               previousPreview={writerPreviousPreviewByGridId[grid.id] ?? null}
               getZoneTokens={getWriterZoneTokens}
               onTokenDragStart={handleWriterTokenDragStart}
               onZoneDrop={handleWriterZoneDrop}
+              onFieldAdd={placeWriterToken}
               onTokenRemove={removeWriterZoneToken}
               onTokenMove={moveWriterZoneToken}
               onReset={resetWriterGrid}
@@ -2903,7 +2904,7 @@ function buildRenderReportTemplateRequest(
   grid: ReportingWriterGridRow,
   zones: Record<ReportWriterDropZone, ReportingWriterToken[]>,
   settings: ReportWriterDraftSettings,
-  customDatasetRows: Record<string, string>[] | null = null,
+  datasetRows: Record<string, string>[],
   chartDraft?: ReportWriterChartDraft | null,
   formatRules?: ReportWriterFormatRuleDraft[] | null
 ): RenderReportTemplateRequest {
@@ -2920,7 +2921,7 @@ function buildRenderReportTemplateRequest(
       preview: "browser-report-writer",
       previewDataset: settings.previewDataset
     },
-    datasetRows: customDatasetRows ?? buildReportWriterPreviewRows(gridDefinition, settings.previewDataset),
+    datasetRows,
     grids: [gridDefinition]
   };
 }

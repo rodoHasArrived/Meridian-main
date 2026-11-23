@@ -413,6 +413,24 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
     }
 
     [AssetOperationsDatabaseFact]
+    public async Task GetBookAsync_ShouldRetainExpiredHoldingsForUnpaidReceiptDiscoveryAfterRestart()
+    {
+        await new AssetOperationsMigrationRunner(_options).EnsureMigratedAsync();
+        var initial = InstrumentPositionProjectionFixture.CreateStrict();
+        var position = initial.Position with { EffectiveTo = new DateOnly(2026, 6, 30), Status = "Matured" };
+        await new PostgresAssetOperationsProjectionStore(_options).UpsertAsync(
+            initial.Role, position, initial.State, 0, InstrumentPositionProjectionFixture.Approval);
+        var restarted = new PostgresAssetOperationsProjectionStore(_options);
+
+        var book = await restarted.GetBookAsync(position.BookContext.LedgerBookId, new DateOnly(2026, 7, 1));
+        var active = await restarted.GetAsOfAsync(position.SecurityId, position.BookContext.LedgerBookId, new DateOnly(2026, 7, 1));
+
+        active.BookPositions.Should().BeEmpty();
+        book.Should().ContainSingle().Which.BookPositions.Should().ContainSingle().Which.PositionId.Should().Be(position.PositionId);
+        book[0].PositionEconomicStates.Should().ContainSingle().Which.Should().BeEquivalentTo(initial.State);
+    }
+
+    [AssetOperationsDatabaseFact]
     public async Task DedicatedStore_ShouldQueryEffectiveBookStateAfterRestartAndRejectOverlap()
     {
         await new AssetOperationsMigrationRunner(_options).EnsureMigratedAsync();
@@ -443,8 +461,12 @@ public sealed class PostgresInstrumentPositionProjectionStoreTests : IAsyncLifet
             new DateOnly(2026, 5, 1));
         var byId = await restarted.GetBookPositionAsync(InstrumentPositionProjectionFixture.PositionId);
         var history = await restarted.GetSecurityAsync(InstrumentPositionProjectionFixture.SecurityId);
+        var book = await restarted.GetBookAsync(
+            InstrumentPositionProjectionFixture.LedgerBookId, new DateOnly(2026, 5, 31));
 
         asOf.BookPositions.Should().ContainSingle();
+        book.Should().ContainSingle().Which.Should().BeEquivalentTo(asOf);
+        (await restarted.GetBookAsync(Guid.NewGuid(), new DateOnly(2026, 5, 31))).Should().BeEmpty();
         asOf.PositionEconomicStates.Should().ContainSingle()
             .Which.EconomicStateId.Should().Be(initial.State.EconomicStateId);
         asOf.BookPositions.Single().CurrentEconomicState.Should().BeEquivalentTo(initial.State);

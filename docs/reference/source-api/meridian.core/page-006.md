@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolSearchResult
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolSearchResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:16](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L16).
+
+Represents a single symbol search result from autocomplete.
+
+```csharp
+public sealed record SymbolSearchResult(string Symbol, string Name, string? Exchange = null, string? AssetType = null, string? Country = null, string? Currency = null, string? Source = null, int MatchScore = 0, string? Figi = null, string? CompositeFigi = null);
+```
+
+## SymbolTemplate
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolTemplate</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:7](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L7).
+
+Predefined template for bulk symbol subscriptions. Supports equity groups, sectors, and indices.
+
+```csharp
+public sealed record SymbolTemplate(string Id, string Name, string Description, TemplateCategory Category, string[] Symbols, TemplateSubscriptionDefaults Defaults);
+```
+
+## SymbolTradingEligibility
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.SymbolTradingEligibility</code>. Kind: `record`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs:119](../../../../src/Meridian.Core/Subscriptions/Models/SymbolSearchResult.cs#L119).
+
+Provider-supplied borrow and order-increment evidence for a symbol.
+
+```csharp
+public sealed record SymbolTradingEligibility(bool? IsTradable, bool? IsMarginable, bool? IsShortable, bool? IsEasyToBorrow, bool? IsFractionable, decimal? MaintenanceMarginRequirement, decimal? MinimumOrderSize, decimal? MinimumTradeIncrement, decimal? PriceIncrement, string? Source);
+```
+
+## TemplateCategory
+
+Qualified name: <code>Meridian.Core.Subscriptions.Models.TemplateCategory</code>. Kind: `enum`.
+
+Source: [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:36](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L36).
+
+Categories for organizing subscription templates.
+
+```csharp
+public enum TemplateCategory : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Sector</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:38](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L38) |  |
+| <code>Index</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:40](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L40) |  |
+| <code>MarketCap</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:42](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L42) |  |
+| <code>Custom</code> | [src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs:44](../../../../src/Meridian.Core/Subscriptions/Models/SymbolTemplate.cs#L44) |  |
+
 ## TemplateSubscriptionDefaults
 
 Qualified name: <code>Meridian.Core.Subscriptions.Models.TemplateSubscriptionDefaults</code>. Kind: `record`.

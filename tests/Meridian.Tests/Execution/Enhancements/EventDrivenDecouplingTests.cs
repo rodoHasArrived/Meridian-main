@@ -170,7 +170,10 @@ public sealed partial class EventDrivenDecouplingTests
             RealizedPnl: 0m,
             NewCash: 0m,
             OccurredAt: new DateTimeOffset(2026, 5, 28, 14, 30, 0, TimeSpan.Zero),
-            FinancialAccountId: "EXT-1");
+            FinancialAccountId: "EXT-1")
+        {
+            BrokerActivityId = "native-activity-fill-101"
+        };
 
         consumer.Publish(evt);
         await consumer.DisposeAsync();
@@ -180,6 +183,8 @@ public sealed partial class EventDrivenDecouplingTests
             .WhoseValue.Should().Be("12.5", "the projection parses the invariant decimal form");
         tradeJournal.Metadata.Tags.Should().ContainKey("externalTransactionId")
             .WhoseValue.Should().Be(evt.FillId.ToString("D"));
+        tradeJournal.Metadata.Tags.Should().ContainKey("brokerActivityId")
+            .WhoseValue.Should().Be(evt.BrokerActivityId);
         tradeJournal.Metadata.Tags.Should().NotContainKey(
             "settlementDate",
             "the execution report carries no settlement date, and estimating T+n conventions is a policy decision");
@@ -200,12 +205,12 @@ public sealed partial class EventDrivenDecouplingTests
 
         var projectedTrade = internalTransactions.Single(transaction => transaction.TransactionType == "trade");
         projectedTrade.Quantity.Should().Be(12.5m);
-        projectedTrade.ExternalTransactionId.Should().Be(evt.FillId.ToString("D"));
+        projectedTrade.ExternalTransactionId.Should().Be(evt.BrokerActivityId);
         projectedTrade.SettlementDate.Should().Be(new DateOnly(2026, 5, 28));
 
         var statementRow = new NormalizedStatementTransaction(
             "import-1:1",
-            evt.FillId.ToString("D"),
+            evt.BrokerActivityId,
             "EXT-1",
             "MSFT",
             "USD",
@@ -1765,7 +1770,7 @@ public sealed partial class EventDrivenDecouplingTests
         }
     }
 
-    private sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
+    internal sealed class InMemoryTradeFillLedgerPostingTarget : ITradeFillLedgerPostingTarget
     {
         private readonly object _sync = new();
         private readonly Dictionary<Guid, LedgerJournalEntryRecord> _retained = [];
@@ -2045,7 +2050,7 @@ public sealed partial class EventDrivenDecouplingTests
         public ValueTask DisposeAsync() => _inner.DisposeAsync();
     }
 
-    private sealed class PassingSecurityValidationGate : ISecurityValidationGateService
+    internal sealed class PassingSecurityValidationGate : ISecurityValidationGateService
     {
         public static readonly Guid SecurityId = Guid.Parse("11111111-1111-1111-1111-111111111111");
         private readonly Guid _securityId;

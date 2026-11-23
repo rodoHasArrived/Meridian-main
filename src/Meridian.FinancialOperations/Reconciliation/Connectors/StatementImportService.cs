@@ -41,6 +41,11 @@ public sealed record StatementImportCommitRequest(
     /// optional for legacy reconciliation-report callers that do not enter the governed close lane.
     /// </summary>
     public StatementAccountingScope? AccountingScope { get; init; }
+    public string? ReviewId { get; init; }
+    public IReadOnlyList<StatementImportRowDispositionDto> RowDispositions { get; init; } = [];
+    public string? TenantId { get; init; }
+    public string? CompanyId { get; init; }
+    public bool AllowAcceptAsBreak { get; init; }
 }
 
 /// <summary>
@@ -80,7 +85,7 @@ public interface IStatementImportCommitService
 /// (deterministic canonical-CSV artifact, retained raw evidence, hand-off to the existing
 /// statement-run workflow and reconciliation queue).
 /// </summary>
-public sealed class StatementImportService(
+public sealed partial class StatementImportService(
     StatementConnectorRegistry connectors,
     StatementMappingProfileCatalog catalog,
     IStatementRunWorkflowService workflow,
@@ -175,7 +180,7 @@ public sealed class StatementImportService(
             suggestions);
     }
 
-    public async Task<StatementImportCommitResultDto> CommitAsync(
+    private async Task<StatementImportCommitResultDto> CommitCoreAsync(
         StatementImportCommitRequest request,
         CancellationToken ct = default)
     {
@@ -231,6 +236,10 @@ public sealed class StatementImportService(
             capturedDocument,
             parse.Records,
             request.ExternalAccountId);
+
+        parse = await ApplyReviewedDispositionsAsync(request, parse, ct).ConfigureAwait(false);
+        if (parse.Records.Count == 0)
+            throw new InvalidDataException("At least one canonical row must remain included in the import.");
 
         var artifactContent = RenderCanonicalArtifact(parse.Records);
         var artifactBytes = Encoding.UTF8.GetBytes(artifactContent);
@@ -770,7 +779,12 @@ public sealed class StatementImportService(
     internal static string RenderCanonicalArtifact(IReadOnlyList<StatementCanonicalRecord> records)
     {
         var builder = new StringBuilder();
-        builder.Append(string.Join(',', CanonicalArtifactHeader)).Append('\n');
+        var receiptMetadata = records.Any(record => record.SecurityId.HasValue || record.ReceiptAllocations is not null
+            || record.ObligationKey is not null || record.ProjectedCashFlowId.HasValue);
+        builder.Append(string.Join(',', CanonicalArtifactHeader));
+        if (receiptMetadata)
+            builder.Append(",marketValue,accruedInterest,securityId,receiptAllocations,obligationKey,projectedCashFlowId");
+        builder.Append('\n');
         foreach (var record in records)
         {
             builder
@@ -790,7 +804,13 @@ public sealed class StatementImportService(
                 .Append(EncodeArtifactValue(record.ProviderActivityCode)).Append(',')
                 .Append(EncodeArtifactValue(record.RelatedTransactionId)).Append(',')
                 .Append(EncodeArtifactValue(record.OrderId)).Append(',')
-                .Append(EncodeArtifactValue(record.Description)).Append('\n');
+                .Append(EncodeArtifactValue(record.Description));
+            if (receiptMetadata)
+                builder.Append(",,,").Append(record.SecurityId?.ToString("D")).Append(',')
+                    .Append(EncodeArtifactValue(record.ReceiptAllocations)).Append(',')
+                    .Append(EncodeArtifactValue(record.ObligationKey)).Append(',')
+                    .Append(record.ProjectedCashFlowId?.ToString("D"));
+            builder.Append('\n');
         }
 
         return builder.ToString();

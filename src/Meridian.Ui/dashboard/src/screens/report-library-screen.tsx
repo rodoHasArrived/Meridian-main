@@ -1,9 +1,10 @@
 import { useMemo } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { formatReportingFamilyLabel } from "@/lib/reporting-hub";
+import { appendRecordWorkspaceContext, readRecordWorkspaceContext } from "@/lib/record-workspace-context";
 import {
   normalizeReportingWorkspace,
   type ReportingWorkspacePayload
@@ -125,6 +126,8 @@ const standardReportCatalog = [
 ];
 
 export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
+  const { search } = useLocation();
+  const recordContext = readRecordWorkspaceContext(search);
   const reporting = normalizeReportingWorkspace(data);
   const templateRows = useMemo(() => buildTemplateRows(reporting?.templates ?? []), [reporting?.templates]);
   const runStatusRows = useMemo(
@@ -167,6 +170,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
             <section aria-label="Available report templates" className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
               {templateRows.map((template) => {
                 const latestRun = runStatusRows.find((run) => run.templateId === template.templateName || run.templateId === template.id);
+                const route = workstationRouteWithQuery(template.canRunOnDemand ? "reportingRunParameters" : "reportingReportBuilder", { templateId: template.id });
                 return (
                   <article key={template.id} className="rounded-md border border-border/70 bg-secondary/15 p-3">
                     <div className="flex flex-wrap items-start justify-between gap-2">
@@ -184,7 +188,7 @@ export function ReportLibraryScreen({ data }: ReportLibraryScreenProps) {
                           : "No retained run"}
                       </span>
                       <Button asChild size="sm" variant={template.canRunOnDemand ? "default" : "outline"}>
-                        <Link to={workstationRouteWithQuery(template.canRunOnDemand ? "reportingRunParameters" : "reportingReportBuilder", { templateId: template.id })}>
+                        <Link to={recordContext ? appendRecordWorkspaceContext(route, recordContext) ?? route : route}>
                           {template.canRunOnDemand ? `Run ${template.name}` : `Review ${template.name}`}
                         </Link>
                       </Button>

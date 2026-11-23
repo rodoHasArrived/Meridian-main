@@ -350,10 +350,15 @@ public sealed class AccountingFeatureModule : IDesktopFeatureModule
         services.TryAddSingleton<AccountingProductionReadinessService>();
         services.AddTransient<AccountingConfigureViewModel>();
         services.AddTransient<AccountingConfigurePage>();
+        services.AddTransient<FiscalYearCloseViewModel>();
+        services.AddTransient<BookFxSettlementViewModel>();
+        services.AddTransient<PrivateCapitalUnitRegisterViewModel>();
         services.AddTransient(sp => new AccountingCloseViewModel(
             sp.GetRequiredService<IAccountingProjectionQueryService>(),
             sp.GetRequiredService<IWorkstationAccountingCloseApiClient>(),
-            sp.GetService<DesktopAuthenticationSession>()));
+            sp.GetService<DesktopAuthenticationSession>(),
+            sp.GetRequiredService<FiscalYearCloseViewModel>(),
+            sp.GetRequiredService<BookFxSettlementViewModel>()));
         services.AddTransient<AccountingClosePage>();
         services.AddTransient<FundStructureSetupViewModel>();
         services.AddTransient<FundAccountsViewModel>();

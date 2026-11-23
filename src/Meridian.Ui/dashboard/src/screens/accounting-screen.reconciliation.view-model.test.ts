@@ -653,7 +653,7 @@ describe("accounting-screen reconciliation view model", () => {
     expect(rows[0]).toMatchObject({
       breakId: "run-42:cash",
       actionBusy: true,
-      varianceLabel: "+$500.00",
+      varianceLabel: "+500.00 Unit unavailable",
       varianceTone: "success",
       statusBadgeVariant: "danger",
       ownerLabel: "Unassigned",
@@ -961,8 +961,15 @@ describe("accounting-screen reconciliation tie-out proof", () => {
     const notLoaded = build(null);
     expect(notLoaded.lineSource).toBe("runs");
     expect(notLoaded.tieOut).toBeNull();
-    expect(notLoaded.statementBalanceLabel).toBe("Not loaded");
-    expect(notLoaded).toMatchObject({ statementBalance: null, ledgerBalance: null, netVariance: null });
+    expect(notLoaded).toMatchObject({
+      statementBalanceLabel: "Not loaded",
+      ledgerBalanceLabel: "Not loaded",
+      statementBalance: null,
+      ledgerBalance: null,
+      netVariance: null,
+      varianceLabel: "Can't assess",
+      varianceTone: "default"
+    });
 
     const cashOnly = build(null, {
       totalCash: 120000,
@@ -976,5 +983,40 @@ describe("accounting-screen reconciliation tie-out proof", () => {
     });
     expect(cashOnly.tieOut).toBeNull();
     expect(cashOnly).toMatchObject({ statementBalance: 120000, ledgerBalance: 120500, netVariance: 500 });
+  });
+
+  it("distinguishes an empty cash summary from measured zero balances", () => {
+    const emptyCashFlow = {
+      totalCash: 0,
+      totalLedgerCash: 0,
+      netVariance: 0,
+      totalFinancing: 0,
+      runsWithCashSignals: 0,
+      runsWithCashVariance: 0,
+      tone: "default" as const,
+      summary: "Cash-flow coverage is not yet available."
+    };
+    expect(build(null, emptyCashFlow)).toMatchObject({
+      statementBalance: null,
+      ledgerBalance: null,
+      netVariance: null,
+      varianceLabel: "Can't assess",
+      varianceTone: "default"
+    });
+    const measuredCashFlow = { ...emptyCashFlow, runsWithCashSignals: 1 };
+    expect(build(null, measuredCashFlow)).toMatchObject({
+      statementBalance: 0,
+      ledgerBalance: 0,
+      netVariance: 0,
+      varianceLabel: "Balanced",
+      varianceTone: "success"
+    });
+    expect(build(null, { ...measuredCashFlow, totalLedgerCash: Number.NaN })).toMatchObject({
+      statementBalance: 0,
+      ledgerBalance: null,
+      netVariance: null,
+      varianceLabel: "Can't assess",
+      varianceTone: "default"
+    });
   });
 });

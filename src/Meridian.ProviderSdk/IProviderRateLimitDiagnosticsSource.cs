@@ -26,6 +26,9 @@ public sealed record ProviderRateLimitDiagnosticSnapshot(
     string? Reason = null,
     bool StateAvailable = true)
 {
+    /// <summary>True when the window represents a usable provider quota. Local safeguards may have their own limits.</summary>
+    public bool QuotaKnown { get; init; } = true;
+
     /// <summary>Legacy request-named counters contain this unit (requests or weighted credits).</summary>
     public string QuotaUnit { get; init; } = "requests";
     public int? DailyUnitsUsed { get; init; }

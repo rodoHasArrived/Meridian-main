@@ -14,7 +14,6 @@ public sealed class SetupWizardService
 {
     private readonly HttpClient _httpClient;
     private readonly ConfigService _configService;
-    private readonly CredentialService _credentialService;
     private readonly int _tcpConnectTimeoutMs;
     private readonly ApiClientService _apiClient;
 
@@ -23,7 +22,6 @@ public sealed class SetupWizardService
         // TD-10: Use HttpClientFactory instead of creating new HttpClient instances
         _httpClient = HttpClientFactoryProvider.CreateClient(HttpClientNames.SetupWizard);
         _configService = new ConfigService();
-        _credentialService = new CredentialService();
         _apiClient = apiClient ?? ApiClientService.Instance;
         var tcpConnectTimeoutMs = (probeOptions ?? new ConnectivityProbeOptions()).TcpConnectTimeoutMs;
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(tcpConnectTimeoutMs, nameof(probeOptions));

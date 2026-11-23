@@ -1,7 +1,9 @@
+using System.Text.Json;
 using System.Text.Json.Nodes;
 using Meridian.Application.Commands;
 using Meridian.Application.Composition.Startup;
 using Meridian.Contracts.Configuration;
+using Meridian.Core.Config;
 using Meridian.Identity.Auth;
 using Meridian.Ui.Shared.Services;
 using ConfigStore = Meridian.Application.UI.ConfigStore;
@@ -265,6 +267,13 @@ internal static class DemoWorkspaceCli
                 ["Urls"] = new JsonArray($"http://localhost:{port}"),
             },
         };
+
+        if (File.Exists(configPath) && ConfigStore.LoadConfig(configPath).Backfill is { } backfill &&
+            (backfill.ValidationProfiles is not null || backfill.ValidationProfileAudit is not null))
+        {
+            config["backfill"] = JsonSerializer.SerializeToNode(new BackfillConfig(
+                ValidationProfiles: backfill.ValidationProfiles, ValidationProfileAudit: backfill.ValidationProfileAudit), AppConfigJsonOptions.Write);
+        }
 
         File.WriteAllText(configPath, config.ToJsonString());
         return configPath;

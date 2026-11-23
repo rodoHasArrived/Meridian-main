@@ -8,6 +8,37 @@ namespace Meridian.Storage.AssetOperations;
 
 public sealed partial class PostgresAssetOperationsProjectionStore
 {
+    public async Task<IReadOnlyList<InstrumentPositionProjectionSnapshot>> GetBookAsync(
+        Guid ledgerBookId, DateOnly asOfDate, CancellationToken ct = default)
+    {
+        if (ledgerBookId == Guid.Empty || asOfDate == default)
+            throw new ArgumentException("A ledger book and observation date are required.");
+        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
+        await using var transaction = await connection.BeginTransactionAsync(IsolationLevel.RepeatableRead, ct).ConfigureAwait(false);
+        var securityIds = new List<Guid>();
+        await using (var command = connection.CreateCommand())
+        {
+            command.Transaction = transaction;
+            command.CommandText = $"select distinct security_id from {Qualified("book_position_projections")} " +
+                "where ledger_book_id = @book_id and effective_from <= @as_of order by security_id;";
+            command.Parameters.AddWithValue("book_id", ledgerBookId);
+            command.Parameters.AddWithValue("as_of", asOfDate);
+            await using var reader = await command.ExecuteReaderAsync(ct).ConfigureAwait(false);
+            while (await reader.ReadAsync(ct).ConfigureAwait(false))
+                securityIds.Add(reader.GetGuid(0));
+        }
+        var snapshots = new List<InstrumentPositionProjectionSnapshot>();
+        foreach (var securityId in securityIds)
+        {
+            var history = await ReadInstrumentSnapshotAsync(connection, transaction, securityId, ledgerBookId, null, ct).ConfigureAwait(false);
+            var snapshot = InstrumentPositionProjectionRules.FilterBookHistoryAsOf(history, asOfDate);
+            if (snapshot.BookPositions.Count > 0)
+                snapshots.Add(snapshot);
+        }
+        await transaction.CommitAsync(ct).ConfigureAwait(false);
+        return snapshots;
+    }
+
     public async Task<InstrumentPositionProjectionSnapshot> GetSecurityAsync(
         Guid securityId,
         CancellationToken ct = default)

@@ -63,7 +63,7 @@ public static class StatementRunMatchingService
                 default:
                     statementTransactions.Add(new NormalizedStatementTransaction(
                         reference,
-                        ExternalTransactionId: null,
+                        ExternalTransactionId: row.ExternalTransactionId,
                         row.Account,
                         NormalizeOptional(row.Symbol),
                         Currency: row.Currency,
@@ -147,13 +147,13 @@ public static class StatementRunMatchingService
                 continue;
             }
 
-            var breakCode = StatementBreakCode(match.Kind, match.MatchTier);
+            var breakCode = match.BreakCode ?? StatementBreakCode(match.Kind, match.MatchTier);
             var toleranceAmount = ToleranceForKind(match.Kind, engineTolerance);
             var delta = match.Variance.LargestAbsoluteAmount;
             outcomes.Add(new MatchOutcome(
                 row.RawChecksum,
                 breakCode,
-                string.Empty,
+                string.Join(";", match.AllInternalEvidenceReferences),
                 match.Confidence,
                 match.Explanation)
             {
@@ -165,7 +165,7 @@ public static class StatementRunMatchingService
 
         foreach (var match in internalOnlyResults)
         {
-            var breakCode = InternalMissingBreakCode(match.Kind);
+            var breakCode = match.BreakCode ?? InternalMissingBreakCode(match.Kind);
             var toleranceAmount = ToleranceForKind(match.Kind, engineTolerance);
             breaks.Add(BuildBreak(
                 importId,

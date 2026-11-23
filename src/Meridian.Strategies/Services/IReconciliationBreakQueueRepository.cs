@@ -17,6 +17,13 @@ public interface IReconciliationBreakQueueAuthorityProbe
 /// <summary>Persists reconciliation break casework and coordinates governed updates and close-scope access.</summary>
 public interface IReconciliationBreakQueueRepository
 {
+    /// <summary>Reopens only a receipt-source case after a retained receipt or posting reversal.</summary>
+    Task<ReconciliationBreakQueueTransitionResult> ApplyBookReceiptReversalAsync(
+        ReconciliationBreakQueueScope scope, BookReceiptReversalCommand command, CancellationToken ct = default)
+        => Task.FromResult(new ReconciliationBreakQueueTransitionResult(
+            ReconciliationBreakQueueTransitionStatus.ValidationFailed, null,
+            "Source receipt reversals are not supported by this repository."));
+
     Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(ReconciliationBreakQueueStatus? status = null, CancellationToken ct = default);
 
     async Task<IReadOnlyList<ReconciliationBreakQueueItem>> GetAllAsync(
@@ -203,6 +210,13 @@ public interface IReconciliationBreakQueueRepository
         CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(scope);
+        if (!request.DryRun && (request.RequireReviewedPreview || request.PreviewBulkActionId is not null))
+        {
+            return new ReconciliationBulkCaseworkResult(request.CommandId, request.IdempotencyKey, false,
+                request.BreakIds.Count, 0, request.BreakIds.Count,
+                request.BreakIds.Select(static breakId => new ReconciliationBulkCaseworkCaseResult(
+                    breakId, false, false, "This repository cannot atomically validate a reviewed bulk preview.", null)).ToArray());
+        }
         var visible = await GetAllAsync(scope, status: null, ct).ConfigureAwait(false);
         var visibleIds = visible.Select(static item => item.BreakId).ToHashSet(StringComparer.OrdinalIgnoreCase);
         if (request.BreakIds.Any(breakId => !visibleIds.Contains(breakId)))

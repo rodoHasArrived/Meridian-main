@@ -187,6 +187,8 @@ public static partial class WorkstationEndpoints
             "portfolio-positions");
         Add([UserPermission.ViewTrades],
             "portfolio-brokerage-accounts", "portfolio-brokerage-positions",
+            // Mirrors the portfolio/trading position reads used by the instrument dossier.
+            "instrument-dossier-positions",
             "trading-positions", "trading-orders", "trading-fills", "trading-execution-audit", "trading-execution-blotter",
             "trading-broker-order-discrepancies", "trading-broker-affected-runs",
             "account-balance-history",
@@ -207,10 +209,15 @@ public static partial class WorkstationEndpoints
             "break-occurrence-age-data");
         Add([UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports],
             "accounting-period-comparison", "accounting-period-closing-balance-comparison", "accounting-ledger-search", "accounting-mark-preview",
+            // Mirrors the dossier's ledger period/journal entry reads.
+            "instrument-dossier-ledger",
             "accounting-payment-evidence-workflows", "accounting-private-capital-events", "accounting-private-capital-activity",
             "accounting-private-capital-subledgers", "accounting-private-capital-subledger", "accounting-private-capital-ledger-impacts",
             "accounting-private-capital-report-outputs", "accounting-prepared-deadlines",
             "close-task-progress-data", "close-checklist-progress-data");
+        // Mirrors the book receipt run reads; direct-lending permission alone does not admit them.
+        Add([UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance],
+            "book-income-receipts");
         Add([UserPermission.AdminMaintenance],
             "accounting-audit-integrity", "data-maintenance-executions");
         Add([UserPermission.ViewStrategies, UserPermission.ManageStrategies],

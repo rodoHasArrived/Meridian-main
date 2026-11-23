@@ -151,6 +151,9 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
             builder.Services.AddSingleton<IHostedService, ReportingScheduleHostedService>();
 
             await using var app = builder.Build();
+            app.Services.GetRequiredService<PostgresLedgerJournalStore>()
+                .Should().BeSameAs(app.Services.GetRequiredService<ILedgerJournalStore>(),
+                    "the fixture must expose the same durable journal store through its concrete and ledger contracts");
             var caseworkDirectory = Path.Combine(dataRoot, "workstation");
             Directory.CreateDirectory(caseworkDirectory);
             var caseworkSnapshotPath = Path.Combine(
@@ -330,8 +333,10 @@ public sealed class ReportingDeploymentReadinessPostgresIntegrationTests
         services.AddSingleton<DatabaseMigrationReadinessReceipt>();
         services.AddSingleton(ledgerOptions);
         services.AddSingleton<LedgerMigrationRunner>();
-        services.AddSingleton<ILedgerJournalStore>(
-            new PostgresLedgerJournalStore(ledgerOptions));
+        var ledgerStore = new PostgresLedgerJournalStore(ledgerOptions);
+        services.AddSingleton(ledgerStore);
+        services.AddSingleton<ILedgerJournalStore>(sp =>
+            sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IFundProfileTenancyRegistry>(
             new PostgresFundProfileTenancyRegistry(ledgerOptions));
 

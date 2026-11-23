@@ -5,7 +5,9 @@ import { Activity, AlertTriangle, Cable, CandlestickChart, CheckCircle, Clipboar
 import React, { type ReactNode } from "react";
 import { ServerOrderPreviewPanel } from "./trading-screen.server-preview";
 import { ExecutionJournalPanel } from "./trading-screen.journal";
+import { PaperReconciliationPanel } from "./trading-screen.paper-reconciliation";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
 import { Link, useLocation } from "react-router-dom";
 import { describeBrokerageSessionSource, positionSourceAttributes } from "@/lib/position-source";
 import { StatusBadge } from "@/design-system/status";
@@ -21,6 +23,7 @@ import {
 } from "@/components/ui/dialog";
 import { GuardrailPanelBody } from "@/components/ui/guardrail-utilization";
 import { Input } from "@/components/ui/input";
+import { LiveAuthorizationRevokeForm } from "@/screens/trading-screen.live-authorization-revoke";
 import { OverflowMenu } from "@/components/ui/overflow-menu";
 import { OrderStatusBanner } from "@/components/ui/order-status-banner";
 import { TradingOrderTicketForm } from "@/screens/trading-screen.order-ticket-form";
@@ -28,6 +31,8 @@ import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
 import {
+  dataToneClass,
+  promotionChecklistDotTone,
   promotionEvaluationPanelTone,
   promotionEvaluationTextTone,
   promotionOutcomeTone,
@@ -81,7 +86,6 @@ import {
   type PaperSessionReplayPanel,
   type TradingLoadingState,
   type TradingBlotterDetail,
-  type TradingDataTone,
   type TradingFillRow,
   type TradingOrderRow,
   type TradingPositionRow,
@@ -105,20 +109,6 @@ interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
   fundAccountId?: string | null;
 }
-
-const promotionChecklistDotTone = {
-  ready: "bg-success",
-  blocked: "bg-danger",
-  review: "bg-warning"
-} as const;
-
-const dataToneClass: Record<TradingDataTone, string> = {
-  default: "text-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-  muted: "text-muted-foreground"
-};
 
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
 // Stated once on the Orders page (and carried into each CSV export), not under every table.
@@ -477,15 +467,20 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
   const shellVm = useTradingScreenShellViewModel({ pathname, data });
-  const blotterVm = useTradingBlotterViewModel(data);
+  const blotterVm = useTradingBlotterViewModel(data, new URLSearchParams(search).get("positionRef"));
   const positionSource = describeBrokerageSessionSource(data?.brokerage);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
+  const positionRecord = blotterVm.selectedPositionRecord;
+  const scopedPositionRecord = positionRecord ? { ...positionRecord, scope: { ...positionRecord.scope, fundAccountId } } : null;
+  const positionContext = useRecordWorkspaceContext(scopedPositionRecord, blotterVm.selectedPositionReference
+    ? { positionRef: blotterVm.selectedPositionReference, fundAccountId } : null, `#${blotterVm.positionDetailId}`);
   const tradingReadiness = useTradingReadinessViewModel({ initialReadiness: data?.readiness ?? null, fundAccountId });
   const executionEvidence = useExecutionEvidenceViewModel();
 
   const governedApprovals = useGovernedApprovalsViewModel(LIVE_GOVERNED_APPROVAL_SERVICES);
   const orderTicket = useOrderTicketViewModel({
     fundAccountId,
+    scopedPaperIntentKey: data?.scopedPaperOrderIntentKey,
     positions: data?.positions ?? [],
     risk: data?.risk ?? null,
     manualOrderEntry: data?.manualOrderEntry ?? null,
@@ -724,6 +719,7 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                 {selectedPositionRow.closeTitleLabel}
               </Button>
             ) : null}
+            identity={scopedPositionRecord ? <RecordIdentitySpine record={scopedPositionRecord} context={positionContext} /> : null}
           />
         </div>
       )}>
@@ -854,6 +850,11 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
               riskWarnings={orderTicket.riskWarnings}
             />
           )}
+          {!orderTicket.open && orderTicket.phase === "reconciliation" ? (
+            <CardContent className="border-b border-border/60 py-3">
+              <p role="status" className="text-sm text-warning">{orderTicket.errorText}</p>
+            </CardContent>
+          ) : null}
           <CardContent className="space-y-3 px-3 py-2">
             <TableWorkbench
               workbenchId="trading-orders" sourceKey={fundAccountId ?? `default:${data.brokerage.account}`}
@@ -1531,7 +1532,8 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
           <SheetHeader>
             <SheetTitle id="promotion-gate-title">
               <FlaskConical className="h-4 w-4 text-primary" />
-              Backtest → Paper promotion gate
+              {promotionGate.evaluation?.targetMode?.toLowerCase() === "live"
+                ? "Paper → Live promotion gate" : "Backtest → Paper promotion gate"}
             </SheetTitle>
             <SheetDescription id="promotion-gate-description">Requires eligibility check before confirmation and audit refresh.</SheetDescription>
             <SheetCloseButton onClick={() => shellVm.closeWorkflowPanel("promotion")} />
@@ -1651,6 +1653,26 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                 <span id={promotionGate.fields.evidenceReferences.helpId ?? undefined} className="text-xs text-muted-foreground">{promotionGate.fields.evidenceReferences.helpText}</span>
               ) : null}
             </label>
+            {promotionGate.evaluation?.targetMode?.toLowerCase() === "live" && (
+              <fieldset className="grid gap-3 rounded-lg border border-border/60 p-3 text-xs sm:grid-cols-3" disabled={promotionGate.busy}>
+                <legend className="px-1 font-semibold">Live authorization</legend>
+                <p className="break-all text-muted-foreground sm:col-span-3">
+                  Strategy revision {promotionGate.evaluation.strategyArtifactId ?? "unavailable"}
+                </p>
+                <label className="grid gap-1">
+                  Allowed symbols
+                  <Input value={promotionGate.form.liveSymbols ?? ""} onChange={(event) => promotionGate.updateField("liveSymbols", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Max USD per order
+                  <Input type="number" min="0.01" step="0.01" value={promotionGate.form.liveNotional ?? ""} onChange={(event) => promotionGate.updateField("liveNotional", event.target.value)} />
+                </label>
+                <label className="grid gap-1">
+                  Expiry (local time)
+                  <Input type="datetime-local" value={promotionGate.form.liveExpiry ?? ""} onChange={(event) => promotionGate.updateField("liveExpiry", event.target.value)} />
+                </label>
+              </fieldset>
+            )}
             <div className="flex flex-wrap gap-2">
               <Button
                 size="sm"
@@ -1764,6 +1786,13 @@ function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: T
                 {promotionGate.historyRows.map((record) => (
                   <li key={record.id} className="font-mono" aria-label={record.ariaLabel}>
                     {record.label}
+                    {record.canRevoke && (
+                      <LiveAuthorizationRevokeForm
+                        authorizationId={record.id}
+                        disabled={promotionGate.busy}
+                        revoke={promotionGate.revokeLiveAuthorization}
+                      />
+                    )}
                   </li>
                 ))}
               </ul>
@@ -2019,6 +2048,7 @@ function PaperSessionDetailPanelView({ detail }: { detail: PaperSessionDetailPan
       )}
 
       {detail.replay && <PaperSessionReplayPanelView panel={detail.replay} />}
+      <PaperReconciliationPanel key={detail.sessionId} sessionId={detail.sessionId} />
     </div>
   );
 }
@@ -2264,7 +2294,8 @@ function TradingBlotterDetailPanel({
   objectType,
   detail,
   emptyText,
-  action
+  action,
+  identity
 }: {
   id: string;
   objectType: string;
@@ -2272,6 +2303,7 @@ function TradingBlotterDetailPanel({
   emptyText: string;
   /** The next action for the selected row, e.g. cancel the order. */
   action?: ReactNode;
+  identity?: ReactNode;
 }) {
   return (
     <DetailPane
@@ -2283,6 +2315,7 @@ function TradingBlotterDetailPanel({
       subtitle={detail?.subtitle}
       summary={detail?.detail}
       actions={detail ? action : null}
+      identity={identity}
       fields={detail?.fields}
       shownInRow={detail?.shownInRow}
       empty={{ text: emptyText }}

@@ -1,6 +1,8 @@
 using FluentAssertions;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
+using Meridian.Contracts.Tenancy;
 using Meridian.Ledger;
 using Meridian.Storage.Ledger;
 using Meridian.Ui.Shared.Services;
@@ -13,6 +15,100 @@ namespace Meridian.Tests.Storage;
 /// </summary>
 public sealed class FiscalYearClosePlanPostgresTests
 {
+    [LedgerDatabaseFact]
+    [Trait("Category", "Integration")]
+    public async Task FiscalClose_RetainsExactConcurrentReceipt_AndLateCorrectionAppendsSuccessor()
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+        var ct = timeout.Token;
+        await using var database = await LedgerPostgresTestDatabase.CreateAsync(ct);
+        const string fund = "synthetic-fiscal-close";
+        const string tenant = "synthetic-close-tenant";
+        const string company = "synthetic-close-company";
+        const string controller = "synthetic-controller";
+        var owners = new PostgresFundProfileTenancyRegistry(database.Options);
+        await owners.BindAsync(fund, tenant, company, ct);
+        PostgresLedgerJournalStore OpenStore(string ownerTenant = tenant) => new(database.Options, new FixedTenant(ownerTenant),
+            postingAuthorities: LedgerPostgresTestDatabase.SyntheticFinancialPostingAuthorities);
+        var store = OpenStore();
+        var bookId = Guid.NewGuid();
+        var created = new DateTimeOffset(2025, 1, 1, 0, 0, 0, TimeSpan.Zero);
+        await store.SaveLedgerBookAsync(new LedgerBookRecord(bookId, fund, Guid.NewGuid(),
+            FundStructureNodeKindDto.Fund, "Synthetic year-end book", "USD", created, created), ct);
+        var prior = await OpenAsync(store, bookId, 2025, 1, new(2025, 1, 1), new(2025, 12, 31), ct);
+        await PostAsync(store, bookId, prior, "Synthetic capital", LedgerPostingKindDto.Originating, ct,
+            (LedgerAccounts.Cash, 1_000m, 0m), (LedgerAccounts.CapitalAccount, 0m, 1_000m));
+        await HardCloseAsync(store, prior, ct);
+        var year = await OpenAsync(store, bookId, 2026, 1, new(2026, 1, 1), new(2026, 12, 31), ct);
+        await PostAsync(store, bookId, year, "Synthetic operating income", LedgerPostingKindDto.Originating, ct,
+            (LedgerAccounts.Cash, 100m, 0m), (LedgerAccounts.DividendIncome, 0m, 100m));
+        await HardCloseAsync(store, year, ct,
+            (LedgerAccounts.DividendIncome, 100m, 0m), (LedgerAccounts.RetainedEarnings, 0m, 100m));
+        var originalPlan = await store.GetFiscalYearClosePlanAsync(bookId, 2026, ct);
+        var request = new FinalizeFiscalYearCloseRequestDto(Guid.NewGuid(), originalPlan.PlanHashSha256!, "Approved close");
+        var postingPolicy = new ExternalGlBookPolicy(new("quickbooks", "synthetic-fiscal", "10001", "sandbox"),
+            true, controller, DateTimeOffset.UtcNow);
+        await store.SaveExternalGlPolicyAsync(bookId, tenant, company, fund, postingPolicy, ct);
+        var withoutExternalReceipt = () => Finalize(store, request);
+        await withoutExternalReceipt.Should().ThrowAsync<LedgerPeriodTransitionException>()
+            .WithMessage("*External GL confirmation is required*");
+        await store.SaveExternalGlPolicyAsync(bookId, tenant, company, fund, postingPolicy with { ConfirmationRequired = false }, ct);
+
+        var concurrent = await Task.WhenAll(Finalize(store, request), Finalize(OpenStore(), request));
+        var original = concurrent[0];
+        concurrent[1].Should().BeEquivalentTo(original);
+        original.ClosingJournalEntryIds.Should().ContainSingle();
+        original.Plan.ReportedNetIncome.Should().Be(100m);
+        original.Plan.PostClosingEquity.Should().Be(1_100m);
+        var conflictingRetry = () => Finalize(store, request with { Reason = "Different terms" });
+        await conflictingRetry.Should().ThrowAsync<InvalidOperationException>().WithMessage("*different authorized inputs*");
+        var duplicateReview = () => Finalize(store, request with
+        { CommandId = Guid.NewGuid(), SupersedesReceiptId = original.ReceiptId });
+        await duplicateReview.Should().ThrowAsync<InvalidOperationException>().WithMessage("*already has a receipt*");
+        var foreign = OpenStore("synthetic-foreign");
+        (await foreign.GetFiscalYearCloseReceiptAsync(bookId, 2026, ct: ct)).Should().BeNull();
+        var foreignWrite = () => foreign.FinalizeFiscalYearCloseAsync(bookId, 2026, request,
+            controller, "Controller", "synthetic-foreign", company, ct);
+        await foreignWrite.Should().ThrowAsync<UnauthorizedAccessException>();
+
+        var closed = (await store.GetPeriodAsync(year.PeriodId, ct))!;
+        var reopened = await store.SavePeriodAsync(closed with { Status = "Open", ClosedAt = null }, closed.Version,
+            new PeriodCloseEventRecord(Guid.NewGuid(), closed.PeriodId, "HardClosed", "Open",
+                controller, "Approved synthetic late adjustment", DateTimeOffset.UtcNow), ct);
+        var staleRequest = request with { CommandId = Guid.NewGuid(), SupersedesReceiptId = original.ReceiptId };
+        var stale = () => Finalize(store, staleRequest with { ExpectedPlanHashSha256 = new string('a', 64) });
+        await stale.Should().ThrowAsync<InvalidOperationException>().WithMessage("*inputs changed or have blockers*");
+        // The reopened period records an approved late adjustment through the standard journal path.
+        var id = Guid.NewGuid();
+        var at = new DateTimeOffset(year.EndDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        const string note = "Approved synthetic late income adjustment";
+        var correction = new JournalEntry(id, at, note,
+            [new LedgerEntry(Guid.NewGuid(), id, at, LedgerAccounts.Cash, 5m, 0m, note,
+                currency: new LedgerEntryCurrency("USD", "USD", 5m, 0m, 1m)),
+             new LedgerEntry(Guid.NewGuid(), id, at, LedgerAccounts.DividendIncome, 0m, 5m, note,
+                currency: new LedgerEntryCurrency("USD", "USD", 0m, 5m, 1m))],
+            new JournalEntryMetadata(EffectiveDate: year.EndDate));
+        await store.AppendAsync(new LedgerJournalEntryWrite(correction, Guid.NewGuid(), reopened.PeriodId,
+            PostingKind: LedgerPostingKindDto.Adjustment,
+            AdjustmentApproval: new("adjustment-5", LedgerAdjustmentApprovalStatusDto.Approved, controller,
+                at, "late-adjustment", GovernanceCaseId: "synthetic-close-case"),
+            LedgerBookId: bookId), ct);
+        await HardCloseAsync(store, reopened, ct,
+            (LedgerAccounts.DividendIncome, 5m, 0m), (LedgerAccounts.RetainedEarnings, 0m, 5m));
+        var newPlan = await store.GetFiscalYearClosePlanAsync(bookId, 2026, ct);
+        var successor = await Finalize(OpenStore(), staleRequest with { ExpectedPlanHashSha256 = newPlan.PlanHashSha256! });
+        successor.SupersedesReceiptId.Should().Be(original.ReceiptId);
+        successor.Plan.ReportedNetIncome.Should().Be(105m);
+        successor.Plan.PostClosingEquity.Should().Be(1_105m);
+        (await OpenStore().GetFiscalYearCloseReceiptAsync(bookId, 2026, original.ReceiptId, ct)).Should().BeEquivalentTo(original);
+        (await OpenStore().GetFiscalYearCloseReceiptAsync(bookId, 2026, ct: ct)).Should().BeEquivalentTo(successor);
+        (await Finalize(OpenStore(), request)).Should().BeEquivalentTo(original, "replay recovers historical approval even after re-close");
+        (await store.QueryAsync(new LedgerJournalEntryQuery(LedgerBookId: bookId), ct)).Should().HaveCount(5);
+
+        Task<FiscalYearCloseReceiptDto> Finalize(PostgresLedgerJournalStore target, FinalizeFiscalYearCloseRequestDto command)
+            => target.FinalizeFiscalYearCloseAsync(bookId, 2026, command, controller, "Controller", tenant, company, ct);
+    }
+
     [LedgerDatabaseFact]
     [Trait("Category", "Integration")]
     public async Task HardClosedYear_BuildsGoldenPlanFromRetainedSnapshots_AndReplaysAfterRestart()
@@ -86,5 +182,10 @@ public sealed class FiscalYearClosePlanPostgresTests
         await ((IAtomicLedgerPeriodCloseStore)store).SaveHardClosedPeriodAsync(soft with { Status = "HardClosed", ClosedAt = closedAt },
             soft.Version, new PeriodCloseEventRecord(Guid.NewGuid(), period.PeriodId, "SoftClosed", "HardClosed",
                 "synthetic-controller", "Synthetic hard close", closedAt), ct);
+    }
+
+    private sealed class FixedTenant(string tenant) : IFundScopeTenantAccessor
+    {
+        public string ResolveCallerTenant() => tenant;
     }
 }

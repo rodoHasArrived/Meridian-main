@@ -47,6 +47,77 @@ items:
         path: docs/source/generated/adapter-readiness-matrix.md
     last_reviewed: 2026-09-28
 
+  - id: W1-DATA-ALIGN-001
+    title: Time-series alignment execution service
+    wave: W1
+    stage_gates:
+      - DataConfidence
+    workspace:
+      - Data
+    owner_lane: Data Confidence and Validation
+    status: planned
+    health: yellow
+    priority: low
+    evidence_posture: planned_evidence
+    status_note: No alignment execution or preview service is wired into the host. Both routes answer 501 and create nothing; the WPF Time Series Alignment page disables its run action and says alignment is unavailable once the host reports the 501. The browser workstation has no alignment screen.
+    decision_ids: []
+    pr_references: []
+    exit_criteria:
+      - The alignment create and preview routes run against stored data and never answer 501 on a host that advertises them.
+      - Alignment output records the gap strategy used and marks filled values, so an aligned dataset can be told apart from source data.
+      - Preview estimates are computed from the stored data, not fabricated.
+      - Browser and WPF surfaces consume the same alignment routes, or the browser gap is sequenced under W8-WPF-PARITY-001.
+    source_modules:
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+      - SRC-WPF
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs
+      - type: source
+        path: src/Meridian.Ui.Services/Services/TimeSeriesAlignmentService.cs
+      - type: source
+        path: src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs
+      - type: test
+        path: tests/Meridian.Wpf.Tests/ViewModels/TimeSeriesAlignmentViewModelTests.cs
+    last_reviewed: 2026-11-19
+
+  - id: W1-DATA-DEDUP-001
+    title: Archive deduplication maintenance task
+    wave: W1
+    stage_gates:
+      - DataConfidence
+    workspace:
+      - Data
+    owner_lane: Data Confidence and Validation
+    status: planned
+    health: yellow
+    priority: low
+    evidence_posture: planned_evidence
+    status_note: The desktop scheduled-maintenance service defines a Deduplication task type, but the server archive-maintenance API has no deduplication task, so the task always reports that nothing was executed. No operator surface currently schedules it.
+    decision_ids: []
+    pr_references: []
+    exit_criteria:
+      - The archive maintenance API exposes a deduplication task that removes duplicate stored events through the existing WAL and atomic-write paths.
+      - A dry run reports the duplicates it would remove without changing storage.
+      - The scheduled Deduplication task runs through that API and reports genuine counts, or the task type is removed before any operator surface can schedule it.
+    source_modules:
+      - SRC-STORAGE
+      - SRC-UI-SHARED
+      - SRC-UI-SERVICES
+    diagrams:
+      - DIA-ASSURANCE-LOOP
+    evidence:
+      - type: source
+        path: src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs
+      - type: source
+        path: src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs
+      - type: test
+        path: tests/Meridian.Ui.Tests/Services/ScheduledMaintenanceServiceTests.cs
+    last_reviewed: 2026-11-19
+
   - id: W2-TRD-001
     title: Paper trading cockpit reliability
     wave: W2
@@ -3054,6 +3125,12 @@ items:
         path: docs/product/meridian-design-document.md
       - type: reference
         path: docs/development/policies/promotion-policy-matrix.md
+      - type: source
+        path: src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs
+      - type: source
+        path: src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs
     last_reviewed: 2026-10-30
 
   - id: W13-OMS-001
@@ -3102,6 +3179,12 @@ items:
         path: docs/product/meridian-design-document.md
       - type: reference
         path: docs/product/implementation-todo-list.md
+      - type: reference
+        path: docs/domain/strategy-order-execution.md
+      - type: test
+        path: tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs
+      - type: test
+        path: tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs
     last_reviewed: 2026-10-30
   - id: W14-ATTEST-001
     title: Single-principal attestation for governed approvals in the single-operator envelope

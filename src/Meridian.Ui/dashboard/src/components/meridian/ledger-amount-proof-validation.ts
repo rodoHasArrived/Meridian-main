@@ -11,22 +11,26 @@ export function isCurrentRetainedEvidence(item: LedgerAmountProofEvidence): bool
 }
 
 /** Match the server's scoped, digest-bound vault route and canonical artifact identity. */
-export function hasExactRetainedSource(packet: EvidencePacket, proof: LedgerAmountProof, item: LedgerAmountProofEvidence): boolean {
-  if (typeof item.route !== "string" || !item.route.startsWith("/workstation/evidence/vault/") ||
-    !item.contentHash || !sha256.test(item.contentHash) || !Array.isArray(packet.nodes)) return false;
+export function matchesLedgerAmountManifestGuard(route: string | null | undefined, contentHash: string | null | undefined,
+  subjectId: string, scope: { ledgerBookId?: string | null; periodId?: string | null; fundProfileId?: string | null }): boolean {
+  if (typeof route !== "string" || !route.startsWith("/workstation/evidence/vault/") ||
+    !contentHash || !sha256.test(contentHash)) return false;
   let url: URL;
-  try { url = new URL(item.route, "https://meridian.invalid"); } catch { return false; }
+  try { url = new URL(route, "https://meridian.invalid"); } catch { return false; }
   if (url.origin !== "https://meridian.invalid" ||
     !/^\/workstation\/evidence\/vault\/[a-zA-Z0-9_-]+$/.test(url.pathname) || url.hash) return false;
   const keys = [...url.searchParams.keys()];
   if (keys.length !== guardKeys.length || guardKeys.some((key) => url.searchParams.getAll(key).length !== 1)) return false;
-  if (url.searchParams.get("ledgerAmountSubjectId") !== proof.subjectId ||
-    url.searchParams.get("ledgerBookId") !== proof.scope.ledgerBookId ||
-    url.searchParams.get("periodId") !== proof.scope.periodId ||
-    url.searchParams.get("fundProfileId") !== proof.scope.fundProfileId ||
-    url.searchParams.get("expectedContentHash")?.toLowerCase() !== item.contentHash.toLowerCase()) return false;
+  return url.searchParams.get("ledgerAmountSubjectId") === subjectId &&
+    url.searchParams.get("ledgerBookId") === scope.ledgerBookId &&
+    url.searchParams.get("periodId") === scope.periodId &&
+    url.searchParams.get("fundProfileId") === scope.fundProfileId &&
+    url.searchParams.get("expectedContentHash")?.toLowerCase() === contentHash.toLowerCase();
+}
 
-  const reportAmount = proof.subjectId.startsWith("report:");
+export function hasExactRetainedSource(packet: EvidencePacket, proof: LedgerAmountProof, item: LedgerAmountProofEvidence): boolean {
+  if (!matchesLedgerAmountManifestGuard(item.route, item.contentHash, proof.subjectId, proof.scope) || !Array.isArray(packet.nodes)) return false;
+  const reportAmount = proof.subjectId.startsWith("report:") || proof.subjectId.startsWith("trial-balance:");
   const sourceScope = reportAmount ? item.sourceScope : proof.scope;
   const sourceSubjectId = reportAmount ? item.sourceSubjectId : proof.subjectId;
   if (!sourceScope || !sourceSubjectId) return false;
@@ -36,6 +40,7 @@ export function hasExactRetainedSource(packet: EvidencePacket, proof: LedgerAmou
       sourceScope.fundProfileId !== proof.scope.fundProfileId || sourceScope.ledgerBookId !== proof.scope.ledgerBookId ||
       !guid.test(sourceScope.periodId) || parts.length !== 3 || !guid.test(parts[0]!) || !guid.test(parts[1]!) ||
       (parts[2] !== "debit" && parts[2] !== "credit")) return false;
+    if (proof.subjectId.startsWith("trial-balance:") && sourceScope.periodId !== proof.scope.periodId) return false;
   }
   // A report guard addresses the report; the source artifact retains its original posting period.
   // Uri.EscapeDataString also escapes these characters which encodeURIComponent leaves intact.
