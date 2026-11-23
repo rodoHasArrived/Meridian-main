@@ -23,6 +23,7 @@ using Meridian.Identity.Auth;
 using Meridian.Platform.Scheduling;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.Storage.Operations;
+using Meridian.Strategies.Artifacts;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live;
 using Meridian.Strategies.Live.Designer;
@@ -46,6 +47,7 @@ using PaperOrderGateway = Meridian.Execution.Adapters.PaperTradingGateway;
 
 namespace Meridian.Tests.Ui;
 
+/// <summary>Protects a saved equity design's reviewed paper identity and accounting effects through replay.</summary>
 public sealed class DesignerPaperRehearsalTests
 {
     private const string Tenant = "rehearsal-tenant";
@@ -72,6 +74,98 @@ public sealed class DesignerPaperRehearsalTests
         }
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task ReviewedPaperIntent_RetryAfterRestartPreservesArtifactAndRefusesChangedAuthority(bool hasArtifact)
+    {
+        using var timeout = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+        var root = Directory.CreateTempSubdirectory("meridian-designer-intent-retry-");
+        try
+        {
+            await RehearseIntentRetryAsync(root.FullName, hasArtifact, timeout.Token);
+        }
+        finally
+        {
+            root.Delete(recursive: true);
+        }
+    }
+
+    private static async Task RehearseIntentRetryAsync(string root, bool hasArtifact, CancellationToken ct)
+    {
+        const string runId = "synthetic-reviewed-run";
+        const string strategyId = "synthetic-reviewed-strategy";
+        var history = new FileOperationalCaseHistoryStore(root);
+        await using var audit = new ExecutionAuditTrailService(
+            new ExecutionAuditTrailOptions(Path.Combine(root, "audit")), NullLogger<ExecutionAuditTrailService>.Instance);
+        await using var sessions = new PaperSessionPersistenceService(
+            NullLogger<PaperSessionPersistenceService>.Instance,
+            new JsonlFilePaperSessionStore(Path.Combine(root, "paper"), NullLogger<JsonlFilePaperSessionStore>.Instance), audit,
+            resolveAccountCurrency: static (id, _) => Task.FromResult<string?>(id == AccountId ? "USD" : null));
+        var session = await sessions.EnsureStrategyRunSessionAsync(runId, DateTimeOffset.UtcNow,
+            new CreatePaperSessionDto(strategyId, "Synthetic reviewed strategy", 100_000m, [Symbol])
+            { FinancialAccountId = AccountId.ToString("D") }, ct);
+        var authority = new ExecutionSdk.StrategyOrderAuthority(strategyId, runId, new string('a', 64),
+            "synthetic-review", session.SessionId)
+        { StrategyArtifactId = hasArtifact ? "sa1-" + new string('b', 64) : null };
+        if (!hasArtifact)
+        {
+            // Null omission retains the exact serialized authority used by historic intent hashes.
+            JsonSerializer.Serialize(authority).Should().Be(JsonSerializer.Serialize(new
+            {
+                authority.StrategyId, authority.RunId, authority.StrategyVersionSha256,
+                authority.ApprovalReference, authority.PaperSessionId
+            }));
+        }
+        var intent = new ExecutionSdk.OrderIntent(Guid.NewGuid(), Tenant, Company, AccountId, "live-trading-engine",
+            new ExecutionSdk.OrderRequest
+            {
+                ClientOrderId = "synthetic-intent-order",
+                FundAccountId = AccountId,
+                StrategyId = strategyId,
+                Symbol = Symbol,
+                Side = ExecutionSdk.OrderSide.Buy,
+                Quantity = 10m,
+                Type = ExecutionSdk.OrderType.Market,
+                TimeInForce = ExecutionSdk.TimeInForce.Day
+            }, authority);
+        var cache = new LiveCache();
+        cache.RecordTrade(Symbol, new Trade(DateTimeOffset.UtcNow, Symbol, 102m, 1000, AggressorSide.Buy, 1));
+        var options = new OrderManagementSystemOptions
+        {
+            PaperIntentScope = new PaperOrderIntentScope { TenantId = Tenant, CompanyId = Company, FundAccountId = AccountId }
+        };
+        await using var gateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, liveFeed: cache);
+        await using var oms = new OrderManagementSystem(gateway, NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: new PaperTradingPortfolio(100_000m), auditTrail: audit, sessionPersistence: sessions,
+            orderIntentHistory: history, options: options) { BindNativePaperSessions = true };
+        await oms.StartAsync(ct);
+        var admitted = await oms.SubmitIntentAsync(intent, ct);
+        admitted.Success.Should().BeTrue(admitted.ErrorMessage);
+        admitted.OrderState!.StrategyArtifactId.Should().Be(authority.StrategyArtifactId);
+        (await oms.SubmitIntentAsync(intent, ct)).OrderId.Should().Be(admitted.OrderId);
+        await oms.StopAsync(ct);
+
+        await using var restartedGateway = new PaperTradingGateway(NullLogger<PaperTradingGateway>.Instance, liveFeed: cache);
+        await using var restarted = new OrderManagementSystem(restartedGateway, NullLogger<OrderManagementSystem>.Instance,
+            portfolioState: new PaperTradingPortfolio(100_000m), auditTrail: audit, sessionPersistence: sessions,
+            orderIntentHistory: new FileOperationalCaseHistoryStore(root), options: options) { BindNativePaperSessions = true };
+        await restarted.StartAsync(ct);
+        var replayed = await restarted.SubmitIntentAsync(intent, ct);
+        replayed.Success.Should().BeTrue(replayed.ErrorMessage);
+        replayed.OrderId.Should().Be(admitted.OrderId);
+        replayed.OrderState!.StrategyArtifactId.Should().Be(authority.StrategyArtifactId);
+        var conflict = await restarted.SubmitIntentAsync(intent with
+        {
+            StrategyAuthority = authority with { StrategyArtifactId = "sa1-" + new string('c', 64) }
+        }, ct);
+        conflict.IntentStatus.Should().Be(ExecutionSdk.OrderIntentStatus.Conflict);
+        var claims = await history.ReadAsync(new OperationalCaseHistoryQuery { CaseType = "paper-order-intent" }, ct);
+        claims.Should().ContainSingle(record => record.EventType == "IntentClaimed");
+        sessions.GetSession(session.SessionId)!.FillCount.Should().Be(1);
+        sessions.GetSession(session.SessionId)!.Portfolio!.Cash.Should().Be(100_000m - 10m * 102m - 1m);
+    }
+
     private static async Task RehearseAsync(string root)
     {
         var from = new DateOnly(2024, 1, 2);
@@ -79,6 +173,7 @@ public sealed class DesignerPaperRehearsalTests
         var history = new FileOperationalCaseHistoryStore(root);
         var repository = new StrategyRunStore(history);
         var designs = new ScopedStrategyDesignStore(history);
+        var artifacts = new StrategyArtifactRegistry(root);
         var designService = new StrategyDesignService();
         var template = designService.GetTemplates().Single(item => item.TemplateId == "equity-price-filter");
         var document = template.Document with { Universe = [Symbol] };
@@ -143,6 +238,7 @@ public sealed class DesignerPaperRehearsalTests
         builder.Services.AddSingleton<IAccountQueryService>(BuildAccountQuery());
         builder.Services.AddSingleton<IScopedAuthorizationService, RehearsalAccountAuthorization>();
         builder.Services.AddSingleton(designs);
+        builder.Services.AddSingleton(artifacts);
         builder.Services.AddSingleton(designService);
         builder.Services.AddSingleton(promotion);
         builder.Services.AddSingleton<PortfolioReadService>();
@@ -159,7 +255,7 @@ public sealed class DesignerPaperRehearsalTests
         builder.Services.AddMeridianBacktesting();
         builder.Services.AddSingleton(sp => new DesignerBacktestService(root,
             sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(), repository, evidence, designService,
-            new TradingCalendar(), securities, actions));
+            new TradingCalendar(), securities, actions, artifacts));
 
         await using var app = builder.Build();
         app.Use(async (context, next) =>
@@ -213,6 +309,10 @@ public sealed class DesignerPaperRehearsalTests
         outcome.Success.Should().BeTrue();
         outcome.DataProvenanceToken.Should().Be("simulated");
         var sourceRun = (await repository.GetRunByIdAsync(outcome.RunId!))!;
+        StrategyArtifact.IsValidId(sourceRun.StrategyArtifactId).Should().BeTrue();
+        var retainedArtifact = await artifacts.GetAsync(sourceRun.StrategyArtifactId!);
+        retainedArtifact!.StrategyId.Should().Be(sourceRun.StrategyId);
+        retainedArtifact.Parameters[DesignerStrategyVersion.VersionKey].Should().Be(outcome.StrategyVersionSha256);
         outcome.ProviderProvenance.Should().NotBeNull();
         outcome.ProviderProvenance!.ReceiptId.Should().Be(sourceRun.ProviderProvenance!.ReceiptId);
         var fill = sourceRun.Metrics!.Fills.Should().ContainSingle().Subject;
@@ -226,7 +326,8 @@ public sealed class DesignerPaperRehearsalTests
         denied.IsEligible.Should().BeFalse();
         denied.Reason.Should().Contain("Simulated");
         var paper = await RetainSyntheticReviewAsync(sourceRun, repository, reviews, promoter, reference);
-        var source = new DesignerDocumentLiveSource(null, designService, scopedDesigns: designs);
+        paper.StrategyArtifactId.Should().Be(sourceRun.StrategyArtifactId);
+        var source = new DesignerDocumentLiveSource(null, designService, artifacts: artifacts, scopedDesigns: designs);
         var catalog = LiveStrategyCatalog.CreateDefault();
         catalog.RegisterFallback(source.SelectorParameterKey,
             (LiveStrategyCreationContext context, out ILiveStrategy? runtime, out string? reason) =>
@@ -238,7 +339,8 @@ public sealed class DesignerPaperRehearsalTests
         await using var engine = new LiveTradingEngine(catalog, hub, cache, new PaperOrderGateway(
                 NullLogger<PaperOrderGateway>.Instance, liveFeed: cache), oms, portfolio, repository,
             new LiveTradingEngineOptions { Enabled = true },
-            auditTrail: audit, designerPaper: new DesignerPaperExecution(repository, new SyntheticReviewAuthority(reviews), sessions));
+            auditTrail: audit, artifacts: artifacts,
+            designerPaper: new DesignerPaperExecution(repository, new SyntheticReviewAuthority(reviews), sessions));
 
         var launch = await engine.TryLaunchAsync(paper);
         launch.Launched.Should().BeTrue(launch.Reason);
@@ -273,7 +375,16 @@ public sealed class DesignerPaperRehearsalTests
         var retainedOrders = await orderEvidence.ReadForRunAsync(paper.RunId, AccountId, outcome.StrategyVersionSha256!, timeout.Token);
         var retainedOrder = retainedOrders.Should().ContainSingle().Which.Admission!;
         retainedOrder.AuthorityDecision!.Origin.Should().Be(ExecutionSdk.OrderCommandOrigin.StrategyRun);
-        retainedOrder.OrderState!.StrategyArtifactId.Should().BeNull();
+        retainedOrder.OrderState!.StrategyArtifactId.Should().Be(sourceRun.StrategyArtifactId);
+        var claims = await history.ReadAsync(new OperationalCaseHistoryQuery { CaseType = "paper-order-intent" });
+        claims.Should().Contain(record => record.EventType == "IntentClaimed" &&
+            record.Data.GetValueOrDefault("runId") == paper.RunId &&
+            record.Data.GetValueOrDefault("strategyArtifactId") == sourceRun.StrategyArtifactId);
+        var restartedRuns = new StrategyRunStore(new FileOperationalCaseHistoryStore(root));
+        (await restartedRuns.GetRunByIdAsync(sourceRun.RunId))!.StrategyArtifactId.Should().Be(sourceRun.StrategyArtifactId);
+        (await restartedRuns.GetRunByIdAsync(paper.RunId))!.StrategyArtifactId.Should().Be(sourceRun.StrategyArtifactId);
+        (await new StrategyArtifactRegistry(root).GetAsync(sourceRun.StrategyArtifactId!))!.ComputeId()
+            .Should().Be(sourceRun.StrategyArtifactId);
         await canonicalPublisher.DidNotReceive().PublishAsync(Arg.Any<TradeExecutedEvent>());
         (await client.GetAsync($"/api/execution/sessions/{sessionId}")).StatusCode.Should().Be(HttpStatusCode.NotFound);
         (await client.GetAsync($"/api/execution/sessions/{sessionId}/reconciliation")).StatusCode.Should().Be(HttpStatusCode.NotFound);
@@ -391,11 +502,14 @@ public sealed class DesignerPaperRehearsalTests
             auditReference: "synthetic-paper-review-" + source.RunId) with
         {
             StrategyVersionSha256 = DesignerStrategyVersion.Read(source),
+            StrategyArtifactId = source.StrategyArtifactId,
             SourceInputHashSha256 = source.InputHashSha256
         };
         await using var reservation = await reviews.ReserveFirstDecisionAsync(decision);
         var target = PromotionService.CreatePromotedRun(source, reservation.Record);
-        target = target with { InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(target) };
+        target = target.StrategyArtifactId is { } artifactId
+            ? target.WithStrategyArtifact(artifactId)
+            : target with { InputHashSha256 = StrategyRunEntry.ComputeAccountBoundInputHash(target) };
         await runs.RecordRunAsync(target);
         return target;
     }

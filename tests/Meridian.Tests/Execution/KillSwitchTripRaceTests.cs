@@ -133,14 +133,16 @@ public sealed class KillSwitchTripRaceTests : IDisposable
         var placing = oms.PlaceOrderAsync(Order("AAPL"));
         await gateway.SubmissionStarted.Task.WaitAsync(TimeSpan.FromSeconds(5));
 
-        var sweep = await oms.CancelAllAsync().WaitAsync(TimeSpan.FromSeconds(5));
+        try
+        {
+            var sweep = await oms.CancelAllAsync().WaitAsync(TimeSpan.FromSeconds(5));
 
-        sweep.Outcome.Should().NotBe(KillSwitchSweepOutcome.Completed,
-            "a cancellation acknowledged before the submission settles is not proof the submission cannot land");
-        sweep.Cancelled.Should().Be(0);
-        sweep.StillWorking.Should().ContainSingle().Which.Reason.Should().Contain("awaiting");
-
-        gateway.ReleaseSubmissions();
+            sweep.Outcome.Should().NotBe(KillSwitchSweepOutcome.Completed,
+                "a cancellation acknowledged before the submission settles is not proof the submission cannot land");
+            sweep.Cancelled.Should().Be(0);
+            sweep.StillWorking.Should().ContainSingle().Which.Reason.Should().Contain("awaiting");
+        }
+        finally { gateway.ReleaseSubmissions(); }
         await placing.WaitAsync(TimeSpan.FromSeconds(5));
     }
 
@@ -199,7 +201,13 @@ public sealed class KillSwitchTripRaceTests : IDisposable
 
         var sweep = await oms.CancelAllAsync().WaitAsync(TimeSpan.FromSeconds(2));
 
-        sweep.Should().BeSameAs(KillSwitchSweepResult.Empty);
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
+        sweep.Requested.Should().Be(0);
+        sweep.Cancelled.Should().Be(0);
+        sweep.StillWorking.Should().BeEmpty();
+        sweep.BrokerViewUnavailable.Should().BeFalse();
+        sweep.IncidentId.Should().NotBeNullOrWhiteSpace("each sweep has its own evidence receipt, including an empty book");
+        sweep.EvidenceRetained.Should().BeFalse("this fixture has no audit store");
     }
 
     public void Dispose()

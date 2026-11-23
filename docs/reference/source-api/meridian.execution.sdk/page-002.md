@@ -6,6 +6,63 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OptionGreeks
+
+Qualified name: <code>Meridian.Execution.Sdk.Derivatives.OptionGreeks</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs:30](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs#L30).
+
+A point-in-time snapshot of an option position&#x27;s Greek sensitivities. All values are expressed in the standard &quot;per share&quot; convention; multiply by OptionDetails.ContractMultiplier for the full contract impact.
+
+```csharp
+public sealed record OptionGreeks(double Delta, double Gamma, double Theta, double Vega, double Rho, double ImpliedVolatility, DateTimeOffset AsOf)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public double DollarDelta(int contracts, int multiplier = 100) =&gt; …;</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs:43](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs#L43) | Dollar-delta: the P&amp;L sensitivity to a $1 move, scaled for a given number of contracts with the specified multiplier. |
+| <code>public double DollarTheta(int contracts, int multiplier = 100) =&gt; …;</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs:50](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs#L50) | Dollar-theta: daily time-decay cost, scaled for a given number of contracts with the specified multiplier. |
+
+## OptionRight
+
+Qualified name: <code>Meridian.Execution.Sdk.Derivatives.OptionRight</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:6](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L6).
+
+Specifies which side of the options market a contract grants access to.
+
+```csharp
+public enum OptionRight
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Call</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:9](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L9) | The holder may buy the underlying. |
+| <code>Put</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:12](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L12) | The holder may sell the underlying. |
+
+## OptionStyle
+
+Qualified name: <code>Meridian.Execution.Sdk.Derivatives.OptionStyle</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:18](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L18).
+
+Exercise style of an option contract.
+
+```csharp
+public enum OptionStyle
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>European</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:21](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L21) | May only be exercised at expiry (European-style). |
+| <code>American</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:24](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L24) | May be exercised at any time before or at expiry (American-style). |
+
 ## ExecutionAccountGrant
 
 Qualified name: <code>Meridian.Execution.Sdk.ExecutionAccountGrant</code>. Kind: `class`.
@@ -561,7 +618,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Sdk.IOrderIntentSubmitter</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution.Sdk/OrderIntent.cs:30](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L30).
+Source: [src/Meridian.Execution.Sdk/OrderIntent.cs:35](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L35).
 
 Versioned submissions use the same OMS instance as existing order requests.
 
@@ -573,7 +630,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;OrderResult&gt; SubmitIntentAsync(OrderIntent intent, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:32](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L32) |  |
+| <code>Task&lt;OrderResult&gt; SubmitIntentAsync(OrderIntent intent, CancellationToken ct = default);</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:37](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L37) |  |
 
 ## IOrderManager
 
@@ -824,13 +881,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool BrokerViewUnavailable { get; init; }</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:56](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L56) | True when the broker&#x27;s own open-order book could not be enumerated, so the sweep covered only the in-memory book. Distinct from Outcome because the two failures call for different operator responses: StillWorking names orders to cancel by hand, while this flag means the broker may hold orders the sweep never even saw — after an OMS restart or for legs the OMS does not track — and the broker book must be verified directly. |
-| <code>public string? BrokerViewError { get; init; }</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:59](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L59) | Why the broker book could not be enumerated, when BrokerViewUnavailable. |
-| <code>public static KillSwitchSweepResult Empty { get; } = new (KillSwitchSweepOutcome.Completed, 0, 0, []);</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:62](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L62) | A sweep over an empty book. Vacuously complete, and honestly so. |
-| <code>public static KillSwitchSweepResult Unestablished(int openCount) =&gt; …;</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:71](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L71) | A sweep whose outcome an order manager did not report. Failed rather than completed, because &quot;we were told nothing&quot; and &quot;the book is empty&quot; are the same value only if you assume the answer you wanted — and on a kill switch that assumption routes orders. |
-| <code>public bool RequiresOperatorAction =&gt; …;</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:88](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L88) | Whether an operator has to act. True whenever anything is still working — or whenever the broker book could not be enumerated, because a sweep that never saw the broker&#x27;s view cannot establish the book is empty, which is the question the audit trail and the endpoint response both need answered. |
-| <code>public static KillSwitchSweepResult From(int requested, int cancelled, IReadOnlyList&lt;KillSwitchSweepFailure&gt; stillWorking);</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:96](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L96) | Builds the aggregate from per-order outcomes. Partial rather than failed whenever anything was cancelled, because the two call for different operator responses: a partial sweep leaves a named list to chase, while a failed one means the kill switch did not fire at all. |
-| <code>public string Describe();</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:118](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L118) | Operator-facing summary naming the orders still working, because a count alone tells an operator that something survived without telling them what to cancel by hand. |
+| <code>public string? IncidentId { get; init; }</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:49](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L49) | Stable identity of the retained incident, including an interrupted or unretained sweep. |
+| <code>public bool EvidenceRetained { get; init; }</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:52](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L52) | True only after the complete structured incident was acknowledged by durable storage. |
+| <code>public string? EvidenceError { get; init; }</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:55](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L55) | Retention failure is distinct from cancellation failure; cancellations still run. |
+| <code>public bool BrokerViewUnavailable { get; init; }</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:65](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L65) | True when the broker&#x27;s own open-order book could not be enumerated, so the sweep covered only the in-memory book. Distinct from Outcome because the two failures call for different operator responses: StillWorking names orders to cancel by hand, while this flag means the broker may hold orders the sweep never even saw — after an OMS restart or for legs the OMS does not track — and the broker book must be verified directly. |
+| <code>public string? BrokerViewError { get; init; }</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:68](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L68) | Why the broker book could not be enumerated, when BrokerViewUnavailable. |
+| <code>public static KillSwitchSweepResult Empty { get; } = new (KillSwitchSweepOutcome.Completed, 0, 0, []);</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:71](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L71) | A sweep over an empty book. Vacuously complete, and honestly so. |
+| <code>public static KillSwitchSweepResult Unestablished(int openCount) =&gt; …;</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:80](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L80) | A sweep whose outcome an order manager did not report. Failed rather than completed, because &quot;we were told nothing&quot; and &quot;the book is empty&quot; are the same value only if you assume the answer you wanted — and on a kill switch that assumption routes orders. |
+| <code>public bool RequiresOperatorAction =&gt; …;</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:97](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L97) | Whether an operator has to act. True whenever anything is still working — or whenever the broker book could not be enumerated, because a sweep that never saw the broker&#x27;s view cannot establish the book is empty, which is the question the audit trail and the endpoint response both need answered. |
+| <code>public static KillSwitchSweepResult From(int requested, int cancelled, IReadOnlyList&lt;KillSwitchSweepFailure&gt; stillWorking);</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:105](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L105) | Builds the aggregate from per-order outcomes. Partial rather than failed whenever anything was cancelled, because the two call for different operator responses: a partial sweep leaves a named list to chase, while a failed one means the kill switch did not fire at all. |
+| <code>public string Describe();</code> | [src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs:127](../../../../src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs#L127) | Operator-facing summary naming the orders still working, because a count alone tells an operator that something survived without telling them what to cancel by hand. |
 
 ## OptionContractIdentity
 
@@ -959,56 +1019,3 @@ Enum declarations:
 | <code>EscalationRelease</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:26](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L26) | A risk-escalated order released by an approver; carries the parked authority. |
 | <code>StrategyRun</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:29](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L29) | An order generated by a running strategy (paper or live run). |
 | <code>KillSwitch</code> | [src/Meridian.Execution.Sdk/OrderCommandAuthority.cs:32](../../../../src/Meridian.Execution.Sdk/OrderCommandAuthority.cs#L32) | A kill-switch cancellation. Cancel-only; never refused on authority. |
-
-## OrderIntent
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderIntent</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution.Sdk/OrderIntent.cs:4](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L4).
-
-Server-resolved scope and terms for submitting one order to the OMS.
-
-```csharp
-public sealed record OrderIntent(Guid IntentId, string TenantId, string CompanyId, Guid FundAccountId, string Actor, OrderRequest Terms, StrategyOrderAuthority? StrategyAuthority = null);
-```
-
-## OrderIntentStatus
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderIntentStatus</code>. Kind: `class`.
-
-Source: [src/Meridian.Execution.Sdk/OrderIntent.cs:21](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L21).
-
-```csharp
-public static class OrderIntentStatus
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string Retained = &quot;Retained&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:23](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L23) |  |
-| <code>public const string Conflict = &quot;Conflict&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:24](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L24) |  |
-| <code>public const string ReconciliationRequired = &quot;ReconciliationRequired&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:25](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L25) |  |
-| <code>public const string Blocked = &quot;Blocked&quot;;</code> | [src/Meridian.Execution.Sdk/OrderIntent.cs:26](../../../../src/Meridian.Execution.Sdk/OrderIntent.cs#L26) |  |
-
-## OrderLeg
-
-Qualified name: <code>Meridian.Execution.Sdk.OrderLeg</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution.Sdk/Models.cs:112](../../../../src/Meridian.Execution.Sdk/Models.cs#L112).
-
-One leg in a multi-leg options order.
-
-```csharp
-public sealed record OrderLeg
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:114](../../../../src/Meridian.Execution.Sdk/Models.cs#L114) |  |
-| <code>public required OrderSide Side { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:115](../../../../src/Meridian.Execution.Sdk/Models.cs#L115) |  |
-| <code>public required decimal RatioQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:116](../../../../src/Meridian.Execution.Sdk/Models.cs#L116) |  |
-| <code>public PositionIntent? PositionIntent { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:117](../../../../src/Meridian.Execution.Sdk/Models.cs#L117) |  |
-| <code>public OptionContractIdentity? OptionContract { get; init; }</code> | [src/Meridian.Execution.Sdk/Models.cs:118](../../../../src/Meridian.Execution.Sdk/Models.cs#L118) |  |

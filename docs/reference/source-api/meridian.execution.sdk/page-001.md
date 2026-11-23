@@ -840,6 +840,109 @@ Declared public members:
 | <code>public string ValidationArtifactPath { get; set; } = &quot;artifacts/provider-validation/_automation/current/wave1-validation-summary.json&quot;;</code> | [src/Meridian.Execution.Sdk/BrokerageConfiguration.cs:100](../../../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs#L100) |  |
 | <code>public string SignoffArtifactPath { get; set; } = &quot;artifacts/provider-validation/_automation/current/dk1-operator-signoff.json&quot;;</code> | [src/Meridian.Execution.Sdk/BrokerageConfiguration.cs:102](../../../../src/Meridian.Execution.Sdk/BrokerageConfiguration.cs#L102) |  |
 
+## CancelAllIncident
+
+Qualified name: <code>Meridian.Execution.Sdk.CancelAllIncident</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/CancelAllIncident.cs:56](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L56).
+
+Complete or interrupted cancel-all evidence reconstructed from the execution audit WAL. Account projections contain only orders attributed to the requested account. Broker-wide coverage is observational and never establishes that an omitted account has no exposure.
+
+```csharp
+public sealed record CancelAllIncident
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int Version { get; init; } = 1;</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:58](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L58) |  |
+| <code>public required string IncidentId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:59](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L59) |  |
+| <code>public required DateTimeOffset StartedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:60](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L60) |  |
+| <code>public DateTimeOffset? CompletedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:61](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L61) |  |
+| <code>public string? Actor { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:62](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L62) |  |
+| <code>public string? CorrelationId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:63](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L63) |  |
+| <code>public OrderSubmissionAuthorityRecord? Authority { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:64](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L64) |  |
+| <code>public required string GatewayId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:65](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L65) |  |
+| <code>public required ExecutionMode ExecutionMode { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:66](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L66) |  |
+| <code>public string? BrokerScopeIdentity { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:67](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L67) |  |
+| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:68](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L68) |  |
+| <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:69](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L69) |  |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:70](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L70) |  |
+| <code>public bool IsAccountProjection { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:71](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L71) |  |
+| <code>public string EvidenceStatus { get; init; } = &quot;InProgress&quot;;</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:73](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L73) | InProgress, Complete or Interrupted. Complete describes evidence, not cancellation success. |
+| <code>public string? EvidenceError { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:74](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L74) |  |
+| <code>public bool BrokerViewUnavailable { get; init; } = true;</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:75](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L75) |  |
+| <code>public string? BrokerViewError { get; init; } = &quot;Broker convergence has not been observed.&quot;;</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:76](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L76) |  |
+| <code>public IReadOnlyList&lt;CancelAllOrderOutcome&gt; Orders { get; init; } = [];</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:77](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L77) |  |
+
+## CancelAllOrderDisposition
+
+Qualified name: <code>Meridian.Execution.Sdk.CancelAllOrderDisposition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Execution.Sdk/CancelAllIncident.cs:4](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L4).
+
+The observed outcome of one cancel-all operation, separate from broker order status.
+
+```csharp
+public enum CancelAllOrderDisposition
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:6](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L6) |  |
+| <code>ConfirmedCancelled</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:7](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L7) |  |
+| <code>FilledDuringCancel</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:8](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L8) |  |
+| <code>AlreadyTerminal</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:9](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L9) |  |
+| <code>StillWorking</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:10](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L10) |  |
+| <code>WithdrawnBeforeDispatch</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:11](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L11) |  |
+
+## CancelAllOrderOutcome
+
+Qualified name: <code>Meridian.Execution.Sdk.CancelAllOrderOutcome</code>. Kind: `record`.
+
+Source: [src/Meridian.Execution.Sdk/CancelAllIncident.cs:18](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L18).
+
+Retained observations for one local order or broker-only order. These are evidence as of ObservedAt, not a current position valuation or a new accounting posting.
+
+```csharp
+public sealed record CancelAllOrderOutcome
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string ObservationKey { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:21](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L21) | Distinguishes local and broker identities even when their text happens to collide. |
+| <code>public required string OrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:22](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L22) |  |
+| <code>public string? BrokerOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:23](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L23) |  |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:24](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L24) |  |
+| <code>public string? BrokerAccountId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:25](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L25) |  |
+| <code>public string? Symbol { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:26](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L26) |  |
+| <code>public OrderSide? Side { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:27](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L27) |  |
+| <code>public string Operation { get; init; } = &quot;Cancel&quot;;</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:28](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L28) |  |
+| <code>public CancelAllOrderDisposition Disposition { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:29](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L29) |  |
+| <code>public OrderStatus? InitialStatus { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:30](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L30) |  |
+| <code>public OrderStatus? Status { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:31](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L31) |  |
+| <code>public decimal? InitialQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:32](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L32) |  |
+| <code>public decimal? InitialFilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:33](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L33) |  |
+| <code>public decimal? Quantity { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:34](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L34) |  |
+| <code>public decimal? FilledQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:35](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L35) |  |
+| <code>public decimal? RemainingQuantity { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:37](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L37) | Possible remaining order quantity; null means it could not be established. |
+| <code>public bool CancellationAttempted { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:38](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L38) |  |
+| <code>public bool RequiresReconciliation { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:39](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L39) |  |
+| <code>public bool HasUnconfirmedReplacement { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:40](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L40) |  |
+| <code>public string? CandidateBrokerOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:41](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L41) |  |
+| <code>public string? CandidateClientOrderId { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:42](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L42) |  |
+| <code>public decimal? ResidualNotional { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:43](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L43) |  |
+| <code>public string? Currency { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:44](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L44) |  |
+| <code>public string ValuationCoverage { get; init; } = &quot;Unavailable&quot;;</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:45](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L45) |  |
+| <code>public OrderMarketReference? ValuationReference { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:46](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L46) |  |
+| <code>public required DateTimeOffset ObservedAt { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:47](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L47) |  |
+| <code>public string? Detail { get; init; }</code> | [src/Meridian.Execution.Sdk/CancelAllIncident.cs:48](../../../../src/Meridian.Execution.Sdk/CancelAllIncident.cs#L48) |  |
+
 ## CanonicalTaxLotAdapter
 
 Qualified name: <code>Meridian.Execution.Sdk.CanonicalTaxLotAdapter</code>. Kind: `class`.
@@ -898,60 +1001,3 @@ Declared public members:
 | <code>public bool IsInTheMoney(decimal underlyingPrice) =&gt; …;</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:62](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L62) | Indicates whether the option is in the money given the current underlying price. |
 | <code>public int DaysToExpiry(DateOnly asOf) =&gt; …;</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:67](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L67) | Approximate number of calendar days remaining until expiry from asOf. |
 | <code>public double TimeToExpiryYears(DateOnly asOf) =&gt; …;</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:72](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L72) | Approximate time-to-expiry in years (calendar days / 365). |
-
-## OptionGreeks
-
-Qualified name: <code>Meridian.Execution.Sdk.Derivatives.OptionGreeks</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs:30](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs#L30).
-
-A point-in-time snapshot of an option position&#x27;s Greek sensitivities. All values are expressed in the standard &quot;per share&quot; convention; multiply by OptionDetails.ContractMultiplier for the full contract impact.
-
-```csharp
-public sealed record OptionGreeks(double Delta, double Gamma, double Theta, double Vega, double Rho, double ImpliedVolatility, DateTimeOffset AsOf)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public double DollarDelta(int contracts, int multiplier = 100) =&gt; …;</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs:43](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs#L43) | Dollar-delta: the P&amp;L sensitivity to a $1 move, scaled for a given number of contracts with the specified multiplier. |
-| <code>public double DollarTheta(int contracts, int multiplier = 100) =&gt; …;</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs:50](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionGreeks.cs#L50) | Dollar-theta: daily time-decay cost, scaled for a given number of contracts with the specified multiplier. |
-
-## OptionRight
-
-Qualified name: <code>Meridian.Execution.Sdk.Derivatives.OptionRight</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:6](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L6).
-
-Specifies which side of the options market a contract grants access to.
-
-```csharp
-public enum OptionRight
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Call</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:9](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L9) | The holder may buy the underlying. |
-| <code>Put</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:12](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L12) | The holder may sell the underlying. |
-
-## OptionStyle
-
-Qualified name: <code>Meridian.Execution.Sdk.Derivatives.OptionStyle</code>. Kind: `enum`.
-
-Source: [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:18](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L18).
-
-Exercise style of an option contract.
-
-```csharp
-public enum OptionStyle
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>European</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:21](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L21) | May only be exercised at expiry (European-style). |
-| <code>American</code> | [src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs:24](../../../../src/Meridian.Execution.Sdk/Derivatives/OptionDetails.cs#L24) | May be exercised at any time before or at expiry (American-style). |
