@@ -7,6 +7,7 @@ using Npgsql;
 
 namespace Meridian.Tests.Storage;
 
+[Trait("Category", "Integration")]
 public sealed class LoanReconciliationPostgresTests
 {
     [LedgerDatabaseFact]

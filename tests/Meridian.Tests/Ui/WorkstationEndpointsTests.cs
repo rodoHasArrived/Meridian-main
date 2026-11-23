@@ -954,7 +954,13 @@ public sealed partial class WorkstationEndpointsTests
             {
                 [accountSnapshot.AccountId] = accountSnapshot
             },
-            DayCashFlows: []);
+            DayCashFlows: [])
+        {
+            AccountingPositions =
+            [
+                new("AAPL", accountSnapshot.AccountId, ReconciliationAaplSecurityId, false, 10m, 400m, "Shares", 1m, "USD")
+            ]
+        };
 
         var metrics = new BacktestMetrics(
             InitialCapital: 1_000m,
@@ -1050,7 +1056,14 @@ public sealed partial class WorkstationEndpointsTests
             {
                 [accountSnapshot.AccountId] = accountSnapshot
             },
-            DayCashFlows: []);
+            DayCashFlows: [])
+        {
+            AccountingPositions =
+            [
+                new("AAPL", accountSnapshot.AccountId, ReconciliationAaplSecurityId, false, 10m, 400m, "Shares", 1m, "USD"),
+                new("TSLA", accountSnapshot.AccountId, ReconciliationTslaSecurityId, true, -5m, 150m, "Shares", 1m, "USD")
+            ]
+        };
 
         var request = new BacktestRequest(
             From: new DateOnly(2026, 3, 20),
@@ -1143,7 +1156,14 @@ public sealed partial class WorkstationEndpointsTests
             {
                 [accountSnapshot.AccountId] = accountSnapshot
             },
-            DayCashFlows: []);
+            DayCashFlows: [])
+        {
+            AccountingPositions =
+            [
+                new("AAPL", accountSnapshot.AccountId, ReconciliationAaplSecurityId, false, 10m, 400m, "Shares", 1m, "USD"),
+                new("TSLA", accountSnapshot.AccountId, ReconciliationTslaSecurityId, true, -5m, 150m, "Shares", 1m, "USD")
+            ]
+        };
 
         var request = new BacktestRequest(
             From: new DateOnly(2026, 3, 20),
@@ -1580,40 +1600,36 @@ public sealed partial class WorkstationEndpointsTests
             ]);
     }
 
+    private static readonly Guid ReconciliationAaplSecurityId = new("33333333-3333-3333-3333-333333333333");
+    private static readonly Guid ReconciliationTslaSecurityId = new("44444444-4444-4444-4444-444444444444");
+
     private static global::Meridian.Ledger.Ledger CreateLedger()
     {
-        var ledger = new global::Meridian.Ledger.Ledger();
-        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero), "Initial capital",
+        var ledger = new global::Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+        var accountId = BacktestDefaults.DefaultBrokerageAccountId;
+        ledger.PostLines(new DateTimeOffset(2026, 3, 21, 16, 0, 0, TimeSpan.Zero), "Initial capital",
         [
-            (LedgerAccounts.Cash, 1_000m, 0m),
-            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+            (LedgerAccounts.CashFor(accountId), 1_000m, 0m),
+            (LedgerAccounts.CapitalAccountFor(accountId), 0m, 1_000m)
         ]);
-        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, TimeSpan.Zero), "Buy AAPL",
-        [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
-            (LedgerAccounts.Cash, 0m, 400m)
-        ]);
-        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, TimeSpan.Zero), "Open TSLA short",
-        [
-            (LedgerAccounts.Cash, 150m, 0m),
-            (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)
-        ]);
+        PostReconciliationTrade(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, TimeSpan.Zero),
+            "Buy AAPL", "AAPL", ReconciliationAaplSecurityId, new(SecurityTradePostingKind.OpenLong, 10m, 400m));
+        PostReconciliationTrade(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, TimeSpan.Zero),
+            "Open TSLA short", "TSLA", ReconciliationTslaSecurityId, new(SecurityTradePostingKind.OpenShort, 5m, 150m));
         return ledger;
     }
 
     private static global::Meridian.Ledger.Ledger CreateMismatchedLedger()
     {
-        var ledger = new global::Meridian.Ledger.Ledger();
-        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero), "Initial capital",
+        var ledger = new global::Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+        var accountId = BacktestDefaults.DefaultBrokerageAccountId;
+        ledger.PostLines(new DateTimeOffset(2026, 3, 21, 17, 0, 0, TimeSpan.Zero), "Initial capital",
         [
-            (LedgerAccounts.Cash, 1_000m, 0m),
-            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+            (LedgerAccounts.CashFor(accountId), 1_000m, 0m),
+            (LedgerAccounts.CapitalAccountFor(accountId), 0m, 1_000m)
         ]);
-        PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 17, 10, 0, 0, TimeSpan.Zero), "Buy AAPL",
-        [
-            (LedgerAccounts.Securities("AAPL"), 350m, 0m),
-            (LedgerAccounts.Cash, 0m, 350m)
-        ]);
+        PostReconciliationTrade(ledger, new DateTimeOffset(2026, 3, 21, 17, 10, 0, TimeSpan.Zero),
+            "Buy AAPL", "AAPL", ReconciliationAaplSecurityId, new(SecurityTradePostingKind.OpenLong, 10m, 350m));
         return ledger;
     }
 
@@ -1621,18 +1637,31 @@ public sealed partial class WorkstationEndpointsTests
         DateTimeOffset startedAt,
         DateTimeOffset portfolioAsOf)
     {
-        var ledger = new global::Meridian.Ledger.Ledger();
-        PostBalancedEntry(ledger, startedAt, "Initial capital",
+        var ledger = new global::Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+        var accountId = BacktestDefaults.DefaultBrokerageAccountId;
+        ledger.PostLines(startedAt, "Initial capital",
         [
-            (LedgerAccounts.Cash, 1_000m, 0m),
-            (LedgerAccounts.CapitalAccount, 0m, 1_000m)
+            (LedgerAccounts.CashFor(accountId), 1_000m, 0m),
+            (LedgerAccounts.CapitalAccountFor(accountId), 0m, 1_000m)
         ]);
-        PostBalancedEntry(ledger, portfolioAsOf, "Buy AAPL",
-        [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
-            (LedgerAccounts.Cash, 0m, 400m)
-        ]);
+        PostReconciliationTrade(ledger, portfolioAsOf, "Buy AAPL", "AAPL", ReconciliationAaplSecurityId,
+            new(SecurityTradePostingKind.OpenLong, 10m, 400m));
         return ledger;
+    }
+
+    private static void PostReconciliationTrade(
+        global::Meridian.Ledger.Ledger ledger,
+        DateTimeOffset timestamp,
+        string description,
+        string symbol,
+        Guid securityId,
+        SecurityTradePosting posting)
+    {
+        var accountId = BacktestDefaults.DefaultBrokerageAccountId;
+        var metadata = SecurityTradePositionEvidence.WithPostings(
+            new(ActivityType: "execution.trade-fill", Symbol: symbol, SecurityId: securityId, FinancialAccountId: accountId),
+            [posting], SecurityLotUnitKind.Shares, 1m);
+        ledger.PostLines(timestamp, description, SecurityTradePostingProjector.Project(posting, symbol, accountId), metadata);
     }
 
     private static void PostBalancedEntry(
