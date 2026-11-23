@@ -87,7 +87,7 @@ public sealed partial class FreshHostAccountingRehearsalTests
                 options: new PaperTradingGatewayOptions { AllowScaffoldMarketFills = true }, costOptions: costs);
             var controls = new ExecutionOperatorControlService(new(Path.Combine(scope.Root, "controls")),
                 NullLogger<ExecutionOperatorControlService>.Instance);
-            _audit = new(new(Path.Combine(scope.Root, "audit")), NullLogger<ExecutionAuditTrailService>.Instance);
+            _audit = new(new ExecutionAuditTrailOptions(Path.Combine(scope.Root, "audit")), NullLogger<ExecutionAuditTrailService>.Instance);
             _journal = new(Path.Combine(scope.Root, "execution-journal"));
             Oms = new(_gateway, NullLogger<OrderManagementSystem>.Instance,
                 riskValidator: new CompositeRiskValidator([new OrderRateThrottle(20, NullLogger<OrderRateThrottle>.Instance)],

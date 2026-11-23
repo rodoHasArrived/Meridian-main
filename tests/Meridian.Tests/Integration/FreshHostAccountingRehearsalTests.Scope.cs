@@ -75,7 +75,7 @@ public sealed partial class FreshHostAccountingRehearsalTests
             AccountingPolicyId: "rehearsal-fill-policy", AccountingPolicyVersion: "v1");
         await setup.SaveLedgerBookAsync(book, ct);
         var period = await setup.SavePeriodAsync(new(Guid.NewGuid(), book.LedgerBookId, now.Year, now.Month,
-            "Synthetic current month", start, start.AddMonths(1).AddDays(-1), "Open", now, null, 0), 0, ct);
+            "Synthetic current month", start, start.AddMonths(1).AddDays(-1), "Open", now, null, 0), 0, ct: ct);
         var chart = new ChartOfAccountsNodeDto[]
         {
             new("cash", "Assets:Cash", "Cash", "Asset"),
