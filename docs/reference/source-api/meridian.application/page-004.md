@@ -155,7 +155,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.DirectLending.CommittedCommandMatch</code>. Kind: `enum`.
 
-Source: [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:477](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L477).
+Source: [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:613](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L613).
 
 Outcome of DirectLendingServiceSupport.FindCommittedCommand.
 
@@ -167,9 +167,9 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>None</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:480](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L480) | The command id is not recorded: process the command. |
-| <code>Replay</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:483](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L483) | The same request already committed: return the committed state. |
-| <code>Conflict</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:486](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L486) | The command id was used for a different mutation or different inputs. |
+| <code>None</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:616](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L616) | The command id is not recorded: process the command. |
+| <code>Replay</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:619](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L619) | The same request already committed: return the committed state. |
+| <code>Conflict</code> | [src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs:622](../../../../src/Meridian.Application/DirectLending/DirectLendingServiceSupport.cs#L622) | The command id was used for a different mutation or different inputs. |
 
 ## DailyAccrualWorker
 
@@ -609,7 +609,7 @@ Declared public members:
 | <code>public Task&lt;LoanServicingStateDto?&gt; TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs:732](../../../../src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs#L732) |  |
 | <code>public Task&lt;LoanServicingStateDto?&gt; TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs:747](../../../../src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs#L747) |  |
 | <code>public Task&lt;LoanContractDetailDto?&gt; RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs:761](../../../../src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs#L761) |  |
-| <code>public Task&lt;LoanServicingStateDto?&gt; AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs:793](../../../../src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs#L793) |  |
+| <code>public Task&lt;LoanServicingStateDto?&gt; AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs:835](../../../../src/Meridian.Application/DirectLending/InMemoryDirectLendingService.cs#L835) |  |
 
 Source: [src/Meridian.Application/DirectLending/InMemoryDirectLendingService.ServicingSchedules.cs:11](../../../../src/Meridian.Application/DirectLending/InMemoryDirectLendingService.ServicingSchedules.cs#L11).
 
@@ -725,9 +725,9 @@ Declared public members:
 | <code>public async Task&lt;DirectLendingCommandResult&lt;LoanServicingStateDto&gt;&gt; TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1240](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1240) |  |
 | <code>public async Task&lt;DirectLendingCommandResult&lt;LoanServicingStateDto&gt;&gt; TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1280](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1280) |  |
 | <code>public async Task&lt;DirectLendingCommandResult&lt;LoanContractDetailDto&gt;&gt; RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1319](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1319) |  |
-| <code>public async Task&lt;DirectLendingCommandResult&lt;LoanServicingStateDto&gt;&gt; AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1408](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1408) |  |
-| <code>public async Task&lt;DirectLendingCommandResult&lt;IReadOnlyList&lt;LoanAggregateSnapshotDto&gt;&gt;&gt; RebuildAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1466](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1466) |  |
-| <code>public async Task&lt;DirectLendingCommandResult&lt;bool&gt;&gt; PublishAssetOperationsAsync(Guid loanId, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1656](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1656) |  |
+| <code>public async Task&lt;DirectLendingCommandResult&lt;LoanServicingStateDto&gt;&gt; AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1470](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1470) |  |
+| <code>public async Task&lt;DirectLendingCommandResult&lt;IReadOnlyList&lt;LoanAggregateSnapshotDto&gt;&gt;&gt; RebuildAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1528](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1528) |  |
+| <code>public async Task&lt;DirectLendingCommandResult&lt;bool&gt;&gt; PublishAssetOperationsAsync(Guid loanId, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default);</code> | [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs:1718](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.cs#L1718) |  |
 
 Source: [src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.ServicingSchedules.cs:10](../../../../src/Meridian.Application/DirectLending/PostgresDirectLendingCommandService.ServicingSchedules.cs#L10).
 
