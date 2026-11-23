@@ -1013,8 +1013,9 @@ applicability text distinguishes dimensions applied here from those retained for
 
 Entity and fund (P4) are scope dimensions carried as the `entityId` and `fundId` URL parameters
 (`app-shell.operating-scope.ts`), in browser storage, recent scopes, saved layouts, Copy link and
-the operator's server-side default scope. They are written into every route's URL because they head
-the scope hierarchy, but they are applied only where a screen reads them: Accounting reads
+the operator's server-side default scope. Ordinary workspace links carry these dimensions because
+they head the scope hierarchy. Record links marked `recordScope=1` use their explicit route scope
+without adding remembered dimensions. Entity and fund are applied only where a screen reads them: Accounting reads
 `entityId` (close scope, intercompany and payment-approval panels), and the screens below narrow
 their fund-account rows by entity and fund. Elsewhere a set fund shows as retained. The picker's entity, fund and account options come from
 `GET /api/workstation/scope-options` (`lib/operating-scope/structure-options.ts`, loaded by
@@ -1052,7 +1053,7 @@ payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCO
 - Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): household accounts and positions, with
   household totals re-summed over the accounts kept. Other Portfolio routes keep the whole household.
 - Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue and its counts.
-- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list and
+- Accounting > Close (`/accounting/close`): the workflow list and
   its count, keyed by each workflow's fund account. The selected workflow, its detail and its close
   reads follow the kept workflows. The route also applies `entityId` to its close-readiness read,
   as before; with the graph loaded, Fund is applied alongside it.
@@ -3344,8 +3345,9 @@ only from data the screen already loads:
   of the figures `ReconciliationComparisonPanel` already shows, with status passed explicitly so
   offsetting breaks never read as tied. Accept, resolve, escalate, reopen, and add-item actions and
   the reviewer line are omitted because no endpoint backs them. The external GL reconciliation is read
-  on the External GL workstream, so the tie-out appears in the Reconciliation band after that
-  workstream has been opened in the same Accounting session.
+  on the External GL workstream. After that read, the Reconciliation band shows a numeric tie-out
+  only when both sources provide comparable amounts in one declared currency and the proof can
+  preserve their exact values and difference; unavailable comparisons or proofs show a reason.
 - `OptimisticCell` (`src/components/data/optimistic-cell.tsx`, with `OptimisticProvider`,
   `OptimisticRowBar`, and `EditableCell`) edits provider module priority in place on the Settings
   provider card. The write is the existing provider-module update and always resends the module's
