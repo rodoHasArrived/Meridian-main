@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { screen, fireEvent, waitFor, within } from "@testing-library/react";
 import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import userEvent from "@testing-library/user-event";
@@ -373,6 +374,38 @@ async function openStrategyControls(user: ReturnType<typeof userEvent.setup>) {
 }
 
 describe("TradingScreen", () => {
+  it("reopens a closed tool on a second explicit visit to the same task link and preserves its draft", async () => {
+    const user = userEvent.setup();
+    const route = "/trading#promotion-gate-panel";
+    renderWithRouter(<WithHeaderRefresh>
+      <Link to={route}>Follow promotion task</Link>
+      <TradingScreen data={data} />
+    </WithHeaderRefresh>, { initialEntries: [route] });
+    const gate = await screen.findByRole("dialog", { name: /backtest.*paper promotion gate/i });
+    await user.type(within(gate).getByLabelText("Approval reason"), "Retained review draft");
+    await user.keyboard("{Escape}");
+    expect(screen.queryByRole("dialog", { name: /backtest.*paper promotion gate/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Header refresh" }));
+    await waitForAsyncEffects();
+    expect(screen.queryByRole("dialog", { name: /backtest.*paper promotion gate/i })).not.toBeInTheDocument();
+
+    await user.click(screen.getByRole("link", { name: "Follow promotion task" }));
+    const reopened = await screen.findByRole("dialog", { name: /backtest.*paper promotion gate/i });
+    expect(within(reopened).getByLabelText("Approval reason")).toHaveValue("Retained review draft");
+    expect(api.approvePromotion).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    ["#session-replay-panel", /session replay controls/i],
+    ["#promotion-gate-panel", /backtest.*paper promotion gate/i]
+  ])("opens the requested tool from an attention deep link %s", async (hash, name) => {
+    await renderTradingScreen(data, `/trading?fundAccountId=account-b${hash}`);
+    expect(await screen.findByRole("dialog", { name })).toBeVisible();
+    expect(api.approvePromotion).not.toHaveBeenCalled();
+    expect(api.startReplay).not.toHaveBeenCalled();
+  });
+
   it("retains source order and fill prices and identifies their unavailable currency", async () => {
     const user = userEvent.setup();
     await renderTradingScreen(data, "/trading/orders");

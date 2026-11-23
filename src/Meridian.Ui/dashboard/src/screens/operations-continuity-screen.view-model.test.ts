@@ -1558,7 +1558,7 @@ describe("Operations Continuity view model", () => {
       dueLabel: "May 9, 2026, 00:00 UTC",
       slaLabel: "SLA Warning due May 9, 2026, 16:00 UTC",
       escalationLabel: "Level 2 at May 8, 2026, 15:20 UTC: Aged cash variance past controller SLA",
-      varianceLabel: "Expected 125,000.25 / Actual 124,998.25 / Variance -2",
+      varianceLabel: "Expected 125,000.25 / Actual 124,998.25 / Variance −2.00 · Unit unavailable",
       materialityLabel: "Materiality 2",
       sourceLabel: "ledger vs custodian",
       rootCauseLabel: "Root cause Broker Cash Timing",
