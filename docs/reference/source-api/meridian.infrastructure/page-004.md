@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FailoverAwareMarketDataClient
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L31).
+
+A composite IMarketDataClient that wraps multiple provider clients and automatically switches between them based on failover rules managed by StreamingFailoverService.
+
+```csharp
+public sealed class FailoverAwareMarketDataClient : IMarketDataClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public FailoverAwareMarketDataClient(Dictionary&lt;string, IMarketDataClient&gt; providers, StreamingFailoverService failoverService, string ruleId, string initialProviderId, IMarketEventPublisher? integrityPublisher = null);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L88) | Creates a new failover-aware client. |
+| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L126) |  |
+| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:129](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L129) |  |
+| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:132](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L132) |  |
+| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:157](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L157) |  |
+| <code>public async Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:202](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L202) |  |
+| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:231](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L231) |  |
+| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:277](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L277) |  |
+| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:312](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L312) |  |
+| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:358](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L358) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:395](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L395) |  |
+| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:396](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L396) |  |
+| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:397](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L397) |  |
+| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:398](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L398) |  |
+| <code>public ProviderCapabilities ProviderCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:399](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L399) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:405](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L405) |  |
+| <code>public string ActiveProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:470](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L470) | Gets the currently active provider ID. |
+
+## FailoverRecoveredEvent
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1436](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1436).
+
+Raised when the primary provider recovers and is restored as active.
+
+```csharp
+public readonly record struct FailoverRecoveredEvent(string RuleId, string FromProviderId, string ToProviderId, DateTimeOffset Timestamp);
+```
+
 ## FailoverRuleApplyOutcome
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRuleApplyOutcome</code>. Kind: `record`.
@@ -1496,25 +1542,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IBPacingViolationException(int errorCode, string message) : base(errorCode, message);</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:500](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L500) |  |
 | <code>public TimeSpan RecommendedWait =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs:508](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBApiLimits.cs#L508) | Recommended wait time before retrying. |
-
-## IBPositionUpdate
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBPositionUpdate</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs:93](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBBrokerageInterop.cs#L93).
-
-```csharp
-public sealed record IBPositionUpdate(string Account, string Symbol, string? SecurityType, decimal Quantity, double AverageCost, string? Currency, string? Exchange, IReadOnlyDictionary<string, string>? Metadata, DateTimeOffset ReceivedAt);
-```
-
-## IBRealTimeBarRequest
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.InteractiveBrokers.IBRealTimeBarRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs:18](../../../../src/Meridian.Infrastructure/Adapters/InteractiveBrokers/IBDataServices.cs#L18).
-
-Explicit parameters for a five-second IB real-time-bar stream.
-
-```csharp
-public sealed record IBRealTimeBarRequest(SymbolConfig Contract, string WhatToShow = "TRADES", bool UseRegularTradingHours = true);
-```

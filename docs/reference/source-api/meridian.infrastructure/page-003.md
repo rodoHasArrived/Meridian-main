@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderCapabilityDescriptor
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityDescriptor</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:168](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L168).
+
+```csharp
+public sealed record ProviderCapabilityDescriptor(string ProviderId, Type? Streaming = null, Type? Historical = null, Type? Search = null, Type? CorporateActions = null, Type? Options = null, Type? Brokerage = null, Type? SymbolResolver = null, Type? CompatibilityDataSource = null, IBProviderCapabilityExecutionMode ExecutionMode = IBProviderCapabilityExecutionMode.NotApplicable, IReadOnlyList<InstrumentType>? InstrumentTypes = null, IReadOnlyList<MarketDataAssetClass>? StreamingAssetClasses = null, IReadOnlyList<ProviderCapabilityExclusion>? Exclusions = null, IReadOnlyList<InstrumentType>? StreamingInstrumentTypes = null, IReadOnlyList<InstrumentType>? SearchInstrumentTypes = null, Func<ProviderFactory, IMarketDataClient?>? StreamingFactory = null, Func<ProviderFactory, IHistoricalDataProvider?>? HistoricalFactory = null, Func<ProviderFactory, ISymbolSearchProvider?>? SearchFactory = null, Func<ProviderFactory, ICorporateActionProvider?>? CorporateActionsFactory = null, Func<ProviderFactory, IOptionsChainProvider?>? OptionsFactory = null, Func<ProviderFactory, IBrokerageGateway?>? BrokerageFactory = null, Func<ProviderFactory, bool>? OptionsEnabled = null, ProviderCapabilityFactoryOwner FactoryOwner = ProviderCapabilityFactoryOwner.Descriptor)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IEnumerable&lt;ProviderCapabilityRegistration&gt; Registrations() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:198](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L198) | The same slots that advertise capabilities supply their construction functions. A null result means configuration or credentials disabled that capability; it never permits substitution with another provider family. |
+| <code>public IReadOnlyList&lt;InstrumentType&gt; SupportedInstrumentTypes { get; } = InstrumentTypes??[InstrumentType.Equity];</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:242](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L242) | Instrument types this provider is declared to cover. Declared here, next to the adapter type wiring, so capability assertions stay close to the code that implements them. Defaults to equities when a provider has not declared broader coverage. |
+| <code>public IReadOnlyList&lt;MarketDataAssetClass&gt; SupportedStreamingAssetClasses { get; } = StreamingAssetClasses??[];</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:244](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L244) |  |
+| <code>public IReadOnlyList&lt;InstrumentType&gt; SupportedStreamingInstrumentTypes { get; } = StreamingInstrumentTypes?? InstrumentTypes??[InstrumentType.Equity];</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:247](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L247) | Streaming coverage can be narrower than historical or reference-data coverage. |
+| <code>public IReadOnlyList&lt;InstrumentType&gt; SupportedSearchInstrumentTypes { get; } = SearchInstrumentTypes?? InstrumentTypes??[InstrumentType.Equity];</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:250](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L250) | Search coverage follows the reference catalog, independently of option-chain coverage. |
+| <code>public IReadOnlyList&lt;ProviderCapabilityExclusion&gt; ExplicitExclusions { get; } = Exclusions??[];</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:252](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L252) |  |
+| <code>public bool HasStreaming =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:254](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L254) |  |
+| <code>public bool HasHistorical =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:255](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L255) |  |
+| <code>public bool HasSearch =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:256](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L256) |  |
+| <code>public bool HasCorporateActions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:257](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L257) |  |
+| <code>public bool HasOptions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:258](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L258) |  |
+| <code>public bool HasBrokerage =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:259](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L259) |  |
+| <code>public bool HasSymbolResolver =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:260](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L260) |  |
+| <code>public bool HasCompatibilityDataSource =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:261](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L261) |  |
+| <code>public IEnumerable&lt;Type&gt; Implementations();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:263](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L263) |  |
+
+## ProviderCapabilityDescriptorCatalog
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityDescriptorCatalog</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:28](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L28).
+
+Canonical capability descriptors used to keep provider metadata, implemented interfaces, and registration paths aligned, including reference-only and compatibility families that do not expose the market-data surfaces shown by the operator capability matrix.
+
+```csharp
+public static class ProviderCapabilityDescriptorCatalog
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;ProviderCapabilityDescriptor&gt; Descriptors { get; } = [new (&quot;synthetic&quot;, Streaming : typeof(SyntheticMarketDataClient), Historical : typeof(SyntheticHistoricalDataProvider), Search : typeof(SyntheticMarketDataClient), Options : typeof(SyntheticOptionsChainProvider), Exclusions :[new (nameof(ICorporateActionProvider), &quot;SyntheticHistoricalDataProvider emits historical corporate-action evidence through ICorporateActionSource; it is not an on-demand ICorporateActionProvider.&quot;)], InstrumentTypes :[InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption], StreamingInstrumentTypes :[InstrumentType.Equity], SearchInstrumentTypes :[InstrumentType.Equity], StreamingFactory : static f =&gt; f.CreateSyntheticStreamingClient(), HistoricalFactory : static f =&gt; f.CreateSyntheticBackfillProvider(f.Config.Backfill?.Providers?.Synthetic), SearchFactory : static f =&gt; f.CreateSyntheticSearchProvider(f.Config.Backfill?.Providers?.Synthetic), OptionsFactory : static f =&gt; f.CreateAdapter&lt;SyntheticOptionsChainProvider&gt;()), new (&quot;ibkr&quot;, Streaming : typeof(IBMarketDataClient), Historical : typeof(IBHistoricalDataProvider), Brokerage : typeof(IBBrokerageGateway), ExecutionMode : IBProviderCapabilityExecutionMode.SimulationWhenVendorSdkUnavailable, InstrumentTypes :[InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex, InstrumentType.Bond, InstrumentType.CFD, InstrumentType.Warrant, InstrumentType.Index], StreamingInstrumentTypes :[InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Future, InstrumentType.FuturesOption, InstrumentType.Forex], StreamingFactory : static f =&gt; f.CreateIbStreamingClient(), HistoricalFactory : static f =&gt; f.CreateIbBackfillProvider(f.Config.IB), BrokerageFactory : static f =&gt; f.CreateIbBrokerageGateway()), new (&quot;alpaca&quot;, typeof(AlpacaMarketDataClient), typeof(AlpacaHistoricalDataProvider), typeof(AlpacaSymbolSearchProvider), typeof(AlpacaCorporateActionProvider), typeof(AlpacaOptionsChainProvider), typeof(AlpacaBrokerageGateway), InstrumentTypes :[InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Crypto], StreamingAssetClasses :[MarketDataAssetClass.Equities, MarketDataAssetClass.Options, MarketDataAssetClass.Crypto, MarketDataAssetClass.News], StreamingFactory : static f =&gt; f.CreateAlpacaStreamingClient(), HistoricalFactory : static f =&gt; f.CreateAlpacaBackfillProvider(f.Config.Backfill?.Providers?.Alpaca), SearchFactory : static f =&gt; f.CreateAlpacaSearchProvider(f.Config.Backfill?.Providers?.Alpaca), CorporateActionsFactory : static f =&gt; f.CreateCorporateActionProvider&lt;AlpacaCorporateActionProvider, AlpacaHistoricalDataProvider&gt;((&quot;ALPACA_KEY_ID&quot;, f.Config.Alpaca?.KeyId?? f.Config.Backfill?.Providers?.Alpaca?.KeyId), (&quot;ALPACA_SECRET_KEY&quot;, f.Config.Alpaca?.SecretKey?? f.Config.Backfill?.Providers?.Alpaca?.SecretKey)), OptionsFactory : static f =&gt; f.CreateAlpacaOptionsProvider(), BrokerageFactory : static f =&gt; f.CreateAlpacaBrokerageGateway()), YahooFinanceProviderModule.Descriptor, new (&quot;tiingo&quot;, Historical : typeof(TiingoHistoricalDataProvider), Search : typeof(TiingoSymbolSearchProvider), CorporateActions : typeof(TiingoCorporateActionProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Crypto], HistoricalFactory : static f =&gt; f.CreateTiingoBackfillProvider(f.Config.Backfill?.Providers?.Tiingo), SearchFactory : static f =&gt; f.CreateTiingoSearchProvider(f.Config.Backfill?.Providers?.Tiingo), CorporateActionsFactory : static f =&gt; f.CreateCorporateActionProvider&lt;TiingoCorporateActionProvider, TiingoHistoricalDataProvider&gt;((&quot;TIINGO_API_TOKEN&quot;, f.Config.Backfill?.Providers?.Tiingo?.ApiToken))), new (&quot;polygon&quot;, Streaming : typeof(PolygonMarketDataClient), Historical : typeof(PolygonHistoricalDataProvider), Search : typeof(PolygonSymbolSearchProvider), Options : typeof(PolygonOptionsChainProvider), Exclusions :[new (nameof(ICorporateActionProvider), &quot;PolygonCorporateActionFetcher is a hosted Security Master ingestion workflow; it does not implement the on-demand ICorporateActionProvider contract.&quot;)], InstrumentTypes :[InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index], StreamingInstrumentTypes :[InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.IndexOption], StreamingFactory : static f =&gt; f.CreatePolygonStreamingClient(), HistoricalFactory : static f =&gt; f.CreatePolygonBackfillProvider(f.Config.Backfill?.Providers?.Polygon), SearchFactory : static f =&gt; f.CreatePolygonSearchProvider(f.Config.Backfill?.Providers?.Polygon), OptionsFactory : static f =&gt; f.CreatePolygonOptionsProvider()), new (&quot;twelvedata&quot;, Historical : typeof(TwelveDataHistoricalDataProvider), Search : typeof(TwelveDataSymbolSearchProvider), CorporateActions : typeof(TwelveDataCorporateActionProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto, InstrumentType.Index], HistoricalFactory : static f =&gt; f.CreateTwelveDataBackfillProvider(), SearchFactory : static f =&gt; f.CreateTwelveDataSearchProvider(), CorporateActionsFactory : static f =&gt; f.CreateCorporateActionProvider&lt;TwelveDataCorporateActionProvider, TwelveDataHistoricalDataProvider&gt;((&quot;TWELVEDATA_API_KEY&quot;, null))), new (&quot;finnhub&quot;, Historical : typeof(FinnhubHistoricalDataProvider), Search : typeof(FinnhubSymbolSearchProvider), CorporateActions : typeof(FinnhubCorporateActionProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto], HistoricalFactory : static f =&gt; f.CreateFinnhubBackfillProvider(f.Config.Backfill?.Providers?.Finnhub), SearchFactory : static f =&gt; f.CreateFinnhubSearchProvider(f.Config.Backfill?.Providers?.Finnhub), CorporateActionsFactory : static f =&gt; f.CreateCorporateActionProvider&lt;FinnhubCorporateActionProvider, FinnhubHistoricalDataProvider&gt;((&quot;FINNHUB_API_KEY&quot;, f.Config.Backfill?.Providers?.Finnhub?.ApiKey))), new (&quot;stooq&quot;, Historical : typeof(StooqHistoricalDataProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Index], HistoricalFactory : static f =&gt; f.CreateStooqBackfillProvider(f.Config.Backfill?.Providers?.Stooq)), new (&quot;alphavantage&quot;, Historical : typeof(AlphaVantageHistoricalDataProvider), Search : typeof(AlphaVantageSymbolSearchProvider), CorporateActions : typeof(AlphaVantageCorporateActionProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Forex, InstrumentType.Crypto], HistoricalFactory : static f =&gt; f.CreateAlphaVantageBackfillProvider(f.Config.Backfill?.Providers?.AlphaVantage), SearchFactory : static f =&gt; f.CreateAlphaVantageSearchProvider(f.Config.Backfill?.Providers?.AlphaVantage), CorporateActionsFactory : static f =&gt; f.CreateCorporateActionProvider&lt;AlphaVantageCorporateActionProvider, AlphaVantageHistoricalDataProvider&gt;((&quot;ALPHA_VANTAGE_API_KEY&quot;, f.Config.Backfill?.Providers?.AlphaVantage?.ApiKey))), FredProviderModule.Descriptor, new (&quot;nasdaq&quot;, Historical : typeof(NasdaqDataLinkHistoricalDataProvider), Search : typeof(NasdaqDataLinkSymbolSearchProvider), CorporateActions : typeof(NasdaqDataLinkCorporateActionProvider), InstrumentTypes :[InstrumentType.Equity, InstrumentType.Commodity, InstrumentType.Index], HistoricalFactory : static f =&gt; f.CreateNasdaqBackfillProvider(f.Config.Backfill?.Providers?.Nasdaq), SearchFactory : static f =&gt; f.CreateNasdaqSearchProvider(f.Config.Backfill?.Providers?.Nasdaq), CorporateActionsFactory : static f =&gt; f.CreateCorporateActionProvider&lt;NasdaqDataLinkCorporateActionProvider, NasdaqDataLinkHistoricalDataProvider&gt;((&quot;NASDAQ_DATA_LINK_API_KEY&quot;, f.Config.Backfill?.Providers?.Nasdaq?.ApiKey))), new (&quot;robinhood&quot;, typeof(RobinhoodMarketDataClient), typeof(RobinhoodHistoricalDataProvider), typeof(RobinhoodSymbolSearchProvider), Options : typeof(RobinhoodOptionsChainProvider), Brokerage : typeof(RobinhoodBrokerageGateway), InstrumentTypes :[InstrumentType.Equity, InstrumentType.EquityOption, InstrumentType.Crypto], StreamingFactory : static f =&gt; f.CreateRobinhoodStreamingClient(), HistoricalFactory : static f =&gt; f.CreateRobinhoodBackfillProvider(f.Config.Backfill?.Providers?.Robinhood), SearchFactory : static f =&gt; f.CreateRobinhoodSearchProvider(), OptionsFactory : static f =&gt; f.CreateRobinhoodOptionsProvider(), BrokerageFactory : static f =&gt; f.CreateRobinhoodBrokerageGateway(), OptionsEnabled : static f =&gt; f.HasRobinhoodOptionsCredentials), new (&quot;edgar&quot;, Search : typeof(EdgarSymbolSearchProvider), Exclusions :[new (nameof(ICorporateActionProvider), &quot;EdgarReferenceDataProvider and EdgarSecurityMasterIngestProvider serve reference-data and Security Master ingestion workflows; neither implements ICorporateActionProvider.&quot;)], InstrumentTypes :[InstrumentType.Equity], SearchFactory : static _ =&gt; new EdgarSymbolSearchProvider()), new (&quot;nyse&quot;, Streaming : typeof(NyseMarketDataClient), CompatibilityDataSource : typeof(NYSEDataSource), Exclusions :[new (nameof(IHistoricalDataProvider), &quot;NYSEDataSource exposes historical access through IHistoricalDataSource; NyseHistoricalDataProvider is an internal helper, not an IHistoricalDataProvider adapter.&quot;)], InstrumentTypes :[InstrumentType.Equity, InstrumentType.Index], StreamingFactory : static f =&gt; f.CreateNyseStreamingClient()), new (&quot;openfigi&quot;, SymbolResolver : typeof(OpenFigiSymbolResolver), Exclusions :[new (nameof(ISymbolSearchProvider), &quot;OpenFigiSymbolResolver implements ISymbolResolver, whose search result contract differs from ISymbolSearchProvider.&quot;)])];</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L30) |  |
+| <code>public static IReadOnlyList&lt;ProviderAdapterFamilyExclusion&gt; ExcludedAdapterFamilies { get; } = [new (&quot;Core&quot;, &quot;Shared provider primitives and orchestration, not a vendor adapter family.&quot;), new (&quot;Failover&quot;, &quot;Composite streaming orchestration over catalogued providers, not an independent provider family.&quot;), new (&quot;Plaid&quot;, &quot;Runtime financial-connectivity adapters implement Plaid-specific Contracts ports, not market-data provider capabilities.&quot;), new (&quot;Templates&quot;, &quot;Copy-only provider and brokerage scaffolds are not runtime registrations.&quot;), new (&quot;TradeStation&quot;, &quot;Mapper-only brokerage assets; no concrete shared-contract runtime adapter exists.&quot;), new (&quot;Tradier&quot;, &quot;Mapper-only brokerage assets; no concrete shared-contract runtime adapter exists.&quot;)];</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs:157](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderCapabilityDescriptorCatalog.cs#L157) | Direct adapter folders that intentionally do not advertise provider capabilities. Keeping these exclusions beside the descriptors makes the folder-level inventory reviewable. |
+
 ## ProviderCapabilityExclusion
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderCapabilityExclusion</code>. Kind: `record`.
@@ -166,7 +215,7 @@ public sealed partial class ProviderFactory
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderHealthStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L344).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:360](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L360).
 
 Result of a provider health check.
 
@@ -178,7 +227,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |
+| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:368](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L368) |  |
 
 ## ProviderInfo
 
@@ -693,7 +742,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.RateLimitInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:326](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L326).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:342](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L342).
 
 Information about a provider&#x27;s current rate limit status.
 
@@ -705,9 +754,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:336](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L336) |  |
-| <code>public double UsageRatio =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L337) |  |
-| <code>public TimeSpan? TimeUntilReset =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:338](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L338) |  |
+| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |
+| <code>public double UsageRatio =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:353](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L353) |  |
+| <code>public TimeSpan? TimeUntilReset =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:354](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L354) |  |
 
 ## RateLimitStatus
 
@@ -1048,49 +1097,3 @@ Declared public members:
 | <code>Task&lt;EdgarFilerRecord?&gt; FetchSubmissionAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs#L19) |  |
 | <code>Task&lt;IReadOnlyList&lt;EdgarXbrlFact&gt;&gt; FetchCompanyFactsAsync(string cik, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs:21](../../../../src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs#L21) |  |
 | <code>Task&lt;EdgarSecurityDataRecord&gt; FetchSecurityDataAsync(EdgarFilerRecord filer, int? maxFilings = null, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs:23](../../../../src/Meridian.Infrastructure/Adapters/Edgar/IEdgarReferenceDataProvider.cs#L23) |  |
-
-## FailoverAwareMarketDataClient
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverAwareMarketDataClient</code>. Kind: `class`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L31).
-
-A composite IMarketDataClient that wraps multiple provider clients and automatically switches between them based on failover rules managed by StreamingFailoverService.
-
-```csharp
-public sealed class FailoverAwareMarketDataClient : IMarketDataClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FailoverAwareMarketDataClient(Dictionary&lt;string, IMarketDataClient&gt; providers, StreamingFailoverService failoverService, string ruleId, string initialProviderId, IMarketEventPublisher? integrityPublisher = null);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:88](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L88) | Creates a new failover-aware client. |
-| <code>public bool IsEnabled =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L126) |  |
-| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? ConnectionDiagnosticsChanged;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:129](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L129) |  |
-| <code>public WebSocketConnectionDiagnostics GetConnectionDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:132](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L132) |  |
-| <code>public async Task ConnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:157](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L157) |  |
-| <code>public async Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:202](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L202) |  |
-| <code>public int SubscribeMarketDepth(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:231](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L231) |  |
-| <code>public void UnsubscribeMarketDepth(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:277](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L277) |  |
-| <code>public int SubscribeTrades(SymbolConfig cfg);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:312](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L312) |  |
-| <code>public void UnsubscribeTrades(int subscriptionId);</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:358](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L358) |  |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:395](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L395) |  |
-| <code>public string ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:396](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L396) |  |
-| <code>public string ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:397](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L397) |  |
-| <code>public int ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:398](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L398) |  |
-| <code>public ProviderCapabilities ProviderCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:399](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L399) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:405](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L405) |  |
-| <code>public string ActiveProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs:470](../../../../src/Meridian.Infrastructure/Adapters/Failover/FailoverAwareMarketDataClient.cs#L470) | Gets the currently active provider ID. |
-
-## FailoverRecoveredEvent
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Failover.FailoverRecoveredEvent</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs:1436](../../../../src/Meridian.Infrastructure/Adapters/Failover/StreamingFailoverService.cs#L1436).
-
-Raised when the primary provider recovers and is restored as active.
-
-```csharp
-public readonly record struct FailoverRecoveredEvent(string RuleId, string FromProviderId, string ToProviderId, DateTimeOffset Timestamp);
-```

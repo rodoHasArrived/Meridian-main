@@ -2,7 +2,7 @@
 
 **Status:** active AI context pack  
 **Owner:** core-team  
-**Reviewed:** 2026-11-12
+**Reviewed:** 2026-11-23
 
 ## Meridian Accounting Rules
 
@@ -14,6 +14,16 @@
 - Balances must reconcile to source evidence, external statements, or approved operational explanations.
 - Accounting UI must expose validation state, source, approval state, and audit trail before commit.
 - Generated code must not silently create accounting records from unverified market data.
+- Historical accounting marks require an explicitly raw source. Retain the actual provider, feed,
+  symbol, session, price basis and source-record digest through valuation evidence and journal
+  fingerprints. A provider's generic or adjusted research bars do not establish that capability.
+- Provider agreement establishes backfill completeness only against an independently resolved,
+  bounded exchange-session calendar. Common missing sessions block closure; an unknown calendar
+  means unknown coverage, while a confirmed holiday-only window can contain no observations.
+- Lending recovery consumes retained applied amounts, original event/revision dates and original
+  terms evidence. Require contiguous aggregate history, collapse exact duplicate deliveries and
+  reject conflicting identities or amounts. Missing historical amortization basis requires explicit
+  evidence; do not infer it from current terms or recompute old amounts using today's clock.
 - Ledger writes must fail closed when required source evidence, reviewer state, period posture, idempotency key, or version/concurrency guard is missing.
 - Governed production stores reject standalone tax-lot saves even with complete acquisition facts. Journal-backed mutations use `IAtomicTaxLotJournalStore`; retained legacy facts use reviewed backfill. Direct saves remain an explicit compatibility-store operation.
 - Supported canonical corporate actions bind reviewed predecessor/successor identities and commit lot mutations with the journal in one transaction. Retain original acquisition facts separately from current carrying basis and preserve source-action lineage after disposal; see the [lot convergence blueprint](../../engineering/blueprints/security-lot-convergence-blueprint.md) for treatments and remaining gates.

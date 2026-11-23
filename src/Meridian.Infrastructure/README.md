@@ -6,10 +6,17 @@ module_id: SRC-INFRASTRUCTURE
 path: src/Meridian.Infrastructure
 status: active
 owner_lane: Data Confidence and Validation
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Infrastructure
+
+Historical adapters expose an optional `GetRawAccountingCloseAsync` capability whose default is
+unavailable. Alpaca implements it with a separate `adjustment=raw` request while retaining its
+configured research adjustment and existing HTTP/quota ownership. Complete pagination and valid
+source rows are required. `AccountingClosePrice` retains raw basis, provider, feed, symbol, session,
+price and the original record's SHA-256 in the accounting evidence reference. The adapter's focused
+fixtures are synthetic; this capability remains live-untested.
 
 Host backfill routing retains throttle and rotation counts by provider and UTC date beneath
 `DataRoot/_meta`. It writes the last seven UTC dates atomically and keeps recent individual

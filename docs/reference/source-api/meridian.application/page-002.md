@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExistingDataInfo
+
+Qualified name: <code>Meridian.Application.Backfill.ExistingDataInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Backfill/BackfillPreview.cs:40](../../../../src/Meridian.Application/Backfill/BackfillPreview.cs#L40).
+
+Information about existing data for a symbol.
+
+```csharp
+public sealed record ExistingDataInfo(bool HasData, bool IsComplete, DateOnly? ExistingFrom, DateOnly? ExistingTo, int FileCount, long TotalSizeBytes);
+```
+
 ## GapBackfillService
 
 Qualified name: <code>Meridian.Application.Backfill.GapBackfillService</code>. Kind: `class`.
@@ -987,19 +999,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static IServiceCollection AddSecurityMasterGovernanceRequirements(this IServiceCollection services);</code> | [src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs:111](../../../../src/Meridian.Application/Composition/SecurityMasterGovernanceProfileGuard.cs#L111) | Registers ISecurityMasterGovernanceRequirements, the IGovernedTermAmendmentPolicy that reads it, and the startup guard that refuses a configuration contradicting the governance profile. Idempotent; every host that enforces a Security Master governance requirement calls it (StorageFeatureRegistration, the workstation shared services and the WPF desktop). |
-
-## SecurityMasterTermsCapabilityServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Application.Composition.SecurityMasterTermsCapabilityServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs:85](../../../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs#L85).
-
-```csharp
-public static class SecurityMasterTermsCapabilityServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddSecurityMasterTermsCapability(this IServiceCollection services, Func&lt;IServiceProvider, string&gt; dataRoot);</code> | [src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs:98](../../../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs#L98) | Registers the business-day calendar source for declared schedule conventions (ADR-025), read from files under &lt;dataRoot&gt;/calendars once at host start, and the hosted service that checks the persisted minimum capability for configured writers and logs the Security Master terms capability line. An unknown calendar id never falls back to weekends only. Idempotent; StorageFeatureRegistration calls this for every host composed through AddMarketDataServices, and the WPF desktop, which composes its own graph and still writes Security Master terms in-process, calls it directly. |

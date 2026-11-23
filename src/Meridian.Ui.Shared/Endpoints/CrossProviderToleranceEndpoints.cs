@@ -1,14 +1,18 @@
 using System.Text.Json;
 using Meridian.Application.Backfill;
 using Meridian.Contracts.Api;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Core.Config;
 using Meridian.Execution.Logging;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Platform.Scheduling;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Ui.Shared.Endpoints;
@@ -125,9 +129,17 @@ public static class CrossProviderToleranceEndpoints
             var tolerances = policy.Resolve(request.AssetClass);
             try
             {
+                var sessions = new HistoricalSessionScheduleResolver(
+                    context.RequestServices.GetService<ISecurityIdentityQueryService>(),
+                    context.RequestServices.GetService<IOperationalTradingCalendar>());
                 var service = new CrossSourceBackfillReconciliationService(available.Where(provider =>
                     string.Equals(provider.Name, baseline, StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(provider.Name, comparison, StringComparison.OrdinalIgnoreCase)));
+                    string.Equals(provider.Name, comparison, StringComparison.OrdinalIgnoreCase)))
+                {
+                    ResolveSessionCoverageAsync = (requestedSymbol, lower, upper, token) =>
+                        CrossSourceBackfillReconciliationService.ResolveExchangeSessionCoverageAsync(
+                            sessions, requestedSymbol, lower, upper, token)
+                };
                 var result = await service.ReconcileDailyAsync(new CrossSourceBackfillReconciliationRequest(
                     symbol, from, to, baseline, [comparison],
                     CloseToleranceRatio: (decimal)tolerances.BackfillCloseTolerancePercent / 100m,
@@ -189,8 +201,9 @@ public static class CrossProviderToleranceEndpoints
     {
         // Kinds produced by CrossSourceBackfillReconciliationService.
         static bool IsDrift(string kind) => kind is "ClosePriceDrift" or "VolumeDrift" or "PriceAndVolumeDrift";
-        static bool IsMissing(string kind) => kind.EndsWith("MissingEvidence", StringComparison.Ordinal) ||
-                                              kind.EndsWith("MissingSession", StringComparison.Ordinal);
+        static bool IsMissing(string kind) => kind != "SessionCalendarMissingEvidence" &&
+                                              (kind.EndsWith("MissingEvidence", StringComparison.Ordinal) ||
+                                               kind.EndsWith("MissingSession", StringComparison.Ordinal));
 
         var flagged = new List<CrossProviderTolerancePreviewDay>();
         var informational = 0;
@@ -227,7 +240,13 @@ public static class CrossProviderToleranceEndpoints
             flagged,
             informational,
             result.Discrepancies.Where(d => IsMissing(d.Kind)).Select(d => d.SessionDate).Distinct().Count(),
-            result.ProviderErrors.Select(error => $"{error.Provider}: {error.ErrorType}").ToArray(),
+            result.ProviderErrors.Select(error => $"{error.Provider}: {error.ErrorType}")
+                .Concat(result.HasVerifiedSessionCoverage ? [] : ["session-calendar: MissingCoverageEvidence"])
+                .Concat(result.Discrepancies
+                    .Where(discrepancy => discrepancy.Kind is "BaselineUnexpectedSession" or "ComparisonUnexpectedSession")
+                    .Select(discrepancy => FormattableString.Invariant(
+                        $"{discrepancy.ComparisonProvider}: {discrepancy.Kind} ({discrepancy.SessionDate:yyyy-MM-dd})")))
+                .ToArray(),
             ProviderCallsPerPreview);
     }
 

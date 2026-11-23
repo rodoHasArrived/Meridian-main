@@ -6,10 +6,37 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Application
+
+Direct-lending restructuring validates principal relief before mutation and retains the same applied
+amount for servicing principal, drawdown lots, event evidence and the restructuring journal. A stable
+command retry returns committed state; changed terms, dates, reasons or amounts conflict. New events
+retain the original terms-version and servicing-revision evidence for recovery.
+
+The loan event rebuilder covers every accepted credit and lifecycle event, including historical
+in-memory aliases. Recovery applies recorded write-off/amortization amounts, nullable servicer
+observations, collateral identity and original status/terms evidence without reposting journals.
+Exact duplicates have one effect; conflicting or incomplete aggregate histories fail. New amortization
+events retain opening/closing basis, and historical nonzero amortization without basis evidence remains
+explicitly unrecoverable. Focused coverage: `DirectLendingLifecycleReplayTests`,
+`DirectLendingEventRebuilderTests`, `PostgresDirectLendingCommandServiceTests`,
+`DirectLendingRestructuringTests`.
+
+Accounting closes require the historical adapter's explicit raw-price capability. The mark source
+validates its raw basis, positive price, symbol, session window, actual provider/feed and source-record
+digest. Unsupported or incomplete evidence leaves the mark unavailable and lets the registered chain
+try its next provider. The immutable price reference retains these facts through valuation drafts,
+journal metadata and retry fingerprints. Research-bar adjustment settings remain independent.
+Focused coverage: `AccountingCloseMarkPriceSourceTests`, `AlpacaAccountingClosePriceTests`.
+
+Cross-source backfill reconciliation resolves a complete, bounded exchange-session calendar before
+judging provider agreement. Missing leading, interior or trailing sessions block closure even when
+every provider omits the same date. Results retain the calendar identity, range and expected sessions;
+unknown or partial calendar coverage and older receipts without it remain incomplete. A confirmed
+holiday-only window can close with no bars. Focused coverage: `CrossSourceBackfillReconciliationServiceTests`.
 
 Corporate-action ingest forwards specialized source terms and the provider's original JSON
 record into durable source proposals. Exact raw-text digests are checked before recording; source
