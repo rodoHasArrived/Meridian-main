@@ -6,7 +6,7 @@ module_id: SRC-UI-SERVICES
 path: src/Meridian.Ui.Services
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui.Services
@@ -57,6 +57,12 @@ tenant-scoped registry and advisory journal-line routes. The workspace retains u
 input, server capabilities, exact approved versions, evidence and review history without duplicating
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyAgreementWorkQueueWorkspace` and the client's work-queue partial consume the same
+durable lifecycle cases as the browser. They retain current scope, version/hash and source
+fingerprint, clear prior book/date state, and send explicit observation or update commands.
+Guarantee caps and unavailable measured exposure remain separate. See
+[lifecycle casework](../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work).
 
 `IntercompanyManagementFeeWorkspace` is the desktop state for fixed management fees over the client's fee
 preview and draft calls; the agreement workspace carries the fixed-fee basis. See

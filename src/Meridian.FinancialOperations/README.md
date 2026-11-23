@@ -6,10 +6,16 @@ module_id: SRC-DESIGN-FINANCIAL-OPERATIONS
 path: src/Meridian.FinancialOperations
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.FinancialOperations
+
+`IntercompanyAgreementWorkQueueService` combines the authorized obligation monitor with durable
+operational case history. Explicit observation, assignment, notes and state changes preserve first
+seen, actor, evidence and source fingerprint under case-sequence/hash concurrency checks. A missing
+finding never resolves a case. Approved guarantee caps remain separate from unavailable measured
+exposure. See [agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
 
 Mapped CSV intake preserves the `coupon`, `interest` and `principal` classifications and explicit
 receipt metadata through `StatementCanonicalRecord` into the canonical artifact. Reversal references

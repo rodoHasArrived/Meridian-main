@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui.Shared
@@ -58,6 +58,13 @@ every observed entity; legal authoring or compliance grants alone cannot authori
 External-review evidence verifies accepted immutable documents, separately from the attesting
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
+
+`IntercompanyAgreementWorkQueueEndpoints` serves read-only `GET /api/ledger/intercompany/work-queue`
+and explicit `POST /observe` and `/update` commands under that route. The host derives actor,
+tenant/company and fund from the owned book. Commands require management grants for the legal
+parties; read grants cannot authorize updates. Conflict responses require refreshing the case,
+while unavailable history is reported without exposing storage details. See
+[agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
 
 `IntercompanyAccrualDraftService` backs `/api/ledger/intercompany/accruals/preview` and `/drafts`
 (ADR-028). It resolves approved `LoanInterest` profile revisions, their pinned legal revisions and

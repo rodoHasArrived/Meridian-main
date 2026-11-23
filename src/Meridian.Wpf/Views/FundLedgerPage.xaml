@@ -2106,6 +2106,9 @@
                 <TabItem Header="Accrual schedules">
                     <agreementViews:IntercompanyAccrualSchedulesControl DataContext="{Binding AccrualSchedules}" />
                 </TabItem>
+                <TabItem Header="Lifecycle queue">
+                    <agreementViews:IntercompanyAgreementWorkQueueControl DataContext="{Binding AgreementWorkQueue}" />
+                </TabItem>
             </TabControl>
         </StackPanel>
     </ScrollViewer>

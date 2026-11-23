@@ -6,7 +6,7 @@ module_id: SRC-CONTRACTS
 path: src/Meridian.Contracts
 status: active
 owner_lane: Contract Compatibility
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Contracts
@@ -50,6 +50,12 @@ strings; omitted companions preserve retained legal command/review hashes. Separ
 attestations retain reviewer and operator identities, while obligation-monitor DTOs carry advisory
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
+
+`IntercompanyAgreementWorkQueueDtos` separates current lifecycle findings from durable operator
+cases, version/hash-bound actions and case history. Guarantee disclosure retains exact decimal caps
+and nullable unavailable measured exposure. The obligation finding's optional typed due date
+identifies its legal boundary without parsing display text. See
+[agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
 
 Fixed management-fee terms add a null-omitted `FixedFeeBasis` (per period or per annum).
 `IntercompanyFeeAccrualDtos` and `IntercompanyFeeAccrualEvidenceDtos` define rule `intercompany-fee-v1`, its

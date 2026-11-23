@@ -158,7 +158,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-CORE
     path: src/Meridian.Core
@@ -860,6 +860,7 @@ modules:
       - AccountingRecords
       - GovernedReportPack
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkQueue" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DimensionSignatureBackwardCompatibilityTests|FullyQualifiedName~ConsolidationServiceTests" /p:EnableWindowsTargeting=true
       - dotnet build src/Meridian.FinancialOperations/Meridian.FinancialOperations.csproj /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter FullyQualifiedName~OperationsContinuityWorkflowServiceTests --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true
@@ -875,7 +876,7 @@ modules:
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-DESIGN-WORKFLOW
     path: src/Meridian.Workflow
@@ -1029,7 +1030,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-UI-SERVICES
     path: src/Meridian.Ui.Services
@@ -1054,13 +1055,13 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
-      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~IntercompanyAgreementWorkQueueWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~MapWorkstationEndpoints" --logger "console;verbosity=normal"
     diagrams:
       - DIA-BROWSER-WORKSTATION
       - DIA-PAPER-SESSION-REPLAY
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-UI-SHARED
     path: src/Meridian.Ui.Shared
@@ -1108,7 +1109,7 @@ modules:
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ExecutionGovernanceEndpointsTests|FullyQualifiedName~EquityOrderSessionPolicyTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" /p:EnableWindowsTargeting=true
-      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementEndpointTests|FullyQualifiedName~IntercompanyAgreementAuthorityTests|FullyQualifiedName~IntercompanyAgreementJournalProjectionTests|FullyQualifiedName~ManualJournalAgreementReviewTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementEndpointTests|FullyQualifiedName~IntercompanyAgreementWorkQueueEndpointTests|FullyQualifiedName~IntercompanyAgreementAuthorityTests|FullyQualifiedName~IntercompanyAgreementJournalProjectionTests|FullyQualifiedName~ManualJournalAgreementReviewTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj /p:EnableWindowsTargeting=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~PilotAcceptanceHarnessTests" --logger "console;verbosity=normal"
@@ -1116,7 +1117,7 @@ modules:
     diagrams:
       - DIA-BROWSER-WORKSTATION
     todos: []
-    last_reviewed: 2026-11-13
+    last_reviewed: 2026-11-23
 
   - id: SRC-UI-DASHBOARD
     path: src/Meridian.Ui/dashboard
@@ -1149,6 +1150,7 @@ modules:
       - AccountingRecords
       - BacktestingEvidence
     validation:
+      - npm --prefix src/Meridian.Ui/dashboard run test -- --run src/screens/accounting-screen.intercompany-work-queue.test.tsx src/lib/api/intercompany-work-queue.api.test.ts src/screens/accounting-screen.entity-obligations.test.tsx
       - npm --prefix src/Meridian.Ui/dashboard run test -- --run src/screens/accounting-screen.intercompany-agreements.test.tsx src/components/accounting/intercompany-journal-reference.test.tsx src/components/accounting/intercompany-agreement-journals.test.tsx src/lib/api/intercompany-agreements.api.test.ts
       - npm --prefix src/Meridian.Ui/dashboard run test
       - npm --prefix src/Meridian.Ui/dashboard run build
@@ -1158,7 +1160,7 @@ modules:
       - DIA-BROWSER-WORKSTATION-ROUTES
     todos:
       - TODO-SRC-UI-DASHBOARD-001
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23
 
   - id: SRC-WPF
     path: src/Meridian.Wpf
@@ -1193,10 +1195,10 @@ modules:
       - GovernedReportPack
       - AccountingRecords
     validation:
-      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Ui.Tests/Meridian.Ui.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementWorkspaceTests|FullyQualifiedName~IntercompanyAgreementWorkQueueWorkspaceTests|FullyQualifiedName~WorkstationIntercompanyAgreementApiClientTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj --filter "FullyQualifiedName~AppServiceRegistrationTests" --logger "console;verbosity=normal" /p:EnableWindowsTargeting=true /p:EnableFullWpfBuild=true /p:NodeReuse=false
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-11-12
+    last_reviewed: 2026-11-23

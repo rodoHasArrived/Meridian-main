@@ -6,7 +6,7 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui/dashboard
@@ -80,6 +80,12 @@ Native intercompany agreement editors capture structured terms without calculati
 Externally reviewed attestations retain the operator and external reviewer separately. The entity
 workspace presents advisory obligation monitoring and reviewed legacy coverage corrections or
 revocations; close advisories stay outside blockers. See [intercompany controls](../../../docs/operators/intercompany-entity-controls.md).
+
+The Obligation monitor includes the shared lifecycle case queue: explicit tracking, owner assignment,
+notes/evidence, awaiting-review/resolved/reopened history and current-versus-retained findings.
+Updates pin case and source versions. The guarantee register displays approved legal caps with
+measured exposure explicitly unavailable. See
+[lifecycle casework](../../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work).
 
 The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
 preview, and bounded quota history. The server catalog supplies tier defaults and ceilings.
