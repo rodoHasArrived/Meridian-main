@@ -124,9 +124,9 @@ public sealed class CorporateActionRetainedEvidenceTests
                 Guid.NewGuid(), securityId ?? Guid.NewGuid(), CorporateActionEventTypes.SpinOff,
                 new DateOnly(2026, 8, 14), null, null, null, null, null, 0.05m,
                 null, null, null, null, Payload: JsonSerializer.SerializeToElement(new { newSymbol = "CHILD" }))
-            {
-                SourceEvidence = Evidence(Raw),
-            },
+        {
+            SourceEvidence = Evidence(Raw),
+        },
             new CorporateActionProviderEventIdentityDto("alpaca", nativeId ?? "native-event", "v1:alpaca-rest-v2",
                 new DateTimeOffset(2026, 8, 14, 12, 0, 0, TimeSpan.Zero), new string('a', 64),
                 "alpaca://corporate-actions/v1/spin_off/native-event/versions/alpaca-rest-v2/fixture",

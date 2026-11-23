@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ApprovalDecision
+
+Qualified name: <code>Meridian.Contracts.Workstation.ApprovalDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L31).
+
+```csharp
+public sealed record ApprovalDecision(string Queue, bool DualControlRequired, IReadOnlyList<string> Reasons);
+```
+
 ## ApprovalPolicy
 
 Qualified name: <code>Meridian.Contracts.Workstation.ApprovalPolicy</code>. Kind: `record`.
@@ -612,16 +622,4 @@ Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:35](../../../.
 
 ```csharp
 public sealed record CloseReadinessBlockerDto(string Code, string ContributorId, string Type, int Count, string Severity, string Owner, string Message, IReadOnlyList<string> RecordIds);
-```
-
-## CloseReadinessContributionDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CloseReadinessContributionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs:28](../../../../src/Meridian.Contracts/Workstation/CloseReadinessDtos.cs#L28).
-
-A contributor&#x27;s retained records and evaluation posture for the selected close scope.
-
-```csharp
-public sealed record CloseReadinessContributionDto(string ContributorId, string Owner, string Status, DateTimeOffset? EvaluatedAtUtc, IReadOnlyList<string> RecordIds);
 ```

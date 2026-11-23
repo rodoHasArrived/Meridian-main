@@ -157,14 +157,31 @@ public sealed partial class AlpacaCorporateActionProviderTests
         var record = JsonNode.Parse(AdditionalFamilyPayload(family))!.AsObject();
         switch (family)
         {
-            case "unit_split": record["new_rate"] = 0; break;
-            case "redemption": record["rate"] = "undeclared numeric string"; break;
-            case "name_change": record.Remove("new_symbol"); break;
-            case "worthless_removal": record["symbol"] = "UNRELATED"; break;
-            case "rights_distribution": record["rate"] = -1; break;
-            case "partial_call": record["lottery_type"] = "unknown"; break;
-            case "reorganization": record["stock_movements"]![0]!["source_rate"] = 0; break;
-            case "capital_gains_distribution": record.Remove("long_term_rate"); record.Remove("short_term_rate"); break;
+            case "unit_split":
+                record["new_rate"] = 0;
+                break;
+            case "redemption":
+                record["rate"] = "undeclared numeric string";
+                break;
+            case "name_change":
+                record.Remove("new_symbol");
+                break;
+            case "worthless_removal":
+                record["symbol"] = "UNRELATED";
+                break;
+            case "rights_distribution":
+                record["rate"] = -1;
+                break;
+            case "partial_call":
+                record["lottery_type"] = "unknown";
+                break;
+            case "reorganization":
+                record["stock_movements"]![0]!["source_rate"] = 0;
+                break;
+            case "capital_gains_distribution":
+                record.Remove("long_term_rate");
+                record.Remove("short_term_rate");
+                break;
         }
         var result = await CreateSut(new RecordingHandler(_ => Json(Envelope(family + "s", record.ToJsonString()))))
             .FetchWithOutcomeAsync("SYNTH", Guid.NewGuid());

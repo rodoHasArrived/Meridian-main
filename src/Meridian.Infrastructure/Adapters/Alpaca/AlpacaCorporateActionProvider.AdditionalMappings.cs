@@ -50,16 +50,16 @@ public sealed partial class AlpacaCorporateActionProvider
         switch (providerType)
         {
             case "unit_split":
-            {
-                actionType = CorporateActionEventTypes.UnitSplit;
-                description = "Unit split";
-                var sourceRate = AdditionalPositiveNumber(payload, "old_rate");
-                numbers["sourceRate"] = sourceRate;
-                legs.Add(AdditionalLeg(payload, "new_", sourceRate, "new_rate"));
-                legs.Add(AdditionalLeg(payload, "alternate_", sourceRate, "alternate_rate"));
-                legsField = "successorLegs";
-                break;
-            }
+                {
+                    actionType = CorporateActionEventTypes.UnitSplit;
+                    description = "Unit split";
+                    var sourceRate = AdditionalPositiveNumber(payload, "old_rate");
+                    numbers["sourceRate"] = sourceRate;
+                    legs.Add(AdditionalLeg(payload, "new_", sourceRate, "new_rate"));
+                    legs.Add(AdditionalLeg(payload, "alternate_", sourceRate, "alternate_rate"));
+                    legsField = "successorLegs";
+                    break;
+                }
             case "redemption":
                 actionType = CorporateActionEventTypes.SecurityRedemption;
                 description = "Security redemption";
@@ -169,14 +169,14 @@ public sealed partial class AlpacaCorporateActionProvider
 
         using var economicDocument = JsonDocument.Parse(buffer.WrittenMemory);
         var raw = payload.GetRawText();
+        // Separate rate components remain in the typed payload; no cash event is collapsed
+        // into the legacy dividend Amount column or assigned an undeclared monetary basis.
         return new CorporateActionCommand(
             SecurityId: securityId,
             ActionType: actionType,
             ExDate: eventDate,
             RecordDate: recordDate,
             PayableDate: payableDate,
-            // Separate rate components remain in the typed payload; no cash event is collapsed
-            // into the legacy dividend Amount column or assigned an undeclared monetary basis.
             Amount: null,
             Currency: currency,
             SplitFromFactor: null,

@@ -48,90 +48,174 @@ public sealed class CorporateActionProviderEvidencePostgresTests(SecurityMasterD
         var stockDividendId = Guid.NewGuid().ToString("D");
         string StockDividend(decimal rate) => JsonSerializer.Serialize(new
         {
-            id = stockDividendId, symbol = ticker, cusip = "000000001", rate,
-            ex_date = "2024-06-03", process_date = "2024-06-10",
-            record_date = "2024-06-03", payable_date = "2024-06-10",
+            id = stockDividendId,
+            symbol = ticker,
+            cusip = "000000001",
+            rate,
+            ex_date = "2024-06-03",
+            process_date = "2024-06-10",
+            record_date = "2024-06-03",
+            payable_date = "2024-06-10",
             additional_source_fact = "Preserve this original provider field",
         });
         var originalStockDividend = StockDividend(0.05m);
         var currentStockDividend = originalStockDividend;
         var spinOff = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), source_symbol = ticker, source_cusip = "000000001",
-            new_symbol = "SYNCHILD", new_cusip = "000000002", source_rate = 4m, new_rate = 1m,
-            ex_date = "2024-06-04", process_date = "2024-06-10",
+            id = Guid.NewGuid().ToString("D"),
+            source_symbol = ticker,
+            source_cusip = "000000001",
+            new_symbol = "SYNCHILD",
+            new_cusip = "000000002",
+            source_rate = 4m,
+            new_rate = 1m,
+            ex_date = "2024-06-04",
+            process_date = "2024-06-10",
         });
         var cashMerger = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), acquiree_symbol = ticker, acquiree_cusip = "000000001",
-            rate = 2.5m, effective_date = "2024-06-05", process_date = "2024-06-10",
+            id = Guid.NewGuid().ToString("D"),
+            acquiree_symbol = ticker,
+            acquiree_cusip = "000000001",
+            rate = 2.5m,
+            effective_date = "2024-06-05",
+            process_date = "2024-06-10",
         });
         var stockMerger = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), acquiree_symbol = ticker, acquiree_cusip = "000000001",
-            acquirer_symbol = "SYNACQ", acquirer_cusip = "000000003", acquiree_rate = 1m, acquirer_rate = 0.5m,
-            effective_date = "2024-06-06", process_date = "2024-06-10",
+            id = Guid.NewGuid().ToString("D"),
+            acquiree_symbol = ticker,
+            acquiree_cusip = "000000001",
+            acquirer_symbol = "SYNACQ",
+            acquirer_cusip = "000000003",
+            acquiree_rate = 1m,
+            acquirer_rate = 0.5m,
+            effective_date = "2024-06-06",
+            process_date = "2024-06-10",
         });
         var mixedMerger = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), acquiree_symbol = ticker, acquiree_cusip = "000000001",
-            acquirer_symbol = "SYNMIX", acquirer_cusip = "000000004", acquiree_rate = 1m,
-            acquirer_rate = 0.7m, cash_rate = 1.25m, effective_date = "2024-06-07", process_date = "2024-06-10",
+            id = Guid.NewGuid().ToString("D"),
+            acquiree_symbol = ticker,
+            acquiree_cusip = "000000001",
+            acquirer_symbol = "SYNMIX",
+            acquirer_cusip = "000000004",
+            acquiree_rate = 1m,
+            acquirer_rate = 0.7m,
+            cash_rate = 1.25m,
+            effective_date = "2024-06-07",
+            process_date = "2024-06-10",
         });
         var cashDividend = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, cusip = "000000001", rate = 0.25m,
-            currency = "USD", special = false, foreign = false,
-            ex_date = "2024-06-08", process_date = "2024-06-10",
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            cusip = "000000001",
+            rate = 0.25m,
+            currency = "USD",
+            special = false,
+            foreign = false,
+            ex_date = "2024-06-08",
+            process_date = "2024-06-10",
         });
         var forwardSplit = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, cusip = "000000001",
-            old_rate = 1m, new_rate = 4m, ex_date = "2024-06-09", process_date = "2024-06-10",
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            cusip = "000000001",
+            old_rate = 1m,
+            new_rate = 4m,
+            ex_date = "2024-06-09",
+            process_date = "2024-06-10",
         });
         var reverseSplit = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, old_cusip = "000000001", new_cusip = "000000011",
-            old_rate = 4m, new_rate = 1m, ex_date = "2024-06-10", process_date = "2024-06-10",
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            old_cusip = "000000001",
+            new_cusip = "000000011",
+            old_rate = 4m,
+            new_rate = 1m,
+            ex_date = "2024-06-10",
+            process_date = "2024-06-10",
         });
         var unitSplit = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), old_symbol = ticker, old_cusip = "000000001", old_rate = 1m,
-            new_symbol = "SYNUNIT", new_cusip = "000000005", new_rate = 1m,
-            alternate_symbol = "SYNWARRANT", alternate_cusip = "000000006", alternate_rate = 0.3333m,
-            effective_date = "2024-06-11", process_date = "2024-06-11",
+            id = Guid.NewGuid().ToString("D"),
+            old_symbol = ticker,
+            old_cusip = "000000001",
+            old_rate = 1m,
+            new_symbol = "SYNUNIT",
+            new_cusip = "000000005",
+            new_rate = 1m,
+            alternate_symbol = "SYNWARRANT",
+            alternate_cusip = "000000006",
+            alternate_rate = 0.3333m,
+            effective_date = "2024-06-11",
+            process_date = "2024-06-11",
         });
         var redemption = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, cusip = "000000001", rate = 0.141134m,
-            payable_date = "2024-06-12", process_date = "2024-06-12",
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            cusip = "000000001",
+            rate = 0.141134m,
+            payable_date = "2024-06-12",
+            process_date = "2024-06-12",
         });
         var nameChange = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), old_symbol = ticker, old_cusip = "000000001",
-            new_symbol = "SYNRENAMED", new_cusip = "000000007", process_date = "2024-06-13",
+            id = Guid.NewGuid().ToString("D"),
+            old_symbol = ticker,
+            old_cusip = "000000001",
+            new_symbol = "SYNRENAMED",
+            new_cusip = "000000007",
+            process_date = "2024-06-13",
         });
         var worthlessRemoval = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, cusip = "000000001", process_date = "2024-06-14",
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            cusip = "000000001",
+            process_date = "2024-06-14",
         });
         var rightsDistribution = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), source_symbol = ticker, source_cusip = "000000001",
-            new_symbol = "SYNRIGHTS", new_cusip = "000000008", rate = 1m,
-            ex_date = "2024-06-15", record_date = "2024-06-16", payable_date = "2024-06-17",
-            process_date = "2024-06-17", expiration_date = "2024-07-15",
+            id = Guid.NewGuid().ToString("D"),
+            source_symbol = ticker,
+            source_cusip = "000000001",
+            new_symbol = "SYNRIGHTS",
+            new_cusip = "000000008",
+            rate = 1m,
+            ex_date = "2024-06-15",
+            record_date = "2024-06-16",
+            payable_date = "2024-06-17",
+            process_date = "2024-06-17",
+            expiration_date = "2024-07-15",
         });
         var partialCall = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, cusip = "000000001", process_date = "2024-06-18",
-            record_date = "2024-06-17", lottery_date = "2024-06-18", lottery_type = "original",
-            results_publication_date = "2024-06-19", payable_date = "2024-06-20", price = 25m, dividend_rate = 0.25m,
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            cusip = "000000001",
+            process_date = "2024-06-18",
+            record_date = "2024-06-17",
+            lottery_date = "2024-06-18",
+            lottery_type = "original",
+            results_publication_date = "2024-06-19",
+            payable_date = "2024-06-20",
+            price = 25m,
+            dividend_rate = 0.25m,
         });
         var reorganization = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, cusip = "000000001", currency = "USD",
-            cash_rate = 0.5m, effective_date = "2024-06-19", process_date = "2024-06-20",
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            cusip = "000000001",
+            currency = "USD",
+            cash_rate = 0.5m,
+            effective_date = "2024-06-19",
+            process_date = "2024-06-20",
             stock_movements = new[]
             {
                 new { symbol = "SYNREORGA", cusip = "000000009", source_rate = 1m, new_rate = 0.6m },
@@ -140,9 +224,16 @@ public sealed class CorporateActionProviderEvidencePostgresTests(SecurityMasterD
         });
         var capitalGains = JsonSerializer.Serialize(new
         {
-            id = Guid.NewGuid().ToString("D"), symbol = ticker, cusip = "000000001", currency = "USD",
-            long_term_rate = 0.45855m, short_term_rate = 0.11019m,
-            ex_date = "2024-06-20", record_date = "2024-06-21", process_date = "2024-06-21", payable_date = "2024-06-24",
+            id = Guid.NewGuid().ToString("D"),
+            symbol = ticker,
+            cusip = "000000001",
+            currency = "USD",
+            long_term_rate = 0.45855m,
+            short_term_rate = 0.11019m,
+            ex_date = "2024-06-20",
+            record_date = "2024-06-21",
+            process_date = "2024-06-21",
+            payable_date = "2024-06-24",
         });
         using var handler = new SourceResponseHandler(() =>
             $$"""
