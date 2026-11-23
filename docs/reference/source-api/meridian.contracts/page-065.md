@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IFinancialOperationsCommandCenterReadService
+
+Qualified name: <code>Meridian.Contracts.Workstation.IFinancialOperationsCommandCenterReadService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L87).
+
+Builds the scoped Financial Operations command center read model.
+
+```csharp
+public interface IFinancialOperationsCommandCenterReadService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FinancialOperationsCommandCenterDto&gt; GetCommandCenterAsync(string? fundProfileId = null, Guid? ledgerBookId = null, Guid? fundAccountId = null, string? periodId = null, string? entityId = null, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/FinancialOperationsCommandCenterDtos.cs#L89) |  |
+
 ## IIntercompanyCloseAdvisorySource
 
 Qualified name: <code>Meridian.Contracts.Workstation.IIntercompanyCloseAdvisorySource</code>. Kind: `interface`.
@@ -645,16 +663,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:689](
 
 ```csharp
 public sealed record LedgerAmountReportUsageDto(Guid ReportId, string DisplayName, GovernanceReportKindDto ReportKind, string FundProfileId, DateTimeOffset AsOf, DateTimeOffset GeneratedAt, string Currency, string? ReportRoute);
-```
-
-## LedgerAmountScopeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountScopeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/LedgerAmountProofDtos.cs#L4).
-
-The complete retained accounting boundary for an amount proof.
-
-```csharp
-public sealed record LedgerAmountScopeDto(string TenantId, string CompanyId, string FundProfileId, Guid LedgerBookId, Guid PeriodId);
 ```

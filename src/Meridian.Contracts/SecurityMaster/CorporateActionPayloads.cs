@@ -17,6 +17,81 @@ public static class CorporateActionPayloads
     /// <summary>Schema-version marker for the current corporate-action payload contracts.</summary>
     public const int CurrentSchemaVersion = 1;
 
+    /// <summary>StockDividend: additional shares received per held share, excluding the original share.</summary>
+    public const string StockDividendRate = "stockDividendRate";
+
+    /// <summary>Original provider event family; retained independently of the canonical event type.</summary>
+    public const string ProviderEventType = "providerEventType";
+
+    /// <summary>Source field used for the staging date, such as ex_date, effective_date or process_date.</summary>
+    public const string DateBasis = "dateBasis";
+
+    /// <summary>True when only a provider process date is known; it is not a declared economic effective date.</summary>
+    public const string EventDateUnspecified = "eventDateUnspecified";
+
+    /// <summary>Provider symbol of the source security; this text does not resolve Security Master identity.</summary>
+    public const string SourceSymbol = "sourceSymbol";
+
+    /// <summary>Provider CUSIP of the source security.</summary>
+    public const string SourceCusip = "sourceCusip";
+
+    /// <summary>Provider ISIN of the source security.</summary>
+    public const string SourceIsin = "sourceIsin";
+
+    /// <summary>Provider symbol of a recipient or renamed security; not an accepted successor identity.</summary>
+    public const string SuccessorSymbol = "successorSymbol";
+
+    /// <summary>Provider CUSIP of a recipient or renamed security.</summary>
+    public const string SuccessorCusip = "successorCusip";
+
+    /// <summary>Provider ISIN of a recipient or renamed security.</summary>
+    public const string SuccessorIsin = "successorIsin";
+
+    /// <summary>Source units corresponding to the reported allocation rate.</summary>
+    public const string SourceRate = "sourceRate";
+
+    /// <summary>
+    /// UnitSplit: ordered allocation-leg objects with source identifiers and rates. The provider
+    /// validates this open array; it is not a single split factor or an approved lot allocation.
+    /// </summary>
+    public const string SuccessorLegs = "successorLegs";
+
+    /// <summary>SecurityRedemption: original provider redemption rate, without assuming a percent-of-par basis.</summary>
+    public const string RedemptionRate = "redemptionRate";
+
+    /// <summary>RightsDistribution: expiry of the distributed right, distinct from its distribution date.</summary>
+    public const string ExpirationDate = "expirationDate";
+
+    /// <summary>PartialCall: reported price; its unit or percent-of-par basis is not inferred.</summary>
+    public const string Price = "price";
+
+    /// <summary>PartialCall: reported dividend rate retained separately from the call price.</summary>
+    public const string DividendRate = "dividendRate";
+
+    /// <summary>PartialCall: provider lottery classification, such as original or supplemental.</summary>
+    public const string LotteryType = "lotteryType";
+
+    /// <summary>PartialCall: lottery date; it does not establish the holder's allocation.</summary>
+    public const string LotteryDate = "lotteryDate";
+
+    /// <summary>PartialCall: announced publication date for lottery results.</summary>
+    public const string ResultsPublicationDate = "resultsPublicationDate";
+
+    /// <summary>Reorganization: original cash rate, retained without assuming its allocation basis.</summary>
+    public const string CashRate = "cashRate";
+
+    /// <summary>
+    /// Reorganization: ordered stock-allocation objects with source and new rates. The provider
+    /// validates each open array member; no single successor or accounting treatment is inferred.
+    /// </summary>
+    public const string StockMovements = "stockMovements";
+
+    /// <summary>CapitalGainsDistribution: long-term capital-gain payment per share, when reported.</summary>
+    public const string LongTermRate = "longTermRate";
+
+    /// <summary>CapitalGainsDistribution: short-term capital-gain payment per share, when reported.</summary>
+    public const string ShortTermRate = "shortTermRate";
+
     /// <summary>TenderOffer: offered price per share/unit in the event's currency.</summary>
     public const string OfferPricePerShare = "offerPricePerShare";
 

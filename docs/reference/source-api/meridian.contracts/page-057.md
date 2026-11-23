@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityTermsProjectionChildRowsDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionChildRowsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermsProjectionReadDtos.cs#L27).
+
+The rows one child projection table holds for a security, in ordinal order.
+
+```csharp
+public sealed record SecurityTermsProjectionChildRowsDto(string TableName, IReadOnlyList<IReadOnlyDictionary<string, JsonElement>> Rows);
+```
+
 ## SecurityTermsProjectionKind
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsProjectionKind</code>. Kind: `enum`.
@@ -438,7 +450,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SplitCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:160](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L160).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:168](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L168).
 
 Unit count scaled by a ratio (forward or reverse split).
 
@@ -806,16 +818,4 @@ A contractual principal payment retained from the security&#x27;s economic terms
 
 ```csharp
 public sealed record StructuredPrincipalScheduleEntry(DateOnly PaymentDate, decimal Amount);
-```
-
-## StructuredStepCouponEntry
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredStepCouponEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:126](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L126).
-
-One dated coupon-rate step resolved from a bond&#x27;s stepSchedule: the annual rate payable from EffectiveDate until the next entry&#x27;s effective date (or maturity).
-
-```csharp
-public sealed record StructuredStepCouponEntry(DateOnly EffectiveDate, decimal Rate);
 ```

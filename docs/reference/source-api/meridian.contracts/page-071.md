@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationBreakQueueScope
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueScope</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:616](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L616).
+
+Server-resolved access scope for reconciliation queue reads and mutations. This value is never accepted from a workstation request body; endpoint adapters build it from the authenticated session.
+
+```csharp
+public sealed record ReconciliationBreakQueueScope
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ReconciliationBreakQueueScope(string tenantId, string companyId);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:618](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L618) |  |
+| <code>public string TenantId { get; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:626](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L626) |  |
+| <code>public string CompanyId { get; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:628](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L628) |  |
+| <code>public bool Owns(ReconciliationBreakQueueItem? item) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:630](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L630) |  |
+
 ## ReconciliationBreakQueueStatus
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueStatus</code>. Kind: `enum`.
@@ -743,14 +764,4 @@ Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:697](../../../
 
 ```csharp
 public sealed record ReconciliationTaxonomyValue(string Code, string DisplayName, int Version, bool IsActive, IReadOnlyList<string>? RequiredEvidencePrefixes = null);
-```
-
-## RecordPreparerAttestationRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.RecordPreparerAttestationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L31).
-
-```csharp
-public sealed record RecordPreparerAttestationRequestDto(Guid CommandId, long ExpectedDeclarationRevision, string ActionId, string SubjectKind, string SubjectId, string SubjectRevision, string SubjectHash, string Reason, string Confirmation, OperationsActionOriginDto Origin = OperationsActionOriginDto.HumanOperator);
 ```

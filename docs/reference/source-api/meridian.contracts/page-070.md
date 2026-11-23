@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioReportingPnlSlicePeriodDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.PortfolioReportingPnlSlicePeriodDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:242](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L242).
+
+```csharp
+public enum PortfolioReportingPnlSlicePeriodDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Daily = 0</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:244](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L244) |  |
+| <code>Weekly = 1</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:245](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L245) |  |
+| <code>Monthly = 2</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:246](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L246) |  |
+| <code>Yearly = 3</code> | [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:247](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L247) |  |
+
 ## PortfolioSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioSummary</code>. Kind: `record`.
@@ -670,24 +689,3 @@ One projected reconciliation break row including routing and sign-off evidence f
 ```csharp
 public sealed record ReconciliationBreakQueueProjectionItemDto(string BreakId, string? WorkflowId, ReconciliationBreakSeverity Severity, ReconciliationBreakQueueStatus Status, string? Owner, string? RequiredSignoffRole, string? SignoffStatus, string? RoutingTarget, string? RoutingDetail, string? EvidenceReference, DateTimeOffset LastUpdatedAt, ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal, ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack, string? AgeBand = null, string? RootCauseCode = null, string? ResolutionCode = null, int CommentCount = 0, int EvidenceCount = 0, DateTimeOffset? LastActivityAt = null, string? LastCommentExcerpt = null, int RelatedCaseCount = 0, string? SlaBadgeLabel = null, string? SlaBadgeTone = null);
 ```
-
-## ReconciliationBreakQueueScope
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueScope</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:616](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L616).
-
-Server-resolved access scope for reconciliation queue reads and mutations. This value is never accepted from a workstation request body; endpoint adapters build it from the authenticated session.
-
-```csharp
-public sealed record ReconciliationBreakQueueScope
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ReconciliationBreakQueueScope(string tenantId, string companyId);</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:618](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L618) |  |
-| <code>public string TenantId { get; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:626](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L626) |  |
-| <code>public string CompanyId { get; }</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:628](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L628) |  |
-| <code>public bool Owns(ReconciliationBreakQueueItem? item) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:630](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L630) |  |

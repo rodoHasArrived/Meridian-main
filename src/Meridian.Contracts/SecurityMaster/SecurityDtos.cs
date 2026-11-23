@@ -184,7 +184,15 @@ public sealed record CorporateActionDto(
     Guid? SupersedesCorpActId = null,
     decimal? RedemptionPricePercentOfPar = null,
     JsonElement? Payload = null,
-    int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion);
+    int PayloadSchemaVersion = CorporateActionPayloads.CurrentSchemaVersion)
+{
+    /// <summary>
+    /// Non-economic provider evidence persisted in the source proposal's existing JSON document.
+    /// Omitted on historical records to preserve their serialized representation.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public CorporateActionRetainedSourceEvidenceDto? SourceEvidence { get; init; }
+}
 
 /// <summary>
 /// Preferred-equity-specific terms returned by the preferred-terms query.
