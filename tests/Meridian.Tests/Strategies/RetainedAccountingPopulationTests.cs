@@ -1,5 +1,7 @@
 using FluentAssertions;
+using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Metrics;
+using Meridian.Backtesting.Portfolio;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Contracts.SecurityMaster;
@@ -14,6 +16,85 @@ namespace Meridian.Tests.Strategies;
 
 public sealed class RetainedAccountingPopulationTests
 {
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void CanonicalDividend_PreservesPositionEvidenceThroughDeclarationSettlementAndSale(bool sellBeforeSettlement)
+    {
+        var date = new DateOnly(2026, 11, 20);
+        var at = new DateTimeOffset(date, TimeOnly.MinValue, TimeSpan.Zero);
+        var securityId = Guid.NewGuid();
+        var accountId = BacktestDefaults.DefaultBrokerageAccountId;
+        var ledger = new Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+        var portfolio = new SimulatedPortfolio(10_000m, new FixedCommissionModel(), 0, 0, ledger, at)
+        { SecurityIdentity = _ => securityId };
+        var action = new BacktestCanonicalAction("TEST", 1, new(Guid.NewGuid(), securityId,
+            CorporateActionEventTypes.Dividend, date.AddDays(1), date.AddDays(3), 2m, "USD",
+            null, null, null, null, null, null, null));
+        portfolio.ConfigureCanonicalActions(new CanonicalBacktestActions(new(at.AddDays(3), "synthetic-snapshot", [action])));
+        var receipts = new List<AssetEventCashFlow>();
+        var cashFlows = new List<CashFlowEntry>();
+        portfolio.ProcessFill(new(Guid.NewGuid(), Guid.NewGuid(), "TEST", 10, 100m, 0m, at.AddHours(12)));
+        portfolio.UpdateLastPrice("TEST", 100m);
+        AssertPosition(0, 10m, 1000m);
+
+        portfolio.ApplyCanonicalActions(date.AddDays(1));
+        AssertPosition(1, 10m, 1000m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable("TEST", accountId)).Should().Be(20m);
+        if (sellBeforeSettlement)
+        {
+            portfolio.ProcessFill(new(Guid.NewGuid(), Guid.NewGuid(), "TEST", -4, 100m, 0m, at.AddDays(2).AddHours(12)));
+            AssertPosition(2, 6m, 600m);
+        }
+
+        portfolio.ApplyCanonicalActions(date.AddDays(3));
+        AssertPosition(3, sellBeforeSettlement ? 6m : 10m, sellBeforeSettlement ? 600m : 1000m);
+        ledger.GetBalance(LedgerAccounts.DividendReceivable("TEST", accountId)).Should().Be(0m);
+        cashFlows.OfType<DividendCashFlow>().Should().ContainSingle().Which.Amount.Should().Be(20m,
+            "settlement retains the ex-date entitlement even after a partial sale");
+
+        portfolio.ProcessFill(new(Guid.NewGuid(), Guid.NewGuid(), "TEST", sellBeforeSettlement ? -6 : -10,
+            100m, 0m, at.AddDays(4).AddHours(12)));
+        AssertPosition(4, 0m, 0m);
+        ledger.Journal.Should().OnlyContain(journal => journal.IsBalanced);
+        portfolio.LedgerIntegrityBreaks.Should().BeEmpty();
+
+        void AssertPosition(int day, decimal quantity, decimal basis)
+        {
+            var snapshot = portfolio.TakeSnapshot(at.AddDays(day).AddHours(20), date.AddDays(day));
+            cashFlows.AddRange(snapshot.DayCashFlows);
+            receipts.AddRange(snapshot.DayCashFlows.OfType<AssetEventCashFlow>());
+            var position = StrategyPositionAccountingProjector.Project(ledger.Journal, receipts).Should().ContainSingle().Which;
+            position.Quantity.Should().Be(quantity);
+            position.MonetaryBasis.Should().Be(basis);
+            position.SecurityId.Should().Be(securityId);
+            position.FinancialAccountId.Should().Be(accountId);
+            position.QuantityUnit.Should().Be("Shares");
+            position.Multiplier.Should().Be(1m);
+            position.Currency.Should().Be("USD");
+            position.CoverageFailure.Should().BeNull();
+        }
+    }
+
+    [Fact]
+    public void UnversionedPositionTransformation_RemainsUnavailable()
+    {
+        var at = DateTimeOffset.Parse("2026-11-21T12:00:00Z");
+        var ledger = new Meridian.Ledger.Ledger(LedgerPolicy.Trading());
+        SecurityTradePosting[] legs = [new(SecurityTradePostingKind.OpenLong, 10m, 1000m)];
+        var metadata = SecurityTradePositionEvidence.WithPostings(new(Symbol: "TEST", FinancialAccountId: "account"),
+            legs, SecurityLotUnitKind.Shares, 1m);
+        ledger.PostLines(at, "Synthetic source position", legs.SelectMany(leg =>
+            SecurityTradePostingProjector.Project(leg, "TEST", "account")).ToArray(), metadata);
+        var receipt = new AssetEventCashFlow(at.AddDays(1), 0m, "TEST", AssetEventType.Split, 10, 0m, PositionFactor: 2m)
+        { AccountId = "account" };
+
+        var position = StrategyPositionAccountingProjector.Project(ledger.Journal, [receipt]).Should().ContainSingle().Which;
+
+        position.Quantity.Should().BeNull();
+        position.CoverageFailure.Should().Be("A processed asset receipt lacks versioned native-unit or currency evidence.");
+    }
+
     [Fact]
     public async Task LegacyPostedSourceDoesNotTurnMatchingActivityIntoProofOfCompleteAccountBalances()
     {

@@ -6,7 +6,7 @@ module_id: SRC-UI-SHARED
 path: src/Meridian.Ui.Shared
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui.Shared
@@ -4412,4 +4412,4 @@ rescan for arrivals earlier than the retained watermark; no API page-token durab
 
 ## Whole-journal downloads
 
-`POST /api/ledger/periods/{periodId}/journal-export` preserves ledger-read, `ExportData`, authenticated tenant/company and retained book-ownership checks. Its existing CSV/Parquet request optionally accepts `from`, `to` and `journalEntryIds`; defaults select the whole period. A single reporting capture supplies period state and every selected journal. Changed period versions require refresh, missing selected IDs reject the entire download, and response headers retain the source snapshot and exact artifact SHA-256. These neutral downloads grant no external-posting authority.
+`POST /api/ledger/periods/{periodId}/journal-export` preserves ledger-read, `ExportData`, authenticated tenant/company and retained book-ownership checks. Its existing CSV/Parquet request optionally accepts `from`, `to` and `journalEntryIds`; defaults select every journal retained in the period, including earlier-effective late postings. Supplying either date bound explicitly filters by effective date within the period and fills the missing bound from the period boundary. A single reporting capture supplies period state and every selected journal. Changed period versions require refresh, missing selected IDs reject the entire download, and response headers retain the source snapshot and exact artifact SHA-256. These neutral downloads grant no external-posting authority.

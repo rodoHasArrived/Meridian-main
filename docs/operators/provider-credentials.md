@@ -2,7 +2,7 @@
 title: Provider Credential Operations
 status: active
 owner: core-team
-reviewed: 2026-06-02
+reviewed: 2026-11-22
 audience: operators
 ---
 
@@ -256,6 +256,41 @@ its request. Use `verify-draft` to check unsaved fields.
 
 The Alpaca equity feed selector verifies recent SIP trades with the selected owned runtime
 connection before saving SIP. Feed changes take effect when the host restarts.
+
+### Create a connection from a template
+
+Use a connection template to create a **new** owned connection with reviewed settings. Credential
+editing for an existing connection still starts from the explicit connection selection above.
+
+- **Browser:** **Data > Providers > Add provider** opens the template catalog.
+- **WPF:** the **Add Provider** wizard starts with the same tenant-owned catalog.
+
+Both clients call the shared `/api/provider-routing/templates` routes, which require
+`ManageCredentials`, `ManageProviders`, and `ModifyConfig` and a server-resolved tenant.
+
+1. Choose a template. Built-ins cover paper brokerage (Alpaca paper), historical equities (Tiingo),
+   options chains (Polygon), reference data (OpenFIGI), and research-only backfill (Stooq).
+2. Review the settings, required capabilities, expected data semantics, suggested binding priority,
+   and verification checklist. If the template changes after review, setup refuses to continue;
+   reload and review again.
+3. Open the scoped credential vault and enter credentials. Enter the provider account identity when
+   the template requires one; it belongs to this connection only. The draft stays out of the
+   connection inventory until it is saved.
+4. Run **Test**. Alpaca verifies the account; Tiingo, Polygon, and OpenFIGI request a sample with the
+   draft's credentials. Credential-free providers and adapters without scoped verification report
+   what their setup check covers. Saving requires a passing test of the current credentials.
+5. Save the connection, then complete the remaining checklist items. Activation and routing
+   bindings are separate operator actions; saving from a template does not activate either.
+
+Discard an abandoned setup from the dialog. Drafts expire after 24 hours, and the operator's next
+setup removes their expired drafts and the matching vault records.
+
+**Manage connection templates** imports and exports template JSON (schema version 1, up to 100
+templates, 64 KB maximum). Import validates the whole file before changing the library and reports
+each incompatible field. **Save as template** copies an owned connection's portable settings and
+binding recommendation; it requires a new template name and a portable scope and never copies
+secrets. See [provider connection templates](../../src/Meridian.Ui.Shared/README.md#provider-connection-templates)
+for the contract detail.
 
 ## Quick credential validation checklist
 

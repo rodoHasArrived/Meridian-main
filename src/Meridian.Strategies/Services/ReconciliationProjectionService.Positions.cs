@@ -16,9 +16,10 @@ public sealed partial class ReconciliationProjectionService
             var actualRows = actual.Where(item => string.Equals(Key(item), key, StringComparison.OrdinalIgnoreCase)).ToArray();
             var e = expectedRows.Length == 1 ? expectedRows[0] : null;
             var a = actualRows.Length == 1 ? actualRows[0] : null;
-            if (e is null && a is { Quantity: 0m, MonetaryBasis: 0m, CoverageFailure: null })
+            if (expectedRows.Length == 0 && a is { Quantity: 0m, MonetaryBasis: 0m, CoverageFailure: null })
                 continue;
-            var representative = e ?? a!;
+            // Cardinality failures still need a label; neither unique counterpart may exist.
+            var representative = expectedRows.FirstOrDefault() ?? actualRows[0];
             var problem = expectedRows.Length > 1 || actualRows.Length > 1
                 ? "Position scope has multiple rows without aggregation authority."
                 : e is null || a is null ? "An exact account and position counterpart is unavailable."

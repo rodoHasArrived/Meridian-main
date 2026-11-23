@@ -47,8 +47,9 @@ public static partial class LedgerEndpoints
                 return Results.BadRequest("format must be csv or parquet.");
             try
             {
-                var from = request!.From ?? period.StartDate;
-                var to = request.To ?? period.EndDate;
+                var hasDateWindow = request!.From.HasValue || request.To.HasValue;
+                var from = hasDateWindow ? request.From ?? period.StartDate : (DateOnly?)null;
+                var to = hasDateWindow ? request.To ?? period.EndDate : (DateOnly?)null;
                 if (from > to || from < period.StartDate || to > period.EndDate)
                     return Results.BadRequest("The accounting-date range must be ordered and inside the selected period.");
                 var snapshot = await snapshotSource.CaptureReportingSnapshotAsync(new LedgerJournalEntryQuery(

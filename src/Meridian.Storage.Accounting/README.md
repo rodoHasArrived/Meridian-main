@@ -6,7 +6,7 @@ module_id: SRC-STORAGE-ACCOUNTING
 path: src/Meridian.Storage.Accounting
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Storage.Accounting
@@ -177,4 +177,4 @@ tables. Monthly and fiscal close check confirmation in the transaction for books
 
 ## Complete journal selections
 
-`LedgerJournalExportSelection` selects complete journals from one book/period reporting capture. Explicit IDs must all exist inside the requested accounting-date window; no line filtering can silently unbalance a journal. The source digest binds original raw values and the period version independently of external account labels or output format. Canonical JSON property ordering preserves dictionary equivalence without hashing formula-escaped cells. CSV uses explicit CRLF and retains invariant decimal precision. Focused coverage lives in `LedgerJournalExportSelectionTests` and `LedgerJournalExporterTests`.
+`LedgerJournalExportSelection` selects complete journals from one book/period reporting capture. With no date bounds, retained period membership includes late postings whose effective dates precede the period. Supplying either bound enables an explicit effective-date window within the period, with the missing bound taken from the period boundary. Explicit IDs must all exist in the selected population; no line filtering can silently unbalance a journal. The source digest binds original raw values and the period version independently of external account labels or output format. Canonical JSON property ordering preserves dictionary equivalence without hashing formula-escaped cells. CSV uses explicit CRLF and retains invariant decimal precision. Focused coverage lives in `LedgerJournalExportSelectionTests` and `LedgerJournalExporterTests`.

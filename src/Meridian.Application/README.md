@@ -6,7 +6,7 @@ module_id: SRC-APP
 path: src/Meridian.Application
 status: active
 owner_lane: Runtime Host
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Application
@@ -20,7 +20,14 @@ fills never attach a quality score fetched later during accounting.
 Loan reconciliation now consumes eligible nonvoid incoming receipts and their retained allocations
 once, by currency and due date. Current durable and synthetic allocation aliases share a matcher;
 PRD-115 principal prepayments, prepaid interest and unapplied cash retain their explained dispositions,
-and outgoing refunds cannot satisfy projected receipts. Optional amount/day tolerances are pinned
+and outgoing refunds cannot satisfy projected receipts. Retained unapplied-cash application events
+consume their original allocation pools once and match on the application date; refunds reduce those
+pools before later applications. Results retain the application and funding evidence without creating
+another cash receipt. Multiple applications can settle one unambiguous projected obligation; an
+exact combined amount takes precedence over a tolerance-only match. Competing obligations and
+arbitrary subsets remain unmatched. Unlinked, insufficient or incompatible funding leaves coverage
+unavailable.
+Optional amount/day tolerances are pinned
 to the retryable command; omitted requests preserve exact matching. Canonical balance comparisons
 use the registered loan account roles, an atomic exact-book journal capture and any pinned configured
 chart revision, including PIK, prepaid-interest and unapplied-cash balances. Missing role, currency or
@@ -86,6 +93,10 @@ interval and source enable/disable live, and reports settings the runtime does n
 running `CrossProviderComparisonService`. The collector also publishes its coordinator to
 `StreamingFailoverRegistry.Process` and honours `Sources[*].Enabled = false` at startup.
 `SaveAsync` now also refuses to overwrite a malformed existing authoritative document.
+Feature-capability override saves record their setting changes after the document is durably saved.
+The effective configuration projection reads declared fields and reports activation impact and
+source. It summarizes dictionaries, leaves additional sections out of the response, and masks
+credentials and free-form text.
 
 Provider routing rejects disabled connections and policy-gated fallbacks consistently across direct
 and scored selection. Catalog metadata placeholders yield to the first concrete capability factory.

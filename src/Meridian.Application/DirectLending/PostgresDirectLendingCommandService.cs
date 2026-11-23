@@ -687,7 +687,9 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         var flows = await _operationsStore.GetProjectedCashFlowsAsync(latestProjection.ProjectionRunId, ct).ConfigureAwait(false);
         var cash = await _operationsStore.GetCashTransactionsAsync(loanId, ct).ConfigureAwait(false);
         var allocations = await _operationsStore.GetPaymentAllocationsAsync(loanId, ct).ConfigureAwait(false);
-        var results = LoanCashReconciliation.Match(runId, loanId, asOf, observedAt, flows, cash, allocations, request).ToList();
+        var history = await _queryService.GetHistoryAsync(loanId, ct).ConfigureAwait(false);
+        var results = LoanCashReconciliation.Match(runId, loanId, asOf, observedAt, flows, cash, allocations, request,
+            history, state.Contract.CurrentTerms.BaseCurrency).ToList();
         results.AddRange(await LoanLedgerReconciliation.ReadAsync(runId, loanId, state, _reconciliationJournalStore,
             _options, _reconciliationAccountResolver, _reconciliationTenancy, asOf, observedAt, request, ct).ConfigureAwait(false));
         var current = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);

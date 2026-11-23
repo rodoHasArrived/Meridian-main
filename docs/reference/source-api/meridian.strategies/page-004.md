@@ -159,7 +159,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyPositionAccountingCheck</code>. Kind: `record`.
 
-Source: [src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs:66](../../../../src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs#L66).
+Source: [src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs:67](../../../../src/Meridian.Strategies/Services/ReconciliationProjectionService.Positions.cs#L67).
 
 ```csharp
 public sealed record StrategyPositionAccountingCheck(string CheckId, string Label, string? SourceScope, ReconciliationBreakMeasureDto Measure, bool IsMatch);

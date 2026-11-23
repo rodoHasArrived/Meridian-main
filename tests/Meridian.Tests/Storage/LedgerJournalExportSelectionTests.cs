@@ -66,6 +66,62 @@ public sealed class LedgerJournalExportSelectionTests
     }
 
     [Fact]
+    public void DefaultSelectionRetainsPeriodMembershipForEarlierEffectiveDates()
+    {
+        var (book, snapshot) = GeneralLedgerExportTestData.Create();
+        var period = snapshot.Period!;
+        var record = snapshot.Journals[0];
+        var late = Rebuild(record, record.Entry.Description,
+            record.Entry.Metadata with { EffectiveDate = period.StartDate.AddDays(-1) }, record.Entry.Timestamp);
+        snapshot = snapshot with { Journals = [late] };
+
+        var complete = LedgerJournalExportSelection.Select(snapshot, book.LedgerBookId, period.PeriodId);
+        complete.Journals.Select(item => item.Entry.JournalEntryId).Should().Equal(late.Entry.JournalEntryId);
+        complete.Journals.SelectMany(item => item.Entry.Lines).Sum(line => line.Debit).Should().Be(GeneralLedgerExportTestData.Amount);
+        complete.Journals.SelectMany(item => item.Entry.Lines).Sum(line => line.Credit).Should().Be(GeneralLedgerExportTestData.Amount);
+        LedgerJournalExportSelection.Select(snapshot, book.LedgerBookId, period.PeriodId,
+            journalEntryIds: [late.Entry.JournalEntryId]).SnapshotSha256.Should().Be(complete.SnapshotSha256);
+
+        LedgerJournalExportSelection.Select(snapshot, book.LedgerBookId, period.PeriodId,
+            period.StartDate, period.EndDate).Journals.Should().BeEmpty();
+        Action selectedOutsideWindow = () => LedgerJournalExportSelection.Select(snapshot, book.LedgerBookId,
+            period.PeriodId, period.StartDate, period.EndDate, [late.Entry.JournalEntryId]);
+        selectedOutsideWindow.Should().Throw<ArgumentException>();
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void OneExplicitDateBoundStillUsesThePeriodBoundaryForTheOther(bool supplyFrom)
+    {
+        var (book, snapshot) = GeneralLedgerExportTestData.Create();
+        var period = snapshot.Period!;
+        var record = snapshot.Journals[0];
+        var effectiveDate = supplyFrom ? period.EndDate.AddDays(1) : period.StartDate.AddDays(-1);
+        snapshot = snapshot with
+        {
+            Journals = [Rebuild(record, record.Entry.Description,
+            record.Entry.Metadata with { EffectiveDate = effectiveDate }, record.Entry.Timestamp)]
+        };
+
+        LedgerJournalExportSelection.Select(snapshot, book.LedgerBookId, period.PeriodId,
+            supplyFrom ? period.StartDate : null, supplyFrom ? null : period.EndDate).Journals.Should().BeEmpty();
+    }
+
+    [Fact]
+    public void DigestDistinguishesPeriodMembershipFromExplicitDateWindow()
+    {
+        var (book, snapshot) = GeneralLedgerExportTestData.Create();
+        var period = snapshot.Period!;
+        var complete = LedgerJournalExportSelection.Select(snapshot, book.LedgerBookId, period.PeriodId);
+        var window = LedgerJournalExportSelection.Select(snapshot, book.LedgerBookId, period.PeriodId,
+            period.StartDate, period.EndDate);
+
+        complete.Journals.Should().Equal(window.Journals);
+        complete.SnapshotSha256.Should().NotBe(window.SnapshotSha256);
+    }
+
+    [Fact]
     public void DigestBindsOriginalTextEvenWhenFormulaEscapingProducesIdenticalCells()
     {
         var (book, snapshot) = GeneralLedgerExportTestData.Create();

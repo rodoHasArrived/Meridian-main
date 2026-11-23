@@ -1,3 +1,4 @@
+using System.Text.Json;
 using FluentAssertions;
 using Meridian.Application.DirectLending;
 using Meridian.Contracts.DirectLending;
@@ -50,6 +51,204 @@ public sealed class LoanCashReconciliationTests
         results.Should().ContainSingle(static row => row.MatchStatus == "MissingCash");
         results.Should().ContainSingle(static row => row.MatchStatus == "Matched" && row.MeasurementKind == "cash-disposition");
         results.Should().NotContain(static row => row.MatchStatus == "UnexpectedCash");
+    }
+
+    [Theory]
+    [InlineData(100, 0)]
+    [InlineData(150, 50)]
+    public void Match_AppliedUnappliedCash_UsesApplicationDateAndPreservesUnconsumedBalance(int receiptAmount, int residual)
+    {
+        var cash = Cash(receiptAmount) with { TransactionType = "MixedPayment", SettlementDate = AsOf.AddDays(-10) };
+        var allocation = Allocation(cash, receiptAmount, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var application = HeldMovement(2, 100m, new(100m, 0m, 0m, 0m, 0m));
+        var results = Match([Flow(100m) with { FlowType = "Interest" }, Flow(100m) with { FlowType = "Interest" }],
+            [cash], [allocation], history: [ReceiptEvent(cash, 1), application, application]);
+
+        var matched = results.Should().ContainSingle(row => row.ProjectedCashFlowId.HasValue && row.MatchStatus == "Matched").Which;
+        matched.ActualAmount.Should().Be(100m);
+        matched.ActualDate.Should().Be(AsOf, "held funds settle the obligation on their application date");
+        matched.CashTransactionId.Should().Be(cash.CashTransactionId);
+        matched.PaymentAllocationId.Should().Be(allocation.AllocationId);
+        matched.Notes.Should().Contain(note => note.Contains(application.EventId.ToString("D")));
+        results.Should().ContainSingle(row => row.MatchStatus == "MissingCash", "the same application cannot satisfy a second obligation");
+        results.Where(row => row.MeasurementKind == "cash-disposition").Sum(row => row.ActualAmount).Should().Be(residual);
+        results.Sum(row => row.ActualAmount).Should().Be(receiptAmount, "applied funds are removed from the original held slice");
+        results.Should().NotContain(row => row.MatchStatus == "UnexpectedCash" || row.MatchStatus == "CashCoverageUnavailable");
+    }
+
+    [Fact]
+    public void Match_SplitHeldApplications_SettleOneObligationAndConserveOriginalFunding()
+    {
+        var cash = Cash(150m) with { TransactionType = "MixedPayment", SettlementDate = AsOf.AddDays(-10) };
+        var allocation = Allocation(cash, 150m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var first = HeldMovement(2, 40m, new(40m, 0m, 0m, 0m, 0m));
+        var second = HeldMovement(3, 60m, new(60m, 0m, 0m, 0m, 0m));
+        var results = Match([Flow(100m) with { FlowType = "Interest" }], [cash], [allocation],
+            history: [ReceiptEvent(cash, 1), first, second, second]);
+
+        var matched = results.Should().ContainSingle(row => row.ProjectedCashFlowId.HasValue).Which;
+        matched.MatchStatus.Should().Be("Matched");
+        matched.ActualAmount.Should().Be(100m);
+        matched.ActualDate.Should().Be(AsOf);
+        matched.CashTransactionId.Should().Be(cash.CashTransactionId);
+        matched.PaymentAllocationId.Should().Be(allocation.AllocationId);
+        matched.Notes.Should().Contain(note => note.Contains(first.EventId.ToString("D")) && note.Contains("amount 40."));
+        matched.Notes.Should().Contain(note => note.Contains(second.EventId.ToString("D")) && note.Contains("amount 60."));
+        results.Should().ContainSingle(row => row.MeasurementKind == "cash-disposition" && row.ActualAmount == 50m);
+        results.Sum(row => row.ActualAmount).Should().Be(150m);
+        LoanCashReconciliation.Exceptions(results, ObservedAt).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Match_ExactHeldApplicationTotal_PrecedesLooseIndividualAmountTolerance()
+    {
+        var cash = Cash(100m) with { TransactionType = "MixedPayment" };
+        var allocation = Allocation(cash, 100m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var results = Match([Flow(100m)], [cash], [allocation], new(60m, 0), history:
+            [ReceiptEvent(cash, 1), HeldMovement(2, 40m, new(0m, 0m, 0m, 0m, 40m)), HeldMovement(3, 60m, new(0m, 0m, 0m, 0m, 60m))]);
+
+        var matched = results.Should().ContainSingle().Which;
+        matched.MatchStatus.Should().Be("Matched");
+        matched.ActualAmount.Should().Be(100m);
+        matched.VarianceAmount.Should().Be(0m);
+        LoanCashReconciliation.Exceptions(results, ObservedAt).Should().BeEmpty();
+    }
+
+    [Fact]
+    public void Match_SplitHeldApplications_DoesNotAssignFundsBetweenCompetingObligations()
+    {
+        var cash = Cash(100m) with { TransactionType = "MixedPayment" };
+        var allocation = Allocation(cash, 100m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var results = Match([Flow(100m), Flow(100m)], [cash], [allocation], history:
+            [ReceiptEvent(cash, 1), HeldMovement(2, 40m, new(0m, 0m, 0m, 0m, 40m)), HeldMovement(3, 60m, new(0m, 0m, 0m, 0m, 60m))]);
+
+        results.Count(row => row.MatchStatus == "MissingCash").Should().Be(2);
+        results.Should().NotContain(row => row.MatchStatus == "Matched");
+        results.Sum(row => row.ActualAmount).Should().Be(100m);
+    }
+
+    [Fact]
+    public void Match_SplitHeldApplications_PreservesIndividualExactMatches()
+    {
+        var cash = Cash(100m) with { TransactionType = "MixedPayment" };
+        var allocation = Allocation(cash, 100m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var results = Match([Flow(40m), Flow(60m)], [cash], [allocation], history:
+            [ReceiptEvent(cash, 1), HeldMovement(2, 40m, new(0m, 0m, 0m, 0m, 40m)), HeldMovement(3, 60m, new(0m, 0m, 0m, 0m, 60m))]);
+
+        results.Should().HaveCount(2).And.OnlyContain(row => row.MatchStatus == "Matched");
+        results.Select(row => row.ActualAmount).Should().BeEquivalentTo(new decimal?[] { 40m, 60m });
+        results.Sum(row => row.ActualAmount).Should().Be(100m);
+    }
+
+    [Theory]
+    [InlineData(1, "MissingCash")]
+    [InlineData(2, "Matched")]
+    public void Match_SplitHeldApplications_RequiresEveryApplicationWithinDateTolerance(int toleranceDays, string expected)
+    {
+        var cash = Cash(100m) with { TransactionType = "MixedPayment", SettlementDate = AsOf.AddDays(-10) };
+        var allocation = Allocation(cash, 100m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var results = Match([Flow(100m)], [cash], [allocation], new(0m, toleranceDays), history:
+            [ReceiptEvent(cash, 1), HeldMovement(2, 40m, new(0m, 0m, 0m, 0m, 40m), AsOf.AddDays(-2)),
+             HeldMovement(3, 60m, new(0m, 0m, 0m, 0m, 60m))]);
+
+        results.Single(row => row.ProjectedCashFlowId.HasValue).MatchStatus.Should().Be(expected);
+        results.Sum(row => row.ActualAmount).Should().Be(100m);
+    }
+
+    [Fact]
+    public void Match_SplitHeldApplications_DoesNotChooseAnArbitrarySubset()
+    {
+        var cash = Cash(150m) with { TransactionType = "MixedPayment" };
+        var allocation = Allocation(cash, 150m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var results = Match([Flow(100m)], [cash], [allocation], history:
+            [ReceiptEvent(cash, 1), HeldMovement(2, 40m, new(0m, 0m, 0m, 0m, 40m)),
+             HeldMovement(3, 60m, new(0m, 0m, 0m, 0m, 60m)), HeldMovement(4, 50m, new(0m, 0m, 0m, 0m, 50m))]);
+
+        results.Should().ContainSingle(row => row.MatchStatus == "MissingCash");
+        results.Should().NotContain(row => row.MatchStatus == "Matched");
+        results.Sum(row => row.ActualAmount).Should().Be(150m);
+    }
+
+    [Fact]
+    public void Match_AppliedUnappliedCash_CombinesFundingWithoutInventingOneReceiptIdentity()
+    {
+        var first = Cash(60m) with { TransactionType = "MixedPayment" };
+        var second = Cash(40m) with { TransactionType = "MixedPayment" };
+        var allocations = new[]
+        {
+            Allocation(first, 60m, "UnappliedCash", 1) with { SourceEventId = first.SourceEventId },
+            Allocation(second, 40m, "UnappliedCash", 1) with { SourceEventId = second.SourceEventId }
+        };
+        var application = HeldMovement(3, 100m, new(0m, 0m, 0m, 0m, 100m));
+        var results = Match([Flow(100m)], [first, second], allocations,
+            history: [ReceiptEvent(first, 1), ReceiptEvent(second, 2), application]);
+
+        var matched = results.Should().ContainSingle().Which;
+        matched.MatchStatus.Should().Be("Matched");
+        matched.ActualAmount.Should().Be(100m);
+        matched.CashTransactionId.Should().BeNull();
+        matched.PaymentAllocationId.Should().BeNull();
+        foreach (var allocation in allocations)
+            matched.Notes.Should().Contain(note => note.Contains(allocation.AllocationId.ToString("D")));
+    }
+
+    [Fact]
+    public void Match_RefundThenPartialApplication_CannotReuseRefundedFunding()
+    {
+        var cash = Cash(150m) with { TransactionType = "MixedPayment" };
+        var allocation = Allocation(cash, 150m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var refund = HeldMovement(2, 50m, null);
+        var application = HeldMovement(3, 100m, new(0m, 0m, 0m, 0m, 100m));
+        var results = Match([Flow(100m), Flow(50m)], [cash], [allocation],
+            history: [ReceiptEvent(cash, 1), refund, application]);
+
+        results.Should().ContainSingle(row => row.MatchStatus == "Matched" && row.ProjectedCashFlowId.HasValue && row.ActualAmount == 100m);
+        results.Should().ContainSingle(row => row.MatchStatus == "MissingCash" && row.ExpectedAmount == 50m);
+        results.Should().ContainSingle(row => row.MatchStatus == "Matched" && row.MeasurementKind == "cash-disposition" && row.ActualAmount == 50m);
+        results.Sum(row => row.ActualAmount).Should().Be(150m);
+
+        var overdrawn = Match([Flow(150m)], [cash], [allocation],
+            history: [ReceiptEvent(cash, 1), refund, HeldMovement(3, 150m, new(0m, 0m, 0m, 0m, 150m))]);
+        overdrawn.Should().NotContain(row => row.MatchStatus == "Matched");
+        overdrawn.Should().ContainSingle(row => row.MatchStatus == "CashCoverageUnavailable");
+    }
+
+    [Theory]
+    [InlineData("currency")]
+    [InlineData("void")]
+    [InlineData("later-receipt")]
+    [InlineData("unlinked-allocation")]
+    [InlineData("malformed-breakdown")]
+    public void Match_AppliedUnappliedCash_RefusesUnsupportedFunding(string fault)
+    {
+        var cash = Cash(100m) with { TransactionType = "MixedPayment" };
+        if (fault == "currency")
+            cash = cash with { Currency = CurrencyCode.EUR };
+        if (fault == "void")
+            cash = cash with { IsVoided = true };
+        var allocation = Allocation(cash, 100m, "UnappliedCash", 1) with
+        { SourceEventId = fault == "unlinked-allocation" ? Guid.NewGuid() : cash.SourceEventId };
+        var application = HeldMovement(2, 100m, new(0m, 0m, 0m, 0m, 100m));
+        if (fault == "malformed-breakdown")
+            application = application with { PayloadJson = "{}" };
+        var results = Match([Flow(100m)], [cash], [allocation],
+            history: [ReceiptEvent(cash, fault == "later-receipt" ? 3 : 1), application]);
+
+        results.Should().ContainSingle(row => row.MatchStatus == "MissingCash");
+        results.Should().ContainSingle(row => row.MatchStatus == "CashCoverageUnavailable");
+        results.Should().NotContain(row => row.MatchStatus == "Matched");
+    }
+
+    [Fact]
+    public void Match_FutureUnappliedApplication_DoesNotSettleAnObligationYet()
+    {
+        var cash = Cash(100m) with { TransactionType = "MixedPayment" };
+        var allocation = Allocation(cash, 100m, "UnappliedCash", 1) with { SourceEventId = cash.SourceEventId };
+        var application = HeldMovement(2, 100m, new(0m, 0m, 0m, 0m, 100m)) with { EffectiveDate = AsOf.AddDays(1) };
+        var results = Match([Flow(100m)], [cash], [allocation], history: [ReceiptEvent(cash, 1), application]);
+
+        results.Should().ContainSingle(row => row.MatchStatus == "MissingCash");
+        results.Should().ContainSingle(row => row.MatchStatus == "Matched" && row.MeasurementKind == "cash-disposition");
     }
 
     [Theory]
@@ -144,8 +343,23 @@ public sealed class LoanCashReconciliationTests
     }
 
     private static IReadOnlyList<ReconciliationResultDto> Match(IReadOnlyList<ProjectedCashFlowDto> flows,
-        IReadOnlyList<CashTransactionDto> cash, IReadOnlyList<PaymentAllocationDto>? allocations = null, ReconcileLoanRequest? request = null) =>
-        LoanCashReconciliation.Match(Guid.NewGuid(), LoanId, AsOf, ObservedAt, flows, cash, allocations ?? [], request ?? new(0m, 0));
+        IReadOnlyList<CashTransactionDto> cash, IReadOnlyList<PaymentAllocationDto>? allocations = null, ReconcileLoanRequest? request = null,
+        IReadOnlyList<LoanEventLineageDto>? history = null) =>
+        LoanCashReconciliation.Match(Guid.NewGuid(), LoanId, AsOf, ObservedAt, flows, cash, allocations ?? [], request ?? new(0m, 0), history, CurrencyCode.USD);
+
+    private static LoanEventLineageDto ReceiptEvent(CashTransactionDto cash, long version) =>
+        new(cash.SourceEventId, version, "loan.mixed-payment-applied", 1, cash.EffectiveDate, ObservedAt, "{}", null, null, null, "synthetic-test", false);
+
+    private static LoanEventLineageDto HeldMovement(long version, decimal amount, PaymentBreakdownDto? breakdown, DateOnly? effective = null) =>
+        new(Guid.NewGuid(), version, breakdown is null ? "loan.unapplied-cash-refunded" : "loan.unapplied-cash-applied", 1,
+            effective ?? AsOf, ObservedAt, JsonSerializer.Serialize(new
+            {
+                loanId = LoanId,
+                amount,
+                effectiveDate = effective ?? AsOf,
+                appliedAmount = breakdown?.TotalAllocated,
+                breakdown
+            }, new JsonSerializerOptions(JsonSerializerDefaults.Web)), null, null, null, "synthetic-test", false);
 
     private static ProjectedCashFlowDto Flow(decimal amount) => new(Guid.NewGuid(), Guid.NewGuid(), LoanId,
         1, "Principal", AsOf, null, null, amount, CurrencyCode.USD, null, null, null, ObservedAt);

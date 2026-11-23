@@ -862,7 +862,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static LedgerJournalExportCapture Select(LedgerReportingSnapshot snapshot, Guid bookId, Guid periodId, DateOnly from, DateOnly to, IReadOnlyList&lt;Guid&gt;? journalEntryIds = null);</code> | [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L13) |  |
+| <code>public static LedgerJournalExportCapture Select(LedgerReportingSnapshot snapshot, Guid bookId, Guid periodId, DateOnly? from = null, DateOnly? to = null, IReadOnlyList&lt;Guid&gt;? journalEntryIds = null);</code> | [src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerJournalExportSelection.cs#L13) |  |
 
 ## LedgerJournalStoreHydrationExtensions
 

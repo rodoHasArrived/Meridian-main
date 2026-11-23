@@ -6,10 +6,14 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Backtesting
+
+Canonical cash-dividend entitlement receipts retain versioned position evidence, the native unit
+and lot multiplier, and the ledger functional currency. Declaration and cash settlement leave
+position quantity and carrying basis unchanged; the entitlement remains fixed through later sales.
 
 Simulated security buys, disposals, short sales/covers, return of capital and fractional
 corporate-action settlements retain producer-supplied investing cash-flow attribution when

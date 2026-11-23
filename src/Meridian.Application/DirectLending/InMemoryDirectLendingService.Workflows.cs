@@ -376,7 +376,8 @@ public sealed partial class InMemoryDirectLendingService
             var asOf = DateOnly.FromDateTime(observedAt.UtcDateTime);
             var flows = _projectedCashFlows.TryGetValue(projection.ProjectionRunId, out var projected) ? projected : [];
             var results = LoanCashReconciliation.Match(runId, loanId, asOf, observedAt, flows,
-                GetList(_cashTransactions, loanId), GetList(_paymentAllocations, loanId), request).ToList();
+                GetList(_cashTransactions, loanId), GetList(_paymentAllocations, loanId), request,
+                _loans[loanId].History, _loans[loanId].TermsVersions[^1].Terms.BaseCurrency).ToList();
             results.Add(new(Guid.NewGuid(), runId, loanId, null, null, "LedgerCoverageUnavailable", null, null, null,
                 asOf, null, "CanonicalRole:population", null, ["The in-memory demonstration has no authoritative journal population."], observedAt)
             { MeasurementKind = "ledger-balance:population", AsOfDate = asOf });

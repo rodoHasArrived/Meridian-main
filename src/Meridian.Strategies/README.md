@@ -6,7 +6,7 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Strategies
@@ -38,6 +38,8 @@ Run ownership requires the server-retained execution attribution marker as well 
 legacy run label. Old labels and private metrics journals remain inspectable audit history, but
 cannot certify scoped paper balances or native position measurements. Missing native event inputs
 produce explicit accounting coverage issues without querying or calculating from money as units.
+Duplicate account/security/direction rows produce unavailable quantity and basis checks; an empty
+expected population suppresses a closed actual row only when that actual row is unique.
 
 Run ledger read models support inclusive economic-time cuts without mutating retained journals.
 Scoped result reads reuse the tenant/company run-visibility guard for downstream accounting
