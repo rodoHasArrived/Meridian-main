@@ -72,6 +72,30 @@ route-identity regressions in `accounting-screen.test.tsx`.
 
 ## Workstation workflows
 
+Reconciliation queues, case inspectors, Today readiness and the Close break list retain the
+source decimal precision and declared currency or unit. Exact zero, absent values, unavailable
+comparison evidence and multiple measures remain distinct. An explicit null exact companion
+does not fall back to a legacy numeric value; legacy numbers beyond safe integer precision are
+unavailable without exact text. Conflict reviews compare each measure and unit independently.
+External-GL comparison rows consume the invariant
+`*Exact` response companions and subtract exact operands; formatted labels are never parsed back
+into amounts. Each external-GL side uses its own declared currency, including explicit unknowns;
+mixed or undeclared currencies do not produce a common-currency total. The existing
+numeric tie-out is withheld with a reason when it cannot represent the exact comparison faithfully.
+
+Attention links carry their source fund account using the shell's record-scope contract, so
+remembered scope does not replace the record's account. Replay and promotion links open their
+existing Trading sheets; execution-control and broker-reconciliation work items reach their
+corresponding Trading surfaces. General diagnostics redirects remain available.
+
+The legacy approval inbox counts and lists only `Submitted` and `ReviewerAssigned`, matching the
+server's pending-review definition. `Pending` is an unsubmitted approval. A missing approval feed
+is shown as **Not supplied**, a supplied empty queue as zero, and unknown statuses or missing plan
+feeds qualify the confirmed count. All supplied close plans contribute. Record links retain their
+workflow and approval identity when available; unavailable or historical requested approvals cannot
+silently select a different actionable approval. This inbox still depends on the optional `closePlans`
+extension; the authoritative approvals workflow remains the live decision surface.
+
 Record identity panels retain internal record IDs in the expandable Technical identity details;
 operator identifiers remain visible. Cash Ladder keeps its engine version in Projection details.
 Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
@@ -1003,8 +1027,9 @@ applicability text distinguishes dimensions applied here from those retained for
 
 Entity and fund (P4) are scope dimensions carried as the `entityId` and `fundId` URL parameters
 (`app-shell.operating-scope.ts`), in browser storage, recent scopes, saved layouts, Copy link and
-the operator's server-side default scope. They are written into every route's URL because they head
-the scope hierarchy, but they are applied only where a screen reads them: Accounting reads
+the operator's server-side default scope. Ordinary workspace links carry these dimensions because
+they head the scope hierarchy. Record links marked `recordScope=1` use their explicit route scope
+without adding remembered dimensions. Entity and fund are applied only where a screen reads them: Accounting reads
 `entityId` (close scope, intercompany and payment-approval panels), and the screens below narrow
 their fund-account rows by entity and fund. Elsewhere a set fund shows as retained. The picker's entity, fund and account options come from
 `GET /api/workstation/scope-options` (`lib/operating-scope/structure-options.ts`, loaded by
@@ -1042,7 +1067,7 @@ payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCO
 - Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): household accounts and positions, with
   household totals re-summed over the accounts kept. Other Portfolio routes keep the whole household.
 - Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue and its counts.
-- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list and
+- Accounting > Close (`/accounting/close`): the workflow list and
   its count, keyed by each workflow's fund account. The selected workflow, its detail and its close
   reads follow the kept workflows. The route also applies `entityId` to its close-readiness read,
   as before; with the graph loaded, Fund is applied alongside it.
@@ -3334,8 +3359,9 @@ only from data the screen already loads:
   of the figures `ReconciliationComparisonPanel` already shows, with status passed explicitly so
   offsetting breaks never read as tied. Accept, resolve, escalate, reopen, and add-item actions and
   the reviewer line are omitted because no endpoint backs them. The external GL reconciliation is read
-  on the External GL workstream, so the tie-out appears in the Reconciliation band after that
-  workstream has been opened in the same Accounting session.
+  on the External GL workstream. After that read, the Reconciliation band shows a numeric tie-out
+  only when both sources provide comparable amounts in one declared currency and the proof can
+  preserve their exact values and difference; unavailable comparisons or proofs show a reason.
 - `OptimisticCell` (`src/components/data/optimistic-cell.tsx`, with `OptimisticProvider`,
   `OptimisticRowBar`, and `EditableCell`) edits provider module priority in place on the Settings
   provider card. The write is the existing provider-module update and always resends the module's

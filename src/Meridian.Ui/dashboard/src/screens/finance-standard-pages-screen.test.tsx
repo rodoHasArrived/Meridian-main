@@ -141,7 +141,7 @@ const data = {
         { label: "Controller approval", status: "Blocked" }
       ],
       approvals: [
-        { approvalId: "approval-je-1", label: "Journal entry approval", status: "Pending" }
+        { approvalId: "approval-je-1", label: "Journal entry approval", status: "Submitted" }
       ],
       closeCalendar: [
         { label: "Lock period", dueDate: "2026-07-05" }
@@ -1609,6 +1609,134 @@ describe("finance standard pages", () => {
       "/accounting/approvals?approvalId=approval-je-1"
     );
     expect(screen.getByText("What evidence supports it?")).toBeInTheDocument();
+  });
+
+  it("counts and lists only submitted approvals awaiting a reviewer decision", async () => {
+    const approvals = ["Pending", "Submitted", "ReviewerAssigned", "Approved", "Rejected"].map((status) => ({
+      approvalId: `approval-${status}`,
+      label: `${status} close approval`,
+      status
+    }));
+    const mixedStatuses = { ...data, closePlans: [{ approvals }] };
+
+    await renderPage(<ApprovalInboxScreen data={mixedStatuses} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvals2");
+    const queue = screen.getByRole("list", { name: "Pending approvals" });
+    expect(within(queue).getAllByRole("listitem")).toHaveLength(2);
+    for (const status of ["Submitted", "ReviewerAssigned"]) {
+      expect(within(queue).getByRole("link", { name: `Review and decide ${status} close approval` })).toHaveAttribute(
+        "href", `/accounting/approvals?approvalId=approval-${status}`
+      );
+    }
+    for (const status of ["Pending", "Approved", "Rejected"]) {
+      expect(screen.queryByText(`${status} close approval`)).not.toBeInTheDocument();
+    }
+  });
+
+  it.each([
+    { approvals: [] },
+    { approvals: [{ approvalId: "approved", label: "Completed approval", status: "Approved" }] },
+    { approvals: [{ approvalId: "pending", label: "Unsubmitted approval", status: "Pending" }] }
+  ])("shows a confirmed zero for a supplied queue with no pending decisions (%j)", async ({ approvals }) => {
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans: [{ approvals }] } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvals0");
+    expect(screen.getByText("Accounting workspace")).toBeInTheDocument();
+    expect(screen.getByText("No pending approvals in the supplied accounting scope")).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Pending approvals" })).not.toBeInTheDocument();
+  });
+
+  it.each([
+    { closePlans: undefined },
+    { closePlans: null }
+  ])("does not treat an absent approval feed as zero (%j)", async ({ closePlans }) => {
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsNot supplied");
+    expect(screen.getByText("No approval feed supplied")).toBeInTheDocument();
+    expect(screen.getByText("Approval queue not supplied")).toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Pending approvals" })).not.toBeInTheDocument();
+  });
+
+  it("distinguishes a malformed close-plan feed from an absent or empty approval queue", async () => {
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans: "unavailable" } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsUnavailable");
+    expect(screen.getByText("Accounting workspace (unavailable)")).toBeInTheDocument();
+    expect(screen.getByText("Approval queue incomplete")).toBeInTheDocument();
+    expect(screen.getByText(/close-plan approval feed is malformed/)).toBeInTheDocument();
+    expect(screen.queryByText("Approval queue not supplied")).not.toBeInTheDocument();
+    expect(screen.queryByText("No pending approvals in the supplied accounting scope")).not.toBeInTheDocument();
+  });
+
+  it("counts pending decisions across every supplied close plan and retains workflow identity in links", async () => {
+    const closePlans = [
+      { workflowId: "workflow-empty", approvals: [] },
+      { workflowId: "workflow-june", approvals: [{ approvalId: "june-review", label: "June close", status: "Submitted" }] },
+      { workflowId: "workflow-july", approvals: [
+        { approvalId: "july-review", label: "July close", status: "ReviewerAssigned" },
+        { approvalId: "july-complete", label: "July approved", status: "Approved" }
+      ] }
+    ];
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvals2");
+    expect(within(screen.getByRole("list", { name: "Pending approvals" })).getAllByRole("listitem")).toHaveLength(2);
+    expect(screen.getByRole("link", { name: "Review and decide June close" })).toHaveAttribute("href", "/accounting/approvals?approvalId=june-review&workflowId=workflow-june");
+    expect(screen.getByRole("link", { name: "Review and decide July close" })).toHaveAttribute("href", "/accounting/approvals?approvalId=july-review&workflowId=workflow-july");
+    expect(screen.queryByText("July approved")).not.toBeInTheDocument();
+  });
+
+  it("marks a partial multi-plan feed without hiding its known pending decisions", async () => {
+    const closePlans = [
+      null,
+      { workflowId: "workflow-missing", approvals: null },
+      { workflowId: "workflow-known", approvals: [{ approvalId: "known-review", label: "Known pending decision", status: "Submitted" }] }
+    ];
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvals1 confirmed");
+    expect(screen.getByText("Accounting workspace (partial)")).toBeInTheDocument();
+    expect(screen.getByText("Approval queue incomplete")).toBeInTheDocument();
+    expect(screen.getByText(/missing or malformed for 2 of 3 close plans/)).toBeInTheDocument();
+    expect(within(screen.getByRole("list", { name: "Pending approvals" })).getAllByRole("listitem")).toHaveLength(1);
+    expect(screen.queryByText("No pending approvals in the supplied accounting scope")).not.toBeInTheDocument();
+  });
+
+  it.each([undefined, "workflow-known"])("offers queue navigation rather than a specific decision when an approval reference is missing (%s)", async (workflowId) => {
+    const closePlans = [{ workflowId, approvals: [{ label: "Unreferenced review", status: "Submitted" }] }];
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    const link = screen.getByRole("link", { name: "Open approvals for Unreferenced review" });
+    expect(link).toHaveTextContent("Open approvals");
+    expect(link).toHaveAttribute("href", workflowId ? `/accounting/approvals?workflowId=${workflowId}` : "/accounting/approvals");
+    expect(screen.queryByRole("link", { name: "Review and decide Unreferenced review" })).not.toBeInTheDocument();
+  });
+
+  it("does not report zero when every supplied close plan is missing its approval feed", async () => {
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans: [{ periodId: "2026-06" }] } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsNot supplied");
+    expect(screen.getByText("Approval queue incomplete")).toBeInTheDocument();
+    expect(screen.queryByText("No pending approvals in the supplied accounting scope")).not.toBeInTheDocument();
+  });
+
+  it("does not invent pending approvals for missing, unrecognized, or malformed statuses", async () => {
+    const approvals = [
+      { approvalId: "submitted", label: "Submitted review", status: "Submitted" },
+      { approvalId: "unknown", label: "Unknown review", status: "Pending review" },
+      { approvalId: "missing", label: "Missing status" },
+      null
+    ];
+    await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans: [{ approvals }] } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
+
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvals1 confirmed");
+    expect(within(screen.getByRole("list", { name: "Pending approvals" })).getAllByRole("listitem")).toHaveLength(1);
+    expect(screen.getByText("Approval statuses need review")).toBeInTheDocument();
+    expect(screen.getByText(/3 approvals with an unavailable or unrecognized status/)).toBeInTheDocument();
+    expect(screen.queryByText("Unknown review")).not.toBeInTheDocument();
+    expect(screen.queryByText("Missing status")).not.toBeInTheDocument();
   });
 
 });

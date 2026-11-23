@@ -39,4 +39,9 @@ describe("operator inbox authority client", () => {
     expect(safeTriageRoute("https://outside.example/accounting")).toBeNull();
     expect(routeForTriageItem(row)).toBe("/accounting/reconciliation");
   });
+  it("retains source scope for triage records whose older response omits the work-item kind", () => {
+    expect(routeForTriageItem({ ...row, kind: null, fundAccountId: "account-b", targetRoute: "/accounting/reconciliation?breakId=break-b#evidence" }))
+      .toBe("/accounting/reconciliation?breakId=break-b&fundAccountId=account-b&recordScope=1#evidence");
+    expect(routeForTriageItem({ ...row, kind: null, fundAccountId: "account-b", targetRoute: "https://outside.example" })).toBeNull();
+  });
 });

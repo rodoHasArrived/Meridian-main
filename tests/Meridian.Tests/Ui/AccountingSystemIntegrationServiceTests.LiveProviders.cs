@@ -125,6 +125,8 @@ public sealed partial class AccountingSystemIntegrationServiceTests
         reconciliation.BreakCount.Should().Be(2);
         reconciliation.Rows.Should().OnlyContain(row => row.Variance == 0m &&
             row.Status == AccountingSystemReconciliationStatusDto.Variance && row.Currency == "USD");
+        reconciliation.Rows.Should().OnlyContain(row => row.MeridianCurrency == "USD" &&
+            row.ExternalCurrency == (omittedZeroBalances ? null : "EUR"));
         reconciliation.Rows.Should().OnlyContain(row => row.Detail.Contains("EUR") && row.Detail.Contains("USD"));
         var template = CertifiedQuickBooksMappingProfile();
         var profile = template with

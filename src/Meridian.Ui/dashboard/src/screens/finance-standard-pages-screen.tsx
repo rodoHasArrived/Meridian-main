@@ -37,6 +37,7 @@ import {
 } from "@/lib/reporting-workspace";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
 import { financeBreakLabel } from "@/screens/accounting-screen.reconciliation.view-model";
+import { isAwaitingApprovalDecision } from "@/screens/accounting-screen.approvals";
 import { formatAccountingDate, formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { ReportRunGovernanceScreen } from "@/screens/report-run-governance-screen";
 import { TrialBalanceScreen } from "@/screens/trial-balance-screen";
@@ -1162,16 +1163,37 @@ export function CloseCalendarScreen({ data: _data }: FinanceStandardScreenProps)
 }
 
 export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
-  const closePlan = firstRecord(asRecord(data), "closePlans");
-  const approvals = readRecordArray(closePlan, "approvals");
-  const approvalRows = approvals.map((approval, index) => {
-    const approvalId = readString(approval, "approvalId", "");
-    return {
-      approvalId,
-      label: readString(approval, "label", approvalId || `Approval ${index + 1}`),
-      status: readString(approval, "status", "Pending")
-    };
-  });
+  const workspace = asRecord(data);
+  const closePlans = Array.isArray(workspace?.closePlans) ? workspace.closePlans : null;
+  const hasMalformedPlanFeed = workspace?.closePlans != null && closePlans === null;
+  const missingPlanFeedCount = closePlans?.filter((plan) => !Array.isArray(asRecord(plan)?.approvals)).length ?? 0;
+  const hasApprovalFeed = closePlans !== null && (closePlans.length === 0 || missingPlanFeedCount < closePlans.length);
+  const approvalRows = closePlans?.flatMap((entry, planIndex) => {
+    const plan = asRecord(entry);
+    const approvals = Array.isArray(plan?.approvals) ? plan.approvals : [];
+    return approvals.map((entry, index) => {
+      const approval = asRecord(entry);
+      const approvalId = readString(approval, "approvalId", "");
+      const workflowId = readString(approval, "workflowId", readString(plan, "workflowId", ""));
+      return {
+        key: `${workflowId}:${approvalId || `${planIndex}:${index}`}`,
+        approvalId,
+        workflowId,
+        label: readString(approval, "label", approvalId || `Approval ${index + 1}`),
+        status: readString(approval, "status", "")
+      };
+    });
+  }) ?? [];
+  const pendingApprovalRows = approvalRows.filter((row) => isAwaitingApprovalDecision(row.status));
+  const unknownStatusCount = approvalRows.filter((row) => !isAwaitingApprovalDecision(row.status)
+    && row.status !== "Pending" && row.status !== "Approved" && row.status !== "Rejected").length;
+  const pendingApprovalCount = hasMalformedPlanFeed
+    ? "Unavailable"
+    : !hasApprovalFeed
+      ? "Not supplied"
+      : unknownStatusCount > 0 || missingPlanFeedCount > 0
+        ? `${pendingApprovalRows.length} confirmed`
+        : String(pendingApprovalRows.length);
 
   return (
     <div className="space-y-4">
@@ -1181,22 +1203,40 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
           <CardDescription>Approvals show what is being approved, why it is ready, what changed, supporting evidence, downstream effects, and risk.</CardDescription>
         </CardHeader>
         <CardContent className="grid gap-3 md:grid-cols-3">
-          <FinanceFact label="Pending approvals" value={String(approvalRows.length)} />
-          <FinanceFact label="Queue source" value={approvals.length > 0 ? "Accounting workspace" : "No approval feed supplied"} />
+          <FinanceFact label="Pending approvals" value={pendingApprovalCount} />
+          <FinanceFact label="Queue source" value={hasMalformedPlanFeed ? "Accounting workspace (unavailable)" : hasApprovalFeed ? missingPlanFeedCount > 0 ? "Accounting workspace (partial)" : "Accounting workspace" : "No approval feed supplied"} />
           <FinanceFact label="Decision authority" value="Approval workflow" />
         </CardContent>
       </Card>
-      {approvalRows.length > 0 ? (
+      {hasMalformedPlanFeed || missingPlanFeedCount > 0 ? (
+        <StatusBanner
+          role="status"
+          tone="warning"
+          title="Approval queue incomplete"
+          detail={hasMalformedPlanFeed
+            ? "The close-plan approval feed is malformed, so a pending count cannot be confirmed. Open approvals to inspect the authoritative queue."
+            : `Approval feeds are missing or malformed for ${missingPlanFeedCount} of ${closePlans!.length} close plans. The confirmed count includes only supplied approvals. Open approvals to inspect the authoritative queue.`}
+        />
+      ) : null}
+      {unknownStatusCount > 0 ? (
+        <StatusBanner
+          role="status"
+          tone="warning"
+          title="Approval statuses need review"
+          detail={`${pluralizeCount(unknownStatusCount, "approval")} with an unavailable or unrecognized status ${unknownStatusCount === 1 ? "is" : "are"} excluded from the pending count. Open approvals to inspect the authoritative queue.`}
+        />
+      ) : null}
+      {pendingApprovalRows.length > 0 ? (
         <Card className="panel-surface">
           <CardHeader>
             <CardTitle className="text-base">Approval queue</CardTitle>
-            <CardDescription>Open a pending approval to review its evidence and record the decision in the approval workflow.</CardDescription>
+            <CardDescription>Submitted approvals awaiting a reviewer decision across all supplied close plans. Open an approval to review its evidence and record the decision in the approval workflow.</CardDescription>
           </CardHeader>
           <CardContent>
             <ul className="space-y-2" aria-label="Pending approvals">
-              {approvalRows.map((row) => (
+              {pendingApprovalRows.map((row) => (
                 <li
-                  key={row.approvalId || row.label}
+                  key={row.key}
                   className="flex flex-wrap items-center justify-between gap-3 rounded-md border border-border/70 bg-secondary/15 px-3 py-2"
                 >
                   <div className="min-w-0">
@@ -1207,12 +1247,12 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
                     <Badge variant={approvalStatusVariant(row.status)}>{presentStatusLabel(row.status)}</Badge>
                     <Button asChild size="sm" variant="outline">
                       <Link
-                        to={row.approvalId
-                          ? workstationRouteWithQuery("accountingApprovals", { approvalId: row.approvalId })
-                          : WORKSTATION_ROUTE_CATALOG.accountingApprovals}
-                        aria-label={`Review and decide ${row.label}`}
+                        to={workstationRouteWithQuery("accountingApprovals", {
+                          approvalId: row.approvalId || undefined, workflowId: row.workflowId || undefined
+                        })}
+                        aria-label={row.approvalId ? `Review and decide ${row.label}` : `Open approvals for ${row.label}`}
                       >
-                        Review &amp; decide
+                        {row.approvalId ? "Review & decide" : "Open approvals"}
                       </Link>
                     </Button>
                   </div>
@@ -1221,14 +1261,16 @@ export function ApprovalInboxScreen({ data }: FinanceStandardScreenProps) {
             </ul>
           </CardContent>
         </Card>
-      ) : (
+      ) : unknownStatusCount === 0 && missingPlanFeedCount === 0 && !hasMalformedPlanFeed ? (
         <StatusBanner
           role="status"
           tone="info"
-          title="No approvals in the supplied accounting scope"
-          detail="Open approvals to inspect the authoritative queue, or review the close calendar to resolve prerequisites that create approval work."
+          title={hasApprovalFeed ? "No pending approvals in the supplied accounting scope" : "Approval queue not supplied"}
+          detail={hasApprovalFeed
+            ? "No submitted approvals are awaiting a reviewer decision. Open approvals to inspect the authoritative queue, or review the close calendar to resolve prerequisites that create approval work."
+            : "This accounting workspace does not include an approval feed. Open approvals to inspect the authoritative queue."}
         />
-      )}
+      ) : null}
       <FinanceList title="Reviewer checklist" items={[
         "What am I approving?",
         "Why is it ready?",
@@ -1430,10 +1472,6 @@ function asRecord(value: unknown): UnknownRecord | null {
 function readRecordArray(record: UnknownRecord | null, key: string): UnknownRecord[] {
   const value = record?.[key];
   return Array.isArray(value) ? value.map(asRecord).filter((item): item is UnknownRecord => item !== null) : [];
-}
-
-function firstRecord(record: UnknownRecord | null, key: string): UnknownRecord | null {
-  return readRecordArray(record, key)[0] ?? null;
 }
 
 function readString(record: UnknownRecord | null, key: string, fallback: string): string {
