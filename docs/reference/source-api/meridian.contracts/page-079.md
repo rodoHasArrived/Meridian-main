@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredReportingExportRowLineageDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRowLineageDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:404](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L404).
+
+```csharp
+public sealed record StructuredReportingExportRowLineageDto(int RowNumber, string RowKey, string RowHashSha256);
+```
+
 ## StructuredReportingExportValidationCheckDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportValidationCheckDto</code>. Kind: `record`.
@@ -606,16 +616,4 @@ Shared catalog projection for reusable workstation workflows.
 
 ```csharp
 public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
-```
-
-## WorkflowNextAction
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L33).
-
-Primary operator action recommended for a workspace.
-
-```csharp
-public sealed record WorkflowNextAction(string Label, string Detail, string TargetPageTag, string Tone);
 ```

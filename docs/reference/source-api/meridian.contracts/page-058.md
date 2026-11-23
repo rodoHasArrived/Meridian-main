@@ -6,6 +6,25 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredCreditReclassificationDisposition
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationDisposition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L12).
+
+Whether a legacy securitised row can be re-modelled as StructuredCredit from the terms it already carries (ADR-022). Blocked rows list what the operator still has to supply.
+
+```csharp
+public enum StructuredCreditReclassificationDisposition
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ready</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L14) |  |
+| <code>Blocked</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L15) |  |
+
 ## StructuredCreditReclassificationReportDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationReportDto</code>. Kind: `record`.
@@ -58,7 +77,7 @@ public sealed record StructuredStepCouponEntry(DateOnly EffectiveDate, decimal R
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SubscriptionCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L177).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:185](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L185).
 
 Holder pays to receive units (rights issue, rights exercise).
 
@@ -871,13 +890,3 @@ Enum declarations:
 | <code>CorporateActions</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:72](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L72) |  |
 | <code>ProviderBackfill</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:73](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L73) |  |
 | <code>Custom</code> | [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:74](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L74) |  |
-
-## StrategyEngineDefinition
-
-Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:141](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L141).
-
-```csharp
-public sealed record StrategyEngineDefinition(string StrategyId, string Version, string Name, StrategyEngineStrategyType Type, string Description, IReadOnlyList<string> AssetUniverse, IReadOnlyList<StrategyEngineDataDependency> RequiredDataInputs, IReadOnlyList<StrategyEngineParameterDefinition> ParameterSchema, IReadOnlyList<StrategyEngineRunMode> SupportedModes, string Owner, string Source, IReadOnlyDictionary<string, string>? UiMetadata = null, IReadOnlyDictionary<string, string>? Extensions = null);
-```

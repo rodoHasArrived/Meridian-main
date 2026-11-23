@@ -73,7 +73,7 @@ public sealed record ComputeOtcExposureSnapshotRequest(DateOnly AsOfDate, DateTi
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:210](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L210).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L218).
 
 Convertible-equity-specific terms returned by the convertible-equity-terms query.
 
@@ -127,7 +127,7 @@ public sealed record CorporateActionAccountingProjectionMutationResultDto(Corpor
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionAdjustmentBehavior</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:496](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L496).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:580](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L580).
 
 How historical-price and open-position adjustment treats the event type.
 
@@ -139,10 +139,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:498](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L498) |  |
-| <code>PriceScaling</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:499](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L499) |  |
-| <code>CashDistribution</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:500](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L500) |  |
-| <code>PositionTransformation</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:501](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L501) |  |
+| <code>None</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:582](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L582) |  |
+| <code>PriceScaling</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:583](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L583) |  |
+| <code>CashDistribution</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:584](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L584) |  |
+| <code>PositionTransformation</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:585](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L585) |  |
 
 ## CorporateActionCalendarCaseReferenceDto
 

@@ -150,15 +150,32 @@ The Alpaca gateway identifies the account by its account number, the identifier 
 verification records; the internal UUID from the same response is accepted as an alias on requests,
 answered under the name the caller used, declared as an alias on the catalog entry, and still
 forms the gateway's durable scope identity (trade-update inbox and OMS recovery journal).
-Alpaca corporate actions are read from the Market Data `v1/corporate-actions` endpoint (cash
-dividends and forward/reverse splits, paged, no currency); a refused or partly failed fetch returns
+Alpaca corporate actions are read from all 16 documented Market Data `v1/corporate-actions`
+families: cash/stock dividends, forward/reverse/unit splits, spin-offs, cash/stock/mixed mergers,
+redemptions, name changes, worthless removals, rights distributions, partial calls, reorganizations
+and capital-gains distributions. Multi-security allocations and separate capital-gain components
+are retained in typed source payloads; types without an economic date explicitly identify their
+process-date staging placeholder and missing economic date. Stock dividends
+retain additional shares per held share; merger effective dates remain explicitly identified.
+Recipient symbols are source terms awaiting mastered-security resolution, never invented IDs.
+Native IDs plus family and canonical payload hashes identify observed revisions, and each staged
+proposal retains the original JSON record and its exact UTF-8 digest. Mapping version v2 appends
+new evidence-bearing revisions without rewriting historical proposals. Explicit currency is retained;
+unknown currency stays unknown. A refused or partly failed fetch returns
 nothing rather than a partial history. `FetchWithOutcomeAsync` reports that case as `Unavailable`
 (no credentials, or the first page failed) or `Incomplete` (a later page failed, a page token
 repeated, or the page limit was exceeded) so ingest can tell it from a provider with no actions;
 Alpha Vantage, Finnhub, Nasdaq Data Link, Tiingo and Twelve Data also report explicit HTTP,
 credential, decoding and record-level coverage outcomes. Legacy collection-only implementations
-report unknown coverage, which cannot certify that no actions exist. The provider is review-only: its records are staged for
-review and never applied automatically. Alpaca historical quotes, trades and auctions always use the
+report unknown coverage, which cannot certify that no actions exist. Alpaca coverage lists all 16
+requested and mapped endpoint families and the US/complete-data/process-date
+query window. REST snapshots cannot establish cancellation history, complete amendment history or
+announcement timeliness. Same-ID conflicting revisions within one traversal fail closed. The provider
+is review-only: its records are staged for review and never applied automatically. Broker corporate-action
+quantities preserve source signs, including removals and reversals without a trade side. Public-schema
+examples, independent issuer/exchange facts and synthetic broker activities are covered by
+[the corporate-action comparison tests](../../docs/testing/alpaca-corporate-action-coverage.md);
+live provider and account compatibility remain live-untested. Alpaca historical quotes, trades and auctions always use the
 symbol-keyed routes, accept numeric trade ids, treat a caller's limit as a bound on the result, and
 send no feed for auctions, which exist only on SIP. Tick windows are sent as UTC instants, and an
 auction range ends on the requested date, which Alpaca treats as inclusive. Order and

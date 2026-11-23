@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityAssetTermUiHint
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermUiHint</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L123).
+
+Presentation hints for one asset-specific term, derived from its declared field so both workstations build edit and create forms from the term schema instead of free-text paths.
+
+```csharp
+public sealed record SecurityAssetTermUiHint(string Key, string FieldPath, string Label, SecurityAssetTermEditorKind Editor, string Group, int Order, bool Required, IReadOnlyList<string> Choices, bool ScalarEditable);
+```
+
 ## SecurityAssetTermVocabularyEscape
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermVocabularyEscape</code>. Kind: `record`.
@@ -584,7 +596,7 @@ public sealed record SecurityDetailDto(Guid SecurityId, string AssetClass, Secur
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityDistributionCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:163](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L163).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:171](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L171).
 
 New units of another security distributed per unit held (spin-off, rights distribution).
 
@@ -820,23 +832,3 @@ Field-level provenance: which source system asserted the value at FieldPath, as 
 ```csharp
 public sealed record SecurityFieldProvenance(string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence);
 ```
-
-## SecurityFieldProvenanceOrigins
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L58).
-
-Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical golden-record attribution from overlay annotations, so an operator edit can never masquerade as (or clobber) a conflict-resolution winner.
-
-```csharp
-public static class SecurityFieldProvenanceOrigins
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string ConflictResolution = &quot;ConflictResolution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L61) | The attribution written when a golden-record conflict resolves to a winning source. |
-| <code>public const string OperatorFieldEdit = &quot;OperatorFieldEdit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L64) | The attribution written when an operator stages an overlay field edit. |
-| <code>public const string CanonicalWrite = &quot;CanonicalWrite&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L72) | The attribution written when an ordinary canonical create/amend changes a governed field — the per-field record of WHICH source supplied the current value, kept so conflict detection can name the true incumbent even when the field was never conflicted (record-level provenance flips on every amendment and cannot answer that question). |

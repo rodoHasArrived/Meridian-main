@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowNextAction
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs:33](../../../../src/Meridian.Contracts/Workstation/WorkflowSummaryDtos.cs#L33).
+
+Primary operator action recommended for a workspace.
+
+```csharp
+public sealed record WorkflowNextAction(string Label, string Detail, string TargetPageTag, string Tone);
+```
+
 ## WorkflowPresetDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowPresetDto</code>. Kind: `record`.
@@ -566,14 +578,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:232](../
 
 ```csharp
 public sealed record WorkstationPlotToolLegendItemPayload(string Id, string Label, string Detail, string Tone);
-```
-
-## WorkstationPlotToolMomentPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolMomentPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:281](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L281).
-
-```csharp
-public sealed record WorkstationPlotToolMomentPayload(string Id, string Label, string Value, string Benchmark);
 ```

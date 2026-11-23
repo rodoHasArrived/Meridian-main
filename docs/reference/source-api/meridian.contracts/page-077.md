@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L270).
+
+Shared workstation payload for a statement reconciliation run and its normalized evidence.
+
+```csharp
+public sealed record StatementRunDto(string? RunId, StatementRunStatus? Status, StatementSourceDto? Source, DateTimeOffset? StartedAtUtc, DateTimeOffset? CompletedAtUtc, string? SourceFileName, string? SourceFileHash, string? MappingProfileId, int? MappingProfileVersion, string? ToleranceProfileId, int? ToleranceProfileVersion, string? ImportedBy, DateTimeOffset? ImportedAtUtc, IReadOnlyList<StatementValidationIssueDto>? ValidationIssues, IReadOnlyList<StatementNormalizedPositionDto>? Positions, IReadOnlyList<StatementNormalizedCashDto>? CashBalances, IReadOnlyList<StatementNormalizedTransactionDto>? Transactions, StatementMatchSummaryDto? MatchSummary, IReadOnlyList<StatementBreakDto>? Breaks, IReadOnlyList<StatementReconciliationCaseDto>? Cases, string? ImportId = null, string? FundProfileId = null, Guid? FundAccountId = null, string? Notes = null);
+```
+
 ## StatementRunExceptionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunExceptionDto</code>. Kind: `record`.
@@ -635,23 +647,3 @@ A canonical promotion checklist requirement projected from durable promotion his
 ```csharp
 public sealed record StrategyRunAcceptanceChecklistItemDto(string ChecklistId, string Label, StrategyRunAcceptanceChecklistStatusDto Status, string? EvidenceReference = null, string? DecidedBy = null, DateTimeOffset? DecidedAt = null, string? AuditReference = null, string? Blocker = null);
 ```
-
-## StrategyRunAcceptanceChecklistStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:298](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L298).
-
-Read-only decision posture for one canonical strategy-promotion checklist requirement.
-
-```csharp
-public enum StrategyRunAcceptanceChecklistStatusDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReviewRequired</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:300](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L300) |  |
-| <code>Ready</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:301](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L301) |  |
-| <code>Rejected</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:302](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L302) |  |

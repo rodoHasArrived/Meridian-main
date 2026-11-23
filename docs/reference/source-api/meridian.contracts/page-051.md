@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OtcAuctionSettlementData
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L41).
+
+Full CDS auction settlement linked to its retained credit trigger. Amount is signed from the fund&#x27;s side.
+
+```csharp
+public sealed record OtcAuctionSettlementData([property : JsonRequired] Guid CreditEventId, [property : JsonRequired] DateOnly AuctionDate, [property : JsonRequired] decimal FinalPricePercent, [property : JsonRequired] decimal SettlementAmount, [property : JsonRequired] string Currency, [property : JsonRequired] int SettlementScale, [property : JsonRequired] string AuctionReference) : OtcContractLifecycleData;
+```
+
 ## OtcCollateralAgreementDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCollateralAgreementDto</code>. Kind: `record`.
@@ -786,28 +798,10 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PayloadCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:216](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L216).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:224](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L224).
 
 Event types whose economics are carried only by the versioned JSON payload.
 
 ```csharp
 public sealed record PayloadCorporateActionTerms(string EventType, JsonElement? Payload) : CorporateActionTerms(EventType);
 ```
-
-## PositionCorporateActionAdjustment
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L4).
-
-Result of applying corporate actions to a live open position.
-
-```csharp
-public record PositionCorporateActionAdjustment(string Ticker, decimal OriginalQuantity, decimal AdjustedQuantity, decimal OriginalCostBasis, decimal AdjustedCostBasis, int ActionCount)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AdjustedTotalCostBasis { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L17) | Exact remaining carrying basis, when supported. Null identifies a legacy result supplying only an average unit quote. |

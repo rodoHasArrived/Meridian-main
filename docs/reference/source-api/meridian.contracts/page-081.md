@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationPlotToolMomentPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolMomentPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:281](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L281).
+
+```csharp
+public sealed record WorkstationPlotToolMomentPayload(string Id, string Label, string Value, string Benchmark);
+```
+
 ## WorkstationPlotToolPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolPayload</code>. Kind: `record`.
@@ -554,15 +564,3 @@ Enum declarations:
 | <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:527](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L527) |  |
 | <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:528](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L528) |  |
 | <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:529](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L529) |  |
-
-## WorkstationSecurityReference
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityReference</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:541](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L541).
-
-Lightweight Security Master reference used by workstation portfolio and ledger surfaces. SubType is the most specific classification available at query time (e.g. &quot;CommonShare&quot;, &quot;Bond&quot;, &quot;OptionContract&quot;). It is derived from the security&#x27;s asset class and is null when the asset class does not map to a unique sub-type. RiskCountry is extracted from the CommonTerms JSON blob when available. IssuerType is only populated by full workbench queries; the lightweight symbol-lookup path leaves it null to avoid an extra round-trip.
-
-```csharp
-public sealed record WorkstationSecurityReference(Guid SecurityId, string DisplayName, string AssetClass, string Currency, SecurityStatusDto Status, string? PrimaryIdentifier, string? SubType = null, WorkstationSecurityCoverageStatus CoverageStatus = WorkstationSecurityCoverageStatus.Resolved, string? MatchedIdentifierKind = null, string? MatchedIdentifierValue = null, string? MatchedProvider = null, string? ResolutionReason = null, string? LookupPath = null, string? LookupSource = null, bool IsInferredMatch = false, string? RiskCountry = null, string? IssuerType = null);
-```

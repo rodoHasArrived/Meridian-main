@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationBreakObservation
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakObservation</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:63](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L63).
+
+```csharp
+public sealed record ReconciliationBreakObservation(string BreakId, string SourceSubjectId);
+```
+
 ## ReconciliationBreakQueueItem
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueItem</code>. Kind: `record`.
@@ -782,15 +792,3 @@ Enum declarations:
 | <code>Bank = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L20) |  |
 | <code>ExternalStatement = Bank</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L21) |  |
 | <code>Cash = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L22) |  |
-
-## ReconciliationSourceRegrouping
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSourceRegrouping</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs:35](../../../../src/Meridian.Contracts/Workstation/ReconciliationBreakLineageDtos.cs#L35).
-
-A completed match group that proves how a prior source break cleared.
-
-```csharp
-public sealed record ReconciliationSourceRegrouping(ReconciliationSourceRegroupingKind Kind, string PriorRunId, IReadOnlyList<string> PriorBreakIds, ReconciliationObservedMatchGroup Group);
-```

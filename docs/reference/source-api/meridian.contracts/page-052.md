@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PositionCorporateActionAdjustment
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.PositionCorporateActionAdjustment</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L4).
+
+Result of applying corporate actions to a live open position.
+
+```csharp
+public record PositionCorporateActionAdjustment(string Ticker, decimal OriginalQuantity, decimal AdjustedQuantity, decimal OriginalCostBasis, decimal AdjustedCostBasis, int ActionCount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AdjustedTotalCostBasis { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/ILivePositionCorporateActionAdjuster.cs#L17) | Exact remaining carrying basis, when supported. Null identifies a legacy result supplying only an average unit quote. |
+
 ## PostAttestedCorporateActionCashDividendRequestDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PostAttestedCorporateActionCashDividendRequestDto</code>. Kind: `record`.
@@ -30,7 +48,7 @@ public sealed record PostCorporateActionCaseAccountingRequestDto(Guid CaseId, lo
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PreferredEquityTermsDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:192](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L192).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L200).
 
 Preferred-equity-specific terms returned by the preferred-terms query.
 
@@ -54,7 +72,7 @@ public sealed record PricingHierarchyEntryDto(int Priority, string SourceId, str
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.PrincipalPaydownCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:194](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L194).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:202](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L202).
 
 Principal returned on a factor-amortizing instrument.
 
@@ -359,7 +377,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.RedemptionCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:186](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L186).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:194](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L194).
 
 Principal redeemed at a price (call, maturity, put).
 
@@ -371,7 +389,7 @@ public sealed record RedemptionCorporateActionTerms(string EventType, decimal? P
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ReferenceChangeCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L209).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:217](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L217).
 
 Reference-data change with no cash or unit economics (symbol, name, delisting, expiry).
 
@@ -870,23 +888,3 @@ Enum declarations:
 | <code>Month</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L17) | Calendar months, clamped to the target month&#x27;s length. |
 | <code>Year</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L20) | Years, counted as twelve calendar months each. |
 | <code>Term</code> | [src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/Schedules/ScheduleTenor.cs#L23) | A single period from the effective date to the termination date. |
-
-## ScheduleSpecFactory
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleSpecFactory</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L109).
-
-Maps a security&#x27;s declared scheduleConventions block (ADR-025) to a ScheduleSpec for the contractual schedule kernel, or says why it cannot. The block is read only where the mapping decodes it (SecurityVersionedTerms: the same predicate, the same read guard and the same leg selection), and the schedule anchors are read at the payload root by exact key, as the mapping reads them, so the factory cannot follow conventions the record does not declare.
-
-```csharp
-public static class ScheduleSpecFactory
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string DeclaredMappingVersion = SecurityVersionedTerms.DeclaredScheduleMappingVersion;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L116) | The version of this mapping from a declared block to a schedule spec. It is SecurityVersionedTerms.DeclaredScheduleMappingVersion itself, so the startup capability line and the schedule evidence cannot name different mappings. |
-| <code>public static DeclaredScheduleResolution Resolve(SecurityDetailDto security, StructuredCashFlowTerms terms, IBusinessDayCalendarSource? calendars);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L157) | Resolves the schedule security declares, with its payment calendars from calendars. DeclaredScheduleStatus.Undeclared means the record declares nothing this node decodes and its projection stays on the legacy path; DeclaredScheduleStatus.Refused carries the reason the projection is blocked. |
-| <code>public static DeclaredScheduleResolution ResolveShape(SecurityDetailDto security, StructuredCashFlowTerms terms);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:220](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L220) | The calendar-free check of what security declares: every rule of Resolve except calendar resolution, then the schedule kernel over the spec with no business-day adjustments and no payment lag. A kernel failure is DeclaredScheduleRefusalCode.KernelRefused, so a write rule that calls this refuses every block a factory rule or a calendar-free kernel failure would block. That is all it guarantees: every check that runs after the factory can still block a Declared result, among them calendar availability, the calendar-dependent kernel failures and the declared walk&#x27;s refusals (a contractual principal schedule, a missing or unrecognized dayCount, Level on a Term period, Act/Act ICMA on adjusted accrual dates, Business/252 without a calendar). A Declared result carries that calendar-free spec. |

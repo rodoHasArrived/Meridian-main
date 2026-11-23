@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunAcceptanceChecklistStatusDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunAcceptanceChecklistStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:298](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L298).
+
+Read-only decision posture for one canonical strategy-promotion checklist requirement.
+
+```csharp
+public enum StrategyRunAcceptanceChecklistStatusDto : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ReviewRequired</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:300](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L300) |  |
+| <code>Ready</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:301](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L301) |  |
+| <code>Rejected</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:302](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L302) |  |
+
 ## StrategyRunArtifactCompleteness
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunArtifactCompleteness</code>. Kind: `record`.
@@ -705,14 +725,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:422](
 
 ```csharp
 public sealed record StructuredReportingExportRequestDto(string FundProfileId, string ExportId, DateTimeOffset? AsOf = null, string? Currency = null);
-```
-
-## StructuredReportingExportRowLineageDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRowLineageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:404](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L404).
-
-```csharp
-public sealed record StructuredReportingExportRowLineageDto(int RowNumber, string RowKey, string RowHashSha256);
 ```

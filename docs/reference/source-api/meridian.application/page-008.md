@@ -28,13 +28,19 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.CorporateActions.CorporateActionProviderFetchOutcome</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:69](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L69).
+Source: [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:78](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L78).
 
 Per-provider, per-security coverage, independent of proposal acceptance authority.
 
 ```csharp
-public sealed record CorporateActionProviderFetchOutcome(string ProviderId, string Ticker, CorporateActionFetchStatus Status, int ActionsFetched, IReadOnlyList<CorporateActionFetchFailure> Failures);
+public sealed record CorporateActionProviderFetchOutcome(string ProviderId, string Ticker, CorporateActionFetchStatus Status, int ActionsFetched, IReadOnlyList<CorporateActionFetchFailure> Failures)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CorporateActionFetchCoverage? Coverage { get; init; }</code> | [src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs:85](../../../../src/Meridian.Application/SecurityMaster/CorporateActions/CorporateActionIngestOrchestrator.cs#L85) |  |
 
 ## CorporateActionScopeFanOutDecision
 

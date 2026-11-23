@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterGridDataDictionaryFieldDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDataDictionaryFieldDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1570](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1570).
+
+```csharp
+public sealed record ReportWriterGridDataDictionaryFieldDto(string Key, string Label, string Role, string SourceField, string DataType, bool IsGenerated, string Description);
+```
+
 ## ReportWriterGridDefinitionDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDefinitionDto</code>. Kind: `record`.
@@ -579,16 +589,4 @@ Structured posture or reconciliation issue from Security Master-driven accountin
 
 ```csharp
 public sealed record SecurityMasterAccountingIssueDto(string Code, string Source, string Symbol, string? AccountId, string Reason, ReconciliationBreakSeverity Severity, string? EvidenceLink = null, decimal? ExpectedAmount = null, decimal? ActualAmount = null);
-```
-
-## SecurityMasterCanonicalMergeOutcomeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L175).
-
-The canonical-merge outcome of a publish, with an operator-facing explanation and, when the canonical record was read or amended, its version.
-
-```csharp
-public sealed record SecurityMasterCanonicalMergeOutcomeDto(SecurityMasterCanonicalMergeOutcomeKind Outcome, string Detail, long? CanonicalVersion);
 ```

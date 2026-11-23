@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ScheduleSpecFactory
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleSpecFactory</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L109).
+
+Maps a security&#x27;s declared scheduleConventions block (ADR-025) to a ScheduleSpec for the contractual schedule kernel, or says why it cannot. The block is read only where the mapping decodes it (SecurityVersionedTerms: the same predicate, the same read guard and the same leg selection), and the schedule anchors are read at the payload root by exact key, as the mapping reads them, so the factory cannot follow conventions the record does not declare.
+
+```csharp
+public static class ScheduleSpecFactory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string DeclaredMappingVersion = SecurityVersionedTerms.DeclaredScheduleMappingVersion;</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:116](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L116) | The version of this mapping from a declared block to a schedule spec. It is SecurityVersionedTerms.DeclaredScheduleMappingVersion itself, so the startup capability line and the schedule evidence cannot name different mappings. |
+| <code>public static DeclaredScheduleResolution Resolve(SecurityDetailDto security, StructuredCashFlowTerms terms, IBusinessDayCalendarSource? calendars);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L157) | Resolves the schedule security declares, with its payment calendars from calendars. DeclaredScheduleStatus.Undeclared means the record declares nothing this node decodes and its projection stays on the legacy path; DeclaredScheduleStatus.Refused carries the reason the projection is blocked. |
+| <code>public static DeclaredScheduleResolution ResolveShape(SecurityDetailDto security, StructuredCashFlowTerms terms);</code> | [src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs:220](../../../../src/Meridian.Contracts/SecurityMaster/ScheduleSpecFactory.cs#L220) | The calendar-free check of what security declares: every rule of Resolve except calendar resolution, then the schedule kernel over the spec with no business-day adjustments and no payment lag. A kernel failure is DeclaredScheduleRefusalCode.KernelRefused, so a write rule that calls this refuses every block a factory rule or a calendar-free kernel failure would block. That is all it guarantees: every check that runs after the factory can still block a Declared result, among them calendar availability, the calendar-dependent kernel failures and the declared walk&#x27;s refusals (a contractual principal schedule, a missing or unrecognized dayCount, Level on a Term period, Act/Act ICMA on adjusted accrual dates, Business/252 without a calendar). A Declared result carries that calendar-free spec. |
+
 ## ScheduleTermsWriteRules
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ScheduleTermsWriteRules</code>. Kind: `class`.
@@ -986,15 +1006,3 @@ Declared public members:
 | <code>public static IReadOnlyList&lt;(string Path, SecurityAssetTermField Field)&gt; PopulatedTermsAbove(string assetClass, JsonElement payload, int termsVersion) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:1087](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L1087) | The populated terms of a flat payload that were introduced above termsVersion: top-level fields, and fields inside a declared object or array element (a swap leg&#x27;s legs&#91;1&#93;.scheduleConventions). Keys and aliases match case-insensitively, as the readers do. A profile-governed payload (SecurityTermsEnvelope.IsProfileGovernedPayload) has no versioned class terms and yields nothing. |
 | <code>public static JsonObject NormalizedTermsAbove(string assetClass, JsonElement payload, int termsVersion, out IReadOnlyList&lt;string&gt; conflictingPaths) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:1103](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L1103) | The terms of a flat payload introduced above termsVersion, keyed by canonical path (scheduleConventions, legs&#91;1&#93;.scheduleConventions) with every null member, &#91;&#93; and {} removed, so two payloads that carry the same versioned content compare equal however they spelled its absence. A path more than one spelling populates is reported in conflictingPaths. A profile-governed payload yields an empty object. |
 | <code>public static JsonObject NormalizedTermsAbove(string assetClass, JsonElement payload, int termsVersion, int throughVersion, out IReadOnlyList&lt;string&gt; conflictingPaths);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs:1116](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsSchema.cs#L1116) | NormalizedTermsAbove(string, JsonElement, int, out IReadOnlyList{string}) bounded above: only the terms introduced after termsVersion and at or before throughVersion. The round-trip guard bounds it by a row&#x27;s own stamp, because a term above the stamp is an undeclared key of that row, which no reader decodes. |
-
-## SecurityAssetTermUiHint
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityAssetTermUiHint</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassRegistry.cs#L123).
-
-Presentation hints for one asset-specific term, derived from its declared field so both workstations build edit and create forms from the term schema instead of free-text paths.
-
-```csharp
-public sealed record SecurityAssetTermUiHint(string Key, string FieldPath, string Label, SecurityAssetTermEditorKind Editor, string Group, int Order, bool Required, IReadOnlyList<string> Choices, bool ScalarEditable);
-```

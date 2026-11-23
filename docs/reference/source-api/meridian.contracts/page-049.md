@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionSourceProposalDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:419](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L419).
+
+```csharp
+public sealed record CorporateActionSourceProposalDto(Guid ProposalId, Guid SecurityId, CorporateActionProviderEventIdentityDto ProviderIdentity, CorporateActionDto ProposedAction, int PayloadSchemaVersion, string EconomicFingerprint, string State, long Version, Guid? SupersedesProposalId, Guid? AcceptedCorporateActionId, Guid? InitialCaseId, string RecordedBy, DateTimeOffset RecordedAtUtc, DateTimeOffset UpdatedAtUtc, string? DecisionBy = null, DateTimeOffset? DecisionAtUtc = null, string? DecisionReason = null, string? CorrelationId = null, CorporateActionSourceProposalActionAvailabilityDto? ActionAvailability = null, CorporateActionSourceDisplayMetadataDto? DisplayMetadata = null);
+```
+
 ## CorporateActionSourceProposalReplayComparer
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalReplayComparer</code>. Kind: `class`.
@@ -22,7 +32,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static bool HasSameSourcePayload(CorporateActionSourceProposalDto existing, CorporateActionSourceProposalDto candidate);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs#L19) |  |
+| <code>public static string ComputeSourceContentHash(JsonElement payload);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs:23](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs#L23) | Hashes a complete source record without rounding numbers to a CLR numeric type. Property order, insignificant whitespace and equivalent numeric spellings do not create revisions. |
+| <code>public static bool HasSameSourcePayload(CorporateActionSourceProposalDto existing, CorporateActionSourceProposalDto candidate);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionSourceProposalReplayComparer.cs#L31) |  |
 
 ## CorporateActionSourceProposalStates
 
@@ -84,7 +95,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static CorporateActionTerms From(CorporateActionDto action);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L18) | The typed terms for action. The event type is normalized through the descriptor catalog first, so provider aliases map to the canonical family. |
-| <code>public static IReadOnlySet&lt;string&gt; PayloadOnlyEventTypes { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { CorporateActionEventTypes.AdvanceRefunding, CorporateActionEventTypes.BankruptcyDistribution, CorporateActionEventTypes.ConsentSolicitation, CorporateActionEventTypes.FractionalUnitsCashInLieu, CorporateActionEventTypes.PaymentInKind, CorporateActionEventTypes.OptionContractAdjustment, CorporateActionEventTypes.CryptoFork, };</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L115) | Event types whose economics live only in the versioned payload (their schema is in CorporateActionPayloadSchemaCatalog). Every other catalog event type maps to a typed family; the coverage test holds the two lists to the catalog. |
+| <code>public static IReadOnlySet&lt;string&gt; PayloadOnlyEventTypes { get; } = new HashSet&lt;string&gt;(StringComparer.Ordinal) { CorporateActionEventTypes.AdvanceRefunding, CorporateActionEventTypes.BankruptcyDistribution, CorporateActionEventTypes.ConsentSolicitation, CorporateActionEventTypes.FractionalUnitsCashInLieu, CorporateActionEventTypes.PaymentInKind, CorporateActionEventTypes.OptionContractAdjustment, CorporateActionEventTypes.CryptoFork, CorporateActionEventTypes.UnitSplit, CorporateActionEventTypes.SecurityRedemption, CorporateActionEventTypes.WorthlessRemoval, CorporateActionEventTypes.PartialCall, CorporateActionEventTypes.Reorganization, CorporateActionEventTypes.CapitalGainsDistribution, };</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:117](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L117) | Event types whose economics live only in the versioned payload (their schema is in CorporateActionPayloadSchemaCatalog). Every other catalog event type maps to a typed family; the coverage test holds the two lists to the catalog. |
 
 ## CorporateActionTermsIncompleteException
 
@@ -108,7 +119,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionTypeDescriptor</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:456](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L456).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:540](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L540).
 
 Metadata for one canonical corporate-action event type. CanonicalName is the stored wire value; CaevCode is ISO 15022 alignment metadata only (not unique — e.g. regular and special dividends both map to DVCA) and null for internal-only extensions. An empty ValidSecurityMasterAssetClasses list means the event type is valid for every asset class.
 
@@ -120,7 +131,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool AppliesToAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:469](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L469) |  |
+| <code>public bool AppliesToAssetClass(string? assetClass) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:553](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L553) |  |
 
 ## CorporateActionTypeDescriptorCatalog
 
@@ -138,11 +149,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:370](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L370) |  |
-| <code>public static CorporateActionTypeDescriptor? Find(string? canonicalName) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:372](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L372) |  |
-| <code>public static bool TryGet(string canonicalName, out CorporateActionTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:377](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L377) |  |
-| <code>public static bool TryNormalize(string? rawEventType, out CorporateActionTypeDescriptor descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:385](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L385) | Alias-tolerant resolution: canonical names, provider aliases, and CAEV codes are all accepted, compared on the letters-and-digits compact token so spacing, casing, and punctuation variants resolve to the same descriptor. |
-| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; FindByAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:396](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L396) |  |
+| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; All =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:454](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L454) |  |
+| <code>public static CorporateActionTypeDescriptor? Find(string? canonicalName) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:456](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L456) |  |
+| <code>public static bool TryGet(string canonicalName, out CorporateActionTypeDescriptor descriptor) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:461](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L461) |  |
+| <code>public static bool TryNormalize(string? rawEventType, out CorporateActionTypeDescriptor descriptor);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:469](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L469) | Alias-tolerant resolution: canonical names, provider aliases, and CAEV codes are all accepted, compared on the letters-and-digits compact token so spacing, casing, and punctuation variants resolve to the same descriptor. |
+| <code>public static IReadOnlyList&lt;CorporateActionTypeDescriptor&gt; FindByAssetClass(string? assetClass);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:480](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L480) |  |
 
 ## CorporateActionValidationException
 
@@ -697,7 +708,7 @@ public sealed record EdgarXbrlFact(string Cik, string Taxonomy, string Concept, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ExchangeCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L169).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L177).
 
 Held units exchanged for a successor security, optionally with cash (merger, conversion, exchange).
 
@@ -835,19 +846,3 @@ Declared public members:
 | <code>Task&lt;CorporateActionCashDividendPreviewDto&gt; PreviewCashDividendAsync(Guid caseId, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L178) |  |
 | <code>Task&lt;CorporateActionCashDividendAttestationResultDto&gt; AttestCashDividendAsync(AttestCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:181](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L181) |  |
 | <code>Task&lt;CorporateActionCashDividendPostingResultDto&gt; PostAttestedCashDividendAsync(PostAttestedCorporateActionCashDividendRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:184](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L184) |  |
-
-## ICorporateActionCashDividendEligibilityResolver
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:167](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L167).
-
-```csharp
-public interface ICorporateActionCashDividendEligibilityResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;CorporateActionCashDividendEligibilityDto&gt; ResolveAsync(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, AssetAccountingEventSpineDto spine, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L169) |  |

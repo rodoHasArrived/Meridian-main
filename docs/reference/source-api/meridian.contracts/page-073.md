@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportLedgerAmountBindingDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportLedgerAmountBindingDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L6).
+
+An exact account balance and its retained journal-line population in a generated report.
+
+```csharp
+public sealed record ReportLedgerAmountBindingDto(string AmountId, string Label, decimal Amount, string Currency, LedgerAmountScopeDto Scope, IReadOnlyList<Guid> JournalEntryIds, IReadOnlyList<Guid> LedgerEntryIds)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SubjectId { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L16) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? SourceSnapshotHash { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L19) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public bool? ProofAvailable { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:26](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L26) | Server-owned answer to whether the current caller may open this amount&#x27;s proof. Set only on API responses; retained bindings leave it null, and clients treat an absent value as denied. |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public AmountPassportReferenceDto? AmountPassport { get; init; }</code> | [src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/ReportLedgerAmountBindingDtos.cs#L29) |  |
+
 ## ReportPackAuditEventDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackAuditEventDto</code>. Kind: `record`.
@@ -612,14 +633,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1544]
 
 ```csharp
 public sealed record ReportWriterGridColumnDto(string Key, string Label, string Role);
-```
-
-## ReportWriterGridDataDictionaryFieldDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDataDictionaryFieldDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1570](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1570).
-
-```csharp
-public sealed record ReportWriterGridDataDictionaryFieldDto(string Key, string Label, string Role, string SourceField, string DataType, bool IsGenerated, string Description);
 ```

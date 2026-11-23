@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashSyncWindow
+
+Qualified name: <code>Meridian.Contracts.Workstation.CashSyncWindow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L6).
+
+```csharp
+public sealed record CashSyncWindow(string Region, string TimeZoneId, TimeOnly WindowStart, TimeOnly WindowEnd, IReadOnlyDictionary<string, CashSyncSourceAvailability> SourceAvailability, IReadOnlyList<Guid> AccountIds);
+```
+
 ## ChangeSinglePrincipalDeclarationRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ChangeSinglePrincipalDeclarationRequestDto</code>. Kind: `record`.
@@ -664,13 +674,3 @@ Enum declarations:
 | <code>PortalDownload = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L87) |  |
 | <code>LocalFile = 6</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L88) |  |
 | <code>ImportedFileReference = 7</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:89](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L89) |  |
-
-## EvidenceDocumentIntakeSourceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentIntakeSourceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:274](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L274).
-
-```csharp
-public sealed record EvidenceDocumentIntakeSourceDto(EvidenceDocumentIntakeSourceKindDto SourceKind, string? Path = null, string? Uri = null, string? DisplayName = null, string? ExpectedContentHashSha256 = null);
-```

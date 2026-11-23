@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SinglePrincipalAttestationStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L112).
+
+```csharp
+public sealed record SinglePrincipalAttestationStateDto(SinglePrincipalAttestationScopeDto Scope, bool PolicyEnabled, string PolicyVersion, string PolicyHash, string Disclosure, string Confirmation, IReadOnlyList<string> AllowedActions, SinglePrincipalDeclarationDto? Declaration, IReadOnlyList<SinglePrincipalDeclarationDto> DeclarationHistory, IReadOnlyList<PreparerAttestationReceiptDto> Receipts, IReadOnlyList<PreparerAttestationRevocationDto> Revocations, IReadOnlyList<SinglePrincipalAttestationAuditEventDto> AuditTrail);
+```
+
 ## SinglePrincipalAttestationSubjectSnapshotDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationSubjectSnapshotDto</code>. Kind: `record`.
@@ -649,16 +659,4 @@ Request to create a statement reconciliation run from an already accessible sour
 
 ```csharp
 public sealed record StatementRunCreateDto(string Broker, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly StatementPeriodStart, DateOnly StatementPeriodEnd, string SourcePath, string OriginalFileName, string MappingProfileId, string ToleranceProfileId, string ImportedBy, string? SourceFileHash = null, string? Notes = null);
-```
-
-## StatementRunDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementRunDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:270](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L270).
-
-Shared workstation payload for a statement reconciliation run and its normalized evidence.
-
-```csharp
-public sealed record StatementRunDto(string? RunId, StatementRunStatus? Status, StatementSourceDto? Source, DateTimeOffset? StartedAtUtc, DateTimeOffset? CompletedAtUtc, string? SourceFileName, string? SourceFileHash, string? MappingProfileId, int? MappingProfileVersion, string? ToleranceProfileId, int? ToleranceProfileVersion, string? ImportedBy, DateTimeOffset? ImportedAtUtc, IReadOnlyList<StatementValidationIssueDto>? ValidationIssues, IReadOnlyList<StatementNormalizedPositionDto>? Positions, IReadOnlyList<StatementNormalizedCashDto>? CashBalances, IReadOnlyList<StatementNormalizedTransactionDto>? Transactions, StatementMatchSummaryDto? MatchSummary, IReadOnlyList<StatementBreakDto>? Breaks, IReadOnlyList<StatementReconciliationCaseDto>? Cases, string? ImportId = null, string? FundProfileId = null, Guid? FundAccountId = null, string? Notes = null);
 ```

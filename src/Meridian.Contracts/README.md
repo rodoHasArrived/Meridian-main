@@ -30,6 +30,18 @@ does not imply a zero balance or a match.
 External-GL export packages optionally pin `MappingContentHash` alongside the mapping version.
 The field is omitted when absent to preserve historical manifest preimages.
 
+`CorporateActionDto.SourceEvidence` optionally retains the provider event type, wire schema,
+original JSON text and its exact SHA-256 digest outside economic terms. The existing source-proposal
+JSON storage preserves this companion without a schema migration; absent evidence is omitted from
+historical serialization. Economic fingerprints exclude source evidence, while replay comparison
+refuses changed or removed evidence under an existing source version.
+
+The corporate-action catalog distinguishes stock dividends, composite unit splits, source-declared
+security redemptions, worthless removals, partial calls, reorganizations and capital-gain
+distributions. Their source terms can be retained without adding automatic price adjustments or
+ledger postings. Multi-security allocation legs and separate capital-gain components remain
+distinct. `SecurityRedemption` does not change the legacy `Redemption` alias for bond maturity.
+
 `SecurityInstrumentTermsDto` provides version/fingerprint-bound canonical term blocks as exact JSON
 text and recursive schema-guided field records. It distinguishes presence, missing, null, invalid
 and ambiguous state, carries explicit unit paths, and retains undeclared/read-ahead content.

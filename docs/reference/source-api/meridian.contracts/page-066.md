@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerAmountProvenanceEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountProvenanceEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:610](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L610).
+
+```csharp
+public sealed record LedgerAmountProvenanceEvidenceDto(string EvidenceType, string EvidenceId, string? DisplayLabel = null, string? Route = null, string? SourceSystem = null, IReadOnlyList<string>? RelatedEvidenceIds = null, int? EvidenceCount = null, decimal? Amount = null, DateTimeOffset? CapturedAt = null, string? ProviderEventId = null, string? ProviderEventType = null, string? ProviderEvidenceSource = null, string? RequiredFeed = null, string? SecurityId = null, string? LedgerEffectKind = null, decimal? PrincipalAmount = null, decimal? IncomeAmount = null, int? JournalPreviewLineCount = null, DateOnly? EffectiveDate = null, decimal? Factor = null, decimal? CashAmount = null, string? Currency = null);
+```
+
 ## LedgerAmountReconciliationCaseDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.LedgerAmountReconciliationCaseDto</code>. Kind: `record`.
@@ -611,16 +621,4 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:111](../../.
 
 ```csharp
 public sealed record OnboardingParallelRunCertificateContentDto(string WorkspaceId, string Name, OnboardingScopeDto Scope, int DataRevision, OnboardingOpeningBalanceReportDto Opening, IReadOnlyList<OnboardingPeriodSummaryDto> Periods, IReadOnlyList<DateOnly> CleanPeriods, IReadOnlyList<OnboardingDifferenceExplanationDto> Explanations, IReadOnlyList<OnboardingReviewDto> ApprovingReviews, string PacketId, string PacketContentHash, string Statement);
-```
-
-## OnboardingParallelRunCertificateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L123).
-
-The parallel-run certificate: every period&#x27;s agreement with the incumbent, every difference explained, hashed and frozen. It is the evidence a promotion decision must attach; it is not itself a promotion.
-
-```csharp
-public sealed record OnboardingParallelRunCertificateDto(string CertificateId, DateTimeOffset IssuedAtUtc, string IssuedBy, OnboardingParallelRunCertificateContentDto Content, string ContentHash, string HashAlgorithm);
 ```

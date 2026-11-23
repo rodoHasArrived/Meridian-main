@@ -569,7 +569,7 @@ public sealed record AttestCorporateActionCashDividendRequestDto(Guid CaseId, lo
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:136](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L136).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:144](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L144).
 
 Cash paid per unit: dividends, special dividends, fund distributions, returns of capital.
 
@@ -581,8 +581,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? PositiveAmountPerUnit =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:143](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L143) | The recorded amount per unit when it is positive; null when absent, zero or negative. |
-| <code>public decimal? GrossAmountFor(LotQuantity holding) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:151](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L151) | Gross cash due on a holding: the amount per unit times the holding&#x27;s economic units. A per-unit distribution reads only on lots counted in shares or fund units; a lot measured in face, notional, commitment amount or contracts has no per-unit meaning, so the result is null rather than a per-unit rate multiplied by a currency amount. |
+| <code>public decimal? PositiveAmountPerUnit =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:151](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L151) | The recorded amount per unit when it is positive; null when absent, zero or negative. |
+| <code>public decimal? GrossAmountFor(LotQuantity holding) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:159](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L159) | Gross cash due on a holding: the amount per unit times the holding&#x27;s economic units. A per-unit distribution reads only on lots counted in shares or fund units; a lot measured in face, notional, commitment amount or contracts has no per-unit meaning, so the result is null rather than a per-unit rate multiplied by a currency amount. |
 
 ## CashDividendAccountRoleBindingDto
 

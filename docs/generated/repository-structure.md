@@ -3430,6 +3430,7 @@ Meridian-main
 │   │   │       ├── report.md
 │   │   │       └── verify-evidence.py
 │   │   ├── accounting-trust-corrections.md
+│   │   ├── alpaca-corporate-action-coverage.md
 │   │   ├── alpaca-paper-portfolio-sandbox.md
 │   │   ├── endpoint-fixture-isolation.md
 │   │   ├── README.md
@@ -6229,6 +6230,7 @@ Meridian-main
 │   │   │   ├── CorporateActionOperationsContracts.cs
 │   │   │   ├── CorporateActionPayloads.cs
 │   │   │   ├── CorporateActionPayloadSchemaCatalog.cs
+│   │   │   ├── CorporateActionRetainedSourceEvidenceDto.cs
 │   │   │   ├── CorporateActionSourceProposalReplayComparer.cs
 │   │   │   ├── CorporateActionTerms.cs
 │   │   │   ├── CorporateActionTypeDescriptorCatalog.cs
@@ -7360,7 +7362,9 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGateway.PortfolioSync.cs
 │   │   │   │   ├── AlpacaBrokerageGateway.Recovery.cs
 │   │   │   │   ├── AlpacaConstants.cs
+│   │   │   │   ├── AlpacaCorporateActionProvider.AdditionalMappings.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
+│   │   │   │   ├── AlpacaCorporateActionProvider.Mapping.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
 │   │   │   │   ├── AlpacaOptionsChainProvider.cs
@@ -7398,6 +7402,7 @@ Meridian-main
 │   │   │   │   ├── BaseHistoricalDataProvider.cs
 │   │   │   │   ├── BaseSymbolSearchProvider.cs
 │   │   │   │   ├── CompositeHistoricalDataProvider.cs
+│   │   │   │   ├── CorporateActionFetchCoverage.cs
 │   │   │   │   ├── CorporateActionFetchResult.cs
 │   │   │   │   ├── CrossProviderValidator.cs
 │   │   │   │   ├── HistoricalBackfillRequestScope.cs
@@ -14110,6 +14115,9 @@ Meridian-main
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.SendBoundary.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.StatementAmounts.cs
 │   │   │   │   ├── AlpacaConnectionReadinessTests.cs
+│   │   │   │   ├── AlpacaCorporateActionCorroborationTests.cs
+│   │   │   │   ├── AlpacaCorporateActionProviderTests.AdditionalFamilies.cs
+│   │   │   │   ├── AlpacaCorporateActionProviderTests.Coverage.cs
 │   │   │   │   ├── AlpacaCorporateActionProviderTests.cs
 │   │   │   │   ├── AlpacaCredentialAndReconnectTests.cs
 │   │   │   │   ├── AlpacaHistoricalDataProviderTests.cs
@@ -14635,12 +14643,16 @@ Meridian-main
 │   │   │   ├── CorporateActionGoldenLedgerTests.cs
 │   │   │   ├── CorporateActionInboxStateTests.cs
 │   │   │   ├── CorporateActionIngestOrchestratorTests.cs
+│   │   │   ├── CorporateActionIngestOrchestratorTests.RetainedEvidence.cs
 │   │   │   ├── CorporateActionLedgerInvariants.cs
 │   │   │   ├── CorporateActionLedgerKnownDefectTests.cs
 │   │   │   ├── CorporateActionOperationsContractTests.cs
 │   │   │   ├── CorporateActionOperationsMigrationTests.cs
 │   │   │   ├── CorporateActionOperationsServiceTests.cs
 │   │   │   ├── CorporateActionPayloadsTests.cs
+│   │   │   ├── CorporateActionProviderEvidencePostgresTests.cs
+│   │   │   ├── CorporateActionProviderFamilySchemaTests.cs
+│   │   │   ├── CorporateActionRetainedEvidenceTests.cs
 │   │   │   ├── CorporateActionSourceRevisionPolicyTests.cs
 │   │   │   ├── CorporateActionTaxonomyPropertyTests.cs
 │   │   │   ├── CorporateActionTermsTests.cs

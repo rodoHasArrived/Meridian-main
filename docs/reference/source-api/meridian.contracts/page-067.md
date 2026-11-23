@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingParallelRunCertificateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingParallelRunCertificateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:123](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L123).
+
+The parallel-run certificate: every period&#x27;s agreement with the incumbent, every difference explained, hashed and frozen. It is the evidence a promotion decision must attach; it is not itself a promotion.
+
+```csharp
+public sealed record OnboardingParallelRunCertificateDto(string CertificateId, DateTimeOffset IssuedAtUtc, string IssuedBy, OnboardingParallelRunCertificateContentDto Content, string ContentHash, string HashAlgorithm);
+```
+
 ## OnboardingPeriodDifferenceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingPeriodDifferenceDto</code>. Kind: `record`.
@@ -566,14 +578,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1361](..
 
 ```csharp
 public sealed record OperationsCloseReadinessBlockerDto(string Code, string Category, string Severity, string Message, OperationsGateKeyDto? Gate, string? RouteHint);
-```
-
-## OperationsCloseReadinessComponentDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsCloseReadinessComponentDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1350](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1350).
-
-```csharp
-public sealed record OperationsCloseReadinessComponentDto(string Key, string Label, int Score, int Weight, bool IsReady, string Severity, string? BlockingReason, OperationsGateKeyDto? Gate, string? RouteHint);
 ```

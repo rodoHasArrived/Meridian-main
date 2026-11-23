@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## FundLedgerQuery
+
+Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L27).
+
+Query for Accounting-first fund ledger views.
+
+```csharp
+public sealed record FundLedgerQuery(string FundProfileId, DateTimeOffset? AsOf = null, FundLedgerScope ScopeKind = FundLedgerScope.Consolidated, string? ScopeId = null, IReadOnlyList<string>? SelectedLedgerIds = null);
+```
+
 ## FundLedgerReconciliationSnapshot
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerReconciliationSnapshot</code>. Kind: `record`.
@@ -745,21 +757,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;AutomatedJournalScheduleStatusDto&gt; GetStatusAsync(string? fundProfileId, Guid? ledgerBookId, string? periodId, CancellationToken ct = default, string? tenantId = null, string? companyId = null, string? entityId = null);</code> | [src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs:86](../../../../src/Meridian.Contracts/Workstation/AutomatedJournalScheduleDtos.cs#L86) |  |
-
-## IBookOfRecordGuard
-
-Qualified name: <code>Meridian.Contracts.Workstation.IBookOfRecordGuard</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:147](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L147).
-
-Answers whether a ledger book is authoritative. A book in shadow mode (or a withdrawn shadow trial) is not.
-
-```csharp
-public interface IBookOfRecordGuard
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;BookOfRecordStatusDto&gt; GetStatusAsync(string tenantId, string? companyId, Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:149](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L149) |  |

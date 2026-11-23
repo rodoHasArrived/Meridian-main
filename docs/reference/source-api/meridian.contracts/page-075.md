@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterCanonicalMergeOutcomeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L175).
+
+The canonical-merge outcome of a publish, with an operator-facing explanation and, when the canonical record was read or amended, its version.
+
+```csharp
+public sealed record SecurityMasterCanonicalMergeOutcomeDto(SecurityMasterCanonicalMergeOutcomeKind Outcome, string Detail, long? CanonicalVersion);
+```
+
 ## SecurityMasterCanonicalMergeOutcomeKind
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind</code>. Kind: `enum`.
@@ -638,14 +650,4 @@ Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:17
 
 ```csharp
 public sealed record SinglePrincipalAttestationScopeDto(string TenantId, string CompanyId, Guid? LedgerBookId = null);
-```
-
-## SinglePrincipalAttestationStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.SinglePrincipalAttestationStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:112](../../../../src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs#L112).
-
-```csharp
-public sealed record SinglePrincipalAttestationStateDto(SinglePrincipalAttestationScopeDto Scope, bool PolicyEnabled, string PolicyVersion, string PolicyHash, string Disclosure, string Confirmation, IReadOnlyList<string> AllowedActions, SinglePrincipalDeclarationDto? Declaration, IReadOnlyList<SinglePrincipalDeclarationDto> DeclarationHistory, IReadOnlyList<PreparerAttestationReceiptDto> Receipts, IReadOnlyList<PreparerAttestationRevocationDto> Revocations, IReadOnlyList<SinglePrincipalAttestationAuditEventDto> AuditTrail);
 ```

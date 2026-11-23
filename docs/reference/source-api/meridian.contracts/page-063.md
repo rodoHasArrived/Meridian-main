@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExpectedJournalPreviewLineDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L316).
+
+Preview line for a balanced journal candidate generated from an expected event.
+
+```csharp
+public sealed record ExpectedJournalPreviewLineDto(string AccountName, string AccountType, string? Symbol, decimal Debit, decimal Credit);
+```
+
 ## ExplainOnboardingDifferenceRequestDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ExplainOnboardingDifferenceRequestDto</code>. Kind: `record`.
@@ -566,16 +578,4 @@ Point-in-time ledger snapshot used by reconciliation views.
 
 ```csharp
 public sealed record FundLedgerDimensionSnapshot(DateTimeOffset Timestamp, int JournalEntryCount, int LedgerEntryCount, IReadOnlyList<FundLedgerSnapshotBalanceLine> Balances);
-```
-
-## FundLedgerQuery
-
-Qualified name: <code>Meridian.Contracts.Workstation.FundLedgerQuery</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundLedgerDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/FundLedgerDtos.cs#L27).
-
-Query for Accounting-first fund ledger views.
-
-```csharp
-public sealed record FundLedgerQuery(string FundProfileId, DateTimeOffset? AsOf = null, FundLedgerScope ScopeKind = FundLedgerScope.Consolidated, string? ScopeId = null, IReadOnlyList<string>? SelectedLedgerIds = null);
 ```

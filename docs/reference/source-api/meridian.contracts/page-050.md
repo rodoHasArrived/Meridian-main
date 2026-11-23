@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ICorporateActionCashDividendEligibilityResolver
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendEligibilityResolver</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:167](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L167).
+
+```csharp
+public interface ICorporateActionCashDividendEligibilityResolver
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;CorporateActionCashDividendEligibilityDto&gt; ResolveAsync(CorporateActionProcessingCaseDto processingCase, CorporateActionCaseAccountingProjectionDto projection, AssetAccountingEventSpineDto spine, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs:169](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttestationContracts.cs#L169) |  |
+
 ## ICorporateActionCashDividendReconciliationSupport
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ICorporateActionCashDividendReconciliationSupport</code>. Kind: `interface`.
@@ -897,7 +913,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.OfferCorporateActionTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:201](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L201).
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs:209](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTerms.cs#L209).
 
 An offer the holder may accept (tender offer).
 
@@ -956,15 +972,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string? ReasonCode { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/OperatorOverrides.cs#L62) |  |
-
-## OtcAuctionSettlementData
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcAuctionSettlementData</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:41](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L41).
-
-Full CDS auction settlement linked to its retained credit trigger. Amount is signed from the fund&#x27;s side.
-
-```csharp
-public sealed record OtcAuctionSettlementData([property : JsonRequired] Guid CreditEventId, [property : JsonRequired] DateOnly AuctionDate, [property : JsonRequired] decimal FinalPricePercent, [property : JsonRequired] decimal SettlementAmount, [property : JsonRequired] string Currency, [property : JsonRequired] int SettlementScale, [property : JsonRequired] string AuctionReference) : OtcContractLifecycleData;
-```

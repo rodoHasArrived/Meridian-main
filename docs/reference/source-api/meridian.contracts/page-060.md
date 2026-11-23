@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AmountPassportPermissionsDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportPermissionsDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L40).
+
+```csharp
+public sealed record AmountPassportPermissionsDto(string View, string Amend, string Detail, string? PeriodStatus = null);
+```
+
 ## AmountPassportRecordDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportRecordDto</code>. Kind: `record`.
@@ -613,13 +623,3 @@ Enum declarations:
 | <code>Available = 1</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
 | <code>Delayed = 2</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
 | <code>Offline = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-
-## CashSyncWindow
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashSyncWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L6).
-
-```csharp
-public sealed record CashSyncWindow(string Region, string TimeZoneId, TimeOnly WindowStart, TimeOnly WindowEnd, IReadOnlyDictionary<string, CashSyncSourceAvailability> SourceAvailability, IReadOnlyList<Guid> AccountIds);
-```

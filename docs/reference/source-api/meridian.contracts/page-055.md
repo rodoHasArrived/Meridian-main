@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityFieldProvenanceOrigins
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L58).
+
+Canonical origins for persisted field-level provenance rows. The origin distinguishes canonical golden-record attribution from overlay annotations, so an operator edit can never masquerade as (or clobber) a conflict-resolution winner.
+
+```csharp
+public static class SecurityFieldProvenanceOrigins
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ConflictResolution = &quot;ConflictResolution&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:61](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L61) | The attribution written when a golden-record conflict resolves to a winning source. |
+| <code>public const string OperatorFieldEdit = &quot;OperatorFieldEdit&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:64](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L64) | The attribution written when an operator stages an overlay field edit. |
+| <code>public const string CanonicalWrite = &quot;CanonicalWrite&quot;;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:72](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L72) | The attribution written when an ordinary canonical create/amend changes a governed field — the per-field record of WHICH source supplied the current value, kept so conflict detection can name the true incumbent even when the field was never conflicted (record-level provenance flips on every amendment and cannot answer that question). |
+
 ## SecurityFieldProvenanceRecord
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceRecord</code>. Kind: `record`.
@@ -837,15 +857,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Ready</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L15) |  |
 | <code>Blocked</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L16) |  |
-
-## SecurityMasterProfilePromotionReportDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionReportDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L49).
-
-Report-first inventory of the active CustomAsset records pinned to one reclassifying profile (SecurityAssetClassDescriptor.ReclassifyingProfileIds). Building the report changes nothing. AlreadyPromotedCount counts the active records pinned to the profile that already carry TargetAssetClass.
-
-```csharp
-public sealed record SecurityMasterProfilePromotionReportDto(DateTimeOffset GeneratedAt, string ProfileId, string TargetAssetClass, int SecuritiesScanned, int AlreadyPromotedCount, int CandidateCount, int ReadyCount, int BlockedCount, IReadOnlyList<SecurityMasterProfilePromotionCandidateDto> Candidates);
-```

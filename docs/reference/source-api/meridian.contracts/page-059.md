@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyEngineDefinition
+
+Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineDefinition</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs:141](../../../../src/Meridian.Contracts/StrategyEngine/StrategyEngineContracts.cs#L141).
+
+```csharp
+public sealed record StrategyEngineDefinition(string StrategyId, string Version, string Name, StrategyEngineStrategyType Type, string Description, IReadOnlyList<string> AssetUniverse, IReadOnlyList<StrategyEngineDataDependency> RequiredDataInputs, IReadOnlyList<StrategyEngineParameterDefinition> ParameterSchema, IReadOnlyList<StrategyEngineRunMode> SupportedModes, string Owner, string Source, IReadOnlyDictionary<string, string>? UiMetadata = null, IReadOnlyDictionary<string, string>? Extensions = null);
+```
+
 ## StrategyEngineMissingDataPolicy
 
 Qualified name: <code>Meridian.Contracts.StrategyEngine.StrategyEngineMissingDataPolicy</code>. Kind: `enum`.
@@ -795,14 +805,4 @@ An immutable amount address. Tenant and company are checked against the authenti
 
 ```csharp
 public sealed record AmountPassportIdentityDto(string SubjectKind, string SubjectId, AmountPassportScopeDto Scope, string AsOf, string Revision);
-```
-
-## AmountPassportPermissionsDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportPermissionsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L40).
-
-```csharp
-public sealed record AmountPassportPermissionsDto(string View, string Amend, string Detail, string? PeriodStatus = null);
 ```

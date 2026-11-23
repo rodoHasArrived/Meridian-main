@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceDocumentIntakeSourceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentIntakeSourceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:274](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L274).
+
+```csharp
+public sealed record EvidenceDocumentIntakeSourceDto(EvidenceDocumentIntakeSourceKindDto SourceKind, string? Path = null, string? Uri = null, string? DisplayName = null, string? ExpectedContentHashSha256 = null);
+```
+
 ## EvidenceDocumentIntakeSourceKindDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentIntakeSourceKindDto</code>. Kind: `enum`.
@@ -784,16 +794,4 @@ Balanced journal preview candidate. Posting remains a separate approval-gated wo
 
 ```csharp
 public sealed record ExpectedJournalPreviewDto(string JournalPreviewId, string ExpectedEventId, string Description, DateOnly EventDate, bool IsBalanced, bool RequiresOperatorApproval, string IdempotencyKey, IReadOnlyList<ExpectedJournalPreviewLineDto> Lines);
-```
-
-## ExpectedJournalPreviewLineDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ExpectedJournalPreviewLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:316](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L316).
-
-Preview line for a balanced journal candidate generated from an expected event.
-
-```csharp
-public sealed record ExpectedJournalPreviewLineDto(string AccountName, string AccountType, string? Symbol, decimal Debit, decimal Credit);
 ```
