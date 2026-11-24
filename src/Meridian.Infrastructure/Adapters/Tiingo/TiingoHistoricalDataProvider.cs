@@ -217,7 +217,9 @@ public sealed class TiingoHistoricalDataProvider : BaseHistoricalDataProvider
                     SplitFactor: price.SplitFactor.HasValue && price.SplitFactor.Value != 1.0m
                         ? price.SplitFactor.Value
                         : splitFactor,
-                    DividendAmount: dividendAmount
+                    DividendAmount: dividendAmount,
+                    PriceBasis: HistoricalPriceBasis.Raw,
+                    AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted
                 ));
             }
 

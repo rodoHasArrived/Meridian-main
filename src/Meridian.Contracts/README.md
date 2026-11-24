@@ -11,6 +11,14 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Contracts
 
+`HistoricalPriceBasis` declares Raw, SplitAdjusted, DividendAdjusted, FullyAdjusted or Unknown
+for a complete historical OHLC set. `HistoricalBar.PriceBasis` survives JSON as a readable enum;
+its default is omitted so retained legacy payloads remain unknown without rewriting their bytes.
+`IsAdjusted` remains a compatibility flag and cannot establish precise basis by itself.
+`AdjustedHistoricalBar` declares primary and optional adjusted sets independently. Raw and exact-basis
+requests reject unavailable sets; partial adjusted OHLC never borrows primary components. See
+[historical provider price bases](../../docs/development/provider-implementation.md#historical-price-bases).
+
 `AccountingSystemReconciliationRowDto` and `AccountingSystemReconciliationSummaryDto` retain their
 numeric fields and add read-only invariant `*Exact` string companions for debit, credit, variance
 and summary totals. Browser consumers can preserve all retained decimal digits without parsing

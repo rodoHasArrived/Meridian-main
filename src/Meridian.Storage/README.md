@@ -11,6 +11,13 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Storage
 
+Historical bar evidence retains the precise OHLC price basis through JSON, batch row digests and
+Parquet. Known basis declarations change row identity even when numeric prices coincide; Unknown
+keeps the legacy row digest. Parquet historical-bar v2 files retain readable `PriceBasis` plus the
+legacy flag, while existing v1 files remain unchanged and discoverable. Catalog date parsing accepts
+both filename generations. Structured research exports retain basis companions with exported OHLC;
+legacy data is explicitly Unknown. See the [migration notes](../../docs/development/provider-implementation.md#historical-price-bases).
+
 The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
 Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
 business folders compile through linked items in `Meridian.Storage.Accounting`. The workflow

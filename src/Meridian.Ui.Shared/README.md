@@ -11,6 +11,10 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+Designer canonical replay requires `HistoricalPriceBasis.Raw` on every retained daily bar.
+Legacy `IsAdjusted=false` without precise basis is insufficient, so previously ambiguous stored prices
+cannot enter raw-price replay or receive a second corporate-action adjustment.
+
 Asset Detail reads full canonical terms through `SecurityInstrumentTermsEndpoints` and
 `SecurityInstrumentTermsReadService`. The schema-guided read preserves exact scalar JSON text,
 all nested/unknown properties and raw blocks, with version/fingerprint and matching source evidence.

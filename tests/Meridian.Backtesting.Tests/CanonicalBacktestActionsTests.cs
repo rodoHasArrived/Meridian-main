@@ -79,6 +79,23 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         strategy.Initialized.Should().BeFalse();
     }
 
+    [Theory]
+    [InlineData(HistoricalPriceBasis.Unknown, false)]
+    [InlineData(HistoricalPriceBasis.SplitAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.DividendAdjusted, null)]
+    [InlineData(HistoricalPriceBasis.FullyAdjusted, null)]
+    public async Task NonRawDeclarationAnywhereInTape_FailsBeforeStrategyInitialization(
+        HistoricalPriceBasis priceBasis, bool? legacyAdjusted)
+    {
+        WriteBarsWithBasis((100m, false, HistoricalPriceBasis.Raw), (99m, legacyAdjusted, priceBasis));
+        var strategy = new TradingStrategy();
+
+        var action = () => Engine(new Query([])).RunAsync(Request(Start.AddDays(1)), strategy);
+
+        await action.Should().ThrowAsync<InvalidOperationException>().WithMessage("*PriceBasis.Raw*");
+        strategy.Initialized.Should().BeFalse("legacy IsAdjusted=false is not proof of raw prices");
+    }
+
     [Fact]
     public async Task MissingPayDateAndManualCorporateAction_FailBeforeInitialization()
     {
@@ -259,6 +276,10 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         1m, "USD", null, null, null, null, null, null, null);
 
     private void WriteBars(params (decimal Price, bool? Adjusted)[] bars)
+        => WriteBarsWithBasis(bars.Select(static bar => (bar.Price, bar.Adjusted,
+            bar.Adjusted == false ? HistoricalPriceBasis.Raw : HistoricalPriceBasis.Unknown)).ToArray());
+
+    private void WriteBarsWithBasis(params (decimal Price, bool? Adjusted, HistoricalPriceBasis Basis)[] bars)
     {
         var directory = Path.Combine(_root, "XYZ");
         Directory.CreateDirectory(directory);
@@ -266,7 +287,8 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         for (var index = 0; index < bars.Length; index++)
         {
             var bar = new HistoricalBar("XYZ", Start.AddDays(index), bars[index].Price, bars[index].Price,
-                bars[index].Price, bars[index].Price, 1_000_000L, "synthetic", index + 1, IsAdjusted: bars[index].Adjusted);
+                bars[index].Price, bars[index].Price, 1_000_000L, "synthetic", index + 1,
+                IsAdjusted: bars[index].Adjusted, PriceBasis: bars[index].Basis);
             writer.WriteLine(JsonSerializer.Serialize(MarketEvent.HistoricalBar(bar.ToTimestampUtc(), "XYZ", bar, "synthetic", index + 1),
                 MarketDataJsonContext.HighPerformanceOptions));
         }

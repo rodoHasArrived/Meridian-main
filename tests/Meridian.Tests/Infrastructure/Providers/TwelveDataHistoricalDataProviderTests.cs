@@ -4,6 +4,7 @@ using System.Text;
 using System.Globalization;
 using System.Text.Json;
 using FluentAssertions;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Exceptions;
 using Meridian.Infrastructure.Adapters.TwelveData;
 using Meridian.Infrastructure.Adapters.Core;
@@ -85,6 +86,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
         bars.Should().BeInAscendingOrder(b => b.SessionDate);
         bars.Select(b => b.Symbol).Should().OnlyContain(symbol => symbol == "MSFT");
         bars.Select(b => b.Source).Should().OnlyContain(source => source == "twelvedata");
+        bars.Should().OnlyContain(bar => bar.PriceBasis == HistoricalPriceBasis.SplitAdjusted && bar.IsAdjusted == true);
 
         bars[0].SessionDate.Should().Be(from);
         bars[0].Open.Should().Be(370.10000m);
@@ -108,6 +110,7 @@ public sealed class TwelveDataHistoricalDataProviderTests
         observedRequest.RequestUri.GetComponents(UriComponents.Query, UriFormat.Unescaped)
             .Should().Contain("symbol=MSFT")
             .And.Contain("interval=1day")
+            .And.Contain("adjust=splits")
             .And.Contain("start_date=2024-01-02")
             .And.Contain("end_date=2024-01-03 23:59:59")
             .And.Contain("outputsize=5000")

@@ -688,7 +688,8 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         var start = new DateTimeOffset(2026, 7, 1, 14, 30, 0, TimeSpan.Zero);
         var provider = CreateMockProvider("serving", priority: 1);
         provider.Setup(p => p.GetDailyBarsAsync("spy.us", date, date, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([new HistoricalBar("SPY.US", date, 100, 101, 99, 100, 1_000, "composite")]);
+            .ReturnsAsync([new HistoricalBar("SPY.US", date, 100, 101, 99, 100, 1_000, "composite",
+                PriceBasis: HistoricalPriceBasis.SplitAdjusted)]);
         var aggregate = provider.As<IHistoricalAggregateBarProvider>();
         aggregate.SetupGet(p => p.SupportedGranularities).Returns([DataGranularity.Minute1]);
         aggregate.Setup(p => p.GetAggregateBarsAsync("spy.us", DataGranularity.Minute1, date, date, It.IsAny<CancellationToken>()))
@@ -702,6 +703,8 @@ public sealed class CompositeHistoricalDataProviderTests : IDisposable
         var intraday = await composite.GetAggregateBarsAsync("SPY", DataGranularity.Minute1, date, date);
 
         daily.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "serving");
+        daily.Single().PriceBasis.Should().Be(HistoricalPriceBasis.SplitAdjusted,
+            "rebinding a provider alias must preserve the precise financial meaning of the returned prices");
         intraday.Should().ContainSingle(bar => bar.Symbol == "SPY" && bar.Source == "serving");
     }
 

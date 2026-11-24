@@ -6,7 +6,7 @@ module_id: SRC-BACKTESTING
 path: src/Meridian.Backtesting
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-12
+last_reviewed: 2026-11-24
 ---
 
 # src/Meridian.Backtesting
@@ -132,12 +132,25 @@ sharing a source is captured before any of those plans is prepared. `BacktestReq
 effective actions; it is not a transaction-time Security Master revision boundary. Only confirmed
 (or legacy confirmed-by-default), non-cancelled actions effective by that cutoff are eligible.
 
+Historical price adjustments require an explicit `HistoricalPriceBasis.Raw` declaration before
+any source close can enter a dividend factor or split calculation. Active plans reject adjusted
+and unknown inputs, including legacy `IsAdjusted=false` rows. Output declares `SplitAdjusted`,
+`DividendAdjusted`, or `FullyAdjusted` for the complete history, including rows whose adjustment
+factor is one. Identity plans preserve the input basis. Captured-plan lookup and content hashes
+include precise basis declarations; legacy unknown-basis hash bytes remain unchanged. The existing
+missing-prior-close dividend limitation remains a raw, unchanged series rather than an invented
+adjusted observation.
+
+Generic research replay requires one consistent historical price basis per effective symbol and
+rejects a changed basis before consuming the mixed bar. An Unknown-only series remains available
+for generic research, but cannot enter the raw-only accounting or adjustment paths above.
+
 `BacktestRequest.CorporateActionMode` defaults to `Legacy`, preserving the existing automatic stored
 action, explicit population, adjusted-price and supplied `AssetEvents` paths and their experiment identities.
 Opt-in `RawPricesWithCanonicalEvents` bypasses both mapped-action sources and cannot be combined with
 explicit `PopulateAssetEventsFromSecurityMaster`. It captures and validates the entire replay before
 strategy initialization: only historical
-bars explicitly stamped `IsAdjusted=false` are accepted. Adjusted, unknown-basis, and non-bar tape
+bars explicitly stamped `PriceBasis=Raw` are accepted. Adjusted, unknown-basis, and non-bar tape
 are rejected; this mode bypasses `AdjustForCorporateActions` rather than adjusting prices twice.
 It requires active mastered USD equities, fully funded long positions, and canonical cash dividends
 and splits. Manual `AssetEvents` are limited to fees. Other action treatments and splits producing
@@ -237,8 +250,8 @@ See the [expanded objectives](../../docs/product/implementation-todo-list.md#exp
   configured source. Its `SecurityMasterAssetEventSource` maps confirmed cash distributions and
   share splits; it does not map mergers, spin-offs or other position transformations. Selecting
   this path never also calls the broad source.
-- Portfolio action accounting uses unadjusted prices, including when explicit `AssetEvents` are
-  supplied. Already-adjusted bars are refused for an event-bearing replay so splits and cash cannot
+- Portfolio action accounting requires explicitly raw prices, including when explicit `AssetEvents` are
+  supplied. Adjusted and unknown-basis bars are refused for an event-bearing replay so splits and cash cannot
   be counted twice. Stored dividends credit ex-date holders on the ex-date; payable-date settlement
   is not modeled. This economic replay uses currently retained confirmed Security Master revisions
   and makes no historical transaction-visibility claim. Provider proposals still require the

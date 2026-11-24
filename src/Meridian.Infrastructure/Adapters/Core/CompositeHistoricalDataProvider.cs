@@ -287,7 +287,7 @@ public sealed class CompositeHistoricalDataProvider : IHistoricalDataProvider, I
         return bars.Select(bar => new HistoricalBar(
             NeedsSymbol(bar.Symbol, symbol, resolved) ? symbol : bar.Symbol,
             bar.SessionDate, bar.Open, bar.High, bar.Low, bar.Close, bar.Volume,
-            NeedsSource(bar.Source) ? provider : bar.Source, bar.SequenceNumber, bar.IsAdjusted)).ToArray();
+            NeedsSource(bar.Source) ? provider : bar.Source, bar.SequenceNumber, bar.IsAdjusted, bar.PriceBasis)).ToArray();
     }
 
     private static IReadOnlyList<AggregateBar> BindAggregateBars(

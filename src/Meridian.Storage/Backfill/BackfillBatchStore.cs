@@ -83,12 +83,25 @@ public sealed record BackfillBatchRevision(int SchemaVersion, BackfillBatchRecei
 
     public static string HashRow(MarketEvent item) => item.Payload switch
     {
-        HistoricalBar bar => Sha256Digest.ComputeUtf8(FormattableString.Invariant(
-            $"daily|{bar.SessionDate:yyyy-MM-dd}|{bar.Open:G29}|{bar.High:G29}|{bar.Low:G29}|{bar.Close:G29}|{bar.Volume}|{bar.IsAdjusted}")),
+        HistoricalBar bar => HashHistoricalRow(bar),
         AggregateBarPayload bar => Sha256Digest.ComputeUtf8(FormattableString.Invariant(
             $"aggregate|{bar.StartTime.UtcTicks}|{bar.EndTime.UtcTicks}|{bar.Open:G29}|{bar.High:G29}|{bar.Low:G29}|{bar.Close:G29}|{bar.Volume}|{bar.Vwap:G29}|{bar.TradeCount}|{(byte)bar.Timeframe}")),
         _ => throw new ArgumentException("Backfill batch evidence requires a historical or aggregate bar.", nameof(item))
     };
+
+    private static string HashHistoricalRow(HistoricalBar bar)
+    {
+        var retained = FormattableString.Invariant(
+            $"daily|{bar.SessionDate:yyyy-MM-dd}|{bar.Open:G29}|{bar.High:G29}|{bar.Low:G29}|{bar.Close:G29}|{bar.Volume}|{bar.IsAdjusted}");
+
+        // Older receipts did not declare a precise basis. Preserve their exact row identity,
+        // while binding new declarations so numerically equal adjusted bars cannot substitute
+        // for one another in retained ingestion or backtest evidence.
+        if (bar.PriceBasis != HistoricalPriceBasis.Unknown)
+            retained += $"|price-basis:v1:{bar.PriceBasis}";
+
+        return Sha256Digest.ComputeUtf8(retained);
+    }
 
     public void Validate()
     {

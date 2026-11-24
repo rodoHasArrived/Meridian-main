@@ -225,7 +225,10 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
                 AdjustedClose: adjCloseValue,
                 AdjustedVolume: null,
                 SplitFactor: splitFactor,
-                DividendAmount: dividendAmount));
+                DividendAmount: dividendAmount,
+                // Yahoo's ordinary historical OHLC already incorporates stock splits.
+                PriceBasis: HistoricalPriceBasis.SplitAdjusted,
+                AdjustedPriceBasis: HistoricalPriceBasis.FullyAdjusted));
         }
 
         return bars;

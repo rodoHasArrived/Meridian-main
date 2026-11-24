@@ -698,7 +698,8 @@ public sealed class HistoricalBackfillService : IDisposable
                 bar.Volume,
                 bar.Source,
                 bar.SequenceNumber,
-                bar.IsAdjusted))
+                bar.IsAdjusted,
+                bar.PriceBasis))
             .ToArray();
     }
 

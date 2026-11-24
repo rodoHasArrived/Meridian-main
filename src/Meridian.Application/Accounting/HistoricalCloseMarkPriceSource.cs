@@ -1,4 +1,5 @@
 using System.Threading;
+using Meridian.Contracts.Domain.Models;
 using Meridian.Contracts.Operations;
 using Meridian.Core.Logging;
 using Meridian.Infrastructure.Adapters.Core;
@@ -44,12 +45,21 @@ public sealed class HistoricalCloseMarkPriceSource : IMarkPriceSource
                 return null;
             }
 
+            // Ordinary OHLC fields and the legacy IsAdjusted flag do not prove raw availability.
+            // The dedicated raw accounting capability can replace this daily-bar path separately.
+            if (bar.PriceBasis != HistoricalPriceBasis.Raw)
+            {
+                _log.Warning("Daily close for {Symbol} on {SessionDate} has {PriceBasis} basis; a raw accounting mark is unavailable",
+                    symbol, bar.SessionDate, bar.PriceBasis);
+                return null;
+            }
+
             var source = string.IsNullOrWhiteSpace(bar.Source) ? _provider.Name : bar.Source;
             var provenance = ResolveProvenance(source);
             return new MarkPriceQuote(
                 bar.Close,
                 source,
-                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}"),
+                FormattableString.Invariant($"daily-close:{symbol}:{bar.SessionDate:yyyy-MM-dd}:{source}:basis=Raw"),
                 // A quoted exchange close for the identical instrument is an ASC 820 Level 1 input.
                 // A fabricated close is not an observation of anything, so it is classified at the
                 // unobservable tier instead of inheriting Level 1 from the shape of the request.
