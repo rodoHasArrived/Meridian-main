@@ -248,7 +248,7 @@ public static partial class ContractualCashFlowEngine
         for (var i = 0; i < explicitPeriods.Count; i++)
         {
             var p = explicitPeriods[i];
-            if (p is null || p.Sequence != i + 1 || p.UnadjustedStart != cursor || p.UnadjustedEnd <= cursor || p.AccrualEnd <= p.AccrualStart || p.PaymentDate < p.AccrualEnd || p.IsFinal != (i == explicitPeriods.Count - 1)
+            if (p is null || p.Sequence != i + 1 || p.UnadjustedStart != cursor || p.UnadjustedEnd <= cursor || p.AccrualEnd <= p.AccrualStart || p.IsFinal != (i == explicitPeriods.Count - 1)
                 || i > 0 && p.AccrualStart != explicitPeriods[i - 1].AccrualEnd)
                 throw new ArgumentException("Explicit coupon periods must be sequential, contiguous and carry valid accrual/payment dates and final markers.");
             cursor = p.UnadjustedEnd;
@@ -256,9 +256,9 @@ public static partial class ContractualCashFlowEngine
                 throw new ArgumentException("Explicit periods require a bounded reference-period collection.");
             var expectedStart = c.AccrualAdjusted == true ? adjustment.Apply(p.UnadjustedStart) : p.UnadjustedStart;
             var expectedEnd = c.AccrualAdjusted == true ? adjustment.Apply(p.UnadjustedEnd) : p.UnadjustedEnd;
-            var payment = adjustment.Apply(expectedEnd);
-            if (spec.PaymentLagBusinessDays > 0)
-                payment = calendar!.AddBusinessDays(payment, spec.PaymentLagBusinessDays);
+            var payment = spec.PaymentLagBusinessDays > 0
+                ? calendar!.AddBusinessDays(expectedEnd, spec.PaymentLagBusinessDays)
+                : adjustment.Apply(expectedEnd);
             if (p.AccrualStart != expectedStart || p.AccrualEnd != expectedEnd || p.PaymentDate != payment)
                 throw new ArgumentException("Explicit accrual/payment dates must agree with the declared adjustment and lag.");
         }
