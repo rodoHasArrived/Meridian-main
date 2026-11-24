@@ -137,8 +137,13 @@ public sealed partial class FreshHostAccountingRehearsalTests
             await using (var verified = new Host(scope))
             {
                 await verified.StartAsync(ct);
+                verified.Engine.ActiveRunIds.Should().Contain(reviewed.RunId);
                 await PublishPriceAsync(verified, 104m, ct);
                 await verified.Consumer.PublishAsync(fill);
+                // Publish confirms durable acceptance, not completion. After restart the WAL's
+                // bounded posted cache can be empty, so an exact replay must be acknowledged
+                // by the real consumer before we inspect pending state or revoke its grant.
+                await verified.WaitForPostedAsync(fill.FillId, ct);
                 await AssertEconomicsAsync(verified, scope, fill, ct);
                 (await verified.Handoffs.LoadPendingAsync(ct)).Should().BeEmpty();
                 await verified.Journals.RevokeAsync(scope.Options.Grant!.GrantId, scope.Options.Grant.Version,

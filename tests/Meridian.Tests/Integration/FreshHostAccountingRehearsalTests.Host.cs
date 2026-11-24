@@ -52,6 +52,7 @@ public sealed partial class FreshHostAccountingRehearsalTests
         private readonly DurableLedgerPostingTarget _target;
         private readonly ExecutionAuditTrailService _audit;
         private readonly ExecutionJournal _journal;
+        private readonly ObservedPostingStore _postingCompletion;
 
         public Host(Scope scope, Interruption? interruption = null)
         {
@@ -75,9 +76,10 @@ public sealed partial class FreshHostAccountingRehearsalTests
                 _target, accounts, new AccountingAutomaticPostingPolicyValidator(new AccountingPolicyService()), securityQuery, positionQuery);
             Handoffs = new(new TradeFillPostingStoreOptions(Path.Combine(scope.Root, "handoffs"), scope.Context),
                 NullLogger<WalTradeFillPostingStore>.Instance);
+            _postingCompletion = new(Handoffs);
             Fault = interruption is { } point ? new(Accounting, point) : null;
             Consumer = LedgerPostingConsumer.CreateWithAccountingAdapter(new GovernedTradeFillLedgerPostingTarget(_target, Journals),
-                NullLogger<LedgerPostingConsumer>.Instance, Handoffs, scope.Context,
+                NullLogger<LedgerPostingConsumer>.Instance, _postingCompletion, scope.Context,
                 Fault is null ? Accounting : Fault, requireCurrentAccountingEvidence: true,
                 securityValidationGate: securityGate, requireSecurityMasterPostingGate: true);
             var costs = new PaperTradingCostOptions { CommissionKind = PaperCommissionKind.FixedPerOrder, CommissionRate = 1m, CommissionMinimum = 0m };
@@ -113,6 +115,9 @@ public sealed partial class FreshHostAccountingRehearsalTests
             await Oms.StartAsync(ct);
             await Engine.ResumePendingRunsAsync(ct);
         }
+
+        public Task WaitForPostedAsync(Guid fillId, CancellationToken ct)
+            => _postingCompletion.WaitForPostedAsync(fillId, ct);
 
         public async ValueTask DisposeAsync()
         {

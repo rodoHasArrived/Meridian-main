@@ -14304,6 +14304,7 @@ Meridian-main
 │   │   │   ├── ConnectionRetryIntegrationTests.cs
 │   │   │   ├── EndpointStubDetectionTests.cs
 │   │   │   ├── FixtureProviderTests.cs
+│   │   │   ├── FreshHostAccountingRehearsalTests.Completion.cs
 │   │   │   ├── FreshHostAccountingRehearsalTests.cs
 │   │   │   ├── FreshHostAccountingRehearsalTests.Host.cs
 │   │   │   ├── FreshHostAccountingRehearsalTests.Scope.cs

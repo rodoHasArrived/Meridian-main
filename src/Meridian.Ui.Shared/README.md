@@ -19,6 +19,8 @@ attributed to that account. Both require global and scoped trading-read authorit
 tenant/company, and authoritative ownership of the account's fund. Administrator access does not
 override tenant ownership. Missing storage is unavailable, not an empty history. List limits apply
 to incidents, never to an incident's order rows; exact-ID reads remain available for older incidents.
+The incident order table registers saved table views under `ViewTrades`, matching these routes;
+layout access does not replace the incident reads' account and tenant ownership checks.
 
 The HTTP projection separates evidence completion from cancellation success, preserves unknown
 quantities as null, and emits financial quantities as exact decimal strings. Raw broker-wide errors
