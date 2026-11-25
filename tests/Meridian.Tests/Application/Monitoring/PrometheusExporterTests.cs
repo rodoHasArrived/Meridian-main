@@ -224,6 +224,24 @@ public sealed class PrometheusExporterTests
         (await ReadSeriesAsync(pipeline))["mdc_pipeline_consumer_failures_total"].Should().Be(5);
     }
 
+    [Fact]
+    public async Task GetPrometheusMetricsAsync_ExportsFreeAndTotalBytesForEachMonitoredPath()
+    {
+        var path = "/test-volume-" + Guid.NewGuid().ToString("N");
+        var handlers = CreateHandlers();
+        handlers.RegisterExtendedProviders(diskSpace: () =>
+        [
+            new Meridian.Platform.Diagnostics.DiskSpaceInfo(path, "/", TotalSpaceGb: 100, FreeSpaceGb: 1.5,
+                UsedSpaceGb: 98.5, UsedPercent: 98.5, IsCritical: true, IsWarning: true)
+        ]);
+
+        var exposition = await handlers.GetPrometheusMetricsAsync();
+
+        var lines = exposition.Split('\n');
+        lines.Should().Contain($"mdc_disk_free_bytes{{path=\"{path}\"}} {1.5 * 1024 * 1024 * 1024}");
+        lines.Should().Contain($"mdc_disk_total_bytes{{path=\"{path}\"}} {100L * 1024 * 1024 * 1024}");
+    }
+
     private static async Task<Dictionary<string, double>> ReadSeriesAsync(string pipeline)
     {
         using var buffer = new MemoryStream();

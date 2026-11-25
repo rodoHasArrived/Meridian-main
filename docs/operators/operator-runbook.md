@@ -327,6 +327,30 @@ misconfigured.
 **Resolved when:** `mdc_sink_write_failures_total` stops increasing and
 `mdc_pipeline_seconds_since_last_flush` returns to the configured flush interval.
 
+## Disk Space Low
+
+Alerts: `MeridianDiskSpaceLow` — severity warning, priority P3; `MeridianDiskSpaceCritical` —
+severity critical, priority P1, objective [SLO-ST-001](./service-level-objectives.md#slo-st-001).
+
+Free space on the volume holding the data root (`mdc_disk_free_bytes`, labelled by `path`) is below
+10 GiB for 15 minutes (low) or 2 GiB for 5 minutes (critical). The data root also holds the WAL, so
+a full volume stops both sink and WAL writes. The thresholds match the `disk_*` component of
+`GET /health/detailed`, which reports Degraded and Unhealthy at the same points.
+
+**Probable causes:** data growth without retention; a large backfill; log or archive accumulation;
+another process filling the volume.
+
+**Immediate actions**
+
+1. **Critical:** free space now: move cold data or archives off the volume, and pause backfills.
+2. Check `mdc_sink_write_failures_total`; if it is rising, also follow
+   [Sink write failures](#sink-write-failures).
+3. Check retention settings (`Storage` `RetentionDays` / `MaxTotalBytes`) and the size of `_logs`
+   and archive directories under the data root.
+
+**Resolved when:** `mdc_disk_free_bytes` is back above 10 GiB and `mdc_sink_write_failures_total`
+is not increasing.
+
 ## Low Data Quality
 
 Alert: `MeridianLowDataQuality` — severity warning, priority P3, objective

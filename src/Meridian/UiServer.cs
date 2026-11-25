@@ -277,17 +277,44 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Services.AddSingleton<IRuntimeReadinessService, RuntimeReadinessService>();
             }
 
+            // Disk-space and memory probes for /health/detailed and mdc_disk_free_bytes. The checker
+            // samples on its own timer, so neither the health endpoint nor the scrape touches the
+            // disk; the data root also holds the WAL, so it is the one volume to watch.
+            builder.Services.AddSingleton(_ =>
+            {
+                var checker = new Meridian.Platform.Diagnostics.SystemHealthChecker();
+                checker.AddMonitoredPath(resolvedDataRoot);
+                return checker;
+            });
+            builder.Services.AddSingleton(sp =>
+            {
+                var detailed = new DetailedHealthCheck();
+                detailed.RegisterProviders(
+                    pipelineStats: sp.GetRequiredService<EventPipeline>().GetStatistics,
+                    systemHealth: sp.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>().GetSnapshot);
+                return detailed;
+            });
+            // Recent Error/Fatal log events for /api/errors.
+            builder.Services.AddSingleton(_ => new ErrorLogRecorder(new Meridian.Platform.Diagnostics.ErrorRingBuffer()));
+
             builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
             {
                 var pipeline = sp.GetRequiredService<EventPipeline>();
                 var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
+                var errors = sp.GetRequiredService<ErrorLogRecorder>();
+                var detailed = sp.GetRequiredService<DetailedHealthCheck>();
+                var systemHealth = sp.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>();
 
-                return new StatusEndpointHandlers(
+                var handlers = new StatusEndpointHandlers(
                     Metrics.GetSnapshot,
                     pipeline.GetStatistics,
                     () => depthCollector.GetRecentIntegrityEvents(),
-                    () => null,
+                    () => errors.Buffer,
                     degradedModeProvider: () => EvaluateDegradedMode(sp));
+                handlers.RegisterExtendedProviders(
+                    detailedHealth: () => detailed.GetDetailedHealthAsync(),
+                    diskSpace: () => systemHealth.GetSnapshot().DiskInfo);
+                return handlers;
             });
 
             builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ =>
@@ -573,6 +600,10 @@ public sealed class UiServer : IAsyncDisposable
             _app = builtApp;
             appBuildStopwatch.Stop();
             _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
+            // Start recording errors and sampling disk space now rather than on the first request
+            // that happens to resolve them, so /api/errors and mdc_disk_free_bytes cover startup.
+            _app.Services.GetRequiredService<ErrorLogRecorder>();
+            _app.Services.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>();
             _logger.LogInformation(
                 "UiServer service graph built (ServiceRegistrationMs={ServiceRegistrationMs}, AppBuildMs={AppBuildMs})",
                 serviceRegistrationStopwatch.ElapsedMilliseconds,

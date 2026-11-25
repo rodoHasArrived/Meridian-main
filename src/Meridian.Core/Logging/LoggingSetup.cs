@@ -131,7 +131,9 @@ public static class LoggingSetup
                 rollOnFileSizeLimit: true,
                 outputTemplate: FileOutputTemplate,
                 shared: true,
-                flushToDiskInterval: TimeSpan.FromSeconds(1));
+                flushToDiskInterval: TimeSpan.FromSeconds(1))
+            // Error and Fatal events also reach in-process subscribers (the /api/errors buffer).
+            .WriteTo.Sink(ErrorLogTap.Instance, LogEventLevel.Error);
 
         // Allow configuration override if provided
         if (configuration != null)

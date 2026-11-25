@@ -549,3 +549,56 @@ tests:
       - eval_time: 20m
         alertname: MeridianSinkWriteFailing
         exp_alerts: []
+
+  # --- MeridianDiskSpaceLow / MeridianDiskSpaceCritical ------------------------
+  - interval: 1m
+    name: Disk alerts fire on sustained low and critical free space
+    input_series:
+      # 1.5 GiB free: below both thresholds.
+      - series: 'mdc_disk_free_bytes{path="/data"}'
+        values: "1610612736+0x30"
+    alert_rule_test:
+      - eval_time: 4m
+        alertname: MeridianDiskSpaceCritical
+        exp_alerts: []
+      - eval_time: 20m
+        alertname: MeridianDiskSpaceCritical
+        exp_alerts:
+          - exp_labels:
+              severity: critical
+              incident_priority: P1
+              path: /data
+            exp_annotations:
+              summary: "Disk nearly full for /data (1.5GiB free)"
+              description: "The volume holding /data has had less than 2 GiB free for 5 minutes; WAL and sink writes will start failing."
+              runbook_url: "docs/operators/operator-runbook.md#disk-space-low"
+              probable_causes: "Data growth without retention, large backfill, log or archive accumulation, another process filling the volume"
+              immediate_mitigation: "1. Free space immediately (move cold data or archives off the volume). 2. Pause backfills. 3. Watch mdc_sink_write_failures_total. 4. Tighten retention once stable."
+              rollback_criteria: "mdc_disk_free_bytes is above 10 GiB and mdc_sink_write_failures_total is not increasing"
+      - eval_time: 20m
+        alertname: MeridianDiskSpaceLow
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P3
+              path: /data
+            exp_annotations:
+              summary: "Low disk space for /data (1.5GiB free)"
+              description: "The volume holding /data has had less than 10 GiB free for 15 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#disk-space-low"
+              probable_causes: "Data growth without retention, large backfill, log or archive accumulation, another process filling the volume"
+              immediate_mitigation: "1. Check retention settings (Storage RetentionDays / MaxTotalBytes). 2. Archive or move cold data. 3. Check _logs and archive sizes under the data root."
+
+  - interval: 1m
+    name: Disk alerts stay silent with ample free space
+    input_series:
+      # 50 GiB free.
+      - series: 'mdc_disk_free_bytes{path="/data"}'
+        values: "53687091200+0x30"
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: MeridianDiskSpaceLow
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: MeridianDiskSpaceCritical
+        exp_alerts: []

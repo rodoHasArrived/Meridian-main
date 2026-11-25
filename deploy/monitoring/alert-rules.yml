@@ -241,6 +241,36 @@ groups:
           immediate_mitigation: "1. Check free space on the data root. 2. Read the 'Failed to flush' lines in <data-root>/_logs for the path and exception. 3. Verify path ownership and mount state. 4. Prefer fixing the cause before restarting; failed batches stay buffered and are retried in place."
           rollback_criteria: "mdc_sink_write_failures_total stops increasing and mdc_pipeline_seconds_since_last_flush returns to the flush interval"
 
+      # Free space on the data-root volume (which also holds the WAL). Thresholds match
+      # SystemHealthConfig (warning 10 GiB, critical 2 GiB), so /health/detailed and these alerts
+      # agree. The low-space warning gives time to act before writes start failing.
+      - alert: MeridianDiskSpaceLow
+        expr: min by (path) (mdc_disk_free_bytes) < 10737418240
+        for: 15m
+        labels:
+          severity: warning
+          incident_priority: P3
+        annotations:
+          summary: "Low disk space for {{ $labels.path }} ({{ $value | humanize1024 }}B free)"
+          description: "The volume holding {{ $labels.path }} has had less than 10 GiB free for 15 minutes."
+          runbook_url: "docs/operators/operator-runbook.md#disk-space-low"
+          probable_causes: "Data growth without retention, large backfill, log or archive accumulation, another process filling the volume"
+          immediate_mitigation: "1. Check retention settings (Storage RetentionDays / MaxTotalBytes). 2. Archive or move cold data. 3. Check _logs and archive sizes under the data root."
+
+      - alert: MeridianDiskSpaceCritical
+        expr: min by (path) (mdc_disk_free_bytes) < 2147483648
+        for: 5m
+        labels:
+          severity: critical
+          incident_priority: P1
+        annotations:
+          summary: "Disk nearly full for {{ $labels.path }} ({{ $value | humanize1024 }}B free)"
+          description: "The volume holding {{ $labels.path }} has had less than 2 GiB free for 5 minutes; WAL and sink writes will start failing."
+          runbook_url: "docs/operators/operator-runbook.md#disk-space-low"
+          probable_causes: "Data growth without retention, large backfill, log or archive accumulation, another process filling the volume"
+          immediate_mitigation: "1. Free space immediately (move cold data or archives off the volume). 2. Pause backfills. 3. Watch mdc_sink_write_failures_total. 4. Tighten retention once stable."
+          rollback_criteria: "mdc_disk_free_bytes is above 10 GiB and mdc_sink_write_failures_total is not increasing"
+
       # Validation pass rate below the SLO-DC-001 critical threshold (gauge, 0-100).
       - alert: MeridianLowDataQuality
         expr: mdc_validation_pass_rate_percent < 80

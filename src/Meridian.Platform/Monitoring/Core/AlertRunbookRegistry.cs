@@ -276,6 +276,53 @@ public sealed class AlertRunbookRegistry
 
         Register(new AlertRunbookEntry
         {
+            AlertName = "MeridianDiskSpaceLow",
+            Severity = "warning",
+            IncidentPriority = "P3",
+            Summary = "Low disk space on the data-root volume",
+            RunbookUrl = "docs/operators/operator-runbook.md#disk-space-low",
+            ProbableCauses = new[]
+            {
+                "Data growth without retention",
+                "Large backfill",
+                "Log or archive accumulation",
+                "Another process filling the volume"
+            },
+            ImmediateActions = new[]
+            {
+                "Check retention settings (Storage RetentionDays / MaxTotalBytes)",
+                "Archive or move cold data",
+                "Check _logs and archive sizes under the data root"
+            }
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianDiskSpaceCritical",
+            Severity = "critical",
+            IncidentPriority = "P1",
+            Summary = "Data-root volume nearly full",
+            RunbookUrl = "docs/operators/operator-runbook.md#disk-space-low",
+            SloId = "SLO-ST-001",
+            ProbableCauses = new[]
+            {
+                "Data growth without retention",
+                "Large backfill",
+                "Log or archive accumulation",
+                "Another process filling the volume"
+            },
+            ImmediateActions = new[]
+            {
+                "Free space immediately (move cold data or archives off the volume)",
+                "Pause backfills",
+                "Watch mdc_sink_write_failures_total",
+                "Tighten retention once stable"
+            },
+            RollbackCriteria = "mdc_disk_free_bytes is above 10 GiB and mdc_sink_write_failures_total is not increasing"
+        });
+
+        Register(new AlertRunbookEntry
+        {
             AlertName = "MeridianSinkWriteFailing",
             Severity = "critical",
             IncidentPriority = "P1",

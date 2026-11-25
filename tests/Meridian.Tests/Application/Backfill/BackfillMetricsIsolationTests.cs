@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Application.Monitoring;
+using Meridian.Application.UI;
 using Meridian.Contracts.Domain.Models;
 using Meridian.Core.Config;
 using Meridian.Infrastructure.Adapters.Core;

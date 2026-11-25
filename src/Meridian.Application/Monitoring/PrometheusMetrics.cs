@@ -7,6 +7,7 @@ using Meridian.DataIntegration.Monitoring.DataQuality;
 using Prometheus;
 using Meridian.Core.Monitoring;
 using Meridian.Contracts.Pipeline;
+using Meridian.Platform.Diagnostics;
 
 namespace Meridian.Application.Monitoring;
 
@@ -487,6 +488,32 @@ public static class PrometheusMetrics
 
     /// <summary>The <c>pipeline</c> label value for the host's live market-data pipeline.</summary>
     public const string LivePipelineLabel = "live";
+
+    // Free space on the volumes holding monitored storage paths (the data root, which also holds
+    // the WAL). Read from SystemHealthChecker's cached snapshot on the scrape, so no disk probe
+    // runs on the request path.
+    private static readonly Gauge DiskFreeBytes = Prometheus.Metrics.CreateGauge(
+        "mdc_disk_free_bytes", "Free bytes available to Meridian on the volume holding a monitored storage path",
+        new GaugeConfiguration { LabelNames = ["path"] });
+
+    private static readonly Gauge DiskTotalBytes = Prometheus.Metrics.CreateGauge(
+        "mdc_disk_total_bytes", "Total size in bytes of the volume holding a monitored storage path",
+        new GaugeConfiguration { LabelNames = ["path"] });
+
+    private const double BytesPerGb = 1024d * 1024d * 1024d;
+
+    /// <summary>
+    /// Updates the disk-space series from a <see cref="SystemHealthChecker"/> snapshot.
+    /// </summary>
+    public static void UpdateDiskMetrics(IReadOnlyList<DiskSpaceInfo> disks)
+    {
+        ArgumentNullException.ThrowIfNull(disks);
+        foreach (var disk in disks)
+        {
+            DiskFreeBytes.WithLabels(disk.Path).Set(Math.Max(0d, disk.FreeSpaceGb * BytesPerGb));
+            DiskTotalBytes.WithLabels(disk.Path).Set(Math.Max(0d, disk.TotalSpaceGb * BytesPerGb));
+        }
+    }
 
     // Backfill runs. A backfill runs its own pipeline with run-scoped counters, so these are the
     // only process-wide record of whether backfills succeed and how long they take.
