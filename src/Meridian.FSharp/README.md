@@ -166,6 +166,11 @@ Use this module for deterministic business-rule kernels shared by strategy, trad
 - **Shared-reference primaries are refused.** Create and amend validation rejects a UPI or Markit RED code as the active primary identifier (`primary_identifier_shared_reference`), using `SecurityIdentifierNormalizer.IsSharedReferenceKind`.
 - **Kind-aware identifier normalization.** `SecurityIdentifier.normalizeIdentifierValue` delegates to `Meridian.Contracts.SecurityMaster.SecurityIdentifierNormalizer.NormalizeValue` through the exhaustive `SecurityIdentifier.toContractKind` mapping, and `kindName` is the mapped Contracts enum name (interop's persisted kind string reuses it). Duplicate and expiry checks use it, so the F# domain, the C# lookup and the stored normalized columns share one implementation. `SecurityIdentifierNormalizationParityTests` fails when a C# kind has no F# case. `validateIsin`, `validateCusip` and `validateLei` keep their signatures and delegate to `TryValidateFormat`, still rejecting values with punctuation the normalizer would strip. `validateLei` now applies ISO 17442 MOD 97-10 in written order (the former copy rotated four characters and rejected valid LEIs), and `validateCusip` no longer accepts the `*`, `@` and `#` private-placement characters, which the C# normalizer strips.
 
+
+## Build settings
+
+`Meridian.FSharp.fsproj` treats FS0025 (incomplete pattern match) as an error, so a new union case,
+such as a new Security Master asset class, cannot leave a match silently unhandled.
 See the [Security Master extensibility review](../../docs/architecture/security-master-extensibility-review.md) (D5–D8) for status and open decisions.
 
 ## Diagrams

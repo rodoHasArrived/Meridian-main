@@ -1180,6 +1180,7 @@ Meridian-main
 │       │   ├── integration_evidence.py
 │       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
+│       │   ├── merge-dotnet-shard-summaries.py
 │       │   ├── publish-certified-release.py
 │       │   ├── release-envelope.py
 │       │   ├── release-preflight.py
@@ -1187,6 +1188,7 @@ Meridian-main
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
+│       │   ├── run-meridian-integrations.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
 │       │   ├── scan-commit-secrets.py
@@ -1845,7 +1847,6 @@ Meridian-main
 │   │   │   ├── carta-inspired-capital-lifecycle.md
 │   │   │   ├── desktop-workstation-screen-blueprint.checklist.json
 │   │   │   ├── desktop-workstation-screen-blueprint.md
-│   │   │   ├── entity-master-adoption-plan.md
 │   │   │   ├── god-file-burn-down-plan.md
 │   │   │   ├── intercompany-entity-controls.md
 │   │   │   ├── README.md
@@ -5565,7 +5566,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredBondLeg.cs
 │   │   │   ├── SecurityMasterCashFlowService.DeclaredConventions.cs
 │   │   │   ├── SecurityMasterCashFlowService.FactorAccrual.cs
-│   │   │   ├── SecurityMasterCashFlowService.ValidTime.cs
 │   │   │   ├── SecurityMasterClassificationDriftReportService.cs
 │   │   │   ├── SecurityMasterConcurrencyException.cs
 │   │   │   ├── SecurityMasterConflictAuthorityPolicy.cs
@@ -6352,7 +6352,6 @@ Meridian-main
 │   │   │   ├── SecurityTermsEnvelope.cs
 │   │   │   ├── SecurityTermsLegacyEventClassifier.cs
 │   │   │   ├── SecurityTermsProjectionReadDtos.cs
-│   │   │   ├── SecurityTermsValidTime.cs
 │   │   │   ├── SecurityUnderlyingGraph.cs
 │   │   │   ├── SecurityValidationDtos.cs
 │   │   │   ├── SecurityValuation.cs
@@ -9053,6 +9052,8 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke.test.mjs
 │   │   │   │   ├── generate-contracts.mjs
 │   │   │   │   ├── generate-contracts.test.mjs
+│   │   │   │   ├── merge-vitest-shards.mjs
+│   │   │   │   ├── merge-vitest-shards.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
@@ -9067,6 +9068,7 @@ Meridian-main
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   ├── vitest-evidence.test.mjs
+│   │   │   │   ├── vitest-files.mjs
 │   │   │   │   ├── workstation-governance-baseline.json
 │   │   │   │   ├── workstation-governance.mjs
 │   │   │   │   └── workstation-governance.test.mjs
@@ -10681,7 +10683,6 @@ Meridian-main
 │   │   │   │   │   ├── reporting-screen.workbench-context.tsx
 │   │   │   │   │   ├── reporting-screen.workflow-continuity.ts
 │   │   │   │   │   ├── security-master-authoritative-detail.ts
-│   │   │   │   │   ├── security-master-change-history.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.test.tsx
 │   │   │   │   │   ├── security-master-policy-evidence.ts
 │   │   │   │   │   ├── settings-change-impact.test.tsx
@@ -11691,7 +11692,6 @@ Meridian-main
 │   │   │   ├── IntercompanyProposalDeliveryService.cs
 │   │   │   ├── InvestmentAccountingTransactionLabService.cs
 │   │   │   ├── IProviderModuleSetupService.cs
-│   │   │   ├── IssuerConcentrationService.cs
 │   │   │   ├── LedgerAccountingCompletenessReadService.cs
 │   │   │   ├── LedgerAmountProvenanceService.cs
 │   │   │   ├── LedgerBookOrdering.cs
@@ -12155,7 +12155,6 @@ Meridian-main
 │   │   │   ├── ProviderHealthModels.cs
 │   │   │   ├── QuantScriptExecutionHistoryModels.cs
 │   │   │   ├── QuantScriptModels.cs
-│   │   │   ├── SecurityMasterChangeHistoryRow.cs
 │   │   │   ├── SecurityMasterPresentationModels.cs
 │   │   │   ├── SettingsModels.cs
 │   │   │   ├── ShellNavigationCatalog.Accounting.cs
@@ -14613,11 +14612,6 @@ Meridian-main
 │   │   │   │   ├── ScheduleParityGrids.cs
 │   │   │   │   ├── SchedulePeriodIdTests.cs
 │   │   │   │   └── ScheduleSpecFactoryTests.cs
-│   │   │   ├── ValidTime
-│   │   │   │   ├── IssuerConcentrationServiceTests.cs
-│   │   │   │   ├── SecurityTermsValidTimeTests.cs
-│   │   │   │   ├── ValidTimeRestatementRoutingTests.cs
-│   │   │   │   └── ValidTimeTestData.cs
 │   │   │   ├── Workbench
 │   │   │   │   ├── AheadOfWriteWorkbenchFixtures.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.AheadOfWrite.cs
@@ -14815,7 +14809,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterAssetClassSupportTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedFallbackTests.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedReconciliationTests.cs
-│   │   │   ├── SecurityMasterCashFlowValidTimeTests.cs
 │   │   │   ├── SecurityMasterChangeOutboxPostgresTests.cs
 │   │   │   ├── SecurityMasterClassificationDriftReportServiceTests.cs
 │   │   │   ├── SecurityMasterClassificationTextGuardTests.cs
@@ -15247,7 +15240,6 @@ Meridian-main
 │   │   │   ├── SecurityEconomicDispositionCoverageTests.cs
 │   │   │   ├── SecurityMasterAccountingEventServiceTests.cs
 │   │   │   ├── SecurityMasterAccountingEventSourceRateUnitTests.cs
-│   │   │   ├── SecurityMasterAccountingValidTimeTests.cs
 │   │   │   ├── ShadowBookValuationServiceTests.cs
 │   │   │   ├── StoppedRunPromotionTests.cs
 │   │   │   ├── StrategyArtifactAndLiveAuthorizationTests.cs
@@ -15981,7 +15973,6 @@ Meridian-main
 │   │   │   ├── DataConfidenceIndicatorModelTests.cs
 │   │   │   ├── OperationsContinuityClosePresentationApprovalTests.cs
 │   │   │   ├── PaneLayoutTests.cs
-│   │   │   ├── SecurityMasterChangeHistoryRowTests.cs
 │   │   │   ├── ShellNavigationCatalogTests.cs
 │   │   │   └── WorkspaceShellChromeContributionTests.cs
 │   │   ├── Services
@@ -16315,6 +16306,7 @@ Meridian-main
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_unimplemented_surfaces.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_browser_results_dir.py
 │   │   ├── test_ci_evidence_controls.py
 │   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
@@ -16338,6 +16330,7 @@ Meridian-main
 │   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
+│   │   ├── test_dotnet_ci_shards.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_fund_economics_golden_consistency.py

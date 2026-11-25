@@ -303,6 +303,9 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         var httpResult = await HandleHttpResponseAsync(response, symbol, $"{granularity.ToDisplayName()} intraday bars", ct).ConfigureAwait(false);
         if (httpResult.IsNotFound)
             return Array.Empty<AggregateBar>();
+        if (httpResult.IsRateLimited)
+            throw CreateRateLimitException($"Yahoo Finance rate limit exceeded for {symbol}", symbol,
+                httpResult.RetryAfter ?? TimeSpan.FromSeconds(60), response);
         if (!httpResult.IsSuccess)
             throw new InvalidOperationException($"Failed to fetch Yahoo Finance data for {symbol}: {httpResult.ErrorMessage ?? "HTTP error"}");
 

@@ -45,8 +45,8 @@ public sealed partial class FredHistoricalDataProvider
         var url = BuildRequestUrl(series, from, to) + $"&realtime_start={vintage}&realtime_end={vintage}&limit=100000";
         using var response = await ExecuteGetAsync(url, series, "typed economic observations", ct).ConfigureAwait(false);
         if ((int)response.StatusCode == 429)
-            throw new RateLimitException("FRED economic observations rate limit exceeded.", provider: Name, symbol: series,
-                retryAfter: HttpResiliencePolicy.ExtractRetryAfter(response) ?? TimeSpan.FromSeconds(60));
+            throw CreateRateLimitException("FRED economic observations rate limit exceeded.", series,
+                HttpResiliencePolicy.ExtractRetryAfter(response) ?? TimeSpan.FromSeconds(60), response);
         if (!response.IsSuccessStatusCode)
             throw new HttpRequestException($"FRED economic observations returned HTTP {(int)response.StatusCode}.", null, response.StatusCode);
         var json = await response.Content.ReadAsStringAsync(ct).ConfigureAwait(false);

@@ -74,6 +74,15 @@ enable the unsupported canonical paper-bond path. See the
 Provider quota responses preserve the runtime's explicit credits/request unit and daily usage,
 cap and reset-policy evidence. They do not infer fundamentals entitlement from available credits.
 
+The Data workspace and its shared provider counts can use the retained records when readiness
+repositories or the provider credential vault are unavailable. Affected rows report unavailable
+readiness evidence, and a failed vault read leaves the credential summary unavailable. Provider
+health returns connection state separately from performance measurements. Absent measurements
+are null, and measured average latency includes its observation timestamp.
+Data keeps independent records available when the backfill receipt store cannot be read.
+Retained backfill runs require a receipt visible to the requesting tenant. The legacy summary
+is available only from a snapshot written without provenance.
+
 `IntercompanyObligationEndpoints` adds an owned-book advisory monitor at
 `/api/ledger/intercompany/obligations` and dates-only native agreement `/{id}/schedule` reads.
 Authenticated scope, retained evidence and existing legal read authority remain server-owned.
@@ -4313,6 +4322,27 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 | `W12-ICPAIR-001` | Durable reviewed counterpart proposals and aged intercompany breaks |
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
+
+## Security Master review-backlog routes (2026-11-25)
+
+Added by PR #3736. Mutating routes declare `ModifySecurityMaster`. Read routes declare View or Modify
+access.
+
+- **Workbench:**
+  - `GET /api/security-master/workbench/revisions` is the pending-revision inbox.
+  - A second open revision staging the same field returns 409 `field-already-staged`.
+- **Held amendments** (`SecurityMasterEndpoints.HeldAmendments.cs`): lists held amendments and
+  discards a held one. An amendment that gets held is answered with 409.
+- **Merge:** `POST /api/security-master/{securityId}/merge`.
+- **Import dry run:** `POST /api/security-master/import/plan`.
+- **Valid time:** `GET /api/security-master/{securityId}/terms-as-of?validAt=&knownAt=`.
+- **Exception queue** (`SecurityMasterEndpoints.ExceptionCases.cs`): list, sync and assign.
+- **Cash-flow engine comparison:** `POST /api/security-master/cash-flows/shadow-compare`.
+- **Factor observations:** `GET` and `POST /api/security-master/{securityId}/factor-observations`.
+  Factor history reads observations first.
+- **Entity master** (`SecurityMasterEndpoints.EntityMaster.cs`): `/api/entity-master/...`, with
+  endpoint names prefixed `EntityMaster`.
+- **Status codes:** DirectLending maps `NegativeInterestUnsupported` to 422.
 
 ## TODO checklist
 
