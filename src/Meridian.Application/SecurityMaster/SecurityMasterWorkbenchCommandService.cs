@@ -895,8 +895,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // candidates can be resolved. Publish deliberately does NOT accept a caller-supplied fund scope:
         // a publisher must not be able to resolve impact for a fund the operator did not edit under,
         // which would disclose another scope's affected books/candidates. A null/blank scope yields an
-        // unscoped impact and the period-aware path reports no restatement — publish-time re-scoping and
-        // cross-fund/multi-fund activation are a later slice gated on tenant-scoped holdings discovery.
+        // unscoped impact, which routes to every ledger book that has held the security (review P4,
+        // owner decision 2026-11-25) rather than to none.
         var fundScope = string.IsNullOrWhiteSpace(revision.FundProfileId) ? null : revision.FundProfileId.Trim();
 
         var snapshot = await _queryService
@@ -909,7 +909,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // can route each by its accounting-period lock status. Without this feed the resolver sees an
         // empty affected set and short-circuits to no restatement.
         var affectedLedgerBookIds = await _affectedLedgerBookResolver
-            .ResolveAsync(downstreamImpact, ct)
+            .ResolveForSecurityAsync(request.SecurityId, downstreamImpact, ct)
             .ConfigureAwait(false);
 
         // Carry the edit's effective date and changed field from the durable revision so period-aware

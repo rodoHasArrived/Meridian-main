@@ -4335,7 +4335,9 @@ public sealed partial class SecurityMasterWorkbenchCommandServiceTests
         public Mock<ISecurityMasterWorkbenchQueryService> QueryService { get; } = new(MockBehavior.Loose);
         public Mock<IOperationsContinuityWorkflowService> Workflow { get; } = new(MockBehavior.Loose);
         public Mock<IPeriodAwareRestatementResolver> Restatement { get; } = new(MockBehavior.Loose);
-        public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose);
+        // CallBase lets ResolveForSecurityAsync fall through to its default, which delegates to the
+        // ResolveAsync setups below (the fund-scoped path).
+        public Mock<IAffectedLedgerBookResolver> AffectedBooks { get; } = new(MockBehavior.Loose) { CallBase = true };
         public Mock<ISecurityFieldProvenanceStore> FieldProvenance { get; } = new(MockBehavior.Loose);
         public Mock<ISecurityMasterStore> ProjectionStore { get; } = new(MockBehavior.Loose);
         public FakeTimeProvider Time { get; } = new(DateTimeOffset.UtcNow);

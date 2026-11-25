@@ -34,6 +34,34 @@ public sealed class LedgerBookAffectedResolverTests
     }
 
     [Fact]
+    public async Task UnscopedRevision_RoutesToEveryBookHoldingTheSecurity()
+    {
+        // Review P4 (owner decision 2026-11-25): an unscoped revision used to route to no book at all.
+        var securityId = Guid.NewGuid();
+        var store = Substitute.For<ILedgerJournalStore>();
+        store.ListLedgerBookIdsHoldingSecurityAsync(securityId, Arg.Any<CancellationToken>())
+            .Returns((IReadOnlyList<Guid>)[BookA, BookB]);
+        var resolver = new LedgerBookAffectedResolver(NullLogger<LedgerBookAffectedResolver>.Instance, store);
+
+        var result = await resolver.ResolveForSecurityAsync(securityId, Impact(ledgerExposureCount: 0, fundProfileId: null));
+
+        result.Should().Equal(BookA, BookB);
+    }
+
+    [Fact]
+    public async Task FundScopedRevision_ForSecurity_StillResolvesTheFundsBooks()
+    {
+        var store = Substitute.For<ILedgerJournalStore>();
+        store.ListLedgerBooksAsync(FundProfileId, Arg.Any<Guid?>(), Arg.Any<FundStructureNodeKindDto?>(), Arg.Any<CancellationToken>())
+            .Returns((IReadOnlyList<LedgerBookRecord>)[]);
+        var resolver = new LedgerBookAffectedResolver(NullLogger<LedgerBookAffectedResolver>.Instance, store);
+
+        await resolver.ResolveForSecurityAsync(Guid.NewGuid(), Impact(ledgerExposureCount: 2, fundProfileId: FundProfileId));
+
+        await store.DidNotReceive().ListLedgerBookIdsHoldingSecurityAsync(Arg.Any<Guid>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task NoLedgerExposure_ResolvesEmpty_AndDoesNotQueryBooks()
     {
         var store = Substitute.For<ILedgerJournalStore>();

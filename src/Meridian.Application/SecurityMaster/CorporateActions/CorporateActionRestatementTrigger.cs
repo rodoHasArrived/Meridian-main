@@ -99,7 +99,7 @@ public sealed class CorporateActionSupersedeRestatementTrigger : ICorporateActio
             return new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []);
         }
 
-        var affectedLedgerBookIds = await bookResolver.ResolveAsync(impact, ct).ConfigureAwait(false);
+        var affectedLedgerBookIds = await bookResolver.ResolveForSecurityAsync(superseding.SecurityId, impact, ct).ConfigureAwait(false);
         if (affectedLedgerBookIds.Count == 0)
         {
             return new SecurityMasterRestatementDecision(RestatementRequired: false, Candidates: []);
