@@ -191,6 +191,7 @@ public static partial class WorkstationEndpoints
             "instrument-dossier-positions",
             "trading-positions", "trading-orders", "trading-fills", "trading-execution-audit", "trading-execution-blotter",
             "trading-broker-order-discrepancies", "trading-broker-affected-runs",
+            "trading-cancel-incident-orders",
             "account-balance-history",
             // Mirrors /api/execution/journal/* and /api/portfolio/cash-ladder/comparison.
             "execution-journal", "portfolio-cash-ladder-comparison");

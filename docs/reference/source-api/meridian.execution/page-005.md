@@ -6,18 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## SessionTcaReport
-
-Qualified name: <code>Meridian.Execution.Services.SessionTcaReport</code>. Kind: `record`.
-
-Source: [src/Meridian.Execution/Services/SessionTcaReporter.cs:388](../../../../src/Meridian.Execution/Services/SessionTcaReporter.cs#L388).
-
-TCA report over a paper/live session fill tape.
-
-```csharp
-public sealed record SessionTcaReport(string SessionId, string StrategyId, DateTimeOffset GeneratedAtUtc, SessionTcaCostSummary CostSummary, IReadOnlyList<SessionSymbolTcaSummary> SymbolSummaries, IReadOnlyList<SessionTcaFillOutlier> Outliers, SessionTcaExecutionQuality ExecutionQuality);
-```
-
 ## SessionTcaReporter
 
 Qualified name: <code>Meridian.Execution.Services.SessionTcaReporter</code>. Kind: `class`.
@@ -50,7 +38,7 @@ public sealed record SimulatedFillHandoff(TradeExecutedEvent Fill, string Receip
 
 Qualified name: <code>Meridian.Execution.Services.VariationMarginPositionSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1443](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1443).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1407](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1407).
 
 An open position that settles daily variation margin, as an end-of-day settlement job sees it.
 

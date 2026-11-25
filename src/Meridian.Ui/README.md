@@ -16,6 +16,12 @@ shared snapshot route. Strategy run detail shows retained source-quality warning
 views retain quantity and monetary units separately. Missing comparison evidence remains unavailable.
 The dashboard and shared-service READMEs document the source and validation boundaries.
 
+Trading → Risk now includes retained cancel-all incident history for the selected execution
+account. The browser reopens complete per-order observations, shows uncertainty and broker coverage,
+and preserves exact quantity text. Its account-authorized shared endpoints and public audit
+projections are documented in the dashboard and UI Shared READMEs. Rebuild the served bundle after
+integrating these source changes.
+
 The workstation bundle under `wwwroot/workstation/` is an ignored build product. Build `dashboard/`
 before starting the host from a fresh source checkout, or restore the CI artifact for the same
 revision. npm commands regenerate contract mirrors first. CI supplies the built bundle to .NET

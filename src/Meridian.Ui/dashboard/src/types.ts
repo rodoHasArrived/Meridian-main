@@ -14,6 +14,7 @@ export type * from "./types/intercompany-rate-fixings";
 export type * from "./types/intercompany-confirmations";
 export type * from "./types/intercompany-accrual-schedules";
 export * from "./types/brokerage-recovery";
+export type * from "./types/cancel-incidents.types";
 export * from "./types/close-preparation";
 export * from "./types/ledger-amount-proof";
 export * from "./types/ledger-tax-results";

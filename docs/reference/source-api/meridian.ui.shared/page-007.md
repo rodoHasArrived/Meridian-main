@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountCashForecastSourceDocument
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceDocument</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:12](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L12).
+
+Supported independently reviewed JSON source; provenance is resolved from the vault.
+
+```csharp
+public sealed record AccountCashForecastSourceDocument(int SchemaVersion, string Kind, string SourceDomain, string SourceEntityId, long EvidenceVersion, string AccountId, string BookId, DateOnly EffectiveDate, AccountCashEvidenceRole Role, AccountCashSourceBalance? Balance = null, AccountCashSourceFlow? Flow = null, AccountCashSourceFx? Fx = null, AccountCashSourceAllocation? Allocation = null, AccountCashSourceReceiptRevision? ReceiptRevision = null, AccountCashSourceWatchObservation? WatchObservation = null);
+```
+
+## AccountCashSourceAllocation
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceAllocation</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:25](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L25).
+
+```csharp
+public sealed record AccountCashSourceAllocation(string AllocationId, string ExpectedFlowId, string ActualVersionId, decimal NetAmount, decimal GrossAmount, decimal WithholdingTax, decimal Fees);
+```
+
+## AccountCashSourceBalance
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceBalance</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:18](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L18).
+
+```csharp
+public sealed record AccountCashSourceBalance(DateOnly AsOfDate, decimal Amount, string Currency, bool IsSettled);
+```
+
+## AccountCashSourceFlow
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFlow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:19](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L19).
+
+```csharp
+public sealed record AccountCashSourceFlow(string FlowId, string VersionId, AccountCashFlowStatus Status, string FlowType, decimal Amount, string Currency, DateOnly? EconomicDate, DateOnly? SettlementDate, DateOnly? CashReceiptDate, Guid? SecurityId = null, Guid? ProjectionRunId = null, string? ProjectionEngineVersion = null, Guid? TermsVersionId = null, string? TermsHash = null, string? SupersedesVersionId = null);
+```
+
 ## AccountCashSourceFx
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashSourceFx</code>. Kind: `record`.
@@ -939,93 +981,4 @@ Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowSe
 
 ```csharp
 public sealed record StatementReconciliationReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
-```
-
-## StatementReconciliationReportWorkflowExecution
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportWorkflowExecution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:26](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L26).
-
-```csharp
-public sealed record StatementReconciliationReportWorkflowExecution(StatementImportCommitResultDto? ImportResult, StatementReconciliationReportWorkflowDto Workflow);
-```
-
-## StatementReconciliationReportWorkflowService
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportWorkflowService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.ArtifactHistory.cs:7](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.ArtifactHistory.cs#L7).
-
-```csharp
-public sealed partial class StatementReconciliationReportWorkflowService
-```
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.Authority.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.Authority.cs#L8).
-
-```csharp
-public sealed partial class StatementReconciliationReportWorkflowService
-```
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:39](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L39).
-
-Durable golden-path coordinator from retained statement input through reconciliation evidence to immutable statement/reconciliation report artifacts. It pauses rather than reporting success while reconciliation breaks or cases remain open, and can resume from its last atomic checkpoint.
-
-```csharp
-public sealed partial class StatementReconciliationReportWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public StatementReconciliationReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementReconciliationReportWorkflowService&gt;? logger = null) : this(imports, evidence, statementRuns, dataRoot, new FileStatementReconciliationReportAuthorityStore(dataRoot), logger, breakQueue : null, intakeAuthority : null);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:78](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L78) |  |
-| <code>public StatementReconciliationReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementReconciliationReportWorkflowService&gt;? logger, IReconciliationBreakQueueRepository? breakQueue) : this(imports, evidence, statementRuns, dataRoot, new FileStatementReconciliationReportAuthorityStore(dataRoot), logger, breakQueue, intakeAuthority : null);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:96](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L96) |  |
-| <code>public StatementReconciliationReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, ILogger&lt;StatementReconciliationReportWorkflowService&gt;? logger, IReconciliationBreakQueueRepository? breakQueue, IStatementReconciliationIntakeAuthority? intakeAuthority) : this(imports, evidence, statementRuns, dataRoot, new FileStatementReconciliationReportAuthorityStore(dataRoot), logger, breakQueue, intakeAuthority);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:115](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L115) |  |
-| <code>public StatementReconciliationReportWorkflowService(IStatementImportCommitService imports, IStatementImportEvidenceRetainer evidence, IStatementRunWorkflowService statementRuns, string dataRoot, IStatementReconciliationReportAuthorityStore authorityStore, ILogger&lt;StatementReconciliationReportWorkflowService&gt;? logger, IReconciliationBreakQueueRepository? breakQueue, IStatementReconciliationIntakeAuthority? intakeAuthority);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:135](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L135) |  |
-| <code>public async Task&lt;StatementReconciliationReportWorkflowExecution&gt; StartAsync(StatementReconciliationReportStartCommand command, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:165](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L165) |  |
-| <code>public async Task&lt;StatementReconciliationReportWorkflowDto?&gt; GetAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:266](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L266) |  |
-| <code>public async Task&lt;StatementReconciliationReportWorkflowExecution?&gt; ResumeAsync(string workflowId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:328](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L328) |  |
-| <code>public async Task&lt;StatementReconciliationReportArtifactDownload?&gt; DownloadArtifactAsync(string workflowId, string artifactId, string tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:368](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L368) |  |
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.Reconciliation.cs:6](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.Reconciliation.cs#L6).
-
-```csharp
-public sealed partial class StatementReconciliationReportWorkflowService
-```
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L8).
-
-```csharp
-public sealed partial class StatementReconciliationReportWorkflowService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool SupportsReviewedRowCases =&gt; …;</code> | [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs:10](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.RowCases.cs#L10) |  |
-
-## StatementToReportArtifactDownload
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportArtifactDownload</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:26](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L26).
-
-Compatibility artifact result for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportArtifactDownload(StatementToReportArtifactDto Descriptor, byte[] Content);
-```
-
-## StatementToReportStartCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementToReportStartCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/StatementToReportWorkflowService.Compatibility.cs#L13).
-
-Compatibility command for callers compiled against the pre-rename operation.
-
-```csharp
-public sealed record StatementToReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
 ```

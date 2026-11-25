@@ -766,6 +766,12 @@ Source: [src/Meridian.Execution/OrderManagementSystem.BrokerageLimits.cs:6](../.
 public sealed partial class OrderManagementSystem
 ```
 
+Source: [src/Meridian.Execution/OrderManagementSystem.CancelIncidents.cs:6](../../../../src/Meridian.Execution/OrderManagementSystem.CancelIncidents.cs#L6).
+
+```csharp
+public sealed partial class OrderManagementSystem
+```
+
 Source: [src/Meridian.Execution/OrderManagementSystem.Cancellation.cs:8](../../../../src/Meridian.Execution/OrderManagementSystem.Cancellation.cs#L8).
 
 ```csharp

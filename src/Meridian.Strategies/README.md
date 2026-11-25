@@ -185,6 +185,17 @@ fail observation rather than falling back to another book. Final metrics are cap
 fill draining and before session closure, and successful completion still requires durable
 replay verification. Retained simulated fill handoffs remain distinct from canonical postings.
 
+New scoped Designer backtests retain a `sa1-` strategy artifact before their first run record.
+The artifact binds the tenant/company-scoped strategy identity, executable design and execution
+realism; the v6 run hash additionally retains the saved draft revision, data snapshot, historical
+window, evidence and account. Activation checks the artifact against the current exact scoped
+draft and the retained Designer version without dropping the dedicated paper-session controls.
+Paper review, the child run and each claimed order carry the same artifact. Missing, altered,
+foreign or conflicting identities defer execution. Earlier runs and null-artifact intent hashes
+retain their original representation. Simulated Designer evidence remains refused by ordinary
+promotion, and paper fills do not gain canonical posting authority. Focused proof:
+`ScopedDesignerArtifactTests` and `DesignerPaperRehearsalTests`.
+
 ### Shared SMA reference and retained comparison
 
 The existing `moving-average-crossover` catalog factory wraps the SDK's shared SMA decision implementation. Explicit `inputMode=bars` and `strategyVersion=sma-crossover-v1` support controlled replay/paper comparisons; omitted mode retains legacy trade input and existing 10/30/10 defaults. Partial and terminal order outcomes maintain one pending intent per symbol. The strategy registry advertises the reference parameters. See [execution workflows](../../docs/engineering/execution-workflows.md).

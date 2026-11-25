@@ -6,7 +6,7 @@ module_id: SRC-EXECUTION-SDK
 path: src/Meridian.Execution.Sdk
 status: active
 owner_lane: Execution and Fund Accounts
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Execution.Sdk
@@ -30,6 +30,22 @@ persistence and paper-book mutation; a gateway, legacy metadata or older `RunId`
 cannot supply either assertion or upgrade historical ownership.
 These nullable fields are omitted when absent, preserving historical payload hashes and fill IDs.
 They describe retained lineage and do not grant execution or posting authority.
+
+`CancelAllIncident` and `CancelAllOrderOutcome` define historical cancel-all evidence with stable
+incident and order identities, authority and account attribution, gateway/environment scope,
+filled and possible remaining quantities, explicit broker coverage and nullable valuation.
+`CancelAllOrderDisposition` separates confirmed cancellations, fills during cancellation, other
+terminal outcomes, still-working orders, unknown state and withdrawals before dispatch.
+`EvidenceStatus=Complete` means the full observation record was captured, not that exposure is zero.
+Account projections exclude foreign and unattributed orders and set `IsAccountProjection`; historical
+`ObservedAt` and valuation-reference timestamps must remain visible in consumers.
+`KillSwitchSweepResult.IncidentId`, `EvidenceRetained` and `EvidenceError` report retention separately
+from the sweep's cancellation result. Storage failure never authorizes skipping cancellation.
+
+`StrategyOrderAuthority.StrategyArtifactId` is optional Designer artifact lineage. It propagates
+through the OMS authority and retained intent claim when present; null is omitted from JSON so old
+intent fingerprints remain stable. The existing authority fingerprint rejects a reused intent key
+whose artifact identity changed.
 
 `IOrderManager.GetUnitReservingOrders` returns the exposure reservations, except that a pending amendment reserves its larger-quantity outcome rather than its larger-value one, for unit limits.
 
