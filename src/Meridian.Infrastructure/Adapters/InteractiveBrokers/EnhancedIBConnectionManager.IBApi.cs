@@ -436,6 +436,13 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         if (_disposed || !_connectionSupervisor.MarkConnectionLost(error))
             return;
 
+        // The subscriptions are retained for replay, but nothing routes while the link is down,
+        // and each depth book is cleared rather than left frozen at its last levels where readers
+        // would take it for a live book. Replay re-registers the tickers and rebuilds the books.
+        _router.UnregisterAllStreamingTickers();
+        foreach (var subscription in _depthSubscriptions.Values)
+            _router.ResetDepthBook(subscription.Symbol);
+
         ConnectionLost?.Invoke(this, EventArgs.Empty);
 
         if (EnableAutoReconnect)
@@ -590,6 +597,10 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
 
     private Task ReplaySubscriptionsAsync(CancellationToken ct)
     {
+        // Start from no registrations so the router routes exactly the subscriptions re-sent
+        // below; a ticker with no retained subscription must not route after a (re)connect.
+        _router.UnregisterAllStreamingTickers();
+
         foreach (var (tickerId, subscription) in _depthSubscriptions.OrderBy(pair => pair.Key))
         {
             ct.ThrowIfCancellationRequested();

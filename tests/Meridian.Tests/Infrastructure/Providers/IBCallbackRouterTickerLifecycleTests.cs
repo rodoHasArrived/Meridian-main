@@ -73,6 +73,26 @@ public sealed class IBCallbackRouterTickerLifecycleTests
     }
 
     [Fact]
+    public void UnregisterAllStreamingTickers_StopsDepthAndTradeRouting_UntilReRegistered()
+    {
+        var (router, depth, trades) = Create();
+        var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        router.RegisterDepthTicker(7, "MSFT");
+        router.RegisterTradeTicker(11, "AAPL");
+
+        router.UnregisterAllStreamingTickers();
+        router.UpdateMktDepth(7, 0, Insert, Bid, 400.10, 100);
+        router.OnTickByTickAllLast(11, 1, now, 190.5, 100, "NASDAQ", string.Empty);
+
+        depth.GetCurrentSnapshot("MSFT").Should().BeNull();
+        trades.GetRecentTrades("AAPL").Should().BeEmpty();
+
+        router.RegisterDepthTicker(7, "MSFT");
+        router.UpdateMktDepth(7, 0, Insert, Bid, 400.10, 100);
+        depth.GetCurrentSnapshot("MSFT").Should().NotBeNull("replay re-registers the retained tickers");
+    }
+
+    [Fact]
     public void UnregisterUnknownTicker_IsANoOp()
     {
         var (router, _, _) = Create();

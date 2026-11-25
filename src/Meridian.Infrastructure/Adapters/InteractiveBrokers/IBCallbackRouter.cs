@@ -62,6 +62,21 @@ public sealed class IBCallbackRouter
     }
 
     /// <summary>
+    /// Drops every depth, trade and quote ticker registration and any partial quote state, so the
+    /// router routes nothing until tickers are registered again. The connection manager calls this
+    /// when the connection is lost and before replaying its retained subscriptions on (re)connect,
+    /// which keeps the router's tickers exactly equal to the subscriptions it is about to re-send.
+    /// Option tickers are left alone: the connection manager does not own them.
+    /// </summary>
+    public void UnregisterAllStreamingTickers()
+    {
+        _depthTickerMap.Clear();
+        _tradeTickerMap.Clear();
+        _quoteTickerMap.Clear();
+        _quoteStates.Clear();
+    }
+
+    /// <summary>
     /// Clears the symbol's depth book before its request is re-sent (for example on reconnect
     /// replay). TWS replays the whole book as inserts from position 0, so a book that kept its old
     /// levels would hold each one twice.

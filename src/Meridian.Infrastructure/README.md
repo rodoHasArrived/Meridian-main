@@ -130,7 +130,10 @@ IB streaming unsubscribes (`UnsubscribeMarketDepth`, `UnsubscribeTrades`, `Unsub
 the ticker from `IBCallbackRouter` once TWS accepts the cancel, so late callbacks for a cancelled
 request are dropped instead of writing into a book a resubscription has just reset. Reconnect replay
 resets each depth book before re-sending its request, because TWS replays the full book from
-position 0 and kept levels would otherwise be duplicated.
+position 0 and kept levels would otherwise be duplicated. When the connection is lost, the manager
+unregisters every streaming ticker from the router and clears each subscribed depth book, so nothing
+routes and no book sits frozen at its last levels during the outage; each (re)connect replay starts
+from no registrations, so the router routes exactly the retained subscriptions it re-sends.
 
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 
