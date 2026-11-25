@@ -148,44 +148,6 @@ Meridian-main
 │   │   ├── meridian-roadmap-strategist.md
 │   │   ├── meridian-simulated-user-panel.md
 │   │   └── meridian-test-writer.md
-│   ├── plugins
-│   │   ├── csharp-dotnet-development
-│   │   │   ├── .github
-│   │   │   │   └── plugin
-│   │   │   │       └── plugin.json
-│   │   │   ├── agents
-│   │   │   │   └── expert-dotnet-software-engineer.md
-│   │   │   ├── skills
-│   │   │   │   ├── aspnet-minimal-api-openapi
-│   │   │   │   │   └── SKILL.md
-│   │   │   │   ├── csharp-async
-│   │   │   │   │   └── SKILL.md
-│   │   │   │   ├── csharp-mstest
-│   │   │   │   │   └── SKILL.md
-│   │   │   │   ├── csharp-nunit
-│   │   │   │   │   └── SKILL.md
-│   │   │   │   ├── csharp-tunit
-│   │   │   │   │   └── SKILL.md
-│   │   │   │   ├── csharp-xunit
-│   │   │   │   │   └── SKILL.md
-│   │   │   │   ├── dotnet-best-practices
-│   │   │   │   │   └── SKILL.md
-│   │   │   │   └── dotnet-upgrade
-│   │   │   │       └── SKILL.md
-│   │   │   └── README.md
-│   │   └── frontend-web-dev
-│   │       ├── .github
-│   │       │   └── plugin
-│   │       │       └── plugin.json
-│   │       ├── agents
-│   │       │   ├── electron-angular-native.md
-│   │       │   └── expert-react-frontend-engineer.md
-│   │       ├── skills
-│   │       │   ├── playwright-explore-website
-│   │       │   │   └── SKILL.md
-│   │       │   └── playwright-generate-test
-│   │       │       └── SKILL.md
-│   │       └── README.md
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
@@ -5005,50 +4967,6 @@ Meridian-main
 │   ├── THIRD_PARTY_NOTICES.md
 │   ├── thumbnail.html
 │   └── VISUAL_FOUNDATIONS.md
-├── plugins
-│   ├── frontend-web-dev
-│   │   ├── .github
-│   │   │   └── plugin
-│   │   │       └── plugin.json
-│   │   ├── agents
-│   │   │   ├── electron-angular-native.md
-│   │   │   └── expert-react-frontend-engineer.md
-│   │   ├── skills
-│   │   │   ├── playwright-explore-website
-│   │   │   │   └── SKILL.md
-│   │   │   └── playwright-generate-test
-│   │   │       └── SKILL.md
-│   │   └── README.md
-│   ├── security-best-practices
-│   │   ├── .github
-│   │   │   └── plugin
-│   │   │       └── plugin.json
-│   │   ├── skills
-│   │   │   └── ai-prompt-engineering-safety-review
-│   │   │       └── SKILL.md
-│   │   └── README.md
-│   ├── testing-automation
-│   │   ├── .github
-│   │   │   └── plugin
-│   │   │       └── plugin.json
-│   │   ├── agents
-│   │   │   ├── playwright-tester.md
-│   │   │   ├── tdd-green.md
-│   │   │   ├── tdd-red.md
-│   │   │   └── tdd-refactor.md
-│   │   ├── skills
-│   │   │   ├── ai-prompt-engineering-safety-review
-│   │   │   │   └── SKILL.md
-│   │   │   ├── csharp-nunit
-│   │   │   │   └── SKILL.md
-│   │   │   ├── java-junit
-│   │   │   │   └── SKILL.md
-│   │   │   ├── playwright-explore-website
-│   │   │   │   └── SKILL.md
-│   │   │   └── playwright-generate-test
-│   │   │       └── SKILL.md
-│   │   └── README.md
-│   └── README.md
 ├── scripts
 │   ├── ai
 │   │   ├── cleanup.sh

@@ -134,9 +134,9 @@ SYSTEM_CHECKS = (
     ),
     (
         "claude",
-        (".claude/settings.json", ".claude/agents", ".claude/skills", ".claude/plugins"),
+        (".claude/settings.json", ".claude/agents", ".claude/skills"),
         AI_CONTRACT,
-        ("Claude / Claude Code", ".claude/agents", ".claude/skills", ".claude/plugins/"),
+        ("Claude / Claude Code", ".claude/agents", ".claude/skills"),
     ),
     (
         "github-copilot",
@@ -424,46 +424,6 @@ def collect_inventory(root: Path) -> list[InventoryItem]:
                 )
             )
 
-    for path in sorted_files(root, ".claude/plugins/*/.github/plugin/plugin.json"):
-        plugin_name = path.parents[2].name
-        items.append(
-            InventoryItem(
-                surface="claude",
-                kind="plugin-manifest",
-                name=plugin_name,
-                path=repo_relative(root, path),
-                expected_docs=(AI_CONTRACT, SKILLS_README),
-                alternate_markers=(f".claude/plugins/{plugin_name}/",),
-            )
-        )
-
-    for path in sorted_files(root, ".claude/plugins/*/agents/*.md"):
-        plugin_name = path.parents[1].name
-        items.append(
-            InventoryItem(
-                surface="claude",
-                kind="plugin-agent",
-                name=f"{plugin_name}/{path.name}",
-                path=repo_relative(root, path),
-                expected_docs=(AGENTS_README,),
-                alternate_markers=(f".claude/plugins/{plugin_name}/",),
-            )
-        )
-
-    for path in sorted_files(root, ".claude/plugins/*/skills/*/SKILL.md"):
-        plugin_name = path.parents[2].name
-        skill_name = path.parent.name
-        items.append(
-            InventoryItem(
-                surface="claude",
-                kind="plugin-skill",
-                name=f"{plugin_name}/{skill_name}",
-                path=repo_relative(root, path),
-                expected_docs=(SKILLS_README,),
-                alternate_markers=(f".claude/plugins/{plugin_name}/",),
-            )
-        )
-
     for path in sorted_files(root, ".claude/skills/*/SKILL.md"):
         name = path.parent.name
         items.append(
@@ -675,7 +635,6 @@ def check_catalog_drift(root: Path, inventory: Sequence[InventoryItem]) -> list[
     findings.extend(check_compact_assistant_guides(root))
     findings.extend(check_shared_project_context(root))
     findings.extend(check_skill_mirror(root))
-    findings.extend(check_plugin_mirror(root))
     findings.extend(check_ui_platform_policy(root))
     findings.extend(check_stale_operator_surface_language(root, inventory))
     findings.extend(check_missing_workflow_references(root))
@@ -891,29 +850,6 @@ def check_skill_mirror(root: Path) -> list[Finding]:
             message=(
                 f"{rel_path} differs from the canonical {_GUIDANCE.SKILL_SOURCE} package; edit the "
                 "canonical skill, then run python build/scripts/ai/generate-guidance.py --write."
-            ),
-        )
-        for rel_path in drift
-    ]
-
-
-def check_plugin_mirror(root: Path) -> list[Finding]:
-    """Report host plugin copies that no longer match their vendored snapshot under plugins/."""
-    try:
-        drift = _GUIDANCE.plugin_mirror_drift(root)
-    except (OSError, ValueError) as exc:
-        drift = [f"plugin mirrors ({exc})"]
-    return [
-        Finding(
-            severity="drift",
-            surface="claude",
-            kind="plugin-mirror",
-            name=Path(rel_path).name,
-            path=rel_path,
-            expected_doc="plugins/README.md",
-            message=(
-                f"{rel_path} differs from its vendored snapshot under plugins/; edit the snapshot, "
-                "then run python build/scripts/ai/generate-guidance.py --write."
             ),
         )
         for rel_path in drift

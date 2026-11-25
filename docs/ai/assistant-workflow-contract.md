@@ -47,7 +47,7 @@ The current repository evidence supports these AI surfaces:
 | Root assistant compatibility | `AGENTS.md`, `CLAUDE.md` | Root-level project context and compatibility for agents that read conventional files |
 | Codex | `.codex/config.toml`, `.codex/environments/`, `.codex/agents/`, `.codex/AGENTS.md`, `.codex/skills/`, `.codex/skills/*/agents/openai.yaml`, `.codex/prompts/`, `.codex/checklists/`, `.codex/memory/`, `tools/codex/` | Repo-local agent profiles, specialist skills, OpenAI/Codex metadata, environment entrypoints, desktop prompts, validation checklists, selective repo-local memory, and Codex PowerShell scanners/generators |
 | Agent Skills-compatible hosts | `.agents/skills/`, `.agents/skills/_shared/project-context.md`, `.agents/skills/*/agents/openai.yaml` | Portable `open-agent-skills-v1` packages and host-neutral skill metadata |
-| Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/`, `.claude/plugins/` | Claude agent definitions, portable skill packages, checked-in plugin packages, hooks, permissions, and model selection |
+| Claude / Claude Code | `.claude/settings.json`, `.claude/settings.local.json`, `.claude/agents/`, `.claude/skills/` | Claude agent definitions, portable skill packages, hooks, permissions, and model selection |
 | GitHub Copilot | `.github/copilot-instructions.md`, `.github/instructions/`, `.github/agents/`, `.github/prompts/` | Repository-wide coding-agent guidance, path instructions, agents, and reusable prompts |
 | MCP-compatible clients | `src/Meridian.Mcp/`, `docs/ai/navigation/README.md`, `docs/ai/generated/repo-navigation.json` | Tool, prompt, resource, and navigation access for any MCP client |
 | AI automation workflows | `.github/workflows/documentation.yml`, `.github/workflows/copilot-setup-steps.yml`, `.github/workflows/README.md`, archived workflow names `prompt-generation.yml`, `reusable-ai-analysis.yml`, `skill-evals.yml` | Checked-in automation lanes for documentation validation and Copilot bootstrap guidance plus documented historical AI workflow names that now route to active local scripts or archive notes |
@@ -485,7 +485,6 @@ When editing `src/**`, assistants must:
 | Codex repo-local memory | `.codex/memory/index.yml`, `docs/ai/codex/memory-system.md` | Selective Codex memory entries, routing metadata, promotion workflow, and `check-codex-memory.py` validation |
 | Agent Skills-compatible package catalog | `.agents/skills/`, `docs/ai/skills/README.md` | Host-neutral portable Agent Skill packages and `agents/openai.yaml` metadata |
 | Claude agent and skill catalog | `.claude/agents/`, `.claude/skills/`, `docs/ai/agents/README.md`, `docs/ai/skills/README.md` | Portable skill packages and Claude settings |
-| Claude plugin packages | `.claude/plugins/csharp-dotnet-development/`, `.claude/plugins/frontend-web-dev/` | Plugin manifests, plugin-contributed agents, plugin-contributed skills, `docs/ai/agents/README.md`, and `docs/ai/skills/README.md` |
 | Copilot agents, prompts, and path rules | `.github/agents/`, `.github/prompts/`, `.github/instructions/`, `.github/copilot-instructions.md` | `docs/ai/agents/README.md`, `docs/ai/prompts/README.md`, `docs/ai/instructions/README.md` |
 | Provider-agnostic prompt docs | `docs/prompts/automation-prompts.md`, `docs/prompts/repo-maintenance-prompts.md`, `docs/prompts/roadmap-source-docs-implementation-prompt.md` | `docs/prompts/README.md`, `docs/ai/prompts/README.md`, automation prompts, repo-maintenance prompts, and source-doc update prompts |
 | MCP tools, prompts, and resources | `src/Meridian.Mcp/` | `docs/ai/navigation/README.md`, generated repo-navigation artifacts |
@@ -552,9 +551,6 @@ Use this checklist when changing any AI-related asset:
       profile routing changes.
 - [ ] Keep `agents/openai.yaml` aligned with the corresponding Codex or Claude skill when skill
       descriptions or default prompts change.
-- [ ] Keep checked-in Claude plugin packages under `.claude/plugins/` indexed in the agent and
-      skill docs when plugin manifests, plugin agents, or plugin skills are added, renamed, or
-      removed.
 - [ ] Keep `docs/prompts/*.md` listed in `docs/prompts/README.md` and `docs/ai/prompts/README.md`
       when prompt or automation guidance changes.
 - [ ] Keep `scripts/ai/` and `tools/codex/` documented when local AI maintenance scripts or
