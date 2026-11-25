@@ -172,7 +172,7 @@ public sealed class LedgerSecurityKeyTests
     [Fact]
     public void PaperFill_CarryingSecurityId_PostsToSecurityKeyedAccount()
     {
-        var portfolio = new PaperTradingPortfolio(100_000m);
+        var portfolio = new PaperTradingPortfolio(100_000m, new Meridian.Ledger.Ledger());
 
         portfolio.ApplyFill(new ExecutionReport
         {
