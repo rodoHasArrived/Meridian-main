@@ -1,4 +1,5 @@
 import { isOpenBreakStatus } from "@/lib/cross-screen-counts";
+import { caseVarianceLabel } from "./reconciliation-case-values";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { getOperatorInbox, getTradingReadiness, type ApiRequestOptions } from "@/lib/api";
 import { formatCurrency, pluralizeCount } from "@/lib/format";
@@ -863,7 +864,7 @@ function buildBreakQueueRow(item: ReconciliationBreakQueueItem): ReadinessConsol
     label: item.strategyName,
     value: item.status,
     detail: item.reason,
-    meta: `${item.category} - variance ${formatCurrency(item.variance)}`,
+    meta: `${item.category} - variance ${caseVarianceLabel(item)}`,
     level: item.status === "Open" ? "blocked" : "review"
   };
 }

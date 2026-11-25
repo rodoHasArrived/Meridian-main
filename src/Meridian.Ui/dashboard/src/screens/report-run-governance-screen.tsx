@@ -500,7 +500,7 @@ export function ReportRunGovernanceScreen() {
         />
       ) : null}
 
-      <ReportReviewPanel key={run.runId} runId={run.runId} version={run.version} onReview={setReview} />
+      <ReportReviewPanel key={`review:${run.runId}`} runId={run.runId} version={run.version} onReview={setReview} />
 
       <LifecyclePanel
         run={run}
@@ -541,7 +541,7 @@ export function ReportRunGovernanceScreen() {
 
       <AuditPanel run={run} />
 
-      <ReportingIncomeComparisonPanel key={run.runId} currentRunId={run.runId} />
+      <ReportingIncomeComparisonPanel key={`income-comparison:${run.runId}`} currentRunId={run.runId} />
 
       <RestatementPanel
         run={run}

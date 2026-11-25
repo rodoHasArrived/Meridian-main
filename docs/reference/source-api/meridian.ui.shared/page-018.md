@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryStoreOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackDeliveryStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs:17](../../../../src/Meridian.Ui.Shared/Services/ReportPackDeliveryService.cs#L17).
+
+```csharp
+public sealed record ReportPackDeliveryStoreOptions(string SnapshotPath);
+```
+
 ## ReportPackProvenanceResolver
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportPackProvenanceResolver</code>. Kind: `class`.
@@ -676,6 +686,25 @@ Credential-free transport readiness exposed to authenticated reporting operators
 public sealed record SecureReportingTransportCapability(string TransportId, string DisplayName, string DeliveryMode, bool IsExternal, bool RequiresDestination, bool UsesGovernedRecipientScope, bool IssuesAccessGrant, bool SupportsProviderReceipts, bool IsConfigured, bool IsInfrastructureReady, string? InfrastructureDisabledReasonCode, bool IsReady, string? DisabledReasonCode);
 ```
 
+## SecurityInstrumentTermsReadService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.SecurityInstrumentTermsReadService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:14](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L14).
+
+Projects retained Security Master terms for inspection without running a codec, upgrading a payload, choosing between aliases or calculating economics. All such decisions stay with their canonical owners. Even unsupported payloads remain available as exact JSON text.
+
+```csharp
+public sealed class SecurityInstrumentTermsReadService(ISecurityMasterQueryService query, ISecurityAssetProfileCatalog? profiles = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;SecurityInstrumentTermsDto?&gt; ReadAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:18](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L18) |  |
+| <code>public static SecurityInstrumentTermsDto Project(SecurityDetailDto detail, SecurityEconomicDefinitionRecord? economic, ISecurityAssetProfileCatalog? profiles, DateTimeOffset retrievedAtUtc);</code> | [src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs:32](../../../../src/Meridian.Ui.Shared/Services/SecurityInstrumentTermsReadService.cs#L32) |  |
+
 ## SecurityMasterExceptionCaseworkService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterExceptionCaseworkService</code>. Kind: `class`.
@@ -911,23 +940,3 @@ Enum declarations:
 | <code>BreakClosure</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:13](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L13) |  |
 | <code>PaymentRelease</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:14](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L14) |  |
 | <code>OverrideApproval</code> | [src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs:15](../../../../src/Meridian.Ui.Shared/Services/SensitiveActionGovernance.cs#L15) |  |
-
-## SettlementInstruction
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SettlementInstruction</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:37](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L37).
-
-```csharp
-public sealed record SettlementInstruction(string InstructionId, string AccountId, string Currency, decimal GrossAmount, DateOnly TradeDate, DateOnly SettlementDate, DateTimeOffset CutoffAt, string Status);
-```
-
-## SourceAvailabilityWindow
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SourceAvailabilityWindow</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:3](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L3).
-
-```csharp
-public sealed record SourceAvailabilityWindow(string SourceId, TimeOnly StartLocal, TimeOnly EndLocal, bool IsAvailable);
-```

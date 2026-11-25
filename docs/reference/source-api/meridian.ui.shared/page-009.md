@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalDraftIntakeSkip
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeSkip</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:82](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L82).
+
+```csharp
+public sealed record AutomatedJournalDraftIntakeSkip(Guid JournalEntryId, string IdempotencyKey, string Reason, AutomatedJournalDraftIntakeDisposition Disposition = AutomatedJournalDraftIntakeDisposition.ProjectionFailed, ManualJournalEntryStatusDto? ExistingStatus = null, AutomatedJournalEvidenceAssessmentDto? ExistingEvidenceAssessment = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReadyDuplicate =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs:90](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs#L90) |  |
+
 ## AutomatedJournalEventProduction
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalEventProduction</code>. Kind: `record`.
@@ -1008,13 +1024,3 @@ Declared public members:
 | <code>public async Task&lt;(PrivateCapitalCallDto Call, PrivateCapitalCallLineDto Line, PrivateCapitalCommitmentDto Commitment, string Recipient, string ReviewGroup)&gt; ResolveAsync(PrivateCapitalScopeDto scope, string callId, string investorId, string? commitmentId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:30](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L30) |  |
 | <code>public async Task ValidateAsync(ReportingRunParametersDto parameters, ReportAccessQueryContext access, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:66](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L66) |  |
 | <code>public static void ValidateRows(ReportingRunParametersDto parameters, ImmutableArray&lt;IReadOnlyDictionary&lt;string, string&gt;&gt; rows);</code> | [src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs:92](../../../../src/Meridian.Ui.Shared/Services/CapitalCallNoticeReportingService.cs#L92) |  |
-
-## CashForecastPoint
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CashForecastPoint</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:73](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L73).
-
-```csharp
-public sealed record CashForecastPoint(DateOnly Date, string AccountId, string Currency, decimal ExpectedInflow, decimal ExpectedOutflow, decimal Net);
-```

@@ -112,9 +112,15 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Alpaca.AlpacaCorporateActionProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:37](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L37).
+Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.AdditionalMappings.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.AdditionalMappings.cs#L10).
 
-Fetches corporate action history (dividends and stock splits) from the Alpaca REST API. Implements ICorporateActionProvider following the same attribute-based discovery pattern as IHistoricalDataProvider implementations.
+```csharp
+public sealed partial class AlpacaCorporateActionProvider
+```
+
+Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:34](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L34).
+
+Fetches review-only observations for every documented Alpaca REST corporate-action family. Implements ICorporateActionProvider following the same attribute-based discovery pattern as IHistoricalDataProvider implementations.
 
 ```csharp
 public sealed partial class AlpacaCorporateActionProvider : ICorporateActionProvider
@@ -124,11 +130,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L54) |  |
-| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:59](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L59) |  |
-| <code>public AlpacaCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;AlpacaCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:67](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L67) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:85](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L85) |  |
-| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L92) |  |
+| <code>public string ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:66](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L66) |  |
+| <code>public CorporateActionProviderReleaseStatusDto ReleaseStatus =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:71](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L71) |  |
+| <code>public AlpacaCorporateActionProvider(IHttpClientFactory httpClientFactory, IConfiguration configuration, ILogger&lt;AlpacaCorporateActionProvider&gt; logger, ICredentialContext? credentials = null);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:79](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L79) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;CorporateActionCommand&gt;&gt; FetchAsync(string ticker, Guid securityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:97](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L97) |  |
+| <code>public async Task&lt;CorporateActionFetchResult&gt; FetchWithOutcomeAsync(string ticker, Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs:104](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.cs#L104) |  |
+
+Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.Mapping.cs:11](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaCorporateActionProvider.Mapping.cs#L11).
+
+```csharp
+public sealed partial class AlpacaCorporateActionProvider
+```
 
 ## AlpacaCryptoMarketDataClient
 

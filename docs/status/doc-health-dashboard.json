@@ -1,11 +1,11 @@
 {
-  "total_files": 1300,
-  "orphaned_count": 396,
+  "total_files": 1301,
+  "orphaned_count": 392,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:76f493b14e396c6f46fdc12a3c61c64da33665e4cef5d36ddfff3937f5ef703b",
+  "signal_digest": "sha256:1e157162b5ad1bea9c99d07749c05ca14b689933baf192285b4ab7dd5a48fd69",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -340,11 +340,7 @@
     "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
     "docs/ai/exports/LLM_CONTEXT.md",
     "docs/ai/model-routing-telemetry.md",
-    "docs/development/fund-account-traversal.md",
-    "docs/development/score-reason-taxonomy.md",
-    "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
-    "docs/engineering/archive-compression-replay-safety.md",
     "docs/engineering/plans/review-remediation-2026-11-12.md",
     "docs/generated/desktop-user-manual.md",
     "docs/generated/interfaces.md",
@@ -6514,6 +6510,13 @@
     },
     {
       "path": "docs/testing/accounting-trust-corrections.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/alpaca-corporate-action-coverage.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

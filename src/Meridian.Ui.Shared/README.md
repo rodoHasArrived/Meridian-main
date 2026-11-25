@@ -11,6 +11,18 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Ui.Shared
 
+Asset Detail reads full canonical terms through `SecurityInstrumentTermsEndpoints` and
+`SecurityInstrumentTermsReadService`. The schema-guided read preserves exact scalar JSON text,
+all nested/unknown properties and raw blocks, with version/fingerprint and matching source evidence.
+Unsupported envelopes and ambiguous fields remain inspectable and explicitly require review.
+
+The workstation `market-valuation` endpoint checks the authenticated tenant/company, authoritative
+book ownership and scoped access before resolving any position or price. It delegates to
+`AssetPositionMarketValuationService` with only retained identities; clients supply no amounts.
+Results are exact decimal strings with model, scope, freshness, receipt and blocker evidence.
+These reads do not approve a valuation or create ledger entries. Their HTTP behavior is covered by
+`SecurityInstrumentTermsEndpointsTests` and `AssetMarketValuation_` endpoint tests.
+
 The book receipt queue composes approved historical positions, accepted Asset Operations schedules,
 canonical statement cash and retained reconciliation/journal links. Expected, received and posted
 amounts stay separate; missing account/provider coverage remains incomplete. Explicit capture commands
@@ -1235,6 +1247,14 @@ import, and `sample`/`skip` lead with the starter kit's desk. Activation outcome
 `workspace-opened` (and `data-imported` for sample workspaces) are only recorded when a client
 reports the completed work to `POST /api/workstation/first-run/outcomes/complete`, so the
 checklist reflects finished work rather than page visits.
+
+## Provider data quality rules
+
+`GET /api/providers/{providerName}/validation-profile` returns the effective and default values,
+profile source, startup streaming values, and retained audit history. `PUT` requires an authenticated
+actor with `ManageProviders` and `ModifyConfig`. A relaxation requires a reason and explicit
+confirmation. A reset removes the override. The profile and its before/after audit entry are
+saved together, and a stale requested revision returns a conflict before either can change.
 
 ## Provider connection templates
 

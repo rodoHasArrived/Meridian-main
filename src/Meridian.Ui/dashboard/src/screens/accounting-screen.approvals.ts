@@ -5,6 +5,12 @@ import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 // screen root focused on rendering. Status labels/tones, evidence summaries, blocker and
 // next-action derivation, and small formatters for the accounting approvals queue.
 
+// Match the pending-review count in WorkstationWorkflowSummaryService. Pending is
+// the pre-submission state; a reviewer decision is due only after submission.
+export function isAwaitingApprovalDecision(status: string): boolean {
+  return status === "Submitted" || status === "ReviewerAssigned";
+}
+
 export function approvalQueueStatusLabel(workflow: OperationsContinuityWorkflowSummary | OperationsContinuityWorkflow): string {
   const approvalGate = workflow.gates.find((gate) => gate.gateKey === "Approval") ?? null;
   if (workflow.status === "Blocked" || approvalGate?.status === "Blocked") {

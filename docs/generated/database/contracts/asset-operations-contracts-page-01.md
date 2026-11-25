@@ -2,7 +2,7 @@
 
 # `asset-operations-contracts` data objects - page 1 of 2
 
-Objects 1-80 of 151. References crossing pages remain available in the dependency manifest.
+Objects 1-80 of 154. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -396,6 +396,35 @@ classDiagram
         +DateTimeOffset ApprovedAt
         +string Rationale
     }
+    class Meridian_Contracts_AssetOperations_AssetPositionMarketValuationBlockerDto["AssetPositionMarketValuationBlockerDto"] {
+        +string Code
+        +string Metric
+        +string Reason
+    }
+    class Meridian_Contracts_AssetOperations_AssetPositionMarketValuationDto["AssetPositionMarketValuationDto"] {
+        +string AccountId
+        +string? AccountingBasis
+        +IReadOnlyList~AssetPositionMarketValuationBlockerDto~ Blockers
+        +string CalculationBasis
+        +decimal? CarryingAmount
+        +string Currency
+        +int? DaysStale
+        +IReadOnlyList~string~ Diagnostics
+        +Guid EconomicStateId
+        +long EconomicStateVersion
+        +string FreshnessStatus
+        +string? FundProfileId
+    }
+    class Meridian_Contracts_AssetOperations_AssetPositionMarketValuationRequest["AssetPositionMarketValuationRequest"] {
+        +string AccountId
+        +Guid EconomicStateId
+        +long EconomicStateVersion
+        +DateTimeOffset? KnownAt
+        +Guid LedgerBookId
+        +Guid PositionId
+        +Guid SecurityId
+        +DateOnly ValuationDate
+    }
     class Meridian_Contracts_AssetOperations_AssetProjectedCashFlowDto["AssetProjectedCashFlowDto"] {
         +DateOnly? AccrualEndDate
         +DateOnly? AccrualStartDate
@@ -654,24 +683,6 @@ classDiagram
     }
     class Meridian_Contracts_AssetOperations_CorporateActionEconomicOperationKindDto["CorporateActionEconomicOperationKindDto"] {
     }
-    class Meridian_Contracts_AssetOperations_CorporateActionEconomicsDto["CorporateActionEconomicsDto"] {
-        +decimal? AccruedIncome
-        +decimal? AffectedQuantity
-        +decimal? CarryingAmount
-        +decimal? CashRatePerUnit
-        +decimal? DistributionRatio
-        +decimal? GrossCashConsideration
-        +bool IdentifierChanged
-        +bool IsMakeWhole
-        +bool IsPartial
-        +decimal? ParAmount
-        +decimal? PositionQuantity
-        +decimal? PurchasePricePerUnit
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionExchangeOfferMethodDto["CorporateActionExchangeOfferMethodDto"] {
-    }
-    class Meridian_Contracts_AssetOperations_CorporateActionHoldingPeriodTreatmentDto["CorporateActionHoldingPeriodTreatmentDto"] {
-    }
     Meridian_Contracts_AssetOperations_AccountCashFlowDto --> Meridian_Contracts_AssetOperations_AccountCashFlowStatus
     Meridian_Contracts_AssetOperations_AccountCashFlowDto --> Meridian_Contracts_AssetOperations_AccountCashProvenanceDto
     Meridian_Contracts_AssetOperations_AccountCashForecastRequestDto --> Meridian_Contracts_AssetOperations_AccountCashFlowDto
@@ -729,6 +740,7 @@ classDiagram
     Meridian_Contracts_AssetOperations_AssetOperationsProjectionDto --> Meridian_Contracts_AssetOperations_AssetTermsObligationsTimelineDto
     Meridian_Contracts_AssetOperations_AssetOperationsProjectionDto --> Meridian_Contracts_AssetOperations_AssetTermsVersionDto
     Meridian_Contracts_AssetOperations_AssetOperationsProjectionDto --> Meridian_Contracts_AssetOperations_BookPositionDto
+    Meridian_Contracts_AssetOperations_AssetPositionMarketValuationDto --> Meridian_Contracts_AssetOperations_AssetPositionMarketValuationBlockerDto
     Meridian_Contracts_AssetOperations_AssetTermsObligationsTimelineDto --> Meridian_Contracts_AssetOperations_AssetTermsObligationTimelineEventDto
     Meridian_Contracts_AssetOperations_AssetTermsObligationsTimelineDto --> Meridian_Contracts_AssetOperations_AssetTimelineVarianceDto
     Meridian_Contracts_AssetOperations_BookReceiptDto --> Meridian_Contracts_AssetOperations_BookReceiptAllocationDto

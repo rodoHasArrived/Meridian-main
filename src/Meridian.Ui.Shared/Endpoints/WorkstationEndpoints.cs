@@ -118,6 +118,7 @@ public static partial class WorkstationEndpoints
         // so it maps its own tenant-scoped group directly on the app.
         MapSecurityMasterWorkbenchEndpoints(app, jsonOptions);
 
+        MapAssetMarketValuationEndpoints(group, jsonOptions);
         MapStreamEndpoints(group, jsonOptions);
         MapStrategyDesignerEndpoints(group, jsonOptions);
         MapStrategyEngineEndpoints(group, jsonOptions);

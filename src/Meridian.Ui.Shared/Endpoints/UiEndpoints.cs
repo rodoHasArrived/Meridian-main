@@ -244,6 +244,7 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapSecurityInstrumentTermsEndpoints(jsonOptions);
         app.MapBondReferenceEndpoints(jsonOptions);
         app.MapBondReferencePagingEndpoints(jsonOptions);
         app.MapBondAnalyticsEndpoints(jsonOptions);

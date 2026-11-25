@@ -31,6 +31,8 @@ import { Select } from "@/components/ui/select";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TradingRiskControls } from "@/components/ui/trading-risk-controls";
 import {
+  dataToneClass,
+  promotionChecklistDotTone,
   promotionEvaluationPanelTone,
   promotionEvaluationTextTone,
   promotionOutcomeTone,
@@ -84,7 +86,6 @@ import {
   type PaperSessionReplayPanel,
   type TradingLoadingState,
   type TradingBlotterDetail,
-  type TradingDataTone,
   type TradingFillRow,
   type TradingOrderRow,
   type TradingPositionRow,
@@ -108,20 +109,6 @@ interface TradingScreenProps {
   data: TradingWorkspaceResponse | null;
   fundAccountId?: string | null;
 }
-
-const promotionChecklistDotTone = {
-  ready: "bg-success",
-  blocked: "bg-danger",
-  review: "bg-warning"
-} as const;
-
-const dataToneClass: Record<TradingDataTone, string> = {
-  default: "text-foreground",
-  success: "text-success",
-  warning: "text-warning",
-  danger: "text-danger",
-  muted: "text-muted-foreground"
-};
 
 type TradingRouteViewId = "overview" | "orders" | "positions" | "risk";
 // Stated once on the Orders page (and carried into each CSV export), not under every table.
@@ -473,13 +460,13 @@ export function TradingScreen(props: TradingScreenProps) {
 }
 
 function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash, key: navigationKey } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const figureContext = useWorkspaceFigureContext();
   // One open-order count for the headline card, the completeness card and every other screen.
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
-  const shellVm = useTradingScreenShellViewModel({ pathname, data });
+  const shellVm = useTradingScreenShellViewModel({ pathname, data, hash, navigationKey });
   const blotterVm = useTradingBlotterViewModel(data, new URLSearchParams(search).get("positionRef"));
   const positionSource = describeBrokerageSessionSource(data?.brokerage);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);

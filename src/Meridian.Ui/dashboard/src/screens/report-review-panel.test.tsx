@@ -26,7 +26,12 @@ describe("ReportReviewPanel", () => {
     expect(await screen.findByText("0.01")).toBeInTheDocument();
     expect(screen.getByText("0.1%")).toBeInTheDocument();
     expect(screen.getByText("Materiality not assessed")).toBeInTheDocument();
-    expect(screen.getByRole("link", { name: "approved" })).toHaveAttribute("href", "/reporting/runs/detail?runId=approved");
+    expect(screen.getByRole("link", { name: "Open prior approved run" })).toHaveAttribute("href", "/reporting/runs/detail?runId=approved");
+    expect(screen.getByText("Current retained version 3")).toBeVisible();
+    expect(screen.getByText("current", { exact: true })).not.toBeVisible();
+    fireEvent.click(screen.getByText("Comparison identifiers", { exact: true }));
+    expect(screen.getByText("current", { exact: true })).toBeVisible();
+    expect(screen.getByText("approved", { exact: true })).toBeVisible();
     expect(onReview).toHaveBeenLastCalledWith(review);
     expect((await axe(container)).violations).toEqual([]);
   });
@@ -37,7 +42,10 @@ describe("ReportReviewPanel", () => {
       lines: review.lines.map((line) => ({ ...line, materialityOutcome: "MaterialException" })), unavailableReasons: [] });
     renderWithRouter(<ReportReviewPanel runId="current" version={3} />);
     expect(await screen.findByText("1 material line change")).toBeInTheDocument();
-    expect(screen.getByLabelText("Authoritative materiality policy")).toHaveTextContent("approved-policy · version policy-v2 · USD");
+    expect(screen.getByLabelText("Authoritative materiality policy")).toHaveTextContent("Retained materiality policy · USD");
+    expect(screen.getByText("Policy approved-policy · version policy-v2")).not.toBeVisible();
+    fireEvent.click(screen.getByText("Materiality policy identifiers", { exact: true }));
+    expect(screen.getByText("Policy approved-policy · version policy-v2")).toBeVisible();
     expect(screen.getByLabelText("Authoritative materiality policy")).toHaveTextContent("absolute tolerance 0.005 USD");
     expect(screen.getByRole("cell", { name: "Material exception" })).toBeInTheDocument();
   });

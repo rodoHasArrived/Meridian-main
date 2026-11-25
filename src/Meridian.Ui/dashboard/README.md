@@ -6,16 +6,95 @@ module_id: SRC-UI-DASHBOARD
 path: src/Meridian.Ui/dashboard
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-20
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui/dashboard
+
+## Asset Detail
+
+Asset Detail separates reference data, holdings/local lots, event evidence, trading parameters,
+governed Passport editing, and cash-flow scenarios. The selected tab is URL-backed; the legacy
+`tab=details-lots` selects Holdings & Lots. Same-asset form inputs remain mounted across visited
+tabs; switching assets resets inputs, aborts supported reads, and rejects stale responses. Search and bounded, clearable recent
+history keep the tab and route scope. Security Master links carry the exact security ID.
+
+The Instrument Dossier embeds the same asset panel with path-owned instrument identity. Its
+outer tab remains in `tab`; embedded asset tabs use `assetTab` and retain book/account/date scope.
+The dossier owns instrument switching and recovery navigation. Delayed reads for an earlier
+instrument cannot replace the current panel, and each embedded resource retains its retry path.
+
+The overview exposes retained Passport trust/readiness and source timestamps, and exact-security
+Asset Operations book positions. Multiple positions require a choice; quantities and amounts are
+not aggregated across accounts/books. Currency, position/source-event identity, and explicit
+book/account/date filters must match. Fund-account scope cannot be mapped by this contract and
+withholds holdings. Quote snapshots remain symbol-level observations with missing currency
+explicit; they do not establish book valuations. Market valuation now comes from the exact-security `market-valuation` endpoint, with position,
+book, account, date and economic-state identity/version. It returns exact decimal text, selected
+price/receipt evidence, registered-model provenance, freshness and metric-specific blockers.
+Unrealized P/L is labelled as an unposted market-value-minus-carrying comparison, not realized,
+tax-cost, or total-return P/L. Unit/share positions without a multiplier can use typed quoted
+prices; original-face DCF market values retain their dirty-value basis and withhold the comparison
+when carrying accrual basis is unknown. Unsupported or stale evidence does not supply amounts.
+
+Canonical instrument terms load from `/api/security-master/{securityId}/instrument-terms` in the
+overview and Reference data. Complete raw common/asset-specific JSON and schema-guided nested
+fields remain inspectable, including schedules and unknown retained fields. Numeric lexemes stay
+exact strings; units are displayed only when explicitly declared. Missing, null, invalid and
+ambiguous values remain distinct. Terms bind to the loaded economic-definition version; Reload
+asset refreshes that identity and clears unsaved form inputs. These read models grant no edit,
+valuation approval or posting authority.
+
+Sections load and retry independently, distinguishing empty, unavailable, and HTTP-404 states.
+Corporate actions group remaining dates separately from retained lifecycle state; past payment
+dates never imply payment/posting. Reference field inspectors compare loaded source, operator
+override, and effective panel value with override-set attribution. Local lots remain browser-only;
+manual-price P/L is an estimate, separate from retained positions and ledger amounts.
+
+Focused tests: `asset-detail-screen`, `asset-detail-events`, `asset-financial-summary`,
+`asset-passport-summary`, `asset-switcher`, `asset-market-valuation`, `security-instrument-terms`,
+`security-details-tracker`, and Security Master
+route-identity regressions in `accounting-screen.test.tsx`.
+
+## Workstation workflows
+
+Reconciliation queues, case inspectors, Today readiness and the Close break list retain the
+source decimal precision and declared currency or unit. Exact zero, absent values, unavailable
+comparison evidence and multiple measures remain distinct. An explicit null exact companion
+does not fall back to a legacy numeric value; legacy numbers beyond safe integer precision are
+unavailable without exact text. Conflict reviews compare each measure and unit independently.
+External-GL comparison rows consume the invariant
+`*Exact` response companions and subtract exact operands; formatted labels are never parsed back
+into amounts. Each external-GL side uses its own declared currency, including explicit unknowns;
+mixed or undeclared currencies do not produce a common-currency total. The existing
+numeric tie-out is withheld with a reason when it cannot represent the exact comparison faithfully.
+
+Attention links carry their source fund account using the shell's record-scope contract, so
+remembered scope does not replace the record's account. Replay and promotion links open their
+existing Trading sheets; execution-control and broker-reconciliation work items reach their
+corresponding Trading surfaces. General diagnostics redirects remain available.
+
+The legacy approval inbox counts and lists only `Submitted` and `ReviewerAssigned`, matching the
+server's pending-review definition. `Pending` is an unsubmitted approval. A missing approval feed
+is shown as **Not supplied**, a supplied empty queue as zero, and unknown statuses or missing plan
+feeds qualify the confirmed count. All supplied close plans contribute. Record links retain their
+workflow and approval identity when available; unavailable or historical requested approvals cannot
+silently select a different actionable approval. This inbox still depends on the optional `closePlans`
+extension; the authoritative approvals workflow remains the live decision surface.
 
 Record identity panels retain internal record IDs in the expandable Technical identity details;
 operator identifiers remain visible. Cash Ladder keeps its engine version in Projection details.
 Reconciliation case evidence retains exact source, scope, and policy IDs in Evidence identifiers
 and groups missing comparison context into one explicit notice. Screenshot readiness checks
 exercise the current Match Workbench's retained case evidence.
+
+`FinancialValue.conditionContextId` links unavailable data conditions to one visible shared
+notice in Trial Balance, case comparisons, and instrument positions. Each value keeps its exact
+amount, currency/unit, individual reason, and scoped proof control; the focused proof control
+references the notice through `aria-describedby`. Other conditions remain visible inline.
+Primary summaries use business labels while immutable IDs stay in technical disclosures and
+continue to drive requests, record identity, and evidence links. Reporting review and income
+comparison panels use distinct per-run keys so form updates retain stable review evidence.
 
 Data → Backfills previews the historical adapter's quota, observed budget, and expected cost.
 The same dialog queues, schedules, or previews a provider administrator-approved equivalent.
@@ -27,14 +106,18 @@ workspace presents advisory obligation monitoring and reviewed legacy coverage c
 revocations; close advisories stay outside blockers. See [intercompany controls](../../../docs/operators/intercompany-entity-controls.md).
 
 The Providers route also includes on-demand backfill tier/priority controls, a read-only routing
-preview, validation profiles and bounded quota history. Tier defaults and ceilings come from the
-server catalog; choosing a paid tier declares the operator's subscription and does not verify it.
+preview, and bounded quota history. The server catalog supplies tier defaults and ceilings.
+Choosing a paid tier records the operator's declared subscription.
 Numeric priority and Move up provide keyboard alternatives to dragging. Preview accepts symbol,
 daily date range and proposed priority/availability without saving or fetching prices; unavailable
-vendors, fabricated selections and unverified coverage remain explicit. Validation relaxation
-requires a reason and exposes retained change history. Quota history distinguishes an observed
-throttle from the next provider attempted. Recent events remain process-lifetime evidence, and
-daily throttle and rotation totals are retained for seven UTC days.
+vendors, fabricated selections and unverified coverage remain explicit. Quota history distinguishes
+an observed throttle from the next provider attempted. Recent events remain process-lifetime
+evidence, and daily throttle and rotation totals are retained for seven UTC days.
+
+Each provider detail opens Data quality rules with effective values, deployment defaults, and
+retained before/after evidence. Authorized operators can review an edit or reset. A relaxation
+requires a reason and confirmation of the affected future jobs. The panel displays saved live
+thresholds alongside the startup values while activation is pending.
 
 The provider editor reads the host's effective order for new jobs. Save feedback explains when a
 routing change is active and when pacing or tier changes require a restart. The Backfills route
@@ -930,8 +1013,9 @@ applicability text distinguishes dimensions applied here from those retained for
 
 Entity and fund (P4) are scope dimensions carried as the `entityId` and `fundId` URL parameters
 (`app-shell.operating-scope.ts`), in browser storage, recent scopes, saved layouts, Copy link and
-the operator's server-side default scope. They are written into every route's URL because they head
-the scope hierarchy, but they are applied only where a screen reads them: Accounting reads
+the operator's server-side default scope. Ordinary workspace links carry these dimensions because
+they head the scope hierarchy. Record links marked `recordScope=1` use their explicit route scope
+without adding remembered dimensions. Entity and fund are applied only where a screen reads them: Accounting reads
 `entityId` (close scope, intercompany and payment-approval panels), and the screens below narrow
 their fund-account rows by entity and fund. Elsewhere a set fund shows as retained. The picker's entity, fund and account options come from
 `GET /api/workstation/scope-options` (`lib/operating-scope/structure-options.ts`, loaded by
@@ -969,7 +1053,7 @@ payloads are unchanged; the narrowing is client-side. Current screens (`FUND_SCO
 - Portfolio > Brokerage sync (`/portfolio/brokerage-sync`): household accounts and positions, with
   household totals re-summed over the accounts kept. Other Portfolio routes keep the whole household.
 - Accounting > Close calendar (`/accounting/close-calendar`): the close-workflow queue and its counts.
-- Accounting > Operations continuity (`/accounting/operations-continuity`): the workflow list and
+- Accounting > Close (`/accounting/close`): the workflow list and
   its count, keyed by each workflow's fund account. The selected workflow, its detail and its close
   reads follow the kept workflows. The route also applies `entityId` to its close-readiness read,
   as before; with the graph loaded, Fund is applied alongside it.
@@ -3261,8 +3345,9 @@ only from data the screen already loads:
   of the figures `ReconciliationComparisonPanel` already shows, with status passed explicitly so
   offsetting breaks never read as tied. Accept, resolve, escalate, reopen, and add-item actions and
   the reviewer line are omitted because no endpoint backs them. The external GL reconciliation is read
-  on the External GL workstream, so the tie-out appears in the Reconciliation band after that
-  workstream has been opened in the same Accounting session.
+  on the External GL workstream. After that read, the Reconciliation band shows a numeric tie-out
+  only when both sources provide comparable amounts in one declared currency and the proof can
+  preserve their exact values and difference; unavailable comparisons or proofs show a reason.
 - `OptimisticCell` (`src/components/data/optimistic-cell.tsx`, with `OptimisticProvider`,
   `OptimisticRowBar`, and `EditableCell`) edits provider module priority in place on the Settings
   provider card. The write is the existing provider-module update and always resends the module's

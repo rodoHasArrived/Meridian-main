@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AccountTypeDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AccountTypeDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:96](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L96).
+
+```csharp
+public enum AccountTypeDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Brokerage</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:98](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L98) |  |
+| <code>Custody</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:99](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L99) |  |
+| <code>Bank</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:100](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L100) |  |
+| <code>Margin</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:101](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L101) |  |
+| <code>PrimeBroker</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:102](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L102) |  |
+| <code>LedgerControl</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:103](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L103) |  |
+| <code>Other</code> | [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:104](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L104) |  |
+
+## AdvisoryClientViewDto
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AdvisoryClientViewDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:373](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L373).
+
+```csharp
+public sealed record AdvisoryClientViewDto(ClientSummaryDto Client, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<AccountSummaryDto> Accounts);
+```
+
+## AdvisoryStructureQuery
+
+Qualified name: <code>Meridian.Contracts.FundStructure.AdvisoryStructureQuery</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FundStructure/FundStructureQueries.cs:18](../../../../src/Meridian.Contracts/FundStructure/FundStructureQueries.cs#L18).
+
+```csharp
+public sealed record AdvisoryStructureQuery(Guid BusinessId, Guid? OrganizationId = null, Guid? ClientId = null, Guid? InvestmentPortfolioId = null, bool ActiveOnly = true, DateTimeOffset? AsOf = null);
+```
+
 ## AdvisoryStructureViewDto
 
 Qualified name: <code>Meridian.Contracts.FundStructure.AdvisoryStructureViewDto</code>. Kind: `record`.
@@ -624,53 +666,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyExternalReviewAttestationDto? ExternalReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:45](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L45) |  |
-
-## EntityLifecycleRevisionIntegrity
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleRevisionIntegrity</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:7](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L7).
-
-Canonical immutable revision integrity shared by domain and storage boundaries.
-
-```csharp
-public static class EntityLifecycleRevisionIntegrity
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void ValidateTimeline(Guid entityId, IReadOnlyList&lt;EntityLifecycleStateDto&gt; timeline);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:11](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L11) |  |
-| <code>public static EntityLifecycleRevisionDto Seal(EntityLifecycleRevisionDto revision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:34](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L34) |  |
-| <code>public static void ValidateRevision(EntityLifecycleRevisionDto revision, EntityLifecycleRevisionDto? previous, long expectedRevision);</code> | [src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs:70](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleRevisionIntegrity.cs#L70) |  |
-
-## EntityLifecycleStateDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityLifecycleStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs:22](../../../../src/Meridian.Contracts/FundStructure/EntityLifecycleDtos.cs#L22).
-
-One non-overlapping, half-open effective status window.
-
-```csharp
-public sealed record EntityLifecycleStateDto(Guid TransitionId, DateTimeOffset EffectiveFrom, DateTimeOffset? EffectiveTo, LegalEntityLifecycleStatusDto Status, LegalEntityLifecycleEventKindDto EventKind, Guid? SuccessorEntityId = null);
-```
-
-## EntityTimelineDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.EntityTimelineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:7](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L7).
-
-Shared authoritative entity inspection; clients render it without rebuilding business state.
-
-```csharp
-public sealed record EntityTimelineDto(Guid OrganizationId, LegalEntitySummaryDto Entity, DateTimeOffset AsOf, IReadOnlyList<EntityLifecycleRevisionDto> LifecycleRevisions, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<IntercompanyAgreementDetailDto> Agreements, IReadOnlyList<ResolvedIntercompanyAccountingArrangementDto> AccountingArrangements, IReadOnlyList<LedgerBookDto> Books, IReadOnlyList<string> Warnings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool CanAttestExternalLifecycleReview { get; init; }</code> | [src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs:14](../../../../src/Meridian.Contracts/FundStructure/EntityTimelineDto.cs#L14) |  |
