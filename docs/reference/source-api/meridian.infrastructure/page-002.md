@@ -522,7 +522,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.HistoricalAuctionsResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:412](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L412).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:413](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L413).
 
 Result container for historical auctions with pagination support.
 
@@ -534,7 +534,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:418](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L418) |  |
+| <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:419](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L419) |  |
 
 ## HistoricalBackfillRequestScope
 
@@ -567,7 +567,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.HistoricalQuotesResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:388](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L388).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:389](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L389).
 
 Result container for historical quotes with pagination support.
 
@@ -579,13 +579,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:394](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L394) |  |
+| <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:395](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L395) |  |
 
 ## HistoricalTradesResult
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.HistoricalTradesResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:400](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L400).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:401](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L401).
 
 Result container for historical trades with pagination support.
 
@@ -597,7 +597,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:406](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L406) |  |
+| <code>public bool HasMore =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:407](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L407) |  |
 
 ## IBackfillRequestMeteredProvider
 
@@ -729,18 +729,18 @@ Declared public members:
 | <code>Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:157](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L157) | Check if the provider is currently available and healthy. Default implementation returns true (assumes always available). |
 | <code>Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:164](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L164) | Fetch daily OHLCV bars for a symbol within the specified date range. |
 | <code>async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:174](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L174) | Get extended bar data with adjustment information when supported. Default implementation converts standard bars to adjusted bars without adjustment data. |
-| <code>Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:192](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L192) | Fetch historical NBBO quotes for a symbol. Only call if SupportsQuotes is true. |
-| <code>Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:204](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L204) | Fetch historical quotes for multiple symbols. Only call if SupportsQuotes is true. |
-| <code>Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:216](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L216) | Fetch historical trades for a symbol. Only call if SupportsTrades is true. |
-| <code>Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:228](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L228) | Fetch historical trades for multiple symbols. Only call if SupportsTrades is true. |
-| <code>Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(string symbol, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:240](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L240) | Fetch historical auction data for a symbol. Only call if SupportsAuctions is true. |
-| <code>Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(IEnumerable&lt;string&gt; symbols, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:251](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L251) | Fetch historical auctions for multiple symbols. Only call if SupportsAuctions is true. |
-| <code>string IProviderMetadata.ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:261](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L261) |  |
-| <code>string IProviderMetadata.ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:264](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L264) |  |
-| <code>string IProviderMetadata.ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:267](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L267) |  |
-| <code>int IProviderMetadata.ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:270](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L270) |  |
-| <code>ProviderCapabilities IProviderMetadata.ProviderCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:273](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L273) |  |
-| <code>void IDisposable.Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:285](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L285) | Disposes provider resources. Default implementation does nothing. |
+| <code>Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:193](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L193) | Fetch historical NBBO quotes for a symbol. Only call if SupportsQuotes is true. |
+| <code>Task&lt;HistoricalQuotesResult&gt; GetHistoricalQuotesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:205](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L205) | Fetch historical quotes for multiple symbols. Only call if SupportsQuotes is true. |
+| <code>Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(string symbol, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:217](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L217) | Fetch historical trades for a symbol. Only call if SupportsTrades is true. |
+| <code>Task&lt;HistoricalTradesResult&gt; GetHistoricalTradesAsync(IEnumerable&lt;string&gt; symbols, DateTimeOffset start, DateTimeOffset end, int? limit = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:229](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L229) | Fetch historical trades for multiple symbols. Only call if SupportsTrades is true. |
+| <code>Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(string symbol, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:241](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L241) | Fetch historical auction data for a symbol. Only call if SupportsAuctions is true. |
+| <code>Task&lt;HistoricalAuctionsResult&gt; GetHistoricalAuctionsAsync(IEnumerable&lt;string&gt; symbols, DateOnly start, DateOnly end, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:252](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L252) | Fetch historical auctions for multiple symbols. Only call if SupportsAuctions is true. |
+| <code>string IProviderMetadata.ProviderId =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:262](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L262) |  |
+| <code>string IProviderMetadata.ProviderDisplayName =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:265](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L265) |  |
+| <code>string IProviderMetadata.ProviderDescription =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:268](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L268) |  |
+| <code>int IProviderMetadata.ProviderPriority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:271](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L271) |  |
+| <code>ProviderCapabilities IProviderMetadata.ProviderCapabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:274](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L274) |  |
+| <code>void IDisposable.Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:286](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L286) | Disposes provider resources. Default implementation does nothing. |
 
 ## IPreparedProviderCredentials
 
@@ -783,7 +783,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.IRateLimitAwareProvider</code>. Kind: `interface`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:292](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L292).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:293](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L293).
 
 Optional interface for providers that can report their rate limit status.
 
@@ -795,9 +795,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>RateLimitInfo GetRateLimitInfo();</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:297](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L297) | Get current rate limit usage information. |
-| <code>event Action&lt;RateLimitInfo&gt;? OnRateLimitHit;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:302](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L302) | Event raised when the provider hits a rate limit. |
-| <code>ProviderRateLimitDiagnosticSnapshot IProviderRateLimitDiagnosticsSource.GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:305](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L305) |  |
+| <code>RateLimitInfo GetRateLimitInfo();</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:298](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L298) | Get current rate limit usage information. |
+| <code>event Action&lt;RateLimitInfo&gt;? OnRateLimitHit;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:303](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L303) | Event raised when the provider hits a rate limit. |
+| <code>ProviderRateLimitDiagnosticSnapshot IProviderRateLimitDiagnosticsSource.GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:306](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L306) |  |
 
 ## IReconnectionGapSource
 
@@ -999,7 +999,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderBackfillProgress</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:358](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L358).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:359](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L359).
 
 Progress information for provider-level backfill operations.
 
@@ -1011,9 +1011,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public double PercentComplete =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:375](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L375) |  |
-| <code>public TimeSpan Elapsed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:376](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L376) |  |
-| <code>public DateTimeOffset EffectiveObservedAt =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:382](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L382) | Stable observation time for transport and API projections. Older callers that do not populate the additive field retain the request start time as a deterministic fallback. |
+| <code>public double PercentComplete =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:376](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L376) |  |
+| <code>public TimeSpan Elapsed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:377](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L377) |  |
+| <code>public DateTimeOffset EffectiveObservedAt =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:383](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L383) | Stable observation time for transport and API projections. Older callers that do not populate the additive field retain the request start time as a deterministic fallback. |
 
 ## ProviderCapabilityDescriptor
 

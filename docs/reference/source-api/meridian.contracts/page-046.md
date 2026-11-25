@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DecisionReason
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionReason</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:26](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L26).
+
+Explains a single weighted rule contribution to a kernel decision.
+
+```csharp
+public sealed record DecisionReason(string RuleId, double Weight, string ReasonCode, string HumanExplanation, DecisionSeverity Severity = DecisionSeverity.Info, IReadOnlyList<string>? EvidenceRefs = null);
+```
+
+## DecisionResult (generic arity 1)
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:47](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L47).
+
+Standardized output envelope for all rule-evaluation kernels.
+
+```csharp
+public sealed record DecisionResult<TScore>(TScore Score, IReadOnlyList<DecisionReason> Reasons, DecisionTrace Trace);
+```
+
+## DecisionSeverity
+
+Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:15](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L15).
+
+Indicates how severe a specific rule reason is for downstream automation and UI.
+
+```csharp
+public enum DecisionSeverity
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info = 0</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:17](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L17) |  |
+| <code>Warning = 1</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:18](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L18) |  |
+| <code>Error = 2</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:19](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L19) |  |
+| <code>Critical = 3</code> | [src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs:20](../../../../src/Meridian.Contracts/RuleEvaluation/DecisionContracts.cs#L20) |  |
+
 ## DecisionTrace
 
 Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionTrace</code>. Kind: `record`.
@@ -672,56 +717,3 @@ Declared public members:
 | <code>public static bool IsAmbiguousFreeText(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L107) | True when value is free text the decoder would change, because it looks like a retired rendering. New writes refuse such text so stored labels stay unambiguous. |
 | <code>public static string NormalizeRequired(string value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:115](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L115) | Normalizes a label for a non-optional field (asset class, sub-type), keeping the stored value when the decoder would produce no label rather than turning a required field null. |
 | <code>public static SecurityEconomicDefinitionRecord NormalizeLabels(SecurityEconomicDefinitionRecord record);</code> | [src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs:123](../../../../src/Meridian.Contracts/SecurityMaster/ClassificationLabelReader.cs#L123) | Returns a read-side copy of record whose asset-class, family and sub-type labels are canonical. The record&#x27;s classification JSON and every other field are kept as stored; the original instance is returned when no label changes. |
-
-## CommitmentLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CommitmentLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L12).
-
-Canonical open lot for commitment-denominated holdings: private fund interests, unfunded commitments and guarantees, whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Commitment. The lot&#x27;s size is the amount committed; how much of it has been called is a separate fact (FundedAmount), so funded and unfunded are never inferred from a cost basis. Distributions the manager may recall (RecallableDistributions) restore unfunded commitment without changing the commitment itself.
-
-```csharp
-public sealed record CommitmentLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CommitmentLot(string lotId, Guid securityId, DateOnly committedDate, decimal totalCommitment, decimal fundedAmount = 0m, decimal recallableDistributions = 0m);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L14) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L43) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L53) | Security Master identity the lot&#x27;s reference data (sponsor, vintage, fee terms) resolves from. |
-| <code>public DateOnly CommittedDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L56) | Date the commitment became binding. |
-| <code>public decimal TotalCommitment { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:59](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L59) | Total amount committed, in the commitment currency. |
-| <code>public decimal FundedAmount { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L62) | Cumulative capital contributed against the commitment. |
-| <code>public decimal RecallableDistributions { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L65) | Distributions returned to the holder that the manager may call again. |
-| <code>public decimal UnfundedCommitment =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:68](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L68) | Capital still callable: the commitment, less contributions, plus recallable distributions. |
-| <code>public decimal FundedFraction =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L71) | Contributions as a fraction of the commitment; exceeds one once recalled distributions are re-contributed. |
-| <code>public bool IsFullyFunded =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L73) |  |
-| <code>public CommitmentLot Draw(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L76) | Records a capital call being met: amount moves from unfunded to funded. |
-| <code>public CommitmentLot RecordRecallableDistribution(decimal amount);</code> | [src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs:87](../../../../src/Meridian.Contracts/SecurityMaster/CommitmentLot.cs#L87) | Records a distribution the manager may recall, which restores unfunded commitment. |
-
-## ComputeOtcExposureSnapshotRequest
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ComputeOtcExposureSnapshotRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcExposure.cs:243](../../../../src/Meridian.Contracts/SecurityMaster/OtcExposure.cs#L243).
-
-Asks for a netting set&#x27;s exposure to be computed and recorded as of a date. A KnowledgeAsOf earlier than the computation replays what was known then; the snapshot is recorded as evidence and no call is issued from it.
-
-```csharp
-public sealed record ComputeOtcExposureSnapshotRequest(DateOnly AsOfDate, DateTimeOffset? KnowledgeAsOf = null);
-```
-
-## ConvertibleEquityTermsDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ConvertibleEquityTermsDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/SecurityDtos.cs#L218).
-
-Convertible-equity-specific terms returned by the convertible-equity-terms query.
-
-```csharp
-public sealed record ConvertibleEquityTermsDto(Guid SecurityId, string? Classification, Guid? UnderlyingSecurityId, decimal? ConversionRatio, decimal? ConversionPrice, DateOnly? ConversionStartDate, DateOnly? ConversionEndDate, long Version);
-```

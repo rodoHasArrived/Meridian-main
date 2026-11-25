@@ -427,7 +427,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Export.TimestampFormat</code>. Kind: `enum`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:337](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L337).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340).
 
 Supported timestamp formats.
 
@@ -439,17 +439,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:340](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L340) | ISO 8601 string format. |
-| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:342](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L342) | Unix timestamp in seconds. |
-| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:344](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L344) | Unix timestamp in milliseconds. |
-| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:346](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L346) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
-| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:348](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L348) | Excel serial date format. |
+| <code>Iso8601</code> | [src/Meridian.Storage/Export/ExportProfile.cs:343](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L343) | ISO 8601 string format. |
+| <code>UnixSeconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:345](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L345) | Unix timestamp in seconds. |
+| <code>UnixMilliseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:347](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L347) | Unix timestamp in milliseconds. |
+| <code>UnixNanoseconds</code> | [src/Meridian.Storage/Export/ExportProfile.cs:349](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L349) | Unix timestamp in nanoseconds (for pandas datetime64&#91;ns&#93;). |
+| <code>ExcelSerial</code> | [src/Meridian.Storage/Export/ExportProfile.cs:351](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L351) | Excel serial date format. |
 
 ## TimestampSettings
 
 Qualified name: <code>Meridian.Storage.Export.TimestampSettings</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Export/ExportProfile.cs:322](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L322).
+Source: [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325).
 
 Timestamp handling settings.
 
@@ -461,9 +461,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:325](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L325) |  |
-| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
-| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;format&quot;)] public TimestampFormat Format { get; set; } = TimestampFormat.Iso8601;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:328](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L328) |  |
+| <code>[JsonPropertyName(&quot;timezone&quot;)] public string Timezone { get; set; } = &quot;UTC&quot;;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:331](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L331) |  |
+| <code>[JsonPropertyName(&quot;includeNanoseconds&quot;)] public bool IncludeNanoseconds { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportProfile.cs:334](../../../../src/Meridian.Storage/Export/ExportProfile.cs#L334) |  |
 
 ## TimeStats
 

@@ -166,7 +166,7 @@ public sealed partial class ProviderFactory
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderHealthStatus</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:344](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L344).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:345](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L345).
 
 Result of a provider health check.
 
@@ -178,7 +178,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:352](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L352) |  |
+| <code>public ProviderHealthStatus() : this(&quot;unknown&quot;, false);</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:353](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L353) |  |
 
 ## ProviderInfo
 
@@ -693,7 +693,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.RateLimitInfo</code>. Kind: `record`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:326](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L326).
+Source: [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:327](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L327).
 
 Information about a provider&#x27;s current rate limit status.
 
@@ -705,9 +705,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:336](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L336) |  |
-| <code>public double UsageRatio =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L337) |  |
-| <code>public TimeSpan? TimeUntilReset =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:338](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L338) |  |
+| <code>public int RemainingRequests =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:337](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L337) |  |
+| <code>public double UsageRatio =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:338](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L338) |  |
+| <code>public TimeSpan? TimeUntilReset =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs:339](../../../../src/Meridian.Infrastructure/Adapters/Core/IHistoricalDataProvider.cs#L339) |  |
 
 ## RateLimitStatus
 

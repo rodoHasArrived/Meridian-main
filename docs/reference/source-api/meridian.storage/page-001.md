@@ -825,7 +825,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static BackfillBatchRevision Create(string provider, string? servingProvider, string feed, string instrument, string granularity, DateOnly? from, DateOnly? to, string? calendar, IReadOnlyList&lt;DateOnly&gt;? expected, IEnumerable&lt;DateOnly&gt; received, IEnumerable&lt;string&gt; rowHashes);</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:67](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L67) |  |
 | <code>public static string HashRow(MarketEvent item) =&gt; …;</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:84](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L84) |  |
-| <code>public void Validate();</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:93](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L93) |  |
+| <code>public void Validate();</code> | [src/Meridian.Storage/Backfill/BackfillBatchStore.cs:106](../../../../src/Meridian.Storage/Backfill/BackfillBatchStore.cs#L106) |  |
 
 ## BackfillBatchStore
 
