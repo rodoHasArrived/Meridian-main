@@ -47,8 +47,8 @@ public sealed record SecurityMasterAccountingSecurity(
 }
 
 /// <summary>
-/// Which valid-time terms an accrual used (ADR-034). The accrual reads the terms valid at the end of the
-/// period; <see cref="ChangedWithinPeriodAt"/> is set when different economics applied earlier in the
+/// Which valid-time terms an accrual used (ADR-034). The accrual reads the terms valid on the last day of
+/// the period (<c>PeriodEnd</c> is exclusive); <see cref="ChangedWithinPeriodAt"/> is set when different economics applied earlier in the
 /// same period, which the single-terms accrual does not split.
 /// </summary>
 public sealed record SecurityAccountingTermsValidity(

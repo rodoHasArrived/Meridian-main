@@ -146,7 +146,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
     }
 
     /// <summary>
-    /// ADR-034 period-correct read: the terms valid at the end of the period (as known now), and the
+    /// ADR-034 period-correct read: the terms valid on the last day of the period (as known now), and the
     /// latest in-period instant at which different economics took over. Null without a reader, or when
     /// the security has no terms valid at period end, so the caller keeps the latest recorded terms. The
     /// definition is null when the period-end economics equal the latest recorded economics: the caller
@@ -162,9 +162,11 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
             return null;
 
         var timeline = await _validTime.GetTimelineAsync(securityId, knownAt: null, ct).ConfigureAwait(false);
+        // The period is [PeriodStart, PeriodEnd): ResolvePeriod and the event service treat PeriodEnd as
+        // exclusive, so terms first valid at PeriodEnd never applied to any day of this period.
         var startOfPeriod = new DateTimeOffset(periodStart.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
-        var endOfPeriod = new DateTimeOffset(periodEnd.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
-        var atEnd = timeline.LastOrDefault(segment => segment.ValidFrom <= endOfPeriod);
+        var exclusiveEnd = new DateTimeOffset(periodEnd.ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var atEnd = timeline.LastOrDefault(segment => segment.ValidFrom < exclusiveEnd);
         if (atEnd is null)
             return null;
 
@@ -173,7 +175,7 @@ public sealed class SecurityMasterAccountingEventSourceAdapter : ISecurityMaster
         for (var index = 1; index < timeline.Count; index++)
         {
             var segment = timeline[index];
-            if (segment.ValidFrom <= startOfPeriod || segment.ValidFrom > endOfPeriod)
+            if (segment.ValidFrom <= startOfPeriod || segment.ValidFrom >= exclusiveEnd)
                 continue;
             if (!SecurityTermsValidTime.EconomicallyEqual(timeline[index - 1].Definition, segment.Definition))
                 changedAt = segment.ValidFrom;
