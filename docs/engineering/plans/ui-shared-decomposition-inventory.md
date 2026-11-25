@@ -15,14 +15,14 @@ The scan is heuristic: it matches declared type names as whole words in comment-
 Common short names (for example `Snapshot`) can inflate edge counts slightly; the compiler is the
 authority when a move is made.
 
-## Snapshot (2026-11-26)
+## Snapshot (2026-11-26, after Phase 1a first PR)
 
 | Cluster | Files | Lines |
 | --- | ---: | ---: |
-| Adapter | 293 | 82926 |
-| Accounting | 94 | 41149 |
+| Adapter | 283 | 81884 |
+| Accounting | 94 | 41150 |
 | Reporting | 63 | 35608 |
-| Workstation | 132 | 28975 |
+| Workstation | 134 | 29059 |
 | Operations | 60 | 21745 |
 | Evidence | 38 | 15762 |
 | SecurityMaster | 20 | 6108 |
@@ -32,29 +32,29 @@ authority when a move is made.
 
 | Source | Target | Type uses |
 | --- | --- | ---: |
-| Workstation | Adapter | 89 |
 | Workstation | Accounting | 85 |
 | Workstation | Reporting | 66 |
 | Workstation | Operations | 57 |
-| Accounting | Workstation | 44 |
+| Accounting | Workstation | 45 |
 | Reporting | Accounting | 35 |
 | Operations | Workstation | 33 |
 | Accounting | Reporting | 31 |
-| Operations | Adapter | 24 |
+| Workstation | Adapter | 25 |
 | Reporting | Evidence | 21 |
 | Workstation | Evidence | 21 |
-| Reporting | Adapter | 16 |
 | Operations | Evidence | 15 |
-| Accounting | Adapter | 14 |
 | Reporting | Workstation | 14 |
 | Evidence | Reporting | 12 |
-| Evidence | Adapter | 10 |
+| Reporting | Adapter | 10 |
 | Evidence | Accounting | 8 |
 | Operations | Accounting | 8 |
 | Accounting | Evidence | 7 |
 | Evidence | Workstation | 5 |
+| Evidence | Adapter | 5 |
 | Workstation | Other | 5 |
 | Workstation | SecurityMaster | 5 |
+| Accounting | Adapter | 4 |
+| Operations | Adapter | 4 |
 | Other | Operations | 3 |
 | Accounting | Operations | 3 |
 | Evidence | Operations | 2 |
@@ -65,62 +65,37 @@ authority when a move is made.
 | SecurityMaster | Adapter | 1 |
 | Other | Workstation | 1 |
 
-### Movable files that reference the adapter layer (50)
+### Movable files that reference the adapter layer (25)
 
 These must have the adapter dependency moved down before the file can leave Ui.Shared.
 
-- `src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs`: ApprovalState, HttpContextWorkstationTenantContextAccessor, OperationsContinuityWorkflowDto
+- `src/Meridian.Ui.Shared/Evidence/EvidenceContributors.cs`: HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Evidence/EvidenceSubjectResolver.cs`: HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Evidence/FileEvidenceArtifactStore.StorageQuota.cs`: WorkstationOperationsJsonContext
-- `src/Meridian.Ui.Shared/Evidence/ReconciliationEvidenceContributor.StatementRuns.cs`: IWorkstationTenantContextAccessor
-- `src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs`: EvidenceEndpoints, HttpContextWorkstationTenantContextAccessor, IWorkstationTenantContextAccessor, WorkstationTenantContext
-- `src/Meridian.Ui.Shared/Services/AccountingClosePostingWorkbenchBridge.cs`: ApprovalState, OperationsApprovalDto
-- `src/Meridian.Ui.Shared/Services/AccountingConfigurationService.ActivationValidation.cs`: ApprovalState
-- `src/Meridian.Ui.Shared/Services/AccountingConfigurationService.RuleValidation.cs`: ApprovalState
+- `src/Meridian.Ui.Shared/Evidence/StrategyRunEvidenceContributor.cs`: EvidenceEndpoints, HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Services/AmountPassportFacts.cs`: LedgerEndpoints
-- `src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs`: OperationsTimelineEntryDto
 - `src/Meridian.Ui.Shared/Services/AuditTrailHttpAuthority.cs`: EndpointAuthorization, FundAccountEndpoints, HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Services/AutomatedJournalDraftIntakeService.cs`: PeriodAdjustmentJsonContext
 - `src/Meridian.Ui.Shared/Services/AutomatedJournalScheduleStore.cs`: AutomatedJournalScheduleJsonContext
 - `src/Meridian.Ui.Shared/Services/BackfillCoordinator.cs`: ValidateRequest
-- `src/Meridian.Ui.Shared/Services/BondWorkflowServiceRegistration.cs`: IWorkstationTenantContextAccessor
-- `src/Meridian.Ui.Shared/Services/CapitalAccountWorkbenchService.cs`: ApprovalState
-- `src/Meridian.Ui.Shared/Services/CapitalCallFundingIntake.cs`: ApprovalState
-- `src/Meridian.Ui.Shared/Services/ClosePublicationReadinessGuard.cs`: IWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Services/CollateralExposureService.cs`: HttpContextWorkstationTenantContextAccessor
-- `src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs`: CoveredCallBacktestRequest, CoveredCallChainPreview, CoveredCallChainPreviewRequest, CoveredCallChainRow, CoveredCallJsonContext, CoveredCallRunHandle, CoveredCallRunResult, CoveredCallRunScope, CoveredCallRunStatusDto, CoveredCallRunSummary, ValidateRequest
-- `src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallRunProjection.cs`: CoveredCallBacktestRequest, CoveredCallChainRow, CoveredCallEquityPoint, CoveredCallMetricsDto, CoveredCallOpenPositionDto, CoveredCallRunResult, CoveredCallRunScope, CoveredCallTradeDto, OverwriteScoringModeDto
-- `src/Meridian.Ui.Shared/Services/CoveredCall/ICoveredCallBacktestService.cs`: CoveredCallBacktestRequest, CoveredCallChainPreview, CoveredCallChainPreviewRequest, CoveredCallRunHandle, CoveredCallRunResult, CoveredCallRunScope, CoveredCallRunStatusDto, CoveredCallRunSummary
+- `src/Meridian.Ui.Shared/Services/CoveredCall/CoveredCallBacktestService.cs`: ValidateRequest
 - `src/Meridian.Ui.Shared/Services/EntityLifecycleExternalReviewEvidenceAuthority.cs`: HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Services/EntityTimelineAccessAuthority.cs`: EndpointAuthorization, HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Services/ExecutionWorkflowWorker.cs`: ExecutionWorkflowJsonContext
-- `src/Meridian.Ui.Shared/Services/FamilyOfficeReadService.cs`: CapitalCommitmentDto, FamilyAccountSummaryDto, FamilyAssetSummaryDto, FamilyBalanceSheetDto, FamilyEntityDto, FamilyOfficeBalanceSheetResponseDto, FamilyOfficeClientOptionDto, FamilyOfficeEndpointStateDto, FamilyOfficeEntitiesResponseDto, FamilyOfficeEvidenceLinkDto, FamilyOfficeOverviewDto, FamilyOfficeOwnershipGraphResponseDto, FamilyOfficeReadinessDto, FamilyOwnershipEdgeDto, FamilyOwnershipGraphDto, FamilyOwnershipNodeDto, PrivateAssetSummaryDto
-- `src/Meridian.Ui.Shared/Services/FundOperationsWorkspaceReadService.cs`: ApprovalState, OperationsContinuityWorkflowDto, OperationsTimelineEntryDto, ReconciliationState
 - `src/Meridian.Ui.Shared/Services/IntercompanyAgreementAuthorities.cs`: EndpointAuthorization, HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Services/IntercompanyP1P2ServiceRegistration.cs`: EndpointAuthorization, HttpContextWorkstationTenantContextAccessor
-- `src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.Intercompany.cs`: ApprovalState
-- `src/Meridian.Ui.Shared/Services/ManualJournalEntryWorkbenchService.cs`: ApprovalState
-- `src/Meridian.Ui.Shared/Services/OmsIntegrationService.cs`: IOmsIntegrationApiHandler, OmsAdapterBoundary, OmsAdapterDiagnostics, OmsAdapterKind, OmsInboundMessage, OmsIngestionResult, OmsIntegrationAuditEntry, OmsIntegrationDirection, OmsIntegrationScope, OmsKeyRotationRequest, OmsKeyRotationResult, OmsRequestSignatureInput, OmsRequestSignatureResult, OmsRetryPolicy, OmsSyncConflictResult, OmsSyncMode, OmsSyncRequest
-- `src/Meridian.Ui.Shared/Services/OperationsContinuityReconciliationBridge.cs`: ApprovalState, OperationsBreakCaseDto, OperationsContinuityWorkflowDto, OperationsTimelineEntryDto
-- `src/Meridian.Ui.Shared/Services/OperationsReportPackAuthority.cs`: OperationsContinuityWorkflowDto
 - `src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs`: PeriodAdjustmentJsonContext
 - `src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.Passport.cs`: LedgerEndpoints
 - `src/Meridian.Ui.Shared/Services/PostedLedgerAmountProvenanceService.cs`: LedgerEndpoints
-- `src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs`: ApprovalState
-- `src/Meridian.Ui.Shared/Services/PrivateCapitalFundEventCommandCenterService.cs`: ApprovalState
-- `src/Meridian.Ui.Shared/Services/PrivateCapitalLifecycleSource.cs`: CapitalActivityDto, CapitalCommitmentDto, FamilyOfficeJsonContext, PrivateCapitalLifecycleDocumentDto, PrivateCapitalSnapshotDto
-- `src/Meridian.Ui.Shared/Services/ReportWriterDatasetSourceService.cs`: ReconciliationState
 - `src/Meridian.Ui.Shared/Services/ReportingCertifiedArtifactProducer.cs`: ReportingCertifiedArtifactJsonContext, ReportingEvidenceAppendixDocument, ReportingEvidenceVaultDocument, ReportingRetainedGridColumn, ReportingRetainedGridDocument, ReportingRetainedGridRow, ReportingRetainedPreviewDocument, ReportingRetainedPreviewPrimaryArtifact
 - `src/Meridian.Ui.Shared/Services/ReportingDeliveryReadModelSecurity.cs`: EndpointAuthorization, HttpContextWorkstationTenantContextAccessor
 - `src/Meridian.Ui.Shared/Services/SecurityMasterWorkbenchQueryService.DownstreamImpact.cs`: HttpContextWorkstationTenantContextAccessor
-- `src/Meridian.Ui.Shared/Services/StatementReconciliationCaseworkHandoffService.cs`: OperationsContinuityWorkflowDto
-- `src/Meridian.Ui.Shared/Services/StatementReconciliationIntakeAuthority.cs`: BrokerIntakeState, OperationsContinuityWorkflowDto, OperationsTransitionRequestDto
 - `src/Meridian.Ui.Shared/Services/TradingOperatorReadinessService.cs`: ExecutionEndpoints
-- `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs`: FundScopedWriteTenantOptions, HttpContextWorkstationTenantContextAccessor, IFundProfileTenantGuard, IOmsIntegrationApiHandler, IQuoteStreamBroadcaster, IWorkstationTenantContextAccessor, QuoteStreamBroadcaster, QuoteStreamOptions, RegistryFundProfileTenantGuard, ReplayScanLifetime, ReportRunStreamBroadcaster, StreamConnectionRegistry, WorkstationFundScopeTenantAccessor
+- `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs`: FundScopedWriteTenantOptions, HttpContextWorkstationTenantContextAccessor, IFundProfileTenantGuard, IQuoteStreamBroadcaster, QuoteStreamBroadcaster, QuoteStreamOptions, RegistryFundProfileTenantGuard, ReplayScanLifetime, ReportRunStreamBroadcaster, StreamConnectionRegistry, WorkstationFundScopeTenantAccessor
 - `src/Meridian.Ui.Shared/Services/WorkstationWorkflowReadScope.cs`: EndpointAuthorization
-- `src/Meridian.Ui.Shared/Services/WorkstationWorkflowSummaryService.cs`: ApprovalState, BrokerIntakeState, LedgerPostingState, OperationsContinuityWorkflowDto, ReconciliationState
 
-### Internal types used outside their own cluster (45)
+### Internal types used outside their own cluster (44)
 
 - `AccountingPreparerAttestationDisclosure` (Accounting) used by: Reporting
 - `AlpacaFeedConfiguration` (Operations) used by: Workstation
@@ -133,7 +108,6 @@ These must have the adapter dependency moved down before the file can leave Ui.S
 - `CapitalCallFundingDraftProducer` (Reporting) used by: Accounting
 - `CapitalCallIssuanceDraftProducer` (Reporting) used by: Accounting
 - `ConsolidationChartValidation` (Workstation) used by: Accounting
-- `CoveredCallJsonContext` (Adapter) used by: Operations
 - `CrossProcessFileLock` (Workstation) used by: Accounting
 - `DistributionDeclarationDraftProducer` (Workstation) used by: Accounting
 - `DurableStatementReconciliationAuthorityRegistration` (Evidence) used by: Workstation
@@ -141,7 +115,6 @@ These must have the adapter dependency moved down before the file can leave Ui.S
 - `Envelope` (Evidence) used by: SecurityMaster, Workstation
 - `ExecutionAuditPublicProjection` (Operations) used by: Workstation
 - `ExecutionWorkflowJsonContext` (Adapter) used by: Operations
-- `FamilyOfficeJsonContext` (Adapter) used by: Workstation
 - `ManualJournalMutationJsonContext` (Accounting) used by: Workstation
 - `Observation` (Workstation) used by: Evidence, Operations
 - `PaperSessionDailyReconciliation` (Workstation) used by: Operations
@@ -151,6 +124,7 @@ These must have the adapter dependency moved down before the file can leave Ui.S
 - `ProviderCredentialProbe` (Operations) used by: Workstation
 - `ReconciliationBreakQueueProjection` (Accounting) used by: Operations, Reporting
 - `RecurringJournalCalculationMath` (Workstation) used by: Operations
+- `RecurringJournalEconomicObligationGuard` (Workstation) used by: Accounting
 - `RegistryFundProfileTenantGuard` (Adapter) used by: Workstation
 - `ReplayScanLifetime` (Adapter) used by: Workstation
 - `ReportingCertifiedArtifactJsonContext` (Adapter) used by: Reporting

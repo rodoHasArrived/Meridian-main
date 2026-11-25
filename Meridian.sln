@@ -19,6 +19,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.Contracts", "src\M
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.Ui.Shared", "src\Meridian.Ui.Shared\Meridian.Ui.Shared.csproj", "{843AA6E4-59F4-8335-168A-461567ADAB08}"
 EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.Workstation.Abstractions", "src\Meridian.Workstation.Abstractions\Meridian.Workstation.Abstractions.csproj", "{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}"
+EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.Tests", "tests\Meridian.Tests\Meridian.Tests.csproj", "{B3333333-C444-D555-E666-F77777777777}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Meridian.Benchmarks", "benchmarks\Meridian.Benchmarks\Meridian.Benchmarks.csproj", "{C4444444-D555-E666-F777-888888888888}"
@@ -265,6 +267,18 @@ Global
 		{843AA6E4-59F4-8335-168A-461567ADAB08}.Release|x64.Build.0 = Release|Any CPU
 		{843AA6E4-59F4-8335-168A-461567ADAB08}.Release|x86.ActiveCfg = Release|Any CPU
 		{843AA6E4-59F4-8335-168A-461567ADAB08}.Release|x86.Build.0 = Release|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Debug|x64.Build.0 = Debug|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Debug|x86.Build.0 = Debug|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Release|x64.ActiveCfg = Release|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Release|x64.Build.0 = Release|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Release|x86.ActiveCfg = Release|Any CPU
+		{6A3F1E2B-7C4D-4E5F-8A9B-0C1D2E3F4A5B}.Release|x86.Build.0 = Release|Any CPU
 		{B3333333-C444-D555-E666-F77777777777}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{B3333333-C444-D555-E666-F77777777777}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{B3333333-C444-D555-E666-F77777777777}.Debug|x64.ActiveCfg = Debug|Any CPU

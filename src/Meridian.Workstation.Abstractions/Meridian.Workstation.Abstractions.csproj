@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>Meridian.Workstation.Abstractions</AssemblyName>
+    <!-- Moved types keep their Meridian.Ui.Shared.* namespaces during the decomposition. -->
+    <RootNamespace>Meridian.Ui.Shared</RootNamespace>
+    <Description>ASP.NET-free workstation contracts, tenant-context seam, and JSON contexts shared by web and desktop hosts</Description>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <NoWarn>$(NoWarn);CS1591</NoWarn>
+  </PropertyGroup>
+
+  <!-- No ASP.NET Core or WPF references: see docs/engineering/plans/ui-shared-decomposition-plan.md. -->
+  <ItemGroup>
+    <ProjectReference Include="..\Meridian.Contracts\Meridian.Contracts.csproj" />
+    <ProjectReference Include="..\Meridian.Identity\Meridian.Identity.csproj" />
+    <ProjectReference Include="..\Meridian.ProviderSdk\Meridian.ProviderSdk.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="Meridian.Ui.Shared" />
+    <InternalsVisibleTo Include="Meridian.Tests" />
+    <InternalsVisibleTo Include="Meridian.Storage.Tests" />
+    <InternalsVisibleTo Include="Meridian.Execution.Tests" />
+  </ItemGroup>
+</Project>

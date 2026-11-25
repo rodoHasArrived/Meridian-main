@@ -1,6 +1,6 @@
 # Ui.Shared Decomposition Plan
 
-**Status:** active (Phase 0 in progress)
+**Status:** active (Phase 1a in progress)
 **Owner:** core-team
 **Reviewed:** 2026-11-25
 
@@ -119,7 +119,7 @@ Each phase is one or more PRs, and each must leave `Meridian CI / quality-gate` 
   `Ui.Shared/Services/` (226) and `Evidence/` (16). It counts type names rather than files or
   lines, so bug fixes and the god-file plan's partial-class splits aren't blocked. Each move PR
   lowers the ceilings.
-- Open: sign off on project names and the revised cluster boundaries.
+- Done: project names and cluster boundaries approved (2026-11-25).
 
 ### Phase 1a: Move the shared seams down (1–2 PRs)
 
@@ -132,6 +132,20 @@ Each phase is one or more PRs, and each must leave `Meridian CI / quality-gate` 
 - Keep namespaces, so this is a move plus `.csproj` change only.
 - Success measure: the inventory's "Movable files that reference the adapter layer" list shrinks to
   the files that genuinely need HTTP types.
+
+Progress:
+
+- PR 1 (done): created `Meridian.Workstation.Abstractions` (references `Contracts`, `Identity` and
+  `ProviderSdk` only). Moved `Contracts/` (5 files), the `WorkstationTenantContext` record and
+  `IWorkstationTenantContextAccessor`, and 5 JSON contexts (CoveredCall, DirectLending,
+  FamilyOffice, IntercompanyOperations, QualityApi). `WorkstationAbstractionsBoundaryTests`
+  enforces the no-ASP.NET and no-`Ui.Shared` rules. Back-references fell from 50 files to 25.
+- PR 2 (next): replace direct uses of the concrete `HttpContextWorkstationTenantContextAccessor`
+  (12 files) with the interface, put `EndpointAuthorization` checks used by services (6 files)
+  behind an abstraction, and move the remaining JSON contexts once their payload types can move
+  (`WorkstationOperationsJsonContext` needs `Meridian.Strategies`; `PeriodAdjustment`,
+  `ExecutionWorkflow` and `ReportingCertifiedArtifact` contexts serialize types still in
+  `Services/`, so they move with Phase 1b).
 
 ### Phase 1b: Finance (reporting, accounting and evidence, ~93K lines)
 
