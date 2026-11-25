@@ -293,7 +293,7 @@ public sealed partial class ReportingScheduleService
                 && !ReportingSchedulePeriodPlanner.IsValid(requestedCadence))
             {
                 throw new ArgumentException(
-                    $"The reporting schedule period cadence must be Monthly, Quarterly, or Annually with 0 to {ReportingSchedulePeriodPlanner.MaximumDueDaysAfterPeriodEnd} due days after period end.",
+                    $"The reporting schedule period cadence must be Monthly, Quarterly, or Annually with 0 to {ReportingSchedulePeriodPlanner.MaximumDueDaysAfterPeriodEnd} due days, Weekly with 0 to {ReportingSchedulePeriodPlanner.MaximumDueDaysFor(ReportingSchedulePeriodFrequencyDto.Weekly)}, or Daily with 0 to {ReportingSchedulePeriodPlanner.MaximumDueDaysFor(ReportingSchedulePeriodFrequencyDto.Daily)} due days after period end.",
                     nameof(request));
             }
             var runParameters = request.RunParameters ?? existing?.RunParameters;

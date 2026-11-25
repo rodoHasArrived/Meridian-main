@@ -3684,6 +3684,22 @@ describe("ReportingScreen", () => {
     });
   });
 
+  it("limits weekly period-close due days to the week and previews the due date", () => {
+    renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/scheduled"] });
+
+    fireEvent.change(screen.getByLabelText("Reporting schedule next report period end"), {
+      target: { value: "2026-11-29" }
+    });
+    fireEvent.change(screen.getByLabelText("Reporting schedule report period"), { target: { value: "Weekly" } });
+    const dueDays = screen.getByLabelText("Reporting schedule due days after period end");
+    expect(dueDays).toHaveAttribute("max", "6");
+    fireEvent.change(dueDays, { target: { value: "30" } });
+
+    // 30 is clamped to the 6-day weekly limit the server enforces.
+    expect(screen.getByLabelText("Reporting schedule due at UTC")).toHaveValue("2026-12-05T08:00:00Z");
+    expect(screen.getByText(/Runs once per week \(Monday to Sunday\), as of each period end and due 6 days after the period end/)).toBeInTheDocument();
+  });
+
   it("converts the schedule due time from the selected time zone to UTC", () => {
     renderWithRouter(<ReportingScreen data={withReportingSchedule()} />, { initialEntries: ["/reporting/scheduled"] });
 

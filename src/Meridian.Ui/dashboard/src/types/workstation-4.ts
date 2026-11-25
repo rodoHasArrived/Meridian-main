@@ -1428,7 +1428,7 @@ export interface ReportingScheduleRecord {
   unresolvedPeriodCloseAfter?: string | null;
 }
 
-export type ReportingSchedulePeriodFrequency = "Monthly" | "Quarterly" | "Annually";
+export type ReportingSchedulePeriodFrequency = "Monthly" | "Quarterly" | "Annually" | "Weekly" | "Daily";
 
 export interface ReportingSchedulePeriodCadence {
   frequency: ReportingSchedulePeriodFrequency;

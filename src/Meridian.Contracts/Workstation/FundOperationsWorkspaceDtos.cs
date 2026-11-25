@@ -1211,12 +1211,16 @@ public enum ReportingSchedulePeriodFrequencyDto
 {
     Monthly = 0,
     Quarterly = 1,
-    Annually = 2
+    Annually = 2,
+    /// <summary>Calendar ISO week ending Sunday; not resolved against ledger accounting periods.</summary>
+    Weekly = 3,
+    /// <summary>Calendar day; not resolved against ledger accounting periods.</summary>
+    Daily = 4
 }
 
 /// <summary>
-/// Period-close cadence for a reporting schedule: one run per monthly, quarterly, or annual
-/// period, as of the period end and due <paramref name="DueDaysAfterPeriodEnd"/> days later.
+/// Period-close cadence for a reporting schedule: one run per monthly, quarterly, annual, weekly,
+/// or daily period, as of the period end and due <paramref name="DueDaysAfterPeriodEnd"/> days later.
 /// </summary>
 public sealed record ReportingSchedulePeriodCadenceDto(
     ReportingSchedulePeriodFrequencyDto Frequency,

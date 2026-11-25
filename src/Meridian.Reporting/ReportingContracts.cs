@@ -208,15 +208,6 @@ public sealed record ReportingJobContract(
     public string? OperationRequestHash { get; init; }
 }
 
-public sealed record ReportingScheduleContract(
-    string ScheduleId,
-    string TemplateId,
-    string CronExpression,
-    DateOnly NextAsOfDate,
-    DateTimeOffset DueAtUtc,
-    int MaxRetries,
-    string RequestedBy);
-
 public sealed record ReportingRunAuditEntry(
     string RunId,
     DateTimeOffset TimestampUtc,

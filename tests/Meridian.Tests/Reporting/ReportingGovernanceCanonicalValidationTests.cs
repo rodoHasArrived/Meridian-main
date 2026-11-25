@@ -1630,12 +1630,6 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             ReportingJobContract contract,
             CancellationToken cancellationToken) => Task.FromResult(manifest);
 
-        public Task<IReadOnlyList<ReportingOutputManifest>> ExecuteDueSchedulesAsync(
-            IEnumerable<ReportingScheduleContract> schedules,
-            DateTimeOffset nowUtc,
-            CancellationToken cancellationToken) =>
-            Task.FromResult<IReadOnlyList<ReportingOutputManifest>>([]);
-
         public ReportingOutputManifest? GetManifest(string runId) =>
             string.Equals(runId, manifest.RunId, StringComparison.Ordinal) ? manifest : null;
 

@@ -129,8 +129,8 @@ the same empty authority set, matching persisted round trips while retaining ord
 comparison for populated authority evidence.
 The host reporting-schedule adapter is the only due-work discovery and lease authority. It resolves
 the exact access scope, readiness, certification, and delivery handoff before calling
-`IReportingOrchestrationService.ExecuteAsync` with one certified job contract. The retained
-`ExecuteDueSchedulesAsync` compatibility member cannot generate runs.
+`IReportingOrchestrationService.ExecuteAsync` with one certified job contract; the orchestration
+service has no batch due-schedule entry point.
 Artifact declarations are not completion evidence by themselves. UI Shared renders the declared
 PDF, XLSX, CSV, evidence, and deterministic preview bytes, verifies non-empty content and SHA-256
 identity, and retains them in one immutable package. Final report readiness fails closed when exact

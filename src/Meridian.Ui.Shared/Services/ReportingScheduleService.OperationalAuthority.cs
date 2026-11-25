@@ -92,6 +92,12 @@ public sealed partial class ReportingScheduleService
         var calendar = ReportingSchedulePeriodPlanner.Next(
             cadence, schedule.NextAsOfDate, schedule.DueAtUtc, timeZone, localTime);
         var advance = new PeriodCloseAdvance(calendar.PeriodEnd, calendar.DueAtUtc);
+        if (ReportingSchedulePeriodPlanner.IsCalendarOnly(cadence.Frequency))
+        {
+            // Weekly and daily closes have no ledger accounting period; the calendar is the
+            // only authority, so there is nothing to resolve or realign later.
+            return (parameters, advance);
+        }
 
         // The ledger names the next period to close: the following period for a monthly close,
         // the fiscal quarter-end or year-end period (by the ledger's own period numbers) for
@@ -151,6 +157,7 @@ public sealed partial class ReportingScheduleService
         if (schedule.UnresolvedPeriodCloseAfter is not { } closedThrough
             || schedule.PeriodCadence is not { } cadence
             || schedule.RunParameters is not { } parameters
+            || ReportingSchedulePeriodPlanner.IsCalendarOnly(cadence.Frequency)
             || PeriodResolver is null
             || !ReportingScheduleTimeZones.TryResolve(schedule.TimeZoneId, out var timeZone))
         {
