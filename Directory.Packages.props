@@ -31,7 +31,7 @@
     <!-- Hosting stays on 10.0.7 with reviewed compatible patch overrides below.
          Configuration, DI/Logging abstractions and Options share the 10.0.14
          dependency floor; exact approved pins are guarded by test_central_package_versions.py. -->
-    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.Configuration" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Json" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.Binder" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.15" />
