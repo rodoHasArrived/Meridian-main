@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportWriterGridDiffRowDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1629](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1629).
+
+```csharp
+public sealed record ReportWriterGridDiffRowDto(string RowKey, ReportWriterDiffRowStateDto State, IReadOnlyDictionary<string, string> PriorValues, IReadOnlyDictionary<string, string> CurrentValues, IReadOnlyList<ReportWriterGridDiffCellDto> Cells);
+```
+
 ## ReportWriterGridKindDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridKindDto</code>. Kind: `enum`.
@@ -225,7 +235,7 @@ public sealed record ResolveSecurityMasterMappings(Guid WorkflowId, FundWorkflow
 
 Qualified name: <code>Meridian.Contracts.Workstation.ResolveSourceConflictRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L58).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:80](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L80).
 
 Records an operator&#x27;s resolution of a Security Master source conflict. When ChosenWinnerSource diverges from the policy winner, AcknowledgePolicyDeviation must be set and the deviation is retained as the audited artifact.
 
@@ -237,7 +247,7 @@ public sealed record ResolveSourceConflictRequest(Guid SecurityId, Guid Conflict
 
 Qualified name: <code>Meridian.Contracts.Workstation.RestatementCandidateDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L184).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L206).
 
 A report pack proposed for restatement because an upstream reference-data edit affected a closed period it consumed. The operator approves the restatement via the existing report-pack path.
 
@@ -545,7 +555,7 @@ public sealed record SecurityMasterAccountingIssueDto(string Code, string Source
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:175](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L175).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:197](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L197).
 
 The canonical-merge outcome of a publish, with an operator-facing explanation and, when the canonical record was read or amended, its version.
 
@@ -557,7 +567,7 @@ public sealed record SecurityMasterCanonicalMergeOutcomeDto(SecurityMasterCanoni
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterCanonicalMergeOutcomeKind</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:156](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L156).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:178](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L178).
 
 What publishing an approved revision did to the canonical (golden) record.
 
@@ -569,10 +579,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>NotApplicable</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:159](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L159) | The revision changes no asset-specific term (an annotation path, or a clear). |
-| <code>OverlayOnly</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:162](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L162) | The approved value stays an overlay annotation; the canonical terms are unchanged. |
-| <code>AlreadyCanonical</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:165](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L165) | The canonical terms already held the approved value; no amendment was appended. |
-| <code>Merged</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:168](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L168) | The approved value was merged into the canonical terms. |
+| <code>NotApplicable</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:181](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L181) | The revision changes no asset-specific term (an annotation path, or a clear). |
+| <code>OverlayOnly</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:184](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L184) | The approved value stays an overlay annotation; the canonical terms are unchanged. |
+| <code>AlreadyCanonical</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:187](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L187) | The canonical terms already held the approved value; no amendment was appended. |
+| <code>Merged</code> | [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:190](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L190) | The approved value was merged into the canonical terms. |
 
 ## SecurityMasterChangeHistoryItemDto
 
@@ -592,16 +602,4 @@ Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:
 
 ```csharp
 public sealed record SecurityMasterConflictAssessmentDto(SecurityMasterConflict Conflict, string? CurrentWinningValue, string? ChallengerValue, string CurrentWinningSource, string ChallengerSource, SecurityMasterConflictRecommendationKind Recommendation, string RecommendedResolution, string RecommendedWinner, SecurityMasterImpactSeverity ImpactSeverity, string ImpactSummary, string ImpactDetail, bool IsBulkEligible, string? BulkIneligibilityReason = null);
-```
-
-## SecurityMasterConflictAuthorityDecision
-
-Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictAuthorityDecision</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:195](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L195).
-
-Deterministic conflict-authority decision: the default winner the policy computes, the rule that selected it, and whether the conflict remains eligible for bulk resolution.
-
-```csharp
-public sealed record SecurityMasterConflictAuthorityDecision(string PolicyWinnerSource, string Rule, string Rationale, bool IsBulkEligible);
 ```

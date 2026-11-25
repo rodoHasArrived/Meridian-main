@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StrategyRunContinuityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1148](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1148).
+
+Canonical shared continuity drill-in contract used by Strategy, Trading, and Accounting run drill-ins.
+
+```csharp
+public record StrategyRunContinuityDto(StrategyRunDetail Run, StrategyRunContinuityLineage Lineage, StrategyRunCashFlowDigest? CashFlow, ReconciliationRunSummary? Reconciliation, StrategyRunContinuityStatus ContinuityStatus);
+```
+
 ## StrategyRunContinuityLineage
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityLineage</code>. Kind: `record`.
@@ -667,7 +679,7 @@ public sealed record SubmitForApproval(Guid WorkflowId, FundWorkflowCommandMetad
 
 Qualified name: <code>Meridian.Contracts.Workstation.SubmitSecurityMasterRevisionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:73](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L73).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L95).
 
 Transitions a draft revision into the governed approval gate. When WorkflowId is supplied, submission is routed through the operations-continuity approval workflow using the workflow&#x27;s ExpectedWorkflowVersion, Reviewer, and ReportPackId.
 
@@ -685,14 +697,4 @@ Per-symbol P&amp;L attribution for one run.
 
 ```csharp
 public sealed record SymbolAttributionEntry(string Symbol, decimal RealizedPnl, decimal UnrealizedPnl, decimal TotalPnl, int TradeCount, decimal Commissions, decimal MarginInterestAllocated);
-```
-
-## SyncCompletenessResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.SyncCompletenessResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L14).
-
-```csharp
-public sealed record SyncCompletenessResult(Guid AccountId, string Counterparty, int ExpectedRecords, int ReceivedRecords, bool IsComplete, string Detail);
 ```

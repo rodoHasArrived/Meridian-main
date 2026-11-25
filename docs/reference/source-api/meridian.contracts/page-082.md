@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationStrategyWorkspaceSummary
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationStrategyWorkspaceSummary</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:194](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L194).
+
+Workspace-level summary embedded inside WorkstationStrategyPayload.
+
+```csharp
+public sealed record WorkstationStrategyWorkspaceSummary(int TotalRuns, string? LatestRunId, string? LatestStrategyName, bool HasLedgerCoverage, bool HasPortfolioCoverage, int PromotionCandidates);
+```
+
 ## WorkstationTableExportDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationTableExportDto</code>. Kind: `record`.

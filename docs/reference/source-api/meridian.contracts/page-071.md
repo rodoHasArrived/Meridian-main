@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationBreakQueueProjectionItemDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueProjectionItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:264](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L264).
+
+One projected reconciliation break row including routing and sign-off evidence fields.
+
+```csharp
+public sealed record ReconciliationBreakQueueProjectionItemDto(string BreakId, string? WorkflowId, ReconciliationBreakSeverity Severity, ReconciliationBreakQueueStatus Status, string? Owner, string? RequiredSignoffRole, string? SignoffStatus, string? RoutingTarget, string? RoutingDetail, string? EvidenceReference, DateTimeOffset LastUpdatedAt, ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal, ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack, string? AgeBand = null, string? RootCauseCode = null, string? ResolutionCode = null, int CommentCount = 0, int EvidenceCount = 0, DateTimeOffset? LastActivityAt = null, string? LastCommentExcerpt = null, int RelatedCaseCount = 0, string? SlaBadgeLabel = null, string? SlaBadgeTone = null);
+```
+
 ## ReconciliationBreakQueueScope
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueScope</code>. Kind: `record`.
@@ -754,14 +766,4 @@ Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:704](../../../
 
 ```csharp
 public sealed record ReconciliationTaxonomySnapshot(int Version, IReadOnlyList<ReconciliationTaxonomyValue> RootCauses, IReadOnlyList<ReconciliationTaxonomyValue> ResolutionCodes);
-```
-
-## ReconciliationTaxonomyValue
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomyValue</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:697](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L697).
-
-```csharp
-public sealed record ReconciliationTaxonomyValue(string Code, string DisplayName, int Version, bool IsActive, IReadOnlyList<string>? RequiredEvidencePrefixes = null);
 ```

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterConflictAuthorityDecision
+
+Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictAuthorityDecision</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:217](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L217).
+
+Deterministic conflict-authority decision: the default winner the policy computes, the rule that selected it, and whether the conflict remains eligible for bulk resolution.
+
+```csharp
+public sealed record SecurityMasterConflictAuthorityDecision(string PolicyWinnerSource, string Rule, string Rationale, bool IsBulkEligible);
+```
+
 ## SecurityMasterConflictRecommendationKind
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictRecommendationKind</code>. Kind: `enum`.
@@ -29,7 +41,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterConflictResolutionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:132](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L132).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:154](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L154).
 
 Result of a governed source-conflict resolution, including any policy deviation.
 
@@ -111,7 +123,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterEditResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:124](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L124).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:146](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L146).
 
 Result of a field edit / submit transition.
 
@@ -291,7 +303,7 @@ public sealed record SecurityMasterProviderSymbolMappingDto(string MappingSource
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterPublishResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:145](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L145).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:167](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L167).
 
 Result of publishing a revision. When the edit affects a hard-closed period with report-pack exposure, RestatementRequired is set and RestatementCandidates carries the report packs an operator may restate via the governed report-pack lifecycle.
 
@@ -338,7 +350,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.SecurityMasterRevisionPublishedEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:205](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L205).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:227](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L227).
 
 Domain event raised after a revision is durably published. Carries the affected ledger books so period-aware propagation can resolve each book&#x27;s lock status from the authoritative ledger period.
 
@@ -627,14 +639,4 @@ Source: [src/Meridian.Contracts/Workstation/SinglePrincipalAttestationDtos.cs:50
 
 ```csharp
 public sealed record SinglePrincipalDeclarationDto(Guid DeclarationId, long Revision, SinglePrincipalAttestationScopeDto Scope, bool Enabled, string PrincipalId, string PolicyVersion, string PolicyHash, string ChangedBy, DateTimeOffset RecordedAt, string Reason);
-```
-
-## StarterWorkspaceDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StarterWorkspaceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L70).
-
-```csharp
-public sealed record StarterWorkspaceDto(string Id, string Name, string Goal, string Description, string DefaultRoute);
 ```

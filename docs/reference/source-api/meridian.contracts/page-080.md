@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceModeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceModeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L62).
+
+```csharp
+public sealed record WorkspaceModeDto(string Id, string Name, bool IsSample, string Badge, string SafetyMessage, string SamplePackVersion);
+```
+
 ## WorkspaceWorkflowSummary
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceWorkflowSummary</code>. Kind: `record`.
@@ -558,14 +568,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:291](../
 
 ```csharp
 public sealed record WorkstationPlotToolSampleRowPayload(string Id, string Timestamp, string SpreadText, string ImpliedVolText, string ZScoreText, string SignalText, string Tone);
-```
-
-## WorkstationPlotToolSignalCardPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolSignalCardPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:244](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L244).
-
-```csharp
-public sealed record WorkstationPlotToolSignalCardPayload(string Id, string Label, string Value, string Detail, string Tone);
 ```

@@ -381,7 +381,7 @@ public sealed record DesktopLaunchTicketRedemptionDto(string Username, string Pa
 
 Qualified name: <code>Meridian.Contracts.Workstation.DiscardSecurityMasterRevisionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:91](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L91).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:113](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L113).
 
 Discards a staged (Draft or Submitted) revision, transitioning it to Rejected and withdrawing the staged override value it governs. This is the terminal path for abandoned drafts and gate-rejected submissions: without it a staged sibling defers the security-level override decision forever, leaving governed runs blocked behind a Pending overlay no revision can ever approve.
 

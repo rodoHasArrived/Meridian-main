@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SyncCompletenessResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.SyncCompletenessResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L14).
+
+```csharp
+public sealed record SyncCompletenessResult(Guid AccountId, string Counterparty, int ExpectedRecords, int ReceivedRecords, bool IsComplete, string Detail);
+```
+
 ## SyncValidationResult
 
 Qualified name: <code>Meridian.Contracts.Workstation.SyncValidationResult</code>. Kind: `record`.
@@ -612,14 +622,4 @@ Request to create or update an operator-saved workflow preset.
 
 ```csharp
 public sealed record WorkflowPresetSaveRequest(string? PresetId, string Name, string? Description, string WorkflowId, string? ActionId, IReadOnlyList<string>? Tags, bool IsPinned, string? ViewStateEnvelope = null);
-```
-
-## WorkspaceModeDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkspaceModeDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L62).
-
-```csharp
-public sealed record WorkspaceModeDto(string Id, string Name, bool IsSample, string Badge, string SafetyMessage, string SamplePackVersion);
 ```

@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementRunSummaryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StatementRunSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:325](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L325).
+
+Lightweight statement-run index row returned by the workstation reconciliation API.
+
+```csharp
+public sealed record StatementRunSummaryDto(string RunId, string ImportId, StatementRunStatus Status, DateTimeOffset StartedAtUtc, DateTimeOffset? CompletedAtUtc, int PositionMatches, int CashMatches, int TransactionMatches, int OpenExceptionCount);
+```
+
 ## StatementRunValidationDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementRunValidationDto</code>. Kind: `record`.
@@ -629,16 +641,4 @@ Backward-compatible alias for StrategyRunContinuityDto.
 
 ```csharp
 public sealed record StrategyRunContinuityDetail(StrategyRunDetail Run, StrategyRunContinuityLineage Lineage, StrategyRunCashFlowDigest? CashFlow, ReconciliationRunSummary? Reconciliation, StrategyRunContinuityStatus ContinuityStatus) : StrategyRunContinuityDto(Run, Lineage, CashFlow, Reconciliation, ContinuityStatus);
-```
-
-## StrategyRunContinuityDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1148](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1148).
-
-Canonical shared continuity drill-in contract used by Strategy, Trading, and Accounting run drill-ins.
-
-```csharp
-public record StrategyRunContinuityDto(StrategyRunDetail Run, StrategyRunContinuityLineage Lineage, StrategyRunCashFlowDigest? CashFlow, ReconciliationRunSummary? Reconciliation, StrategyRunContinuityStatus ContinuityStatus);
 ```

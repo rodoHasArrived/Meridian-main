@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportPackDeliveryAccessLinkDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryAccessLinkDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:883](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L883).
+
+```csharp
+public sealed record ReportPackDeliveryAccessLinkDto(string Kind, string Label, string Href, bool RequiresToken, DateTimeOffset? ExpiresAtUtc = null, string? Description = null);
+```
+
 ## ReportPackDeliveryApprovalStepDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReportPackDeliveryApprovalStepDto</code>. Kind: `record`.
@@ -612,14 +622,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1636]
 
 ```csharp
 public sealed record ReportWriterGridDiffDto(string GridId, string Title, IReadOnlyList<ReportWriterGridColumnDto> Columns, IReadOnlyList<ReportWriterGridDiffRowDto> Rows, IReadOnlyList<string> Warnings, int AddedRowCount, int RemovedRowCount, int ChangedRowCount, int UnchangedRowCount);
-```
-
-## ReportWriterGridDiffRowDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportWriterGridDiffRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1629](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1629).
-
-```csharp
-public sealed record ReportWriterGridDiffRowDto(string RowKey, ReportWriterDiffRowStateDto State, IReadOnlyDictionary<string, string> PriorValues, IReadOnlyDictionary<string, string> CurrentValues, IReadOnlyList<ReportWriterGridDiffCellDto> Cells);
 ```

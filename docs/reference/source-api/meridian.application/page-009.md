@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## NullCorporateActionCommandService
+
+Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionCommandService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:144](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L144).
+
+Rejects corporate-action appends when their command service is unavailable.
+
+```csharp
+public sealed class NullCorporateActionCommandService : ICorporateActionCommandService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Task&lt;CorporateActionAppendResult&gt; AppendAsync(Guid securityId, CorporateActionDto action, string? actor, string source, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs:146](../../../../src/Meridian.Application/SecurityMaster/NullSecurityMasterServices.cs#L146) |  |
+
 ## NullCorporateActionOperationsService
 
 Qualified name: <code>Meridian.Application.SecurityMaster.NullCorporateActionOperationsService</code>. Kind: `class`.
@@ -1024,22 +1042,3 @@ A machine-proposed security-master draft for an unmastered symbol. The operator 
 ```csharp
 public sealed record SecurityMasterDraftProposalDto(string Symbol, bool Resolved, Guid ProposedSecurityId, string AssetClass, string? DisplayName, string? Exchange, string? Currency, IReadOnlyList<SecurityIdentifierDto> Identifiers, string SourceSystem, string Provenance, string? Notes);
 ```
-
-## SecurityMasterDraftProposalService
-
-Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterDraftProposalService</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L30).
-
-Pre-builds security-master drafts for coverage gaps flagged by the RC001 sweep, using the shared symbol-resolution spine (canonical registry first, then OpenFIGI) for identifiers and display metadata. Drafts are explicitly marked machine-proposed so downstream provenance never mistakes them for operator-entered data.
-
-```csharp
-public sealed class SecurityMasterDraftProposalService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterDraftProposalService(ILogger&lt;SecurityMasterDraftProposalService&gt; logger, ISymbolResolver? symbolResolver = null);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:38](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L38) |  |
-| <code>public async Task&lt;SecurityMasterDraftProposalDto&gt; BuildDraftAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs:46](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterDraftProposalService.cs#L46) |  |

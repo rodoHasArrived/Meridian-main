@@ -250,6 +250,18 @@ Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:127](../../.
 public sealed record PromoteShadowBookRequestDto(int ExpectedVersion, string CertificateId, string Rationale, IReadOnlyList<string> EvidenceIds);
 ```
 
+## ProposeHistoricalIdentifierWindowRequest
+
+Qualified name: <code>Meridian.Contracts.Workstation.ProposeHistoricalIdentifierWindowRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:62](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L62).
+
+Proposes a HISTORICAL identifier window — an identifier the security carried before it was ingested — as a governed Draft revision. Bulk imports stamp every identifier&#x27;s ValidFrom with the ingest time (an untrusted file is no authority for valid time), so a window before the ingest date can only enter the golden record through this proposal: it must cite an Evidence Vault reference and a justification, an independent second operator approves it through the workbench maker-checker gate, and publish applies it as a governed amendment with the proposed ValidFrom. The proposed identifier is never primary.
+
+```csharp
+public sealed record ProposeHistoricalIdentifierWindowRequest(Guid SecurityId, long ExpectedVersion, Meridian.Contracts.SecurityMaster.SecurityIdentifierKind Kind, string Value, string? Provider, DateTimeOffset ValidFrom, DateTimeOffset? ValidTo, string EvidenceReference, string Justification, string Actor, string? FundProfileId = null);
+```
+
 ## ProviderCorporateActionEvidenceCandidateDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.ProviderCorporateActionEvidenceCandidateDto</code>. Kind: `record`.
@@ -477,7 +489,7 @@ public sealed record ProviderShadowBookComparisonLineDto(string Dimension, strin
 
 Qualified name: <code>Meridian.Contracts.Workstation.PublishSecurityMasterRevisionRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:116](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L116).
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/SecurityMasterWorkbenchCommandDtos.cs#L138).
 
 Publishes an approved revision (durable append + downstream propagation). The downstream restatement impact is scoped to the fund captured on the draft revision (the fund the edit was made under, if any). Publish deliberately carries no caller-supplied fund scope, so a publisher cannot resolve impact for a fund the operator did not edit under. Publish-time re-scoping and cross-fund (multi-held) expansion are a separate slice gated on tenant-scoped holdings discovery.
 
@@ -676,16 +688,4 @@ Reconciliation break-queue projection used by shared operator workflows.
 
 ```csharp
 public sealed record ReconciliationBreakQueueProjectionDto(int TotalCount, int OpenCount, int InReviewCount, int ResolvedCount, int DismissedCount, int CriticalOpenCount, IReadOnlyList<ReconciliationBreakQueueProjectionItemDto> Items, int BreachedCount = 0, int AwaitingEvidenceCount = 0, int SignedOffEvidenceCount = 0);
-```
-
-## ReconciliationBreakQueueProjectionItemDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationBreakQueueProjectionItemDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:264](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L264).
-
-One projected reconciliation break row including routing and sign-off evidence fields.
-
-```csharp
-public sealed record ReconciliationBreakQueueProjectionItemDto(string BreakId, string? WorkflowId, ReconciliationBreakSeverity Severity, ReconciliationBreakQueueStatus Status, string? Owner, string? RequiredSignoffRole, string? SignoffStatus, string? RoutingTarget, string? RoutingDetail, string? EvidenceReference, DateTimeOffset LastUpdatedAt, ReconciliationCasePriority Priority = ReconciliationCasePriority.Normal, ReconciliationCaseSlaState SlaState = ReconciliationCaseSlaState.OnTrack, string? AgeBand = null, string? RootCauseCode = null, string? ResolutionCode = null, int CommentCount = 0, int EvidenceCount = 0, DateTimeOffset? LastActivityAt = null, string? LastCommentExcerpt = null, int RelatedCaseCount = 0, string? SlaBadgeLabel = null, string? SlaBadgeTone = null);
 ```

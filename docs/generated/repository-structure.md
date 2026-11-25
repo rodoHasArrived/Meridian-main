@@ -5509,6 +5509,7 @@ Meridian-main
 │   │   │   │   └── SecurityValuationService.cs
 │   │   │   ├── AlternativeAssetLotExtensions.cs
 │   │   │   ├── ApprovedFieldEditCanonicalMergeHandler.cs
+│   │   │   ├── ApprovedHistoricalIdentifierWindowHandler.cs
 │   │   │   ├── CanonicalRegistryCoverageSource.cs
 │   │   │   ├── CanonicalSymbolRegistryMigrationService.cs
 │   │   │   ├── ConfiguredSymbolCoverageSource.cs
@@ -5571,6 +5572,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterDataQualityService.cs
 │   │   │   ├── SecurityMasterDraftProposalService.cs
 │   │   │   ├── SecurityMasterGovernanceRequirements.cs
+│   │   │   ├── SecurityMasterHistoricalIdentifierWindow.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolver.cs
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestFailureClassifier.cs
@@ -5602,6 +5604,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWorkbenchCommandService.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Discard.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.FieldBase.cs
+│   │   │   ├── SecurityMasterWorkbenchCommandService.HistoricalIdentifierWindow.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.IndependentReview.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Mutations.cs
 │   │   │   ├── SecurityMasterWorkbenchCommandService.Overrides.cs
@@ -9455,6 +9458,9 @@ Meridian-main
 │   │   │   │   │   │   ├── security-passport-editor.tsx
 │   │   │   │   │   │   ├── security-passport-editor.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-editor.view-model.ts
+│   │   │   │   │   │   ├── security-passport-historical-window.tsx
+│   │   │   │   │   │   ├── security-passport-historical-window.view-model.test.ts
+│   │   │   │   │   │   ├── security-passport-historical-window.view-model.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.parity.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.test.ts
 │   │   │   │   │   │   ├── security-passport-schema-fields.view-model.ts
@@ -14582,6 +14588,7 @@ Meridian-main
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.ScheduleAuthoring.cs
 │   │   │   │   ├── ApprovedFieldEditCanonicalMergeHandlerTests.StaleProposal.cs
 │   │   │   │   ├── BondWorkflowTermsAdmissionTests.cs
+│   │   │   │   ├── HistoricalIdentifierWindowGovernanceTests.cs
 │   │   │   │   ├── InMemorySecurityMasterRevisionStoreTests.cs
 │   │   │   │   ├── LedgerBookAffectedResolverTests.cs
 │   │   │   │   ├── LedgerPeriodLockReaderTests.cs
