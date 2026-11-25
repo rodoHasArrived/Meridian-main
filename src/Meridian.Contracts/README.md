@@ -2585,6 +2585,21 @@ versions, propose and decide requests, `IIntercompanyConfirmationClosePolicyStor
 opt-in confirmation contributor; with no active policy the gate returns null and the decision is unchanged.
 `FundOperationsNavigationContext` gains an optional, additive `JournalEntryId` for journal deep links.
 
+## Security Master review queues and provider-integration actor flags (2026-11-25)
+
+- `Workstation/SecurityMasterReviewQueueDtos.cs`: `SecurityMasterHeldAmendmentDto`,
+  `SecurityMasterExceptionCaseDto`, `SecurityMasterExceptionCaseQueueItemDto` (the row plus
+  `SlaBreached` and `AgeHours`), `SecurityMasterExceptionSyncResultDto`,
+  `AssignSecurityMasterExceptionCaseRequest` and the held-amendment and exception-case status
+  constants. The browser and WPF share these shapes.
+- `SecurityMasterPendingRevisionDto` gains `ConflictId` and `ConflictCandidateSource`, set when a
+  revision was staged by adopting a conflict candidate.
+- `Integrations/ProviderIntegrationActorFlags.cs`: `ProviderIntegrationActorFlagDto` (its `FlagId`
+  is derived from the record path, field path and recorded value), the scan request and result DTOs,
+  `IProviderIntegrationActorFlagStore`, and `ProviderIntegrationActorLabelClassifier`, which names the
+  actor and timestamp fields and classifies session desk labels, strategy desk labels, Settings
+  placeholders and blank actors.
+
 ## Security Master and entity master contracts (2026-11-25)
 
 Added by the Security Master review backlog (PR #3736):

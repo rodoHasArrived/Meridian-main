@@ -912,7 +912,9 @@ changes. Overrides follow the signed-in operator to other browsers through the h
 below; they do not reach the WPF desktop.
 
 Operator presentation preferences follow the operator across browsers and machines
-(`lib/operator-preferences-sync.ts`, started from `app.tsx` once a non-fixture session is known):
+(`lib/operator-preferences-sync.ts`, started from `app.tsx` once a non-fixture session is known; its
+operator key uses the signed-in username, falling back to the session desk label only without a
+named session):
 appearance, density, display time zone, the page-descriptions setting and the shortcut overrides are
 read from `GET /api/workstation/operator/preferences`. A value the host holds wins and is written to
 this browser's store without announcing a change; a value the host lacks keeps this browser's value,
@@ -3943,3 +3945,36 @@ can discard a revision through `discardSecurityMasterRevision`. Both functions a
 `lib/api/security-master-workbench.api.ts` and use endpoint helpers in `workstation-endpoints.ts`.
 The passport editor's banner view model names the first stager when the server refuses with
 `field-already-staged`.
+
+Below the inbox, two more panels read the shared review-queue routes through
+`lib/api/security-master-review-queues.api.ts`. Their types mirror the C# contracts in
+`Meridian.Contracts/Workstation/SecurityMasterReviewQueueDtos.cs`.
+
+- `security-master-held-amendments.tsx` lists held amendments by status. It opens the security and
+  discards Held rows.
+- `security-master-exception-queue.tsx` shows the server's SLA verdict and breach count, and offers
+  sync and assign.
+- `describeReviewQueueFailure` turns a refusal into the same sentence the desktop shows.
+
+The passport editor (`security-passport-editor.tsx`, mounted through
+`security-passport-editor-launcher.tsx`) gets its conflicts from the trust snapshot's open
+`conflictAssessments`. `defaultLoadPassport` makes one snapshot read, then calls
+`listPendingSecurityMasterRevisions` with the security's id. `attachPendingDrafts` links each review D3
+"Use B" draft to its conflict by `conflictId`. Such a conflict shows "Awaiting draft …", Accept and
+Override are disabled, and **Continue draft** makes that draft the working revision.
+`classifyConflictResolution` adopts a `pendingRevisionId` returned by a resolution in the same way.
+
+## Operator identity
+
+The workstation session's `displayName` is a desk label ("Meridian Operator", "<strategy> Desk"), not
+the person. `hooks/use-signed-in-username.ts` reads the signed-in username once per page load from
+`/api/auth/me` (`lib/api/auth.api.ts`); a failed read is retried rather than cached as nobody.
+
+- **Who acts:** the hook's value keys the Accounting and Data screens' recovery drafts, fills request
+  hints such as `requestedBy`, and names the operator in Settings, the masthead, the workspace header
+  and the trust strip.
+- **Recorded actor:** the server still takes the actor from the session; a name sent in a body is a
+  hint only.
+- **Unverified actors:** Settings' advanced provider route has an "Unverified actors" panel
+  (`screens/settings-provider-integration-actor-flags.tsx`). It lists and scans append-only flags on
+  provider-integration records stored under a desk label.

@@ -2,6 +2,6 @@
   "id": "SRC-STORAGE",
   "path": "src/Meridian.Storage",
   "readme": "src/Meridian.Storage/README.md",
-  "readme_hash": "cd3373c22c494a812b541de2de41b1438679dd469c55385f2b512f1ad0c86dd8",
-  "source_hash": "caa00ebdde0c13fa17851428541121fb2b332adb49b74d63aadfbda19bbb5ef4"
+  "readme_hash": "52bb4251d5f80cdbd3eb3a543d38dfa0aeaf791fc337b0a73413158a64c7038a",
+  "source_hash": "83ca1445903f6fbc04693b447b18963b688cc69b39cc7f19a91a945a0f1d18b7"
 }

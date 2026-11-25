@@ -1849,6 +1849,16 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 | `W12-ICINCOME-001` | Policy-governed intercompany revenue and expense elimination |
 <!-- source-roadmap-traceability:end -->
 
+## Review queues and actor flags (2026-11-25)
+
+- `SecurityMasterWorkbenchCommandService.TryReadConflictCandidate` is public and static. It reads the
+  conflict id and candidate source from a revision justification, and both the pending-revision route
+  and `ApprovedFieldEditCanonicalMergeHandler` use it, so the inbox and the publish-time conflict
+  resolution agree on which conflict a draft came from.
+- `Integrations/ProviderIntegrationActorFlagService.ScanAsync` scans the tenant's integration store and
+  appends a flag for each actor value the classifier does not accept as a person, recording the
+  authenticated operator who ran the scan. Re-running it appends nothing new.
+
 ## Security Master architecture-review backlog (2026-11-25)
 
 The 2026-11-24 Security Master review backlog (PR #3736) added these Application services under

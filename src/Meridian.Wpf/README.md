@@ -1332,6 +1332,26 @@ flagged, why it is empty, a retry after a failure, and the notes.
 - Run Cash Flow: "Vs end of last month" loads the portfolio cash ladder comparison over the API
   (`PeriodComparisonApiClient`), because its providers are composed only in the host.
 
+## Security Master review queues (2026-11-25)
+
+The Security Master page's "Review queues" card gives the desktop the browser's three review
+queues, read through `SecurityMasterReviewQueueApiClient` and labelled through
+`SecurityMasterReviewQueuePresentation` (both in `Meridian.Ui.Services`). The desktop keeps no queue
+state of its own.
+
+- **Pending revisions** (`ViewModels/SecurityMaster/SecurityMasterReviewInboxViewModel`): drafts,
+  submitted and approved revisions, oldest first. Open loads the revision into the passport editor;
+  Discard is offered only for states the server will discard.
+- **Held amendments** (`SecurityMasterHeldAmendmentsViewModel`): amendments held by source
+  precedence, with Discard and Open security.
+- **Exception queue** (`SecurityMasterExceptionQueueViewModel`): open cases with SLA breach and age,
+  Sync, and Assign. The assignee defaults to the signed-in operator when one is known.
+
+`SecurityPassportEditorViewModel` gains `DiscardRevisionCommand`, shows the 409
+`field-already-staged` refusal through `SecurityMasterWorkbenchFailure` instead of a generic error,
+and adopts the `pendingRevisionId` that a "Use B" conflict resolution returns, so the staged draft
+opens in the editor rather than the conflict reading as resolved.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
