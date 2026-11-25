@@ -466,6 +466,7 @@ public static class UiApiRoutes
 
     // Passport Workbench governed-write surface (see docs/engineering/blueprints/security-master-passport-workbench.md).
     public const string SecurityMasterWorkbenchField = "/api/security-master/{securityId:guid}/workbench/field";
+    public const string SecurityMasterWorkbenchHistoricalIdentifierWindow = "/api/security-master/{securityId:guid}/workbench/historical-identifier-window";
     public const string SecurityMasterWorkbenchResolveConflict = "/api/security-master/{securityId:guid}/workbench/resolve-conflict";
     public const string SecurityMasterWorkbenchSubmit = "/api/security-master/{securityId:guid}/workbench/submit";
     public const string SecurityMasterWorkbenchApprove = "/api/security-master/{securityId:guid}/workbench/approve";

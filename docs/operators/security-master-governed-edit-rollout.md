@@ -216,8 +216,12 @@ ticker used before a rename), stage it through the governed workbench instead:
    window is already in place and does not amend again. Discarding the proposal only rejects the
    revision, because it stages no overlay value.
 
-There is no HTTP route or workstation UI for proposals yet; the command is available on
-`ISecurityMasterWorkbenchCommandService`.
+Over HTTP, step 1 is `POST /api/security-master/{securityId}/workbench/historical-identifier-window`
+(permission `ModifySecurityMaster`). The body is a `ProposeHistoricalIdentifierWindowRequest`; the
+path's security id and the session's actor replace whatever the body says, so the recorded proposer
+is always the caller. A refused proposal returns 422 and a stale `expectedVersion` returns 409.
+Steps 2 and 3 use the existing workbench `submit`, `approve` and `publish` routes with the returned
+revision id. There is no browser or WPF screen for proposals yet.
 
 ## Concurrency and Recovery Rehearsal
 

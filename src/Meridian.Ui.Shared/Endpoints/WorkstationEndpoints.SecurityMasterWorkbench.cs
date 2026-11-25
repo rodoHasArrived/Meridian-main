@@ -107,6 +107,69 @@ public static partial class WorkstationEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status422UnprocessableEntity);
 
+        // Governed historical identifier window proposal (review F1). Imports cannot backdate an
+        // identifier, so a window before the ingest date is staged here as a Draft revision with its
+        // evidence and justification, then follows the submit → approve → publish routes below.
+        group.MapPost(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchHistoricalIdentifierWindow), async (
+            Guid securityId,
+            ProposeHistoricalIdentifierWindowRequest? request,
+            HttpContext context,
+            [FromServices] ISecurityMasterWorkbenchCommandService? service,
+            [FromServices] IFundProfileTenantGuard? fundGuard,
+            [FromServices] IFundProfileTenancyRegistry? fundRegistry) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (service is null)
+            {
+                return WorkbenchServiceUnavailable();
+            }
+
+            if (request is null)
+            {
+                return WorkbenchMissingPayload("A ProposeHistoricalIdentifierWindowRequest body is required.");
+            }
+
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
+            // The proposal persists its fund profile on the draft revision, which later scopes publish
+            // impact, so it gets the same tenant guard and ownership reservation as the field-edit route.
+            var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            if (fundGuard is not null && !string.IsNullOrWhiteSpace(request.FundProfileId))
+            {
+                var fundDecision = await fundGuard
+                    .EvaluateAsync(tenantContext, request.FundProfileId, context.RequestAborted)
+                    .ConfigureAwait(false);
+                if (!fundDecision.IsAllowed)
+                {
+                    return EndpointHelpers.Forbidden();
+                }
+            }
+
+            if (!await ReserveFundOwnershipAsync(
+                    fundRegistry, tenantContext, request.FundProfileId, context).ConfigureAwait(false))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            // The proposer is server-derived from the session; it is recorded on the window and
+            // excluded from reviewing or approving it.
+            var bound = request with { SecurityId = securityId, Actor = actor };
+            return await ExecuteWorkbenchAsync(
+                () => service.ProposeHistoricalIdentifierWindowAsync(bound, context.RequestAborted), jsonOptions).ConfigureAwait(false);
+        })
+        .WithName("SecurityMasterWorkbenchHistoricalIdentifierWindow").RequirePermission(UserPermission.ModifySecurityMaster)
+        .Produces<SecurityMasterEditResultDto>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden)
+        .Produces(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status422UnprocessableEntity);
+
         group.MapPost(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchResolveConflict), async (
             Guid securityId,
             ResolveSourceConflictRequest? request,
