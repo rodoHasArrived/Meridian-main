@@ -121,7 +121,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.DeterministicReportingSectionRenderer</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:1671](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L1671).
+Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:1655](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L1655).
 
 Builds reproducible section manifests and hashes from reporting contract snapshot lineage.
 
@@ -133,7 +133,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:1673](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L1673) |  |
+| <code>public ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:1657](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L1657) |  |
 
 ## EnrichedLedgerRow
 
@@ -443,12 +443,11 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;ReportingOutputManifest&gt; ExecuteAsync(ReportingJobContract contract, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:19](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L19) |  |
-| <code>[Obsolete(&quot;Due-schedule discovery and execution is owned by the host reporting-schedule adapter. Call ExecuteAsync only with its certified ReportingJobContract.&quot;, error : false)] Task&lt;IReadOnlyList&lt;ReportingOutputManifest&gt;&gt; ExecuteDueSchedulesAsync(IEnumerable&lt;ReportingScheduleContract&gt; schedules, DateTimeOffset nowUtc, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:24](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L24) |  |
-| <code>ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:25](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L25) |  |
-| <code>ReportingOutputManifest? GetManifest(string tenantId, string runId) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:26](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L26) |  |
-| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:31](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L31) |  |
-| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:32](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L32) |  |
-| <code>Task&lt;bool&gt; TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:49](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L49) |  |
+| <code>ReportingOutputManifest? GetManifest(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:20](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L20) |  |
+| <code>ReportingOutputManifest? GetManifest(string tenantId, string runId) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:21](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L21) |  |
+| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:26](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L26) |  |
+| <code>IReadOnlyList&lt;ReportingRunAuditEntry&gt; GetAudit(string tenantId, string runId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:27](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L27) |  |
+| <code>Task&lt;bool&gt; TransitionApprovalAsync(string runId, ReportingRunStatus target, string actor, string role, string notes, CancellationToken cancellationToken);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:44](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L44) |  |
 
 ## IReportingPartnersCapitalSource
 
@@ -621,7 +620,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.IReportingSectionRenderer</code>. Kind: `interface`.
 
-Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:88](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L88).
+Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:83](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L83).
 
 Builds a reporting section manifest and lineage for a specific run attempt.
 
@@ -633,7 +632,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:90](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L90) |  |
+| <code>ReportingSectionManifest RenderSection(string runId, ReportingJobContract contract, ReportingTemplateMetadata template, string sectionId, int attempt);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:85](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L85) |  |
 
 ## IReportingStarterKitCatalog
 
@@ -658,7 +657,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.IReportingTemplateCatalog</code>. Kind: `interface`.
 
-Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:53](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L53).
+Source: [src/Meridian.Reporting/ReportingOrchestrationService.cs:48](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L48).
 
 Resolves reporting template metadata by identifier, version, and operational scope.
 
@@ -670,11 +669,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>ReportingTemplateMetadata Get(string templateId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:55](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L55) |  |
-| <code>ReportingTemplateMetadata Get(string templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:57](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L57) |  |
-| <code>ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:61](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L61) |  |
-| <code>ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:80](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L80) |  |
-| <code>IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates();</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:84](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L84) |  |
+| <code>ReportingTemplateMetadata Get(string templateId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:50](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L50) |  |
+| <code>ReportingTemplateMetadata Get(string templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:52](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L52) |  |
+| <code>ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId);</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:56](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L56) |  |
+| <code>ReportingTemplateMetadata Get(VersionedReportTemplateIdDto templateId, ReportingOperationalScope? operationalScope) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:75](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L75) |  |
+| <code>IReadOnlyList&lt;ReportingTemplateMetadata&gt; ListTemplates();</code> | [src/Meridian.Reporting/ReportingOrchestrationService.cs:79](../../../../src/Meridian.Reporting/ReportingOrchestrationService.cs#L79) |  |
 
 ## IReportingTemplateGovernanceStore
 

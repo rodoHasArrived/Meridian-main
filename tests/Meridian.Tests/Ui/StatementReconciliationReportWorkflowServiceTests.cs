@@ -1058,34 +1058,6 @@ public sealed class StatementReconciliationReportWorkflowServiceTests : IDisposa
             .WithMessage("*IStatementReconciliationIntakeAuthority*");
     }
 
-    [Fact]
-    public async Task PreRenameServiceAdapter_DirectConstructionWithoutAuthority_FailsClosedBeforeRetention()
-    {
-        var imports = new FakeImportService(BuildImportResult());
-        var evidence = new FakeEvidenceRetainer();
-        var canonicalCommand = BuildCommand();
-#pragma warning disable CS0618 // Verifies fail-closed source compatibility for pre-rename callers.
-        var service = new StatementToReportWorkflowService(
-            imports,
-            evidence,
-            new FakeStatementRunWorkflowService { ReturnReconciled = true },
-            _root);
-
-        var act = () => service.StartAsync(
-            new StatementToReportStartCommand(
-                canonicalCommand.Import,
-                canonicalCommand.TenantId,
-                canonicalCommand.CompanyId));
-
-        var failure = await act.Should()
-            .ThrowAsync<StatementReconciliationIntakeAuthorityException>();
-        failure.Which.Code.Should().Be("STATEMENT_INTAKE_AUTHORITY_UNAVAILABLE");
-        imports.CommitCount.Should().Be(0);
-        evidence.RetainCount.Should().Be(0);
-        Directory.Exists(_root).Should().BeFalse();
-#pragma warning restore CS0618
-    }
-
     private StatementReconciliationReportWorkflowService CreateService(
         IStatementImportCommitService imports,
         IStatementImportEvidenceRetainer evidence,

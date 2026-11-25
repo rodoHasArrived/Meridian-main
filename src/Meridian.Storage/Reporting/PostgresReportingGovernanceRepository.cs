@@ -1,8 +1,6 @@
 using System.Collections.Immutable;
 using System.Data;
-using System.Globalization;
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using Meridian.Reporting;
 using Npgsql;
@@ -85,7 +83,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
     private sealed partial class PostgresReportingGovernanceTransaction : IReportingGovernanceTransaction
     {
         private const int MaximumKeyLength = 256;
-        private const short LegacyFormatVersion = (short)ReportingGovernancePersistenceFormat.LegacyV1;
         private const short CurrentFormatVersion = (short)ReportingGovernancePersistenceFormat.CanonicalV2;
 
         private readonly NpgsqlConnection _connection;
@@ -706,11 +703,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             bool validateRestatementBinding = true,
             ImmutableArray<ReportingGovernanceAuditEntry>? retainedAudit = null)
         {
-            if (row.StateFormatVersion == LegacyFormatVersion)
-            {
-                var status = await VerifyLegacyRunAsync(row, cancellationToken).ConfigureAwait(false);
-                throw new ReportingGovernanceLegacyAggregateException(status);
-            }
             if (row.StateFormatVersion != CurrentFormatVersion)
             {
                 throw Integrity(
@@ -763,11 +755,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             CancellationToken cancellationToken,
             bool validateBinding = true)
         {
-            if (row.StateFormatVersion == LegacyFormatVersion)
-            {
-                var status = await VerifyLegacyRestatementAsync(row, cancellationToken).ConfigureAwait(false);
-                throw new ReportingGovernanceLegacyAggregateException(status);
-            }
             if (row.StateFormatVersion != CurrentFormatVersion)
             {
                 throw Integrity(
@@ -1009,51 +996,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             return rows.DrainToImmutable();
         }
 
-        private async Task<ReportingGovernancePersistenceStatus> VerifyLegacyRunAsync(
-            PersistedRunRow row,
-            CancellationToken cancellationToken)
-        {
-            VerifyPayloadChecksum("legacy reporting run", row.RunId, row.StatePayload, row.StateHashSha256);
-            var run = DeserializeLegacyRun(row.StatePayload, row.RunId);
-            if (!run.AuditTrail.IsDefaultOrEmpty)
-            {
-                throw Integrity(
-                    "legacy reporting run",
-                    row.RunId,
-                    "the retained state payload contains mutable audit history");
-            }
-            if (!StringComparer.Ordinal.Equals(run.Scope.TenantId, row.TenantId)
-                || !StringComparer.Ordinal.Equals(run.RunId, row.RunId)
-                || !StringComparer.Ordinal.Equals(run.SeriesId, row.SeriesId)
-                || !StringComparer.Ordinal.Equals(run.Scope.OrganizationId, row.OrganizationId)
-                || !StringComparer.Ordinal.Equals(run.Scope.CompanyId, row.CompanyId)
-                || run.Revision != row.Revision
-                || run.Version != row.AggregateVersion
-                || (short)run.ExecutionState != row.ExecutionState
-                || (short)run.GovernanceState != row.GovernanceState)
-            {
-                throw Integrity(
-                    "legacy reporting run",
-                    row.RunId,
-                    "indexed columns do not match the retained v1 state payload");
-            }
-
-            ValidateLegacyRunShape(run);
-            var auditRows = await VerifyLegacyAuditAsync(
-                row.TenantId,
-                ReportingGovernanceAuditAggregateKind.Run,
-                row.RunId,
-                row.AggregateVersion,
-                cancellationToken).ConfigureAwait(false);
-            return BuildVerifiedLegacyStatus(
-                row.TenantId,
-                ReportingGovernanceAuditAggregateKind.Run,
-                row.RunId,
-                row.AggregateVersion,
-                row.StateHashSha256,
-                auditRows);
-        }
-
         private async Task<ReportingGovernancePersistenceStatus> InspectRunStatusAsync(
             PersistedRunRow row,
             CancellationToken cancellationToken)
@@ -1080,10 +1022,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             PersistedRunRow row,
             CancellationToken cancellationToken)
         {
-            if (row.StateFormatVersion == LegacyFormatVersion)
-            {
-                return await VerifyLegacyRunAsync(row, cancellationToken).ConfigureAwait(false);
-            }
             if (row.StateFormatVersion != CurrentFormatVersion)
             {
                 throw Integrity("reporting run", row.RunId, $"unsupported state format v{row.StateFormatVersion}");
@@ -1099,52 +1037,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
                 row.TenantId,
                 ReportingGovernanceAuditAggregateKind.Run,
                 row.RunId,
-                row.AggregateVersion,
-                row.StateHashSha256,
-                auditRows);
-        }
-
-        private async Task<ReportingGovernancePersistenceStatus> VerifyLegacyRestatementAsync(
-            PersistedRestatementRow row,
-            CancellationToken cancellationToken)
-        {
-            VerifyPayloadChecksum(
-                "legacy reporting restatement request",
-                row.RequestId,
-                row.StatePayload,
-                row.StateHashSha256);
-            var request = DeserializeLegacyRestatement(row.StatePayload, row.RequestId);
-            if (!request.AuditTrail.IsDefaultOrEmpty)
-            {
-                throw Integrity(
-                    "legacy reporting restatement request",
-                    row.RequestId,
-                    "the retained state payload contains mutable audit history");
-            }
-            if (!StringComparer.Ordinal.Equals(request.RequestedBy.TenantId, row.TenantId)
-                || !StringComparer.Ordinal.Equals(request.RequestId, row.RequestId)
-                || !StringComparer.Ordinal.Equals(request.SeriesId, row.SeriesId)
-                || !StringComparer.Ordinal.Equals(request.PredecessorRunId, row.PredecessorRunId)
-                || request.Version != row.AggregateVersion
-                || (short)request.State != row.RequestState)
-            {
-                throw Integrity(
-                    "legacy reporting restatement request",
-                    row.RequestId,
-                    "indexed columns do not match the retained v1 state payload");
-            }
-
-            ValidateLegacyRestatementShape(row.TenantId, request);
-            var auditRows = await VerifyLegacyAuditAsync(
-                row.TenantId,
-                ReportingGovernanceAuditAggregateKind.RestatementRequest,
-                row.RequestId,
-                row.AggregateVersion,
-                cancellationToken).ConfigureAwait(false);
-            return BuildVerifiedLegacyStatus(
-                row.TenantId,
-                ReportingGovernanceAuditAggregateKind.RestatementRequest,
-                row.RequestId,
                 row.AggregateVersion,
                 row.StateHashSha256,
                 auditRows);
@@ -1176,10 +1068,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             PersistedRestatementRow row,
             CancellationToken cancellationToken)
         {
-            if (row.StateFormatVersion == LegacyFormatVersion)
-            {
-                return await VerifyLegacyRestatementAsync(row, cancellationToken).ConfigureAwait(false);
-            }
             if (row.StateFormatVersion != CurrentFormatVersion)
             {
                 throw Integrity(
@@ -1203,60 +1091,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
                 auditRows);
         }
 
-        private async Task<ImmutableArray<PersistedAuditRow>> VerifyLegacyAuditAsync(
-            string tenantId,
-            ReportingGovernanceAuditAggregateKind aggregateKind,
-            string aggregateId,
-            long aggregateVersion,
-            CancellationToken cancellationToken)
-        {
-            var rows = await ReadAuditRowsAsync(
-                tenantId,
-                aggregateKind,
-                aggregateId,
-                cancellationToken).ConfigureAwait(false);
-            if (rows.Length != aggregateVersion || rows.IsDefaultOrEmpty)
-            {
-                throw Integrity(
-                    "legacy reporting governance audit chain",
-                    aggregateId,
-                    "the v1 audit chain is incomplete");
-            }
-
-            string? previousHash = null;
-            for (var index = 0; index < rows.Length; index++)
-            {
-                var row = rows[index];
-                if (row.HashFormatVersion != LegacyFormatVersion)
-                {
-                    throw Integrity(
-                        "legacy reporting governance audit event",
-                        row.EventId,
-                        $"declared hash format v{row.HashFormatVersion} instead of v1");
-                }
-
-                VerifyPayloadChecksum(
-                    "legacy reporting governance audit event",
-                    row.EventId,
-                    row.EventPayload,
-                    row.PayloadHashSha256);
-                var entry = DeserializeAudit(row.EventPayload, row.EventId);
-                ValidateAuditRowBinding(tenantId, aggregateKind, aggregateId, row, entry);
-                if (entry.AggregateVersion != index + 1L
-                    || !StringComparer.Ordinal.Equals(entry.PreviousHash, previousHash)
-                    || !StringComparer.Ordinal.Equals(entry.Hash, ComputeLegacyAuditHash(entry)))
-                {
-                    throw Integrity(
-                        "legacy reporting governance audit chain",
-                        aggregateId,
-                        "the append-only v1 version or SHA-256 chain is invalid");
-                }
-                previousHash = entry.Hash;
-            }
-
-            return rows;
-        }
-
         private static void ValidateAuditRowBinding(
             string tenantId,
             ReportingGovernanceAuditAggregateKind aggregateKind,
@@ -1278,29 +1112,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
                     "indexed columns do not match the retained event payload");
             }
         }
-
-        private static ReportingGovernancePersistenceStatus BuildVerifiedLegacyStatus(
-            string tenantId,
-            ReportingGovernanceAuditAggregateKind aggregateKind,
-            string aggregateId,
-            long aggregateVersion,
-            string statePayloadHash,
-            ImmutableArray<PersistedAuditRow> auditRows) =>
-            new(
-                tenantId,
-                aggregateKind,
-                aggregateId,
-                aggregateVersion,
-                ReportingGovernancePersistenceFormat.LegacyV1,
-                statePayloadHash,
-                StateChecksumVerified: true,
-                auditRows.Length,
-                auditRows.Select(static row =>
-                        (ReportingGovernancePersistenceFormat)row.HashFormatVersion)
-                    .ToImmutableArray(),
-                AuditChainVerified: true,
-                ReportingGovernancePersistenceDisposition.LegacyReadOnlyRecertificationRequired,
-                "The committed v1 checksum and audit chain are valid, but typed principals and exact certification hashes are absent; export the immutable history and create a freshly certified v2 run.");
 
         private static ReportingGovernancePersistenceStatus BuildVerifiedCurrentStatus(
             string tenantId,
@@ -1396,57 +1207,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             var retainedCompanyId = reader.IsDBNull(1) ? null : reader.GetString(1);
             return StringComparer.Ordinal.Equals(retainedOrganizationId, authorityOrganizationId)
                 && StringComparer.Ordinal.Equals(retainedCompanyId, authorityCompanyId);
-        }
-
-        private static string ComputeLegacyAuditHash(ReportingGovernanceAuditEntry entry)
-        {
-            var canonical = new StringBuilder();
-            AppendLegacyCanonical(canonical, entry.EventId);
-            AppendLegacyCanonical(canonical, (int)entry.AggregateKind);
-            AppendLegacyCanonical(canonical, entry.AggregateId);
-            AppendLegacyCanonical(canonical, entry.AggregateVersion);
-            AppendLegacyCanonical(
-                canonical,
-                entry.OccurredAtUtc.ToUniversalTime().ToString("O", CultureInfo.InvariantCulture));
-            AppendLegacyCanonical(canonical, (int)entry.Action);
-            AppendLegacyCanonical(canonical, entry.Authority.ActorId);
-            AppendLegacyCanonical(canonical, entry.Authority.TenantId);
-            AppendLegacyCanonical(canonical, entry.Authority.OrganizationId);
-            AppendLegacyCanonical(canonical, entry.Authority.CompanyId);
-            foreach (var permission in entry.Authority.Permissions.OrderBy(static permission => permission))
-            {
-                AppendLegacyCanonical(canonical, (int)permission);
-            }
-            AppendLegacyCanonical(canonical, (int)entry.Authority.Origin);
-            AppendLegacyCanonical(canonical, entry.Authority.CorrelationId);
-            AppendLegacyCanonical(canonical, (int)entry.PermissionUsed);
-            AppendLegacyCanonical(canonical, entry.FromExecutionState is null ? null : (int)entry.FromExecutionState.Value);
-            AppendLegacyCanonical(canonical, entry.ToExecutionState is null ? null : (int)entry.ToExecutionState.Value);
-            AppendLegacyCanonical(canonical, entry.FromGovernanceState is null ? null : (int)entry.FromGovernanceState.Value);
-            AppendLegacyCanonical(canonical, entry.ToGovernanceState is null ? null : (int)entry.ToGovernanceState.Value);
-            AppendLegacyCanonical(canonical, entry.FromRestatementState is null ? null : (int)entry.FromRestatementState.Value);
-            AppendLegacyCanonical(canonical, entry.ToRestatementState is null ? null : (int)entry.ToRestatementState.Value);
-            AppendLegacyCanonical(canonical, entry.Note);
-            AppendLegacyCanonical(canonical, entry.PreviousHash);
-            return Sha256Digest.ComputeUtf8(canonical.ToString());
-        }
-
-        private static void AppendLegacyCanonical(StringBuilder target, object? value)
-        {
-            var text = value switch
-            {
-                null => null,
-                IFormattable formattable => formattable.ToString(null, CultureInfo.InvariantCulture),
-                _ => value.ToString()
-            };
-            if (text is null)
-            {
-                target.Append("-1:");
-                return;
-            }
-            target.Append(Encoding.UTF8.GetByteCount(text).ToString(CultureInfo.InvariantCulture));
-            target.Append(':');
-            target.Append(text);
         }
 
         private async Task AppendAuditAsync(
@@ -1675,154 +1435,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             }
         }
 
-        private static void ValidateLegacyRunShape(GovernedReportingRunV1 run)
-        {
-            RequireKey(run.RunId, nameof(run.RunId));
-            RequireKey(run.SeriesId, nameof(run.SeriesId));
-            RequireKey(run.TemplateId, nameof(run.TemplateId));
-            RequireKey(run.TemplateVersion, nameof(run.TemplateVersion));
-            if (run.Scope is null || run.Access is null || run.Snapshot is null || run.CreationAuthority is null)
-            {
-                throw Integrity("legacy reporting run", run.RunId, "required v1 immutable scope data is missing");
-            }
-
-            RequireKey(run.Scope.TenantId, nameof(run.Scope.TenantId));
-            RequireKey(run.Scope.OrganizationId, nameof(run.Scope.OrganizationId));
-            RequireKey(run.Scope.BookId, nameof(run.Scope.BookId));
-            RequireKey(run.Scope.PeriodId, nameof(run.Scope.PeriodId));
-            ValidateLegacyAccess(run.Access, run.RunId);
-            RequireKey(run.Snapshot.SnapshotId, nameof(run.Snapshot.SnapshotId));
-            RequireKey(run.Snapshot.SnapshotHash, nameof(run.Snapshot.SnapshotHash));
-            RequireKey(run.Snapshot.ReconciliationCheckpointId, nameof(run.Snapshot.ReconciliationCheckpointId));
-
-            if (!StringComparer.Ordinal.Equals(run.Snapshot.TenantId, run.Scope.TenantId)
-                || !StringComparer.Ordinal.Equals(run.Snapshot.OrganizationId, run.Scope.OrganizationId)
-                || !StringComparer.Ordinal.Equals(run.Snapshot.CompanyId, run.Scope.CompanyId)
-                || !StringComparer.Ordinal.Equals(run.Snapshot.FundId, run.Scope.FundId)
-                || !StringComparer.Ordinal.Equals(run.Snapshot.BookId, run.Scope.BookId)
-                || !StringComparer.Ordinal.Equals(run.Snapshot.PeriodId, run.Scope.PeriodId)
-                || !StringComparer.Ordinal.Equals(run.CreationAuthority.TenantId, run.Scope.TenantId)
-                || !StringComparer.Ordinal.Equals(run.CreationAuthority.OrganizationId, run.Scope.OrganizationId)
-                || !StringComparer.Ordinal.Equals(run.CreationAuthority.CompanyId, run.Scope.CompanyId))
-            {
-                throw Integrity(
-                    "legacy reporting run",
-                    run.RunId,
-                    "the v1 snapshot or creation authority escaped its retained operational scope");
-            }
-
-            if (run.Revision <= 0 || run.Version <= 0
-                || !Enum.IsDefined(run.ExecutionState)
-                || !Enum.IsDefined(run.GovernanceState)
-                || ((run.GovernanceState == GovernedReportingState.Released) != (run.Release is not null))
-                || (run.GovernanceState >= GovernedReportingState.Approved && run.Approval is null)
-                || (run.GovernanceState >= GovernedReportingState.Validated && run.Readiness is null))
-            {
-                throw Integrity(
-                    "legacy reporting run",
-                    run.RunId,
-                    "the v1 revision, lifecycle state, or receipt shape is invalid");
-            }
-
-            if (run.Readiness is not null)
-            {
-                ValidateLegacyReadiness(run.Readiness, run);
-            }
-        }
-
-        private static void ValidateLegacyAccess(ReportingAccessScopeV1 access, string runId)
-        {
-            RequireKey(access.PolicyId, nameof(access.PolicyId));
-            RequireKey(access.PolicyVersion, nameof(access.PolicyVersion));
-            RequireKey(access.PolicyHash, nameof(access.PolicyHash));
-            if (!Enum.IsDefined(access.Mode)
-                || (access.Mode == ReportingGovernanceAccessMode.Private
-                    && string.IsNullOrWhiteSpace(access.OwnerPrincipalId))
-                || (access.Mode == ReportingGovernanceAccessMode.Restricted
-                    && access.PrincipalIds.IsDefaultOrEmpty)
-                || (!access.PrincipalIds.IsDefaultOrEmpty
-                    && (access.PrincipalIds.Any(string.IsNullOrWhiteSpace)
-                        || access.PrincipalIds.Distinct(StringComparer.Ordinal).Count()
-                            != access.PrincipalIds.Length)))
-            {
-                throw Integrity(
-                    "legacy reporting run",
-                    runId,
-                    "the retained v1 access policy shape is invalid");
-            }
-        }
-
-        private static void ValidateLegacyReadiness(
-            ReportingReadinessReceiptV1 readiness,
-            GovernedReportingRunV1 run)
-        {
-            RequireKey(readiness.ReceiptId, nameof(readiness.ReceiptId));
-            RequireKey(readiness.ReceiptHash, nameof(readiness.ReceiptHash));
-            if (!StringComparer.Ordinal.Equals(readiness.RunId, run.RunId)
-                || !StringComparer.Ordinal.Equals(readiness.TenantId, run.Scope.TenantId)
-                || !StringComparer.Ordinal.Equals(readiness.SnapshotId, run.Snapshot.SnapshotId)
-                || !StringComparer.Ordinal.Equals(readiness.SnapshotHash, run.Snapshot.SnapshotHash)
-                || readiness.Checks.IsDefaultOrEmpty
-                || readiness.Checks.Any(static check =>
-                    string.IsNullOrWhiteSpace(check.CheckId)
-                    || !check.Passed
-                    || check.EvidenceIds.IsDefaultOrEmpty
-                    || check.EvidenceIds.Any(string.IsNullOrWhiteSpace)
-                    || check.EvidenceIds.Distinct(StringComparer.Ordinal).Count()
-                        != check.EvidenceIds.Length)
-                || readiness.Checks.Select(static check => check.CheckId)
-                    .Distinct(StringComparer.Ordinal).Count() != readiness.Checks.Length)
-            {
-                throw Integrity(
-                    "legacy reporting run",
-                    run.RunId,
-                    "the retained v1 readiness receipt is invalid");
-            }
-        }
-
-        private static void ValidateLegacyRestatementShape(
-            string tenantId,
-            ReportingRestatementRequestV1 request)
-        {
-            RequireKey(request.RequestId, nameof(request.RequestId));
-            RequireKey(request.PredecessorRunId, nameof(request.PredecessorRunId));
-            RequireKey(request.SeriesId, nameof(request.SeriesId));
-            RequireKey(request.Reason, nameof(request.Reason));
-            if (request.RequestedBy is null
-                || !StringComparer.Ordinal.Equals(request.RequestedBy.TenantId, tenantId)
-                || request.Version <= 0
-                || request.PredecessorRevision <= 0
-                || request.PredecessorVersion <= 0
-                || !Enum.IsDefined(request.State)
-                || request.ChangedLines.IsDefaultOrEmpty
-                || request.ChangedLines.Any(static line =>
-                    string.IsNullOrWhiteSpace(line.LineKey)
-                    || StringComparer.Ordinal.Equals(line.PreviousValue, line.CurrentValue)
-                    || line.EvidenceIds.IsDefaultOrEmpty
-                    || line.EvidenceIds.Any(string.IsNullOrWhiteSpace))
-                || request.ChangedLines.Select(static line => line.LineKey)
-                    .Distinct(StringComparer.Ordinal).Count() != request.ChangedLines.Length)
-            {
-                throw Integrity(
-                    "legacy reporting restatement request",
-                    request.RequestId,
-                    "the retained v1 request shape is invalid");
-            }
-
-            if ((request.State == ReportingRestatementRequestState.Approved)
-                    != (request.ApprovedBy is not null
-                        && request.ApprovedAtUtc is not null
-                        && request.DraftRunId is not null)
-                || (request.ApprovedBy is not null
-                    && !StringComparer.Ordinal.Equals(request.ApprovedBy.TenantId, tenantId)))
-            {
-                throw Integrity(
-                    "legacy reporting restatement request",
-                    request.RequestId,
-                    "the retained v1 approval fields are invalid");
-            }
-        }
-
         private static void VerifyPayloadChecksum(string kind, string id, string payload, string expectedHash)
         {
             var actualHash = Sha256Digest.ComputeUtf8(payload);
@@ -1847,25 +1459,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             }
         }
 
-        private static GovernedReportingRunV1 DeserializeLegacyRun(string payload, string id)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize(
-                        payload,
-                        ReportingGovernanceJsonContext.Default.GovernedReportingRunV1)
-                    ?? throw Integrity("legacy reporting run", id, "the retained v1 state payload is null");
-            }
-            catch (JsonException exception)
-            {
-                throw Integrity(
-                    "legacy reporting run",
-                    id,
-                    "the retained v1 state payload is invalid JSON",
-                    exception);
-            }
-        }
-
         private static string SerializeRestatement(ReportingRestatementRequest request) =>
             ReportingGovernancePersistenceJson.SerializeRestatement(request);
 
@@ -1878,28 +1471,6 @@ public sealed partial class PostgresReportingGovernanceRepository : IReportingGo
             catch (JsonException exception)
             {
                 throw Integrity("reporting restatement request", id, "the retained state payload is invalid JSON", exception);
-            }
-        }
-
-        private static ReportingRestatementRequestV1 DeserializeLegacyRestatement(string payload, string id)
-        {
-            try
-            {
-                return JsonSerializer.Deserialize(
-                        payload,
-                        ReportingGovernanceJsonContext.Default.ReportingRestatementRequestV1)
-                    ?? throw Integrity(
-                        "legacy reporting restatement request",
-                        id,
-                        "the retained v1 state payload is null");
-            }
-            catch (JsonException exception)
-            {
-                throw Integrity(
-                    "legacy reporting restatement request",
-                    id,
-                    "the retained v1 state payload is invalid JSON",
-                    exception);
             }
         }
 
@@ -2015,21 +1586,4 @@ public sealed class ReportingGovernancePersistenceException : ReportingGovernanc
             Data[nameof(innerException)] = innerException.ToString();
         }
     }
-}
-
-/// <summary>
-/// Raised after a v1 aggregate and its original audit chain have been verified successfully. The
-/// aggregate remains read-only because current typed access and certification facts cannot be
-/// reconstructed from the committed v1 payload without inference.
-/// </summary>
-public sealed class ReportingGovernanceLegacyAggregateException : ReportingGovernanceException
-{
-    public ReportingGovernanceLegacyAggregateException(ReportingGovernancePersistenceStatus status)
-        : base(
-            $"Retained {status.AggregateKind} '{status.AggregateId}' is verified legacy governance format v1 and is read-only; export its immutable history and create a freshly certified v2 run.")
-    {
-        Status = status;
-    }
-
-    public ReportingGovernancePersistenceStatus Status { get; }
 }
