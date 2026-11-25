@@ -100,6 +100,13 @@ public sealed record OrderRequest
     public Guid? IntentId { get; init; }
     public string? StrategyId { get; init; }
     public Guid? FundAccountId { get; init; }
+
+    /// <summary>
+    /// Security Master identity resolved at order admission, when known. Gateways stamp it onto
+    /// execution reports so fills post to SecurityId-keyed ledger accounts.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
     public PositionIntent? PositionIntent { get; init; }
     public OptionContractIdentity? OptionContract { get; init; }
     public IReadOnlyList<OrderLeg>? Legs { get; init; }
@@ -186,6 +193,14 @@ public sealed record ExecutionReport
     [System.Text.Json.Serialization.JsonIgnore(
         Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public string? AssetClass { get; init; }
+
+    /// <summary>
+    /// Security Master identity of the filled instrument, carried from order admission (or the
+    /// gateway's security definition). Per-security ledger accounts are keyed by it (Security Master
+    /// review F2). Omitted from serialized payloads when null so existing durable records are unaffected.
+    /// </summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public Guid? SecurityId { get; init; }
 
     /// <summary>Security-definition lot denomination retained for paper fill replay; absent on legacy reports.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]

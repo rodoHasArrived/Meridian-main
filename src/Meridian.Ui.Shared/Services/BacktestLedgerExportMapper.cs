@@ -46,8 +46,10 @@ public static class BacktestLedgerExportMapper
                     throw new InvalidOperationException("Lot export is unavailable: open lots have no unambiguous retained position mark.");
                 var isShort = lots[0].IsShort;
                 var totalBasis = lots.Sum(lot => lot.CostBasis());
-                var carrying = isShort ? LedgerAccounts.ShortSecuritiesPayable(group.Key, account.AccountId) :
-                    LedgerAccounts.Securities(group.Key, account.AccountId);
+                // Backtest ledgers are run-local and ticker-keyed (see SimulatedPortfolio.SimulationKey).
+                var simulationKey = LedgerSecurityKey.Unresolved(group.Key);
+                var carrying = isShort ? LedgerAccounts.ShortSecuritiesPayable(simulationKey, account.AccountId) :
+                    LedgerAccounts.Securities(simulationKey, account.AccountId);
                 if (Math.Abs(result.Ledger.GetBalanceAsOf(carrying, asOf) - totalBasis) > 0.00000001m)
                     throw new InvalidOperationException("Lot export is unavailable: retained lot basis does not reconcile to the ledger.");
                 var marketValue = isShort ? totalBasis - position.UnrealizedPnl : totalBasis + position.UnrealizedPnl;

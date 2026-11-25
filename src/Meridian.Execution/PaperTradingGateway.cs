@@ -577,6 +577,7 @@ public sealed class PaperTradingGateway :
         {
             report = report with
             {
+                SecurityId = report.SecurityId ?? (convention.SecurityId == Guid.Empty ? null : convention.SecurityId),
                 AssetClass = convention.AssetClass,
                 LotUnitKind = convention.UnitKind,
                 LotMultiplier = convention.Multiplier,
@@ -684,7 +685,8 @@ public sealed class PaperTradingGateway :
             RejectReason = rejectReason,
             Timestamp = DateTimeOffset.UtcNow,
             GatewayOrderId = gatewayOrderId,
-            ClientOrderId = request.ClientOrderId ?? orderId
+            ClientOrderId = request.ClientOrderId ?? orderId,
+            SecurityId = request.SecurityId
         };
     }
 

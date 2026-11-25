@@ -33,8 +33,20 @@ public sealed class LedgerMarkToMarketCarryingValueSource(ILedgerJournalStore st
         foreach (var position in request.Positions)
         {
             var key = MarkToMarketCarryingValueKey.FromPosition(position);
-            var account = LedgerAccounts.Securities(key.Symbol, key.FinancialAccountId);
+            // Carrying value is read from the SecurityId-keyed account (Security Master review F2).
+            // Until a governed reclass moves them, journals retained before SecurityId keying hold
+            // the same holding on its ticker-keyed account, so both buckets are one carrying value.
+            var account = LedgerAccounts.Securities(LedgerSecurityKey.From(key.SecurityId, key.Symbol), key.FinancialAccountId);
             var accountExists = trialBalance.TryGetValue(account, out var balance);
+            if (key.SecurityId is not null)
+            {
+                var legacy = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(key.Symbol), key.FinancialAccountId);
+                if (trialBalance.TryGetValue(legacy, out var legacyBalance))
+                {
+                    balance += legacyBalance;
+                    accountExists = true;
+                }
+            }
             var evidence = $"ledger://books/{request.LedgerBookId.Value:D}/accounts/{Uri.EscapeDataString(account.ToString())}/as-of/{Uri.EscapeDataString(asOfUtc.ToString("O", CultureInfo.InvariantCulture))}";
             if (entityId is not null)
                 evidence += $"?entityId={Uri.EscapeDataString(entityId)}";

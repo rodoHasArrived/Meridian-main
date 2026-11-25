@@ -7,9 +7,16 @@ namespace Meridian.Application.Subscriptions.Services;
 /// <summary>Projects a complete account at cost; subscription filters never remove opening assets.</summary>
 public static class PortfolioOpeningBalanceProjector
 {
-    public static AutomatedJournalDraft Build(PortfolioImportRun run)
+    /// <param name="run">The retained import run.</param>
+    /// <param name="securityIds">
+    /// Canonical Security Master identity for every snapshot position ticker (normalized upper-case).
+    /// Opening Securities / Short Securities Payable accounts are keyed by SecurityId (Security Master
+    /// review F2); the ticker is kept for display only.
+    /// </param>
+    public static AutomatedJournalDraft Build(PortfolioImportRun run, IReadOnlyDictionary<string, Guid> securityIds)
     {
         ArgumentNullException.ThrowIfNull(run);
+        ArgumentNullException.ThrowIfNull(securityIds);
         var snapshot = run.Snapshot ?? throw new InvalidOperationException("An opening requires a retained complete broker snapshot.");
         if (run.SnapshotHash != PortfolioImportRunService.SnapshotHash(snapshot))
             throw new InvalidDataException("Opening source evidence does not match its retained hash.");
@@ -47,8 +54,12 @@ public static class PortfolioOpeningBalanceProjector
             if (!position.AverageCost.HasValue || position.AverageCost < 0 || (position.Quantity != 0m && position.AverageCost == 0))
                 throw new InvalidOperationException($"Opening position {position.Symbol} lacks a valid cost basis.");
             var cost = checked(position.Quantity * position.AverageCost.Value);
-            AddSigned(cost < 0 ? LedgerAccounts.ShortSecuritiesPayable(position.Symbol, accountId)
-                : LedgerAccounts.Securities(position.Symbol, accountId), cost);
+            var symbol = position.Symbol.Trim().ToUpperInvariant();
+            if (!securityIds.TryGetValue(symbol, out var securityId) || securityId == Guid.Empty)
+                throw new InvalidOperationException($"Opening instrument {symbol} has no canonical Security Master identity.");
+            var security = LedgerSecurityKey.Resolved(securityId, symbol);
+            AddSigned(cost < 0 ? LedgerAccounts.ShortSecuritiesPayable(security, accountId)
+                : LedgerAccounts.Securities(security, accountId), cost);
         }
         var equity = lines.Sum(line => line.debit - line.credit);
         AddSigned(LedgerAccounts.CapitalAccountFor(accountId), -equity);

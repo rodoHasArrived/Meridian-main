@@ -163,7 +163,7 @@ public sealed partial class SecurityMasterAmortizationLedgerBridge : ISecurityMa
         var financialAccountId = string.IsNullOrWhiteSpace(postingContext.FinancialAccountId)
             ? null
             : postingContext.FinancialAccountId.Trim();
-        var carrying = LedgerAccounts.Securities(normalizedTicker, financialAccountId);
+        var carrying = LedgerAccounts.Securities(LedgerSecurityKey.Resolved(securityId, normalizedTicker), financialAccountId);
         var existingIds = ledger.Journal.Select(static j => j.JournalEntryId).ToHashSet();
 
         var schedule = projection.Schedule.OrderBy(static entry => entry.PeriodDate).ToList();

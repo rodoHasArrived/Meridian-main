@@ -42,8 +42,23 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
         var futureActivity = records.Any(r => r.Entry.Timestamp > provider.SyncedAt && r.Entry.Lines.Any(InScope));
         var providerBySymbol = provider.Positions.GroupBy(p => p.Symbol.Trim().ToUpperInvariant(), StringComparer.Ordinal)
             .ToDictionary(g => g.Key, g => g.ToArray(), StringComparer.Ordinal);
-        var symbols = providerBySymbol.Keys.Concat(lines.Where(l => l.Account.Name is "Securities" or "Short Securities Payable")
-            .Select(l => l.Account.Symbol).OfType<string>()).Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal);
+        // Per-security accounts are keyed by SecurityId (Security Master review F2): a holding is one
+        // row however many tickers it traded under. The row label is the broker symbol that
+        // identifies the same security, else the account's display ticker. Journals retained before
+        // SecurityId keying stay on ticker-keyed accounts and match by ticker.
+        var brokerSecurityBySymbol = providerBySymbol.ToDictionary(
+            pair => pair.Key,
+            pair => pair.Value.Select(p => p.Security?.SecurityId).OfType<Guid>().Distinct().ToArray(),
+            StringComparer.Ordinal);
+        var positionAccounts = lines.Select(l => l.Account)
+            .Where(a => a.Name is LedgerAccounts.SecuritiesAccountName or LedgerAccounts.ShortSecuritiesPayableAccountName
+                && (a.Symbol is not null || a.SecurityId is not null))
+            .Distinct().ToArray();
+        string Label(LedgerAccount a) => a.SecurityId is { } id
+            ? brokerSecurityBySymbol.FirstOrDefault(pair => pair.Value.Contains(id)).Key ?? a.Symbol ?? id.ToString("D")
+            : a.Symbol!;
+        var symbols = providerBySymbol.Keys.Concat(positionAccounts.Select(Label))
+            .Distinct(StringComparer.Ordinal).Order(StringComparer.Ordinal);
         foreach (var symbol in symbols)
         {
             providerBySymbol.TryGetValue(symbol, out var brokerRows);
@@ -56,9 +71,10 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
                     throw new InvalidOperationException("Provider quantity and average-cost conventions require explicit instrument multipliers; this comparison supports unit-priced equities.");
                 if (futureActivity)
                     throw new InvalidOperationException("Later journal activity prevents using current open lots at the earlier broker cutoff; capture a fresh broker snapshot.");
-                var accounts = lines.Where(l => l.Account.Symbol == symbol && l.Account.Name is "Securities" or "Short Securities Payable")
-                    .Select(l => l.Account)
-                    .Concat(new[] { LedgerAccounts.Securities(symbol, account), LedgerAccounts.ShortSecuritiesPayable(symbol, account) })
+                var brokerSecurity = brokerSecurityBySymbol.TryGetValue(symbol, out var ids) && ids.Length == 1 ? ids[0] : (Guid?)null;
+                var defaultKey = LedgerSecurityKey.From(brokerSecurity, symbol);
+                var accounts = positionAccounts.Where(a => string.Equals(Label(a), symbol, StringComparison.Ordinal))
+                    .Concat(new[] { LedgerAccounts.Securities(defaultKey, account), LedgerAccounts.ShortSecuritiesPayable(defaultKey, account) })
                     .Distinct().ToArray();
                 var lots = new List<LedgerTaxLotRecord>();
                 foreach (var lotAccount in accounts)
@@ -125,7 +141,7 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
                 || ValuationMarkEvidenceGuard.IsValuation(origin.Metadata.IdempotencyKey) || origin.Metadata.ActivityType == "fair-value-mark"
                 || (origin.Metadata.EffectiveDate ?? DateOnly.FromDateTime(origin.Timestamp.UtcDateTime)) != lot.AcquiredDate)
                 throw new InvalidOperationException("Canonical acquisition origin does not match the retained instrument, position, account and acquisition date.");
-            if ((lot.Account.Name == "Short Securities Payable") != (lot.Acquisition!.Direction == OpenLotDirection.Short))
+            if ((lot.Account.Name == LedgerAccounts.ShortSecuritiesPayableAccountName) != (lot.Acquisition!.Direction == OpenLotDirection.Short))
                 throw new InvalidOperationException("Canonical acquisition direction does not match its securities account.");
         }
 
@@ -137,7 +153,7 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
                 if (IsValidatedValuationOnly(book, symbol, entry, component.Key, lots))
                     continue;
                 var acquisitions = lots.Where(l => l.SourceJournalEntryId == entry.JournalEntryId && l.Account == component.Key).ToArray();
-                var shortPosition = component.Key.Name == "Short Securities Payable";
+                var shortPosition = component.Key.Name == LedgerAccounts.ShortSecuritiesPayableAccountName;
                 if (acquisitions.Length == 0 || !entry.IsBalanced
                     || component.Any(l => shortPosition ? l.Debit != 0m : l.Credit != 0m)
                     || component.Any(l => l.Currency is { } currency && !string.Equals(currency.FunctionalCurrency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
@@ -154,9 +170,11 @@ public sealed class PostedLedgerAccountReconciliationSource(ILedgerJournalStore 
         var lossAccount = LedgerAccounts.UnrealizedLossFor(account.FinancialAccountId ?? symbol);
         if ((!ValuationMarkEvidenceGuard.IsValuation(entry.Metadata.IdempotencyKey) && entry.Metadata.ActivityType != "fair-value-mark")
             || !entry.IsBalanced || entry.Metadata.SecurityId is not { } securityId
-            || account != LedgerAccounts.Securities(symbol, account.FinancialAccountId)
+            || account.Name != LedgerAccounts.SecuritiesAccountName
+            || (account.SecurityId is { } keyedId ? keyedId != securityId : account.Symbol != symbol)
             || !lots.Any(l => l.Account == account && l.SecurityId == securityId)
-            || !string.Equals(entry.Metadata.Symbol, symbol, StringComparison.OrdinalIgnoreCase)
+            // A SecurityId-keyed mark may carry the ticker in force when it was booked.
+            || (account.SecurityId is null && !string.Equals(entry.Metadata.Symbol, symbol, StringComparison.OrdinalIgnoreCase))
             || entry.Lines.Any(l => l.Account != account && l.Account != gainAccount && l.Account != lossAccount)
             || entry.Lines.All(l => l.Account == account)
             || entry.Lines.Any(l => l.Currency is null || !l.Currency.IsFunctionalCurrency

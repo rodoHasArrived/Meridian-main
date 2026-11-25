@@ -37,6 +37,13 @@ public sealed record AllocationResult(
     DateTimeOffset AllocatedAt)
 {
     /// <summary>
+    /// Security Master identity of the block instrument, carried from order admission. Required to
+    /// post the allocation: per-security ledger accounts are keyed by SecurityId (Security Master
+    /// review F2), with <see cref="Symbol"/> kept for display.
+    /// </summary>
+    public Guid? SecurityId { get; init; }
+
+    /// <summary>
     /// Validates that all slice quantities sum to the block total.
     /// Rounding residuals of up to ±1 share are acceptable.
     /// </summary>

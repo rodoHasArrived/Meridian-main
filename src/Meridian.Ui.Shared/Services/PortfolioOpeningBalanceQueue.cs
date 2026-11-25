@@ -17,33 +17,58 @@ public sealed class PortfolioOpeningBalanceQueue(
     ConfigStore configuration,
     ILedgerJournalStore store,
     ISecurityMasterQueryService? securities = null,
-    IFundAccountService? accounts = null) : IPortfolioOpeningBalanceQueue
+    IFundAccountService? accounts = null,
+    ISecurityResolver? resolver = null) : IPortfolioOpeningBalanceQueue
 {
+    /// <summary>
+    /// Resolves every snapshot position ticker through the canonical (provider-less) resolver as of
+    /// the snapshot instant. Ambiguous or unregistered tickers block the opening rather than guess.
+    /// </summary>
+    private async Task<IReadOnlyDictionary<string, Guid>> ResolveOpeningSecuritiesAsync(PortfolioImportRun run, CancellationToken ct)
+    {
+        var snapshot = run.Snapshot ?? throw new InvalidOperationException("An opening requires a retained complete broker snapshot.");
+        var result = new Dictionary<string, Guid>(StringComparer.Ordinal);
+        if (!snapshot.Positions.Any())
+            return result;
+
+        var canonical = resolver ?? throw new InvalidOperationException("Opening instruments require the canonical Security Master resolver.");
+        var details = securities ?? throw new InvalidOperationException("Opening instruments require an authoritative Security Master resolver.");
+        foreach (var symbol in snapshot.Positions.Select(static p => p.Symbol.Trim().ToUpperInvariant()).Distinct(StringComparer.Ordinal))
+        {
+            var resolution = await canonical.ResolveCanonicalAsync(
+                new ResolveCanonicalSecurityRequest(SecurityIdentifierKind.Ticker, symbol, snapshot.RetrievedAt, ActiveOnly: true),
+                ct).ConfigureAwait(false);
+            if (!resolution.IsResolved)
+                throw new CanonicalSecurityResolutionException(resolution);
+            var security = await details.GetByIdAsync(resolution.SecurityId!.Value, ct).ConfigureAwait(false)
+                ?? throw new InvalidOperationException($"Opening instrument {symbol} is not resolved in Security Master.");
+            if (security.Status != SecurityStatusDto.Active || !string.Equals(security.Currency, snapshot.Currency, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidOperationException($"Opening instrument {symbol} requires active same-currency Security Master evidence.");
+            result[symbol] = security.SecurityId;
+        }
+
+        return result;
+    }
+
     public async Task<Guid> QueueAsync(PortfolioImportRun run, CancellationToken ct = default)
     {
-        var draft = PortfolioOpeningBalanceProjector.Build(run);
+        var securityIds = await ResolveOpeningSecuritiesAsync(run, ct).ConfigureAwait(false);
+        var draft = PortfolioOpeningBalanceProjector.Build(run, securityIds);
         var scope = run.Request.Scope;
         var accountAuthority = accounts ?? throw new InvalidOperationException("Opening balances require the retained financial account authority.");
         var account = await accountAuthority.GetAccountAsync(scope.FinancialAccountId, ct);
         if (account is null || !account.IsActive || account.EntityId != scope.EntityId ||
             account.FundId?.ToString("D") != scope.FundProfileId)
             throw new InvalidOperationException("The opening entity and fund must match the retained active financial account.");
-        if (draft.Lines.Any(line => line.account.Symbol is not null))
+        if (draft.Lines.Any(line => line.account.SecurityId is not null))
         {
-            var resolver = securities ?? throw new InvalidOperationException("Opening instruments require an authoritative Security Master resolver.");
-            var resolvedLines = new List<(LedgerAccount account, decimal debit, decimal credit, LedgerLineDimensionSet? dimensions)>();
-            foreach (var line in draft.Lines)
+            draft = draft with
             {
-                if (line.account.Symbol is not { } symbol)
-                { resolvedLines.Add(line); continue; }
-                var security = await resolver.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, symbol, null, ct)
-                    ?? throw new InvalidOperationException($"Opening instrument {symbol} is not resolved in Security Master.");
-                if (security.Status != SecurityStatusDto.Active || !string.Equals(security.Currency, run.Snapshot!.Currency, StringComparison.OrdinalIgnoreCase))
-                    throw new InvalidOperationException($"Opening instrument {symbol} requires active same-currency Security Master evidence.");
-                resolvedLines.Add((line.account, line.debit, line.credit,
-                    (line.dimensions ?? new LedgerLineDimensionSet()) with { InstrumentId = security.SecurityId }));
-            }
-            draft = draft with { Lines = resolvedLines };
+                Lines = draft.Lines.Select(line => line.account.SecurityId is { } securityId
+                    ? (line.account, line.debit, line.credit,
+                        (line.dimensions ?? new LedgerLineDimensionSet()) with { InstrumentId = securityId })
+                    : line).ToArray()
+            };
         }
         var book = await store.GetLedgerBookAsync(scope.LedgerBookId, ct)
             ?? throw new InvalidOperationException("The opening ledger book is unavailable.");

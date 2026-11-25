@@ -5,7 +5,14 @@ namespace Meridian.Execution;
 /// <summary>
 /// Result from a Security Master gate check for an order symbol.
 /// </summary>
-public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null);
+public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null)
+{
+    /// <summary>
+    /// Canonical Security Master identity of the approved symbol, when the gate resolved one. Carry it
+    /// on the order (<c>OrderRequest.SecurityId</c>) so fills post to SecurityId-keyed ledger accounts.
+    /// </summary>
+    public Guid? SecurityId { get; init; }
+}
 
 /// <summary>
 /// Pre-trade governance gate: verifies that a symbol is registered and active in the

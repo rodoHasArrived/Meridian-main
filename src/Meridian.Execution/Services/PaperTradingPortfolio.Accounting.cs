@@ -47,14 +47,26 @@ public sealed partial class PaperTradingPortfolio
                     _ledger.GetBalance(Scoped(account, LedgerAccounts.MarginLoanPayable)));
                 Compare(account.AccountId, "ShortCollateral", account.ShortMarginCollateral,
                     _ledger.GetBalance(Scoped(account, LedgerAccounts.ShortSaleCollateralReceivable)));
-                // Include ledger-only symbols so a closed holding cannot leave stranded basis.
-                var symbols = account.Positions.Keys.Concat(_ledger.Accounts
-                    .Where(a => a.Symbol is not null && (a.Name is "Securities" or "Short Securities Payable")
-                        && (!_scopeLedgerAccounts || string.Equals(a.FinancialAccountId, account.AccountId, StringComparison.OrdinalIgnoreCase)))
-                    .Select(a => a.Symbol!)).Distinct(StringComparer.OrdinalIgnoreCase);
-                foreach (var symbol in symbols)
+                // Include ledger-only security keys so a closed holding cannot leave stranded basis.
+                // Per-security accounts are keyed by SecurityId when the holding carried one
+                // (Security Master review F2), else by the legacy ticker.
+                var keys = new List<(string Symbol, LedgerSecurityKey Key)>();
+                foreach (var position in account.Positions.Values)
+                    keys.Add((position.Symbol, position.LedgerKey));
+                foreach (var ledgerAccount in _ledger.Accounts.Where(a =>
+                             a.Name is LedgerAccounts.SecuritiesAccountName or LedgerAccounts.ShortSecuritiesPayableAccountName
+                             && (a.Symbol is not null || a.SecurityId is not null)
+                             && (!_scopeLedgerAccounts || string.Equals(a.FinancialAccountId, account.AccountId, StringComparison.OrdinalIgnoreCase))))
+                {
+                    var key = LedgerSecurityKey.FromAccount(ledgerAccount);
+                    if (!keys.Any(existing => existing.Key == key))
+                        keys.Add((key.Symbol ?? key.SecurityId!.Value.ToString("D"), key));
+                }
+                foreach (var (symbol, key) in keys)
                 {
                     account.Positions.TryGetValue(symbol, out var position);
+                    if (position is not null && position.LedgerKey != key)
+                        position = null;
                     if (position is not null)
                     {
                         var units = position.UnitizedLots.Sum(lot => lot.UnitKind == position.LotUnit ? lot.Quantity : 0m);
@@ -63,10 +75,10 @@ public sealed partial class PaperTradingPortfolio
                     }
                     Compare(account.AccountId, $"Securities:{symbol}",
                         position is { Quantity: > 0m, UsesVariationMargin: false } ? position.OpenCostBasis : 0m,
-                        _ledger.GetBalance(Scoped(account, LedgerAccounts.Securities(symbol))));
+                        _ledger.GetBalance(Scoped(account, LedgerAccounts.Securities(key))));
                     Compare(account.AccountId, $"ShortSecurities:{symbol}",
                         position is { Quantity: < 0m, UsesVariationMargin: false } ? position.OpenCostBasis : 0m,
-                        _ledger.GetBalance(Scoped(account, LedgerAccounts.ShortSecuritiesPayable(symbol))));
+                        _ledger.GetBalance(Scoped(account, LedgerAccounts.ShortSecuritiesPayable(key))));
                 }
             }
             return breaks;
@@ -124,8 +136,9 @@ public sealed partial class PaperTradingPortfolio
 
         var scope = LedgerScope(account);
         var cashAccount = _chartOfAccounts.Resolve(LedgerAccountRole.Cash, scope);
-        var receivable = LedgerAccounts.AccruedInterestReceivable(report.Symbol, scope);
         account.Positions.TryGetValue(report.Symbol, out var position);
+        var receivable = LedgerAccounts.AccruedInterestReceivable(
+            position?.LedgerKey ?? LedgerSecurityKey.From(report.SecurityId, report.Symbol), scope);
 
         if (buysOntoLong)
         {

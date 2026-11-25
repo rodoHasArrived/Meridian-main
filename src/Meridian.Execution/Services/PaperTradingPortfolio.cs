@@ -605,7 +605,8 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             ApplyFillToAccount(account, report.Symbol, signedQty, fillPrice,
                 explicitCosts, report.Timestamp, report.OrderId,
                 ownerAccountId, multiplier, faceValueSizing, lotUnit, economicMultiplier, variationMargin, capture,
-                _canonicalAccountingRequired ? PaperSessionFillRecord.ComputeCanonicalFillId(report) : null);
+                _canonicalAccountingRequired ? PaperSessionFillRecord.ComputeCanonicalFillId(report) : null,
+                report.SecurityId);
             var (accruedInterest, accruedRelieved) = ApplyAccruedInterestSettlement(
                 account, report, faceValueSizing, signedQty, quantityBefore, purchasedAccruedBefore);
 
@@ -954,8 +955,10 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         SecurityLotUnitKind lotUnit,
         decimal economicMultiplier,
         bool variationMargin,
-        FillAccountingCapture capture, Guid? canonicalFillId = null)
+        FillAccountingCapture capture, Guid? canonicalFillId = null, Guid? securityId = null)
     {
+        if (account.Positions.TryGetValue(symbol, out var existingPosition))
+            existingPosition.BindSecurity(securityId);
         if (!account.Positions.TryGetValue(symbol, out var pos))
         {
             pos = new PaperPosition(symbol, price)
@@ -969,6 +972,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             // multiplier below 1 would otherwise stay at the default and fail the equality check
             // on the very next fill.
             pos.InitializeContractMultiplier(contractMultiplier);
+            pos.BindSecurity(securityId);
             account.Positions[symbol] = pos;
         }
         else if (pos.LotUnit != lotUnit)
@@ -1245,7 +1249,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         // Preserve the exact financing in captured evidence, while classifying gross trade
         // cash and financing cash independently in the journal.
         PostInvestingLedgerLines(ts, $"Buy {qty} {symbol} @ {price:F4}",
-            SecurityTradePostingProjector.Project(capture.Opening with { BorrowedAmount = 0m }, symbol, LedgerScope(account), _chartOfAccounts));
+            SecurityTradePostingProjector.Project(capture.Opening with { BorrowedAmount = 0m }, pos.LedgerKey, LedgerScope(account), _chartOfAccounts));
     }
 
     private void ApplyCoverShort(
@@ -1286,7 +1290,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (_ledger is not null)
         {
             PostInvestingLedgerLines(ts, $"Cover {coverQty} {symbol} @ {price:F4}",
-                SecurityTradePostingProjector.Project(capture.Closing, symbol, LedgerScope(account), _chartOfAccounts));
+                SecurityTradePostingProjector.Project(capture.Closing, pos.LedgerKey, LedgerScope(account), _chartOfAccounts));
             if (marginReleased > 0m)
                 _ledger.PostLines(ts, $"Reg T short collateral released {coverQty} {symbol}",
                     SecurityTradePostingProjector.ShortCollateral(marginReleased, true, LedgerScope(account), _chartOfAccounts));
@@ -1329,7 +1333,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (_ledger is null)
             return;
         PostInvestingLedgerLines(ts, $"Sell {closeQty} {symbol} @ {price:F4}",
-            SecurityTradePostingProjector.Project(capture.Closing with { LoanRepaid = 0m }, symbol, LedgerScope(account), _chartOfAccounts));
+            SecurityTradePostingProjector.Project(capture.Closing with { LoanRepaid = 0m }, pos.LedgerKey, LedgerScope(account), _chartOfAccounts));
         if (loanRepaid > 0m)
             _ledger.PostLines(ts, $"Margin repayment — {symbol}",
                 SecurityTradePostingProjector.MarginFinancing(0m, loanRepaid, LedgerScope(account), _chartOfAccounts));
@@ -1377,7 +1381,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         if (_ledger is null)
             return;
         PostInvestingLedgerLines(ts, $"Short sell {qty} {symbol} @ {price:F4}",
-            SecurityTradePostingProjector.Project(capture.Opening, symbol, LedgerScope(account), _chartOfAccounts));
+            SecurityTradePostingProjector.Project(capture.Opening, pos.LedgerKey, LedgerScope(account), _chartOfAccounts));
 
         // Collateral held by the broker is an asset, but is not available cash.
         if (collateralHeld > 0m)
