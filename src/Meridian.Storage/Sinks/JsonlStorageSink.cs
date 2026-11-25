@@ -605,7 +605,9 @@ public sealed class JsonlStorageSink : IStorageSink
             // before the list is cleared, so a failure part-way retries all of them.
             foreach (var directory in pending)
             {
-                AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).GetAwaiter().GetResult();
+                // Strict: this is the last step of the flush EventPipeline awaits before it
+                // commits the WAL. A failure must surface so the WAL keeps the records.
+                AtomicFileWriter.SyncDirectoryStrictAsync(directory, CancellationToken.None).GetAwaiter().GetResult();
             }
 
             _pendingDirectorySyncs = null;

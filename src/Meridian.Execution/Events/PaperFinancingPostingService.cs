@@ -304,12 +304,16 @@ public sealed partial class PaperFinancingPostingService : IAsyncDisposable
         await _wal.TruncateAsync(_sequence, CancellationToken.None).ConfigureAwait(false);
     }
 
-    private Task PersistSnapshotAsync()
+    private async Task PersistSnapshotAsync()
     {
         var snapshot = new PaperFinancingPostingSnapshot(1, _context, _sequence, _charges.Values.ToArray());
-        return AtomicFileWriter.WriteAsync(_snapshotPath,
+        await AtomicFileWriter.WriteAsync(_snapshotPath,
             JsonSerializer.Serialize(snapshot, ExecutionJsonContext.Default.PaperFinancingPostingSnapshot),
-            CancellationToken.None);
+            CancellationToken.None).ConfigureAwait(false);
+        // Callers truncate the WAL next. The snapshot's rename must be durable first, and the
+        // write above only makes that a best effort; a failure here keeps the WAL instead.
+        await AtomicFileWriter.SyncDirectoryStrictAsync(
+            Path.GetDirectoryName(_snapshotPath) ?? ".", CancellationToken.None).ConfigureAwait(false);
     }
 
     private void Apply(PaperFinancingPostingState state)

@@ -758,7 +758,18 @@ public sealed class WriteAheadLog : IAsyncDisposable
 
                         // Persist the archive rename and verify the archive actually landed before
                         // deleting the only remaining copy of the records.
-                        await AtomicFileWriter.SyncDirectoryAsync(archiveDir, ct);
+                        try
+                        {
+                            await AtomicFileWriter.SyncDirectoryStrictAsync(archiveDir, ct);
+                        }
+                        catch (IOException ex)
+                        {
+                            _log.Error(
+                                ex,
+                                "Refusing to delete WAL file {File}: archive {Archive} could not be made durable",
+                                walFile, archivePath);
+                            continue;
+                        }
 
                         var archiveInfo = new FileInfo(archivePath);
                         if (!archiveInfo.Exists || archiveInfo.Length == 0)
@@ -924,7 +935,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
             // post-create, so it must not observe cancellation.
             await _currentWalFile.FlushAsync(CancellationToken.None).ConfigureAwait(false);
             _currentWalFile.Flush(flushToDisk: true);
-            await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
+            // Strict: records fsynced into a segment whose entry is not durable are not durable
+            // either, so a failure here must stop the writer rather than be logged and ignored.
+            await AtomicFileWriter.SyncDirectoryStrictAsync(_walDirectory, CancellationToken.None).ConfigureAwait(false);
 
             if (_walDirectoryCreated && !_walDirectoryParentSynced)
             {
@@ -932,7 +945,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 // treatment or the whole directory can vanish.
                 var parent = Path.GetDirectoryName(Path.GetFullPath(_walDirectory));
                 if (!string.IsNullOrEmpty(parent))
-                    await AtomicFileWriter.SyncDirectoryAsync(parent, CancellationToken.None).ConfigureAwait(false);
+                    await AtomicFileWriter.SyncDirectoryStrictAsync(parent, CancellationToken.None).ConfigureAwait(false);
                 _walDirectoryParentSynced = true;
             }
         }
@@ -1237,20 +1250,69 @@ public sealed class WriteAheadLog : IAsyncDisposable
         return header == null || TryParseWalHeader(header, out _);
     }
 
+    // The highest sequence any segment can have used, so new records never reuse one.
+    // Checksum-valid records give the exact answer for healthy segments. A damaged segment may
+    // have held higher sequences in lines that no longer validate, and their content cannot be
+    // trusted to say which, so it is bounded structurally instead: a segment's records are
+    // numbered consecutively after the base sequence in its name, hence none can exceed
+    // base + number of record lines. A damaged segment with a foreign name has no base, so its
+    // line count is added on top of everything else. Healthy segments never take this path, so
+    // an undamaged WAL keeps contiguous numbering.
     private async Task<long> GetLastSequenceNumberAsync(CancellationToken ct)
     {
         long maxSequence = 0;
+        long unanchoredLines = 0;
 
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal");
         foreach (var walFile in walFiles)
         {
+            var hasBase = TryParseSegmentBaseSequence(walFile, out var baseSequence);
+            if (hasBase)
+                maxSequence = Math.Max(maxSequence, baseSequence);
+
+            var corruptedBefore = CorruptedRecordCount;
             await foreach (var record in ReadWalFileAsync(walFile, ct))
             {
                 maxSequence = Math.Max(maxSequence, record.Sequence);
             }
+
+            if (CorruptedRecordCount == corruptedBefore)
+                continue;
+
+            var recordLines = await CountRecordLinesAsync(walFile, ct).ConfigureAwait(false);
+            if (hasBase)
+                maxSequence = Math.Max(maxSequence, baseSequence + recordLines);
+            else
+                unanchoredLines += recordLines;
         }
 
-        return maxSequence;
+        return maxSequence + unanchoredLines;
+    }
+
+    // Non-empty lines after the first: every line that is, or once was, a record. For a file
+    // whose header is unreadable the first line is still not counted, which is the safe side
+    // only by one; such a file's line count is an upper bound in every other respect.
+    private static async Task<long> CountRecordLinesAsync(string walFile, CancellationToken ct)
+    {
+        await using var stream = new FileStream(
+            walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+        using var reader = new StreamReader(stream);
+
+        long lines = 0;
+        var first = true;
+        while (await reader.ReadLineAsync(ct).ConfigureAwait(false) is { } line)
+        {
+            if (first)
+            {
+                first = false;
+                continue;
+            }
+
+            if (!string.IsNullOrWhiteSpace(line))
+                lines++;
+        }
+
+        return lines;
     }
 
     private static bool TryParseWalHeader(string header, out int version)
@@ -1582,9 +1644,9 @@ public sealed class WriteAheadLog : IAsyncDisposable
             destination.Flush(flushToDisk: true);
         }
 
-        await AtomicFileWriter.SyncDirectoryAsync(quarantineDirectory, ct).ConfigureAwait(false);
+        await AtomicFileWriter.SyncDirectoryStrictAsync(quarantineDirectory, ct).ConfigureAwait(false);
         if (created)
-            await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, ct).ConfigureAwait(false);
+            await AtomicFileWriter.SyncDirectoryStrictAsync(_walDirectory, ct).ConfigureAwait(false);
 
         return quarantinePath;
     }

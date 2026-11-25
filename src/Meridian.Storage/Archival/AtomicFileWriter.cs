@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading;
 using Meridian.Contracts.Integrity;
 using Meridian.Core.Logging;
+using Prometheus;
 using Serilog;
 
 namespace Meridian.Storage.Archival;
@@ -19,6 +20,22 @@ public static partial class AtomicFileWriter
     // Storage paths can contain financial account identities. Diagnostics retain operation
     // outcomes only; exception text can expose the same paths and must not be logged either.
     private static ILogger Log => LoggingSetup.ForContext(typeof(AtomicFileWriter));
+
+    private static readonly Counter DirectoryFsyncFailuresTotal = Metrics.CreateCounter(
+        "mdc_storage_dir_fsync_failures_total",
+        "Total number of directory fsync attempts that failed, leaving a new, renamed or deleted entry possibly not durable");
+
+    /// <summary>
+    /// Test seam: when set for the current async flow, called with each directory about to be
+    /// fsynced; a non-null result is treated as the errno of a failed fsync. Never set in production.
+    /// </summary>
+    [System.ComponentModel.EditorBrowsable(System.ComponentModel.EditorBrowsableState.Never)]
+    internal static readonly AsyncLocal<Func<string, int?>?> DirectorySyncFault = new();
+
+    // errno values meaning "this filesystem cannot fsync a directory" (EINVAL; ENOTSUP/EOPNOTSUPP
+    // on Linux and macOS). Some network and FUSE filesystems answer this way for every directory;
+    // it is a property of the mount, not a failed write, so the strict barrier does not refuse it.
+    private static bool IsDirectoryFsyncUnsupported(int errno) => errno is 22 or 95 or 45 or 102;
 
     // UTF-8 without a byte-order mark. A BOM would prefix text files (e.g. the .sha256 checksum
     // sidecar) with U+FEFF, which token-splitting readers must not see as part of the content.
@@ -942,10 +959,31 @@ public static partial class AtomicFileWriter
     /// Fsyncs a directory so that prior rename/link operations within it are durable after a crash
     /// or power loss. No-op on platforms where directory metadata is journaled automatically.
     /// </summary>
+    /// <remarks>
+    /// Best effort: a failed fsync is logged and counted but not thrown. Use
+    /// <see cref="SyncDirectoryStrictAsync"/> when the caller is about to rely on the entry being
+    /// durable, for example before deleting or truncating the only other copy of the data.
+    /// </remarks>
     public static Task SyncDirectoryAsync(string directory, CancellationToken ct = default)
     {
         ct.ThrowIfCancellationRequested();
-        SyncDirectory(directory);
+        SyncDirectory(directory, throwOnFailure: false);
+        return Task.CompletedTask;
+    }
+
+    /// <summary>
+    /// Fsyncs a directory as a durability barrier: throws <see cref="IOException"/> when the
+    /// directory cannot be opened or its fsync fails, so the caller does not go on to commit,
+    /// truncate or delete on the strength of an entry that may not survive power loss.
+    /// </summary>
+    /// <remarks>
+    /// A filesystem that does not support directory fsync at all is logged and counted but not
+    /// refused. The exception message carries the errno only, never the path.
+    /// </remarks>
+    public static Task SyncDirectoryStrictAsync(string directory, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        SyncDirectory(directory, throwOnFailure: true);
         return Task.CompletedTask;
     }
 
@@ -958,7 +996,18 @@ public static partial class AtomicFileWriter
     private static Task SyncCommittedDirectoryAsync(string directory)
         => SyncDirectoryAsync(directory, CancellationToken.None);
 
-    private static void SyncDirectory(string directory)
+    private static void ReportDirectorySyncFailure(string messageTemplate, int errno, bool throwOnFailure)
+    {
+        DirectoryFsyncFailuresTotal.Inc();
+        Log.Warning(messageTemplate, errno);
+        if (throwOnFailure && !IsDirectoryFsyncUnsupported(errno))
+        {
+            throw new IOException(
+                $"Directory fsync failed (errno {errno}); the directory entry may not survive a crash or power loss.");
+        }
+    }
+
+    private static void SyncDirectory(string directory, bool throwOnFailure = false)
     {
         // A bare relative path (e.g. "file.txt") yields an empty directory; treat it as the
         // current directory rather than faulting.
@@ -972,6 +1021,12 @@ public static partial class AtomicFileWriter
             Directory.CreateDirectory(directory);
         }
 
+        if (DirectorySyncFault.Value?.Invoke(directory) is { } injectedErrno)
+        {
+            ReportDirectorySyncFailure("Directory fsync failed (errno {Errno})", injectedErrno, throwOnFailure);
+            return;
+        }
+
         if (!OperatingSystem.IsLinux() && !OperatingSystem.IsMacOS())
         {
             // On Windows, NTFS journals directory metadata changes automatically.
@@ -983,7 +1038,8 @@ public static partial class AtomicFileWriter
         int fd = PosixInterop.open(directory, PosixInterop.O_RDONLY);
         if (fd < 0)
         {
-            Log.Warning("Unable to open directory for fsync (errno {Errno})", Marshal.GetLastPInvokeError());
+            ReportDirectorySyncFailure(
+                "Unable to open directory for fsync (errno {Errno})", Marshal.GetLastPInvokeError(), throwOnFailure);
             return;
         }
 
@@ -991,7 +1047,8 @@ public static partial class AtomicFileWriter
         {
             if (PosixInterop.fsync(fd) < 0)
             {
-                Log.Warning("Directory fsync failed (errno {Errno})", Marshal.GetLastPInvokeError());
+                ReportDirectorySyncFailure(
+                    "Directory fsync failed (errno {Errno})", Marshal.GetLastPInvokeError(), throwOnFailure);
             }
         }
         finally

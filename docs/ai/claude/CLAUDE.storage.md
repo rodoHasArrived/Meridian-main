@@ -133,6 +133,23 @@ original to `<wal>/quarantine/<segment>.<utc>.quarantined`. An unterminated, unp
 line is an incomplete tail (`WalRepairResult.IncompleteTailRecords`), not corruption, and never
 causes a rewrite.
 
+### Directory Durability Barriers
+
+`AtomicFileWriter.SyncDirectoryAsync` is best effort: a failed directory fsync is logged and
+counted, never thrown, because the write methods call it after their rename has already committed.
+`AtomicFileWriter.SyncDirectoryStrictAsync` throws `IOException` and is for the step *before* code
+relies on an entry being durable: a new WAL segment's entry before records are written to it, the
+archive before its WAL segment is deleted, a new JSONL file's entry before the sink flush returns
+(the barrier `EventPipeline` awaits before committing the WAL), a repair quarantine copy, and a
+snapshot's rename before the WAL behind it is committed and truncated. A filesystem that cannot
+fsync directories at all (EINVAL/ENOTSUP) is logged and counted but not refused. Use the strict
+form for any new delete-or-truncate-after-publish sequence. Tests inject failures through the
+async-local `AtomicFileWriter.DirectorySyncFault` seam.
+
+Sequence recovery never reuses a sequence: healthy segments contribute their highest valid record,
+and a segment with corrupt lines contributes `base sequence in its name + record line count`, so
+damaged high-numbered records still push the next sequence past them.
+
 ### WAL Sync Modes
 
 Use the actual `WalOptions` and writer flush behavior rather than the former illustrative sync-mode
@@ -208,6 +225,9 @@ existing suites and record results; listing these scenarios is not a claim that 
 The recovery-events counter is the valid-record scan tally, not a durable sink-replay count. The
 implementation explicitly distinguishes it from `mdc_wal_replayed_events_total` reported by replay
 consumers. Do not recreate old metric names or arbitrary thresholds without checking instrumentation.
+
+`AtomicFileWriter` declares `mdc_storage_dir_fsync_failures_total`, incremented for every directory
+fsync that fails, whether or not the caller treats it as fatal.
 
 ## Related Documentation
 
