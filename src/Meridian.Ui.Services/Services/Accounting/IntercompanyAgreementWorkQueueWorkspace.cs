@@ -205,8 +205,10 @@ public sealed class IntercompanyAgreementWorkQueueWorkspace : ObservableObject, 
         _queue = queue;
         Cases.Clear();
         Guarantees.Clear();
-        foreach (var item in queue.Cases) Cases.Add(new(item));
-        foreach (var item in queue.Guarantees) Guarantees.Add(new(item));
+        foreach (var item in queue.Cases)
+            Cases.Add(new(item));
+        foreach (var item in queue.Guarantees)
+            Guarantees.Add(new(item));
         NotifyObservation();
     }
 
@@ -245,7 +247,8 @@ public sealed class IntercompanyAgreementWorkQueueWorkspace : ObservableObject, 
 
     public void Dispose()
     {
-        if (_disposed) return;
+        if (_disposed)
+            return;
         _disposed = true;
         _generation++;
         _session.Cancel();
@@ -254,11 +257,13 @@ public sealed class IntercompanyAgreementWorkQueueWorkspace : ObservableObject, 
 
     private async Task RunAsync(Func<CancellationToken, Task> body)
     {
-        if (IsBusy || _disposed) return;
+        if (IsBusy || _disposed)
+            return;
         var generation = _generation;
         var token = _session.Token;
         IsBusy = true;
-        try { await body(token); }
+        try
+        { await body(token); }
         catch (OperationCanceledException) when (token.IsCancellationRequested) { }
         catch (Exception error)
         {
@@ -281,7 +286,8 @@ public sealed class IntercompanyAgreementWorkQueueWorkspace : ObservableObject, 
     private Guid Identity<T>(string action, T request)
     {
         var key = action + "|" + LedgerBook + "|" + AsOf + "|" + ExpiryHorizonDays + "|" + JsonSerializer.Serialize(request);
-        if (_command?.Key != key) _command = (key, Guid.NewGuid());
+        if (_command?.Key != key)
+            _command = (key, Guid.NewGuid());
         return _command.Value.Id;
     }
     private static T Require<T>(ApiResponse<T> response) where T : class => response.Success && response.Data is not null ? response.Data
@@ -290,13 +296,20 @@ public sealed class IntercompanyAgreementWorkQueueWorkspace : ObservableObject, 
     private static string? Null(string value) => string.IsNullOrWhiteSpace(value) ? null : value.Trim();
     private void NotifyObservation()
     {
-        OnPropertyChanged(nameof(CanManage)); OnPropertyChanged(nameof(IsCurrent)); OnPropertyChanged(nameof(ObservationText));
-        OnPropertyChanged(nameof(PermissionText)); OnPropertyChanged(nameof(ObservationFingerprint)); NotifyCommands();
+        OnPropertyChanged(nameof(CanManage));
+        OnPropertyChanged(nameof(IsCurrent));
+        OnPropertyChanged(nameof(ObservationText));
+        OnPropertyChanged(nameof(PermissionText));
+        OnPropertyChanged(nameof(ObservationFingerprint));
+        NotifyCommands();
     }
     private void NotifyCommands()
     {
-        LoadBooksCommand?.NotifyCanExecuteChanged(); LoadCommand?.NotifyCanExecuteChanged();
-        ObserveCommand?.NotifyCanExecuteChanged(); UpdateCommand?.NotifyCanExecuteChanged(); OpenAgreementCommand?.NotifyCanExecuteChanged();
+        LoadBooksCommand?.NotifyCanExecuteChanged();
+        LoadCommand?.NotifyCanExecuteChanged();
+        ObserveCommand?.NotifyCanExecuteChanged();
+        UpdateCommand?.NotifyCanExecuteChanged();
+        OpenAgreementCommand?.NotifyCanExecuteChanged();
     }
 }
 

@@ -80,8 +80,15 @@ public sealed class IntercompanyAgreementWorkQueueWorkspaceTests
     [Fact]
     public async Task ServerPermissionIsRequired_AndUnknownExposureNeverUsesDeclaredCap()
     {
-        var client = new Client { Queue = Queue(Item()) with { CanManage = false, Guarantees = [new(Agreement, "G-1", "Synthetic guarantee", 2, "legal-hash", Guid.NewGuid(), "Guarantor", Guid.NewGuid(), "Obligor", "USD", "bank-reference", 12345678901234567890.12345678m,
-            new(2026, 1, 1), new(2027, 1, 1), null, IntercompanyAgreementStatusDto.Active, null, "Unavailable", "No reviewed underlying exposure mapping.")] } };
+        var client = new Client
+        {
+            Queue = Queue(Item()) with
+            {
+                CanManage = false,
+                Guarantees = [new(Agreement, "G-1", "Synthetic guarantee", 2, "legal-hash", Guid.NewGuid(), "Guarantor", Guid.NewGuid(), "Obligor", "USD", "bank-reference", 12345678901234567890.12345678m,
+            new(2026, 1, 1), new(2027, 1, 1), null, IntercompanyAgreementStatusDto.Active, null, "Unavailable", "No reviewed underlying exposure mapping.")]
+            }
+        };
         using var view = await Open(client);
         view.SelectedCase = Assert.Single(view.Cases);
         view.Reason = "Reason";
@@ -213,15 +220,19 @@ public sealed class IntercompanyAgreementWorkQueueWorkspaceTests
         { LastScope = scope; return Deferred ?? Task.FromResult(ReadFailure ?? ApiResponse<IntercompanyAgreementWorkQueueDto>.Ok(Queue)); }
         public Task<ApiResponse<IntercompanyAgreementWorkItemDto>> ObserveAgreementWorkQueueAsync(IntercompanyObligationMonitorRequestDto scope, IntercompanyAgreementWorkQueueObserveRequestDto request, CancellationToken ct = default)
         {
-            LastScope = scope; LastObservation = request;
-            var item = Item(); Queue = Queue with { Cases = [item] };
+            LastScope = scope;
+            LastObservation = request;
+            var item = Item();
+            Queue = Queue with { Cases = [item] };
             return Task.FromResult(ApiResponse<IntercompanyAgreementWorkItemDto>.Ok(item));
         }
         public Task<ApiResponse<IntercompanyAgreementWorkItemDto>> UpdateAgreementWorkQueueAsync(IntercompanyObligationMonitorRequestDto scope, IntercompanyAgreementWorkQueueUpdateRequestDto request, CancellationToken ct = default)
         {
-            LastScope = scope; LastUpdate = request;
+            LastScope = scope;
+            LastUpdate = request;
             var item = Queue.Cases[0] with { Version = Queue.Cases[0].Version + 1, RecordHash = "updated-hash", Owner = request.Owner };
-            if (MutationFailure is null) Queue = Queue with { Cases = [item] };
+            if (MutationFailure is null)
+                Queue = Queue with { Cases = [item] };
             return Task.FromResult(MutationFailure ?? ApiResponse<IntercompanyAgreementWorkItemDto>.Ok(item));
         }
         public Task<ApiResponse<IntercompanyAgreementListDto>> ListAsync(IntercompanyAgreementQueryDto query, CancellationToken ct = default) => throw new NotSupportedException();

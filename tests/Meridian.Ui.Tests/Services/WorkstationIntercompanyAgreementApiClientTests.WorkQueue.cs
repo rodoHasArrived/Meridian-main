@@ -16,7 +16,7 @@ public sealed partial class WorkstationIntercompanyAgreementApiClientTests
             [new(Guid.NewGuid(), "G-1", "Guarantee", 2, "hash", Guid.NewGuid(), "Guarantor", Guid.NewGuid(), "Obligor", "USD", "bank-reference",
                 12345678901234567890.12345678m, new(2026, 1, 1), new(2027, 1, 1), null,
                 Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto.Active, null, "Unavailable", "Underlying exposure is not mapped.")], [])
-            { LedgerBookId = book, FundProfileId = "fund/a", CanManage = true };
+        { LedgerBookId = book, FundProfileId = "fund/a", CanManage = true };
         using var api = new ApiClientService(new Factory((request, _) =>
         {
             Assert.Equal("/api/ledger/intercompany/work-queue", request.RequestUri!.AbsolutePath);
@@ -47,7 +47,8 @@ public sealed partial class WorkstationIntercompanyAgreementApiClientTests
     [Fact]
     public async Task WorkQueueUpdateSendsExpectedAuthorityAndCannotAcceptAnotherCommandReceipt()
     {
-        var book = Guid.NewGuid(); var date = new DateOnly(2026, 11, 23);
+        var book = Guid.NewGuid();
+        var date = new DateOnly(2026, 11, 23);
         var command = new IntercompanyAgreementWorkQueueUpdateRequestDto(Guid.NewGuid(), "case-a", IntercompanyAgreementWorkItemActionDto.AssignOwner,
             7, "record-7", "source-current", "Assign follow-up", "operator-b");
         var item = new IntercompanyAgreementWorkItemDto("case-a", book, Guid.NewGuid(), 2, "expiring", "Warning", "Expiry", "Amend", null, date,

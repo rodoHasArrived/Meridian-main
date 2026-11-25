@@ -22,8 +22,12 @@ public sealed partial class DirectLendingLifecycleReplayTests
         Add(history, "loan.fee-assessed", new { amount = 25m, effectiveDate = Start });
         Add(history, "loan.daily-accrual-posted", new
         {
-            accrualEntryId = Guid.Parse("83333333-3333-4333-8333-333333333333"), accrualDate = Start,
-            interestAmount = 4m, commitmentFeeAmount = 0m, penaltyAmount = 0m, annualRateApplied = 0.08m
+            accrualEntryId = Guid.Parse("83333333-3333-4333-8333-333333333333"),
+            accrualDate = Start,
+            interestAmount = 4m,
+            commitmentFeeAmount = 0m,
+            penaltyAmount = 0m,
+            annualRateApplied = 0.08m
         });
         Add(history, "loan.collateral-added", new { collateral = Collateral() });
         Add(history, "loan.collateral-value-updated", new { collateralId = CollateralId, newEstimatedValue = 175m, newAppraisalDate = Start });
@@ -32,9 +36,13 @@ public sealed partial class DirectLendingLifecycleReplayTests
         Add(history, "loan.servicer-position-imported", new
         {
             batchId = Guid.Parse("84444444-4444-4444-8444-444444444444"),
-            servicerReportLineId = Guid.Parse("85555555-5555-4555-8555-555555555555"), reportAsOfDate = Start,
-            principalOutstanding = 125m, interestAccruedUnpaid = (decimal?)null,
-            feesAccruedUnpaid = (decimal?)null, penaltyAccruedUnpaid = 1m, commitmentAvailable = (decimal?)null
+            servicerReportLineId = Guid.Parse("85555555-5555-4555-8555-555555555555"),
+            reportAsOfDate = Start,
+            principalOutstanding = 125m,
+            interestAccruedUnpaid = (decimal?)null,
+            feesAccruedUnpaid = (decimal?)null,
+            penaltyAccruedUnpaid = 1m,
+            commitmentAvailable = (decimal?)null
         });
         Add(history, "loan.discount-premium-amortized", BasisReceipt(10m, 2m, 100m, 20m));
         Add(history, "loan.status-transitioned", new { newStatus = LoanStatus.Active, reason = "Retained cure", effectiveDate = Start });
@@ -151,8 +159,11 @@ public sealed partial class DirectLendingLifecycleReplayTests
         Add(history, "loan.servicer-position-imported", new
         {
             batchId = Guid.Parse("84444444-4444-4444-8444-444444444444"),
-            servicerReportLineId = Guid.Parse("85555555-5555-4555-8555-555555555555"), reportAsOfDate = Start,
-            principalOutstanding = (decimal?)null, feesAccruedUnpaid = 0m, commitmentAvailable = (decimal?)null
+            servicerReportLineId = Guid.Parse("85555555-5555-4555-8555-555555555555"),
+            reportAsOfDate = Start,
+            principalOutstanding = (decimal?)null,
+            feesAccruedUnpaid = 0m,
+            commitmentAvailable = (decimal?)null
         });
 
         var rebuilt = Rebuild(history);
@@ -273,9 +284,12 @@ public sealed partial class DirectLendingLifecycleReplayTests
         {
             Add(history, "loan.discount-premium-amortized", new
             {
-                discountAmort = 20m, premiumAmort = 0m,
-                unamortizedDiscountBefore = 10m, unamortizedDiscountAfter = 0m,
-                unamortizedPremiumBefore = 0m, unamortizedPremiumAfter = 0m
+                discountAmort = 20m,
+                premiumAmort = 0m,
+                unamortizedDiscountBefore = 10m,
+                unamortizedDiscountAfter = 0m,
+                unamortizedPremiumBefore = 0m,
+                unamortizedPremiumAfter = 0m
             });
         }
         else
@@ -311,8 +325,11 @@ public sealed partial class DirectLendingLifecycleReplayTests
         history.Add(Event(5, "loan.collateral-added", new { collateral }) with { EffectiveDate = default(DateOnly) });
         history.Add(Event(6, "loan.status-transitioned", new
         {
-            newStatus = (LoanStatus)255, effectiveDate = default(DateOnly), reason = "Retained classification"
-        }) with { EffectiveDate = default(DateOnly) });
+            newStatus = (LoanStatus)255,
+            effectiveDate = default(DateOnly),
+            reason = "Retained classification"
+        }) with
+        { EffectiveDate = default(DateOnly) });
 
         var rebuilt = Rebuild(history);
 
@@ -328,8 +345,12 @@ public sealed partial class DirectLendingLifecycleReplayTests
         Add(history, "loan.prepayment-penalty-charged", new { penaltyAmount = 7m });
         Add(history, "loan.daily-accrual-posted", new
         {
-            accrualEntryId = Guid.Parse("8bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"), accrualDate = Start,
-            interestAmount = 1m, commitmentFeeAmount = 0m, penaltyAmount = 0m, annualRateApplied = 0.08m
+            accrualEntryId = Guid.Parse("8bbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"),
+            accrualDate = Start,
+            interestAmount = 1m,
+            commitmentFeeAmount = 0m,
+            penaltyAmount = 0m,
+            annualRateApplied = 0.08m
         });
 
         var rebuilt = Rebuild(history);
@@ -374,10 +395,15 @@ public sealed partial class DirectLendingLifecycleReplayTests
 
     private static object BasisReceipt(decimal discount, decimal premium, decimal discountBefore, decimal premiumBefore) => new
     {
-        accrualDate = Start, discountAmortization = discount, discountAmort = discount,
-        premiumAmortization = premium, premiumAmort = premium,
-        unamortizedDiscountBefore = discountBefore, unamortizedDiscountAfter = discountBefore - discount,
-        unamortizedPremiumBefore = premiumBefore, unamortizedPremiumAfter = premiumBefore - premium
+        accrualDate = Start,
+        discountAmortization = discount,
+        discountAmort = discount,
+        premiumAmortization = premium,
+        premiumAmort = premium,
+        unamortizedDiscountBefore = discountBefore,
+        unamortizedDiscountAfter = discountBefore - discount,
+        unamortizedPremiumBefore = premiumBefore,
+        unamortizedPremiumAfter = premiumBefore - premium
     };
 
     private static CollateralDto Collateral() => new(CollateralId, CollateralType.Equipment, "Retained equipment", 200m, CurrencyCode.USD, Start);

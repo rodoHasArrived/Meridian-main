@@ -28,18 +28,26 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
         }
         Seed("loan.created", new
         {
-            loanId, template.FacilityName, template.Borrower, template.EffectiveDate, terms = template.CurrentTerms
+            loanId,
+            template.FacilityName,
+            template.Borrower,
+            template.EffectiveDate,
+            terms = template.CurrentTerms
         }, template.EffectiveDate);
         Seed("loan.activated", new { activationDate = template.EffectiveDate }, template.EffectiveDate);
         Seed("loan.drawdown-booked", new
         {
-            lotId = Guid.Parse("87777777-2222-4222-8222-222222222222"), amount = 100m,
-            tradeDate = template.EffectiveDate, settleDate = template.EffectiveDate
+            lotId = Guid.Parse("87777777-2222-4222-8222-222222222222"),
+            amount = 100m,
+            tradeDate = template.EffectiveDate,
+            settleDate = template.EffectiveDate
         }, template.EffectiveDate);
         Seed("loan.drawdown-booked", new
         {
-            lotId = Guid.Parse("88888888-2222-4222-8222-222222222222"), amount = 50m,
-            tradeDate = date.AddDays(-1), settleDate = date.AddDays(-1)
+            lotId = Guid.Parse("88888888-2222-4222-8222-222222222222"),
+            amount = 50m,
+            tradeDate = date.AddDays(-1),
+            settleDate = date.AddDays(-1)
         }, date.AddDays(-1));
         var rebuilder = new DirectLendingEventRebuilder();
         var current = rebuilder.Rebuild(loanId, history)!;

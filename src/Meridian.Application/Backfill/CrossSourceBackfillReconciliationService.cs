@@ -19,7 +19,8 @@ public sealed class CrossSourceBackfillReconciliationService
     /// Without a host resolver, only an explicit supported listing identity can resolve.
     /// </summary>
     public Func<string, DateOnly, DateOnly, CancellationToken, Task<CrossSourceBackfillSessionCoverage?>>?
-        ResolveSessionCoverageAsync { get; init; }
+        ResolveSessionCoverageAsync
+    { get; init; }
 
     public CrossSourceBackfillReconciliationService(IEnumerable<IHistoricalDataProvider> providers)
     {

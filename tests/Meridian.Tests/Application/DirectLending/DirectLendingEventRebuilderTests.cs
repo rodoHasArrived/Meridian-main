@@ -315,20 +315,48 @@ public sealed class DirectLendingEventRebuilderTests
         var payload = JsonNode.Parse(restructure.PayloadJson)!.AsObject();
         switch (conflict)
         {
-            case "termsVersion": payload["newTermsVersion"]!["versionNumber"] = 9; break;
-            case "termsHash": payload["newTermsVersion"]!["termsHash"] = "altered"; break;
-            case "termsContent": payload["newTermsVersion"]!["terms"]!["fixedAnnualRate"] = 0.09m; break;
-            case "termsTimestamp": payload["newTermsVersion"]!["recordedAt"] = RestructuringRecordedAt.AddSeconds(1); break;
-            case "revisionNumber": payload["servicingRevision"]!["revisionNumber"] = 9; break;
-            case "revisionDate": payload["servicingRevision"]!["effectiveAsOfDate"] = "2026-04-02"; break;
-            case "revisionNotes": payload["servicingRevision"]!["notes"] = "Other workout"; break;
-            case "missingRevision": payload.Remove("servicingRevision"); break;
-            case "missingAppliedHaircut": payload.Remove("appliedPrincipalHaircut"); break;
-            case "missingJournalHaircut": payload.Remove("principalHaircut"); payload.Remove("haircutAmount"); break;
-            case "differentAppliedHaircut": payload["appliedPrincipalHaircut"] = 160m; break;
-            case "differentLoan": payload["loanId"] = Guid.NewGuid(); break;
-            case "differentEffectiveDate": payload["effectiveDate"] = "2026-04-02"; break;
-            default: throw new InvalidOperationException($"Unknown fixture conflict '{conflict}'.");
+            case "termsVersion":
+                payload["newTermsVersion"]!["versionNumber"] = 9;
+                break;
+            case "termsHash":
+                payload["newTermsVersion"]!["termsHash"] = "altered";
+                break;
+            case "termsContent":
+                payload["newTermsVersion"]!["terms"]!["fixedAnnualRate"] = 0.09m;
+                break;
+            case "termsTimestamp":
+                payload["newTermsVersion"]!["recordedAt"] = RestructuringRecordedAt.AddSeconds(1);
+                break;
+            case "revisionNumber":
+                payload["servicingRevision"]!["revisionNumber"] = 9;
+                break;
+            case "revisionDate":
+                payload["servicingRevision"]!["effectiveAsOfDate"] = "2026-04-02";
+                break;
+            case "revisionNotes":
+                payload["servicingRevision"]!["notes"] = "Other workout";
+                break;
+            case "missingRevision":
+                payload.Remove("servicingRevision");
+                break;
+            case "missingAppliedHaircut":
+                payload.Remove("appliedPrincipalHaircut");
+                break;
+            case "missingJournalHaircut":
+                payload.Remove("principalHaircut");
+                payload.Remove("haircutAmount");
+                break;
+            case "differentAppliedHaircut":
+                payload["appliedPrincipalHaircut"] = 160m;
+                break;
+            case "differentLoan":
+                payload["loanId"] = Guid.NewGuid();
+                break;
+            case "differentEffectiveDate":
+                payload["effectiveDate"] = "2026-04-02";
+                break;
+            default:
+                throw new InvalidOperationException($"Unknown fixture conflict '{conflict}'.");
         }
         history.Add(restructure with { PayloadJson = payload.ToJsonString() });
 
@@ -409,6 +437,7 @@ public sealed class DirectLendingEventRebuilderTests
                 2, newTerms, "loan.restructured", "Agreed workout", RestructuringRecordedAt),
             servicingRevision = new ServicingRevisionDto(
                 3, "Restructuring", RestructuringDate, RestructuringRecordedAt, "Agreed workout")
-        }) with { RecordedAt = RestructuringRecordedAt.AddSeconds(1) };
+        }) with
+        { RecordedAt = RestructuringRecordedAt.AddSeconds(1) };
     }
 }

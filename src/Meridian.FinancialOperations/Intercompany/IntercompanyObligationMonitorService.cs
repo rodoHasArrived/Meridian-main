@@ -216,7 +216,7 @@ public sealed class IntercompanyObligationMonitorService(
             findings.Add(new("intercompany.agreement.expiring", "Warning",
                 $"{detail.Name} legal coverage ends on {coverageEnd.Date:yyyy-MM-dd}.", AgreementId: detail.AgreementId,
                 AgreementVersion: coverageEnd.AgreementVersion, DrillThrough: AgreementRoute(detail.AgreementId))
-                { DueDate = coverageEnd.Date });
+            { DueDate = coverageEnd.Date });
         }
         foreach (var row in schedule.Rows)
         {

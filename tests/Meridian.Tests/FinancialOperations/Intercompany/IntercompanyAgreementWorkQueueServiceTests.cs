@@ -276,7 +276,8 @@ public sealed class IntercompanyAgreementWorkQueueServiceTests
         var terms = old.ApplicableRevision!.Terms with
         {
             AgreementType = IntercompanyAgreementTypeDto.Guarantee,
-            PartyOneRole = "Guarantor", PartyTwoRole = "Obligor",
+            PartyOneRole = "Guarantor",
+            PartyTwoRole = "Obligor",
             Terms = new() { StructuredTerms = new(Guarantee: new("Synthetic beneficiary", 500_000.25m)) }
         };
         var revision = old.ApplicableRevision with { Terms = terms };
@@ -313,17 +314,32 @@ public sealed class IntercompanyAgreementWorkQueueServiceTests
             // must not make the old cap or expired window current again.
             applicable = first with
             {
-                AgreementVersion = 2, Action = IntercompanyAgreementActionDto.Amend, PayloadHash = IntercompanyAgreementWorkQueueFixture.Hash("renewal"),
-                Terms = terms with { EffectiveFrom = fixture.Scope.AsOf.AddDays(-1), EffectiveTo = fixture.Scope.AsOf.AddDays(30),
-                    Terms = new() { StructuredTerms = new(Guarantee: new("Renewed beneficiary", 250m)) } }
+                AgreementVersion = 2,
+                Action = IntercompanyAgreementActionDto.Amend,
+                PayloadHash = IntercompanyAgreementWorkQueueFixture.Hash("renewal"),
+                Terms = terms with
+                {
+                    EffectiveFrom = fixture.Scope.AsOf.AddDays(-1),
+                    EffectiveTo = fixture.Scope.AsOf.AddDays(30),
+                    Terms = new() { StructuredTerms = new(Guarantee: new("Renewed beneficiary", 250m)) }
+                }
             };
             revisions.Insert(0, applicable); // Deliberately not in approval/effective order.
         }
         else if (status == IntercompanyAgreementStatusDto.Terminated)
-            revisions.Add(first with { AgreementVersion = 2, Action = IntercompanyAgreementActionDto.Terminate,
-                Terms = terms with { TerminationEffectiveDate = fixture.Scope.AsOf.AddDays(-2) } });
-        fixture.Detail = fixture.Detail with { AgreementType = IntercompanyAgreementTypeDto.Guarantee,
-            EffectiveStatus = status, ApplicableRevision = applicable, Revisions = revisions };
+            revisions.Add(first with
+            {
+                AgreementVersion = 2,
+                Action = IntercompanyAgreementActionDto.Terminate,
+                Terms = terms with { TerminationEffectiveDate = fixture.Scope.AsOf.AddDays(-2) }
+            });
+        fixture.Detail = fixture.Detail with
+        {
+            AgreementType = IntercompanyAgreementTypeDto.Guarantee,
+            EffectiveStatus = status,
+            ApplicableRevision = applicable,
+            Revisions = revisions
+        };
         fixture.Guarantees = [fixture.Detail];
         var guarantee = Assert.Single((await fixture.GetAsync()).Guarantees);
         Assert.Equal(applicable.AgreementVersion, guarantee.AgreementVersion);
@@ -340,13 +356,24 @@ public sealed class IntercompanyAgreementWorkQueueServiceTests
     {
         using var fixture = new IntercompanyAgreementWorkQueueFixture();
         var original = fixture.Detail.ApplicableRevision!;
-        var terms = original.Terms with { AgreementType = IntercompanyAgreementTypeDto.Guarantee,
-            Terms = new() { StructuredTerms = new(Guarantee: new("Synthetic beneficiary", 100m)) } };
+        var terms = original.Terms with
+        {
+            AgreementType = IntercompanyAgreementTypeDto.Guarantee,
+            Terms = new() { StructuredTerms = new(Guarantee: new("Synthetic beneficiary", 100m)) }
+        };
         var revision = original with { Terms = terms };
-        var termination = revision with { AgreementVersion = 2, Action = IntercompanyAgreementActionDto.Terminate,
-            Terms = terms with { TerminationEffectiveDate = fixture.Scope.AsOf.AddDays(5) } };
-        fixture.Detail = fixture.Detail with { AgreementType = IntercompanyAgreementTypeDto.Guarantee,
-            ApplicableRevision = revision, Revisions = [revision, termination] };
+        var termination = revision with
+        {
+            AgreementVersion = 2,
+            Action = IntercompanyAgreementActionDto.Terminate,
+            Terms = terms with { TerminationEffectiveDate = fixture.Scope.AsOf.AddDays(5) }
+        };
+        fixture.Detail = fixture.Detail with
+        {
+            AgreementType = IntercompanyAgreementTypeDto.Guarantee,
+            ApplicableRevision = revision,
+            Revisions = [revision, termination]
+        };
         fixture.Guarantees = [fixture.Detail];
         var guarantee = Assert.Single((await fixture.GetAsync()).Guarantees);
         Assert.Equal(IntercompanyAgreementStatusDto.Active, guarantee.EffectiveStatus);

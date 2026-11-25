@@ -672,8 +672,12 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             AppendRevision(stored, "CollateralAdded", request.AppraisalDate, $"Added collateral {collateral.CollateralId}");
             AppendEvent(stored, "CollateralAdded", request.AppraisalDate, new
             {
-                collateral.CollateralId, collateral.CollateralType, collateral.Description,
-                collateral.EstimatedValue, collateral.Currency, collateral.AppraisalDate,
+                collateral.CollateralId,
+                collateral.CollateralType,
+                collateral.Description,
+                collateral.EstimatedValue,
+                collateral.Currency,
+                collateral.AppraisalDate,
                 ServicingRevision = stored.Servicing.RevisionHistory[^1]
             }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
@@ -697,7 +701,8 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             AppendRevision(stored, "CollateralRemoved", effectiveDate, request.Reason);
             AppendEvent(stored, "CollateralRemoved", effectiveDate, new
             {
-                request.CollateralId, request.Reason,
+                request.CollateralId,
+                request.Reason,
                 ServicingRevision = stored.Servicing.RevisionHistory[^1]
             }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
@@ -724,7 +729,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             AppendRevision(stored, "CollateralValueUpdated", request.NewAppraisalDate, $"Revalued collateral {request.CollateralId}");
             AppendEvent(stored, "CollateralValueUpdated", request.NewAppraisalDate, new
             {
-                request.CollateralId, request.NewEstimatedValue, request.NewAppraisalDate,
+                request.CollateralId,
+                request.NewEstimatedValue,
+                request.NewAppraisalDate,
                 ServicingRevision = stored.Servicing.RevisionHistory[^1]
             }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
@@ -755,7 +762,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             AppendRevision(stored, "StatusTransition", request.EffectiveDate, request.Reason);
             AppendEvent(stored, "LoanStatusTransitioned", request.EffectiveDate, new
             {
-                request.NewStatus, request.EffectiveDate, request.Reason,
+                request.NewStatus,
+                request.EffectiveDate,
+                request.Reason,
                 ServicingRevision = stored.Servicing.RevisionHistory[^1]
             }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
@@ -773,7 +782,9 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             AppendRevision(stored, "PikToggle", request.EffectiveDate, request.Reason ?? (request.EnablePik ? "PIK enabled" : "PIK disabled"));
             AppendEvent(stored, "PikToggled", request.EffectiveDate, new
             {
-                request.EnablePik, request.EffectiveDate, request.Reason,
+                request.EnablePik,
+                request.EffectiveDate,
+                request.Reason,
                 ServicingRevision = stored.Servicing.RevisionHistory[^1]
             }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));

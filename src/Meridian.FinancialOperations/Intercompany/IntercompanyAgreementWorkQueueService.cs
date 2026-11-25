@@ -137,7 +137,8 @@ public sealed partial class IntercompanyAgreementWorkQueueService(
         var normalized = scope with { FundProfileId = book.FundProfileId, LedgerBookId = book.LedgerBookId };
         var scopeKey = HashParts(context.TenantId.Trim().ToUpperInvariant(), companyId, book.LedgerBookId.ToString("D"));
         IntercompanyObligationMonitorDto observation;
-        try { observation = await monitor.EvaluateAsync(context, companyId, normalized, ct).ConfigureAwait(false); }
+        try
+        { observation = await monitor.EvaluateAsync(context, companyId, normalized, ct).ConfigureAwait(false); }
         catch (Exception error) when (IsUnavailable(error)) { throw Unavailable(); }
         if (observation.AsOf != scope.AsOf || observation.ExpiryHorizonDays != scope.ExpiryHorizonDays)
             throw Unavailable();
@@ -159,7 +160,8 @@ public sealed partial class IntercompanyAgreementWorkQueueService(
         foreach (var agreementId in legalIds)
         {
             IntercompanyAgreementDetailDto? detail;
-            try { detail = await agreements.GetAsync(context, agreementId, scope.AsOf, ct: ct).ConfigureAwait(false); }
+            try
+            { detail = await agreements.GetAsync(context, agreementId, scope.AsOf, ct: ct).ConfigureAwait(false); }
             catch (Exception error) when (IsUnavailable(error)) { throw Unavailable(); }
             if (detail is null || detail.AgreementId != agreementId || detail.AsOf != scope.AsOf)
                 throw Unavailable();

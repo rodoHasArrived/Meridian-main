@@ -71,7 +71,9 @@ public sealed class IntercompanyAgreementWorkQueueAdversarialTests
         };
         fixture.Detail = fixture.Detail with
         {
-            PartyTwoId = replacementParty, ApplicableRevision = revision, Revisions = [revision]
+            PartyTwoId = replacementParty,
+            ApplicableRevision = revision,
+            Revisions = [revision]
         };
         fixture.Findings = [];
         fixture.Access.Setup(authority => authority.CanAccessEntitiesAsync(It.IsAny<IntercompanyAgreementCallContext>(),

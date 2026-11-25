@@ -108,7 +108,11 @@ public sealed partial class InMemoryDirectLendingService
             AppendRevision(stored, "InternalEvent", request.EffectiveDate, $"Fee assessed for {request.Amount:0.00}.");
             AppendEvent(stored, "loan.fee-assessed", request.EffectiveDate, new
             {
-                loanId, request.FeeType, request.Amount, request.EffectiveDate, request.Note,
+                loanId,
+                request.FeeType,
+                request.Amount,
+                request.EffectiveDate,
+                request.Note,
                 ServicingRevision = stored.Servicing.RevisionHistory[^1]
             }, metadata);
             GetList(_feeBalances, loanId).Add(new FeeBalanceDto(Guid.NewGuid(), loanId, request.FeeType, request.EffectiveDate, request.Amount, request.Amount, stored.History[^1].EventId, request.Note, DateTimeOffset.UtcNow));
@@ -145,7 +149,10 @@ public sealed partial class InMemoryDirectLendingService
             AppendRevision(stored, "InternalEvent", request.EffectiveDate, request.Reason);
             AppendEvent(stored, "loan.write-off-applied", request.EffectiveDate, new
             {
-                loanId, Amount = amount, request.EffectiveDate, request.Reason,
+                loanId,
+                Amount = amount,
+                request.EffectiveDate,
+                request.Reason,
                 ServicingRevision = stored.Servicing.RevisionHistory[^1]
             }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));

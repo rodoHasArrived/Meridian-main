@@ -84,11 +84,16 @@ public sealed partial class IntercompanyAgreementWorkQueueService
             Data = data,
             Transition = old?.State != snapshot.State ? new()
             {
-                PreviousState = old?.State.ToString(), CurrentState = snapshot.State.ToString(), TransitionedAtUtc = now
+                PreviousState = old?.State.ToString(),
+                CurrentState = snapshot.State.ToString(),
+                TransitionedAtUtc = now
             } : null,
             Assignment = action == nameof(IntercompanyAgreementWorkItemActionDto.AssignOwner) ? new()
             {
-                PreviousAssigneeId = old?.Owner, AssigneeId = snapshot.Owner, AssignedBy = actor, AssignedAtUtc = now
+                PreviousAssigneeId = old?.Owner,
+                AssigneeId = snapshot.Owner,
+                AssignedBy = actor,
+                AssignedAtUtc = now
             } : null
         };
         try

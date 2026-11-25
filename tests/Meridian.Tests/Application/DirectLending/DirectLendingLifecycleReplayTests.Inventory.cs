@@ -82,20 +82,33 @@ public sealed partial class DirectLendingLifecycleReplayTests
         var fixingId = Guid.Parse("89999999-9999-4999-8999-999999999999");
         Add(history, "loan.rate-reset-applied", new
         {
-            effectiveDate = Start, observedRate = 0.04m, spreadBps = 250m, allInRate = 0.065m,
-            sourceRef = "retained-fixing-revision-2", resetKind = "Scheduled", fixingObservationDate = Start.AddDays(-2), fixingId, fixingRevision = 2
+            effectiveDate = Start,
+            observedRate = 0.04m,
+            spreadBps = 250m,
+            allInRate = 0.065m,
+            sourceRef = "retained-fixing-revision-2",
+            resetKind = "Scheduled",
+            fixingObservationDate = Start.AddDays(-2),
+            fixingId,
+            fixingRevision = 2
         });
         Add(history, "loan.daily-accrual-posted", new
         {
-            accrualEntryId = Guid.Parse("8aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"), accrualDate = Start,
-            interestAmount = 0m, commitmentFeeAmount = 0m, penaltyAmount = 0m, annualRateApplied = 0.065m,
-            pikInterestAmount = 5m, pikCapitalizationDeferred = true
+            accrualEntryId = Guid.Parse("8aaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"),
+            accrualDate = Start,
+            interestAmount = 0m,
+            commitmentFeeAmount = 0m,
+            penaltyAmount = 0m,
+            annualRateApplied = 0.065m,
+            pikInterestAmount = 5m,
+            pikCapitalizationDeferred = true
         });
         Add(history, "loan.pik-capitalized", new { capitalizationDate = Start, periodStart = Start, periodEnd = Start, amount = 5m });
         Add(history, "loan.terms-amended", new
         {
             terms = terms with { RateResetSchedule = schedule with { IndexName = "OTHER" }, InterestIndexName = "OTHER" },
-            versionNumber = 2, amendmentReason = "Later schedule"
+            versionNumber = 2,
+            amendmentReason = "Later schedule"
         });
         Add(history, "loan.status-transitioned", new { newStatus = LoanStatus.NonPerforming, effectiveDate = Start, reason = "Later status" });
 
