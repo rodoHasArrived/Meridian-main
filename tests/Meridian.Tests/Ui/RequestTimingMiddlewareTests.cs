@@ -89,6 +89,30 @@ public sealed class RequestTimingMiddlewareTests
         logger.Entries.Should().BeEmpty("a zero threshold turns the slow-request log off");
     }
 
+    [Fact]
+    public async Task AnUnknownMethod_IsLabelledOther_AndLineBreaksNeverReachTheLog()
+    {
+        // Kestrel accepts any token as a method; an unbounded label set would defeat the route
+        // template's cardinality guard, and client text must not forge log lines.
+        var template = $"/api/odd-{Guid.NewGuid():N}";
+        var logger = new CapturingLogger();
+        var middleware = new RequestTimingMiddleware(
+            async context => { await Task.Delay(30); context.Response.StatusCode = StatusCodes.Status200OK; },
+            TimeSpan.FromMilliseconds(10),
+            logger);
+        var context = CreateContext(template, template);
+        context.Request.Method = "FROBNICATE";
+        context.TraceIdentifier = "trace-1\r\nforged line";
+
+        await middleware.InvokeAsync(context);
+
+        (await ExportAsync()).Should().Contain(
+            $"mdc_http_request_duration_seconds_count{{route=\"{template}\",method=\"{RequestTimingMiddleware.OtherMethod}\",status=\"200\"}} 1");
+        var warning = logger.Entries.Should().ContainSingle().Subject;
+        warning.Message.Should().StartWith($"Slow request: OTHER {template}");
+        warning.Message.Should().NotContain("\n").And.NotContain("\r").And.Contain("trace-1__forged line");
+    }
+
     private static DefaultHttpContext CreateContext(string template, string path)
     {
         var context = new DefaultHttpContext();

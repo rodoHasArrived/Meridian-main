@@ -17,7 +17,7 @@ authority and cannot encompass handwritten blocks or reviewed baselines.
 | `database/manifest/contracts.json` | CI artifact; source catalog with file fingerprints. Schema-control still compares reviewed database docs, dependencies, physical manifests and policy findings. Structural diffs reconstruct the contract baseline from pinned base source. |
 | `docs/{source,roadmap}/generated/MANIFEST.json` | CI artifacts; mechanical registry/output digests. |
 | Dashboard `ui-api-routes.generated.ts` and `workspace-catalog.generated.ts` | Generated on npm installation and before development, build and validation commands; included in CI evidence. |
-| `src/Meridian.Ui/wwwroot/workstation/` | Build artifact; the browser lane validates emitted entrypoints/assets, and the `build-workstation` job builds, validates and supplies the same-run bundle to the .NET shards before project evaluation. Packaging builds from source. The canonical served path is unchanged. |
+| `src/Meridian.Ui/wwwroot/workstation/` | Build artifact; the browser lane validates emitted entrypoints/assets, and the hosted `verify-dotnet` job builds and validates its own same-run bundle before project evaluation. Packaging builds from source. The canonical served path is unchanged. |
 | Actual source fingerprints | `artifacts/docs/source-hashes.json`; informational evidence, never acceptance of a review baseline. |
 | `docs/source/generated/source-hash-manifest.json` | Committed reviewed source/README baseline; regeneration must never mint review evidence. Module-specific review and freshness checks remain. |
 | `docs/status/doc-health-dashboard.{md,json}` | Committed reviewed health-score baseline; keeps the severe-regression comparison available. |

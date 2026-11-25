@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import posixpath
+import re
 import unittest
 from pathlib import Path
 
@@ -22,14 +24,34 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
         self.assertNotIn("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj", self.workflow)
 
     def test_smoke_publish_is_conditionally_gated(self) -> None:
-        self.assertIn("Decide desktop smoke publish", self.workflow)
-        self.assertIn("steps.desktop-smoke.outputs.run == 'true'", self.workflow)
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        plan = workflow["jobs"]["smoke-plan"]
+        smoke = workflow["jobs"]["smoke"]
+        # The decision runs on a cheap Linux runner; Windows starts only for a planned publish.
+        self.assertEqual(plan["runs-on"], "ubuntu-latest")
+        self.assertEqual(plan["outputs"]["run"], "${{ steps.desktop-smoke.outputs.run }}")
+        decide = next(step for step in plan["steps"] if step.get("name") == "Decide desktop smoke publish")
+        self.assertEqual(decide["id"], "desktop-smoke")
+        checkout = next(step for step in plan["steps"] if step.get("uses", "").startswith("actions/checkout@"))
+        self.assertEqual(checkout["with"]["fetch-depth"], "2")
+        self.assertEqual(smoke["needs"], "smoke-plan")
+        self.assertEqual(smoke["if"], "needs.smoke-plan.outputs.run == 'true'")
+        self.assertEqual(smoke["runs-on"], "windows-latest")
         self.assertIn("run_smoke_publish:", self.workflow)
-        self.assertIn("fetch-depth: 2", self.workflow)
         self.assertIn('"HEAD^1" "HEAD^2"', self.workflow)
         self.assertIn("git fetch origin $env:BASE_REF --depth=100", self.workflow)
         self.assertIn("git diff --name-only", self.workflow)
         self.assertIn("^build/scripts/(publish|install)/", self.workflow)
+
+    def test_smoke_publish_does_not_wait_for_validation(self) -> None:
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        jobs = workflow["jobs"]
+        self.assertNotIn("needs", jobs["desktop"])
+        self.assertEqual(jobs["desktop"]["name"], "verify-desktop (build/test WPF)")
+        validation = next(step for step in jobs["desktop"]["steps"]
+                          if step.get("name") == "Run isolated Windows validation")
+        self.assertIn("--parallel-build", validation["run"])
+        self.assertFalse(any("publish" in step.get("run", "") for step in jobs["desktop"]["steps"]))
 
     def test_validation_artifact_is_uploaded_on_every_run(self) -> None:
         self.assertIn("Upload WPF validation artifacts", self.workflow)
@@ -38,22 +60,20 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
 
     def test_only_successful_smoke_binaries_have_shorter_retention(self) -> None:
         workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
-        steps = workflow["jobs"]["desktop"]["steps"]
-        uploads = {
-            step["name"]: step for step in steps
-            if step.get("uses", "").startswith("actions/upload-artifact@")
-        }
-        validation = uploads["Upload WPF validation artifacts"]
-        smoke = uploads["Upload desktop smoke publish artifacts"]
+        validation = next(step for step in workflow["jobs"]["desktop"]["steps"]
+                          if step.get("name") == "Upload WPF validation artifacts")
+        steps = workflow["jobs"]["smoke"]["steps"]
+        smoke = next(step for step in steps if step.get("name") == "Upload desktop smoke publish artifacts")
         self.assertEqual(validation["if"], "always()")
         self.assertEqual(validation["with"]["retention-days"], "14")
         self.assertEqual(smoke["if"], "always()")
         self.assertEqual(smoke["with"]["path"], "artifacts/publish/desktop-smoke/")
         self.assertEqual(smoke["with"]["retention-days"], "${{ job.status == 'success' && 7 || 14 }}")
-        # Retention must not replace publishing or the executable existence gate.
+        # Retention must not replace publishing or the executable existence gate: inside the
+        # planned smoke job every publish step is unconditional and precedes the upload.
         for name in ("Restore WPF publish graph", "Smoke publish WPF app", "Confirm desktop executable"):
             step = next(step for step in steps if step.get("name") == name)
-            self.assertEqual(step["if"], "steps.desktop-smoke.outputs.run == 'true'")
+            self.assertNotIn("if", step)
             self.assertNotIn("continue-on-error", step)
             self.assertLess(steps.index(step), steps.index(smoke))
 
@@ -73,6 +93,35 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
         for event in ("pull_request", "push"):
             with self.subTest(event=event):
                 self.assertIn("src/Meridian.Launcher/**", workflow["on"][event]["paths"])
+
+
+    def test_every_wpf_project_dependency_triggers_windows_validation(self) -> None:
+        # This build owns the WPF suite (including Category=W4Acceptance, which Golden Path
+        # now runs only on manual dispatch), so a change to any project WPF compiles against
+        # must start it. Walk the ProjectReference graph rather than trusting a hand list.
+        def references(project: str) -> list[str]:
+            text = (REPO_ROOT / project).read_text(encoding="utf-8")
+            return [
+                posixpath.normpath(posixpath.join(posixpath.dirname(project), ref.replace("\\", "/")))
+                for ref in re.findall(r'ProjectReference\s+Include="([^"]+)"', text)
+            ]
+
+        seen: set[str] = set()
+        pending = ["src/Meridian.Wpf/Meridian.Wpf.csproj", "tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj"]
+        while pending:
+            project = pending.pop()
+            if project in seen or not (REPO_ROOT / project).is_file():
+                continue
+            seen.add(project)
+            pending.extend(references(project))
+        self.assertGreater(len(seen), 2)
+
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        for event in ("pull_request", "push"):
+            paths = set(workflow["on"][event]["paths"])
+            for directory in sorted({posixpath.dirname(project) for project in seen}):
+                with self.subTest(event=event, directory=directory):
+                    self.assertIn(f"{directory}/**", paths)
 
 
 if __name__ == "__main__":

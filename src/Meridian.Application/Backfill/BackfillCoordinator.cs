@@ -256,6 +256,14 @@ public sealed partial class BackfillCoordinator : IDisposable
         Action onStarted, Action<DateTimeOffset> onThrottled, CancellationToken ct) =>
         RunCoreAsync(request, null, null, tenantId, ct, estimate, alternativeFor, onStarted, onThrottled);
 
+    // Request fields and provider errors come from API callers and vendors; strip line breaks so
+    // they cannot forge extra lines in the plain-text log file (same rule as HistoricalBackfillService).
+    private static string SanitizeLogText(string? value) =>
+        (value ?? string.Empty).Replace('\r', '_').Replace('\n', '_');
+
+    private static string? FormatLogDate(DateOnly? value) =>
+        value is { } date ? SanitizeLogText(date.ToString("yyyy-MM-dd", System.Globalization.CultureInfo.InvariantCulture)) : null;
+
     private async Task<(BackfillResult Result, BackfillStatusStore ReceiptStore)> RunCoreAsync(
         BackfillRequest? request, Guid? cloneReceiptId,
         string? confirmationCode, string? tenantId, CancellationToken ct, BackfillQuotaEstimate? submissionEstimate = null,
@@ -347,8 +355,8 @@ public sealed partial class BackfillCoordinator : IDisposable
             {
                 _log.Warning(
                     "Backfill finished unsuccessfully: provider {Provider}, {SymbolCount} symbol(s) {From} to {To} ({Granularity}), {BarsWritten} bars written: {Error}",
-                    request.Provider, normalizedSymbols.Length, request.From, request.To, request.Granularity,
-                    result.BarsWritten, result.Error);
+                    SanitizeLogText(request.Provider), normalizedSymbols.Length, FormatLogDate(request.From),
+                    FormatLogDate(request.To), request.Granularity, result.BarsWritten, SanitizeLogText(result.Error));
             }
 
             var skipped = result.SkippedSymbols.ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -378,8 +386,8 @@ public sealed partial class BackfillCoordinator : IDisposable
             PrometheusMetrics.RecordBackfillRun(outcome, System.Diagnostics.Stopwatch.GetElapsedTime(runStarted));
             _log.Error(ex,
                 "Backfill {Outcome}: provider {Provider}, {SymbolCount} symbol(s) {From} to {To} ({Granularity}), clone of receipt {CloneReceiptId}",
-                outcome, request?.Provider, request?.Symbols?.Count ?? 0, request?.From, request?.To, request?.Granularity,
-                cloneReceiptId);
+                outcome, SanitizeLogText(request?.Provider), request?.Symbols?.Count ?? 0, FormatLogDate(request?.From),
+                FormatLogDate(request?.To), request?.Granularity, cloneReceiptId);
             throw;
         }
         finally
