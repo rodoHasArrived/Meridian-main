@@ -612,6 +612,9 @@ public sealed class UiServer : IAsyncDisposable
             // Standardize fail-closed endpoint failures before authentication and other
             // middleware can short-circuit the request pipeline.
             _app.UseExceptionHandler();
+            // Time every request (mdc_http_request_duration_seconds) and log slow ones; placed
+            // before authentication and rate limiting so the duration covers the whole pipeline.
+            _app.UseRequestTiming(TimeSpan.FromMilliseconds(_apiHostOptions.SlowRequestThresholdMs));
             _app.UseWhen(
                 context => context.Request.Path.StartsWithSegments("/api"),
                 apiPipeline => apiPipeline.UseStatusCodePages(async statusCodeContext =>
