@@ -4,10 +4,12 @@ using Meridian.Contracts.Api;
 using Meridian.Contracts.SecurityMaster;
 using Meridian.Contracts.Services;
 using Meridian.Core.Config;
+using Meridian.DataIntegration.Monitoring.DataQuality;
 using Meridian.Execution.Logging;
 using Meridian.Identity.Auth;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Platform.Scheduling;
+using Meridian.Storage.Interfaces;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
@@ -94,6 +96,9 @@ public static class CrossProviderToleranceEndpoints
         group.MapPost(UiApiRoutes.QualityCrossProviderPreview, async (
             CrossProviderTolerancePreviewRequest request,
             HttpContext context,
+            [FromServices] ConfigStore store,
+            [FromServices] DataQualityMonitoringService? qualityMonitor,
+            [FromServices] ISymbolRegistryService? symbolRegistry,
             [FromServices] IEnumerable<IHistoricalDataProvider>? providers,
             [FromServices] ILoggerFactory loggerFactory,
             CancellationToken ct) =>
@@ -105,7 +110,8 @@ public static class CrossProviderToleranceEndpoints
                 return ApiProblemDetails.Validation(context, "symbol", "A valid symbol is required.");
             if (request.Days is < 1 or > MaxPreviewDays)
                 return ApiProblemDetails.Validation(context, "days", $"The preview covers 1 to {MaxPreviewDays} days.");
-            var policy = request.Policy ?? CrossProviderTolerancePolicy.Default;
+            var comparisonMonitor = qualityMonitor?.CrossProvider;
+            var policy = request.Policy ?? comparisonMonitor?.Policy ?? CrossProviderTolerancePolicy.FromConfig(store.Load());
             try
             {
                 policy.Validate();
@@ -113,6 +119,17 @@ public static class CrossProviderToleranceEndpoints
             catch (ArgumentException exception)
             {
                 return ApiProblemDetails.Validation(context, "policy", exception.Message);
+            }
+
+            var resolution = comparisonMonitor?.ResolvePolicy(symbol, policy) ??
+                CrossProviderToleranceResolver.Resolve(symbol, policy, CrossProviderToleranceResolver.FromSymbolRegistry(symbolRegistry));
+            if (!string.IsNullOrWhiteSpace(request.AssetClass) &&
+                !string.Equals(request.AssetClass.Trim(), resolution.AssetClass, StringComparison.OrdinalIgnoreCase))
+            {
+                var message = resolution.AssetClass is { } resolved
+                    ? $"The symbol registry resolves {symbol} as '{resolved}'. The supplied asset class differs."
+                    : $"No asset class is resolved for {symbol}. Omit the asset class to preview the base thresholds.";
+                return ApiProblemDetails.Validation(context, "assetClass", message);
             }
 
             var available = (providers ?? []).ToArray();
@@ -127,7 +144,7 @@ public static class CrossProviderToleranceEndpoints
 
             var to = DateOnly.FromDateTime(DateTime.UtcNow.Date).AddDays(-1);
             var from = to.AddDays(-(request.Days - 1));
-            var tolerances = policy.Resolve(request.AssetClass);
+            var tolerances = resolution.Tolerances;
             try
             {
                 var sessions = new HistoricalSessionScheduleResolver(
@@ -147,7 +164,7 @@ public static class CrossProviderToleranceEndpoints
                     VolumeToleranceRatio: tolerances.VolumeMode == CrossProviderVolumeMode.Off
                         ? decimal.MaxValue
                         : (decimal)tolerances.VolumeTolerancePercent / 100m), ct).ConfigureAwait(false);
-                return Results.Json(BuildPreview(symbol, from, to, baseline, comparison, tolerances, result), jsonOptions);
+                return Results.Json(BuildPreview(symbol, from, to, baseline, comparison, resolution, result), jsonOptions);
             }
             catch (OperationCanceledException) when (ct.IsCancellationRequested)
             {
@@ -197,9 +214,10 @@ public static class CrossProviderToleranceEndpoints
         DateOnly to,
         string baseline,
         string comparison,
-        CrossProviderTolerances tolerances,
+        CrossProviderToleranceResolution resolution,
         CrossSourceBackfillReconciliationResult result)
     {
+        var tolerances = resolution.Tolerances;
         // Kinds produced by CrossSourceBackfillReconciliationService.
         static bool IsDrift(string kind) => kind is "ClosePriceDrift" or "VolumeDrift" or "PriceAndVolumeDrift";
         static bool IsMissing(string kind) => kind != "SessionCalendarMissingEvidence" &&
@@ -248,7 +266,10 @@ public static class CrossProviderToleranceEndpoints
                     .Select(discrepancy => FormattableString.Invariant(
                         $"{discrepancy.ComparisonProvider}: {discrepancy.Kind} ({discrepancy.SessionDate:yyyy-MM-dd})")))
                 .ToArray(),
-            ProviderCallsPerPreview);
+            ProviderCallsPerPreview)
+        {
+            ResolvedAssetClass = resolution.AssetClass
+        };
     }
 
     private static string[] PreviewProviderNames(IEnumerable<IHistoricalDataProvider>? providers)
@@ -282,6 +303,7 @@ public sealed record CrossProviderTolerancePolicySaveResponse(
     CrossProviderTolerancePolicyAudit Audit,
     Meridian.Contracts.Configuration.ConfigurationChangeStatus ChangeImpact);
 
+/// <summary>A draft historical preview with an optional assertion about the registry asset class.</summary>
 public sealed record CrossProviderTolerancePreviewRequest(
     string Symbol,
     string BaselineProvider,
@@ -310,4 +332,8 @@ public sealed record CrossProviderTolerancePreviewResponse(
     int InformationalDays,
     int MissingSessions,
     IReadOnlyList<string> ProviderErrors,
-    int ProviderCallsUsed);
+    int ProviderCallsUsed)
+{
+    /// <summary>The registry asset class used to select thresholds, or null for a symbol without a class.</summary>
+    public string? ResolvedAssetClass { get; init; }
+}

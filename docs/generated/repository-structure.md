@@ -6613,6 +6613,7 @@ Meridian-main
 │   │   │   │   ├── AnomalyDetector.cs
 │   │   │   │   ├── CompletenessScoreCalculator.cs
 │   │   │   │   ├── CrossProviderComparisonService.cs
+│   │   │   │   ├── CrossProviderToleranceResolver.cs
 │   │   │   │   ├── DataFreshnessSlaMonitor.cs
 │   │   │   │   ├── DataQualityModels.cs
 │   │   │   │   ├── DataQualityMonitoringService.cs
@@ -12155,7 +12156,6 @@ Meridian-main
 │   │   │   ├── ConnectionService.cs
 │   │   │   ├── ContextMenuService.cs
 │   │   │   ├── CredentialService.cs
-│   │   │   ├── CredentialService.OAuth.cs
 │   │   │   ├── DataWorkspacePresentationBuilder.cs
 │   │   │   ├── DemoTourService.cs
 │   │   │   ├── DesktopAuthenticationSession.cs
