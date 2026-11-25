@@ -103,6 +103,22 @@ public sealed partial class SecurityMasterWorkbenchCommandService
             changeEntry);
     }
 
+    /// <summary>
+    /// The window path is reserved for <see cref="ProposeHistoricalIdentifierWindowAsync"/>, which
+    /// requires the evidence reference and always requires independent review. Staging it as a field
+    /// edit would let a free-form value reach the publish-time window amendment.
+    /// </summary>
+    private static void EnsureFieldEditDoesNotTargetWindowPath(UpdateSecurityFieldRequest request)
+    {
+        if (SecurityMasterHistoricalIdentifierWindow.IsWindowPath(request.FieldPath))
+        {
+            throw new ArgumentException(
+                $"'{SecurityMasterHistoricalIdentifierWindow.FieldPath}' is reserved for governed historical identifier " +
+                "window proposals; use the historical identifier window proposal instead of a field edit.",
+                nameof(request));
+        }
+    }
+
     /// <summary>The proposer recorded in a window revision's payload, or null for other revisions.</summary>
     private static string? TryGetWindowProposer(SecurityMasterRevisionRecord revision)
     {
