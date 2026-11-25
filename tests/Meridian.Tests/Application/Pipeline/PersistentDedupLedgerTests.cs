@@ -374,6 +374,46 @@ public sealed class PersistentDedupLedgerTests : IAsyncLifetime
             "the commit syncs the directory once and compaction syncs it again after its rename");
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task LegacyLedger_IsAdoptedOnceAndKeepsDurabilityConfirmedEntries(bool synchronousLoad)
+    {
+        var evt = CreateTradeEvent("SPY", 1);
+        _firstLedger = new PersistentDedupLedger(_ledgerDirectory);
+        await _firstLedger.InitializeAsync();
+        var reserved = await _firstLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery);
+        await _firstLedger.CommitDurableAsync([reserved.Reservation]);
+        await _firstLedger.DisposeAsync();
+        _firstLedger = null;
+
+        var workloadDirectory = Path.Combine(_ledgerDirectory, "collector");
+        _secondLedger = new PersistentDedupLedger(workloadDirectory, legacyLedgerDirectory: _ledgerDirectory);
+        if (synchronousLoad)
+            _secondLedger.Initialize();
+        else
+            await _secondLedger.InitializeAsync();
+
+        File.Exists(LedgerPath).Should().BeFalse("the legacy ledger moved into the workload directory");
+        File.Exists(Path.Combine(workloadDirectory, "dedup_ledger.jsonl")).Should().BeTrue();
+        (await _secondLedger.TryReserveAsync(evt, DedupLookupScope.WalRecovery)).Status
+            .Should().Be(DedupReservationStatus.Duplicate, "the adopted entry still suppresses WAL replay");
+    }
+
+    [Fact]
+    public async Task LegacyLedger_IsLeftAloneWhenTheWorkloadAlreadyHasALedger()
+    {
+        var workloadDirectory = Path.Combine(_ledgerDirectory, "collector");
+        Directory.CreateDirectory(workloadDirectory);
+        await File.WriteAllTextAsync(Path.Combine(workloadDirectory, "dedup_ledger.jsonl"), string.Empty);
+        await File.WriteAllTextAsync(LedgerPath, string.Empty);
+
+        _firstLedger = new PersistentDedupLedger(workloadDirectory, legacyLedgerDirectory: _ledgerDirectory);
+        await _firstLedger.InitializeAsync();
+
+        File.Exists(LedgerPath).Should().BeTrue("adoption never overwrites a ledger the workload already owns");
+    }
+
     [Fact]
     public async Task Appends_BelowThreshold_DoNotCompact()
     {

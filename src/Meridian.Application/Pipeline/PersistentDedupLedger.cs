@@ -40,6 +40,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     private readonly ILogger _log = LoggingSetup.ForContext<PersistentDedupLedger>();
     private readonly string _ledgerDirectory;
     private readonly string _ledgerPath;
+    private readonly string? _legacyLedgerDirectory;
     private readonly TimeSpan _entryTtl;
     private readonly TimeProvider _timeProvider;
     private readonly int _maxInMemoryEntries;
@@ -102,6 +103,9 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
     /// <summary>Default number of ledger lines below which the file is never compacted.</summary>
     internal const int DefaultCompactionMinLines = 100_000;
 
+    /// <summary>Full path of the ledger file this instance reads and appends.</summary>
+    internal string LedgerPath => _ledgerPath;
+
     /// <summary>Lines currently in the ledger file, as far as this instance has read or written it.</summary>
     internal long DiskLineCount => Interlocked.Read(ref _diskLineCount);
 
@@ -121,7 +125,8 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         TimeSpan? entryTtl = null,
         int maxInMemoryEntries = 500_000,
         int compactionMinLines = DefaultCompactionMinLines,
-        TimeProvider? timeProvider = null)
+        TimeProvider? timeProvider = null,
+        string? legacyLedgerDirectory = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(compactionMinLines);
         _ledgerDirectory = ledgerDirectory;
@@ -130,6 +135,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         _timeProvider = timeProvider ?? TimeProvider.System;
         _maxInMemoryEntries = maxInMemoryEntries;
         _compactionMinLines = compactionMinLines;
+        _legacyLedgerDirectory = legacyLedgerDirectory;
         Directory.CreateDirectory(ledgerDirectory);
         WarmHashPath();
         WarmPrefixCache();
@@ -181,6 +187,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         var cutoff = _timeProvider.GetUtcNow().Ticks - _entryTtl.Ticks;
         var loadedCleanly = true;
         _diskLineCount = 0;
+        AdoptLegacyLedger();
 
         if (File.Exists(_ledgerPath))
         {
@@ -221,6 +228,7 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         var cutoff = _timeProvider.GetUtcNow().Ticks - _entryTtl.Ticks;
         var loadedCleanly = true;
         _diskLineCount = 0;
+        AdoptLegacyLedger();
 
         if (File.Exists(_ledgerPath))
         {
@@ -245,6 +253,40 @@ public sealed class PersistentDedupLedger : IDedupStore, IAsyncDisposable
         }
 
         EnableAutoCompactionAfterLoad(loadedCleanly);
+    }
+
+    /// <summary>
+    /// Moves a ledger left in the shared pre-workload directory into this ledger's directory, once,
+    /// before the first load. Skipped when this directory already has a ledger. The rename is
+    /// atomic, so two adopters racing cannot both take it or tear it.
+    /// </summary>
+    private void AdoptLegacyLedger()
+    {
+        if (string.IsNullOrWhiteSpace(_legacyLedgerDirectory) || File.Exists(_ledgerPath))
+            return;
+
+        var legacyPath = Path.Combine(_legacyLedgerDirectory, Path.GetFileName(_ledgerPath));
+        if (string.Equals(Path.GetFullPath(legacyPath), Path.GetFullPath(_ledgerPath), StringComparison.Ordinal) ||
+            !File.Exists(legacyPath))
+        {
+            return;
+        }
+
+        try
+        {
+            File.Move(legacyPath, _ledgerPath, overwrite: false);
+        }
+        catch (IOException ex) when (File.Exists(_ledgerPath) || !File.Exists(legacyPath))
+        {
+            // Another adopter won the rename; load whatever it moved.
+            _log.Debug(ex, "Legacy dedup ledger {LegacyPath} was adopted concurrently", legacyPath);
+            return;
+        }
+
+        // The SyncDirectoryAsync helper completes synchronously; this load path cannot await.
+        AtomicFileWriter.SyncDirectoryAsync(_ledgerDirectory).GetAwaiter().GetResult();
+        AtomicFileWriter.SyncDirectoryAsync(_legacyLedgerDirectory).GetAwaiter().GetResult();
+        _log.Information("Adopted legacy dedup ledger {LegacyPath} into {LedgerPath}", legacyPath, _ledgerPath);
     }
 
     /// <summary>

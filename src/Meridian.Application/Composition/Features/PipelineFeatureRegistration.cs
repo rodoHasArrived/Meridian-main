@@ -30,6 +30,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
 {
     public IServiceCollection Register(IServiceCollection services, CompositionOptions options)
     {
+        var workload = options.PipelineWorkload;
         // IEventMetrics - injectable metrics for pipeline and publisher.
         if (options.EnableOpenTelemetry)
         {
@@ -161,12 +162,15 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<Storage.Archival.WriteAheadLog>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var walDir = Path.Combine(storageOptions.RootPath, "_wal");
+            var walDir = PipelineDurabilityPaths.WalDirectory(storageOptions.RootPath, workload);
             return new Storage.Archival.WriteAheadLog(walDir, new Storage.Archival.WalOptions
             {
                 SyncMode = Storage.Archival.WalSyncMode.BatchedSync,
                 SyncBatchSize = 1000,
-                MaxFlushDelay = TimeSpan.FromSeconds(1)
+                MaxFlushDelay = TimeSpan.FromSeconds(1),
+                LegacySegmentDirectory = PipelineDurabilityPaths.AdoptsLegacyState(workload)
+                    ? PipelineDurabilityPaths.LegacyWalDirectory(storageOptions.RootPath)
+                    : null
             });
         });
 
@@ -202,7 +206,11 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         services.AddSingleton<PersistentDedupLedger>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            var ledger = new PersistentDedupLedger(Path.Combine(storageOptions.RootPath, "_dedup"));
+            var ledger = new PersistentDedupLedger(
+                PipelineDurabilityPaths.DedupDirectory(storageOptions.RootPath, workload),
+                legacyLedgerDirectory: PipelineDurabilityPaths.AdoptsLegacyState(workload)
+                    ? PipelineDurabilityPaths.LegacyDedupDirectory(storageOptions.RootPath)
+                    : null);
             // A DI factory cannot await, so load with synchronous I/O rather than blocking on
             // the asynchronous load. The ledger must be loaded before the pipeline starts.
             ledger.Initialize();
