@@ -6049,6 +6049,8 @@ describe("AccountingScreen", () => {
       vi.mocked(api.assignReconciliationBreak).mockReturnValueOnce(new Promise(() => undefined));
       renderWithRouter(<AccountingScreen data={{ ...data, breakQueue: scoped }} session={session} />, { initialEntries: ["/accounting/reconciliation"] });
       await waitForAsyncEffects();
+      // The test viewport is the constrained layout: the case inspector opens on request.
+      await inspectReconciliationBreak(user);
       await user.click(screen.getByText("Other decisions"));
       await user.click(screen.getByRole("button", { name: "Assign" }));
       await user.type(within(screen.getByRole("form", { name: "Assign case" })).getByRole("textbox", { name: "Assignee" }), "ops-user");
