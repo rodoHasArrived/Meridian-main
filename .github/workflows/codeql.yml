@@ -41,11 +41,12 @@ jobs:
             build-mode: none
 
     steps:
-      # Docs-only pull requests cannot change analyzed code. The required
-      # "Analyze <language>" checks still run and pass, but skip the ~20 minute
-      # build and analysis. Main pushes, merge groups, schedules, manual runs and
-      # reusable release callers always analyze. Uses the same classifier as the
-      # Meridian CI .NET lane: unknown paths and empty diffs require analysis.
+      # A pull request whose changes cannot affect this language's analysis (documentation,
+      # dashboard-only changes for C#, .NET-only changes for JavaScript/TypeScript) keeps the
+      # required "Analyze <language>" check green but skips the ~20 minute build and analysis.
+      # Unknown paths and empty diffs analyze. Main pushes, merge groups, schedules, manual
+      # runs and reusable release callers always analyze. The skip is step-level because a
+      # skipped matrix job reports an unexpanded name and leaves required checks pending.
       - name: Check out PR history for change detection
         if: github.event_name == 'pull_request'
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -62,28 +63,30 @@ jobs:
           EVENT_NAME: ${{ github.event_name }}
           BASE_SHA: ${{ github.event.pull_request.base.sha }}
           HEAD_SHA: ${{ github.event.pull_request.head.sha }}
+          LANGUAGE: ${{ matrix.language }}
         shell: bash
         run: |
           set -euo pipefail
           if [[ "$EVENT_NAME" == "pull_request" ]]; then
             decision="$RUNNER_TEMP/codeql-change-decision"
             (cd .codeql-change-detection &&
-              python3 build/scripts/ci/detect-dotnet-changes.py \
-                --base "$BASE_SHA" --head "$HEAD_SHA" --github-output "$decision")
+              python3 build/scripts/ci/detect-codeql-languages.py \
+                --base "$BASE_SHA" --head "$HEAD_SHA" --language "$LANGUAGE" \
+                --github-output "$decision")
             # Keep the detection clone out of the analyzed source tree.
             rm -rf .codeql-change-detection
-            grep -qx 'dotnet=true\|dotnet=false' "$decision"
-            sed 's/^dotnet=/analyze=/' "$decision" >> "$GITHUB_OUTPUT"
+            grep -qx 'analyze=true\|analyze=false' "$decision"
+            cat "$decision" >> "$GITHUB_OUTPUT"
           else
             echo "analyze=true" >> "$GITHUB_OUTPUT"
           fi
 
-      - name: Report docs-only skip
+      - name: Report skipped analysis
         if: steps.changes.outputs.analyze != 'true'
         env:
           LANGUAGE: ${{ matrix.language }}
         run: |
-          echo "Docs-only pull request: CodeQL ${LANGUAGE} analysis intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+          echo "No ${LANGUAGE}-relevant changes in this pull request: CodeQL ${LANGUAGE} analysis intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
 
       - name: Check out repository
         if: steps.changes.outputs.analyze == 'true'
