@@ -337,7 +337,12 @@ of directories created for it, at the first durability barrier.
 
 WAL record types containing `|` or a line break, and payloads containing a raw line break, are
 refused before they are written, because recovery could not parse them back. `RepairAsync` holds
-the truncate lock, and every segment listing sorts ordinally. `AtomicFileWriter.AppendAsync`
+the truncate lock, and every segment listing sorts ordinally. A WAL directory has one live owner:
+`InitializeAsync` and `RepairAsync` take an exclusive `.owner.lock` in the directory and throw
+`WalDirectoryInUseException` when another process, or another instance in the same process, holds
+it; constructing a WAL takes no lock, and a crashed owner releases with its handles.
+`WalOptions.LegacySegmentDirectory` moves `*.wal` segments left in an older shared directory into
+the owned one, under that directory's lock, before recovery. `AtomicFileWriter.AppendAsync`
 serializes appends to one path within the process, so concurrent copy-on-write appends keep
 every line.
 
