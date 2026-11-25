@@ -656,7 +656,7 @@ Declared public members:
 | <code>public Task&lt;LedgerBookRecord?&gt; GetLedgerBookAsync(Guid ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:265](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L265) |  |
 | <code>public Task&lt;IReadOnlyList&lt;LedgerBookRecord&gt;&gt; ListLedgerBooksAsync(string? fundProfileId = null, Guid? fundStructureNodeId = null, FundStructureNodeKindDto? fundStructureNodeKind = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:269](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L269) |  |
 | <code>public Task&lt;LedgerBookRecord&gt; SaveLedgerBookAsync(LedgerBookRecord book, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:277](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L277) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:359](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L359) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs:366](../../../../src/Meridian.Storage/Ledger/FileTradeFillLedgerJournalStore.cs#L366) |  |
 
 ## FiscalYearCloseProjection
 
