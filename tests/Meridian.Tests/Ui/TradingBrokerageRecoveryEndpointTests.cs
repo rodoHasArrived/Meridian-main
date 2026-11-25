@@ -14,6 +14,7 @@ using Meridian.Identity;
 using Meridian.Identity.Auth;
 using Meridian.PortfolioRecords.Accounts;
 using Meridian.PortfolioRecords.FundAccounts;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Meridian.Ui.Shared.Services;
 using Microsoft.AspNetCore.Builder;
@@ -274,7 +275,7 @@ public sealed class TradingBrokerageRecoveryEndpointTests
     {
         private readonly string _root;
 
-        private Harness(WebApplication app, Guid accountId, IBrokerageGateway gateway, string root)
+        private Harness(SharedEndpointGraph.EndpointTestApp app, Guid accountId, IBrokerageGateway gateway, string root)
         {
             App = app;
             AccountId = accountId;
@@ -282,7 +283,7 @@ public sealed class TradingBrokerageRecoveryEndpointTests
             _root = root;
         }
 
-        public WebApplication App { get; }
+        public SharedEndpointGraph.EndpointTestApp App { get; }
         public Guid AccountId { get; }
         public IBrokerageGateway Gateway { get; }
         public IBrokeragePortfolioSync Portfolio => (IBrokeragePortfolioSync)Gateway;
@@ -358,48 +359,54 @@ public sealed class TradingBrokerageRecoveryEndpointTests
             oms.GetCompletedOrders(Arg.Any<int>()).Returns(Array.Empty<OrderState>());
             oms.GetExposureReservingOrders().Returns(Array.Empty<OrderState>());
             var root = Path.Combine(Path.GetTempPath(), "meridian-recovery-endpoint-tests", Guid.NewGuid().ToString("N"));
-            var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-            {
-                EnvironmentName = Environments.Development
-            });
-            builder.WebHost.UseTestServer();
-            builder.Services.AddSingleton<IAccountQueryService>(accountService);
-            builder.Services.AddSingleton<IFundAccountService>(accountService);
-            builder.Services.AddSingleton<IScopedAuthorizationService>(new AccountAuthorization(
-                hasAccountGrant ? accountId : Guid.NewGuid(), scopedPermissions, additionalAuthorizedAccount));
-            builder.Services.AddSingleton<IBrokerageGateway>(gateway);
-            builder.Services.AddSingleton<IOrderManager>(oms);
-            builder.Services.AddSingleton(new BrokerageExecutionReconciliationService(
-                NullLogger<BrokerageExecutionReconciliationService>.Instance));
-            builder.Services.AddSingleton(provider => new BrokeragePortfolioSyncService(
-                new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
-                [], [], [], provider, NullLogger<BrokeragePortfolioSyncService>.Instance));
-            builder.Services.AddSingleton(provider => new LiveBrokeragePortfolioSyncService(
-                () => gateway, () => oms, provider.GetRequiredService<BrokerageExecutionReconciliationService>()));
-            if (registerBrokerPortfolio)
-            {
-                builder.Services.AddSingleton<BrokeragePortfolioState>();
-                builder.Services.AddSingleton<IPortfolioState>(provider => provider.GetRequiredService<BrokeragePortfolioState>());
-            }
-            var app = builder.Build();
-            app.Use(async (context, next) =>
-            {
-                context.Items[LoginSessionMiddleware.CurrentUserKey] = "recovery-operator";
-                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
-                if (hasTenant)
-                    context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "recovery-tenant";
-                else
-                    // An omitted tenant inherits the authenticated company by design. An
-                    // explicit unresolved tenant must not be replaced by that fallback.
-                    context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "all";
-                if (hasCompany)
-                    context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "recovery-company";
-                await next();
-            });
-            app.MapWorkstationEndpoints(JsonOptions);
-            if (registerBrokerPortfolio)
-                app.MapExecutionEndpoints(JsonOptions);
-            await app.StartAsync();
+            // Tests registering the same service types reuse one compiled route graph; each keeps
+            // its own services and caller identity.
+            var app = await SharedEndpointGraph.CreateAsync(
+                graphVariant: $"trading-brokerage-recovery:execution={registerBrokerPortfolio}",
+                createBuilder: static () => WebApplication.CreateBuilder(new WebApplicationOptions
+                {
+                    EnvironmentName = Environments.Development
+                }),
+                configureServices: services =>
+                {
+                    services.AddSingleton<IAccountQueryService>(accountService);
+                    services.AddSingleton<IFundAccountService>(accountService);
+                    services.AddSingleton<IScopedAuthorizationService>(new AccountAuthorization(
+                        hasAccountGrant ? accountId : Guid.NewGuid(), scopedPermissions, additionalAuthorizedAccount));
+                    services.AddSingleton<IBrokerageGateway>(gateway);
+                    services.AddSingleton<IOrderManager>(oms);
+                    services.AddSingleton(new BrokerageExecutionReconciliationService(
+                        NullLogger<BrokerageExecutionReconciliationService>.Instance));
+                    services.AddSingleton(provider => new BrokeragePortfolioSyncService(
+                        new BrokeragePortfolioSyncOptions(root, TimeSpan.FromMinutes(30), "alpaca"),
+                        [], [], [], provider, NullLogger<BrokeragePortfolioSyncService>.Instance));
+                    services.AddSingleton(provider => new LiveBrokeragePortfolioSyncService(
+                        () => gateway, () => oms, provider.GetRequiredService<BrokerageExecutionReconciliationService>()));
+                    if (registerBrokerPortfolio)
+                    {
+                        services.AddSingleton<BrokeragePortfolioState>();
+                        services.AddSingleton<IPortfolioState>(provider => provider.GetRequiredService<BrokeragePortfolioState>());
+                    }
+                },
+                configureRequest: context =>
+                {
+                    context.Items[LoginSessionMiddleware.CurrentUserKey] = "recovery-operator";
+                    context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = permissions;
+                    if (hasTenant)
+                        context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "recovery-tenant";
+                    else
+                        // An omitted tenant inherits the authenticated company by design. An
+                        // explicit unresolved tenant must not be replaced by that fallback.
+                        context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = "all";
+                    if (hasCompany)
+                        context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = "recovery-company";
+                },
+                configureGraph: graph =>
+                {
+                    graph.MapWorkstationEndpoints(JsonOptions);
+                    if (registerBrokerPortfolio)
+                        graph.MapExecutionEndpoints(JsonOptions);
+                });
             gateway.ClearReceivedCalls();
             return new Harness(app, accountId, gateway, root);
         }

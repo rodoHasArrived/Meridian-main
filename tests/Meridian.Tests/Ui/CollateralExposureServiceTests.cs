@@ -30,7 +30,8 @@ public sealed class CollateralExposureServiceTests
     {
         var buffer = new CollateralIngestionBuffer();
 
-        for (var index = 0; index < 20_050; index++)
+        Fill(buffer, start: 0, count: 20_000);
+        for (var index = 20_000; index < 20_050; index++)
         {
             buffer.IngestBatch(Scope, [Row(index)]);
         }
@@ -53,7 +54,8 @@ public sealed class CollateralExposureServiceTests
     {
         var buffer = new CollateralIngestionBuffer();
 
-        for (var index = 0; index < 5_010; index++)
+        Fill(buffer, start: 0, count: 5_000);
+        for (var index = 5_000; index < 5_010; index++)
         {
             buffer.IngestBatch(Scope, [Row(index)]);
         }
@@ -290,7 +292,8 @@ public sealed class CollateralExposureServiceTests
             new CollateralInputRow(DateTimeOffset.UnixEpoch, "CPTY-PAIR", "repo", 1m, 13m, 1m, "cash", 1m, 0m)
         ]);
 
-        for (var index = 0; index < 20_000; index++)
+        Fill(buffer, start: 0, count: 19_000);
+        for (var index = 19_000; index < 20_000; index++)
         {
             buffer.IngestBatch(Scope, [Row(index)]);
         }
@@ -592,7 +595,8 @@ public sealed class CollateralExposureServiceTests
         // Capacity spread across many identities still evicts the oldest and accepts the newest --
         // refusing there would freeze exposure at whatever the deployment saw first.
         var buffer = new CollateralIngestionBuffer();
-        for (var index = 0; index < CollateralIngestionBuffer.MaxBufferedRows; index++)
+        Fill(buffer, start: 0, count: CollateralIngestionBuffer.MaxBufferedRows - 10);
+        for (var index = CollateralIngestionBuffer.MaxBufferedRows - 10; index < CollateralIngestionBuffer.MaxBufferedRows; index++)
         {
             buffer.IngestBatch(Scope, [Row(index)]).Should().Be(CollateralIngestOutcome.Retained);
         }
@@ -603,6 +607,23 @@ public sealed class CollateralExposureServiceTests
     }
 
     private static readonly CollateralTenantScope Scope = CollateralTenantScope.Unscoped;
+
+    /// <summary>
+    /// Brings a buffer up to a starting size in pages of a thousand distinct exposures.
+    /// </summary>
+    /// <remarks>
+    /// Every delivery re-reads the whole window, so filling one row at a time is quadratic: 20,000
+    /// single-row deliveries took over 30 seconds per test. Paging leaves the same rows in the same
+    /// order. The deliveries a test is about, at and past capacity, stay single-row.
+    /// </remarks>
+    private static void Fill(CollateralIngestionBuffer buffer, int start, int count)
+    {
+        for (var offset = 0; offset < count; offset += 1_000)
+        {
+            var page = Enumerable.Range(start + offset, Math.Min(1_000, count - offset)).Select(Row).ToArray();
+            buffer.IngestBatch(Scope, page).Should().Be(CollateralIngestOutcome.Retained);
+        }
+    }
 
     private static CollateralInputRow Row(int index)
         => new(DateTimeOffset.UnixEpoch.AddSeconds(index), $"CPTY-{index}", "repo", 1m, 1m, 1m, "cash", 1m, 0m);

@@ -24,6 +24,7 @@ using Meridian.Strategies.Promotions;
 using Meridian.Strategies.Services;
 using Meridian.Strategies.Storage;
 using Meridian.Testing;
+using Meridian.Tests.TestHelpers;
 using Meridian.Ui.Shared.Endpoints;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -1636,8 +1637,7 @@ public sealed partial class ExecutionWriteEndpointsTests
     public async Task PromotionEndpoints_ExposeTenantScopeMetadataOnEveryRoute()
     {
         await using var app = await CreateAppAsync(services => RegisterPromotionServices(services));
-        var promotionEndpoints = ((IEndpointRouteBuilder)app).DataSources
-            .SelectMany(static source => source.Endpoints)
+        var promotionEndpoints = app.Services.GetRequiredService<EndpointDataSource>().Endpoints
             .OfType<RouteEndpoint>()
             .Where(static endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/promotion", StringComparison.Ordinal) == true)
             .ToArray();
@@ -1890,7 +1890,7 @@ public sealed partial class ExecutionWriteEndpointsTests
             auditTrail: sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
     }
 
-    private static async Task<WebApplication> CreateAppAsync(
+    private static async Task<SharedEndpointGraph.EndpointTestApp> CreateAppAsync(
         Action<IServiceCollection>? configureServices = null,
         UserPermission currentUserPermissions = UserPermission.ViewTrades | UserPermission.ExecuteTrades | UserPermission.ManageOrders | UserPermission.ManageStrategies,
         string? currentUser = "ops-user",
@@ -1898,49 +1898,53 @@ public sealed partial class ExecutionWriteEndpointsTests
         string? currentTenantId = "execution-test-tenant",
         string? currentCompanyId = "execution-test-company")
     {
-        var builder = WebApplication.CreateBuilder(new WebApplicationOptions
-        {
-            EnvironmentName = Environments.Development
-        });
-        builder.WebHost.UseTestServer();
-        configureServices?.Invoke(builder.Services);
-        if (allowedAccountScopes is not null)
-        {
-            builder.Services.AddSingleton<IScopedAuthorizationService>(
-                new TestScopedAuthorizationService(allowedAccountScopes));
-        }
-
-        var app = builder.Build();
-        app.Use(async (context, next) =>
-        {
-            if (!string.IsNullOrWhiteSpace(currentUser))
+        // Tests registering the same service types reuse one compiled route graph; each keeps
+        // its own services and caller identity.
+        var app = await SharedEndpointGraph.CreateAsync(
+            graphVariant: "execution-write",
+            createBuilder: static () => WebApplication.CreateBuilder(new WebApplicationOptions
             {
-                context.Items[LoginSessionMiddleware.CurrentUserKey] = currentUser;
-            }
-
-            context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
-            if (!string.IsNullOrWhiteSpace(currentCompanyId))
+                EnvironmentName = Environments.Development
+            }),
+            configureServices: services =>
             {
-                context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = currentCompanyId;
-            }
-
-            if (!string.IsNullOrWhiteSpace(currentTenantId))
+                configureServices?.Invoke(services);
+                if (allowedAccountScopes is not null)
+                {
+                    services.AddSingleton<IScopedAuthorizationService>(
+                        new TestScopedAuthorizationService(allowedAccountScopes));
+                }
+            },
+            configureRequest: context =>
             {
-                context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = currentTenantId;
-            }
-            await next();
-        });
+                if (!string.IsNullOrWhiteSpace(currentUser))
+                {
+                    context.Items[LoginSessionMiddleware.CurrentUserKey] = currentUser;
+                }
 
-        app.MapExecutionEndpoints(new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
-        app.MapPromotionEndpoints(new JsonSerializerOptions
-        {
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase
-        });
+                context.Items[LoginSessionMiddleware.CurrentUserPermissionsKey] = currentUserPermissions;
+                if (!string.IsNullOrWhiteSpace(currentCompanyId))
+                {
+                    context.Items[LoginSessionMiddleware.CurrentUserCompanyIdKey] = currentCompanyId;
+                }
 
-        await app.StartAsync();
+                if (!string.IsNullOrWhiteSpace(currentTenantId))
+                {
+                    context.Items[LoginSessionMiddleware.CurrentTenantIdKey] = currentTenantId;
+                }
+            },
+            configureGraph: static graph =>
+            {
+                graph.MapExecutionEndpoints(new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+                graph.MapPromotionEndpoints(new JsonSerializerOptions
+                {
+                    PropertyNamingPolicy = JsonNamingPolicy.CamelCase
+                });
+            });
+
         if (app.Services.GetService<IOrderManager>() is IOrderManagementLifecycle lifecycle)
         {
             await lifecycle.StartAsync();
