@@ -330,32 +330,6 @@ public sealed partial class PostgresFundAccountStoreTests : IClassFixture<FundAc
     }
 
     [FundAccountDatabaseFact]
-    public async Task IsEmptyAsync_FreshSchema_TrueThenFalseAfterFirstAccount()
-    {
-        // IsEmpty is schema-global, so this test needs its own schema rather than the
-        // shared collection schema other tests write into.
-        var options = new FundAccountStoreOptions
-        {
-            ConnectionString = _fixture.Options.ConnectionString,
-            Schema = $"fa_empty_{Guid.NewGuid():N}"
-        };
-        try
-        {
-            using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
-            await new FundAccountMigrationRunner(options).EnsureMigratedAsync(cts.Token);
-            var store = new PostgresFundAccountStore(options);
-
-            (await store.IsEmptyAsync(cts.Token)).Should().BeTrue();
-            await store.UpsertAccountAsync(MakeAccount(), cts.Token);
-            (await store.IsEmptyAsync(cts.Token)).Should().BeFalse();
-        }
-        finally
-        {
-            await FundAccountDatabaseFixture.DropSchemaAsync(options.ConnectionString, options.Schema);
-        }
-    }
-
-    [FundAccountDatabaseFact]
     public async Task SyncHistoryCorrelationMigration_EquallyRankedDuplicates_KeepsTheNewestAttemptCurrent()
     {
         var options = CreateIsolatedOptions("fa_sync_dedupe");
@@ -456,8 +430,9 @@ public sealed partial class PostgresFundAccountStoreTests : IClassFixture<FundAc
 
             await act.Should().NotThrowAsync("re-running migrations must be safe on every startup");
             var store = new PostgresFundAccountStore(options);
-            await store.UpsertAccountAsync(MakeAccount(), cts.Token);
-            (await store.IsEmptyAsync(cts.Token)).Should().BeFalse();
+            var account = MakeAccount();
+            await store.UpsertAccountAsync(account, cts.Token);
+            (await store.GetAccountAsync(account.AccountId, cts.Token)).Should().NotBeNull();
         }
         finally
         {

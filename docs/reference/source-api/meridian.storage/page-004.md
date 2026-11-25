@@ -20,7 +20,7 @@ public sealed record FundStructureTenantBackfillStamp(string Table, Guid Id, str
 
 Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantMap</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:118](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L118).
+Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:115](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L115).
 
 Which fund-structure nodes a store attributes to a tenant.
 
@@ -32,7 +32,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static FundStructureTenantMap Unpartitioned { get; } = new (IsPartitioned : false, new Dictionary&lt;Guid, string&gt;());</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:123](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L123) | A store that does not model tenant ownership. |
+| <code>public static FundStructureTenantMap Unpartitioned { get; } = new (IsPartitioned : false, new Dictionary&lt;Guid, string&gt;());</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:120](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L120) | A store that does not model tenant ownership. |
 
 ## FundStructureTenantQuarantineResolution
 
@@ -135,9 +135,8 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;FundStructureAssignmentDto&gt;&gt; GetAllAssignmentsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:70](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L70) |  |
 | <code>Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:73](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L73) |  |
 | <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetAllLinkedAccountIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:74](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L74) |  |
-| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:77](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L77) |  |
-| <code>Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:96](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L96) | The tenant stamped on each node this store partitions, for the nodes that carry one. |
-| <code>Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:101](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L101) | Stamps nodeId as owned by tenantId. |
+| <code>Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:93](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L93) | The tenant stamped on each node this store partitions, for the nodes that carry one. |
+| <code>Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:98](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L98) | Stamps nodeId as owned by tenantId. |
 
 ## IFundStructureTenantBackfillSession
 
@@ -456,9 +455,8 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;FundStructureAssignmentDto&gt;&gt; GetAllAssignmentsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:788](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L788) |  |
 | <code>public async Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:809](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L809) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; GetAllLinkedAccountIdsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:834](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L834) |  |
-| <code>public async Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:885](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L885) |  |
-| <code>public async Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:912](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L912) |  |
-| <code>public async Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:931](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L931) |  |
+| <code>public async Task&lt;FundStructureTenantMap&gt; GetNodeTenantsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:883](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L883) |  |
+| <code>public async Task StampNodeTenantAsync(Guid nodeId, string tenantId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs:910](../../../../src/Meridian.Storage/FundStructure/PostgresFundStructureStore.cs#L910) |  |
 
 ## PostgresFundStructureTenantBackfillStore
 

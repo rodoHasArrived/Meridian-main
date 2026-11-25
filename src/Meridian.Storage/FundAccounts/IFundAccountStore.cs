@@ -79,7 +79,4 @@ public interface IFundAccountStore
     // Margin snapshots
     Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);
     Task<IReadOnlyList<MarginSnapshotDto>> GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);
-
-    // Emptiness check
-    Task<bool> IsEmptyAsync(CancellationToken ct = default);
 }

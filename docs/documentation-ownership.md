@@ -24,7 +24,7 @@ remaining compatibility-lane cleanup.
 | Automation-owned status output | `docs/status/` | Keep canonical paths for tools; declared mechanical reports are ignored and exported by CI. Reviewed health baselines and hybrid documents remain committed. |
 | Detailed supporting guidance | `docs/development/`, `docs/security/`, `docs/testing/`, `docs/integrations/`, and related specialist folders | Development holds active implementation, extension, testing, and tooling guides reached from Engineering. Link specialist material from its canonical owner and avoid duplicating entrypoint commands or product status. |
 | Transitional compatibility paths | `docs/operations/` and `docs/plans/` | Retain only when active code, tests, tooling, or strong links require the path; do not add new durable guidance. |
-| Historical or superseded material | `archive/docs/` | Preserve useful history with replacement links or explicit archive rationale. |
+| Historical or superseded material | Git history; `docs/adr/historical/` for ADRs still cited by source | The repository no longer keeps an `archive/` folder. Delete superseded material with explicit approval (git history retains it), or keep it in place with a status note and replacement link. |
 
 ## Placement Classes
 
@@ -34,7 +34,7 @@ remaining compatibility-lane cleanup.
   require its path; do not add new durable guidance.
 - `source-material`: historical facts awaiting extraction into a canonical or supporting owner.
 - `generated`: preserve the output and update its registry input or generator only.
-- `archived`: retain under `archive/docs/` with replacement links where useful.
+- `archived`: no in-tree archive exists. Removed material is retained by git history; historical ADRs still cited by source live in `docs/adr/historical/`.
 - `delete-candidate`: use only for untracked generated junk or explicitly approved removals.
 
 ## Source-Of-Truth Rules
@@ -66,7 +66,7 @@ Before adding or moving docs:
 1. Choose the owning lane from the table above.
 2. Check whether a registry or generator already owns the truth.
 3. Add or update the nearest `README.md` only when discoverability changes.
-4. Archive superseded material instead of deleting it when it has historical or evidence value.
+4. Delete superseded material only with explicit approval; otherwise keep it in place with a status note. Do not recreate an `archive/` folder.
 5. Run the narrowest docs validation command for the touched surface.
 
 ## Structure Enforcement
@@ -80,15 +80,16 @@ Before adding or moving docs:
 - `operations` and `plans` are transitional and continue to warn until their strong references and
   tooling contracts are retired or moved.
 - Removed or unexpected top-level folders are errors. Add active documentation to a canonical or
-  supporting lane, or archive historical material under `archive/docs/`.
+  supporting lane.
 - The validator still warns on missing lifecycle fields so legacy files can be cleaned up in batches instead of blocking unrelated slices.
 
 ### Historical reviews and evidence placement
 
-Keep large dated review records and loose run/audit JSON snapshots under `archive/docs/`,
-with a brief pointer from the active owner when needed. Current design, remediation plans and
-registry status stay in their canonical lanes. The [archive index](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/README.md)
-records retained review and measurement history; archival does not resolve a finding.
+Keep dated review records and run/audit JSON snapshots that are still read beside their active
+owner under `docs/`. Current design, remediation plans and registry status stay in their canonical
+lanes. The repository no longer keeps an `archive/` folder: the
+[last archive index](https://github.com/rodoHasArrived/Meridian-main/blob/9c0c9de471fb1adbff73321c7d1ccfa871eb669a/archive/docs/README.md) is a pinned pointer to past review and measurement history, not a
+place for new material. Retiring a record does not resolve a finding.
 
 Move related snapshot inputs, diagnostic policies and compressed reports together, preserve
 JSON bytes and evidence dates, and update reproduction commands. Keep current generator-owned

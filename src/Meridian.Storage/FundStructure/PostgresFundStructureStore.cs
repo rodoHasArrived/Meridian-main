@@ -859,8 +859,6 @@ public sealed partial class PostgresFundStructureStore : IFundStructureStore
         }
     }
 
-    // ── Emptiness check ───────────────────────────────────────────────────────
-
     // ── Tenant partition (W9-GOV-008 criterion 2) ─────────────────────────────
 
     /// <summary>The node tables that carry a tenant stamp, with the column holding each node's id.</summary>
@@ -926,36 +924,5 @@ public sealed partial class PostgresFundStructureStore : IFundStructureStore
         cmd.Parameters.AddWithValue("node_id", nodeId);
         cmd.Parameters.AddWithValue("tenant_id", tenantId.Trim());
         await cmd.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
-    }
-
-    public async Task<bool> IsEmptyAsync(CancellationToken ct = default)
-    {
-        await using var conn = await OpenAsync(ct).ConfigureAwait(false);
-        return await IsEmptyAsync(conn, transaction: null, ct).ConfigureAwait(false);
-    }
-
-    private async Task<bool> IsEmptyAsync(
-        NpgsqlConnection conn,
-        NpgsqlTransaction? transaction,
-        CancellationToken ct)
-    {
-        await using var cmd = conn.CreateCommand();
-        cmd.Transaction = transaction;
-        cmd.CommandText = $"""
-            SELECT
-                NOT EXISTS (SELECT 1 FROM {Q("organization")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("business")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("client")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("fund")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("sleeve")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("vehicle")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("legal_entity")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("investment_portfolio")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("ownership_link")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("fund_structure_assignment")})
-                AND NOT EXISTS (SELECT 1 FROM {Q("fund_structure_linked_account")})
-            """;
-        var result = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-        return result is true;
     }
 }

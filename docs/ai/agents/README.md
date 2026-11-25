@@ -64,7 +64,6 @@ in user-level Codex config.
 | `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
 | `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
 | `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
-| `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
 | `meridian-blueprint.toml` | Create implementation-ready technical designs |
 | `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
@@ -188,7 +187,6 @@ the former `meridian-navigation` and `meridian-user-panel` aliases were pruned h
 
 | Agent | Purpose |
 | ------ | --------- |
-| [`meridian-archive-organizer.md`](../../../.claude/agents/meridian-archive-organizer.md) | Archive stale files and keep repository structure tidy |
 | [`meridian-blueprint.md`](../../../.claude/agents/meridian-blueprint.md) | Blueprint and design specialist |
 | [`meridian-brainstorm.md`](../../../.claude/agents/meridian-brainstorm.md) | Generate Meridian-native product and architecture ideas |
 | [`meridian-browser-workstation.md`](../../../.claude/agents/meridian-browser-workstation.md) | Route and implement browser workstation TypeScript/React tasks |

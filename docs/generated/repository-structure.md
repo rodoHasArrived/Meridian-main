@@ -8,27 +8,6 @@ Meridian-main
 │   └── skills
 │       ├── _shared
 │       │   └── project-context.md
-│       ├── meridian-archive-organizer
-│       │   ├── agents
-│       │   │   └── openai.yaml
-│       │   ├── evals
-│       │   │   └── evals.json
-│       │   ├── fixtures
-│       │   │   └── superseded-adr
-│       │   │       └── docs
-│       │   │           ├── adr
-│       │   │           │   ├── ADR-015-platform-restructuring.md
-│       │   │           │   └── README.md
-│       │   │           └── generated
-│       │   │               └── repository-structure.md
-│       │   ├── references
-│       │   │   ├── archive-placement-guide.md
-│       │   │   └── evaluation-harness.md
-│       │   ├── scripts
-│       │   │   ├── run_evals.py
-│       │   │   ├── score_eval.py
-│       │   │   └── trace_archive_candidates.py
-│       │   └── SKILL.md
 │       ├── meridian-blueprint
 │       │   ├── references
 │       │   │   ├── blueprint-patterns.md
@@ -142,7 +121,6 @@ Meridian-main
 │           └── SKILL.md
 ├── .claude
 │   ├── agents
-│   │   ├── meridian-archive-organizer.md
 │   │   ├── meridian-blueprint.md
 │   │   ├── meridian-brainstorm.md
 │   │   ├── meridian-browser-workstation.md
@@ -158,27 +136,6 @@ Meridian-main
 │   ├── skills
 │   │   ├── _shared
 │   │   │   └── project-context.md
-│   │   ├── meridian-archive-organizer
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
-│   │   │   ├── evals
-│   │   │   │   └── evals.json
-│   │   │   ├── fixtures
-│   │   │   │   └── superseded-adr
-│   │   │   │       └── docs
-│   │   │   │           ├── adr
-│   │   │   │           │   ├── ADR-015-platform-restructuring.md
-│   │   │   │           │   └── README.md
-│   │   │   │           └── generated
-│   │   │   │               └── repository-structure.md
-│   │   │   ├── references
-│   │   │   │   ├── archive-placement-guide.md
-│   │   │   │   └── evaluation-harness.md
-│   │   │   ├── scripts
-│   │   │   │   ├── run_evals.py
-│   │   │   │   ├── score_eval.py
-│   │   │   │   └── trace_archive_candidates.py
-│   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
 │   │   │   ├── references
 │   │   │   │   ├── blueprint-patterns.md
@@ -300,7 +257,6 @@ Meridian-main
 │   │   ├── desktop-test-generation.toml
 │   │   ├── diagnostics-audit-timeline.toml
 │   │   ├── meridian-accounting-posting-controls.toml
-│   │   ├── meridian-archive-organizer.toml
 │   │   ├── meridian-blueprint.toml
 │   │   ├── meridian-brainstorm.toml
 │   │   ├── meridian-browser-workstation.toml
@@ -454,28 +410,6 @@ Meridian-main
 │   │   │   │   ├── posting_controls_check.py
 │   │   │   │   ├── run_evals.py
 │   │   │   │   └── score_eval.py
-│   │   │   └── SKILL.md
-│   │   ├── meridian-archive-organizer
-│   │   │   ├── agents
-│   │   │   │   └── openai.yaml
-│   │   │   ├── evals
-│   │   │   │   ├── benchmark_baseline.json
-│   │   │   │   └── evals.json
-│   │   │   ├── fixtures
-│   │   │   │   └── superseded-adr
-│   │   │   │       └── docs
-│   │   │   │           ├── adr
-│   │   │   │           │   ├── ADR-015-platform-restructuring.md
-│   │   │   │           │   └── README.md
-│   │   │   │           └── generated
-│   │   │   │               └── repository-structure.md
-│   │   │   ├── references
-│   │   │   │   ├── archive-placement-guide.md
-│   │   │   │   └── evaluation-harness.md
-│   │   │   ├── scripts
-│   │   │   │   ├── run_evals.py
-│   │   │   │   ├── score_eval.py
-│   │   │   │   └── trace_archive_candidates.py
 │   │   │   └── SKILL.md
 │   │   ├── meridian-blueprint
 │   │   │   ├── agents
@@ -2031,7 +1965,6 @@ Meridian-main
 │   │   ├── statement-reconciliation-report-operations.md
 │   │   └── verified-outcome-recovery.md
 │   ├── plans
-│   │   ├── codebase-audit-cleanup-roadmap.md
 │   │   ├── paper-trading-cockpit-reliability-sprint.md
 │   │   ├── README.md
 │   │   └── report-writer-auto-preview-blueprint.md

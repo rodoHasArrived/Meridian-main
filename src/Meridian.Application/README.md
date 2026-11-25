@@ -359,8 +359,7 @@ tenant/connection identity: every vault read and mutation requires readable conf
 entirely legacy provider family under the configuration lease. Production and distributed workstations
 refuse these unowned execution paths even before a family has retained an owner. Owned families remain unavailable to
 these runtimes until tenant-aware selection is implemented; the guard does not choose another owner.
-Atomic legacy sidecar import validates the complete batch under one configuration lease before vault
-mutation. The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
+The shared legacy-runtime DI key makes IB Flex remote retrieval opt in to this guard;
 hosts without an authoritative configuration or credential-store service retain file import only.
 
 `SecurityMasterOperationalReadinessService` consumes the asset-pack registry for all class-specific

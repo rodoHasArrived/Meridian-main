@@ -19,8 +19,8 @@ Data sources: `repo markdown (*.md)`, `file modification metadata`
 
 | Metric | Value |
 | -------- | ------- |
-| Total documentation files | 1295 |
-| Orphaned files | 380 |
+| Total documentation files | 1288 |
+| Orphaned files | 379 |
 | Files without headings | 231 |
 | Stale files (>90 days) | 0 |
 | TODO/FIXME markers | 303 |
@@ -67,7 +67,6 @@ These files lack a Markdown heading, making them harder to navigate:
 
 These files are not linked from any other Markdown file in the repository:
 
-- `.agents/skills/meridian-archive-organizer/SKILL.md`
 - `.agents/skills/meridian-blueprint/SKILL.md`
 - `.agents/skills/meridian-brainstorm/SKILL.md`
 - `.agents/skills/meridian-browser-workstation/SKILL.md`
@@ -87,7 +86,8 @@ These files are not linked from any other Markdown file in the repository:
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-04-analysis-export-power-user-review.md`
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-05-research-promotion-roadmap-review.md`
 - `.agents/skills/meridian-simulated-user-panel/evals/golden/eval-06-provider-health-usability-lab.md`
-- ... and 360 more
+- `.agents/skills/meridian-simulated-user-panel/references/artifact-bundles.md`
+- ... and 359 more
 
 ## Trend
 
@@ -95,7 +95,7 @@ These files are not linked from any other Markdown file in the repository:
 
 | Date | Score | Files | Orphans | Stale |
 | ------ | ------- | ------- | --------- | ------- |
-| 1970-01-01 | 86 | 1295 | 380 | 0 |
+| 1970-01-01 | 86 | 1288 | 379 | 0 |
 
 ---
 

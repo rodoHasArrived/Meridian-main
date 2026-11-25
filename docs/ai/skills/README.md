@@ -36,7 +36,6 @@ These repo-local skills are the primary Meridian skill set for current AI work:
 
 | Skill | Purpose |
 | ------ | --------- |
-| `meridian-archive-organizer` | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | Implement and review browser workstation TypeScript/React changes |
@@ -107,7 +106,6 @@ any mirror drift. Keep Codex-only package evals, scripts, profile wiring, and ro
 
 | Skill | SKILL.md | Purpose |
 | ------ | --------- | --------- |
-| `meridian-archive-organizer` | [`SKILL.md`](../../../.claude/skills/meridian-archive-organizer/SKILL.md) | Archive stale files and keep the repository structure tidy |
 | `meridian-blueprint` | [`SKILL.md`](../../../.claude/skills/meridian-blueprint/SKILL.md) | Turn one idea into an implementation-ready technical blueprint |
 | `meridian-brainstorm` | [`SKILL.md`](../../../.claude/skills/meridian-brainstorm/SKILL.md) | Generate high-value product and architecture ideas |
 | `meridian-browser-workstation` | [`SKILL.md`](../../../.claude/skills/meridian-browser-workstation/SKILL.md) | Route and implement browser workstation TypeScript/React work |

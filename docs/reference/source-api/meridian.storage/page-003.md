@@ -732,7 +732,6 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:77](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L77) |  |
 | <code>Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:80](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L80) |  |
 | <code>Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:81](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L81) |  |
-| <code>Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/IFundAccountStore.cs:84](../../../../src/Meridian.Storage/FundAccounts/IFundAccountStore.cs#L84) |  |
 
 ## IPrivateCapitalRecordStore
 
@@ -790,7 +789,6 @@ Declared public members:
 | <code>public async Task&lt;IReadOnlyList&lt;AccountSyncHistoryEntryDto&gt;&gt; GetSyncHistoryAsync(Guid accountId, string? capability, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1313](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1313) |  |
 | <code>public async Task UpsertMarginSnapshotAsync(MarginSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1373](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1373) |  |
 | <code>public async Task&lt;IReadOnlyList&lt;MarginSnapshotDto&gt;&gt; GetMarginSnapshotsAsync(Guid accountId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1496](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1496) |  |
-| <code>public async Task&lt;bool&gt; IsEmptyAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs:1571](../../../../src/Meridian.Storage/FundAccounts/PostgresFundAccountStore.cs#L1571) |  |
 
 ## PostgresPrivateCapitalRecordStore
 

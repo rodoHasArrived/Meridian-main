@@ -844,8 +844,7 @@ NetSuite, Plaid, IB Flex and module compatibility runtime composition uses the l
 guard; owned families cannot activate unassigned or options credentials after rollback. Explicit selected-connection verification
 continues through the scoped lifecycle. Accounting imports and Plaid item workflows still require a
 tenant-aware runtime before owned-provider rollout. Module tests refuse before provider configuration
-or probing, and unavailable owned credential metadata does not fall back to environment values. The
-compatibility sidecar importer validates the entire provider batch before atomic vault import.
+or probing, and unavailable owned credential metadata does not fall back to environment values.
 
 Source comparison requires a completed recovery checkpoint with matching run/import IDs, artifact hashes and counts, plus executed mapping proof shared by the import and match artifact. Failed or running recovery cannot clear observations. Named SLA calendars load once per host from DataRoot/reconciliation/sla-calendars.json; see the reconciliation operating procedure.
 An unfinished recovery refuses publication so the report workflow can retry after completion.

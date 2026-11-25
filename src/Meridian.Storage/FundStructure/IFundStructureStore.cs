@@ -73,9 +73,6 @@ public interface IFundStructureStore
     Task UpsertLinkedAccountIdAsync(Guid accountId, CancellationToken ct = default);
     Task<IReadOnlyList<Guid>> GetAllLinkedAccountIdsAsync(CancellationToken ct = default);
 
-    // Emptiness check
-    Task<bool> IsEmptyAsync(CancellationToken ct = default);
-
     // Tenant partition (W9-GOV-008 criterion 2)
     //
     // Deliberately two narrow methods rather than a tenant argument on every read and a tenant

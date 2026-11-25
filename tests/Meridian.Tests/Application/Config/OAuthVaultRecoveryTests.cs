@@ -108,8 +108,6 @@ public sealed class OAuthVaultRecoveryTests : IDisposable
             return Task.FromResult<IReadOnlyDictionary<string, OAuthToken>>(new Dictionary<string, OAuthToken> { ["provider"] = Token() });
         }
 
-        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-            => throw new NotSupportedException();
         public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
             => throw new NotSupportedException();
     }

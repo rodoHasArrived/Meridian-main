@@ -34,7 +34,7 @@ Classify AI/doc changes in this rebuild model:
 - `canonical`: canonical lanes in `docs/ai/` and host shims (CLAUDE/Codex/agent docs)
 - `source-material`: historical notes or experiments used for extraction only
 - `generated`: `docs/ai/generated/*` (regenerate, do not hand-edit)
-- `archive`: retired guidance with replacement index entries under `archive/docs/`
+- `archive`: retired guidance. No in-tree archive exists; removed guidance is retained by git history
 
 ## Quick Start
 

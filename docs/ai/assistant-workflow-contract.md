@@ -67,7 +67,7 @@ there is an actual tooling need, then list the exact entrypoint in this contract
 - `canonical`: shared policies and lane indexes under `docs/ai/` that define current behavior.
 - `source-material`: historical notes and one-off experiments used only for extraction.
 - `generated`: `docs/ai/generated/*` (regenerate, do not hand-edit).
-- `archive`: retired AI guidance retained with replacement links from migration stubs.
+- `archive`: retired AI guidance. No in-tree archive exists; removed guidance is retained by git history, with replacement links from migration stubs where a path is still in use.
 - `delete-candidate`: only untracked junk or explicitly approved removals after review.
 
 ## Engineering- and Documentation-Awareness Rules for Agents

@@ -201,8 +201,6 @@ public sealed class OAuthTokenRefreshFailureTests
             => Interlocked.Increment(ref _reads) <= failures
                 ? Task.FromException<IReadOnlyDictionary<string, OAuthToken>>(new IOException("vault unavailable"))
                 : Task.FromResult<IReadOnlyDictionary<string, OAuthToken>>(new Dictionary<string, OAuthToken>());
-        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-            => Task.CompletedTask;
         public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
             => Task.CompletedTask;
     }
@@ -214,8 +212,6 @@ public sealed class OAuthTokenRefreshFailureTests
             await Task.Yield();
             return new Dictionary<string, OAuthToken>();
         }
-        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-            => Task.CompletedTask;
         public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
             => Task.CompletedTask;
     }
@@ -225,8 +221,6 @@ public sealed class OAuthTokenRefreshFailureTests
         public bool RotationCommitWasCancelable { get; private set; }
         public Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
             => inner.ReadOAuthTokensAsync(ct);
-        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-            => inner.ImportOAuthTokensAsync(tokens, ct);
         public Task<IReadOnlyDictionary<string, OAuthToken>> ReadScopedOAuthTokensAsync(ProviderCredentialScope scope, CancellationToken ct = default)
             => ((IScopedOAuthTokenVault)inner).ReadScopedOAuthTokensAsync(scope, ct);
         public Task SaveScopedOAuthTokenAsync(string providerName, OAuthToken? token, ProviderCredentialScope scope, CancellationToken ct = default)
@@ -254,8 +248,6 @@ public sealed class OAuthTokenRefreshFailureTests
         public bool RejectWrites { get; set; }
         public Task<IReadOnlyDictionary<string, OAuthToken>> ReadOAuthTokensAsync(CancellationToken ct = default)
             => inner.ReadOAuthTokensAsync(ct);
-        public Task ImportOAuthTokensAsync(IReadOnlyDictionary<string, OAuthToken> tokens, CancellationToken ct = default)
-            => inner.ImportOAuthTokensAsync(tokens, ct);
         public Task SaveOAuthTokenAsync(string providerName, OAuthToken? token, CancellationToken ct = default)
             => RejectWrites ? Task.FromException(new IOException("secret-bearing storage failure"))
                 : inner.SaveOAuthTokenAsync(providerName, token, ct);

@@ -1565,24 +1565,4 @@ public sealed class PostgresFundAccountStore : IFundAccountStore
             SnapshotEvidencePath: reader.IsDBNull(reader.GetOrdinal("snapshot_evidence_path")) ? null : reader.GetString(reader.GetOrdinal("snapshot_evidence_path")),
             CorrelationId: reader.IsDBNull(reader.GetOrdinal("correlation_id")) ? null : reader.GetString(reader.GetOrdinal("correlation_id")));
     }
-
-    // ── Emptiness check ───────────────────────────────────────────────────────
-
-    public async Task<bool> IsEmptyAsync(CancellationToken ct = default)
-    {
-        await using var connection = await OpenConnectionAsync(ct).ConfigureAwait(false);
-        return await IsEmptyAsync(connection, transaction: null, ct).ConfigureAwait(false);
-    }
-
-    private async Task<bool> IsEmptyAsync(
-        NpgsqlConnection connection,
-        NpgsqlTransaction? transaction,
-        CancellationToken ct)
-    {
-        await using var cmd = connection.CreateCommand();
-        cmd.Transaction = transaction;
-        cmd.CommandText = $"SELECT COUNT(*) = 0 FROM {Qualified("account_definition")}";
-        var result = await cmd.ExecuteScalarAsync(ct).ConfigureAwait(false);
-        return result is true;
-    }
 }

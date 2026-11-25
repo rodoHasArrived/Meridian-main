@@ -1,13 +1,12 @@
 {
-  "total_files": 1295,
-  "orphaned_count": 380,
+  "total_files": 1288,
+  "orphaned_count": 379,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:3f7d29df865790607df0fe52e16c7be291a051aa7eaf9e5af5b677df4d4a15e4",
+  "signal_digest": "sha256:ac8c621f9cc5297bb585c7c90e2f0e10a89d713e3058397e40ae223446384207",
   "orphaned_files": [
-    ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
     ".agents/skills/meridian-brainstorm/SKILL.md",
     ".agents/skills/meridian-browser-workstation/SKILL.md",
@@ -627,48 +626,6 @@
       "path": ".agents/skills/_shared/project-context.md",
       "has_heading": true,
       "todo_count": 1,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/adr/ADR-015-platform-restructuring.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/adr/README.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/fixtures/superseded-adr/docs/generated/repository-structure.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/references/archive-placement-guide.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/references/evaluation-harness.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": ".agents/skills/meridian-archive-organizer/SKILL.md",
-      "has_heading": true,
-      "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
       "stale": false
     },
@@ -3544,13 +3501,6 @@
     },
     {
       "path": "docs/operators/verified-outcome-recovery.md",
-      "has_heading": true,
-      "todo_count": 0,
-      "last_modified_utc": "1970-01-01T00:00:00+00:00",
-      "stale": false
-    },
-    {
-      "path": "docs/plans/codebase-audit-cleanup-roadmap.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
