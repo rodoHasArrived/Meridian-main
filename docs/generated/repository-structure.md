@@ -1169,6 +1169,7 @@ Meridian-main
 │       │   ├── ci-metrics.py
 │       │   ├── collect-actions.py
 │       │   ├── dependency-locks.py
+│       │   ├── detect-codeql-languages.py
 │       │   ├── detect-dotnet-changes.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
@@ -5495,40 +5496,6 @@ Meridian-main
 │   │   │   │   ├── SecurityProjectionRebuildHandler.cs
 │   │   │   │   └── UflProjectionRebuilder.cs
 │   │   │   ├── Validation
-│   │   │   │   ├── Modules
-│   │   │   │   │   ├── BondAssetValidationModule.cs
-│   │   │   │   │   ├── CapFloorAssetValidationModule.cs
-│   │   │   │   │   ├── CashSweepAssetValidationModule.cs
-│   │   │   │   │   ├── CertificateOfDepositAssetValidationModule.cs
-│   │   │   │   │   ├── CfdAssetValidationModule.cs
-│   │   │   │   │   ├── CommercialPaperAssetValidationModule.cs
-│   │   │   │   │   ├── CommitmentGuaranteeAssetValidationModule.cs
-│   │   │   │   │   ├── CommodityAssetValidationModule.cs
-│   │   │   │   │   ├── CreditDefaultSwapAssetValidationModule.cs
-│   │   │   │   │   ├── CryptoCurrencyAssetValidationModule.cs
-│   │   │   │   │   ├── CustomAssetAssetValidationModule.cs
-│   │   │   │   │   ├── DepositAssetValidationModule.cs
-│   │   │   │   │   ├── DirectLoanAssetValidationModule.cs
-│   │   │   │   │   ├── EquityAssetValidationModule.cs
-│   │   │   │   │   ├── FutureAssetValidationModule.cs
-│   │   │   │   │   ├── FxForwardAssetValidationModule.cs
-│   │   │   │   │   ├── FxSpotAssetValidationModule.cs
-│   │   │   │   │   ├── InvestmentFundAssetValidationModule.cs
-│   │   │   │   │   ├── MoneyMarketFundAssetValidationModule.cs
-│   │   │   │   │   ├── NonDeliverableForwardAssetValidationModule.cs
-│   │   │   │   │   ├── OptionAssetValidationModule.cs
-│   │   │   │   │   ├── OtherSecurityAssetValidationModule.cs
-│   │   │   │   │   ├── PrivateCompanyEquityAssetValidationModule.cs
-│   │   │   │   │   ├── PrivateFundInterestAssetValidationModule.cs
-│   │   │   │   │   ├── RealEstateHoldingAssetValidationModule.cs
-│   │   │   │   │   ├── RepoAssetValidationModule.cs
-│   │   │   │   │   ├── SecurityAssetValidationModules.cs
-│   │   │   │   │   ├── StructuredCreditAssetValidationModule.cs
-│   │   │   │   │   ├── StructuredNoteAssetValidationModule.cs
-│   │   │   │   │   ├── SwapAssetValidationModule.cs
-│   │   │   │   │   ├── SwaptionAssetValidationModule.cs
-│   │   │   │   │   ├── TreasuryBillAssetValidationModule.cs
-│   │   │   │   │   └── WarrantAssetValidationModule.cs
 │   │   │   │   ├── AssetClassValidatorRegistry.cs
 │   │   │   │   ├── FileSecurityValidationSnapshotStore.cs
 │   │   │   │   ├── SchemaTermsAssetClassValidator.cs
@@ -5609,7 +5576,6 @@ Meridian-main
 │   │   │   ├── SecurityMasterImportService.cs
 │   │   │   ├── SecurityMasterIngestFailureClassifier.cs
 │   │   │   ├── SecurityMasterIngestStatusService.cs
-│   │   │   ├── SecurityMasterMapping.AssetPackCodecs.cs
 │   │   │   ├── SecurityMasterMapping.cs
 │   │   │   ├── SecurityMasterMapping.EquityCapital.cs
 │   │   │   ├── SecurityMasterMapping.GeneratedDecode.cs
@@ -6229,43 +6195,6 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
-│   │   │   ├── AssetModules
-│   │   │   │   ├── BondAssetModule.cs
-│   │   │   │   ├── CapFloorAssetModule.cs
-│   │   │   │   ├── CashSweepAssetModule.cs
-│   │   │   │   ├── CertificateOfDepositAssetModule.cs
-│   │   │   │   ├── CfdAssetModule.cs
-│   │   │   │   ├── CommercialPaperAssetModule.cs
-│   │   │   │   ├── CommitmentGuaranteeAssetModule.cs
-│   │   │   │   ├── CommodityAssetModule.cs
-│   │   │   │   ├── CreditDefaultSwapAssetModule.cs
-│   │   │   │   ├── CryptoCurrencyAssetModule.cs
-│   │   │   │   ├── CustomAssetModule.cs
-│   │   │   │   ├── DepositAssetModule.cs
-│   │   │   │   ├── DirectLoanAssetModule.cs
-│   │   │   │   ├── EquityAssetModule.cs
-│   │   │   │   ├── FutureAssetModule.cs
-│   │   │   │   ├── FxForwardAssetModule.cs
-│   │   │   │   ├── FxSpotAssetModule.cs
-│   │   │   │   ├── InvestmentFundAssetModule.cs
-│   │   │   │   ├── MoneyMarketFundAssetModule.cs
-│   │   │   │   ├── NonDeliverableForwardAssetModule.cs
-│   │   │   │   ├── OptionAssetModule.cs
-│   │   │   │   ├── OtherSecurityAssetModule.cs
-│   │   │   │   ├── PrivateCompanyEquityAssetModule.cs
-│   │   │   │   ├── PrivateFundInterestAssetModule.cs
-│   │   │   │   ├── RealEstateHoldingAssetModule.cs
-│   │   │   │   ├── RepoAssetModule.cs
-│   │   │   │   ├── SecurityAssetModuleCodec.cs
-│   │   │   │   ├── SecurityAssetModuleEconomics.cs
-│   │   │   │   ├── SecurityAssetModuleRates.cs
-│   │   │   │   ├── SecurityAssetModuleSchema.cs
-│   │   │   │   ├── StructuredCreditAssetModule.cs
-│   │   │   │   ├── StructuredNoteAssetModule.cs
-│   │   │   │   ├── SwapAssetModule.cs
-│   │   │   │   ├── SwaptionAssetModule.cs
-│   │   │   │   ├── TreasuryBillAssetModule.cs
-│   │   │   │   └── WarrantAssetModule.cs
 │   │   │   ├── Compatibility
 │   │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
 │   │   │   │   └── ISecurityResolver.cs
@@ -6343,7 +6272,6 @@ Meridian-main
 │   │   │   ├── ScheduleTermsWriteRules.cs
 │   │   │   ├── ScheduleTermsWriteRules.Gaps.cs
 │   │   │   ├── SecurityAssetClassCatalog.cs
-│   │   │   ├── SecurityAssetClassModules.cs
 │   │   │   ├── SecurityAssetClassRegistry.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrade.cs
 │   │   │   ├── SecurityAssetClassTermsUpgrader.cs
@@ -8726,42 +8654,6 @@ Meridian-main
 │   │   ├── Runtime
 │   │   │   └── JsonLifecycleReceiptStore.cs
 │   │   ├── SecurityMaster
-│   │   │   ├── AssetPacks
-│   │   │   │   ├── BondStorageModule.cs
-│   │   │   │   ├── CapFloorStorageModule.cs
-│   │   │   │   ├── CashSweepStorageModule.cs
-│   │   │   │   ├── CertificateOfDepositStorageModule.cs
-│   │   │   │   ├── CfdStorageModule.cs
-│   │   │   │   ├── CommercialPaperStorageModule.cs
-│   │   │   │   ├── CommitmentGuaranteeStorageModule.cs
-│   │   │   │   ├── CommodityStorageModule.cs
-│   │   │   │   ├── CreditDefaultSwapStorageModule.cs
-│   │   │   │   ├── CryptoCurrencyStorageModule.cs
-│   │   │   │   ├── CustomAssetStorageModule.cs
-│   │   │   │   ├── DepositStorageModule.cs
-│   │   │   │   ├── DirectLoanStorageModule.cs
-│   │   │   │   ├── EquityStorageModule.cs
-│   │   │   │   ├── FutureStorageModule.cs
-│   │   │   │   ├── FxForwardStorageModule.cs
-│   │   │   │   ├── FxSpotStorageModule.cs
-│   │   │   │   ├── InvestmentFundStorageModule.cs
-│   │   │   │   ├── MoneyMarketFundStorageModule.cs
-│   │   │   │   ├── NonDeliverableForwardStorageModule.cs
-│   │   │   │   ├── OptionStorageModule.cs
-│   │   │   │   ├── OtherSecurityStorageModule.cs
-│   │   │   │   ├── PrivateCompanyEquityStorageModule.cs
-│   │   │   │   ├── PrivateFundInterestStorageModule.cs
-│   │   │   │   ├── RealEstateHoldingStorageModule.cs
-│   │   │   │   ├── RepoStorageModule.cs
-│   │   │   │   ├── SecurityTermsStorageColumns.cs
-│   │   │   │   ├── SecurityTermsStorageContribution.cs
-│   │   │   │   ├── SecurityTermsStorageModules.cs
-│   │   │   │   ├── StructuredCreditStorageModule.cs
-│   │   │   │   ├── StructuredNoteStorageModule.cs
-│   │   │   │   ├── SwapStorageModule.cs
-│   │   │   │   ├── SwaptionStorageModule.cs
-│   │   │   │   ├── TreasuryBillStorageModule.cs
-│   │   │   │   └── WarrantStorageModule.cs
 │   │   │   ├── Migrations
 │   │   │   │   ├── 001_security_master.sql
 │   │   │   │   ├── 002_security_master_fts.sql
@@ -14811,7 +14703,6 @@ Meridian-main
 │   │   │   ├── SecurityAssetClassBehaviorFactsTests.cs
 │   │   │   ├── SecurityAssetClassCatalogTests.cs
 │   │   │   ├── SecurityAssetClassFactParityTests.cs
-│   │   │   ├── SecurityAssetClassModuleTests.cs
 │   │   │   ├── SecurityAssetClassOperationalWiringTests.cs
 │   │   │   ├── SecurityAssetClassParityGuardTests.cs
 │   │   │   ├── SecurityAssetClassRegistryCoverageTests.cs
@@ -14835,7 +14726,6 @@ Meridian-main
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.cs
 │   │   │   ├── SecurityAssetTermsSchemaRoundTripTests.ReadableTwins.cs
 │   │   │   ├── SecurityAssetTermsSchemaTests.cs
-│   │   │   ├── SecurityAssetValidationModuleTests.cs
 │   │   │   ├── SecurityCodecRecordContractionTests.cs
 │   │   │   ├── SecurityCurveRulesTests.cs
 │   │   │   ├── SecurityCurvesMigrationTests.cs
@@ -14964,7 +14854,6 @@ Meridian-main
 │   │   │   ├── SecurityTermsFormatDeclarationTests.cs
 │   │   │   ├── SecurityTermsProjectionRegistryTests.cs
 │   │   │   ├── SecurityTermsS2StampTests.cs
-│   │   │   ├── SecurityTermsStorageModuleTests.cs
 │   │   │   ├── SecurityTermsVersioningTests.cs
 │   │   │   ├── SecurityTermsWriteGoldenTests.cs
 │   │   │   ├── SecurityTrancheContractContractionTests.cs
@@ -16117,6 +16006,8 @@ Meridian-main
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
 │   │   │   ├── FakeWorkstationStrategyBriefingApiClient.cs
+│   │   │   ├── LoopbackFastRefusalHandler.cs
+│   │   │   ├── LoopbackFastRefusalHandlerTests.cs
 │   │   │   ├── MainPageUiAutomationFacade.cs
 │   │   │   ├── NavigationHostInspector.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
@@ -16367,6 +16258,7 @@ Meridian-main
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_unimplemented_surfaces.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_browser_results_dir.py
 │   │   ├── test_ci_evidence_controls.py
 │   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
@@ -16382,6 +16274,7 @@ Meridian-main
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_desktop_workflow_fixture.py
+│   │   ├── test_detect_codeql_languages.py
 │   │   ├── test_detect_dotnet_changes.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_health_dashboard_merge.py
