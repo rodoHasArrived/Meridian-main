@@ -636,7 +636,7 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
         wal2.CorruptionDetected += count => Interlocked.Add(ref corruptionSignals, count);
 
         var sink = new FaultSink();
-        await using var pipeline = new EventPipeline(sink, capacity: 100, enablePeriodicFlush: false, wal: wal2);
+        var pipeline = new EventPipeline(sink, capacity: 100, enablePeriodicFlush: false, wal: wal2);
 
         await pipeline.RecoverAsync();
 
@@ -645,6 +645,9 @@ public sealed class DedupWalOrderingTests : IAsyncLifetime
             "Alert mode must raise the corruption signal for an undeserializable payload");
         wal2.CorruptedRecordCount.Should().BeGreaterThanOrEqualTo(1,
             "the semantic payload failure must be counted as corruption, never dropped silently");
+        // A WAL directory has a single writer: the first pipeline must be gone before the
+        // fresh recovery below opens the same directory.
+        await pipeline.DisposeAsync();
 
         // The trailing poison record is committed past after its one signal: a fresh
         // recovery finds nothing to replay or re-alert on.
