@@ -908,8 +908,6 @@ Meridian-main
 │   │   ├── desktop-evaluation-prerelease.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
-│   │   ├── desktop-standalone-publish.yml
-│   │   ├── desktop-user-manual.yml
 │   │   ├── desktop-workflow-runner.yml
 │   │   ├── documentation.yml
 │   │   ├── generated-repair-publish.yml
@@ -932,9 +930,7 @@ Meridian-main
 │   │   ├── service-backed-integrations.yml
 │   │   ├── targeted-test.yml
 │   │   ├── web-screenshot-capture.yml
-│   │   ├── windows-desktop-build.yml
-│   │   ├── wpf-dev-validation.yml
-│   │   └── wpf-route-validation.yml
+│   │   └── windows-desktop-build.yml
 │   ├── CODEOWNERS
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
