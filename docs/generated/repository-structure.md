@@ -46,6 +46,13 @@ Meridian-main
 │       │   ├── agents
 │       │   │   └── openai.yaml
 │       │   └── SKILL.md
+│       ├── meridian-ci-cd
+│       │   ├── assets
+│       │   │   ├── pr-workflow.yml
+│       │   │   └── scheduled-workflow.yml
+│       │   ├── references
+│       │   │   └── workflow-inventory.md
+│       │   └── SKILL.md
 │       ├── meridian-cleanup
 │       │   └── SKILL.md
 │       ├── meridian-code-review
@@ -226,6 +233,13 @@ Meridian-main
 │   │   ├── meridian-browser-workstation
 │   │   │   ├── agents
 │   │   │   │   └── openai.yaml
+│   │   │   └── SKILL.md
+│   │   ├── meridian-ci-cd
+│   │   │   ├── assets
+│   │   │   │   ├── pr-workflow.yml
+│   │   │   │   └── scheduled-workflow.yml
+│   │   │   ├── references
+│   │   │   │   └── workflow-inventory.md
 │   │   │   └── SKILL.md
 │   │   ├── meridian-cleanup
 │   │   │   └── SKILL.md
@@ -1846,7 +1860,6 @@ Meridian-main
 │   │   │   ├── README.md
 │   │   │   ├── review-remediation-2026-11-12.md
 │   │   │   ├── security-master-review-remediation-plan.md
-│   │   │   ├── ui-shared-decomposition-plan.md
 │   │   │   ├── web-ui-improvements-implementation-plan-2026-07.md
 │   │   │   ├── web-workstation-ux-review-plan-2026-11.md
 │   │   │   ├── workstation-ux-consolidation-plan-2026-11.md

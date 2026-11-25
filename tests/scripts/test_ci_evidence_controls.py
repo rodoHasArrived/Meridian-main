@@ -69,6 +69,35 @@ class EvidenceControlsTests(unittest.TestCase):
                     hygiene.check_action_refs(failures)
                 self.assertEqual(not failures, expected, ref)
 
+    def test_one_action_repository_cannot_carry_two_pins(self):
+        hygiene = load('check-workflow-hygiene')
+        first, second = 'a' * 40, 'b' * 40
+        for other, expected in [(first, True), (second, False)]:
+            with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+                directory = Path(tmp)
+                (directory / 'ci.yml').write_text(f'steps:\n  - uses: org/repo@{first} # v4\n  - uses: org/other@{second} # v1\n')
+                (directory / 'action.yml').write_text(f'steps:\n  - uses: org/repo/sub@{other} # v4\n')
+                failures = []
+                with patch.object(hygiene, 'WORKFLOW_DIR', directory), patch.object(hygiene, 'LOCAL_ACTION_DIR', directory), \
+                        patch.object(hygiene, 'REPO_ROOT', directory):
+                    hygiene.check_action_pins_agree(failures)
+                self.assertEqual(not failures, expected, failures)
+
+    def test_every_job_except_a_reusable_caller_needs_a_timeout(self):
+        hygiene = load('check-workflow-hygiene')
+        with tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp:
+            directory = Path(tmp)
+            (directory / 'ci.yml').write_text(
+                'on:\n  push:\njobs:\n'
+                '  bounded:\n    runs-on: ubuntu-latest\n    timeout-minutes: 5\n    steps:\n      - run: "true"\n'
+                '  caller:\n    uses: ./.github/workflows/other.yml\n'
+                '  unbounded:\n    runs-on: ubuntu-latest\n    steps:\n      - run: |\n          timeout-minutes: 5\n')
+            failures = []
+            with patch.object(hygiene, 'WORKFLOW_DIR', directory), patch.object(hygiene, 'REPO_ROOT', directory):
+                hygiene.check_jobs_declare_timeouts(failures)
+        self.assertEqual(len(failures), 1, failures)
+        self.assertIn("'unbounded'", failures[0])
+
     def test_untracked_or_expired_quarantine_is_rejected(self):
         runner = load('run-script-tests')
         name = 'test_ci_evidence_controls'
