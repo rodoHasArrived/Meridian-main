@@ -305,3 +305,20 @@ test("empty and failed previews replace populated readiness with their explicit 
     assert.ok(!selected.waitForTexts.includes(source.module.accountingPayload.breakQueue[0].reason));
   }
 });
+
+test("a scenario capture of a route outside the scenario reads the screenshot fixture, not the generic dev fixture", async () => {
+  const fixtures = JSON.parse(await readFile(path.join(repoRoot, "scripts/dev/web-screenshot-fixtures.json"), "utf8"));
+  const workbenchPath = "/api/ledger/journal-entry-workbench";
+  assert.ok(Object.hasOwn(fixtures.routes, workbenchPath), "Journal Entries capture depends on the screenshot workbench fixture");
+  for (const scenarioId of ["accounting.normal", "accounting.empty"]) {
+    // The scenario does not define the workbench, so it falls through to the screenshot fixture.
+    const response = createScreenshotApiResolver(source.module, fixtures.routes, { scenarioId })
+      .resolve(`http://localhost${workbenchPath}?fundProfileId=fund-alpha`);
+    assert.equal(response.status, 200, scenarioId);
+    assert.deepEqual(response.body, fixtures.routes[workbenchPath], scenarioId);
+    // A scenario's explicit route still wins over a same-path fixture.
+    const accounting = createScreenshotApiResolver(source.module, { "/api/workstation/accounting": { obsoleteDuplicate: true } }, { scenarioId })
+      .resolve("http://localhost/api/workstation/accounting");
+    assert.notDeepEqual(accounting.body, { obsoleteDuplicate: true }, scenarioId);
+  }
+});
