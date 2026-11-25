@@ -58,6 +58,16 @@ public interface ISecurityMasterRevisionStore
     Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default);
 
     /// <summary>
+    /// Revisions in any of <paramref name="states"/> across ALL securities, oldest first, at most
+    /// <paramref name="limit"/>. Feeds the review inbox (review P5/D1): a reviewer other than the
+    /// drafter must be able to find a colleague's submitted draft.
+    /// </summary>
+    Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListByStatesAsync(
+        IReadOnlyCollection<SecurityMasterRevisionStateDto> states, int limit, CancellationToken ct = default)
+        => Task.FromException<IReadOnlyList<SecurityMasterRevisionRecord>>(
+            new NotSupportedException("This revision store does not support cross-security listing."));
+
+    /// <summary>
     /// Atomically transitions a revision from <paramref name="expected"/> to <paramref name="next"/>.
     /// Throws <see cref="SecurityMasterRevisionStateException"/> when the revision is missing or its
     /// current state is not <paramref name="expected"/> (a concurrent or out-of-order transition).
@@ -204,6 +214,16 @@ public sealed class InMemorySecurityMasterRevisionStore(TimeProvider? timeProvid
     public Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListBySecurityAsync(Guid securityId, CancellationToken ct = default)
         => Task.FromResult<IReadOnlyList<SecurityMasterRevisionRecord>>(
             _revisions.Values.Where(record => record.SecurityId == securityId).ToArray());
+
+    public Task<IReadOnlyList<SecurityMasterRevisionRecord>> ListByStatesAsync(
+        IReadOnlyCollection<SecurityMasterRevisionStateDto> states, int limit, CancellationToken ct = default)
+        => Task.FromResult<IReadOnlyList<SecurityMasterRevisionRecord>>(
+            _revisions.Values
+                .Where(record => states.Contains(record.State))
+                .OrderBy(static record => record.UpdatedAt)
+                .ThenBy(static record => record.RevisionId)
+                .Take(Math.Max(1, limit))
+                .ToArray());
 
     public Task<SecurityMasterRevisionRecord> TransitionAsync(
         Guid revisionId,

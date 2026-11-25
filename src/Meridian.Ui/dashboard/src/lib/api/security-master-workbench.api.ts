@@ -8,17 +8,41 @@
  * authoritative, so it is passed as an argument rather than trusted from the body.
  */
 
-import { apiPostJson } from "@/lib/api";
+import { apiGetJson, apiPostJson } from "@/lib/api";
 import { isApiError } from "@/lib/api-errors";
 import {
   securityMasterWorkbenchApproveEndpoint,
+  securityMasterWorkbenchDiscardEndpoint,
   securityMasterWorkbenchFieldEndpoint,
+  securityMasterWorkbenchPendingRevisionsEndpoint,
   securityMasterWorkbenchPublishEndpoint,
   securityMasterWorkbenchResolveConflictEndpoint,
   securityMasterWorkbenchSubmitEndpoint
 } from "@/lib/workstation-endpoints";
 
 export type SecurityMasterRevisionState = "Draft" | "Submitted" | "Approved" | "Published" | "Rejected";
+
+/** One governed revision awaiting action, across securities (review inbox). */
+export interface SecurityMasterPendingRevision {
+  revisionId: string;
+  securityId: string;
+  state: SecurityMasterRevisionState;
+  actor: string;
+  createdAt: string;
+  updatedAt: string;
+  fieldPath: string | null;
+  fieldValue: string | null;
+  justification: string | null;
+  fundProfileId: string | null;
+  baseVersion: number | null;
+  ageHours: number;
+}
+
+/** Withdraws an abandoned Draft or gate-rejected Submitted revision. `actor` is server-derived. */
+export interface DiscardSecurityMasterRevisionInput {
+  revisionId: string;
+  reason?: string | null;
+}
 
 export interface SecurityMasterChangeHistoryItem {
   changeId: string;
@@ -51,6 +75,8 @@ export interface SecurityMasterConflictResolution {
   isPolicyDeviation: boolean;
   reason: string;
   newVersion: number;
+  /** Set when choosing a non-current value staged a governed draft instead of resolving immediately. */
+  pendingRevisionId?: string | null;
 }
 
 export interface RestatementCandidate {
@@ -185,6 +211,7 @@ export function publishSecurityMasterRevision(
 export type WorkbenchWriteError =
   | { kind: "version-conflict"; currentVersion: number | null }
   | { kind: "revision-state-conflict"; message: string | null }
+  | { kind: "field-already-staged"; stagedBy: string | null; revisionId: string | null; message: string | null }
   | { kind: "workflow-required" }
   | { kind: "unprocessable"; message: string | null }
   | { kind: "forbidden" }
@@ -195,6 +222,8 @@ interface WorkbenchErrorBody {
   error?: unknown;
   currentVersion?: unknown;
   message?: unknown;
+  stagedBy?: unknown;
+  revisionId?: unknown;
 }
 
 function parseErrorBody(responseBody: string | null): WorkbenchErrorBody {
@@ -207,6 +236,23 @@ function parseErrorBody(responseBody: string | null): WorkbenchErrorBody {
   } catch {
     return {};
   }
+}
+
+/** Lists revisions awaiting action across every security, oldest first (default: Submitted and Approved). */
+export function listPendingSecurityMasterRevisions(
+  states: readonly SecurityMasterRevisionState[] = ["Submitted", "Approved"],
+  signal?: AbortSignal
+): Promise<SecurityMasterPendingRevision[]> {
+  return apiGetJson<SecurityMasterPendingRevision[]>(securityMasterWorkbenchPendingRevisionsEndpoint(states), { signal });
+}
+
+/** Discards a revision so its staged overlay value no longer blocks the security's other edits. */
+export function discardSecurityMasterRevision(
+  securityId: string,
+  input: DiscardSecurityMasterRevisionInput,
+  signal?: AbortSignal
+): Promise<SecurityMasterEditResult> {
+  return apiPostJson<SecurityMasterEditResult>(securityMasterWorkbenchDiscardEndpoint(securityId), input, { signal });
 }
 
 /**
@@ -228,6 +274,14 @@ export function classifyWorkbenchWriteError(error: unknown): WorkbenchWriteError
     case 403:
       return { kind: "forbidden" };
     case 409:
+      if (code === "field-already-staged") {
+        return {
+          kind: "field-already-staged",
+          stagedBy: typeof body.stagedBy === "string" ? body.stagedBy : null,
+          revisionId: typeof body.revisionId === "string" ? body.revisionId : null,
+          message
+        };
+      }
       if (code === "version-conflict") {
         return {
           kind: "version-conflict",

@@ -229,6 +229,62 @@ public static partial class WorkstationEndpoints
         .Produces(StatusCodes.Status409Conflict)
         .Produces(StatusCodes.Status422UnprocessableEntity);
 
+        // Review inbox (review P5/D1): revisions awaiting action across every security, oldest first,
+        // so a reviewer who is not the drafter can find and act on a colleague's submitted draft.
+        group.MapGet(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchPendingRevisions), async (
+            string? state,
+            int? limit,
+            HttpContext context,
+            [FromServices] ISecurityMasterRevisionStore? revisions) =>
+        {
+            if (!EndpointAuthorization.HasPermission(context, UserPermission.ViewSecurityMaster)
+                && !EndpointAuthorization.HasPermission(context, UserPermission.ModifySecurityMaster))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            if (revisions is null)
+            {
+                return WorkbenchServiceUnavailable();
+            }
+
+            var states = new List<SecurityMasterRevisionStateDto>();
+            foreach (var token in (string.IsNullOrWhiteSpace(state) ? "Submitted,Approved" : state)
+                         .Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries))
+            {
+                if (!Enum.TryParse<SecurityMasterRevisionStateDto>(token, ignoreCase: true, out var parsed))
+                {
+                    return Results.BadRequest(new { error = $"Unknown revision state '{token}'." });
+                }
+
+                states.Add(parsed);
+            }
+
+            var now = DateTimeOffset.UtcNow;
+            var rows = await revisions
+                .ListByStatesAsync(states, Math.Clamp(limit ?? 200, 1, 1000), context.RequestAborted)
+                .ConfigureAwait(false);
+            return Results.Json(
+                rows.Select(row => new SecurityMasterPendingRevisionDto(
+                        row.RevisionId,
+                        row.SecurityId,
+                        row.State,
+                        row.Actor,
+                        row.CreatedAt,
+                        row.UpdatedAt,
+                        row.FieldPath,
+                        row.FieldValueRecorded ? row.FieldValue : null,
+                        row.FieldJustification,
+                        row.FundProfileId,
+                        row.BaseVersion,
+                        Math.Round((now - row.UpdatedAt).TotalHours, 1)))
+                    .ToArray(),
+                jsonOptions);
+        })
+        .WithName("SecurityMasterWorkbenchPendingRevisions")
+        .Produces<IReadOnlyList<SecurityMasterPendingRevisionDto>>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status403Forbidden);
+
         group.MapPost(SecurityMasterSubroute(UiApiRoutes.SecurityMasterWorkbenchDiscard), async (
             Guid securityId,
             DiscardSecurityMasterRevisionRequest? request,
@@ -387,6 +443,21 @@ public static partial class WorkstationEndpoints
             // stays Approved but cannot publish; the operator discards it and stages the edit again.
             return Results.Json(
                 new { error = "stale-field-proposal", message = ex.Message, baseVersion = ex.BaseVersion, currentVersion = ex.CurrentVersion },
+                jsonOptions,
+                statusCode: StatusCodes.Status409Conflict);
+        }
+        catch (FieldAlreadyStagedException ex)
+        {
+            return Results.Json(
+                new
+                {
+                    error = "field-already-staged",
+                    message = ex.Message,
+                    fieldPath = ex.FieldPath,
+                    revisionId = ex.RevisionId,
+                    stagedBy = ex.StagedBy,
+                    state = ex.State.ToString()
+                },
                 jsonOptions,
                 statusCode: StatusCodes.Status409Conflict);
         }

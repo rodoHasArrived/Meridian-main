@@ -163,6 +163,20 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 // provenance rows, so every write below uses the canonical path.
                 var validatedPath = await EnsureFieldEditIsSchemaValidAsync(request, ct).ConfigureAwait(false);
 
+                // Review P5/D1: overlay staging never bumped a version, so a second operator staging
+                // the same field silently overwrote the first operator's pending value. An open
+                // (Draft/Submitted/Approved) revision on the field now refuses the second staging and
+                // names its stager; the first revision must be published or discarded first.
+                var openRevision = (await _revisions.ListBySecurityAsync(request.SecurityId, ct).ConfigureAwait(false))
+                    .FirstOrDefault(existing => existing.State is SecurityMasterRevisionStateDto.Draft
+                                                    or SecurityMasterRevisionStateDto.Submitted
+                                                    or SecurityMasterRevisionStateDto.Approved
+                                                && string.Equals(existing.FieldPath, validatedPath, StringComparison.OrdinalIgnoreCase));
+                if (openRevision is not null)
+                {
+                    throw new FieldAlreadyStagedException(request.SecurityId, validatedPath, openRevision.RevisionId, openRevision.Actor, openRevision.State);
+                }
+
                 // Stage the operator value as an override read-model annotation. The override store applies
                 // the patch under the shared, generation-fenced transaction; it does not advance the economic
                 // version, so the returned NewVersion is the unchanged canonical version. A blank value is
@@ -2119,4 +2133,32 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             ReconciliationExposureCount: 0,
             ReportPackExposureCount: 0,
             Links: []);
+}
+
+/// <summary>
+/// A field edit was refused because another open revision already stages the same field (review
+/// P5/D1). Mapped to HTTP 409 with the first stager's identity.
+/// </summary>
+public sealed class FieldAlreadyStagedException : InvalidOperationException
+{
+    public FieldAlreadyStagedException(Guid securityId, string fieldPath, Guid revisionId, string stagedBy, SecurityMasterRevisionStateDto state)
+        : base($"Field '{fieldPath}' of security '{securityId:D}' is already staged by {stagedBy} in revision '{revisionId:D}' ({state}). "
+               + "Publish or discard that revision before staging the field again.")
+    {
+        SecurityId = securityId;
+        FieldPath = fieldPath;
+        RevisionId = revisionId;
+        StagedBy = stagedBy;
+        State = state;
+    }
+
+    public Guid SecurityId { get; }
+
+    public string FieldPath { get; }
+
+    public Guid RevisionId { get; }
+
+    public string StagedBy { get; }
+
+    public SecurityMasterRevisionStateDto State { get; }
 }

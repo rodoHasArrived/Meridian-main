@@ -406,6 +406,16 @@ export function securityMasterWorkbenchPublishEndpoint(securityId: string): stri
   return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchPublish, securityId);
 }
 
+export function securityMasterWorkbenchDiscardEndpoint(securityId: string): string {
+  return securityMasterWorkbenchPath(UI_API_ROUTES.SecurityMasterWorkbenchDiscard, securityId);
+}
+
+/** Review inbox: revisions awaiting action across every security (review P5/D1). */
+export function securityMasterWorkbenchPendingRevisionsEndpoint(states?: readonly string[]): string {
+  const route = UI_API_ROUTES.SecurityMasterWorkbenchPendingRevisions;
+  return states && states.length > 0 ? `${route}?state=${encodeURIComponent(states.join(","))}` : route;
+}
+
 export const REFERENCE_DATA_API_ENDPOINTS = {
   edgarFiler: UI_API_ROUTES.ReferenceDataEdgarFiler,
   edgarFacts: UI_API_ROUTES.ReferenceDataEdgarFacts,

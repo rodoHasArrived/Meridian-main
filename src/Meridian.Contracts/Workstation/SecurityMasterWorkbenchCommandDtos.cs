@@ -220,3 +220,21 @@ public sealed record SecurityMasterRevisionPublishedEvent(
     IReadOnlyList<Guid> AffectedLedgerBookIds,
     string Actor,
     string? CorrelationId);
+
+/// <summary>
+/// One governed revision awaiting action, across securities (review P5/D1 review inbox). The drafter
+/// is <see cref="Actor"/>; under the Institutional profile a different principal must approve.
+/// </summary>
+public sealed record SecurityMasterPendingRevisionDto(
+    Guid RevisionId,
+    Guid SecurityId,
+    SecurityMasterRevisionStateDto State,
+    string Actor,
+    DateTimeOffset CreatedAt,
+    DateTimeOffset UpdatedAt,
+    string? FieldPath,
+    string? FieldValue,
+    string? Justification,
+    string? FundProfileId,
+    long? BaseVersion,
+    double AgeHours);

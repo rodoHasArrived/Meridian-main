@@ -111,6 +111,15 @@ export function buildWorkbenchErrorBanner(error: WorkbenchWriteError): PassportB
         title: "Revision state changed",
         message: error.message ?? "This revision is no longer in a state that allows the requested action. Reload the revision."
       };
+    case "field-already-staged":
+      return {
+        tone: "warning",
+        title: "Field already staged",
+        message:
+          error.stagedBy != null
+            ? `${error.stagedBy} already has an open revision on this field. Publish or discard it before staging another value.`
+            : error.message ?? "Another open revision already stages this field. Publish or discard it first."
+      };
     case "workflow-required":
       return {
         tone: "warning",
