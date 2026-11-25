@@ -793,7 +793,7 @@ public sealed partial class WorkstationEndpointsTests
         new("tenant-test", "tenant-test");
 
     private static async Task<IReadOnlyList<ReconciliationBreakQueueItem>> RetainScopedReconciliationBreaksAsync(
-        WebApplication app,
+        Meridian.Tests.TestHelpers.SharedEndpointGraph.EndpointTestApp app,
         string runId,
         ReconciliationRunDetail reconciliation)
     {
