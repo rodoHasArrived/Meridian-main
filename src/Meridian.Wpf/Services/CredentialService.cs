@@ -1021,6 +1021,8 @@ public sealed class CredentialService : ICredentialService, IDisposable
 
     private EventHandler<SharedCredentialExpirationEventArgs>? _sharedCredentialExpiring;
 
+    string ICredentialService.OAuthTokenResourcePrefix => OAuthTokenResource;
+
     event EventHandler<SharedCredentialExpirationEventArgs>? ICredentialService.CredentialExpiring
     {
         add => _sharedCredentialExpiring += value;

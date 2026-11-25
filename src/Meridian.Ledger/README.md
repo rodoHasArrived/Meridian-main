@@ -44,6 +44,11 @@ unbound ledger for callers outside the posting chart. Durable, hash-chained run 
 while swapping both functional and transaction debit/credit amounts. A correction never drops the
 currency evidence from its immutable source.
 
+The standard posting chart assigns explicit codes to registered roles. Configured book charts
+support a stable code per node within the tenant, company, and book. Active, pinned chart references
+and optional line memos follow journal lines through persistence, exports, and reversals. Legacy
+journal records retain their original serialization when these fields are absent.
+
 Explicitly classified investing activities recognize either an asset carrying leg or a
 liability carrying leg (short securities payable). A short cover with retained investing
 classification reports its actual cash cost while preserving the booked realized result.

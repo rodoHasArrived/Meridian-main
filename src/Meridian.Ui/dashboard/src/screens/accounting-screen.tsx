@@ -1,21 +1,20 @@
-import { CloseBoard } from "@/components/meridian/close-board";
 import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCards } from "lucide-react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
-import { selectCurrentDailyValuationSchedule, useAccountingCloseSources, type CloseWorkflowQuery } from "./accounting-screen.close-sources";
+import { selectCurrentDailyValuationSchedule, useAccountingCloseSources } from "./accounting-screen.close-sources";
 import { useValuationMarkPreview, ValuationMarkPreviewPanel } from "./accounting-screen.mark-preview";
 import { formatCount } from "@/lib/format";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
 import { workspaceKpiIds } from "@/lib/kpi-registry";
-import { CloseChecklistProgressChart, ReconciliationAgingChart } from "@/components/meridian/workstation-evidence-charts";
-import { CloseChecklistHistoryChart } from "@/components/meridian/close-checklist-history-chart";
+import { ReconciliationAgingChart } from "@/components/meridian/workstation-evidence-charts";
 import { DenseDataTable, EntitySummary, ToolbarStrip, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { FinancialRecordExplorerShell } from "@/components/meridian/financial-record-explorer";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { instrumentRecordIdentity } from "@/lib/instrument-record-identity";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { PrepareNextPeriodPanel } from "@/screens/accounting-screen.prepare-next-period";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { StatusBanner } from "@/components/ui/status-banner";
@@ -41,20 +40,23 @@ import { cn } from "@/lib/utils";
 import { StatusBadge, toneToSeverity } from "@/design-system/status";
 import { workspaceForPath } from "@/lib/workspace";
 import { CapitalAccountWorkbenchPanel } from "@/screens/accounting-screen.capital-account-workbench-panel";
+import { UnitRegisterPanel } from "@/screens/accounting-screen.unit-register";
 import { AccountingPostedLedgerSection } from "@/screens/accounting-screen.posted-ledger-panel";
 import { CorporateActionsPanel } from "@/screens/accounting-screen.corporate-actions-panel";
 import { AccountingCloseReportPackagePanel, AccountingWorkflowLaunchPanel, CloseCommandCenterPanel } from "@/screens/accounting-screen.close-cockpit-panels";
 import { SecuritySchedulesPanel } from "@/screens/accounting-screen.security-master-panels";
 import { CalibrationSummaryPanel } from "@/screens/accounting-screen.calibration-panel";
 import { InstrumentPassportPanel, ReferenceDataWorkbenchPanel, SecurityOpenLotReadModelPanel } from "@/screens/accounting-screen.security-master-detail-panels";
-import { AccountingChip, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
+import { AccountingChip, AccountingHighlight, AccountingWorkbenchContext } from "@/screens/accounting-screen.workbench-context";
 import { OperationalExceptionWorkbenchPanel, ReconciliationQueueSummaryCard, TradingParametersPanel, reconciliationQueueColumns } from "@/screens/accounting-screen.operations-panels";
 import { BankingPaymentApprovalsPanel } from "@/screens/accounting-screen.payment-approvals";
 import { AuditChainIntegrityPanel } from "@/screens/accounting-screen.audit-integrity";
 import { BondCutoverConsolePanel } from "@/screens/accounting-screen.bond-cutover";
 import { ReconciliationReadinessPanel } from "@/screens/accounting-screen.reconciliation-readiness";
+import { ExternalGlPostingPanel } from "@/screens/accounting-screen.external-gl-posting";
 import { AccountingOnboardingPanel } from "@/screens/accounting-screen.onboarding-panel";
 import { ReconciliationWorkbench, ReconciliationStatementRuns, ThreeWayReconciliationWorkbench } from "./accounting-screen.reconciliation-workbench";
+import { IncomeReceiptQueuePanel } from "./income-receipt-queue-panel";
 import { useReconciliationViewState } from "./reconciliation-view-state";
 import { AccountOversightPanel } from "@/screens/accounting-screen.account-oversight";
 import { buildAccountingSectionVisibility, buildAccountingTaskMode, resolveAccountingWorkstream } from "@/screens/accounting-screen.task-mode-view-model";
@@ -69,61 +71,21 @@ import { BREAK_QUEUE_VISIT_SURFACE, sinceLastVisitDelta, summarizeSinceLastVisit
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { IntercompanyAgreementsPanel } from "@/screens/accounting-screen.intercompany-agreements";
 import { AccountingSystemReconciliationPanel, mergeExternalGlExportPackage } from "@/screens/accounting-screen.external-gl-panel";
-import { AccountingCaseWorkbench } from "@/screens/accounting-screen.case-workbench";
+import { AccountingCaseWorkbenchSection } from "@/screens/accounting-screen.case-workbench";
+import { CaseInspector } from "./case-inspector";
+import { AccountingCloseLanding, AccountingPeriodPreparation } from "./accounting-screen.close-landing";
+import { isSecurityMasterDrillInTabId, resolveSecurityMasterDrillInTab, buildSecurityMasterDrillInSearch, resolveExplorerSecurityId, parseCloseWorkflowQuery } from "./accounting-screen.route-context";
 import { AccountingConfigurationPanel } from "@/screens/accounting-screen.configuration-panel";
 import { ManualJournalEntryWorkbenchPanel } from "@/screens/accounting-screen.manual-journal-panel";
 import { AccountingApprovalsWorkstream } from "@/screens/accounting-screen.approvals-workstream";
 import { AccountingValue } from "@/screens/accounting-screen.accounting-value";
+import { AccountingLoadingPanel } from "./accounting-screen.loading-panel";
 import { statusTextClass } from "@/design-system/status-styles";
 
 interface AccountingScreenProps {
   data: AccountingWorkspaceResponse | null;
   multiAssetCoverage?: MultiAssetCoverageSummary | null;
   session?: SessionInfo | null;
-}
-
-const SECURITY_MASTER_DRILL_IN_TAB_IDS = ["identity", "reference", "schedules", "lots", "passport", "evidence"] as const;
-
-type SecurityMasterDrillInTabId = (typeof SECURITY_MASTER_DRILL_IN_TAB_IDS)[number];
-
-function isSecurityMasterDrillInTabId(value: string | null): value is SecurityMasterDrillInTabId {
-  return SECURITY_MASTER_DRILL_IN_TAB_IDS.includes(value as SecurityMasterDrillInTabId);
-}
-
-function resolveSecurityMasterDrillInTab(search: string): SecurityMasterDrillInTabId {
-  const requested = new URLSearchParams(search).get("tab");
-  return isSecurityMasterDrillInTabId(requested) ? requested : "identity";
-}
-
-function buildSecurityMasterDrillInSearch(search: string, tabId: SecurityMasterDrillInTabId): string {
-  const params = new URLSearchParams(search);
-  params.set("tab", tabId);
-  const serialized = params.toString();
-  return serialized ? `?${serialized}` : "";
-}
-
-function resolveExplorerSecurityId(recordId: string): string | null {
-  const [recordType, securityId, ...extraSegments] = recordId.split(":");
-  return (recordType === "security" || recordType === "security-instrument") && securityId && extraSegments.length === 0
-    ? securityId
-    : null;
-}
-
-function parseCloseWorkflowQuery(search: string): CloseWorkflowQuery {
-  const params = new URLSearchParams(search);
-  return {
-    fundProfileId: normalizeOptionalQueryValue(params.get("fundProfileId")),
-    entityId: normalizeOptionalQueryValue(params.get("entityId")),
-    fundAccountId: normalizeOptionalQueryValue(params.get("fundAccountId")),
-    ledgerBookId: normalizeOptionalQueryValue(params.get("ledgerBookId")),
-    periodId: normalizeOptionalQueryValue(params.get("periodId")),
-    status: normalizeOptionalQueryValue(params.get("workflowStatus"))
-  };
-}
-
-function normalizeOptionalQueryValue(value: string | null): string | undefined {
-  const normalized = value?.trim();
-  return normalized ? normalized : undefined;
 }
 
 export function AccountingScreen(props: AccountingScreenProps) {
@@ -151,7 +113,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const workspace = workspaceForPath(pathname);
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
-  const reconciliationViewState = useReconciliationViewState(workstream === "reconciliation" || workstream === "exceptions");
+  const reconciliationViewState = useReconciliationViewState(workstream === "reconciliation" || workstream === "exceptions" || taskMode.id === "close-cockpit");
   const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, operatorIdentity, workstream === "reconciliation" || workstream === "exceptions" ? reconciliationViewState : undefined);
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
@@ -289,6 +251,9 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const identityPrimaryFields = identity?.summaryFields.filter((field) => field.label === "Asset class" || field.label === "Effective") ?? [];
   const identityTechnicalFields = identity?.summaryFields.filter((field) => !identityPrimaryFields.includes(field)) ?? [];
   const selectedSecurityEntry = securityMaster.selectedEntry;
+  const registryDetail = securityMaster.identity?.securityId === securityMaster.selectedSecurityId ? securityMaster.identity : null;
+  const registryRecord = instrumentRecordIdentity(selectedSecurityEntry, registryDetail);
+  const registryRecordContext = useRecordWorkspaceContext(registryRecord, { securityId: securityMaster.selectedSecurityId }, "#security-detail-page-title");
   const securityMasterActiveTab = resolveSecurityMasterDrillInTab(search);
   const bondAction = new URLSearchParams(search).get("bondAction");
   const focusedBondAction = useRef<string | null>(null);
@@ -713,59 +678,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   );
 
   if (!data) {
-    const loading = buildAccountingLoadingViewState(pathname);
-    return (
-      <Card
-        className="panel-surface-strong"
-        role={loading.role}
-        aria-busy={loading.ariaBusy}
-        aria-live={loading.ariaLive}
-        aria-labelledby={loading.titleId}
-        aria-describedby={loading.detailId}
-      >
-        <CardHeader>
-          <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0">
-              <div className={eyebrowClassName(loading.eyebrow)}>{loading.eyebrow}</div>
-              <CardTitle id={loading.titleId} className="mt-2 text-base">{loading.title}</CardTitle>
-              <CardDescription id={loading.detailId} className="mt-2">{loading.detail}</CardDescription>
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <AccountingChip label="Route" value={loading.routeLabel} />
-              <AccountingChip label="Task mode" value={loading.workstreamLabel} />
-            </div>
-          </div>
-          <div className="mt-4 grid gap-3 lg:grid-cols-[minmax(0,1fr)_minmax(18rem,0.38fr)]">
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.statusItemsLabel) && "uppercase")}>{loading.statusItemsLabel}</div>
-              <div role="list" className="mt-3 grid gap-2 md:grid-cols-3">
-                {loading.statusItems.map((item) => (
-                  <div key={item.id} role="listitem" className="rounded-md border border-border/60 bg-background/45 px-3 py-2">
-                    <div className="text-sm font-semibold text-foreground">{item.label}</div>
-                    <p className="mt-1 text-xs leading-5 text-muted-foreground">{item.detail}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-            <div className="rounded-md border border-border/70 bg-secondary/20 px-3 py-3">
-              <div className={cn("text-xs font-semibold text-muted-foreground", usesTrackedCaps(loading.actionsLabel) && "uppercase")}>{loading.actionsLabel}</div>
-              <div className="mt-3 grid gap-2">
-                {loading.actions.map((action) => (
-                  <Button key={action.id} asChild size="sm" variant="outline" className="h-auto justify-start py-2 text-left">
-                    <Link to={action.href} aria-label={action.ariaLabel}>
-                      <span className="min-w-0">
-                        <span className="block font-semibold">{action.label}</span>
-                        <span className="mt-1 block text-xs font-normal leading-5 text-muted-foreground">{action.detail}</span>
-                      </span>
-                    </Link>
-                  </Button>
-                ))}
-              </div>
-            </div>
-          </div>
-        </CardHeader>
-      </Card>
-    );
+    return <AccountingLoadingPanel loading={buildAccountingLoadingViewState(pathname)} />;
   }
 
   const focus = taskMode;
@@ -790,9 +703,17 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
       {workstream === "reconciliation" ? (
         <ThreeWayReconciliationWorkbench>
-          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice}
+          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog}
+            caseInspector={<CaseInspector key={reconciliation.selectedBreakId} caseId={reconciliation.selectedBreakId}
+              initialCase={reconciliation.sourceRows.find((item) => item.breakId === reconciliation.selectedBreakId)}
+              onChanged={reconciliation.applyCaseworkUpdate} relatedCases={reconciliation.lineageRows}
+              onOpenCase={reconciliation.selectBreak} comparisonBreakId={reconciliationViewState.comparisonBreakId}
+              onComparisonChange={reconciliationViewState.setComparisonBreakId}
+              requestedDecision={resolveDialog.active?.breakId === reconciliation.selectedBreakId ? resolveDialog.active.status === "Dismissed" ? "Dismiss" : "Resolve" : null}
+              onDecisionRequestHandled={resolveDialog.close} />} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} operatorId={operatorIdentity}
             runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />}
           />
+          <IncomeReceiptQueuePanel operatorIdentity={operatorIdentity} />
           <section aria-label="Break aging" className="space-y-2"><h3 className="text-sm font-semibold">Break aging</h3><ReconciliationAgingChart breaks={reconciliation.sourceRows} /></section>
           <TechnicalDetails label="Account oversight"><AccountOversightPanel /></TechnicalDetails>
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} /></TechnicalDetails>
@@ -800,50 +721,18 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {/* On the landing the queue leads and preparation follows it (below); elsewhere it stays here. */}
-      {sectionVisibility.showWorkflowDetails && !sectionVisibility.showCloseCockpitLanding ? <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} /> : null}
+      {sectionVisibility.showWorkflowDetails && !sectionVisibility.showCloseCockpitLanding ? <AccountingPeriodPreparation
+        closeWorkflow={closeWorkflow} ledgerBookId={closeWorkflowQuery.ledgerBookId} closeBoard={closeReportPackage.closeBoard} /> : null}
 
       {sectionVisibility.showCloseCockpitLanding ? (
         <>
-          {closeWorkflow?.closeChecklist ? <section aria-label="Close task progress" className="space-y-2"><h3 className="text-sm font-semibold">Close task progress</h3><CloseChecklistProgressChart tasks={closeWorkflow.closeChecklist} /></section> : null}
-          <AccountingCaseWorkbench
-            breakRows={reconciliation.rows}
-            visitBaseline={breakQueueVisit.baseline}
-            selectedBreakId={reconciliation.selectedBreakId}
-            selectedBreakDetail={reconciliation.selectedDetail}
-            closeCommandCenter={closeCommandCenter}
-            detailActions={reconciliation.detailActions}
-            onSelectBreak={reconciliation.selectBreak}
-            onAssignBreak={(breakId) => {
-              reconciliation.selectBreak(breakId);
-              void reconciliation.assignBreak(breakId);
-            }}
-            onResolveBreak={(breakId) => {
-              reconciliation.selectBreak(breakId);
-              resolveDialog.open(breakId, "Resolved");
-            }}
-            onDismissBreak={(breakId) => {
-              reconciliation.selectBreak(breakId);
-              resolveDialog.open(breakId, "Dismissed");
-            }}
+          <AccountingCloseLanding
+            caseWorkbench={(
+              <AccountingCaseWorkbenchSection reconciliation={reconciliation} controls={reconciliationViewState} operatorId={operatorIdentity}
+                resolveDialog={resolveDialog} closeCommandCenter={closeCommandCenter} visitBaseline={breakQueueVisit.baseline} />
+            )}
+            closeWorkflow={closeWorkflow} search={search}
           />
-          {closeReportPackage.closeBoard ? <CloseBoard board={closeReportPackage.closeBoard} /> : null}
-          <PrepareNextPeriodPanel initialWorkflowId={closeWorkflow?.workflowId} />
-          {closeWorkflow ? <CloseChecklistHistoryChart workflowId={closeWorkflow.workflowId} workflowVersion={closeWorkflow.version} /> : null}
-          <TechnicalDetails label="System details" className="panel-surface">
-            <div className="space-y-4">
-              {workflowLaunch ? <AccountingWorkflowLaunchPanel view={workflowLaunch} /> : null}
-              {closeCommandCenter ? (
-                <CloseCommandCenterPanel
-                  view={closeCommandCenter}
-                  onRefresh={() => void refreshCloseWorkflow()}
-                  onCommand={(command) => void runCloseCommand(command)}
-                  activeCommand={activeDailyValuationCommand}
-                  commandStatusText={dailyValuationBatchStatusText}
-                />
-              ) : null}
-              <AccountingCloseReportPackagePanel view={closeReportPackage} />
-            </div>
-          </TechnicalDetails>
         </>
       ) : (
         <>
@@ -926,6 +815,8 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
         </Card>
       ) : null}
 
+      {sectionVisibility.showExternalGl ? <ExternalGlPostingPanel /> : null}
+
       {sectionVisibility.showExternalGl ? (
       <AccountingSystemReconciliationPanel
         providers={accountingSystemProviders}
@@ -971,9 +862,10 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
         <ManualJournalEntryWorkbenchPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment])} view={journalEntries} search={search} />
       ) : null}
 
-      {sectionVisibility.showCapitalAccounts ? (
+      {sectionVisibility.showCapitalAccounts ? <>
         <CapitalAccountWorkbenchPanel view={capitalAccountWorkbench} />
-      ) : null}
+        <UnitRegisterPanel />
+      </> : null}
 
       {sectionVisibility.showApprovals ? (
         <AccountingApprovalsWorkstream />
@@ -1841,6 +1733,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                   {securityMaster.pageView.detailStatusLabel}
                 </Badge>
               </div>
+              {registryRecord ? <RecordIdentitySpine record={registryRecord} context={registryRecordContext} /> : null}
               <ToolbarStrip
                 ariaLabel={securityMaster.pageView.detailToolbarAriaLabel}
                 items={securityMaster.pageView.detailSections}
@@ -2079,30 +1972,19 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
 
       {sectionVisibility.showReconciliationActions && workstream !== "reconciliation" ? (
         <>
-          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />} />
+          <ReconciliationWorkbench reconciliation={reconciliation} resolveDialog={resolveDialog}
+            caseInspector={<CaseInspector key={reconciliation.selectedBreakId} caseId={reconciliation.selectedBreakId}
+              initialCase={reconciliation.sourceRows.find((item) => item.breakId === reconciliation.selectedBreakId)}
+              onChanged={reconciliation.applyCaseworkUpdate} relatedCases={reconciliation.lineageRows}
+              onOpenCase={reconciliation.selectBreak} comparisonBreakId={reconciliationViewState.comparisonBreakId}
+              onComparisonChange={reconciliationViewState.setComparisonBreakId}
+              requestedDecision={resolveDialog.active?.breakId === reconciliation.selectedBreakId ? resolveDialog.active.status === "Dismissed" ? "Dismiss" : "Resolve" : null}
+              onDecisionRequestHandled={resolveDialog.close} />} controls={reconciliationViewState} selectionNotice={reconciliation.selectionNotice} operatorId={operatorIdentity} runSelector={<ReconciliationStatementRuns reconciliation={reconciliation} initiallyOpen={hash === "#statement-runs"} />} />
           <TechnicalDetails id="accounting-history" label="Calibration and history"><CalibrationSummaryPanel view={reconciliation.calibrationView} compact={workstream === "exceptions"} /></TechnicalDetails>
         </>
       ) : null}
         </>
       )}
-    </div>
-  );
-}
-
-function AccountingHighlight({
-  icon: Icon,
-  title,
-  description
-}: {
-  icon: typeof ShieldCheck;
-  title: string;
-  description: string;
-}) {
-  return (
-    <div className="workspace-header-card">
-      <Icon className="mb-3 h-5 w-5 text-primary" />
-      <div className="font-semibold text-foreground">{title}</div>
-      <p className="mt-2 text-sm leading-6 text-muted-foreground">{description}</p>
     </div>
   );
 }

@@ -130,6 +130,28 @@ public sealed class ConfigStore
     internal Task<T> UpdateRequiredAsync<T>(Func<AppConfig, (AppConfig Config, T Result)> update, CancellationToken ct = default)
         => UpdateCoreAsync(LoadRequired, update, ct);
 
+    // Vault checks and template publication share the same ownership lease as credential writes.
+    internal async Task<T> UpdateRequiredWithLeaseAsync<T>(
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update, CancellationToken ct)
+    {
+        using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
+        var current = LoadRequired();
+        var (next, result) = await update(current, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        if (!ReferenceEquals(current, next))
+            await SaveCoreAsync(next, ct).ConfigureAwait(false);
+        return result;
+    }
+
+    /// <summary>
+    /// Applies a checked update to persisted configuration. The callback may read local evidence
+    /// under the same lock as the commit. It must not perform network I/O or reenter configuration writes.
+    /// </summary>
+    public Task<T> UpdateRequiredCheckedAsync<T>(
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update,
+        CancellationToken ct = default)
+        => UpdateCoreAsync(LoadRequired, update, ct);
+
     /// <summary>
     /// Read-modify-write of the configuration document under the cross-process configuration lock
     /// (PRD-002: concurrent configuration writes). The current document is loaded <em>inside</em> the
@@ -153,15 +175,24 @@ public sealed class ConfigStore
         return UpdateCoreAsync<object?>(LoadForUpdate, current => (update(current), null), ct);
     }
 
-    private async Task<T> UpdateCoreAsync<T>(
+    private Task<T> UpdateCoreAsync<T>(
         Func<AppConfig> load,
         Func<AppConfig, (AppConfig Config, T Result)> update,
         CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(update);
+        return UpdateCoreAsync(load, (current, _) => Task.FromResult(update(current)), ct);
+    }
+
+    private async Task<T> UpdateCoreAsync<T>(
+        Func<AppConfig> load,
+        Func<AppConfig, CancellationToken, Task<(AppConfig Config, T Result)>> update,
+        CancellationToken ct)
+    {
+        ArgumentNullException.ThrowIfNull(update);
         using var lease = await AcquireWriteLockAsync(ct).ConfigureAwait(false);
         var current = load();
-        var (next, result) = update(current);
+        var (next, result) = await update(current, ct).ConfigureAwait(false);
         ct.ThrowIfCancellationRequested();
         if (!ReferenceEquals(current, next))
         {
@@ -238,6 +269,11 @@ public sealed class ConfigStore
             var handled = changedPaths.Where(applier.Handles).ToArray();
             if (handled.Length == 0)
                 continue;
+            if (applier.ReconcilePendingPaths)
+            {
+                handled = handled.Concat(GetChangeStatus().PendingChanges.Select(change => change.Path).Where(applier.Handles))
+                    .Distinct(StringComparer.Ordinal).ToArray();
+            }
 
             try
             {
@@ -304,10 +340,11 @@ public sealed class ConfigStore
             }
 
             JsonObject root;
+            string? previousJson = null;
             if (File.Exists(ConfigPath))
             {
-                var json = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
-                root = ParseConfigRoot(json);
+                previousJson = await File.ReadAllTextAsync(ConfigPath, ct).ConfigureAwait(false);
+                root = ParseConfigRoot(previousJson);
             }
             else
             {
@@ -329,6 +366,7 @@ public sealed class ConfigStore
             using var candidate = JsonDocument.Parse(output);
             ProviderConfigurationCredentialGuard.Validate(candidate.RootElement, _ownershipPolicy);
             await AtomicFileWriter.WriteAsync(ConfigPath, output, ct).ConfigureAwait(false);
+            RecordFeatureCapabilityChange(previousJson, output);
         }
         catch (ProviderConfigurationCredentialException)
         {
@@ -342,6 +380,29 @@ public sealed class ConfigStore
         {
             throw new InvalidOperationException($"Failed to save feature capability overrides: {ex.Message}", ex);
         }
+    }
+
+    private void RecordFeatureCapabilityChange(string? previousJson, string nextJson)
+    {
+        try
+        {
+            var previous = string.IsNullOrWhiteSpace(previousJson)
+                ? CreateDefaultConfig(ConfigPath)
+                : ProjectDocument(previousJson);
+            ConfigurationChangeTracker.ForPath(ConfigPath).RecordFeatureCapabilities(previous, ProjectDocument(nextJson));
+        }
+        catch (Exception ex) when (ex is JsonException or InvalidDataException or NotSupportedException)
+        {
+            // A projection error cannot undo the durable save, and may include a literal config value.
+            Log.Warning("Saved configuration {ConfigPath} could not be tracked ({FailureType})", ConfigPath, ex.GetType().Name);
+        }
+
+        AppConfig ProjectDocument(string json)
+            => NormalizeLoadedConfig(
+                ConfigPath,
+                json,
+                JsonSerializer.Deserialize<AppConfig>(json, AppConfigJsonOptions.Read)
+                    ?? throw new InvalidDataException("Configuration document is JSON null."));
     }
 
     public string? TryLoadStatusJson()

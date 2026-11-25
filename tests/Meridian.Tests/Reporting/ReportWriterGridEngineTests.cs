@@ -154,8 +154,8 @@ public sealed class ReportWriterGridEngineTests
             row.Values["sector"] == "Rates" &&
             row.Values["US:marketValue"] == "40" &&
             row.Values["US:pnl"] == "-2" &&
-            row.Values["EU:marketValue"] == "0" &&
-            row.Values["EU:pnl"] == "0" &&
+            row.Values["EU:marketValue"] == "" &&
+            row.Values["EU:pnl"] == "" &&
             row.Values["returnPct"] == "-5");
         rendered.Lineage.Should().NotBeNull();
         rendered.Lineage!.SourceFields.Should().Equal("marketValue", "pnl", "region", "sector");
@@ -181,7 +181,11 @@ public sealed class ReportWriterGridEngineTests
                     new ReportWriterMetricDefinitionDto("marketValue", "marketValue"),
                     new ReportWriterMetricDefinitionDto("pnl", "pnl")
                 ],
-                Formulas: [new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue}")])
+                Formulas:
+                [
+                    new ReportWriterFormulaDefinitionDto("returnPct", "{pnl} / {marketValue}"),
+                    new ReportWriterFormulaDefinitionDto("guarded", "safeDivide({pnl}, {marketValue}, -1)")
+                ])
         };
 
         var rendered = ReportWriterGridEngine.RenderGrids(grids, rows).Single();
@@ -191,8 +195,10 @@ public sealed class ReportWriterGridEngineTests
         rendered.Lineage!.InputRowCount.Should().Be(2);
         rendered.Lineage.OutputRowCount.Should().Be(2);
         rendered.Warnings.Should().Contain("Field 'marketValue' contained non-numeric values; affected cells were skipped.");
-        rendered.Warnings.Should().Contain(warning => warning.StartsWith("Formula 'returnPct' could not be evaluated:", StringComparison.Ordinal));
-        rendered.Rows.Should().Contain(row => row.Values["bucket"] == "Equity" && row.Values["returnPct"] == string.Empty);
+        rendered.Warnings.Should().Contain(warning => warning.StartsWith("Formula 'returnPct' could not be evaluated:", StringComparison.Ordinal)
+            && warning.Contains("division by zero", StringComparison.Ordinal));
+        rendered.Rows.Should().Contain(row => row.Values["bucket"] == "Equity"
+            && row.Values["returnPct"] == string.Empty && row.Values["guarded"] == "-1");
     }
 
     [Fact]
@@ -496,7 +502,77 @@ public sealed class ReportWriterGridEngineTests
         rendered.Chart.Should().NotBeNull();
         rendered.Chart!.Warnings.Should().Contain(warning =>
             warning.Contains("missingColumn", StringComparison.OrdinalIgnoreCase));
-        rendered.Chart.Series.Single(series => series.Key == "missingColumn").Values.Should().Equal(0m);
+        rendered.Chart.Series.Single(series => series.Key == "missingColumn").Values.Should().ContainSingle().Which.Should().BeNull();
+    }
+
+    [Theory]
+    [InlineData(ReportWriterGridKindDto.Detail)]
+    [InlineData(ReportWriterGridKindDto.Pivot)]
+    [InlineData(ReportWriterGridKindDto.TopN)]
+    [InlineData(ReportWriterGridKindDto.Contribution)]
+    public void RenderGrids_UnknownMetricFailsValidationAndProducesNoNumber(ReportWriterGridKindDto kind)
+    {
+        var grid = new ReportWriterGridDefinitionDto("holdings", "Holdings", kind,
+            RowFields: ["sector"],
+            Metrics:
+            [
+                new("wrong", "misspelledValue", ReportWriterAggregateFunctionDto.Count),
+                new("known", "marketValue"),
+                new("rows", "*", ReportWriterAggregateFunctionDto.Count)
+            ]);
+
+        var rendered = ReportWriterGridEngine.RenderGrids([grid],
+            [Row(("sector", "Technology"), ("MarketValue", "0"))]).Single();
+
+        var row = rendered.Rows.Single();
+        row.Values["wrong"].Should().BeEmpty();
+        row.Values["known"].Should().Be("0");
+        row.Values["rows"].Should().Be("1");
+        if (kind == ReportWriterGridKindDto.Contribution)
+            row.Values["contributionPercent"].Should().BeEmpty();
+        rendered.ValidationChecks.Should().ContainSingle(check =>
+            check.CheckId == "metric-source-fields" && check.Status == "Failed"
+            && check.Detail.Contains("'holdings' metric 'wrong' uses field 'misspelledValue'", StringComparison.Ordinal));
+    }
+
+    [Fact]
+    public void RenderGrids_FieldsPresentBeforeFiltersStayValidAndNoRowsAreUnverified()
+    {
+        var grid = new ReportWriterGridDefinitionDto("filtered", "Filtered", ReportWriterGridKindDto.Pivot,
+            RowFields: ["sector"],
+            Metrics: [new("marketValue", "marketValue"), new("count", "marketValue", ReportWriterAggregateFunctionDto.Count)],
+            Filters: [new("sector", Value: "Rates")]);
+        var rendered = ReportWriterGridEngine.RenderGrids([grid],
+            [Row(("sector", "Rates")), Row(("sector", "Equity"), ("MARKETVALUE", "1"))]).Single();
+
+        rendered.Rows.Single().Values["marketValue"].Should().BeEmpty();
+        rendered.Rows.Single().Values["count"].Should().Be("0");
+        rendered.ValidationChecks.Should().ContainSingle(check =>
+            check.CheckId == "metric-source-fields" && check.Status == "Passed");
+        var empty = ReportWriterGridEngine.RenderGrids([grid], []).Single();
+        empty.Rows.Should().BeEmpty();
+        empty.ValidationChecks.Should().ContainSingle(check =>
+            check.CheckId == "metric-source-fields" && check.Status == "Warning");
+    }
+
+    [Fact]
+    public void RenderGrids_PivotChartDistinguishesZeroFromMissingAndSortsMissingLast()
+    {
+        var grid = new ReportWriterGridDefinitionDto("holdings", "Holdings", ReportWriterGridKindDto.Pivot,
+            RowFields: ["sector"],
+            ColumnFields: ["region"],
+            Metrics: [new("value", "marketValue")],
+            SortBy: "US:value",
+            SortDescending: false,
+            FormatRules: [new("US:value", ReportWriterFilterOperatorDto.GreaterThan, ReportWriterCellStyleDto.Warning, "0")],
+            Chart: new(ReportWriterChartTypeDto.Bar, "sector", ["US:value"]));
+        var rendered = ReportWriterGridEngine.RenderGrids([grid],
+            [Row(("sector", "Rates"), ("region", "EU"), ("marketValue", "5")),
+             Row(("sector", "Technology"), ("region", "US"), ("marketValue", "0"))]).Single();
+
+        rendered.Rows.Select(row => row.Values["sector"]).Should().Equal("Technology", "Rates");
+        rendered.Chart!.Series.Single().Values.Should().Equal(0m, null);
+        rendered.Warnings.Should().BeEmpty();
     }
 
     [Fact]

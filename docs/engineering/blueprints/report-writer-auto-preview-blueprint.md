@@ -30,6 +30,10 @@ design record:
   function in a ref (updated in an effect) instead of capturing the edit-time closure. Stale
   results are discarded by checking the render's `AbortSignal`, which a newer render aborts; no
   separate sequence counter is needed.
+- **Dataset rules.** Layout edits keep the last preview dimmed. Changing the preview dataset (or
+  the pasted rows) clears the preview and its comparison baseline, because neither describes the
+  new data. Auto preview does not run while no dataset is chosen, and it never touches the manual
+  preview's single in-flight request or the global status panel.
 - **Component props.** `ReportWriterDesignerGrid` takes one optional `autoPreview` prop
   (`phase`, `enabled`, `pausedForSize`, `quietError`, `onToggle`, `onRetry`,
   `onEditSessionChange`) rather than five separate props. The hook also exposes

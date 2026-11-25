@@ -1,9 +1,11 @@
 import { cn } from "@/lib/utils";
+import type { ReactNode } from "react";
 import type { PositionValueMeasurement } from "@/lib/position-value-graphic";
 
 /** Exact display text stays primary; the miniature is a relative scanning aid. */
-export function PositionValueGraphic({ value, measurement, kind, reviewRequired = false, className }: {
+export function PositionValueGraphic({ value, displayValue, measurement, kind, reviewRequired = false, className }: {
   value: string;
+  displayValue?: ReactNode;
   measurement: PositionValueMeasurement | null;
   kind: "exposure" | "pnl";
   reviewRequired?: boolean;
@@ -17,7 +19,7 @@ export function PositionValueGraphic({ value, measurement, kind, reviewRequired 
     ? `${signed ? "P&L magnitude" : "Exposure magnitude"}: ${measurement.magnitudePct}% of largest displayed ${denomination} ${signed ? "absolute P&L" : "exposure"} among ${measurement.comparableCount} loaded positions. Display rounding retained; no currency conversion.`
     : "Graphic unavailable: this displayed amount has no supported, unambiguous format. Original amount retained.";
   return <span className="inline-flex min-w-0 flex-col items-end gap-1" title={scaleLabel}>
-    <span className={cn("font-mono", className)}>{value}</span>
+    <span className={cn("font-mono", className)}>{displayValue ?? value}</span>
     {measurement ? <span className="relative block h-1.5 w-16 bg-secondary" aria-hidden="true" data-position-value-graphic={kind}>
       {signed ? <span className="absolute inset-y-[-2px] left-1/2 w-px bg-foreground/70" /> : null}
       <span className={cn("absolute inset-y-0", signed

@@ -6,10 +6,17 @@ module_id: SRC-STRATEGIES
 path: src/Meridian.Strategies
 status: active
 owner_lane: Strategy Analytics
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-20
 ---
 
 # src/Meridian.Strategies
+
+Book receipt observations reuse `IReconciliationBreakQueueRepository` for assignment and disposition.
+Its dedicated reversal command reopens only a closed `BookReceipt` exception in the exact scope and
+book, with retained source identities, version/idempotency checks and audit evidence. Backdated
+observations and retained close freezes cannot bypass governed casework; ordinary operator-only
+approval, resolution and sign-off rules remain unchanged. See
+[book receipt operations](../../docs/operators/book-receipt-queue.md).
 
 Scoped paper/live run ledger reads use an optional `IStrategyRunLedgerSource` to rebuild from
 posted journals with the exact retained run identity. The source authorizes the financial account
@@ -95,6 +102,16 @@ Comparisons require immutable evidence of available internal populations and ide
 Run receipts and observation metadata commit in the queue's integrity-checked atomic snapshot and
 survive restart. Failed, partial, older, ambiguous or differently scoped comparisons cannot clear
 prior observations. Source clearing leaves casework disposition, approval and close blockers intact.
+Split and merge classifications require a confirmed transaction group from the newer completed run
+and unique business subjects from the immediately preceding comparable run. A split links one
+statement subject to multiple ledger records. A merge links all proven prior subjects to the same
+ledger record. The audit retains the group, compared run, exact amounts, and affected case IDs.
+
+Reviewed bulk execution checks the durable dry-run receipt, authenticated scope and action,
+all eligible rows, and their exact versions under the queue mutation lease. Supersession also binds
+the successor's version. The lease admits one execution per preview and returns an exact prior
+execution receipt on replay. A stale row blocks the entire reviewed batch.
+
 Create, save, and legacy rekey intake enforce the same simulation-provenance gate. Saves cannot
 remove a retained non-real mark by changing source labels, and rekeys preserve the strongest
 explicit provenance from both records. Create retries compare normalized provenance with the
@@ -103,6 +120,12 @@ New rekeys bind the original admitted request hash in their audit event, preserv
 after restart even when the retained record contributes a stronger provenance mark.
 
 ## Purpose
+
+Browser casework uses reviewed versions for single decisions and per-case bulk previews/execution.
+The repository checks supplied versions while holding its mutation lease and returns the current
+case on conflict. Existing unversioned legacy review/resolve/bulk adapters retain their historical
+behavior; they do not provide stale-review protection. Queue/detail API projections expose command
+form availability from shared lifecycle validation, while every submitted command is revalidated.
 
 Strategies owns strategy lifecycle, run storage, promotion records, strategy read services, and
 strategy-facing reconciliation governance.
@@ -131,7 +154,21 @@ run's retained fund account. A run without a fund account (paper only) keeps the
 promotion, so a live order routes only for an active run that an approved live promotion targets.
 The OMS asks at preflight and again at dispatch, inside its pre-trade gate. The run record is read
 every time; an approved live promotion found for a run is remembered, because promotion history is
-append-only, so the promotion file is not re-read for every order.
+append-only, so the promotion file is not re-read for every order. The active live grant also
+binds the exact executable artifact, account, expiry, and exposure limits. Dispatch checks the
+grant and its withdrawal state. Scoped Designer paper review retains the saved version and
+backtest input hashes with a dedicated paper session.
+
+New scoped Designer backtests retain a `sa1-` strategy artifact before their first run record.
+The artifact binds the tenant/company-scoped strategy identity, executable design and execution
+realism; the v6 run hash additionally retains the saved draft revision, data snapshot, historical
+window, evidence and account. Activation checks the artifact against the current exact scoped
+draft and the retained Designer version without dropping the dedicated paper-session controls.
+Paper review, the child run and each claimed order carry the same artifact. Missing, altered,
+foreign or conflicting identities defer execution. Earlier runs and null-artifact intent hashes
+retain their original representation. Simulated Designer evidence remains refused by ordinary
+promotion, and paper fills do not gain canonical posting authority. Focused proof:
+`ScopedDesignerArtifactTests` and `DesignerPaperRehearsalTests`.
 
 ### Shared SMA reference and retained comparison
 
@@ -176,6 +213,11 @@ verified legacy hashes only for an explicit one-time upgrade and rejects later s
 parameterless store remains an explicit in-memory compatibility seam for
 isolated tests; browser and WPF production composition and the desktop fallback use the same
 data-root-backed durable history store.
+
+Completed native backtests expose replayed bar counts, verified backfill revisions, and a source-bound
+completion fingerprint in Strategy run detail. Research completion records bind the mix in their input
+hash. Runs admitted before replay keep their lifecycle input hash and derive the completion fingerprint
+from retained results. Run comparison discloses different mixes and unavailable evidence.
 
 Completed run journals now use the content-addressed `JsonlStrategyRunLedgerArchive` under
 `DataRoot/strategies/run-ledgers`. The lifecycle snapshot retains the exact SHA-256 and journal

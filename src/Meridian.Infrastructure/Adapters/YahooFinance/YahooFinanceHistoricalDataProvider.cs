@@ -47,6 +47,7 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         : TimeSpan.FromSeconds(0.5);
     public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? Meridian.Core.Config.BackfillProviderCatalog.YahooPerHour;
     public override TimeSpan RateLimitWindow => RuntimeOptions?.Window ?? TimeSpan.FromHours(1);
+    protected override bool HasKnownQuota => false; // The adapter's safety limit is not a published Yahoo quota.
 
     public override HistoricalDataCapabilities Capabilities { get; } =
         HistoricalDataCapabilities.BarsOnly with
@@ -302,6 +303,9 @@ public sealed class YahooFinanceHistoricalDataProvider : BaseHistoricalDataProvi
         var httpResult = await HandleHttpResponseAsync(response, symbol, $"{granularity.ToDisplayName()} intraday bars", ct).ConfigureAwait(false);
         if (httpResult.IsNotFound)
             return Array.Empty<AggregateBar>();
+        if (httpResult.IsRateLimited)
+            throw CreateRateLimitException($"Yahoo Finance rate limit exceeded for {symbol}", symbol,
+                httpResult.RetryAfter ?? TimeSpan.FromSeconds(60), response);
         if (!httpResult.IsSuccess)
             throw new InvalidOperationException($"Failed to fetch Yahoo Finance data for {symbol}: {httpResult.ErrorMessage ?? "HTTP error"}");
 

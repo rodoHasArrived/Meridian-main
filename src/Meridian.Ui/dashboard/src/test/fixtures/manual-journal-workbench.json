@@ -1,0 +1,99 @@
+{
+  "fundProfileId": "fund-alpha",
+  "ledgerBookId": "book-alpha",
+  "loadedAtUtc": "2026-06-30T00:00:00Z",
+  "ledgerBooks": [],
+  "chartOfAccounts": [
+    {
+      "nodeId": "cash",
+      "path": "Assets:Cash",
+      "accountName": "Cash",
+      "accountType": "Asset",
+      "isArchived": false
+    },
+    {
+      "nodeId": "interest-income",
+      "path": "Income:Interest",
+      "accountName": "Interest Income",
+      "accountType": "Revenue",
+      "isArchived": false
+    }
+  ],
+  "drafts": [
+    {
+      "journalEntryId": "manual-je-1",
+      "status": "Approved",
+      "fundProfileId": "fund-alpha",
+      "ledgerBookId": "book-alpha",
+      "accountingBasis": "Primary",
+      "accountingDate": "2026-06-30",
+      "periodId": "2026-06",
+      "entityId": "entity-master",
+      "fundNodeId": "fund-alpha",
+      "currency": "USD",
+      "memo": "Synthetic approved close adjustment",
+      "preparedBy": "browser-user",
+      "createdAtUtc": "2026-06-30T00:00:00Z",
+      "updatedAtUtc": "2026-06-30T00:00:00Z",
+      "version": 3,
+      "lines": [
+        {
+          "lineId": "line-debit",
+          "side": "Debit",
+          "amount": 100,
+          "currency": "USD",
+          "accountPath": "Assets:Cash",
+          "securityId": "11111111-1111-1111-1111-111111111111",
+          "securityDisplayName": "Microsoft Corp.",
+          "description": "Security-linked cash debit"
+        },
+        {
+          "lineId": "line-credit",
+          "side": "Credit",
+          "amount": 100,
+          "currency": "USD",
+          "accountPath": "Income:Interest",
+          "securityId": null,
+          "description": "Interest income credit"
+        }
+      ],
+      "evidenceLinks": [
+        "/api/workstation/evidence/subjects/accounting-record/manual-je-1"
+      ],
+      "evidenceAttachments": [
+        {
+          "attachmentId": "source-doc-1",
+          "displayName": "Controller support package",
+          "evidenceKind": "SourceDocument",
+          "uri": "/api/workstation/evidence/subjects/accounting-record/manual-je-1",
+          "sourceSystem": "EvidenceVault",
+          "addedAtUtc": "2026-06-30T00:00:00Z",
+          "addedBy": "browser-user",
+          "lineId": "line-debit",
+          "description": null
+        }
+      ],
+      "validationIssues": [],
+      "totalDebits": 100,
+      "totalCredits": 100,
+      "imbalance": 0,
+      "approvalId": null,
+      "submittedAtUtc": null,
+      "submittedBy": null,
+      "entryType": "Distribution",
+      "treasuryContext": {
+        "effectiveDate": "2026-06-30",
+        "idempotencyKey": "browser:fund-alpha:distribution:manual-je-1",
+        "fundEventId": "fund-event:fund-alpha:distribution:20260630",
+        "fundEventType": "Distribution",
+        "capitalAccountId": "capital-account:fund-alpha:lp-1",
+        "investorId": "investor:lp-1",
+        "paymentIntentId": "payment:fund-alpha:distribution:manual-je-1",
+        "settlementReference": "settlement:fund-alpha:distribution:20260630"
+      },
+      "approvedBy": "synthetic-controller",
+      "approvedAtUtc": "2026-06-30T01:00:00Z"
+    }
+  ],
+  "auditTrail": []
+}

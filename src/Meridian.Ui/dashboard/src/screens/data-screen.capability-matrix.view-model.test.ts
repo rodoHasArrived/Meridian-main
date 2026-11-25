@@ -46,6 +46,17 @@ function response(overrides: Partial<ProviderCapabilityMatrixResponse> = {}): Pr
 }
 
 describe("buildCapabilityMatrixModel", () => {
+  it("joins registered adapter declarations by normalized provider ID", () => {
+    const input = response();
+    const id = input.providers[0].providerId;
+    const model = buildCapabilityMatrixModel(input, new Map([[id.toLowerCase(), {
+      supportsMarketDepth: true, maxDepthLevels: 5, supportsHistoricalQuotes: false
+    }]]));
+    expect(model.rows[0].capabilities).toEqual({
+      supportsMarketDepth: true, maxDepthLevels: 5, supportsHistoricalQuotes: false
+    });
+  });
+
   it("marks supported cells with compact capability codes and unsupported cells with a dash", () => {
     const model = buildCapabilityMatrixModel(response());
 

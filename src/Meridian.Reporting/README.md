@@ -22,6 +22,15 @@ catalogs, deterministic artifact declarations, immutable lifecycle/restatement c
 distribution contracts, Security Master-enriched report generation, NAV attribution, no-code
 report-writer grid rendering, and reporting ownership conformance.
 
+The Financial Statement Control Pack ties rows to the retained book population, including
+realized and unrealized P&L and instrument detail. Final packs bind the selected hard-close
+snapshot. An annual run can bind a fiscal close receipt using `fiscalYearCloseReceiptId`.
+Use `comparisonPeriodId` on a final period run to include an earlier hard close from the same
+book. Certification requires that the comparative journal population match the current opening
+history. The pack retains the comparative snapshot and identifies its period in both exports.
+When a run declares `bookFxSettlementSetId`, all required retained journal legs must verify
+before certification. The XLSX and Parquet artifacts carry the same statement rows and controls.
+
 Authoritative source checkpoints optionally retain a content-addressed complete ledger population.
 New ledger captures use that population for period datasets and complete-history calculations,
 including retained generated trial-balance amount bindings. Rendering and amount proof replay the
@@ -222,6 +231,61 @@ templates continue to require Final-certified parameters and committed-close evi
 and delivery receipts remain authoritative. A call plan, posted issuance, generated notice,
 released notice and delivered notice are distinct states.
 
+## Run review evidence
+
+`ReportingRunReviewEngine` reuses `ReportSnapshotDiffEngine` to compare retained report lines,
+normalized parameters, and certified ledger fields against the latest earlier approved or released
+revision of the same series, scope, period/as-of, book, basis, and currency. Missing retained grids,
+source rows, ambiguous identities, and absent baselines remain explicit unavailable states. Numeric
+cells retain decimal strings; percentage variance uses the absolute prior value and remains absent
+when the prior is zero or missing.
+
+UI Shared exposes `GET /api/fund-structure/reporting/runs/{runId}/review`. Browser approval sends
+its `reviewEvidenceId` with the existing optimistic version. The server recomputes the basis,
+rejects drift, retains and verifies the content-addressed envelope, and records its identity in the
+approval decision/audit note. `GET .../{runId}/review/{reviewId}` replays retained evidence under
+both runs' current access controls, independently of current source-manifest availability. The
+optional request member preserves legacy client compatibility; browser approval requires the
+review evidence. Existing clients that omit it retain the established approval contract.
+
+Materiality policy is server-owned through `IReportingReviewMaterialityPolicyProvider`. The
+registered configuration adapter reads the admin-controlled `MERIDIAN_REPORTING_REVIEW_POLICIES`
+JSON array from the existing host configuration (or process environment for legacy composition).
+Hosts can replace that DI interface with a durable policy registry. No policy or tolerance is
+seeded. Each policy requires an id/version, exact tenant/organization/company/fund/book/period
+scope, template id/version, currency, and explicit monetary grid/column identities. Each metric
+can provide `absoluteVariance` and/or `relativeVariancePercent` as decimal strings; null means
+that dimension is not assessed. Relative tolerance uses the absolute prior amount and requires
+a nonzero numeric prior. Threshold equality stays within tolerance (`>` marks a breach), using
+exact decimal coefficients for relative comparison without division rounding. Unknown or missing
+inputs, uncovered monetary measures, incomplete line comparisons and unconfigured policies keep
+the total material-change count null. Known breaches remain visible even when assessment is partial.
+
+A configured policy has this shape; administrators supply their approved thresholds rather than
+copying an application default:
+
+```json
+[{
+  "policyId": "<admin-issued-policy-id>", "version": "<immutable-version>",
+  "scope": {
+    "tenantId": "<tenant>", "organizationId": "<organization>", "companyId": "<company>",
+    "fundId": "<fund>", "bookId": "<book-guid>", "periodId": "<period-guid>"
+  },
+  "templateId": "<template>", "templateVersion": "<template-version>", "currency": "<ISO-code>",
+  "metrics": [{ "gridId": "<grid>", "column": "<monetary-measure>",
+    "absoluteVariance": null, "relativeVariancePercent": null }]
+}]
+```
+
+Publish a new policy version when changing its approved thresholds. Review evidence retains the
+full policy, including exact thresholds and version, in its content hash. At command admission, approval recomputes that
+basis, rejects changed policy evidence, and names the admitted policy/version in the retained
+decision receipt. A configuration reload after admission applies to subsequent commands; deployments
+requiring atomic policy changes at commit should replace the provider with a transactional authority.
+Browser defaults are never promoted to authoritative thresholds. Passport bindings for individual
+arbitrary report-writer cells and general nonledger source revision attribution remain separate
+capabilities. Run/snapshot evidence is exposed without inventing cell-level proof or causal explanations.
+
 ## Diagrams
 
 `DIA-ASSURANCE-LOOP`
@@ -269,6 +333,10 @@ execution: row dimensions, column-field cross-tabs for pivot grids, aggregate
 metrics, Top-N limits, contribution percentages, and bounded arithmetic formulas are evaluated
 against the lower-level engine's input rows with structured warnings for missing or non-numeric
 inputs. Governed HTTP callers do not supply those rows; the server resolves their certified source.
+Metric bindings are checked against dataset field names before filtering. An absent metric field
+produces a failed check in preview and a terminal audited failure in generation. Numeric aggregates
+with no observations and empty pivot intersections render as blanks. Chart points for blanks carry
+null values, while measured zeros retain their numeric value.
 The canonical envelope now preserves optional `PositionId` alongside `InstrumentId`, keeping
 same-security book positions distinct in generated reporting evidence without treating a projected
 position or balance as an accounting fact. The immutable journal remains authoritative.

@@ -33,20 +33,23 @@ public sealed class AuditTrailExplorerService
     public Task<AuditTrailExplorerResultDto> SearchAsync(
         AuditTrailExplorerQueryDto? query = null,
         CancellationToken ct = default)
-        => ReadAsync(query, null, complete: false, ct);
+        => ReadAsync(query, null, null, complete: false, ct);
 
     /// <summary>HTTP reads authorize each operations source before loading its timeline.</summary>
     public Task<AuditTrailExplorerResultDto> SearchAuthorizedAsync(AuditTrailExplorerQueryDto? query,
-        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
-        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: false, ct);
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default,
+        Func<Guid, Task<bool>>? canReadPaperAccount = null)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), canReadPaperAccount, complete: false, ct);
 
     /// <summary>Every authorized retained match; the browser/1,000-row browse cap is never an export limit.</summary>
     public Task<AuditTrailExplorerResultDto> ExportAuthorizedAsync(AuditTrailExplorerQueryDto? query,
-        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default)
-        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), complete: true, ct);
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>> canReadWorkflow, CancellationToken ct = default,
+        Func<Guid, Task<bool>>? canReadPaperAccount = null)
+        => ReadAsync(query, canReadWorkflow ?? throw new ArgumentNullException(nameof(canReadWorkflow)), canReadPaperAccount, complete: true, ct);
 
     private async Task<AuditTrailExplorerResultDto> ReadAsync(AuditTrailExplorerQueryDto? query,
-        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>>? canReadWorkflow, bool complete, CancellationToken ct)
+        Func<OperationsContinuityWorkflowSummaryDto, CancellationToken, Task<bool>>? canReadWorkflow,
+        Func<Guid, Task<bool>>? canReadPaperAccount, bool complete, CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         query ??= new AuditTrailExplorerQueryDto();
@@ -85,6 +88,9 @@ public sealed class AuditTrailExplorerService
             foreach (var summary in _paperSessions.GetSessions())
             {
                 ct.ThrowIfCancellationRequested();
+                if (summary.FundAccountId is { } account && canReadWorkflow is not null
+                    && (canReadPaperAccount is null || !await canReadPaperAccount(account).ConfigureAwait(false)))
+                    continue;
                 foreach (var fill in _paperSessions.GetSessionFillHistory(summary.SessionId))
                 {
                     if (complete && entries.Count >= MaximumExportEntries)
@@ -259,6 +265,12 @@ public sealed class AuditTrailExplorerService
 
     private static AuditTrailTimelineEntryDto MapExecution(ExecutionAuditEntry entry, int sequence)
     {
+        // Preserve the identity of the stored action while deriving every public field and
+        // search/alias relationship from the safe projection, never from hidden account data.
+        var retainedActionHash = BuildExecutionActionHash(entry);
+        var projected = ExecutionAuditPublicProjection.Project(entry);
+        var isPublicSummary = !ReferenceEquals(projected, entry);
+        entry = projected;
         var objectKind = ResolveExecutionObjectKind(entry);
         var objectId = ResolveExecutionObjectId(entry);
         var related = BuildExecutionRelatedObjectIds(entry, objectId);
@@ -282,8 +294,8 @@ public sealed class AuditTrailExplorerService
             EvidenceRoute: BuildEvidenceRoute(entry),
             ActionLedgerSource: "ExecutionAuditTrail",
             ActionLedgerSequence: sequence,
-            CurrentActionHash: BuildExecutionActionHash(entry),
-            ActionLedgerStatus: "WalRetained",
+            CurrentActionHash: retainedActionHash,
+            ActionLedgerStatus: isPublicSummary ? "WalRetainedPublicSummary" : "WalRetained",
             OrderId: FirstNonBlank(GetMetadata(entry, "clientOrderId"), entry.OrderId),
             BrokerName: entry.BrokerName);
     }

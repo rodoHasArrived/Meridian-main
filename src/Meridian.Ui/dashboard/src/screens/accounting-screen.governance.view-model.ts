@@ -176,6 +176,7 @@ interface AccountingChartAccountDraft {
   path: string;
   accountName: string;
   accountType: string;
+  accountCode: string;
   parentPath: string;
   financialAccountId: string;
   evidenceText: string;
@@ -1087,6 +1088,8 @@ export function useAccountingConfigurationViewModel(
     const path = chartAccountDraft.path.trim();
     const accountName = chartAccountDraft.accountName.trim();
     const accountType = chartAccountDraft.accountType.trim();
+    const retainedCode = workspace.chartOfAccounts.find(node => node.nodeId.toLowerCase() === nodeId.toLowerCase())?.accountCode;
+    const accountCode = retainedCode ?? chartAccountDraft.accountCode.trim();
     if (!nodeId || !path || !accountName || !accountType) {
       setChartAccountSaveError({
         summary: "Chart account is missing required fields.",
@@ -1112,6 +1115,7 @@ export function useAccountingConfigurationViewModel(
           path,
           accountName,
           accountType,
+          ...(accountCode ? { accountCode } : {}),
           parentPath: chartAccountDraft.parentPath.trim() || null,
           financialAccountId: chartAccountDraft.financialAccountId.trim() || null,
           isArchived: false
@@ -2005,6 +2009,8 @@ export function useAccountingConfigurationViewModel(
         : !workspace.ledgerBookSetupCandidate
           ? "No server-provided ledger-book setup candidate is available for this configuration scope."
           : null;
+    const retainedChartAccountCode = workspace?.chartOfAccounts.find(node =>
+      node.nodeId.toLowerCase() === chartAccountDraft.nodeId.trim().toLowerCase())?.accountCode;
     const chartAccountSaveDisabledReason = loading
       ? "Accounting configuration is still loading."
       : !workspace
@@ -2473,6 +2479,8 @@ export function useAccountingConfigurationViewModel(
         pathValue: chartAccountDraft.path,
         accountNameValue: chartAccountDraft.accountName,
         accountTypeValue: chartAccountDraft.accountType,
+        accountCodeValue: retainedChartAccountCode ?? chartAccountDraft.accountCode,
+        accountCodeReadOnly: Boolean(retainedChartAccountCode),
         parentPathValue: chartAccountDraft.parentPath,
         financialAccountIdValue: chartAccountDraft.financialAccountId,
         evidenceValue: chartAccountDraft.evidenceText,
@@ -2801,6 +2809,7 @@ function buildDefaultAccountingChartAccountDraft(): AccountingChartAccountDraft 
     path: "Assets:Cash:Operating",
     accountName: "Operating Cash",
     accountType: "Asset",
+    accountCode: "",
     parentPath: "Assets:Cash",
     financialAccountId: "",
     evidenceText: "browser://accounting/configure/chart-account/setup"
@@ -2814,6 +2823,7 @@ function buildNextAccountingChartAccountDraft(workspace: AccountingConfiguration
     path: `Assets:Configured Account ${nextIndex}`,
     accountName: `Configured Account ${nextIndex}`,
     accountType: "Asset",
+    accountCode: "",
     parentPath: "Assets",
     financialAccountId: "",
     evidenceText: `browser://accounting/configure/chart-account/${nextIndex}`

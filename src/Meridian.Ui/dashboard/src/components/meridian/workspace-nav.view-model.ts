@@ -122,7 +122,7 @@ export function buildWorkspaceNavViewModel(
 ): WorkspaceNavViewModel {
   const attentionItems: readonly AppShellOperatorFocusItem[] = Array.isArray(attention) ? attention : suppliedAttentionItems;
   const attentionCounts = attention && !Array.isArray(attention) ? attention as WorkspaceAttentionCounts : null;
-  const isHome = pathname === "/";
+  const isHome = pathname === "/" || pathname === "/today";
   const visibleWorkspaces = canonicalizeWorkspaceSummaries(workspaces);
   const currentWorkspace =
     visibleWorkspaces.find((workspace) => isWorkspacePathActive(pathname, workspace.key)) ?? visibleWorkspaces[0];

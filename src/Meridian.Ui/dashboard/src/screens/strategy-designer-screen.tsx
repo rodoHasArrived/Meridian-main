@@ -1,3 +1,4 @@
+import { ChartEvidenceMark, ChartEvidenceView, type ChartEvidence, type ChartInspection, type ChartMarkGeometry } from "@/components/charts/chart-evidence";
 import { ArrowRightLeft, CircleDot, Database, Eye, FlaskConical, GitBranch, Layers, Network, PlayCircle, Save, Search, ShieldCheck, Sparkles, Workflow } from "lucide-react";
 import { StatusBadge } from "@/design-system/status";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
@@ -9,6 +10,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
+import { Link } from "react-router-dom";
+import { Select } from "@/components/ui/select";
+import { evidenceWorkbenchPath } from "@/lib/workspace";
+import { useHostedDesigner, type HostedDesigner } from "@/screens/strategy-designer-hosted";
 import {
   useStrategyDesignerViewModel,
   type ParticipationSliceViewModel,
@@ -26,10 +31,7 @@ import {
 } from "@/screens/strategy-designer-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
-const SAVE_DRAFT_BLOCKER_ID = "strategy-designer-save-draft-blocker";
 const BACKTEST_BLOCKER_ID = "strategy-designer-backtest-blocker";
-const SAVE_DRAFT_BLOCKER =
-  "Saving drafts needs a canvas-to-design-document mapping that is not implemented yet, so this action would discard your work.";
 
 function cellKindBadgeVariant(kind: StrategyBuilderCellKind): "default" | "outline" | "success" | "warning" | "danger" | "research" {
   switch (kind) {
@@ -54,12 +56,13 @@ function CellKindIcon({ kind }: { kind: StrategyBuilderCellKind }) {
   }
 }
 
-export function StrategyDesignerScreen() {
+export function StrategyDesignerScreen({ fundAccountId }: { fundAccountId?: string | null } = {}) {
   const vm = useStrategyDesignerViewModel();
+  const hosted = useHostedDesigner(vm.workbench.document, vm.applyBuilderDocument, fundAccountId);
 
   return (
     <div className="space-y-6" data-testid="strategy-designer-screen">
-      <WorkbenchHero vm={vm.workbench} />
+      <WorkbenchHero vm={vm.workbench} hosted={hosted} />
 
       <div
         className="grid gap-4 xl:grid-cols-[280px_minmax(0,1fr)]"
@@ -72,7 +75,7 @@ export function StrategyDesignerScreen() {
         </div>
       </div>
 
-      <details className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
+      <details open={hosted.supportedTemplate || undefined} className="rounded-lg border border-border/70 bg-secondary/15 px-4 py-3">
         <summary className="cursor-pointer font-semibold text-foreground focus-visible:outline-hidden focus-visible:ring-2 focus-visible:ring-primary/40">
           Templates and backtest proof
         </summary>
@@ -80,8 +83,8 @@ export function StrategyDesignerScreen() {
           Load an approved starting point or inspect validation, trace, and endpoint proof after the active design is ready.
         </p>
         <div className="mt-4 grid gap-4 xl:grid-cols-[minmax(0,0.95fr)_minmax(0,1.05fr)]">
-          <TemplateGallery vm={vm.workbench} />
-          <BacktestProofPanel vm={vm.workbench} />
+          <TemplateGallery vm={vm.workbench} hosted={hosted} />
+          <BacktestProofPanel vm={vm.workbench} hosted={hosted} />
         </div>
       </details>
 
@@ -101,7 +104,7 @@ export function StrategyDesignerScreen() {
   );
 }
 
-function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+function WorkbenchHero({ vm, hosted }: { vm: StrategyBuilderWorkbenchViewModel; hosted: HostedDesigner }) {
   return (
     <section className="space-y-4" aria-labelledby="strategy-builder-title">
       <div className="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
@@ -116,58 +119,39 @@ function WorkbenchHero({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           </p>
         </div>
         <div className="flex flex-col items-start gap-2">
-          {/*
-            Both actions are deliberately disabled rather than bound to a handler. The workstation
-            endpoints and typed clients exist (`saveStrategyDesignerDraft`,
-            `runStrategyDesignerBacktest`), but two contract gaps block an honest wire-up:
-            the canvas holds a `StrategyBuilderDocument` and the API takes a `StrategyDesignDocument`
-            with no mapper between them, and a backtest run additionally requires governed evidence
-            references (operator acceptance, retained evidence, accounting, approvals, paper
-            validation, governed reports) that this screen cannot collect. Rendering an enabled
-            control that silently discards the operator's work — or posts empty evidence arrays into
-            a governance flow — is worse than a disabled one that says why.
-
-            A disabled native button cannot take keyboard focus and `disabledReason` reaches the DOM
-            only as `title`, so a pointer hover was the sole way to learn why. Each reason is
-            therefore also rendered as visible text and wired to its button through
-            `aria-describedby`, which keyboard and screen-reader operators can actually reach.
-          */}
-          <div className="flex flex-wrap items-center gap-2">
-            <Button
-              type="button"
-              variant="outline"
-              aria-label="Save strategy design draft"
-              aria-describedby={SAVE_DRAFT_BLOCKER_ID}
-              disabled
-              disabledReason={SAVE_DRAFT_BLOCKER}
-            >
+          <div className="flex flex-wrap items-end gap-2">
+            <Button type="button" variant="outline" aria-label="Save strategy design draft"
+              disabled={hosted.busy !== null} onClick={hosted.save}>
               <Save className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">Save draft</span>
+              <span className="ml-1.5">{hosted.busy === "saving" ? "Saving" : "Save draft"}</span>
             </Button>
-            <Button
-              type="button"
-              variant="secondary"
-              // The unconditional evidence blocker lives in the view-model, so the status label,
-              // proof summary, aria-label, and this button all state the same reason rather than
-              // the screen overriding a command the view-model still advertised as ready.
-              aria-label={vm.backtest.runCommand.ariaLabel}
-              aria-describedby={BACKTEST_BLOCKER_ID}
-              disabled={vm.backtest.runCommand.disabled}
-              disabledReason={vm.backtest.runCommand.disabledReason}
-            >
+            <Button type="button" variant="secondary" aria-describedby={BACKTEST_BLOCKER_ID}
+              disabled={hosted.busy !== null || hosted.blocker !== null} onClick={hosted.runBacktest}>
               <PlayCircle className="h-4 w-4" aria-hidden="true" />
-              <span className="ml-1.5">{vm.backtest.runCommand.label}</span>
+              <span className="ml-1.5">{hosted.busy === "running" ? "Running backtest" : "Run backtest proof"}</span>
             </Button>
           </div>
-          <p id={SAVE_DRAFT_BLOCKER_ID} className="text-xs leading-5 text-muted-foreground">
-            <span className="font-medium text-foreground">Save draft unavailable:</span> {SAVE_DRAFT_BLOCKER}
-          </p>
-          {vm.backtest.runCommand.disabledReason ? (
-            <p id={BACKTEST_BLOCKER_ID} className="text-xs leading-5 text-muted-foreground">
-              <span className="font-medium text-foreground">Run backtest proof unavailable:</span>{" "}
-              {vm.backtest.runCommand.disabledReason}
-            </p>
+          {hosted.drafts.length > 0 ? (
+            <div className="flex flex-wrap items-end gap-2">
+              <label className="grid gap-1 text-sm">
+                Open saved draft
+                <Select value={vm.document.revision ? vm.document.documentId : ""}
+                  onChange={event => hosted.openDraft(event.target.value)} disabled={hosted.busy !== null}>
+                  <option value="">Choose a draft</option>
+                  {hosted.drafts.map(draft => (
+                    <option key={draft.documentId} value={draft.documentId}>{draft.name} · {draft.updatedAt.slice(0, 10)}</option>
+                  ))}
+                </Select>
+              </label>
+              {vm.document.revision ? (
+                <Button type="button" variant="outline" disabled={hosted.busy !== null}
+                  onClick={() => hosted.openDraft(vm.document.documentId)}>Reload saved draft</Button>
+              ) : null}
+            </div>
           ) : null}
+          {hosted.blocker ? <p id={BACKTEST_BLOCKER_ID} className="text-xs text-muted-foreground">{hosted.blocker}</p> : null}
+          {hosted.message ? <p role="status" className="text-xs">{hosted.message}</p> : null}
+          {hosted.error ? <p role="alert" className="text-xs text-destructive">{hosted.error}</p> : null}
         </div>
       </div>
       <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
@@ -434,7 +418,7 @@ function StrategyDetailField({ field }: { field: StrategyLegDetailFieldViewModel
   );
 }
 
-function TemplateGallery({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+function TemplateGallery({ vm, hosted }: { vm: StrategyBuilderWorkbenchViewModel; hosted: HostedDesigner }) {
   return (
     <Card data-testid="strategy-builder-template-gallery">
       <CardHeader>
@@ -444,16 +428,33 @@ function TemplateGallery({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
         </CardTitle>
         <CardDescription>Prototype concepts rebuilt as Meridian design templates.</CardDescription>
       </CardHeader>
-      <CardContent className="grid gap-3 md:grid-cols-3">
+      <CardContent className="grid grid-cols-[repeat(auto-fit,minmax(min(100%,12rem),1fr))] gap-3">
+        {hosted.template ? (
+          <div className="space-y-2 rounded-md border border-border/70 p-3">
+            <h3 className="text-sm font-semibold">Equity price filter</h3>
+            <p className="text-xs text-muted-foreground">Closed expression for a single equity and fixed-share long sizing.</p>
+            <Button type="button" variant="outline" className="h-auto whitespace-normal text-left"
+              disabled={hosted.busy !== null} onClick={hosted.newEquityDraft}>
+              New equity price filter draft
+            </Button>
+          </div>
+        ) : null}
         {vm.templates.map((template) => (
-          <TemplateCard key={template.templateId} template={template} onLoad={vm.loadTemplate} />
+          <TemplateCard key={template.templateId} template={template} disabled={hosted.busy !== null}
+            onLoad={templateId => {
+              if (!vm.document.dirty || window.confirm("Discard unsaved changes to this draft?")) vm.loadTemplate(templateId);
+            }} />
         ))}
       </CardContent>
     </Card>
   );
 }
 
-function TemplateCard({ template, onLoad }: { template: StrategyBuilderTemplate; onLoad: (templateId: string) => void }) {
+function TemplateCard({ template, disabled, onLoad }: {
+  template: StrategyBuilderTemplate;
+  disabled: boolean;
+  onLoad: (templateId: string) => void;
+}) {
   return (
     <article className="rounded-md border border-border/70 bg-secondary/20 p-3">
       <div className="flex items-start justify-between gap-2">
@@ -465,6 +466,7 @@ function TemplateCard({ template, onLoad }: { template: StrategyBuilderTemplate;
           type="button"
           variant="outline"
           size="sm"
+          disabled={disabled}
           onClick={() => onLoad(template.templateId)}
           aria-label={template.loadCommand.ariaLabel}
         >
@@ -483,7 +485,9 @@ function TemplateCard({ template, onLoad }: { template: StrategyBuilderTemplate;
   );
 }
 
-function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
+function BacktestProofPanel({ vm, hosted }: { vm: StrategyBuilderWorkbenchViewModel; hosted: HostedDesigner }) {
+  const run = hosted.run?.strategyId === vm.document.documentId ? hosted.run : null;
+  const trace = hosted.supportedTemplate ? vm.trace.filter(step => step.stepId !== "quant-script") : vm.trace;
   return (
     <Card data-testid="strategy-builder-backtest-proof">
       <CardHeader>
@@ -491,14 +495,74 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           <PlayCircle className="h-4 w-4 text-primary" aria-hidden="true" />
           Backtest proof
         </CardTitle>
-        <CardDescription>{vm.backtest.proofSummary}</CardDescription>
+        <CardDescription>{run ? "Retained native replay" : hosted.blocker ?? "Ready to run"}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
-        {vm.trace.length > 0 ? (
+        {hosted.supportedTemplate ? (
+          <fieldset disabled={hosted.busy !== null} className="grid gap-3 sm:grid-cols-2">
+            <label className="grid gap-1 text-sm">
+              Equity ticker
+              <Input value={vm.document.universe[0] ?? ""} onChange={event => hosted.edit("symbol", event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              Entry expression
+              <Input value={hosted.priceFilter?.source ?? ""} onChange={event => hosted.edit("condition", event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              Share quantity
+              <Input inputMode="numeric" value={hosted.fixedShares?.parameters?.sizingValue ?? ""}
+                onChange={event => hosted.edit("shares", event.target.value)} />
+            </label>
+            <div className="grid content-start gap-1 text-sm">
+              Execution account
+              <span className="break-all text-xs text-muted-foreground">{hosted.account ?? "Choose a workspace account"}</span>
+            </div>
+            <label className="grid gap-1 text-sm">
+              From date
+              <Input type="date" value={hosted.from} onChange={event => hosted.setFrom(event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm">
+              To date
+              <Input type="date" value={hosted.to} onChange={event => hosted.setTo(event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              Acceptance criterion
+              <Input value={hosted.criteria} onChange={event => hosted.setCriteria(event.target.value)} />
+            </label>
+            <label className="grid gap-1 text-sm sm:col-span-2">
+              Evidence Vault reference
+              <Input list="designer-vault-manifests" value={hosted.vaultReference}
+                onChange={event => hosted.setVaultReference(event.target.value)} />
+              <datalist id="designer-vault-manifests">
+                {Array.from(new Map(hosted.evidence.map(item => [item.vaultId, item])).values()).map(item => (
+                  <option key={item.vaultId} value={"evidence://evidence-vault/" + item.vaultId}>
+                    {item.document.fileName}
+                  </option>
+                ))}
+              </datalist>
+            </label>
+          </fieldset>
+        ) : null}
+        {run?.runId ? (
+          <section aria-label="Retained Designer run" className="space-y-2 rounded-md border border-border/70 p-3">
+            {run.dataProvenanceToken === "simulated" ? <Badge variant="warning">Simulated</Badge> : null}
+            <dl className="grid gap-2 text-sm">
+              <div><dt>Strategy version</dt><dd className="break-all font-mono text-xs">{run.strategyVersionSha256 ?? "Version unrecorded"}</dd></div>
+              <div><dt>Replay snapshot</dt><dd className="break-all font-mono text-xs">{run.dataSnapshotSha256}</dd></div>
+              {Object.entries(run.metrics).map(([label, value]) => (
+                <div key={label}><dt>{label}</dt><dd className="tabular-nums">{value}</dd></div>
+              ))}
+            </dl>
+            <Link className="text-sm text-primary underline" to={evidenceWorkbenchPath("strategy-run", run.runId)}>
+              Open run evidence
+            </Link>
+          </section>
+        ) : null}
+        {trace.length > 0 ? (
           <div className="rounded-md border border-border/70 bg-secondary/15 px-3 py-3">
             <div className="eyebrow-label mb-3">Review gates</div>
             <GateRail
-              gates={vm.trace.map((step) => ({
+              gates={trace.map((step) => ({
                 key: step.stepId,
                 label: step.label,
                 status: step.status
@@ -513,7 +577,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           </div>
           <div className="rounded-md border border-border/70 p-3">
             <div className="text-xs uppercase tracking-[0.14em] text-muted-foreground">Execution mode</div>
-            <div className="mt-1 text-sm font-medium text-foreground">Backtest only</div>
+            <div className="mt-1 text-sm font-medium text-foreground">{hosted.supportedTemplate ? "Closed-expression replay" : "Preview"}</div>
           </div>
         </div>
         <div className="flex flex-wrap gap-2">
@@ -544,7 +608,7 @@ function BacktestProofPanel({ vm }: { vm: StrategyBuilderWorkbenchViewModel }) {
           ))}
         </div>
         <div className="space-y-2" role="list" aria-label="Strategy Builder run trace">
-          {vm.trace.map((step) => (
+          {trace.map((step) => (
             <div
               key={step.stepId}
               role="listitem"
@@ -590,6 +654,8 @@ function TransitionMap({ transitions }: { transitions: StrategyBuilderTransition
     </Card>
   );
 }
+
+const payoffInputsId = "strategy-payoff-leg-inputs";
 
 function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
   return (
@@ -651,7 +717,7 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
           </div>
         </div>
         <div className="grid gap-4 lg:grid-cols-2">
-          <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} />
+          <PayoffCard payoff={vm.payoff} legCount={vm.legs.length} spotInputId={vm.spotPriceField.id} />
           <ParticipationCard participation={vm.participation} />
         </div>
       </CardContent>
@@ -659,7 +725,38 @@ function OptionsPayoffPanel({ vm }: { vm: StrategyDesignerViewModel }) {
   );
 }
 
-function PayoffCard({ payoff, legCount }: { payoff: PayoffChartViewModel; legCount: number }) {
+function PayoffCard({ payoff, legCount, spotInputId }: { payoff: PayoffChartViewModel; legCount: number; spotInputId: string }) {
+  const proof = { href: `#${payoffInputsId}`, label: "Open payoff leg inputs" };
+  const observations: ChartEvidence[] = payoff.points.map(({ price, pnl }, index) => ({
+    id: `payoff-${index}`, label: `Expiration scenario ${index + 1}`,
+    asOf: "Hypothetical expiration · date unspecified",
+    values: [
+      { series: "Underlying price", value: price, unit: "Model currency per unit", basis: "Sampled underlying price at expiration." },
+      { series: "Portfolio payoff", value: pnl, unit: "Model currency units", basis: "Sum of signed leg payoffs. Options use intrinsic value less premium, multiplied by quantity. Stock uses price less entry, multiplied by quantity." }
+    ],
+    proof
+  }));
+  const references: { geometry: ChartMarkGeometry; evidence: ChartEvidence }[] = [];
+  if (payoff.spotLineX !== null) {
+    references.push({
+      geometry: { x: payoff.spotLineX - 4, y: payoff.paddingTop, width: 8, height: payoff.height - payoff.paddingTop - payoff.paddingBottom },
+      evidence: {
+        id: "spot-marker", label: "Spot input marker", asOf: "Current draft",
+        values: [{ series: "Reference spot", value: payoff.spotPrice, unit: "Model currency per unit", basis: "Operator-entered spot used to frame the scenario range." }],
+        proof: { href: `#${spotInputId}`, label: "Open spot input" }
+      }
+    });
+  }
+  if (payoff.zeroLineY !== null) {
+    references.push({
+      geometry: { x: payoff.paddingLeft, y: payoff.zeroLineY - 4, width: payoff.width - payoff.paddingLeft - payoff.paddingRight, height: 8 },
+      evidence: {
+        id: "zero-marker", label: "Zero payoff reference", asOf: "Fixed reference",
+        values: [{ series: "Portfolio payoff", value: 0, unit: "Model currency units", basis: "Zero net P&L reference." }],
+        proof
+      }
+    });
+  }
   return (
     <div data-testid="strategy-designer-payoff">
       {payoff.isEmpty ? (
@@ -667,48 +764,58 @@ function PayoffCard({ payoff, legCount }: { payoff: PayoffChartViewModel; legCou
           Add a leg to render the payoff curve.
         </div>
       ) : (
-        <svg viewBox={`0 0 ${payoff.width} ${payoff.height}`} role="img" aria-label={payoff.ariaLabel} className="w-full max-w-full">
-          <rect
-            x={payoff.paddingLeft}
-            y={payoff.paddingTop}
-            width={payoff.width - payoff.paddingLeft - payoff.paddingRight}
-            height={payoff.height - payoff.paddingTop - payoff.paddingBottom}
-            fill="transparent"
-            stroke="hsl(var(--border))"
-            strokeOpacity={0.4}
-          />
-          {payoff.zeroLineY !== null && (
-            <line
-              x1={payoff.paddingLeft}
-              x2={payoff.width - payoff.paddingRight}
-              y1={payoff.zeroLineY}
-              y2={payoff.zeroLineY}
-              stroke="hsl(var(--muted-foreground))"
-              strokeDasharray="4 4"
-              strokeOpacity={0.6}
-            />
+        <ChartEvidenceView label="Strategy payoff" evidence={[...observations, ...references.map(({ evidence }) => evidence)]}>
+          {(inspection) => (
+            <svg viewBox={`0 0 ${payoff.width} ${payoff.height}`} role="group" aria-label={payoff.ariaLabel} aria-describedby={inspection.hintId} className="w-full max-w-full">
+              <rect
+                x={payoff.paddingLeft}
+                y={payoff.paddingTop}
+                width={payoff.width - payoff.paddingLeft - payoff.paddingRight}
+                height={payoff.height - payoff.paddingTop - payoff.paddingBottom}
+                fill="transparent"
+                stroke="hsl(var(--border))"
+                strokeOpacity={0.4}
+              />
+              {payoff.zeroLineY !== null && (
+                <line
+                  x1={payoff.paddingLeft}
+                  x2={payoff.width - payoff.paddingRight}
+                  y1={payoff.zeroLineY}
+                  y2={payoff.zeroLineY}
+                  stroke="hsl(var(--muted-foreground))"
+                  strokeDasharray="4 4"
+                  strokeOpacity={0.6}
+                />
+              )}
+              {payoff.spotLineX !== null && (
+                <line
+                  x1={payoff.spotLineX}
+                  x2={payoff.spotLineX}
+                  y1={payoff.paddingTop}
+                  y2={payoff.height - payoff.paddingBottom}
+                  stroke="hsl(var(--primary))"
+                  strokeDasharray="2 4"
+                  strokeOpacity={0.6}
+                />
+              )}
+              <polyline
+                points={payoff.points.map((p) => `${p.x},${p.y}`).join(" ")}
+                fill="none"
+                stroke="hsl(var(--primary))"
+                strokeWidth={1.75}
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                data-testid="strategy-designer-payoff-polyline"
+              />
+              {references.map(({ geometry, evidence }, index) => (
+                <ChartEvidenceMark key={evidence.id} inspection={inspection} index={payoff.points.length + index} geometry={geometry} />
+              ))}
+              {payoff.points.map((point, index) => (
+                <ChartEvidenceMark key={observations[index].id} inspection={inspection} index={index} geometry={point} />
+              ))}
+            </svg>
           )}
-          {payoff.spotLineX !== null && (
-            <line
-              x1={payoff.spotLineX}
-              x2={payoff.spotLineX}
-              y1={payoff.paddingTop}
-              y2={payoff.height - payoff.paddingBottom}
-              stroke="hsl(var(--primary))"
-              strokeDasharray="2 4"
-              strokeOpacity={0.6}
-            />
-          )}
-          <polyline
-            points={payoff.points.map((p) => `${p.x},${p.y}`).join(" ")}
-            fill="none"
-            stroke="hsl(var(--primary))"
-            strokeWidth={1.75}
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            data-testid="strategy-designer-payoff-polyline"
-          />
-        </svg>
+        </ChartEvidenceView>
       )}
       <p className="mt-2 text-xs text-muted-foreground" data-testid="strategy-designer-payoff-legcount">
         Sampled across {legCount} leg{legCount === 1 ? "" : "s"}.
@@ -725,17 +832,28 @@ function ParticipationCard({ participation }: { participation: ParticipationView
           Awaiting first leg.
         </div>
       ) : (
-        <ul className="space-y-2" data-testid="strategy-designer-participation-list">
-          {participation.slices.map((slice) => (
-            <ParticipationRow key={slice.legId} slice={slice} />
-          ))}
-        </ul>
+        <ChartEvidenceView label="Strategy leg participation" evidence={participation.slices.map((slice) => ({
+          id: slice.legId, label: slice.label, asOf: "Current draft",
+          values: [{
+            series: "Share of gross notional", value: slice.share * 100, unit: "%",
+            basis: `Absolute leg quantity × ${slice.instrument === "Stock" ? "draft spot" : "strike"}, divided by total gross notional × 100.`
+          }],
+          proof: { href: `#${payoffInputsId}-${slice.legId}`, label: "Open leg inputs" }
+        }))}>
+          {(inspection) => (
+            <ul id={payoffInputsId} tabIndex={-1} aria-label="Payoff leg inputs" aria-describedby={inspection.hintId} className="space-y-2" data-testid="strategy-designer-participation-list">
+              {participation.slices.map((slice, index) => (
+                <ParticipationRow key={slice.legId} slice={slice} markProps={inspection.markProps(index)} />
+              ))}
+            </ul>
+          )}
+        </ChartEvidenceView>
       )}
     </div>
   );
 }
 
-function ParticipationRow({ slice }: { slice: ParticipationSliceViewModel }) {
+function ParticipationRow({ slice, markProps }: { slice: ParticipationSliceViewModel; markProps: ReturnType<ChartInspection["markProps"]> }) {
   return (
     <li className="space-y-1">
       <div className="flex items-center justify-between gap-2 text-sm">
@@ -747,14 +865,14 @@ function ParticipationRow({ slice }: { slice: ParticipationSliceViewModel }) {
         </div>
         <span className="font-mono text-xs text-muted-foreground">{slice.sharePercent}</span>
       </div>
-      <div className="h-2 w-full overflow-hidden rounded-full bg-secondary/40" role="presentation">
-        <div
-          className={cn("h-full rounded-full", slice.tone === "long" ? "bg-success" : "bg-warning")}
+      <button type="button" className="decision-chart-bar block h-3 w-full overflow-hidden rounded-full bg-secondary/40 aria-current:ring-1 aria-current:ring-primary" {...markProps}>
+        <span
+          className={cn("block h-full rounded-full", slice.tone === "long" ? "bg-success" : "bg-warning")}
           style={{ width: slice.barWidth }}
           data-testid={`participation-bar-${slice.legId}`}
         />
-      </div>
-      <div className="text-xs text-muted-foreground">{slice.detail}</div>
+      </button>
+      <div id={`${payoffInputsId}-${slice.legId}`} tabIndex={-1} className="text-xs text-muted-foreground">{slice.detail}</div>
     </li>
   );
 }

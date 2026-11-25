@@ -1,3 +1,4 @@
+import fixtureManualJournalWorkbench from "../test/fixtures/manual-journal-workbench.json";
 import { accountingPayload as fixtureAccountingWorkspace } from "../scenarios/accounting-payload";
 import {
   capHealthyOnStaleEvidence,
@@ -6076,6 +6077,14 @@ const financialRecordExplorerFixtureBase = WORKSTATION_API_ENDPOINTS.financialRe
 const dynamicFixturePatterns: DynamicFixturePattern[] = [
   ...workstationSurfaceFixturePatterns,
   {
+    pattern: apiRoutePattern(RECONCILIATION_API_ENDPOINTS.breakQueue, "/[^/]+"),
+    resolve: (cleanPath) => fixtureAccountingWorkspace.breakQueue.find((item) => item.breakId === readDecodedPathSegment(cleanPath))
+  },
+  {
+    pattern: apiRoutePattern(RECONCILIATION_API_ENDPOINTS.breakQueue, "/[^/]+/audit"),
+    resolve: () => []
+  },
+  {
     pattern: apiRoutePattern(financialRecordExplorerFixtureBase, "/[^/]+"),
     resolve: (cleanPath) => buildFixtureFinancialRecordExplorer(readDecodedPathSegment(cleanPath))
   },
@@ -6200,6 +6209,7 @@ const dynamicFixturePatterns: DynamicFixturePattern[] = [
 ];
 
 export function resolveDevFixture<T>(path: string): T | undefined {
+  if (path.split("?")[0] === WORKSTATION_API_ENDPOINTS.manualJournalEntryWorkbench) return fixtureManualJournalWorkbench as T;
   return resolveFixtureFromMaps<T>(path, fixtures, dynamicFixturePatterns);
 }
 

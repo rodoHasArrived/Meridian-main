@@ -6,6 +6,197 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SymbolPreset
+
+Qualified name: <code>Meridian.Application.Services.SymbolPreset</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:979](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L979).
+
+Preset symbol lists.
+
+```csharp
+public enum SymbolPreset : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Custom</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:981](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L981) |  |
+| <code>USMajorIndices</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:982](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L982) |  |
+| <code>TechGiants</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:983](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L983) |  |
+| <code>SP500Top20</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:984](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L984) |  |
+| <code>Crypto</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:985](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L985) |  |
+
+## UseCase
+
+Qualified name: <code>Meridian.Application.Services.UseCase</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/AutoConfigurationService.cs:965](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L965).
+
+Use case for configuration.
+
+```csharp
+public enum UseCase : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Development</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:967](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L967) |  |
+| <code>Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:968](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L968) |  |
+| <code>[Obsolete(&quot;Use Strategy. Research is retained only as a compatibility alias.&quot;)] Research = Strategy</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:969](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L969) |  |
+| <code>RealTimeTrading</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:971](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L971) |  |
+| <code>BackfillOnly</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:972](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L972) |  |
+| <code>Production</code> | [src/Meridian.Application/Services/AutoConfigurationService.cs:973](../../../../src/Meridian.Application/Services/AutoConfigurationService.cs#L973) |  |
+
+## ValidationCheck
+
+Qualified name: <code>Meridian.Application.Services.ValidationCheck</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:584](../../../../src/Meridian.Application/Services/DryRunService.cs#L584).
+
+A single validation check.
+
+```csharp
+public sealed class ValidationCheck
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:586](../../../../src/Meridian.Application/Services/DryRunService.cs#L586) |  |
+| <code>public bool Passed { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:587](../../../../src/Meridian.Application/Services/DryRunService.cs#L587) |  |
+| <code>public string Message { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:588](../../../../src/Meridian.Application/Services/DryRunService.cs#L588) |  |
+
+## ValidationSection
+
+Qualified name: <code>Meridian.Application.Services.ValidationSection</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/DryRunService.cs:557](../../../../src/Meridian.Application/Services/DryRunService.cs#L557).
+
+A validation section with checks.
+
+```csharp
+public sealed class ValidationSection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; set; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DryRunService.cs:559](../../../../src/Meridian.Application/Services/DryRunService.cs#L559) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Application/Services/DryRunService.cs:560](../../../../src/Meridian.Application/Services/DryRunService.cs#L560) |  |
+| <code>public List&lt;ValidationCheck&gt; Checks { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:561](../../../../src/Meridian.Application/Services/DryRunService.cs#L561) |  |
+| <code>public List&lt;string&gt; Warnings { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:562](../../../../src/Meridian.Application/Services/DryRunService.cs#L562) |  |
+| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Application/Services/DryRunService.cs:563](../../../../src/Meridian.Application/Services/DryRunService.cs#L563) |  |
+| <code>public void AddCheck(string name, bool passed, string message, string errorMessage);</code> | [src/Meridian.Application/Services/DryRunService.cs:565](../../../../src/Meridian.Application/Services/DryRunService.cs#L565) |  |
+
+## WebhookConfig
+
+Qualified name: <code>Meridian.Application.Services.WebhookConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:670](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L670).
+
+Configuration for a single webhook endpoint.
+
+```csharp
+public sealed record WebhookConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Name { get; init; } = &quot;Default&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:675](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L675) | Display name for the webhook. |
+| <code>public string Url { get; init; } = &quot;&quot;;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:680](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L680) | Webhook URL. |
+| <code>public WebhookType Type { get; init; } = WebhookType.Generic;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:685](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L685) | Type of webhook (affects message formatting). |
+| <code>public bool Enabled { get; init; } = true;</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:690](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L690) | Whether this webhook is enabled. |
+| <code>public Dictionary&lt;string, string&gt;? Headers { get; init; }</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:695](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L695) | Custom headers to include with requests. |
+
+## WebhookDeliveryResult
+
+Qualified name: <code>Meridian.Application.Services.WebhookDeliveryResult</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:771](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L771).
+
+Result of a single webhook delivery.
+
+```csharp
+public readonly record struct WebhookDeliveryResult(string WebhookName, WebhookType WebhookType, bool Success, int? StatusCode, string? ErrorMessage, DateTimeOffset SentAt);
+```
+
+## WebhookType
+
+Qualified name: <code>Meridian.Application.Services.WebhookType</code>. Kind: `enum`.
+
+Source: [src/Meridian.Application/Services/DailySummaryWebhook.cs:701](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L701).
+
+Supported webhook types.
+
+```csharp
+public enum WebhookType : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Generic</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:704](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L704) | Generic JSON webhook. |
+| <code>Slack</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:707](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L707) | Slack incoming webhook. |
+| <code>Discord</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:710](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L710) | Discord webhook. |
+| <code>Teams</code> | [src/Meridian.Application/Services/DailySummaryWebhook.cs:713](../../../../src/Meridian.Application/Services/DailySummaryWebhook.cs#L713) | Microsoft Teams webhook connector. |
+
+## WizardResult
+
+Qualified name: <code>Meridian.Application.Services.WizardResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Services/ConfigurationWizard.cs:331](../../../../src/Meridian.Application/Services/ConfigurationWizard.cs#L331).
+
+Result of running the configuration wizard.
+
+```csharp
+public sealed record WizardResult(bool Success, AppConfig? Config, string? ConfigPath);
+```
+
+## ApplyTemplateResult
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ApplyTemplateResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/TemplateService.cs:311](../../../../src/Meridian.Application/Subscriptions/Services/TemplateService.cs#L311).
+
+Result of applying a template.
+
+```csharp
+public sealed record ApplyTemplateResult(bool Success, int SymbolsAdded, int SymbolsSkipped, string? Message = null);
+```
+
+## ArchivedSymbolInfo
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolInfo</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:731](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L731).
+
+Information about archived data for a symbol.
+
+```csharp
+public sealed record ArchivedSymbolInfo(string Symbol, int FileCount, long TotalSizeBytes, DateOnly? OldestData, DateOnly? NewestData, string[] DataTypes, string[] Sources);
+```
+
+## ArchivedSymbolsOptions
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:756](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L756).
+
+Options for scanning archived symbols.
+
+```csharp
+public sealed record ArchivedSymbolsOptions(string[]? FilterSymbols = null, bool IncludeCompressed = true);
+```
+
 ## ArchivedSymbolsResult
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.ArchivedSymbolsResult</code>. Kind: `record`.
@@ -689,24 +880,25 @@ Declared public members:
 | <code>public ConfigurationChangeStatus GetChangeStatus() =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:115](../../../../src/Meridian.Application/Http/ConfigStore.cs#L115) | Saved setting impacts and host-lifetime pending activation; contains no setting values. |
 | <code>public static ConfigurationChangeImpact GetSettingImpact(string path) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:118](../../../../src/Meridian.Application/Http/ConfigStore.cs#L118) | Conservative activation requirement for a configuration field, also exposed by effective settings. |
 | <code>public AppConfig LoadRequired();</code> | [src/Meridian.Application/Http/ConfigStore.cs:121](../../../../src/Meridian.Application/Http/ConfigStore.cs#L121) | Loads existing configuration without substituting defaults when authoritative state cannot be read. |
-| <code>public Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:146](../../../../src/Meridian.Application/Http/ConfigStore.cs#L146) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
-| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:150](../../../../src/Meridian.Application/Http/ConfigStore.cs#L150) | Result-less form of UpdateAsync{T}. |
-| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:185](../../../../src/Meridian.Application/Http/ConfigStore.cs#L185) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
-| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:207](../../../../src/Meridian.Application/Http/ConfigStore.cs#L207) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
-| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:291](../../../../src/Meridian.Application/Http/ConfigStore.cs#L291) |  |
-| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:347](../../../../src/Meridian.Application/Http/ConfigStore.cs#L347) |  |
-| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:364](../../../../src/Meridian.Application/Http/ConfigStore.cs#L364) |  |
-| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:371](../../../../src/Meridian.Application/Http/ConfigStore.cs#L371) |  |
-| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:378](../../../../src/Meridian.Application/Http/ConfigStore.cs#L378) |  |
-| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:385](../../../../src/Meridian.Application/Http/ConfigStore.cs#L385) |  |
-| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:391](../../../../src/Meridian.Application/Http/ConfigStore.cs#L391) |  |
-| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:398](../../../../src/Meridian.Application/Http/ConfigStore.cs#L398) |  |
+| <code>public Task&lt;T&gt; UpdateRequiredCheckedAsync&lt;T&gt;(Func&lt;AppConfig, CancellationToken, Task&lt;(AppConfig Config, T Result)&gt;&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:150](../../../../src/Meridian.Application/Http/ConfigStore.cs#L150) | Applies a checked update to persisted configuration. The callback may read local evidence under the same lock as the commit. It must not perform network I/O or reenter configuration writes. |
+| <code>public Task&lt;T&gt; UpdateAsync&lt;T&gt;(Func&lt;AppConfig, (AppConfig Config, T Result)&gt; update, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:168](../../../../src/Meridian.Application/Http/ConfigStore.cs#L168) | Read-modify-write of the configuration document under the cross-process configuration lock (PRD-002: concurrent configuration writes). The current document is loaded inside the lock, handed to update, and the returned document is written atomically before the lock is released, so two writers editing different sections can never lose each other&#x27;s change the way a Load() + SaveAsync pair can. |
+| <code>public Task UpdateAsync(Func&lt;AppConfig, AppConfig&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:172](../../../../src/Meridian.Application/Http/ConfigStore.cs#L172) | Result-less form of UpdateAsync{T}. |
+| <code>public async Task&lt;IDisposable&gt; AcquireWriteLeaseAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigStore.cs:216](../../../../src/Meridian.Application/Http/ConfigStore.cs#L216) | Holds the cross-process configuration write lock (the .lock sidecar beside the file) until the returned lease is disposed. For writers that persist the document through their own serializer, such as the WPF shell&#x27;s configuration service, so the installed two-process workstation shares one lock with every UpdateAsync{T} caller. Not reentrant. |
+| <code>public async Task SaveAsync(AppConfig cfg, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:238](../../../../src/Meridian.Application/Http/ConfigStore.cs#L238) | Whole-document replacement: the caller&#x27;s snapshot becomes the configuration, last writer wins. Reserved for callers that own the entire document (the CLI &quot;save this configuration&quot; path and the setup wizard&#x27;s generated output). Section-level edits use UpdateAsync{T}, which reads the current document under the same lock and cannot drop a concurrent change. |
+| <code>public async Task SaveFeatureCapabilityOverridesAsync(IReadOnlyDictionary&lt;string, bool&gt; overrides, CancellationToken ct = default);</code> | [src/Meridian.Application/Http/ConfigStore.cs:327](../../../../src/Meridian.Application/Http/ConfigStore.cs#L327) |  |
+| <code>public string? TryLoadStatusJson();</code> | [src/Meridian.Application/Http/ConfigStore.cs:408](../../../../src/Meridian.Application/Http/ConfigStore.cs#L408) |  |
+| <code>public string GetStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:425](../../../../src/Meridian.Application/Http/ConfigStore.cs#L425) |  |
+| <code>public string GetBackfillStatusPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:432](../../../../src/Meridian.Application/Http/ConfigStore.cs#L432) |  |
+| <code>public BackfillResult? TryLoadBackfillStatus();</code> | [src/Meridian.Application/Http/ConfigStore.cs:439](../../../../src/Meridian.Application/Http/ConfigStore.cs#L439) |  |
+| <code>public string GetDataRoot(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:446](../../../../src/Meridian.Application/Http/ConfigStore.cs#L446) |  |
+| <code>public string GetProviderMetricsPath(AppConfig? cfg = null);</code> | [src/Meridian.Application/Http/ConfigStore.cs:452](../../../../src/Meridian.Application/Http/ConfigStore.cs#L452) |  |
+| <code>public ProviderMetricsStatus? TryLoadProviderMetrics();</code> | [src/Meridian.Application/Http/ConfigStore.cs:459](../../../../src/Meridian.Application/Http/ConfigStore.cs#L459) |  |
 
 ## ConfigurationRuntimeAppliers
 
 Qualified name: <code>Meridian.Application.UI.ConfigurationRuntimeAppliers</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:35](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L35).
+Source: [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:38](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L38).
 
 Process-wide registry of runtime appliers keyed by configuration file path.
 
@@ -718,8 +910,38 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IDisposable Attach(string configPath, IConfigurationRuntimeApplier applier);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:41](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L41) | Attaches an applier for a configuration file until the returned handle is disposed. |
-| <code>public static IReadOnlyList&lt;IConfigurationRuntimeApplier&gt; For(string configPath) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:51](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L51) | Appliers currently attached to a configuration file. |
+| <code>public static IDisposable Attach(string configPath, IConfigurationRuntimeApplier applier);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:44](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L44) | Attaches an applier for a configuration file until the returned handle is disposed. |
+| <code>public static IReadOnlyList&lt;IConfigurationRuntimeApplier&gt; For(string configPath) =&gt; …;</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:54](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L54) | Appliers currently attached to a configuration file. |
+
+## EffectiveConfigurationEntry
+
+Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:10](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L10).
+
+A setting&#x27;s displayed value, provenance and activation impact.
+
+```csharp
+public sealed record EffectiveConfigurationEntry(string Key, string Value, string Source, ConfigurationChangeImpact Impact);
+```
+
+## EffectiveConfigurationProjection
+
+Qualified name: <code>Meridian.Application.UI.EffectiveConfigurationProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:13](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L13).
+
+Projects declared configuration settings without traversing operator-defined keys or values.
+
+```csharp
+public static class EffectiveConfigurationProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;EffectiveConfigurationEntry&gt; Build(AppConfig config, IReadOnlyList&lt;EnvironmentOverrideInfo&gt; environmentVariables);</code> | [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs:18](../../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs#L18) |  |
 
 ## IConfigurationRuntimeApplier
 
@@ -738,8 +960,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>string Name { get; }</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:18](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L18) | Short name used in logs. |
-| <code>bool Handles(string path);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:21](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L21) | Whether this applier owns the flattened setting path (for example DataSources.FailoverRules.0.FailoverThreshold). |
-| <code>Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:27](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L27) | Applies a saved configuration. Returns one entry per handled path in changedPaths. Implementations must be idempotent: the same change can arrive from a UI save and a file watcher. |
+| <code>bool ReconcilePendingPaths =&gt; …;</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:21](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L21) | Reconciles previously deferred paths when the next save touches this runtime. |
+| <code>bool Handles(string path);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:24](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L24) | Whether this applier owns the flattened setting path (for example DataSources.FailoverRules.0.FailoverThreshold). |
+| <code>Task&lt;IReadOnlyList&lt;ConfigurationApplyEntry&gt;&gt; ApplyAsync(AppConfig previous, AppConfig next, IReadOnlyList&lt;string&gt; changedPaths, CancellationToken ct);</code> | [src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs:30](../../../../src/Meridian.Application/Http/ConfigurationRuntimeAppliers.cs#L30) | Applies a saved configuration. Returns one entry per handled path in changedPaths. Implementations must be idempotent: the same change can arrive from a UI save and a file watcher. |
 
 ## StatusEndpointHandlers
 
@@ -843,261 +1066,3 @@ Declared public members:
 | <code>public WizardCoordinator AddStep(IWizardStep step);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L19) | Registers a step implementation. |
 | <code>public WizardCoordinator AddTransition(WizardStepId from, WizardStepId to, Func&lt;WizardContext, bool&gt;? condition = null);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:26](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L26) | Adds a directed transition between two steps. |
 | <code>public async Task&lt;WizardContext&gt; RunAsync(WizardContext context, WizardStepId entryStep, CancellationToken ct = default);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:37](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L37) | Runs the step graph starting at entryStep and returns the final WizardContext after all steps have been executed. |
-
-## WizardStepId
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepId</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepId.cs:7](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L7).
-
-Identifies each discrete step in the configuration wizard workflow. Steps form a directed graph; transitions are declared in WizardTransition.
-
-```csharp
-public enum WizardStepId : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>DetectProviders</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L9) |  |
-| <code>CredentialGuidance</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:10](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L10) |  |
-| <code>SelectUseCase</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L11) |  |
-| <code>ConfigureDataSource</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L12) |  |
-| <code>ValidateCredentials</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L13) |  |
-| <code>ConfigureSymbols</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:14](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L14) |  |
-| <code>ConfigureStorage</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L15) |  |
-| <code>ConfigureBackfill</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L16) |  |
-| <code>ReviewConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:17](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L17) |  |
-| <code>SaveConfiguration</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L18) |  |
-| <code>Summary</code> | [src/Meridian.Application/Wizard/Core/WizardStepId.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardStepId.cs#L19) |  |
-
-## WizardStepResult
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L13).
-
-Returned by an IWizardStep after execution. Carries the outcome, an optional message, and an optional override for the next step.
-
-```csharp
-public sealed record WizardStepResult(WizardStepStatus Status, WizardStepId? NextStep = null, string? Message = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WizardStepResult Succeeded(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L19) | Creates a successful result with the default next step. |
-| <code>public static WizardStepResult JumpTo(WizardStepId next, string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:23](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L23) | Creates a successful result that jumps to a specific step. |
-| <code>public static WizardStepResult Skipped(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:27](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L27) | Creates a skip result with the default next step. |
-| <code>public static WizardStepResult Failed(string message) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:31](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L31) | Creates a failure result. |
-| <code>public static WizardStepResult Cancelled(string? message = null) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardStepResult.cs:35](../../../../src/Meridian.Application/Wizard/Core/WizardStepResult.cs#L35) | Creates a cancellation result. |
-
-## WizardStepStatus
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:6](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L6).
-
-Outcome of a single wizard step execution.
-
-```csharp
-public enum WizardStepStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Success</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:9](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L9) | Step completed normally; continue to next step. |
-| <code>Failure</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L12) | Step failed; the wizard should surface an error. |
-| <code>Skip</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:15](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L15) | Step was skipped (condition not met); continue to next step. |
-| <code>Cancelled</code> | [src/Meridian.Application/Wizard/Core/WizardStepStatus.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardStepStatus.cs#L18) | User or code cancelled; stop the wizard immediately. |
-
-## WizardSummary
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardSummary</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardSummary.cs:13](../../../../src/Meridian.Application/Wizard/Core/WizardSummary.cs#L13).
-
-Human-readable summary produced at the end of a completed wizard run.
-
-```csharp
-public sealed record WizardSummary(bool Success, AppConfig? Config, string? ConfigPath, IReadOnlyList<string> ConfiguredItems, IReadOnlyList<string> NextSteps)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static WizardSummary Empty { get; } = new (Success : false, Config : null, ConfigPath : null, ConfiguredItems : Array.Empty&lt;string&gt;(), NextSteps : Array.Empty&lt;string&gt;());</code> | [src/Meridian.Application/Wizard/Core/WizardSummary.cs:21](../../../../src/Meridian.Application/Wizard/Core/WizardSummary.cs#L21) | Returns an empty failed summary. |
-
-## WizardTransition
-
-Qualified name: <code>Meridian.Application.Wizard.Core.WizardTransition</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Wizard/Core/WizardTransition.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardTransition.cs#L12).
-
-Declares a conditional edge in the wizard step graph.
-
-```csharp
-public sealed record WizardTransition(WizardStepId From, WizardStepId To, Func<WizardContext, bool>? Condition = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Applies(WizardContext context) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardTransition.cs:18](../../../../src/Meridian.Application/Wizard/Core/WizardTransition.cs#L18) | Returns true if this transition applies to the given context. |
-
-## ProviderDescriptor
-
-Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderDescriptor</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs:28](../../../../src/Meridian.Application/Wizard/Metadata/ProviderDescriptor.cs#L28).
-
-Immutable descriptor for a single data provider. Centralises signup URLs, environment variable names, capabilities and priority so that both ConfigurationWizard and AutoConfigurationService can share the same source of truth.
-
-```csharp
-public sealed record ProviderDescriptor(string Name, string DisplayName, string[] RequiredEnvVars, string[] AlternativeEnvVars, string[] Capabilities, int Priority, string SignupUrl = "", string DocsUrl = "", string FreeTierDescription = "");
-```
-
-## ProviderRegistry
-
-Qualified name: <code>Meridian.Application.Wizard.Metadata.ProviderRegistry</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:8](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L8).
-
-Central registry of all supported data providers with their metadata. Replaces the duplicated dictionaries in ConfigurationWizard and AutoConfigurationService.
-
-```csharp
-public static class ProviderRegistry
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyList&lt;ProviderDescriptor&gt; All { get; } = BuildRegistry();</code> | [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:11](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L11) | All provider descriptors, ordered by ascending priority. |
-| <code>public static ProviderDescriptor? Get(string name) =&gt; …;</code> | [src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs:14](../../../../src/Meridian.Application/Wizard/Metadata/ProviderRegistry.cs#L14) | Returns the descriptor for the given provider name, or null. |
-
-## ConfigureBackfillStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureBackfillStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L11).
-
-Step 8: Configures historical data backfill settings. Writes WizardContext.Backfill (may remain null if skipped).
-
-```csharp
-public sealed class ConfigureBackfillStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L16) |  |
-| <code>public ConfigureBackfillStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L18) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureBackfillStep.cs#L24) |  |
-
-## ConfigureDataSourceStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureDataSourceStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L12).
-
-Step 4: Selects the primary real-time data source and configures provider options. Writes WizardContext.DataSource.
-
-```csharp
-public sealed class ConfigureDataSourceStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L17) |  |
-| <code>public ConfigureDataSourceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureDataSourceStep.cs#L25) |  |
-
-## ConfigureStorageStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureStorageStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:12](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L12).
-
-Step 7: Lets the user pick a storage profile or configure advanced settings. Writes WizardContext.Storage.
-
-```csharp
-public sealed class ConfigureStorageStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L17) |  |
-| <code>public ConfigureStorageStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:19](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L19) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs:25](../../../../src/Meridian.Application/Wizard/Steps/ConfigureStorageStep.cs#L25) |  |
-
-## ConfigureSymbolsStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.ConfigureSymbolsStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L11).
-
-Step 6: Lets the user pick a symbol preset or enter custom symbols. Writes WizardContext.Symbols.
-
-```csharp
-public sealed class ConfigureSymbolsStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L16) |  |
-| <code>public ConfigureSymbolsStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L18) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/ConfigureSymbolsStep.cs#L24) |  |
-
-## CredentialGuidanceStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.CredentialGuidanceStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:10](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L10).
-
-Step 2: Shows credential setup guidance when no providers are configured. Skipped automatically when at least one provider has credentials.
-
-```csharp
-public sealed class CredentialGuidanceStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:15](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L15) |  |
-| <code>public CredentialGuidanceStep(TextWriter output, TextReader input);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:17](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L17) |  |
-| <code>public async Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs:23](../../../../src/Meridian.Application/Wizard/Steps/CredentialGuidanceStep.cs#L23) |  |
-
-## DetectProvidersStep
-
-Qualified name: <code>Meridian.Application.Wizard.Steps.DetectProvidersStep</code>. Kind: `class`.
-
-Source: [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:11](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L11).
-
-Step 1: Scans environment variables and returns the list of detected providers. Writes WizardContext.DetectedProviders.
-
-```csharp
-public sealed class DetectProvidersStep : IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public WizardStepId StepId =&gt; …;</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:16](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L16) |  |
-| <code>public DetectProvidersStep(AutoConfigurationService autoConfig, TextWriter output);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:18](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L18) |  |
-| <code>public Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs:24](../../../../src/Meridian.Application/Wizard/Steps/DetectProvidersStep.cs#L24) |  |

@@ -270,6 +270,15 @@ public sealed class LedgerJournalStoreTests
             AggregateId = book.LedgerBookId,
             LedgerBookId = book.LedgerBookId
         };
+        target = target with
+        {
+            Entry = new JournalEntry(target.Entry.JournalEntryId, target.Entry.Timestamp, target.Entry.Description,
+                target.Entry.Lines.Select(line => line with
+                {
+                    ChartAccount = StandardChartOfAccounts.Instance.GetPostingReference(line.Account),
+                    Memo = "Retained line memo"
+                }).ToArray(), target.Entry.Metadata)
+        };
         var neighbor = BuildBalancedJournalWrite(period.PeriodId, now.AddMinutes(1)) with
         {
             AggregateId = book.LedgerBookId,
@@ -296,6 +305,15 @@ public sealed class LedgerJournalStoreTests
         var foreign = new PostgresLedgerJournalStore(database.Options, new FixedQueryTenantAccessor("tenant-beta"),
             TenantScopeEnforcementOptions.FailClosed);
         (await foreign.QueryAsync(query)).Should().BeEmpty("knowing the journal identity must not bypass tenant scope");
+
+        var prefixQuery = query with
+        {
+            JournalEntryId = null,
+            JournalEntryIdPrefix = target.Entry.JournalEntryId.ToString("D")[..23].ToUpperInvariant()
+        };
+        (await owner.QueryAsync(prefixQuery)).Should().ContainSingle().Which.Entry.JournalEntryId.Should().Be(target.Entry.JournalEntryId);
+        (await owner.QueryAsync(prefixQuery with { LedgerBookId = otherBook.LedgerBookId })).Should().BeEmpty();
+        (await foreign.QueryAsync(prefixQuery)).Should().BeEmpty();
     }
 
     [Fact]

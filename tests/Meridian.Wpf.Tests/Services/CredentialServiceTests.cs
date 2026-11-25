@@ -507,6 +507,17 @@ public sealed class CredentialServiceTests : IDisposable
     }
 
     [Fact]
+    public async Task SharedSeam_OAuthTokenResourcePrefix_MatchesHostResourceNaming()
+    {
+        var sut = await CreateInitializedSutAsync();
+
+        // OAuthRefreshService derives provider ids from this prefix; it must match the
+        // names this host stores tokens under, not the shared no-op default.
+        ((ICredentialService)sut).OAuthTokenResourcePrefix.Should().Be(CredentialService.OAuthTokenResource);
+        CredentialService.OAuthTokenResource.Should().Be("Meridian.OAuth");
+    }
+
+    [Fact]
     public async Task UpdateMetadataAsync_ExpiresBeyondSevenDays_DoesNotRaiseCredentialExpiring()
     {
         var sut = await CreateInitializedSutAsync();

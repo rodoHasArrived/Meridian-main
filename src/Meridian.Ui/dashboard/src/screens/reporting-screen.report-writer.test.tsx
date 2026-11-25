@@ -63,11 +63,12 @@ function Harness({
         customDatasetText={writer.writerCustomDatasetText[grid.id] ?? ""}
         isSaving={false}
         isPreviewing={writer.previewingWriterDraftId === grid.id}
-        preview={writer.writerPreviewByGridId[grid.id] ?? null}
+        preview={writer.getWriterPreview(grid)}
         previousPreview={writer.writerPreviousPreviewByGridId[grid.id] ?? null}
         getZoneTokens={writer.getWriterZoneTokens}
         onTokenDragStart={writer.handleWriterTokenDragStart}
         onZoneDrop={writer.handleWriterZoneDrop}
+        onFieldAdd={writer.placeWriterToken}
         onTokenRemove={writer.removeWriterZoneToken}
         onTokenMove={writer.moveWriterZoneToken}
         onReset={writer.resetWriterGrid}
@@ -98,6 +99,14 @@ function Harness({
   );
 }
 
+function buildGrid(): ReportingWriterGridRow {
+  return buildNewCustomReportWriterGrid(1, { templateId: "investor-monthly-statement", templateVersion: "1" });
+}
+
+function choosePortfolioSample() {
+  fireEvent.change(screen.getByLabelText("Custom report 1 preview dataset"), { target: { value: "portfolioPositions" } });
+}
+
 function editFormula(value: string) {
   fireEvent.change(screen.getByLabelText("Custom report 1 custom formula expression"), { target: { value } });
 }
@@ -113,18 +122,23 @@ describe("report-writer auto preview", () => {
     renderMock.mockReset();
   });
 
-  it("sends no render requests until the grid is edited", async () => {
-    render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+  it("sends no render requests until the grid is edited, nor while no dataset is chosen", async () => {
+    render(<Harness grid={buildGrid()} />);
     await waitPastDebounce();
-
     expect(renderMock).not.toHaveBeenCalled();
+
+    editFormula("{pnl}");
+    await waitPastDebounce();
+    expect(renderMock).not.toHaveBeenCalled();
+    expect(screen.queryByLabelText("Custom report 1 auto preview error")).not.toBeInTheDocument();
     expect(screen.getByRole("checkbox", { name: "Auto preview Custom report 1 report-writer grid" })).toBeChecked();
   });
 
   it("re-renders once after a burst of edits, quietly, with an abort signal", async () => {
     renderMock.mockResolvedValue(buildResponse(2));
-    render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+    render(<Harness grid={buildGrid()} />);
 
+    choosePortfolioSample();
     editFormula("{pnl}");
     editFormula("{pnl} /");
     editFormula("{pnl} / {marketValue}");
@@ -138,7 +152,8 @@ describe("report-writer auto preview", () => {
 
   it("keeps the last preview visible and dimmed while it is out of date", async () => {
     renderMock.mockResolvedValue(buildResponse(1));
-    render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+    render(<Harness grid={buildGrid()} />);
+    choosePortfolioSample();
     editFormula("{pnl}");
     await waitFor(() => expect(screen.getByLabelText("Custom report 1 live preview")).toBeInTheDocument());
 
@@ -155,9 +170,13 @@ describe("report-writer auto preview", () => {
 
   it("shows a quiet error with Retry, held back while the operator is typing", async () => {
     const user = userEvent.setup();
-    renderMock.mockRejectedValueOnce(new Error("Render service unavailable"));
-    render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+    renderMock.mockResolvedValue(buildResponse(1));
+    render(<Harness grid={buildGrid()} />);
 
+    choosePortfolioSample();
+    await screen.findByText("Preview up to date");
+    renderMock.mockClear();
+    renderMock.mockRejectedValueOnce(new Error("Render service unavailable"));
     const expression = screen.getByLabelText("Custom report 1 custom formula expression");
     await user.click(expression);
     fireEvent.change(expression, { target: { value: "{pnl}" } });
@@ -184,7 +203,7 @@ describe("report-writer auto preview", () => {
       fields: [],
       rows: Array.from({ length: 201 }, (_, index) => ({ fund: `Fund${index}`, marketValue: "1" }))
     };
-    render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} datasetSources={[bigSource]} />);
+    render(<Harness grid={buildGrid()} datasetSources={[bigSource]} />);
 
     fireEvent.change(screen.getByLabelText("Custom report 1 preview dataset"), { target: { value: "source:big" } });
     await waitPastDebounce();
@@ -197,8 +216,9 @@ describe("report-writer auto preview", () => {
     const user = userEvent.setup();
     renderMock.mockResolvedValue(buildResponse(3));
     // A long debounce keeps the pending auto render from firing before the click lands.
-    render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} debounceMs={150} />);
+    render(<Harness grid={buildGrid()} debounceMs={150} />);
 
+    choosePortfolioSample();
     editFormula("{pnl}");
     await user.click(screen.getByRole("button", { name: "Preview Custom report 1 report-writer grid" }));
 
@@ -209,7 +229,8 @@ describe("report-writer auto preview", () => {
 
   it("announces preview status through an accessible live region", async () => {
     renderMock.mockResolvedValue(buildResponse(1));
-    const { container } = render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+    const { container } = render(<Harness grid={buildGrid()} />);
+    choosePortfolioSample();
     editFormula("{pnl}");
     await screen.findByText("Preview up to date");
 
@@ -219,7 +240,7 @@ describe("report-writer auto preview", () => {
   });
 
   it("does not announce empty drop zones as lists", async () => {
-    const { container } = render(<Harness grid={buildNewCustomReportWriterGrid(1, null, null)} />);
+    const { container } = render(<Harness grid={buildGrid()} />);
 
     const rows = screen.getByRole("group", { name: "Custom report 1 Rows drop zone" });
     expect(within(rows).queryByRole("list")).not.toBeInTheDocument();

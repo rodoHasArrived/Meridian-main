@@ -11,7 +11,9 @@ namespace Meridian.Storage.Backfill;
     PropertyNamingPolicy = JsonKnownNamingPolicy.CamelCase,
     WriteIndented = true)]
 [JsonSerializable(typeof(BackfillResult))]
+[JsonSerializable(typeof(RetainedBackfillResult))]
 [JsonSerializable(typeof(Dictionary<string, string>))]
 [JsonSerializable(typeof(Dictionary<string, long>))]
 [JsonSerializable(typeof(BackfillCoverageDocument))]
+[JsonSerializable(typeof(BackfillBatchRevision))]
 internal sealed partial class BackfillStatusStoreJsonContext : JsonSerializerContext;

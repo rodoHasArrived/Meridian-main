@@ -6,6 +6,70 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportValidationSeverity
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationSeverity</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:313](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L313).
+
+Severity level for export validation issues.
+
+```csharp
+public enum ExportValidationSeverity : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Info</code> | [src/Meridian.Storage/Export/ExportValidator.cs:315](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L315) |  |
+| <code>Warning</code> | [src/Meridian.Storage/Export/ExportValidator.cs:316](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L316) |  |
+| <code>Error</code> | [src/Meridian.Storage/Export/ExportValidator.cs:317](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L317) |  |
+
+## ExportValidator
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidator</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:15](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L15).
+
+Validates an export request before any files are written. Catches problems such as insufficient disk space, missing write permissions, and empty result sets early so users are never surprised by a silent failure mid-export.
+
+```csharp
+public sealed class ExportValidator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExportValidator(string dataRoot, IEnumerable&lt;IPreflightRule&lt;ExportPreflightContext&gt;&gt;? rules = null) : this(new StorageOptions { RootPath = dataRoot }, rules);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:32](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L32) |  |
+| <code>public ExportValidator(StorageOptions storageOptions, IEnumerable&lt;IPreflightRule&lt;ExportPreflightContext&gt;&gt;? rules = null);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:39](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L39) |  |
+| <code>public async Task&lt;ExportValidationResult&gt; ValidateAsync(ExportRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/Export/ExportValidator.cs:55](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L55) | Runs all pre-export checks and returns a ExportValidationResult that describes every issue found. The export should be aborted when ExportValidationResult.IsValid is false. |
+
+## ExportVerificationResult
+
+Qualified name: <code>Meridian.Storage.Export.ExportVerificationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportVerificationReport.cs:204](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L204).
+
+Aggregate result of an export verification run.
+
+```csharp
+public sealed class ExportVerificationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;isValid&quot;)] public bool IsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:210](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L210) | true when every file passed all checks. |
+| <code>[JsonPropertyName(&quot;checksumsValid&quot;)] public bool ChecksumsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:216](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L216) | true when all file checksums matched the manifest. |
+| <code>[JsonPropertyName(&quot;recordCountsValid&quot;)] public bool RecordCountsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:222](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L222) | true when all record counts matched the manifest. |
+| <code>[JsonPropertyName(&quot;schemaValid&quot;)] public bool SchemaValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:229](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L229) | true when schema checks passed. Currently always true (advisory — reserved for future schema-level validation). |
+| <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;string&gt; Issues { get; init; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:235](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L235) | Human-readable descriptions of every issue found. |
+| <code>[JsonPropertyName(&quot;fileResults&quot;)] public IReadOnlyList&lt;ExportFileVerificationResult&gt; FileResults { get; init; } = Array.Empty&lt;ExportFileVerificationResult&gt;();</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:241](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L241) | Per-file verification details. |
+| <code>public static ExportVerificationResult Failure(string reason) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportVerificationReport.cs:247](../../../../src/Meridian.Storage/Export/ExportVerificationReport.cs#L247) | Creates a result that represents a top-level failure (e.g. missing manifest). |
+
 ## ExportVerifier
 
 Qualified name: <code>Meridian.Storage.Export.ExportVerifier</code>. Kind: `class`.
@@ -445,6 +509,18 @@ Enum declarations:
 | <code>Max</code> | [src/Meridian.Storage/Export/ExportRequest.cs:170](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L170) |  |
 | <code>Last</code> | [src/Meridian.Storage/Export/ExportRequest.cs:171](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L171) |  |
 
+## XlsxColumnLayout
+
+Qualified name: <code>Meridian.Storage.Export.XlsxColumnLayout</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Export/XlsxWorkbookWriter.cs:317](../../../../src/Meridian.Storage/Export/XlsxWorkbookWriter.cs#L317).
+
+Display width and numeric formatting for a worksheet column that opts into a layout.
+
+```csharp
+public sealed record XlsxColumnLayout(int Width, bool GroupNumbers = false);
+```
+
 ## XlsxWorkbookWriter
 
 Qualified name: <code>Meridian.Storage.Export.XlsxWorkbookWriter</code>. Kind: `class`.
@@ -467,11 +543,17 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Export.XlsxWorksheet</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Export/XlsxWorkbookWriter.cs:293](../../../../src/Meridian.Storage/Export/XlsxWorkbookWriter.cs#L293).
+Source: [src/Meridian.Storage/Export/XlsxWorkbookWriter.cs:319](../../../../src/Meridian.Storage/Export/XlsxWorkbookWriter.cs#L319).
 
 ```csharp
-public sealed record XlsxWorksheet(string Name, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<object?>> Rows);
+public sealed record XlsxWorksheet(string Name, IReadOnlyList<string> Headers, IReadOnlyList<IReadOnlyList<object?>> Rows)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;XlsxColumnLayout&gt;? Columns { get; init; }</code> | [src/Meridian.Storage/Export/XlsxWorkbookWriter.cs:324](../../../../src/Meridian.Storage/Export/XlsxWorkbookWriter.cs#L324) |  |
 
 ## FileNamingConvention
 
@@ -900,70 +982,4 @@ Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:138](../../..
 
 ```csharp
 public sealed record FundStructureLegacyImportRequest(string SourceHash, IReadOnlyList<OrganizationSummaryDto> Organizations, IReadOnlyList<BusinessSummaryDto> Businesses, IReadOnlyList<ClientSummaryDto> Clients, IReadOnlyList<FundSummaryDto> Funds, IReadOnlyList<SleeveSummaryDto> Sleeves, IReadOnlyList<VehicleSummaryDto> Vehicles, IReadOnlyList<LegalEntitySummaryDto> Entities, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<FundStructureAssignmentDto> Assignments, IReadOnlyList<Guid> LinkedAccountIds);
-```
-
-## FundStructureLegacyImportResult
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureLegacyImportResult</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:152](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L152).
-
-```csharp
-public enum FundStructureLegacyImportResult : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Imported = 0</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:154](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L154) |  |
-| <code>AlreadyImported = 1</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:155](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L155) |  |
-| <code>StoreNotEmpty = 2</code> | [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:156](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L156) |  |
-
-## FundStructureMigrationRunner
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L8).
-
-Applies the PostgreSQL migrations used by fund structure persistence.
-
-```csharp
-public sealed class FundStructureMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundStructureMigrationRunner(FundStructureStoreOptions options);</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:12](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L12) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs:30](../../../../src/Meridian.Storage/FundStructure/FundStructureMigrationRunner.cs#L30) |  |
-
-## FundStructureStoreOptions
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:6](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L6).
-
-Configures the PostgreSQL connection and schema for fund structure storage.
-
-```csharp
-public sealed class FundStructureStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:8](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L8) |  |
-| <code>public string Schema { get; set; } = &quot;fund_structure&quot;;</code> | [src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs:9](../../../../src/Meridian.Storage/FundStructure/FundStructureStoreOptions.cs#L9) |  |
-
-## FundStructureTenantBackfillEvidence
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureTenantBackfillEvidence</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs:10](../../../../src/Meridian.Storage/FundStructure/IFundStructureTenantBackfillStore.cs#L10).
-
-```csharp
-public sealed record FundStructureTenantBackfillEvidence(Guid BookId, string FundProfileId, Guid NodeId, string? TenantId, string? CompanyId, JsonElement RetainedBook, JsonElement? RetainedRegistryEntry);
 ```

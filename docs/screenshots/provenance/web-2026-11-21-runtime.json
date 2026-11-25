@@ -1,0 +1,25 @@
+{
+  "observedAtUtc": "2026-11-21T00:18:34.010Z",
+  "playwrightInstalled": "1.65.0",
+  "nodeVersion": "v24.19.0",
+  "platform": "linux",
+  "architecture": "x64",
+  "executablePath": "/home/agent/.cache/ms-playwright/chromium-1254/chrome-linux64/chrome",
+  "chromium": [
+    {
+      "name": "chromium",
+      "revision": "1254",
+      "installByDefault": true,
+      "browserVersion": "158.0.8127.18",
+      "title": "Chrome for Testing"
+    },
+    {
+      "name": "chromium-headless-shell",
+      "revision": "1254",
+      "installByDefault": true,
+      "browserVersion": "158.0.8127.18",
+      "title": "Chrome Headless Shell"
+    }
+  ],
+  "browserVersion": "158.0.8127.18"
+}

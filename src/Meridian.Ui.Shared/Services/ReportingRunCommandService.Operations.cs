@@ -9,8 +9,8 @@ namespace Meridian.Ui.Shared.Services;
 internal sealed record ReportingRunOperation(string RunId, string RequestHash);
 
 /// <summary>A verified failed outcome, distinct from an uncertain or unauthorized operation.</summary>
-internal sealed class ReportingNoticeOperationFailedException(string runId)
-    : ReportingGovernanceException("This retained notice operation failed. Inspect it and explicitly generate a new notice if needed.")
+internal sealed class ReportingNoticeOperationFailedException(string runId, string? failureReason = null)
+    : ReportingGovernanceException(failureReason ?? "This retained notice operation failed. Inspect it and explicitly generate a new notice if needed.")
 {
     public string RunId { get; } = runId;
 }
@@ -50,7 +50,8 @@ public sealed partial class ReportingRunCommandService
         if (!ReportAccessPolicyEvaluator.Evaluate(manifest, access).IsAccessible)
             throw new ReportingGovernanceAuthorizationException("The retained operation is not accessible in the current authenticated scope.");
         if (manifest.Status == ReportingRunStatus.Failed)
-            throw new ReportingNoticeOperationFailedException(manifest.RunId);
+            throw new ReportingNoticeOperationFailedException(manifest.RunId,
+                manifest.FailureCode == ReportWriterMetricValidationException.FailureCode ? manifest.FailureReason : null);
         if (!ReportPackRunReadService.HasCertifiedImmutableGovernanceBinding(manifest))
             throw new ReportingGovernanceAuthorizationException("The retained operation is not accessible in the current authenticated scope.");
 

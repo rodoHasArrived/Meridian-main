@@ -106,6 +106,50 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void MapCalendarEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/CalendarEndpoints.cs#L16) |  |
 
+## CancelAllIncidentDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.CancelAllIncidentDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs:93](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs#L93).
+
+```csharp
+public sealed record CancelAllIncidentDto(CancelAllIncidentSummaryDto Summary, string? CorrelationId, string? BrokerScopeIdentity, string? BrokerViewError, IReadOnlyList<CancelAllOrderOutcomeDto> Orders)
+```
+
+## CancelAllIncidentHistoryDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.CancelAllIncidentHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs:77](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs#L77).
+
+A bounded account projection; complete evidence and successful cancellation are separate states.
+
+```csharp
+public sealed record CancelAllIncidentHistoryDto(DateTimeOffset AsOf, int Returned, int Limit, bool HasMore, string CoverageNote, IReadOnlyList<CancelAllIncidentSummaryDto> Incidents);
+```
+
+## CancelAllIncidentSummaryDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.CancelAllIncidentSummaryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs:80](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs#L80).
+
+```csharp
+public sealed record CancelAllIncidentSummaryDto(string IncidentId, Guid? FundAccountId, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, string? Actor, string GatewayId, string ExecutionMode, string EvidenceStatus, string? EvidenceError, bool BrokerViewUnavailable, int OrderCount, int UnresolvedOrderCount)
+```
+
+## CancelAllOrderOutcomeDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.CancelAllOrderOutcomeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs:103](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs#L103).
+
+Financial quantities are exact decimal text; unknown values remain null.
+
+```csharp
+public sealed record CancelAllOrderOutcomeDto(string ObservationKey, string OrderId, string? BrokerOrderId, Guid? FundAccountId, string? BrokerAccountId, string? Symbol, string? Side, string Operation, string Disposition, string? InitialStatus, string? Status, string? InitialQuantity, string? InitialFilledQuantity, string? Quantity, string? FilledQuantity, string? RemainingQuantity, bool CancellationAttempted, bool RequiresReconciliation, bool HasUnconfirmedReplacement, string? CandidateBrokerOrderId, string? CandidateClientOrderId, string? ResidualNotional, string? Currency, string ValuationCoverage, string? ValuationPrice, DateTimeOffset? ValuationObservedAt, string? ValuationSource, DateTimeOffset ObservedAt, string? Detail)
+```
+
 ## CanonicalizationEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CanonicalizationEndpoints</code>. Kind: `class`.
@@ -164,7 +208,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CheckpointEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L16).
+Source: [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L17).
 
 Extension methods for registering backfill checkpoint/resume API endpoints. Exposes checkpoint semantics to users for job resumability and crash recovery (P0).
 
@@ -176,7 +220,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapCheckpointEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L21) | Maps all checkpoint and ingestion job API endpoints. |
+| <code>public static void MapCheckpointEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/CheckpointEndpoints.cs#L22) | Maps all checkpoint and ingestion job API endpoints. |
 
 ## CleanupHistoryRequest
 
@@ -192,7 +236,7 @@ public record CleanupHistoryRequest(int? MaxAgeDays = null);
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:125](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L125).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:131](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L131).
 
 Request to clear an existing execution manual override.
 
@@ -204,7 +248,7 @@ public sealed record ClearExecutionManualOverrideRequest(string? Reason = null, 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ClearManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:140](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L140).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:146](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L146).
 
 Legacy request alias preserved for older callers.
 
@@ -262,7 +306,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ConfigEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L20).
+Source: [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L22).
 
 Extension methods for registering configuration API endpoints. Shared between web dashboard and desktop application hosts.
 
@@ -274,7 +318,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L25) | Maps all configuration-related API endpoints. |
+| <code>public static void MapConfigEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/ConfigEndpoints.cs#L27) | Maps all configuration-related API endpoints. |
 
 ## ConfigureAccrualScheduleInput
 
@@ -354,7 +398,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateExecutionManualOverrideRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:115](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L115).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:121](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L121).
 
 Request to create an execution manual override.
 
@@ -376,7 +420,7 @@ public record CreateMaintenanceScheduleRequest(string Name, string? Description 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CreateManualOverrideCommandRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:130](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L130).
+Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:136](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L136).
 
 Legacy request alias preserved for older callers.
 
@@ -393,8 +437,14 @@ Source: [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:36](../../../
 Request to create a new paper trading session.
 
 ```csharp
-public sealed record CreatePaperSessionRequest(string StrategyId, string? StrategyName, decimal InitialCash = 100_000m, IReadOnlyList<string>? Symbols = null);
+public sealed record CreatePaperSessionRequest(string StrategyId, string? StrategyName, decimal InitialCash = 100_000m, IReadOnlyList<string>? Symbols = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs:42](../../../../src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs#L42) |  |
 
 ## CredentialEndpoints
 
@@ -727,78 +777,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public EndpointIndependentAuthenticationMetadata(string reason);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:98](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L98) |  |
 | <code>public string Reason { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:105](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L105) | How this route authenticates its caller, e.g. &quot;provider HMAC signature headers&quot;. |
-
-## EndpointNonMutatingMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointNonMutatingMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:67](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L67).
-
-Declares that a route outside the safe methods changes no state -- a read whose query does not fit in a URL, not a command. Only the read-only-role method cap consults this; it does not substitute for the route&#x27;s own permission, which still decides who may call it. Applied per route after reading the handler, never by convention: an unmarked non-safe route stays refused for a read-only principal, so a wrong omission costs a capability while a wrong marking would reopen the legacy mutations the cap exists to close.
-
-```csharp
-public sealed class EndpointNonMutatingMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EndpointNonMutatingMetadata(string reason);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:69](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L69) |  |
-| <code>public string Reason { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:76](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L76) | Why this route changes nothing, e.g. &quot;bounded single SELECT-family statement&quot;. |
-
-## EndpointOpenReadMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointOpenReadMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:45](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L45).
-
-Declares that a read route is deliberately open to any authenticated workstation session, with the reason stated where reviewers and the read-declaration ratchet can see it. The read surface is governed risk-based rather than uniformly: reads exposing account-scoped, position, or PII-bearing data must declare a permission via EndpointAuthorization.RequirePermission{TBuilder}, while broad workstation reads — reference data, catalogs, health — declare openness explicitly through this marker instead of by omission. A read route carrying neither is undeclared debt tracked by the ratchet.
-
-```csharp
-public sealed class EndpointOpenReadMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EndpointOpenReadMetadata(string reason);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:47](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L47) |  |
-| <code>public string Reason { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:54](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L54) | Why this read is safe for any authenticated session, e.g. &quot;static reference data&quot;. |
-
-## EndpointPermissionlessMutationMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointPermissionlessMutationMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:122](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L122).
-
-Declares that a mutating route is deliberately callable without any permission: the authentication bootstrap itself (login, logout, the one-use first-account seam) and the 410 Gone tombstones for retired lifecycles, which perform no action. The pre-binding mutation guard (MutationAuthorizationGuardMiddleware) stands aside for it, and the coverage suite asserts its permissionless allowlist matches these declarations one-for-one, so the runtime exemption and the tested exemption cannot drift apart. Applied per route after reading the handler, never by convention. A route that authenticates its caller by its own mechanism belongs under EndpointIndependentAuthenticationMetadata instead; this marker is only for routes whose permissionless reachability is itself the design.
-
-```csharp
-public sealed class EndpointPermissionlessMutationMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EndpointPermissionlessMutationMetadata(string reason);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:124](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L124) |  |
-| <code>public string Reason { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:131](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L131) | Why this mutation is safe without any permission, e.g. &quot;login bootstrap&quot;. |
-
-## EnvironmentDesignerEndpoints
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.EnvironmentDesignerEndpoints</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs#L14).
-
-Maps environment-design draft discovery and editing operations to HTTP endpoints.
-
-```csharp
-public static class EnvironmentDesignerEndpoints
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void MapEnvironmentDesignerEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/EnvironmentDesignerEndpoints.cs#L16) |  |

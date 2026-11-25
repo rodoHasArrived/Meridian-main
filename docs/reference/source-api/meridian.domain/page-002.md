@@ -47,7 +47,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationResolutionMetadata</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:189](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L189).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:209](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L209).
 
 ```csharp
 public sealed record ReconciliationResolutionMetadata(string ResolutionCode, string Summary, string ResolvedBy, DateTimeOffset ResolvedAtUtc, string? SignedOffBy = null, DateTimeOffset? SignedOffAtUtc = null);
@@ -196,7 +196,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Domain.Reconciliation.StatementReconciliationRun</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:227](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L227).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:247](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L247).
 
 ```csharp
 public sealed record StatementReconciliationRun(string RunId, string ImportId, DateTimeOffset StartedAtUtc, DateTimeOffset CompletedAtUtc, int PositionMatches, int CashMatches, int TransactionMatches, int OpenExceptionCount)
@@ -206,8 +206,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ToleranceProfileId { get; init; } = string.Empty;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:237](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L237) |  |
-| <code>public int ToleranceProfileVersion { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:238](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L238) |  |
+| <code>public string ToleranceProfileId { get; init; } = string.Empty;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:257](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L257) |  |
+| <code>public int ToleranceProfileVersion { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:258](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L258) |  |
 
 ## StatementRowKind
 
@@ -233,7 +233,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Domain.Reconciliation.StatementRunMatchGroupRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:271](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L271).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:291](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L291).
 
 One matched group retained on a statement run&#x27;s immutable match artifact: the statement-side and internal-side evidence members that reconciled together, with the rule, tier, and variance that formed the group. Pair matches carry one member per side; split matches carry several on one side. Membership is part of the run&#x27;s durable identity — two runs that match the same number of rows through different pair or split assignments must retain different artifacts, or the matcher&#x27;s determinism and idempotency cannot be evidenced from retained state.
 
@@ -245,9 +245,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? QuantityVariance { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:280](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L280) |  |
-| <code>public decimal? MarketValueVariance { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:281](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L281) |  |
-| <code>public decimal? AmountVariance { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:282](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L282) |  |
+| <code>public decimal? QuantityVariance { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:300](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L300) |  |
+| <code>public decimal? MarketValueVariance { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:301](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L301) |  |
+| <code>public decimal? AmountVariance { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:302](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L302) |  |
 
 ## StatementRunRequest
 

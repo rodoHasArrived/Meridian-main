@@ -155,6 +155,10 @@ public sealed record ReportingOutputManifest(
     ImmutableArray<IReadOnlyDictionary<string, string>> CertifiedDatasetRows = default,
     CertifiedPartnersCapitalProjection? CertifiedPartnersCapital = null)
 {
+    /// <summary>Stable classification for terminal failures that are safe to replay.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? FailureCode { get; init; }
+
     /// <summary>Optional documented, quantified methodology effects retained with this run.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)]
     public ImmutableArray<ReportingIncomeMethodologyEvidence> IncomeMethodologyEvidence { get; init; }

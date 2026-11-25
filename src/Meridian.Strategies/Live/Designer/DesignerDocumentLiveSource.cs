@@ -2,6 +2,7 @@ using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Workstation;
 using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Services;
+using Meridian.Strategies.Storage;
 using Microsoft.Extensions.Logging;
 
 namespace Meridian.Strategies.Live.Designer;
@@ -33,6 +34,8 @@ namespace Meridian.Strategies.Live.Designer;
 /// </remarks>
 public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
 {
+    internal const string RetainedArtifactParameterKey = "meridian.retainedStrategyArtifactId";
+    private readonly Meridian.Strategies.Artifacts.StrategyArtifactRegistry? _artifacts;
     /// <summary>Run parameter naming the designer document to activate.</summary>
     public const string DesignerDocumentParameterKey = "designerDocumentId";
 
@@ -48,6 +51,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
     private readonly StrategyDesignService _designService;
     private readonly ILogger<DesignerDocumentLiveSource>? _logger;
     private readonly TimeSpan _loadTimeout;
+    private readonly ScopedStrategyDesignStore? _scopedDesigns;
 
     /// <param name="repository">
     /// Design document store. Null on a host that composes the trading engine without the
@@ -61,12 +65,16 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         IStrategyDesignRepository? repository,
         StrategyDesignService designService,
         ILogger<DesignerDocumentLiveSource>? logger = null,
-        TimeSpan? loadTimeout = null)
+        TimeSpan? loadTimeout = null,
+        Meridian.Strategies.Artifacts.StrategyArtifactRegistry? artifacts = null,
+        ScopedStrategyDesignStore? scopedDesigns = null)
     {
         _repository = repository;
         _designService = designService ?? throw new ArgumentNullException(nameof(designService));
         _logger = logger;
         _loadTimeout = loadTimeout is { } timeout && timeout > TimeSpan.Zero ? timeout : DefaultLoadTimeout;
+        _scopedDesigns = scopedDesigns;
+        _artifacts = artifacts;
     }
 
     /// <inheritdoc/>
@@ -88,7 +96,16 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             return false;
         }
 
-        if (_repository is null)
+        var isVersioned = context.Parameters.ContainsKey(DesignerStrategyVersion.VersionKey);
+        var hasArtifact = context.Parameters.TryGetValue(RetainedArtifactParameterKey, out var artifactId);
+        if (hasArtifact && string.IsNullOrWhiteSpace(artifactId))
+        {
+            failureReason = "The Designer run has conflicting or incomplete retained strategy identity.";
+            return false;
+        }
+
+        if ((hasArtifact && _artifacts is null) || (isVersioned && _scopedDesigns is null) ||
+            (!hasArtifact && !isVersioned && _repository is null))
         {
             failureReason =
                 $"Run references designer document '{documentId}', but no strategy design repository is " +
@@ -96,7 +113,7 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             return false;
         }
 
-        var document = LoadDocument(documentId, out failureReason);
+        var document = LoadDocument(context, documentId, isVersioned, artifactId, out failureReason);
         if (document is null)
         {
             return false;
@@ -112,6 +129,18 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
         try
         {
             var normalized = _designService.Normalize(document);
+
+            if (isVersioned)
+            {
+                if (!DesignerStrategyVersion.Matches(normalized, context.Parameters))
+                {
+                    failureReason = "The retained Designer version does not match the approved executable inputs.";
+                    return false;
+                }
+
+                return TryCreatePaperStrategy(normalized, _designService.Validate(normalized), out strategy, out failureReason)
+                    && TryVerifyUniverse(context, documentId, normalized, out failureReason);
+            }
 
             if (!TryVerifyRevision(context, documentId, normalized, out failureReason))
             {
@@ -163,6 +192,29 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
 
         strategy = new DesignerDocumentStrategy(plan!, _logger);
         failureReason = null;
+        return true;
+    }
+
+    /// <summary>Compiles the same bounded closed-expression strategy for native replay and paper activation.</summary>
+    public static bool TryCreatePaperStrategy(
+        StrategyDesignDocument document,
+        StrategyDesignValidationResult validation,
+        out IBacktestStrategy? strategy,
+        out string? reason)
+    {
+        strategy = null;
+        if (!DesignerStrategyPlan.TryCompile(document, validation, out var plan, out reason))
+            return false;
+
+        if (plan!.Universe.Count != 1 || plan.Trade.Side != DesignerTradeSide.Long ||
+            plan.Trade.SizingMethod != DesignerSizingMethod.FixedShares || plan.EntryGates.Count == 0 ||
+            plan.RequiredFields.Any(static field => !string.Equals(field, "PRICE", StringComparison.OrdinalIgnoreCase)))
+        {
+            reason = "This Designer run requires one equity, a price filter, and fixed-share long sizing.";
+            return false;
+        }
+
+        strategy = new DesignerDocumentStrategy(plan);
         return true;
     }
 
@@ -292,7 +344,9 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
     private static string Shorten(string hash) =>
         hash.Length <= 12 ? hash : string.Concat(hash.AsSpan(0, 12), "...");
 
-    private StrategyDesignDocument? LoadDocument(string documentId, out string? failureReason)
+    private StrategyDesignDocument? LoadDocument(
+        LiveStrategyCreationContext context, string documentId, bool isVersioned, string? artifactId,
+        out string? failureReason)
     {
         try
         {
@@ -306,13 +360,22 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             // cooperative cancellation alone would let a stalled store block the promotion path
             // and the startup resume sweep indefinitely.
             var document = Task.Run(
-                    () => _repository!.GetAsync(documentId, timeout.Token),
+                    async () =>
+                    {
+                        if (artifactId is not null)
+                            return await LoadArtifactDocumentAsync(context, documentId, isVersioned, artifactId, timeout.Token)
+                                .ConfigureAwait(false);
+
+                        return isVersioned
+                            ? await LoadScopedRevisionAsync(context, documentId, timeout.Token).ConfigureAwait(false)
+                            : await _repository!.GetAsync(documentId, timeout.Token).ConfigureAwait(false);
+                    },
                     CancellationToken.None)
                 .WaitAsync(_loadTimeout)
                 .GetAwaiter()
                 .GetResult();
 
-            if (document is null)
+            if (document is null || !string.Equals(document.DocumentId, documentId, StringComparison.Ordinal))
             {
                 failureReason =
                     $"Designer document '{documentId}' was not found in the strategy design repository. " +
@@ -340,5 +403,68 @@ public sealed class DesignerDocumentLiveSource : IBacktestStrategyLiveSource
             _logger?.LogWarning(ex, "Failed to load designer document {DocumentId}", documentId);
             return null;
         }
+    }
+
+    private async Task<StrategyDesignDocument?> LoadArtifactDocumentAsync(
+        LiveStrategyCreationContext context, string documentId, bool isVersioned, string artifactId,
+        CancellationToken ct)
+    {
+        var artifact = await _artifacts!.GetAsync(artifactId, ct).ConfigureAwait(false);
+        if (artifact is null)
+            return null;
+        if (artifact.Route != Meridian.Strategies.Artifacts.StrategyAuthoringRoute.Designer ||
+            !string.Equals(artifact.StrategyId, context.StrategyId, StringComparison.Ordinal))
+            throw new InvalidOperationException("The retained artifact belongs to a different strategy or authoring route.");
+        if (!isVersioned)
+        {
+            if (artifact.Parameters.ContainsKey(DesignerStrategyVersion.VersionKey))
+                throw new InvalidOperationException("The scoped Designer artifact requires its retained version and paper authority.");
+            return artifact.DesignerDocument;
+        }
+
+        // A digest does not grant access to a draft. Resolve the current saved revision inside
+        // the run's tenant/company scope and require both retained identities to describe it.
+        var document = await LoadScopedRevisionAsync(context, documentId, ct).ConfigureAwait(false);
+        if (document is null)
+            return null;
+        if (!context.Parameters.TryGetValue(DesignerStrategyVersion.VersionKey, out var version) ||
+            !Meridian.Contracts.Integrity.Sha256Digest.IsCanonical(version) ||
+            !context.Parameters.TryGetValue(DesignerStrategyVersion.RealismKey, out var realismHash) ||
+            !Meridian.Contracts.Integrity.Sha256Digest.IsCanonical(realismHash))
+            throw new InvalidOperationException("The scoped Designer version or execution settings are missing.");
+        var expected = artifact with
+        {
+            SourceRevision = DesignerDocumentRevision.ComputeHash(document),
+            Parameters = new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [DesignerStrategyVersion.VersionKey] = version,
+                [DesignerStrategyVersion.RealismKey] = realismHash
+            },
+            Universe = document.Universe,
+            DataDependency = document.DatasetReference,
+            DesignerDocument = document
+        };
+        if (!string.Equals(expected.ComputeId(), artifactId, StringComparison.Ordinal))
+            throw new InvalidOperationException("The retained artifact conflicts with the scoped Designer version or executable inputs.");
+        return document;
+    }
+
+    private async Task<StrategyDesignDocument?> LoadScopedRevisionAsync(
+        LiveStrategyCreationContext context, string documentId, CancellationToken ct)
+    {
+        var scope = new StrategyRunRepositoryScope(
+            context.Parameters.GetValueOrDefault(DesignerStrategyVersion.TenantKey),
+            context.Parameters.GetValueOrDefault(DesignerStrategyVersion.CompanyKey));
+        if (!string.Equals(context.StrategyId, DesignerStrategyVersion.ComputeStrategyId(scope, documentId), StringComparison.Ordinal))
+            throw new InvalidOperationException("The Designer strategy identity differs from its retained tenant and company scope.");
+        var latest = await _scopedDesigns!.GetAsync(scope, documentId, revision: null, ct).ConfigureAwait(false);
+        if (latest is null)
+            return null;
+
+        if (!string.Equals(latest.Revision, context.Parameters.GetValueOrDefault(DesignerStrategyVersion.DraftRevisionKey),
+                StringComparison.Ordinal))
+            throw new InvalidOperationException("The saved design changed after review. Backtest the current revision.");
+
+        return latest;
     }
 }

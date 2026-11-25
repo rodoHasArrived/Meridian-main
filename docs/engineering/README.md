@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-10-31
+**Reviewed:** 2026-11-23
 
 This is the canonical developer and agent entrypoint for Meridian engineering and contribution work.
 
@@ -573,6 +573,14 @@ python3 build/scripts/docs/mark-stale-docs.py --write --summary
 ```
 
 ## Supporting Detail and Historical Sources
+
+Focused engineering references:
+
+- [C#/TypeScript Contract Parity](contract-type-parity.md) *(registry-driven structural parity gate and exemption ratchet)*
+- [Financial Values and Amount Passports](financial-value-pattern.md) *(browser `FinancialValue` entry point and scoped Amount passports)*
+- [Archive Compression and Replay Safety](archive-compression-replay-safety.md) *(recoverable `.jsonl` → `.jsonl.gz` publication protocol)*
+
+Supporting and historical sources:
 
 - [Development Guides](../development/README.md) *(active supporting implementation detail)*
 - [Desktop Testing Guide](../development/desktop-testing-guide.md) *(active supporting WPF detail)*

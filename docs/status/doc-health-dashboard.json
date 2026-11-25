@@ -1,11 +1,11 @@
 {
-  "total_files": 1290,
-  "orphaned_count": 396,
+  "total_files": 1301,
+  "orphaned_count": 392,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 85,
-  "signal_digest": "sha256:276a7bb5a69b126d18ec36d747fb07df4c7d9e7949217011348c752b2de59c39",
+  "signal_digest": "sha256:1e157162b5ad1bea9c99d07749c05ca14b689933baf192285b4ab7dd5a48fd69",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -340,11 +340,7 @@
     "docs/ai/claude/CLAUDE.roadmap-learning-log.md",
     "docs/ai/exports/LLM_CONTEXT.md",
     "docs/ai/model-routing-telemetry.md",
-    "docs/development/fund-account-traversal.md",
-    "docs/development/score-reason-taxonomy.md",
-    "docs/development/synthetic-provider-test-harness.md",
     "docs/docfx/api/index.md",
-    "docs/engineering/archive-compression-replay-safety.md",
     "docs/engineering/plans/review-remediation-2026-11-12.md",
     "docs/generated/desktop-user-manual.md",
     "docs/generated/interfaces.md",
@@ -2551,6 +2547,13 @@
       "stale": false
     },
     {
+      "path": "docs/engineering/financial-value-pattern.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/engineering/free-development-tools.md",
       "has_heading": true,
       "todo_count": 0,
@@ -2594,6 +2597,13 @@
     },
     {
       "path": "docs/engineering/plans/browser-workstation-ux-program.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/browser-workstation-ux-roadmap-2026-11.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -3231,6 +3241,13 @@
     },
     {
       "path": "docs/operators/bond-workflows.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/operators/book-receipt-queue.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -4637,6 +4654,27 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.contracts/page-080.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-081.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.contracts/page-082.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.core/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4798,6 +4836,13 @@
       "stale": false
     },
     {
+      "path": "docs/reference/source-api/meridian.execution/page-005.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/reference/source-api/meridian.financialoperations/page-001.md",
       "has_heading": true,
       "todo_count": 0,
@@ -4855,6 +4900,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.financialoperations/page-009.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.financialoperations/page-010.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -5114,6 +5166,13 @@
     },
     {
       "path": "docs/reference/source-api/meridian.reporting/page-004.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/reference/source-api/meridian.reporting/page-005.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",
@@ -6457,6 +6516,13 @@
       "stale": false
     },
     {
+      "path": "docs/testing/alpaca-corporate-action-coverage.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
       "path": "docs/testing/alpaca-paper-portfolio-sandbox.md",
       "has_heading": true,
       "todo_count": 0,
@@ -6605,6 +6671,13 @@
     },
     {
       "path": "docs/testing/evidence/next-work-20261029/accounting-expansion.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/testing/evidence/next-work-20261029/bond-lot-golden-case.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

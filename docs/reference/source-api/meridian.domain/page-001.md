@@ -313,31 +313,32 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static MarketEvent Trade(DateTimeOffset ts, string symbol, Trade trade, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:40](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L40) |  |
-| <code>public static MarketEvent L2Snapshot(DateTimeOffset ts, string symbol, LOBSnapshot snap, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:43](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L43) |  |
-| <code>public static MarketEvent BboQuote(DateTimeOffset ts, string symbol, BboQuotePayload quote, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:46](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L46) |  |
-| <code>public static MarketEvent L2SnapshotPayload(DateTimeOffset ts, string symbol, L2SnapshotPayload payload, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:49](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L49) |  |
-| <code>public static MarketEvent OrderFlow(DateTimeOffset ts, string symbol, OrderFlowStatistics stats, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:52](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L52) |  |
-| <code>public static MarketEvent Integrity(DateTimeOffset ts, string symbol, IntegrityEvent integrity, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:55](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L55) |  |
-| <code>public static MarketEvent DepthIntegrity(DateTimeOffset ts, string symbol, DepthIntegrityEvent integrity, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:58](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L58) |  |
-| <code>public static MarketEvent ResyncRequested(DateTimeOffset ts, string symbol, string reason, string source, string? streamId = null, string? venue = null, long seq = 0);</code> | [src/Meridian.Domain/Events/MarketEvent.cs:62](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L62) |  |
-| <code>public static MarketEvent Heartbeat(DateTimeOffset ts, string source) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:76](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L76) |  |
-| <code>public static MarketEvent HistoricalBar(DateTimeOffset ts, string symbol, HistoricalBar bar, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:79](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L79) |  |
-| <code>public static MarketEvent AggregateBar(DateTimeOffset ts, string symbol, Domain.Models.AggregateBar bar, string source, long seq = 0);</code> | [src/Meridian.Domain/Events/MarketEvent.cs:82](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L82) |  |
-| <code>public static MarketEvent OptionQuote(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionQuote quote, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:102](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L102) |  |
-| <code>public static MarketEvent OptionTrade(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionTrade trade, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:105](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L105) |  |
-| <code>public static MarketEvent OptionGreeks(DateTimeOffset ts, string symbol, GreeksSnapshot greeks, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:108](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L108) |  |
-| <code>public static MarketEvent OptionChain(DateTimeOffset ts, string underlyingSymbol, OptionChainSnapshot chain, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:111](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L111) |  |
-| <code>public static MarketEvent OpenInterest(DateTimeOffset ts, string symbol, OpenInterestUpdate oi, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:114](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L114) |  |
-| <code>public static MarketEvent OrderAdd(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderAdd order, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:117](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L117) |  |
-| <code>public static MarketEvent OrderModify(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderModify modify, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:120](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L120) |  |
-| <code>public static MarketEvent OrderCancel(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderCancel cancel, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:123](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L123) |  |
-| <code>public static MarketEvent OrderExecute(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderExecute execute, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:126](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L126) |  |
-| <code>public static MarketEvent OrderReplace(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderReplace replace, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:129](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L129) |  |
-| <code>public MarketEvent StampReceiveTime(DateTimeOffset? exchangeTs = null) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:136](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L136) | Stamps the event with wall-clock and monotonic receive timestamps. Call this at the earliest point when the event enters the system. |
-| <code>public string EffectiveSymbol =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:150](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L150) | Returns the effective symbol for downstream consumers: CanonicalSymbol when available, otherwise the raw Symbol. Use this property in storage paths, dedup keys, metrics labels, and quality monitoring to ensure consistent behavior regardless of canonicalization state. |
-| <code>public MarketEvent StampTraceContext(ActivityContext parentContext) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:156](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L156) | Stamps the event with trace context captured at ingress so downstream sinks, logs, and dead-letter flows can correlate records without relying on ambient Activity state. |
-| <code>public double? EstimatedLatencyMs { get; }</code> | [src/Meridian.Domain/Events/MarketEvent.cs:169](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L169) | Computes the estimated end-to-end latency in milliseconds using monotonic clock, or falls back to wall-clock difference if monotonic data is unavailable. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? BackfillRevisionId { get; init; }</code> | [src/Meridian.Domain/Events/MarketEvent.cs:42](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L42) | Content address of the retained backfill response that supplied this bar. |
+| <code>public static MarketEvent Trade(DateTimeOffset ts, string symbol, Trade trade, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:44](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L44) |  |
+| <code>public static MarketEvent L2Snapshot(DateTimeOffset ts, string symbol, LOBSnapshot snap, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:47](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L47) |  |
+| <code>public static MarketEvent BboQuote(DateTimeOffset ts, string symbol, BboQuotePayload quote, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:50](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L50) |  |
+| <code>public static MarketEvent L2SnapshotPayload(DateTimeOffset ts, string symbol, L2SnapshotPayload payload, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:53](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L53) |  |
+| <code>public static MarketEvent OrderFlow(DateTimeOffset ts, string symbol, OrderFlowStatistics stats, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:56](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L56) |  |
+| <code>public static MarketEvent Integrity(DateTimeOffset ts, string symbol, IntegrityEvent integrity, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:59](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L59) |  |
+| <code>public static MarketEvent DepthIntegrity(DateTimeOffset ts, string symbol, DepthIntegrityEvent integrity, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:62](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L62) |  |
+| <code>public static MarketEvent ResyncRequested(DateTimeOffset ts, string symbol, string reason, string source, string? streamId = null, string? venue = null, long seq = 0);</code> | [src/Meridian.Domain/Events/MarketEvent.cs:66](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L66) |  |
+| <code>public static MarketEvent Heartbeat(DateTimeOffset ts, string source) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:80](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L80) |  |
+| <code>public static MarketEvent HistoricalBar(DateTimeOffset ts, string symbol, HistoricalBar bar, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:83](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L83) |  |
+| <code>public static MarketEvent AggregateBar(DateTimeOffset ts, string symbol, Domain.Models.AggregateBar bar, string source, long seq = 0);</code> | [src/Meridian.Domain/Events/MarketEvent.cs:86](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L86) |  |
+| <code>public static MarketEvent OptionQuote(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionQuote quote, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:106](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L106) |  |
+| <code>public static MarketEvent OptionTrade(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OptionTrade trade, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:109](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L109) |  |
+| <code>public static MarketEvent OptionGreeks(DateTimeOffset ts, string symbol, GreeksSnapshot greeks, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:112](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L112) |  |
+| <code>public static MarketEvent OptionChain(DateTimeOffset ts, string underlyingSymbol, OptionChainSnapshot chain, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:115](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L115) |  |
+| <code>public static MarketEvent OpenInterest(DateTimeOffset ts, string symbol, OpenInterestUpdate oi, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:118](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L118) |  |
+| <code>public static MarketEvent OrderAdd(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderAdd order, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:121](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L121) |  |
+| <code>public static MarketEvent OrderModify(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderModify modify, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:124](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L124) |  |
+| <code>public static MarketEvent OrderCancel(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderCancel cancel, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:127](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L127) |  |
+| <code>public static MarketEvent OrderExecute(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderExecute execute, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:130](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L130) |  |
+| <code>public static MarketEvent OrderReplace(DateTimeOffset ts, string symbol, Contracts.Domain.Models.OrderReplace replace, string source, long seq = 0) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:133](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L133) |  |
+| <code>public MarketEvent StampReceiveTime(DateTimeOffset? exchangeTs = null) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:140](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L140) | Stamps the event with wall-clock and monotonic receive timestamps. Call this at the earliest point when the event enters the system. |
+| <code>public string EffectiveSymbol =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:154](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L154) | Returns the effective symbol for downstream consumers: CanonicalSymbol when available, otherwise the raw Symbol. Use this property in storage paths, dedup keys, metrics labels, and quality monitoring to ensure consistent behavior regardless of canonicalization state. |
+| <code>public MarketEvent StampTraceContext(ActivityContext parentContext) =&gt; …;</code> | [src/Meridian.Domain/Events/MarketEvent.cs:160](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L160) | Stamps the event with trace context captured at ingress so downstream sinks, logs, and dead-letter flows can correlate records without relying on ambient Activity state. |
+| <code>public double? EstimatedLatencyMs { get; }</code> | [src/Meridian.Domain/Events/MarketEvent.cs:173](../../../../src/Meridian.Domain/Events/MarketEvent.cs#L173) | Computes the estimated end-to-end latency in milliseconds using monotonic clock, or falls back to wall-clock difference if monotonic data is unavailable. |
 
 ## MarketEventPayload
 
@@ -591,6 +592,11 @@ Declared public members:
 | <code>public string? ExternalTransactionId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:138](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L138) | The broker/custodian transaction identifier, used for exact transaction matching. |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? MarketValue { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:146](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L146) | Custodian-stated market value of a holding, when the source states it. Required for bonds, whose quantity is face and whose price is quoted per 100 face, so quantity x price is not value. Omitted from serialized rows when absent so retained imports keep their content. |
 | <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public decimal? AccruedInterest { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:153](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L153) | Custodian-stated accrued interest on a holding (absolute amount in Currency), reconciled against Meridian&#x27;s accrued interest receivable. Null when the source states none. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? RelatedTransactionId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:157](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L157) | The source payment identity linked by a retained reversal. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? SecurityId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:161](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L161) | Explicit canonical instrument identity supplied by the source mapping. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ReceiptAllocations { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:165](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L165) | Source allocation JSON; every positive leg identifies one obligation or projected flow. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public string? ObligationKey { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:169](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L169) | Source identity for a payment allocated to one obligation. |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public Guid? ProjectedCashFlowId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:173](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L173) | Accepted projected flow identity for a payment allocated to one obligation. |
 
 ## DataSourceSnapshot
 
@@ -733,7 +739,7 @@ public sealed record NormalizedStatementRow(string RowId, StatementRowKind Kind,
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationBreakClassifications</code>. Kind: `class`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:288](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L288).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:308](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L308).
 
 Machine-readable break classifications carried on ReconciliationBreakRecord.Classification.
 
@@ -745,13 +751,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const string InternalTransactionPopulationUnavailable = &quot;internal-transaction-population-unavailable&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:295](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L295) | Statement transaction matching ran against an empty internal ledger-transaction population, so every statement movement is structurally unmatched. Breaks carrying this classification are informational only: they stay visible for operator review but must not block close outputs. |
+| <code>public const string InternalTransactionPopulationUnavailable = &quot;internal-transaction-population-unavailable&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:315](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L315) | Statement transaction matching ran against an empty internal ledger-transaction population, so every statement movement is structurally unmatched. Breaks carrying this classification are informational only: they stay visible for operator review but must not block close outputs. |
 
 ## ReconciliationBreakExplanation
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationBreakExplanation</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:200](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L200).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:220](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L220).
 
 ```csharp
 public sealed record ReconciliationBreakExplanation(string Summary, IReadOnlyList<string> SourceSystems, string ProbableCause, string LedgerImpact, string SuggestedNextAction, string RequiredSignoffRole, IReadOnlyList<string> EvidenceLinks);
@@ -761,7 +767,7 @@ public sealed record ReconciliationBreakExplanation(string Summary, IReadOnlyLis
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationBreakRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:241](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L241).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:261](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L261).
 
 ```csharp
 public sealed record ReconciliationBreakRecord(string BreakId, string RunId, string ImportId, string SourceReference, string BreakCode, string Category, decimal Delta, decimal Tolerance, bool ToleranceBreached, DateTimeOffset CreatedAtUtc, string Status)
@@ -771,14 +777,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? EvidenceLink { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:254](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L254) |  |
-| <code>public string? Classification { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:260](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L260) | Optional machine-readable classification qualifying how the break should be governed. null for an ordinary break. See ReconciliationBreakClassifications. |
+| <code>public string? EvidenceLink { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:274](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L274) |  |
+| <code>public string? Classification { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:280](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L280) | Optional machine-readable classification qualifying how the break should be governed. null for an ordinary break. See ReconciliationBreakClassifications. |
 
 ## ReconciliationCase
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCase</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:156](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L156).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:176](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L176).
 
 ```csharp
 public sealed record ReconciliationCase(string CaseId, string ImportId, string Status, string Reason, decimal Confidence, string Rationale, DateTimeOffset CreatedAtUtc, IReadOnlyList<ReconciliationCaseHistoryEntry> History)
@@ -788,27 +794,27 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Owner { get; init; } = &quot;unassigned&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:166](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L166) |  |
-| <code>public string Priority { get; init; } = &quot;Normal&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:167](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L167) |  |
-| <code>public DateTimeOffset? DueAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:168](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L168) |  |
-| <code>public DateTimeOffset? SlaBreachedAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:169](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L169) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseCommentThread&gt; CommentThreads { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:170](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L170) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseAuditEvent&gt; AuditEvents { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:171](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L171) |  |
-| <code>public ReconciliationResolutionMetadata? Resolution { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:172](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L172) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:173](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L173) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseDecisionNote&gt; DecisionNotes { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:174](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L174) |  |
-| <code>public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:175](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L175) |  |
-| <code>public string LastUpdatedBy { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:176](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L176) |  |
-| <code>public string Disposition { get; init; } = &quot;Open&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:177](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L177) |  |
-| <code>public int AgingDays { get; init; } = 0;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:178](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L178) |  |
-| <code>public IReadOnlyList&lt;ReconciliationCaseAttachment&gt; Attachments { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:179](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L179) |  |
-| <code>public ReconciliationBreakExplanation? BreakExplanation { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:180](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L180) |  |
+| <code>public string Owner { get; init; } = &quot;unassigned&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:186](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L186) |  |
+| <code>public string Priority { get; init; } = &quot;Normal&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:187](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L187) |  |
+| <code>public DateTimeOffset? DueAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:188](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L188) |  |
+| <code>public DateTimeOffset? SlaBreachedAtUtc { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:189](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L189) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseCommentThread&gt; CommentThreads { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:190](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L190) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseAuditEvent&gt; AuditEvents { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:191](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L191) |  |
+| <code>public ReconciliationResolutionMetadata? Resolution { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:192](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L192) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceReferences { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:193](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L193) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseDecisionNote&gt; DecisionNotes { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:194](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L194) |  |
+| <code>public DateTimeOffset LastUpdatedAtUtc { get; init; } = CreatedAtUtc;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:195](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L195) |  |
+| <code>public string LastUpdatedBy { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:196](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L196) |  |
+| <code>public string Disposition { get; init; } = &quot;Open&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:197](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L197) |  |
+| <code>public int AgingDays { get; init; } = 0;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:198](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L198) |  |
+| <code>public IReadOnlyList&lt;ReconciliationCaseAttachment&gt; Attachments { get; init; } = [];</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:199](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L199) |  |
+| <code>public ReconciliationBreakExplanation? BreakExplanation { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:200](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L200) |  |
 
 ## ReconciliationCaseAttachment
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseAttachment</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:191](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L191).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:211](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L211).
 
 ```csharp
 public sealed record ReconciliationCaseAttachment(string AttachmentId, string EvidenceKind, string SourceSystem, string SourceReference, string ContentHash, string? Route, DateTimeOffset AttachedAtUtc);
@@ -818,7 +824,7 @@ public sealed record ReconciliationCaseAttachment(string AttachmentId, string Ev
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseAuditEvent</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:187](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L187).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:207](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L207).
 
 ```csharp
 public sealed record ReconciliationCaseAuditEvent(string EventId, string EventType, DateTimeOffset OccurredAtUtc, string Actor, string Detail);
@@ -828,7 +834,7 @@ public sealed record ReconciliationCaseAuditEvent(string EventId, string EventTy
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseComment</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:185](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L185).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:205](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L205).
 
 ```csharp
 public sealed record ReconciliationCaseComment(string CommentId, string Body, string Actor, DateTimeOffset CreatedAtUtc, string? ParentCommentId = null);
@@ -838,7 +844,7 @@ public sealed record ReconciliationCaseComment(string CommentId, string Body, st
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseCommentThread</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:183](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L183).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:203](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L203).
 
 ```csharp
 public sealed record ReconciliationCaseCommentThread(string ThreadId, string Subject, IReadOnlyList<ReconciliationCaseComment> Comments);
@@ -848,7 +854,7 @@ public sealed record ReconciliationCaseCommentThread(string ThreadId, string Sub
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseDecisionNote</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:209](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L209).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:229](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L229).
 
 ```csharp
 public sealed record ReconciliationCaseDecisionNote(string DecisionNoteId, string Actor, DateTimeOffset CreatedAtUtc, string Note, IReadOnlyList<string> EvidenceReferences);
@@ -868,7 +874,7 @@ public sealed record ReconciliationCaseEvent(DateTimeOffset OccurredAtUtc, strin
 
 Qualified name: <code>Meridian.Domain.Reconciliation.ReconciliationCaseHistoryEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:216](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L216).
+Source: [src/Meridian.Domain/Reconciliation/StatementEntities.cs:236](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L236).
 
 ```csharp
 public sealed record ReconciliationCaseHistoryEntry(DateTimeOffset TimestampUtc, string FromStatus, string ToStatus, string Note)
@@ -878,5 +884,5 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string Actor { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:222](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L222) |  |
-| <code>public string? EvidenceId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:223](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L223) |  |
+| <code>public string Actor { get; init; } = &quot;system&quot;;</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:242](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L242) |  |
+| <code>public string? EvidenceId { get; init; }</code> | [src/Meridian.Domain/Reconciliation/StatementEntities.cs:243](../../../../src/Meridian.Domain/Reconciliation/StatementEntities.cs#L243) |  |

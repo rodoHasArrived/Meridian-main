@@ -166,6 +166,7 @@ public static class UiEndpoints
         app.MapProviderRoutingEndpoints(jsonOptions);
         app.MapPlaidEndpoints(jsonOptions);
         app.MapAccountingSystemEndpoints(jsonOptions);
+        app.MapExternalGlPostingEndpoints(jsonOptions);
         app.MapOnboardingEndpoints(jsonOptions);
         app.MapPortfolioImportEndpoints();
 
@@ -243,6 +244,7 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapSecurityInstrumentTermsEndpoints(jsonOptions);
         app.MapBondReferenceEndpoints(jsonOptions);
         app.MapBondReferencePagingEndpoints(jsonOptions);
         app.MapBondAnalyticsEndpoints(jsonOptions);

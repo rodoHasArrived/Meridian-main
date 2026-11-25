@@ -59,6 +59,7 @@ export interface CommandPaletteItem {
   keywords?: readonly string[];
   /** Set for runnable action items; the component resolves the handler by item id. */
   action?: { actionId: string; confirm: boolean } | null;
+  recordId?: string;
   active: boolean;
 }
 
@@ -113,7 +114,8 @@ export interface CommandPaletteEntityItem {
   label: string;
   description: string;
   route: string;
-  sourceLabel: "Symbol" | "Security";
+  sourceLabel: string;
+  recordId?: string;
   commandLabel: string;
   ariaLabel: string;
   statusLabel?: string | null;
@@ -217,7 +219,8 @@ export function buildCommandPaletteViewModel(
   });
   const focusItems = buildFocusItems(workflowData.operatorFocusItems ?? [], pathname, operatingScope);
   const actionItems = buildActionItems(workflowData.actionItems ?? []);
-  const entityItems = buildEntityItems(workflowData.entityItems ?? [], pathname);
+  const normalizedQuery = query.trim();
+  const entityItems = normalizedQuery ? buildEntityItems(workflowData.entityItems ?? [], pathname) : [];
   const workspaceItems = buildWorkspaceItems(visibleWorkspaces, activeKey, operatingScope, activeRouteParts.search);
   const routeItems = buildRouteItems(pathname, operatingScope);
   const presetItems = buildPresetItems(workflowData.workflowPresets?.presets ?? [], pathname, operatingScope);
@@ -227,7 +230,6 @@ export function buildCommandPaletteViewModel(
   const recentItems = buildSavedPageItems("recent", (workflowData.recentPages ?? []).filter((page) => !pinnedRoutes.has(page.route)), pathname)
     .filter((item) => !item.active);
   const items = [...pinnedItems, ...recentItems, ...focusItems, ...actionItems, ...entityItems, ...workspaceItems, ...routeItems, ...presetItems, ...workflowItems];
-  const normalizedQuery = query.trim();
   const filteredItems = filterCommandItems(items, normalizedQuery);
   const commandGroups = buildCommandPaletteGroups(filteredItems);
   const hasWorkflowBackend = Boolean(
@@ -296,7 +298,7 @@ export function buildCommandPaletteViewModel(
     items,
     query,
     searchInputLabel: "Search command palette",
-    searchPlaceholder: "Go to route, action, evidence...",
+    searchPlaceholder: "Go to route, action, or record...",
     searchDescribedBy: emptyState
       ? `${COMMAND_PALETTE_FILTER_COUNT_ID} ${emptyState.detailId}`
       : COMMAND_PALETTE_FILTER_COUNT_ID,
@@ -392,7 +394,7 @@ function buildEntitySearchStatusLabel(
   status: NonNullable<CommandPaletteWorkflowData["entitySearchStatus"]>,
   error: string | null
 ) {
-  if (normalizedQuery.length < 2) {
+  if (!normalizedQuery) {
     return null;
   }
 
@@ -416,7 +418,10 @@ function buildEntitySearchStatusLabel(
 }
 
 export function buildCommandPaletteGroups(items: CommandPaletteItem[]): CommandPaletteGroup[] {
-  return COMMAND_KIND_ORDER
+  const order = items.some((item) => item.recordId)
+    ? ["entity" as const, ...COMMAND_KIND_ORDER.filter((kind) => kind !== "entity")]
+    : COMMAND_KIND_ORDER;
+  return order
     .map((kind) => {
       const groupItems = items.filter((item) => item.kind === kind);
       const label = COMMAND_KIND_LABELS[kind];
@@ -601,8 +606,9 @@ function buildEntityItems(
       label: entity.label,
       description: entity.description,
       route: entity.route,
-      routeLabel: entity.route,
-      statusLabel: active ? "Current" : entity.statusLabel ?? entity.sourceLabel,
+      routeLabel: entity.recordId ? entity.sourceLabel : entity.route,
+      recordId: entity.recordId,
+      statusLabel: active && !entity.recordId ? "Current" : entity.statusLabel ?? entity.sourceLabel,
       statusTone: active ? "current" : "neutral",
       statusVisible: true,
       commandLabel: entity.commandLabel,
@@ -863,6 +869,10 @@ function filterCommandItems(items: CommandPaletteItem[], query: string) {
   }
 
   return items.filter((item) => {
+    if (item.recordId) {
+      return true;
+    }
+
     const haystack = [
       item.kind,
       item.label,

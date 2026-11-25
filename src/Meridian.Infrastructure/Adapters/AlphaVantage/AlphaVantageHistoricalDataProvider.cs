@@ -21,8 +21,8 @@ namespace Meridian.Infrastructure.Adapters.AlphaVantage;
 /// Free tier: 25 requests/day (severely limited), 5 calls/minute.
 /// Extends BaseHistoricalDataProvider for common functionality.
 /// </summary>
-[DataSource("alphavantage", "Alpha Vantage (free tier)", DataSourceType.Historical, DataSourceCategory.Free,
-    Priority = 25, Description = "Free tier historical OHLCV data via Alpha Vantage API")]
+[DataSource("alphavantage", "Alpha Vantage", DataSourceType.Historical, DataSourceCategory.Free,
+    Priority = 25, Description = "Historical OHLCV data via Alpha Vantage API")]
 [ImplementsAdr("ADR-001", "Alpha Vantage historical data provider implementation")]
 [ImplementsAdr("ADR-004", "All async methods support CancellationToken")]
 [ImplementsAdr("ADR-005", "Attribute-based provider discovery")]
@@ -43,7 +43,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
         : _rateLimiterRegistry.GetOrCreate(Name, _apiKey, "api-requests", _quotaBudget!);
 
     public override string Name => "alphavantage";
-    public override string DisplayName => "Alpha Vantage (free tier)";
+    public override string DisplayName => "Alpha Vantage";
     public override string Description => "US equities with unique intraday historical data support. Default free profile: 25 requests/day.";
     protected override string HttpClientName => HttpClientNames.AlphaVantageHistorical;
 
@@ -146,10 +146,8 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             if (IsRateLimitResponse(json))
             {
                 Log.Warning("Alpha Vantage rate limit hit for {Symbol}. Message in response.", symbol);
-                throw new RateLimitException(
-                    $"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.",
-                    provider: Name,
-                    symbol: symbol);
+                throw CreateRateLimitException(
+                    $"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.", symbol);
             }
 
             if (json.Contains("\"Error Message\""))
@@ -214,10 +212,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             // Alpha Vantage returns 200 OK with error/rate limit messages in body
             if (IsRateLimitResponse(json))
             {
-                throw new RateLimitException(
-                    $"Alpha Vantage rate limit exceeded for {symbol}",
-                    provider: Name,
-                    symbol: symbol);
+                throw CreateRateLimitException($"Alpha Vantage rate limit exceeded for {symbol}", symbol);
             }
 
             if (json.Contains("\"Error Message\""))

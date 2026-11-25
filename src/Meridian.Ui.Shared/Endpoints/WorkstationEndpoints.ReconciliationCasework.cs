@@ -12,6 +12,19 @@ namespace Meridian.Ui.Shared.Endpoints;
 
 public static partial class WorkstationEndpoints
 {
+    private static ReconciliationBreakQueueItem ProjectCaseCommandAvailability(
+        ReconciliationBreakQueueItem item,
+        HttpContext context)
+        => item with
+        {
+            PermittedCommands = FileReconciliationBreakQueueRepository.GetPermittedCommands(
+                item,
+                ResolveCurrentActor(context),
+                CanMutateReconciliationBreakQueue(context),
+                EndpointAuthorization.DeriveActionOriginFromPrincipal(context) == OperationsActionOriginDto.HumanOperator,
+                HasGovernedWorkflowReopenPermission(context))
+        };
+
     private static async Task<IResult> ApplyReconciliationCaseworkEndpointAsync(
         string breakId,
         ReconciliationCaseworkCommand request,
@@ -97,7 +110,7 @@ public static partial class WorkstationEndpoints
             return Results.BadRequest(new { error = "Idempotency key is required." });
         }
 
-        if (request.BreakIds.Count > request.MaxCaseCount)
+        if (request.BreakIds is null || request.BreakIds.Count > request.MaxCaseCount)
         {
             return Results.BadRequest(new { error = $"Bulk action exceeds max case count {request.MaxCaseCount}." });
         }
@@ -124,6 +137,7 @@ public static partial class WorkstationEndpoints
                 ? currentUser
                 : request.Assignee,
             AssignToCurrentOperator = false,
+            RequireReviewedPreview = !request.DryRun,
             // Derived from the principal -- see the single-case handler above (#2673).
             ActionOrigin = EndpointAuthorization.DeriveActionOriginFromPrincipal(context),
             ApprovalActor = NormalizeOptional(request.ApprovalActor),

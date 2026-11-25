@@ -55,14 +55,18 @@ Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the exi
 `quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
 `service-backed-integrations.yml` implementation used by Production Certification. The
 always-reported `integration-gate` companion requires success and fails for failed, cancelled
-or skipped integration execution. It runs without path filters on pull requests (including
-forks), merge groups, main pushes and manual/reusable calls.
+or skipped integration execution, with one exception: a pull request that the `changes` job
+successfully classifies as documentation-only skips the integration job, as it already skips
+`verify-dotnet`, and the gate accepts exactly that skip. It uses no path filters; main pushes,
+merge groups and manual/reusable calls always classify as requiring the tests.
 
 The shared implementation uses the certification `postgres:17` service, health checks and
 eight domain connection strings. The database and credentials are disposable within each
 job; no production secrets or privileged PR event are used. Checkout uses the event SHA with
 credentials persistence disabled and `contents: read`. Meridian, Direct Lending and Demo project
-restores and test runs are attempted independently, so one failure cannot hide another result. TRX validation
+restores and test runs are attempted independently, so one failure cannot hide another result. The
+Meridian suite is built once and run as two concurrent processes (see the November 25 record
+below). TRX validation
 runs after failures and rejects missing required suite prefixes, failed/skipped/unknown
 outcomes and every file with zero discovered tests. Coverage and schema evidence retain the
 existing certification artifact contract (90 days); CI companion evidence is retained 14 days.
@@ -430,6 +434,96 @@ that includes distinct subjects, refs and commits. This is not a durable FIFO qu
 who need every request executed must wait for completion before submitting the next.
 Production certification and release serialization retain their existing policies.
 
+### Critical-path restructuring — November 25, 2026
+
+Job timings from pull-request run
+[45483483086](https://github.com/rodoHasArrived/Meridian-main/actions/runs/45483483086)
+(31 minutes to `quality-gate`) showed that the gate's length was scheduling, not work:
+`verify-dotnet` (17 minutes) declared `needs: verify-browser` (13 minutes) only to obtain
+the workstation bundle; its 11.75 minutes of tests ran as about 1,420 process-seconds
+through two processes on one runner; and about 11 of the browser lane's 13 minutes were 84
+sequential ten-second Vitest batches. The changes below follow from those observations;
+none removes or narrows a validation.
+
+- **`build-workstation`** builds and validates the bundle with
+  `build/scripts/ensure-workstation-assets.py` and uploads it by immutable artifact ID. The
+  .NET shards consume it and start without waiting for browser tests. The browser lane still
+  builds, validates and retains its own bundle, and `quality-gate` still requires both lanes.
+- **`dotnet-shards`** runs the unchanged roster on two runners, each a complete
+  `scripts/ci.sh --lane verify-dotnet` restricted to a deterministic slice by
+  `MERIDIAN_CI_DOTNET_SHARD`. Shard 1 owns formatting, ratchets and the web-host build.
+- **`browser-shards`** runs the unchanged test files on two runners, each a complete
+  `scripts/ci.sh --lane verify-browser` restricted by `MERIDIAN_CI_BROWSER_SHARD`. Shard 1
+  owns lint, the strict typecheck and the production bundle.
+- **`verify-dotnet` and `verify-browser`** keep their names, their evidence artifact names
+  and their places in `quality-gate`. Each is now the verdict over its shards and fails
+  unless they together ran the complete roster, or every test file, exactly once.
+- **Pipeline Budget Benchmark** cancels the superseded run when a pull request receives a
+  newer push. Main pushes and manual dispatches still run to completion.
+
+This is runner fan-out, not the process-count or batch-size promotion governed below: every
+.NET runner keeps two test processes, Vitest keeps two workers and eight files per batch,
+and `tests/xunit.runner.json` is unchanged.
+
+**Shard counts are deliberately two.** A lane cannot finish before its longest test process
+(about 360 seconds for `core-ui-workstation-endpoints-map`), and two runners with two
+processes each already reach that floor; a third .NET runner would repeat the restore and
+build for no gain. Each additional shard repeats setup (about four minutes of restore and
+build for .NET, under a minute of install for the browser lane).
+
+**Fan-out helps only when runners are available.** While this change was prepared, the
+account had about 120 queued and 16 running workflow runs across roughly twenty open pull
+requests, and this change's own jobs waited in the queue. Under that saturation, run latency
+is set by total runner-seconds demanded, which this change raises slightly, not by any one
+run's critical path. A run that needs .NET now occupies up to five runners at once in these
+lanes instead of two, plus `build-workstation` and two short verdict jobs. If queueing
+dominates again, set a lane's `shard` matrix, its `K/N` suffix, its outputs and
+`--expected-shards` back to one together; the workflow contract tests keep them consistent.
+Rollback is reverting this change. The expected gate time is an estimate from one run until
+post-merge runs are measured.
+
+**Integration lane.** `service-backed-integrations` took 19 minutes in the same run: a
+five-minute build and one 11.5-minute `Meridian.Tests` step. Its TRX showed 1,290
+test-seconds, of which one class, `Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests`
+(196 tests), took 445; xUnit runs a class serially, so that class alone was two thirds of
+the step's wall time. Two changes follow.
+
+- The suite now runs as two complementary processes declared once in
+  `integration_evidence.MERIDIAN_PROCESSES`: that class against a second database,
+  `meridian_tax_lot`, and every other test against `meridian`. The project is built once;
+  `run-meridian-integrations.py` gives the second process a copy of the built output, because
+  the coverage collector instruments assemblies in place, plus a private temporary directory
+  and rewritten connection strings. The receipt requires TRX and coverage from both
+  processes, rejects a test that ran in the wrong process, and requires schema evidence for
+  both databases. Expected test time is about 7.5 minutes (estimate; the class remains the
+  floor), for a job of about 15.
+- Documentation-only pull requests skip the job through the existing change classification.
+
+The schema evidence deserves a separate note. In the measured run the retained
+`database-table-inventory.csv` and `migration-ledger-inventory.csv` held only their header
+rows and `database-schema.sql` contained no `CREATE TABLE`: the tests create and remove
+their own schemas, so the dump records an empty database. Splitting the suite across two
+databases therefore changes the file set, not what the evidence proves. Whether
+certification should instead dump a freshly migrated database is an open owner decision
+that this change does not make.
+
+**Shard counts set to one — November 25, 2026.** After the change merged, none of the 40
+most recent Meridian CI runs (10:38 to 13:11 UTC) had completed: every run was cancelled,
+queued or pending, and the merge commit's own run was superseded before it started. With
+no free runner, a second shard buys no wall-clock time and repeats setup, so both lanes now
+run one shard. `build-workstation`, the verdict jobs, the two-process integration suite and
+the documentation-only skip are unchanged, and `quality-gate` no longer waits for browser
+tests before starting .NET. Restore two shards per lane, as described above, once runs start
+within a minute or two of being created.
+
+Two causes were visible and neither is addressed here. Pushes outpaced the queue: `main`
+received five pushes in about thirty minutes, each cancelling the previous run. And a
+cancelled run does not release its concurrency group until its `if: always()` gate jobs
+have themselves obtained a runner, so each supersession costs a full queue wait before the
+next run for that branch can start. The verdict jobs added on November 25 are two more such
+jobs per run. Skipping gates on cancellation is not a safe fix, because GitHub treats a
+skipped required check as passing.
+
 ### Benchmark promotion criteria
 
 Hosted defaults remain two .NET test processes and eight browser files per batch; local .NET
@@ -498,6 +592,20 @@ observations, including their earlier attempts. These targets are separate from 
 five-pair concurrency adoption rule. Insufficient, incomplete or unmatched samples produce an
 unevaluated target, never a savings claim. Failed and cancelled final outcomes remain separately
 visible and cannot enter successful performance cohorts.
+
+## Unimplemented-surface register
+
+`build/scripts/ci/check-unimplemented-surfaces.py` runs in the workflows lane next to the test
+skip register. A route or task that refuses honestly because nothing implements it is an
+unimplemented surface. That covers `ApiProblemDetails.NotImplemented(...)`, a
+`BuildNotImplementedResult(...)` maintenance task, or a 501 whose title or detail says "not
+implemented". The source file of each one must be listed as `evidence.path` on a roadmap row in
+`docs/roadmap/data/roadmap-items.yml`. Otherwise it needs an entry with a reason in
+`build/scripts/ci/unimplemented-surface-baseline.json`.
+
+A 501 returned only because an optional service is not registered is a host configuration
+refusal and is out of scope. Baseline entries that stop matching, or that a roadmap row now
+covers, fail the gate. Removing an entry from the baseline needs a roadmap row first.
 
 ## Review sequence and rollback
 

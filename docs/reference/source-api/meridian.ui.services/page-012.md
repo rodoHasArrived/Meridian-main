@@ -6,6 +6,149 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAllocationEditor
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyAllocationEditor</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:264](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L264).
+
+```csharp
+public sealed class IntercompanyAllocationEditor : ObservableObject
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string EntityId { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:267](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L267) |  |
+| <code>public string Percent { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs:268](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyAgreementWorkspace.StructuredTerms.cs#L268) |  |
+
+## IntercompanyBalanceConfirmationRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationRow</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:263](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L263).
+
+One retained confirmation as seen from the loaded book; amounts are the server&#x27;s exact decimals.
+
+```csharp
+public sealed class IntercompanyBalanceConfirmationRow(IntercompanyBalanceConfirmationDto confirmation, Guid book)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyBalanceConfirmationDto Confirmation { get; } = confirmation;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:265](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L265) |  |
+| <code>public Guid ConfirmationId =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:266](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L266) |  |
+| <code>public long Version =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:267](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L267) |  |
+| <code>public string BalanceDigest =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:268](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L268) |  |
+| <code>public IntercompanyBalanceConfirmationStatusDto Status =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:269](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L269) |  |
+| <code>public IntercompanyBalanceConfirmationPartyDto ThisBookParty =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:270](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L270) |  |
+| <code>public string Profile =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:272](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L272) |  |
+| <code>public string StatusText =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:273](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L273) |  |
+| <code>public string PartyOne =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:282](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L282) |  |
+| <code>public string PartyTwo =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:283](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L283) |  |
+| <code>public string Net =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:284](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L284) |  |
+| <code>public string History =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:285](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L285) |  |
+| <code>public bool CanConfirm =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:287](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L287) |  |
+| <code>public bool CanDispute =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:290](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L290) |  |
+
+## IntercompanyBalanceConfirmationWorkspace
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyBalanceConfirmationWorkspace</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:12](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L12).
+
+The loaded book&#x27;s opt-in confirmation close policy (ADR-032), over the same routes as the browser. Without an active policy, confirmation stays advisory; one operator proposes the blocking findings and a different one approves.
+
+```csharp
+public sealed partial class IntercompanyBalanceConfirmationWorkspace
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;IntercompanyClosePolicyCodeChoice&gt; BlockingCodeChoices { get; } = [..new (string Code, string Label)[] { (&quot;not-proposed&quot;, &quot;No confirmation proposed&quot;), (&quot;awaiting-confirmation&quot;, &quot;Awaiting the other side&quot;), (&quot;disputed&quot;, &quot;Disputed&quot;), (&quot;balances-changed&quot;, &quot;Balances changed since confirmation&quot;), (&quot;resolved-awaiting-proposal&quot;, &quot;Resolved, awaiting a new proposal&quot;) }.Select(item =&gt; new IntercompanyClosePolicyCodeChoice(item.Code, item.Label, item.Code == &quot;disputed&quot;))];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L20) | Findings a policy may make blocking; &quot;disputed&quot; is preselected. |
+| <code>public string ClosePolicyReason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:25](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L25) |  |
+| <code>public string ClosePolicyText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:27](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L27) | The loaded book&#x27;s policy position in words. |
+| <code>public IntercompanyConfirmationClosePolicyDto? OpenClosePolicy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:29](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L29) | The book&#x27;s proposed or active policy, if any. |
+| <code>public IAsyncRelayCommand ProposeClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L30) |  |
+| <code>public IAsyncRelayCommand ApproveClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L32) |  |
+| <code>public IAsyncRelayCommand RejectClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:34](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L34) |  |
+| <code>public IAsyncRelayCommand DisableClosePolicyCommand =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs:36](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs#L36) |  |
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:17](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L17).
+
+Desktop state for reciprocal intercompany balance confirmation over the routes the browser uses. Balances are pinned by the server from posted journals; this book&#x27;s operator confirms or disputes only this book&#x27;s side. Confirmation is advisory unless the book adopts a reviewed close policy (ADR-032, see the ClosePolicy part); nothing is calculated here.
+
+```csharp
+public sealed partial class IntercompanyBalanceConfirmationWorkspace : ObservableObject, IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyBalanceConfirmationWorkspace(IWorkstationIntercompanyAgreementApiClient client);</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L32) |  |
+| <code>public ObservableCollection&lt;IntercompanyBalanceConfirmationRow&gt; Confirmations { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:47](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L47) |  |
+| <code>public ObservableCollection&lt;string&gt; Findings { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:48](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L48) |  |
+| <code>public ObservableCollection&lt;IntercompanyChoiceRow&gt; Profiles { get; } = [];</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:50](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L50) | Approved accounting profiles that map the loaded book on the loaded date. |
+| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:51](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L51) |  |
+| <code>public IAsyncRelayCommand ProposeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:52](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L52) |  |
+| <code>public IAsyncRelayCommand ConfirmCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:53](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L53) |  |
+| <code>public IAsyncRelayCommand DisputeCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L54) |  |
+| <code>public IAsyncRelayCommand ResolveCommand { get; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:55](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L55) |  |
+| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:56](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L56) |  |
+| <code>public bool CanManageLedger { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:57](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L57) |  |
+| <code>public string PermissionNote =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:58](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L58) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:61](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L61) |  |
+| <code>public string SummaryText { get; private set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:63](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L63) | The advisory position, stated as advisory: close eligibility is unchanged. |
+| <code>public string LedgerBook { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:64](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L64) |  |
+| <code>public string AsOf { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:66](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L66) | Confirmation date (yyyy-MM-dd), normally the period end. |
+| <code>public string Reason { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:67](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L67) |  |
+| <code>public string SelectedProfile { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:68](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L68) |  |
+| <code>public IntercompanyBalanceConfirmationRow? SelectedConfirmation { get; set; }</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:69](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L69) |  |
+| <code>public void ResetSession();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:211](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L211) | Clear prior-session evidence and invalidate every outstanding response on account changes. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:224](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L224) |  |
+
+## IntercompanyChoice
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyChoice</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:30](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L30).
+
+One selectable identifier with a readable label. The selection list is a convenience over shared reads: the bound value is the identifier the command sends, and the server remains the authority for it.
+
+```csharp
+public sealed record IntercompanyChoice(string Id, string Label)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs:32](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationIntercompanyAgreementApiClient.Choices.cs#L32) |  |
+
+## IntercompanyChoiceRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyChoiceRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:257](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L257).
+
+One selectable identifier with a readable label.
+
+```csharp
+public sealed record IntercompanyChoiceRow(string Id, string Label)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs:259](../../../../src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.cs#L259) |  |
+
 ## IntercompanyClosePolicyCodeChoice
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IntercompanyClosePolicyCodeChoice</code>. Kind: `class`.
@@ -472,7 +615,7 @@ Qualified name: <code>Meridian.Ui.Services.Services.Accounting.IWorkstationFisca
 
 Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:11](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L11).
 
-Shared read of the governed fiscal-year close plan (W12-YEND-001). The server derives the plan from retained close snapshots; workstations present it and never recompute balances.
+Shared fiscal-year close workflow. The server derives the plan from retained close snapshots and commits a receipt for the exact plan the controller reviewed.
 
 ```csharp
 public interface IWorkstationFiscalYearCloseApiClient
@@ -483,6 +626,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;FiscalYearClosePlanDto&gt; GetClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:13](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L13) |  |
+| <code>Task&lt;FiscalYearCloseReceiptDto?&gt; GetCloseReceiptAsync(Guid ledgerBookId, int fiscalYear, Guid? receiptId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:14](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L14) |  |
+| <code>Task&lt;FiscalYearCloseReceiptDto&gt; FinalizeCloseAsync(Guid ledgerBookId, int fiscalYear, FinalizeFiscalYearCloseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L16) |  |
 
 ## IWorkstationIntercompanyAgreementApiClient
 
@@ -897,7 +1042,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.Services.Accounting.WorkstationFiscalYearCloseApiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:16](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L16).
+Source: [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L20).
 
 ```csharp
 public sealed class WorkstationFiscalYearCloseApiClient(ApiClientService api) : IWorkstationFiscalYearCloseApiClient
@@ -907,7 +1052,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;FiscalYearClosePlanDto&gt; GetClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:18](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L18) |  |
+| <code>public async Task&lt;FiscalYearClosePlanDto&gt; GetClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:22](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L22) |  |
+| <code>public async Task&lt;FiscalYearCloseReceiptDto?&gt; GetCloseReceiptAsync(Guid ledgerBookId, int fiscalYear, Guid? receiptId = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:42](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L42) |  |
+| <code>public async Task&lt;FiscalYearCloseReceiptDto&gt; FinalizeCloseAsync(Guid ledgerBookId, int fiscalYear, FinalizeFiscalYearCloseRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs:54](../../../../src/Meridian.Ui.Services/Services/Accounting/WorkstationFiscalYearCloseApiClient.cs#L54) |  |
 
 ## WorkstationIntercompanyAgreementApiClient
 
@@ -1443,124 +1590,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public string MaterialLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:29](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L29) | &quot;Material&quot; when the change is past the threshold, otherwise empty. |
-
-## PeriodComparisonView
-
-Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonView</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:39](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L39).
-
-A prior-period comparison ready to show: a heading, why it is empty if it is, rows and notes.
-
-```csharp
-public sealed record PeriodComparisonView(bool IsReady, string Heading, string Windows, string? Message, IReadOnlyList<PeriodComparisonRow> Rows, IReadOnlyList<string> Notes);
-```
-
-## ConfigProfile
-
-Qualified name: <code>Meridian.Ui.Services.Services.ConfigProfile</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:726](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L726).
-
-Represents a configuration profile (built-in or custom).
-
-```csharp
-public sealed record ConfigProfile(string Id, string Name, string Description, bool IsBuiltIn);
-```
-
-## ConfigServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.ConfigServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:38](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L38).
-
-Abstract base class for configuration management shared between platforms. Provides platform-agnostic config validation, backfill provider management, data source management, and symbol management. Platform-specific config file I/O is delegated to derived classes. Part of Phase 2 service extraction.
-
-```csharp
-public abstract class ConfigServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public abstract string ConfigPath { get; }</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:52](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L52) | Gets the path to the configuration file. |
-| <code>public async Task&lt;ConfigValidationResultDetail&gt; ValidateConfigDetailAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:122](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L122) | Validates the current configuration. |
-| <code>public async Task&lt;DataSourcesConfigDto&gt; GetDataSourcesConfigDtoAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:191](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L191) | Gets the data sources configuration. |
-| <code>public Task AddOrUpdateDataSourceAsync(DataSourceConfigDto dataSource, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:200](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L200) | Adds or updates a data source configuration. |
-| <code>public Task DeleteDataSourceAsync(string id, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:225](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L225) | Deletes a data source by ID. |
-| <code>public Task SetDefaultDataSourceAsync(string id, bool isHistorical, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:240](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L240) | Sets the default data source for real-time or historical data. |
-| <code>public Task UpdateFailoverSettingsAsync(bool enableFailover, int failoverTimeoutSeconds, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:260](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L260) | Updates failover settings for data sources. |
-| <code>public async Task&lt;BackfillProvidersConfigDto&gt; GetBackfillProvidersConfigAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:274](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L274) | Gets backfill provider configuration, creating defaults when missing. |
-| <code>public async Task&lt;BackfillProviderOptionsDto?&gt; GetBackfillProviderOptionsAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:285](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L285) | Gets options for a single historical backfill provider. |
-| <code>public async Task&lt;(string? PreviousJson, string NewJson)&gt; SetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto options, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:300](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L300) | Sets backfill provider options. Returns the previous and new JSON for audit trail purposes. |
-| <code>public async Task&lt;string?&gt; ResetBackfillProviderOptionsAsync(string providerId, BackfillProviderOptionsDto defaultOptions, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:335](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L335) | Resets a provider&#x27;s configuration back to defaults. Returns the previous JSON for audit trail purposes. |
-| <code>public async Task&lt;SymbolConfigDto[]&gt; GetConfiguredSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:363](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L363) | Gets the configured symbols from configuration. |
-| <code>public Task SaveSymbolsAsync(SymbolConfigDto[] symbols, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:372](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L372) | Saves symbols to the configuration. |
-| <code>public Task AddSymbolAsync(SymbolConfigDto symbol, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:378](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L378) | Adds a symbol to the configuration. |
-| <code>public Task RemoveSymbolAsync(string symbolName, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:395](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L395) | Removes a symbol from the configuration. |
-| <code>public static string NormalizeProviderId(string providerId);</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:481](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L481) |  |
-
-## ConfigValidationResultDetail
-
-Qualified name: <code>Meridian.Ui.Services.Services.ConfigValidationResultDetail</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:17](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L17).
-
-Result of configuration validation. Platform-agnostic version for shared use.
-
-```csharp
-public sealed class ConfigValidationResultDetail
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsValid { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:19](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L19) |  |
-| <code>public string[] Errors { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:20](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L20) |  |
-| <code>public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:21](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L21) |  |
-| <code>public static ConfigValidationResultDetail Success() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:23](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L23) |  |
-| <code>public static ConfigValidationResultDetail Failure(params string[] errors) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConfigServiceBase.cs:24](../../../../src/Meridian.Ui.Services/Services/ConfigServiceBase.cs#L24) |  |
-
-## ConnectionServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.Services.ConnectionServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:12](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L12).
-
-Abstract base class for connection management shared across desktop applications. Provides shared state machine, monitoring orchestration, auto-reconnect logic, and event raising. Platform-specific HTTP calls and timer implementations are delegated to derived classes. Part of Phase 6C.2 service deduplication (ROADMAP item 6C.2).
-
-```csharp
-public abstract class ConnectionServiceBase : IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ServiceUrl =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:33](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L33) | Gets the current service URL being used for connections. |
-| <code>public ConnectionState State =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:36](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L36) | Gets the current connection state. |
-| <code>public string CurrentProvider =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:39](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L39) | Gets the current provider name. |
-| <code>public TimeSpan? Uptime =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:42](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L42) | Gets the connection uptime. |
-| <code>public double LastLatencyMs { get; private set; }</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:45](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L45) | Gets the last measured latency in milliseconds. |
-| <code>public int TotalReconnects { get; private set; }</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:48](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L48) | Gets the total number of reconnections. |
-| <code>public bool IsMonitoring =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:51](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L51) | Gets whether monitoring is currently active. |
-| <code>public bool IsAutoReconnectPaused =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:54](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L54) | Gets whether auto-reconnect is currently paused. |
-| <code>public event EventHandler&lt;ConnectionStateChangedEventArgs&gt;? StateChanged;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:57](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L57) | Event raised when connection state changes. |
-| <code>public event EventHandler&lt;ConnectionStateEventArgs&gt;? ConnectionStateChanged;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:60](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L60) | Event raised when connection state changes (ViewModel binding). |
-| <code>public event EventHandler&lt;int&gt;? LatencyUpdated;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:63](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L63) | Event raised when latency measurement is updated. |
-| <code>public event EventHandler&lt;ReconnectEventArgs&gt;? ReconnectAttempting;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:66](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L66) | Event raised when a reconnection attempt is starting. |
-| <code>public event EventHandler? ReconnectSucceeded;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:69](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L69) | Event raised when reconnection succeeds. |
-| <code>public event EventHandler&lt;ReconnectFailedEventArgs&gt;? ReconnectFailed;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:72](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L72) | Event raised when a reconnection attempt fails. |
-| <code>public event EventHandler&lt;ConnectionHealthEventArgs&gt;? ConnectionHealthUpdated;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:75](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L75) | Event raised when connection health is updated. |
-| <code>public void UpdateSettings(ConnectionSettings settings);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:80](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L80) | Updates connection settings and reconfigures the underlying client. |
-| <code>public void ConfigureServiceUrl(string serviceUrl, int timeoutSeconds = 30);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:90](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L90) | Configures the service URL directly. |
-| <code>public ConnectionSettings GetSettings() =&gt; …;</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:98](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L98) | Gets current connection settings. |
-| <code>public void StartMonitoring();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:116](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L116) | Starts the connection monitoring with periodic health checks. |
-| <code>public void StopMonitoring();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:141](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L141) | Stops connection monitoring. |
-| <code>public async Task&lt;bool&gt; ConnectAsync(string provider, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:159](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L159) | Initiates a connection to the provider. Performs a health check first; returns false when the provider is unreachable or the request is cancelled before the check completes. |
-| <code>public Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:197](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L197) | Disconnects from the provider. |
-| <code>public void PauseAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:211](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L211) | Pauses auto-reconnection temporarily. |
-| <code>public void ResumeAutoReconnect();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:224](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L224) | Resumes auto-reconnection. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs:524](../../../../src/Meridian.Ui.Services/Services/ConnectionServiceBase.cs#L524) |  |

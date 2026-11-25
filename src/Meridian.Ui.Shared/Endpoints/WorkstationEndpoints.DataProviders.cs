@@ -58,7 +58,7 @@ public static partial class WorkstationEndpoints
         IReadOnlyList<ProviderConnectionDto> routingConnections,
         IReadOnlyList<ProviderBindingDto> routingBindings,
         IReadOnlyList<ProviderTrustSnapshotDto> trustSnapshots,
-        IReadOnlyList<ProviderReadinessRowDto> readinessRows,
+        IReadOnlyList<ProviderReadinessRowDto>? readinessRows,
         DateTimeOffset asOf,
         bool exposeConnectionSummaries)
     {
@@ -66,7 +66,7 @@ public static partial class WorkstationEndpoints
         // list stays the providers in use, so the readiness catalog's not-yet-configured entries
         // never count against provider health on the shell's trust strip.
         var readinessLookup = new Dictionary<string, ProviderReadinessRowDto>(StringComparer.OrdinalIgnoreCase);
-        foreach (var readinessRow in readinessRows)
+        foreach (var readinessRow in readinessRows ?? [])
         {
             readinessLookup.TryAdd(NormalizeProviderKey(readinessRow.ProviderId), readinessRow);
         }
@@ -151,7 +151,7 @@ public static partial class WorkstationEndpoints
 
                 var displayName = ResolveDataProviderDisplayName(providerId, connection, routingConnection, metrics);
                 var capability = ResolveDataProviderCapability(connection, routingConnection, metrics);
-                var latency = metrics is not null ? $"{metrics.AverageLatencyMs:F0}ms p50" : "Latency not reported";
+                var latency = FormatProviderAverageLatency(metrics);
                 var note = BuildDataProviderNote(metrics, connection, trustSnapshot, rationale);
                 return new WorkstationDataProviderRecord(
                     ProviderId: connection?.ProviderId ?? providerId,
@@ -188,7 +188,8 @@ public static partial class WorkstationEndpoints
                         trustSnapshot,
                         bindings,
                         metrics,
-                        rationale));
+                        rationale,
+                        readinessUnavailable: readinessRows is null));
             })
             .OrderBy(static provider => provider.DisplayName, StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -423,7 +424,8 @@ public static partial class WorkstationEndpoints
         ProviderTrustSnapshotDto? trustSnapshot,
         IReadOnlyList<ProviderBindingDto> bindings,
         ProviderMetrics? metrics,
-        ProviderTrustRationalePayload rationale)
+        ProviderTrustRationalePayload rationale,
+        bool readinessUnavailable)
     {
         var diagnostics = new List<WorkstationDataProviderDiagnostic>();
         var hasCredentials = connection is not null &&
@@ -474,8 +476,18 @@ public static partial class WorkstationEndpoints
             },
             StatusLabel: rationale.Status,
             Detail: metrics is not null
-                ? $"Latency {metrics.AverageLatencyMs:F0}ms p50; dropped messages {metrics.MessagesDropped}; subscriptions {metrics.ActiveSubscriptions}."
+                ? $"{FormatProviderAverageLatency(metrics)}. {metrics.MessagesDropped} messages dropped with {metrics.ActiveSubscriptions} subscriptions."
                 : rationale.RecommendedAction));
+
+        if (readinessUnavailable)
+        {
+            diagnostics.Add(new WorkstationDataProviderDiagnostic(
+                Id: "provider-readiness",
+                Label: "Provider readiness",
+                Status: "warning",
+                StatusLabel: "Unavailable",
+                Detail: "The provider readiness evidence could not be loaded."));
+        }
 
         diagnostics.Add(new WorkstationDataProviderDiagnostic(
             Id: "routing-readiness",
@@ -513,6 +525,11 @@ public static partial class WorkstationEndpoints
 
     private static string FormatProviderTimestamp(DateTimeOffset? value)
         => value?.ToString("MMM dd, yyyy HH:mm 'UTC'", CultureInfo.InvariantCulture) ?? "Never";
+
+    private static string FormatProviderAverageLatency(ProviderMetrics? metrics)
+        => ProviderMetricsLookup.GetMeasuredAverageLatencyMs(metrics) is { } average
+            ? $"{average.ToString("0.##", CultureInfo.InvariantCulture)} ms average"
+            : "Latency not reported";
 
     private static ProviderTrustRationalePayload BuildProviderTrustRationale(ProviderMetrics metrics)
     {
@@ -553,7 +570,7 @@ public static partial class WorkstationEndpoints
                 GateImpact: gateImpact);
         }
 
-        if (metrics.AverageLatencyMs >= 250d)
+        if (ProviderMetricsLookup.GetMeasuredAverageLatencyMs(metrics) >= 250d)
         {
             return new ProviderTrustRationalePayload(
                 Status: "Warning",

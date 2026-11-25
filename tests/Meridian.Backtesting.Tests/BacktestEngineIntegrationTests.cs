@@ -5,8 +5,10 @@ using Meridian.Core.Serialization;
 using Meridian.Backtesting.Engine;
 using Meridian.Contracts.Domain.Enums;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.SecurityMaster;
 using Meridian.Domain.Events;
 using Meridian.Storage;
+using Meridian.Storage.Backfill;
 using Meridian.Storage.Replay;
 using Meridian.Storage.Services;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -57,6 +59,7 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         result.TotalEventsProcessed.Should().Be(0);
         result.Universe.Should().BeEmpty();
         result.Fills.Should().BeEmpty();
+        result.ToResolvedRealismDescriptor().SourceMixHash.Should().BeNull();
     }
 
     // ------------------------------------------------------------------ //
@@ -179,6 +182,89 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
         fill.Symbol.Should().Be("TSLA");
         fill.FilledQuantity.Should().Be(5);
         fill.FillPrice.Should().BeInRange(190m, 215m, "bar midpoint fill should land within the OHLC range");
+    }
+
+    [Fact]
+    public async Task RunAsync_UsesRetainedBackfillRevisionAndDisclosesInteriorGap()
+    {
+        var from = new DateOnly(2024, 7, 3);
+        var missing = new DateOnly(2024, 7, 5);
+        var to = new DateOnly(2024, 7, 8);
+        var bars = new[] { from, to }.Select(static date =>
+        {
+            var bar = new HistoricalBar("SPY", date, 100m, 105m, 95m, 101m, 10_000, "fixture", IsAdjusted: false);
+            return MarketEvent.HistoricalBar(bar.ToTimestampUtc(), bar.Symbol, bar, bar.Source);
+        }).ToArray();
+        var retained = BackfillBatchRevision.Create("composite", "fixture", "default", "SPY", "daily", from, to,
+            "us-equity-sessions-v1", [from, missing, to], [from, to], bars.Select(BackfillBatchRevision.HashRow));
+        var store = new BackfillStatusStore(_dataRoot);
+        await store.Batches.PublishAsync(retained);
+        var root = Path.Combine(_dataRoot, "SPY");
+        Directory.CreateDirectory(root);
+        await File.WriteAllLinesAsync(Path.Combine(root, $"SPY_bars_{from:yyyy-MM-dd}.jsonl"), bars.Concat([bars[0]]).Select(item =>
+            JsonSerializer.Serialize(item with { BackfillRevisionId = retained.Receipt.RevisionId }, MarketDataJsonContext.HighPerformanceOptions)));
+
+        var engine = new BacktestEngine(NullLogger<BacktestEngine>.Instance, new StorageCatalogService(_dataRoot, new StorageOptions()),
+            securityMasterQueryService: null, securityIdentityQueryService: new ListingLookup());
+        var request = new BacktestRequest(From: from, To: to, DataRoot: _dataRoot, Symbols: ["SPY", "MISSING"],
+            AdjustForCorporateActions: false, FillTiming: FillTiming.SameBar);
+
+        var result = await engine.RunAsync(request, new BuyFirstBarStrategy("SPY", 5));
+        result.TotalEventsProcessed.Should().Be(2, "recovery and overlapping imports can leave a repeated stamped row");
+        var coverage = result.EngineMetadata!.InputCoverage!;
+        coverage.RequiredSessionFraction.Should().Be(1m);
+        var spy = coverage.Instruments.Should().ContainSingle(item => item.Instrument == "SPY").Which;
+        spy.Status.Should().Be("Incomplete");
+        spy.ExpectedSessions.Should().Be(3);
+        spy.MissingSessions.Should().Equal(missing);
+        coverage.Instruments.Should().Contain(item => item.Instrument == "MISSING" && item.Status == "Unknown");
+        coverage.Revisions.Should().ContainSingle().Which.RevisionId.Should().Be(retained.Receipt.RevisionId);
+        coverage.SourceMix.Should().Equal(new BacktestSourceCount("SPY", "FIXTURE", 2));
+        result.BiasDisclosure!.Items.Select(static item => item.Title).Should().Contain(["Data incomplete", "Coverage unknown"]);
+        result.Ledger.Journal.SelectMany(static item => item.Metadata.EvidenceReferences)
+            .Should().Contain(evidence => evidence.EvidenceId == retained.Receipt.RevisionId &&
+                                          evidence.ContentHash == retained.Receipt.ContentHash && evidence.SourceSystem == "fixture");
+
+        var normalized = CanonicalBacktestResultNormalizer.FromNative(result);
+        var json = JsonSerializer.Serialize(normalized.EngineMetadata);
+        JsonSerializer.Deserialize<BacktestEngineMetadata>(json)!.InputCoverage.Should().BeEquivalentTo(coverage);
+    }
+
+    [Fact]
+    public async Task RunAsync_SourceMixCountsOnlyReplayedBarsAndResolvesTheCompletedFingerprint()
+    {
+        var from = new DateOnly(2024, 1, 2);
+        var to = from.AddDays(2);
+        WriteBarJsonl("SPY", from.AddDays(-1), from.AddDays(-1), 100m, source: "unused");
+        WriteBarJsonl("SPY", from, from, 100m, source: "alpaca");
+        WriteBarJsonl("SPY", from.AddDays(1), from.AddDays(1), 100m, source: "ALPACA");
+        WriteBarJsonl("SPY", to, to, 100m, source: "polygon");
+        var request = new BacktestRequest(from, to, Symbols: ["SPY"], DataRoot: _dataRoot,
+            AdjustForCorporateActions: false);
+
+        var result = await _engine.RunAsync(request, new NoOpStrategy());
+
+        var coverage = result.EngineMetadata!.InputCoverage!;
+        coverage.SourceMix.Should().Equal(new BacktestSourceCount("SPY", "ALPACA", 2),
+            new BacktestSourceCount("SPY", "POLYGON", 1));
+        var reordered = coverage with { SourceMix = coverage.SourceMix!.Reverse().ToArray() };
+        reordered.SourceMixHash.Should().Be(coverage.SourceMixHash);
+        request.ToRealismDescriptor().SourceMixHash.Should().BeNull();
+        result.ToResolvedRealismDescriptor().SourceMixHash.Should().Be(coverage.SourceMixHash).And.NotBeNull();
+    }
+
+    private sealed class ListingLookup : ISecurityIdentityQueryService
+    {
+        public Task<SecurityDetailDto?> GetByIdentifierAsync(SecurityIdentifierKind identifierKind, string identifierValue,
+            string? provider, CancellationToken ct = default, DateTimeOffset? asOfUtc = null)
+        {
+            var effectiveFrom = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
+            return Task.FromResult<SecurityDetailDto?>(identifierValue == "SPY" ? new SecurityDetailDto(
+                Guid.Parse("3a80a6d4-7853-46d8-b0e5-9cde3b0acfee"), "Equity", SecurityStatusDto.Active, "SPY", "USD",
+                JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }),
+                [new SecurityIdentifierDto(SecurityIdentifierKind.ListingId, "SPY:XNAS", true, effectiveFrom)], [], 1, effectiveFrom, null)
+                : null);
+        }
     }
 
     // ------------------------------------------------------------------ //
@@ -815,7 +901,8 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
     /// Writes one <see cref="HistoricalBar"/> per day (from → to inclusive) to a JSONL file
     /// in a per-symbol sub-directory, named in the pattern the UniverseDiscovery scanner expects.
     /// </summary>
-    private void WriteBarJsonl(string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m)
+    private void WriteBarJsonl(string symbol, DateOnly from, DateOnly to, decimal basePrice, decimal dailyGain = 0m,
+        string source = "test")
     {
         var symbolDir = Path.Combine(_dataRoot, symbol.ToUpperInvariant());
         Directory.CreateDirectory(symbolDir);
@@ -839,11 +926,11 @@ public sealed class BacktestEngineIntegrationTests : IDisposable
                 Low: low,
                 Close: close,
                 Volume: 1_000_000L,
-                Source: "test",
+                Source: source,
                 SequenceNumber: seq++);
 
             var ts = bar.ToTimestampUtc();
-            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, "test", seq);
+            var evt = MarketEvent.HistoricalBar(ts, symbol, bar, source, seq);
 
             writer.WriteLine(JsonSerializer.Serialize(evt, MarketDataJsonContext.HighPerformanceOptions));
             date = date.AddDays(1);

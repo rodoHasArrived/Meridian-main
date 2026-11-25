@@ -7,6 +7,7 @@ import path from "node:path";
 import process from "node:process";
 import { chromiumLaunchOptions } from "./design-system-smoke-helpers.mjs";
 import { A11Y_ROUTES, checkInspectorFocusNotObscured, compareAxeFindings, nextAxeBaseline, readAxeBaseline, runAxe, writeAxeBaseline } from "./smoke-workstation-a11y.mjs";
+import { createScreenshotApiResolver, loadScreenshotScenarioModule, setupScenarioApiMocking } from "../../../../scripts/dev/web-screenshot-scenarios.mjs";
 
 const navLabels = ["Trading", "Portfolio", "Accounting", "Reporting", "Strategy", "Data", "Settings"];
 
@@ -184,34 +185,6 @@ async function loadFixtureRoutes(repoRoot) {
   return fixtureConfig && typeof fixtureConfig.routes === "object" ? fixtureConfig.routes : {};
 }
 
-async function setupApiMocking(page, fixtureRoutes) {
-  await page.route("**/api/**", (route) => {
-    const url = new URL(route.request().url());
-    const pathname = url.pathname;
-    // Vite source imports such as /workstation/src/lib/api/*.ts are not API requests.
-    if (!pathname.startsWith("/api/")) return route.continue();
-
-    if (Object.prototype.hasOwnProperty.call(fixtureRoutes, pathname)) {
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(fixtureRoutes[pathname])
-      });
-    }
-
-    const prefixEntry = Object.entries(fixtureRoutes).find(([key]) => pathname.startsWith(`${key}/`));
-    if (prefixEntry) {
-      return route.fulfill({
-        status: 200,
-        contentType: "application/json",
-        body: JSON.stringify(prefixEntry[1])
-      });
-    }
-
-    return route.fulfill({ status: 404, contentType: "application/json", body: "{}" });
-  });
-}
-
 async function main() {
   const { values, flags } = parseArgs(process.argv.slice(2));
   if (flags.has("help")) {
@@ -241,6 +214,7 @@ async function main() {
   const failedRequests = [];
   let server = null;
   let browser = null;
+  let scenarioSource = null;
 
   const manifest = {
     version: 1,
@@ -283,7 +257,11 @@ async function main() {
       }
     });
 
-    await setupApiMocking(page, await loadFixtureRoutes(repoRoot));
+    // Use the same typed Accounting scenario and exact fixture reads as screenshot
+    // capture. Accounting is intentionally absent from the legacy JSON fixtures.
+    scenarioSource = await loadScreenshotScenarioModule(dashboardDir);
+    const apiResolver = createScreenshotApiResolver(scenarioSource.module, await loadFixtureRoutes(repoRoot));
+    await setupScenarioApiMocking(page, apiResolver, (message) => errors.push(message));
     await page.goto(targetUrl, { waitUntil: "domcontentloaded", timeout: timeoutMs });
     await page.waitForSelector(".workstation-frame", { timeout: timeoutMs });
     await page.waitForLoadState("networkidle", { timeout: 15000 }).catch(() => undefined);
@@ -343,6 +321,7 @@ async function main() {
     if (browser) {
       await browser.close();
     }
+    await scenarioSource?.close();
     await stopProcess(server);
 
     manifest.finishedAtUtc = new Date().toISOString();

@@ -62,6 +62,8 @@ export interface ProviderRateLimitSnapshot {
   dailyMaximum?: number | null;
   dailyResetsAt?: string | null;
   dailyResetPolicy?: "utc-midnight" | "rolling-24-hours" | string | null;
+  backfillAttemptsInWindow?: number | null;
+  backfillAttemptWindowSeconds?: number | null;
 }
 
 export interface ProviderRateLimitsResponse {

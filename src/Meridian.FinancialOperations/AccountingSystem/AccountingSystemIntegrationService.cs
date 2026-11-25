@@ -7,6 +7,7 @@ using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Operations;
+using Meridian.Contracts.Tenancy;
 using Meridian.Contracts.Workstation;
 using Meridian.Ledger;
 using Meridian.FinancialOperations.Intercompany;
@@ -196,6 +197,7 @@ public sealed partial class AccountingSystemIntegrationService
             DisplayName = RequireText(request.Profile.DisplayName, "Mapping profile display name"),
             UpdatedAtUtc = DateTimeOffset.UtcNow,
             CertificationState = certificationState,
+            CertifiedPostingDestination = null,
             AccountMappings = NormalizeAccountMappings(request.Profile.AccountMappings),
             DimensionMappings = (request.Profile.DimensionMappings ?? [])
                 .Select(mapping => mapping with { ProviderId = providerId })
@@ -207,17 +209,37 @@ public sealed partial class AccountingSystemIntegrationService
             normalizedProfile = normalizedProfile with { CertificationState = AccountingCertificationStateDto.Draft };
         }
 
-        // Validation above stays synchronous for callers; only the durable write is awaited.
+        var postingDestination = request.PostingDestination;
+        var scoped = request.LedgerBookId.HasValue && TenantReadPredicate.IsResolvedTenant(tenantId) &&
+            TenantReadPredicate.IsResolvedTenant(companyId);
+        if (postingDestination is not null)
+        {
+            if (!scoped || _ledgerJournalStore is not PostgresLedgerJournalStore ||
+                normalizedProfile.CertificationState != AccountingCertificationStateDto.Certified ||
+                !string.Equals(providerId, postingDestination.ProviderId, StringComparison.Ordinal))
+                throw new ArgumentException("Posting mapping certification requires the certified profile and exact owned book destination.");
+            normalizedProfile = normalizedProfile with { CertifiedPostingDestination = postingDestination };
+        }
+
         return RetainProfileAsync();
 
         async Task<ExternalGlMappingProfileDto> RetainProfileAsync()
         {
-            await RetainAsync(
-                MappingProfilesCollection,
-                _mappingProfiles,
-                MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId),
-                new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId, normalizedProfile, actor, evidenceLinks, tenantId, companyId),
-                ct).ConfigureAwait(false);
+            var retained = new ScopedExternalGlMappingProfile(providerId, fundProfileId, request.LedgerBookId,
+                normalizedProfile, actor, evidenceLinks, tenantId, companyId);
+            if (postingDestination is not null && _ledgerJournalStore is PostgresLedgerJournalStore postgres &&
+                request.LedgerBookId is { } bookId)
+            {
+                await postgres.RetainExternalGlMappingProfileAsync(bookId, tenantId!, companyId!, fundProfileId,
+                    providerId, profileId, JsonSerializer.Serialize(retained, JsonOptions), postingDestination, ct).ConfigureAwait(false);
+            }
+            else
+            {
+                await RetainAsync(MappingProfilesCollection, _mappingProfiles,
+                    MappingProfileKey(providerId, fundProfileId, request.LedgerBookId, profileId, tenantId, companyId), retained, ct)
+                    .ConfigureAwait(false);
+            }
+
             return normalizedProfile;
         }
     }
@@ -2276,6 +2298,8 @@ public sealed partial class AccountingSystemIntegrationService
         public string AccountName { get; }
 
         public string Currency { get; }
+
+        public string? SourceCurrency { get; init; }
 
         public decimal Debit { get; set; }
 

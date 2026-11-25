@@ -105,6 +105,9 @@ public sealed class PeriodAdjustmentPreparationTests
             var scheduled = await service.ScheduleMarkReversalAsync(request, "preparer", Tenant, Company);
             scheduled.PeriodAdjustment.Should().Be(request);
             scheduled.RecurrenceEnabled.Should().BeFalse();
+            var duplicateSource = () => service.ScheduleMarkReversalAsync(request with { IntentId = "another-intent" },
+                "preparer", Tenant, Company);
+            await duplicateSource.Should().ThrowAsync<InvalidOperationException>().WithMessage("*already retains different*");
             var worker = Worker(schedules);
             var due = scheduled.ScheduledForUtc!.Value;
             (await worker.RunDueAsync(due.AddTicks(-1))).Runs.Should().BeEmpty();

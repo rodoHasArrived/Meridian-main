@@ -212,7 +212,9 @@ export function normalizeOperatingContextSymbol(value: string | null | undefined
 }
 
 export function appendOperatingScopeToRoute(route: string, operatingScope: AppShellOperatingScopeState): string {
-  if (!operatingScope.hasScope) {
+  const searchIndex = route.indexOf("?");
+  const search = searchIndex >= 0 ? route.slice(searchIndex).split("#")[0] : "";
+  if (!operatingScope.hasScope || hasExplicitRecordScope(search)) {
     return route;
   }
 
@@ -231,13 +233,19 @@ export function appendOperatingScopeToRoute(route: string, operatingScope: AppSh
  */
 const CENTRALLY_CARRIED_SCOPE_PARAMS: ReadonlySet<string> = new Set(["entityId", "fundId", "fundAccountId"]);
 
+/** Record links carry their own authorized view scope. Remembered filters stay available elsewhere. */
+export function hasExplicitRecordScope(search: string | URLSearchParams): boolean {
+  const params = typeof search === "string" ? new URLSearchParams(search) : search;
+  return params.get("recordScope") === "1";
+}
+
 /**
  * Returns `search` with the stored scope's fund hierarchy added for the keys the route's workspace
  * carries. Values already on the URL win, and `accountId` counts as an explicit fund account.
  * Returns the original string when nothing needs adding, so callers can compare by identity.
  */
 export function carryOperatingScopeIntoSearch(pathname: string, search: string, scope: AppShellOperatingScopeInput | null | undefined): string {
-  if (!scope) return search;
+  if (!scope || hasExplicitRecordScope(search)) return search;
   const state = buildOperatingScopeFromSearch("", scope);
   if (!state.hasScope) return search;
   const carried = operatingScopeCarriedKeysForRoute(pathname);
@@ -258,14 +266,14 @@ export function carryOperatingScopeIntoSearch(pathname: string, search: string, 
  * Routes whose screen narrows its fund-account rows to the chosen entity and fund client-side,
  * using the organization graph (`lib/operating-scope/fund-scope-narrowing.ts`): the Portfolio
  * brokerage household (accounts and positions), the Accounting close calendar (close workflows),
- * the Operations Continuity workflow list, and the statement fetch schedules on Statement import.
- * A route matches itself and its sub-paths. Operations Continuity also applies `entityId` to its
+ * the Close hub workflow list, and the statement fetch schedules on Statement import.
+ * A route matches itself and its sub-paths. The Close hub also applies `entityId` to its
  * close-readiness read (`ACCOUNTING_ENTITY_ROUTES`); the two add the same key and coexist.
  */
 export const FUND_SCOPE_NARROWED_ROUTES: readonly string[] = [
   WORKSTATION_ROUTE_CATALOG.portfolioBrokerageSync,
   WORKSTATION_ROUTE_CATALOG.accountingCloseCalendar,
-  WORKSTATION_ROUTE_CATALOG.accountingOperationsContinuity,
+  WORKSTATION_ROUTE_CATALOG.accountingClose,
   WORKSTATION_ROUTE_CATALOG.accountingStatementImport
 ];
 
@@ -470,14 +478,14 @@ function formatOperatingScopeWindow({
 
 // Accounting routes whose screens read `entityId` from the URL: the close cockpit (close sources),
 // configuration (intercompany agreements), manual journal entries, approvals (banking payments) and
-// operations continuity. Elsewhere in Accounting (ledger, trial balance, ...) the entity is retained,
+// the Close hub. Elsewhere in Accounting (ledger, trial balance, ...) the entity is retained,
 // not applied, so the scope bar does not claim a filter the screen does not use.
 const ACCOUNTING_ENTITY_ROUTES = new Set([
   "/accounting",
   "/accounting/configure",
   "/accounting/journal-entries",
   "/accounting/approvals",
-  "/accounting/operations-continuity"
+  "/accounting/close"
 ]);
 
 function operatingScopeKeysForRoute(

@@ -4,7 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { GlobalRefreshProvider } from "@/lib/global-refresh";
 import { ReportingScreen } from "@/screens/reporting-screen";
-import { renderWithRouter } from "@/test/render";
+import { renderWithRouter, TestMemoryRouter } from "@/test/render";
 import { useReportRunStream } from "@/hooks/use-report-run-stream";
 import type {
   AccountingWorkspaceResponse,
@@ -2353,10 +2353,10 @@ describe("ReportingScreen", () => {
       "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 1 filter in draft"
     );
     expect(within(grid).getByLabelText("Sector Pivot saved filters")).toHaveTextContent("strategy = Core");
-    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveValue("portfolioPositions");
-    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Portfolio positions");
-    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Ledger facts");
-    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Cash ladder");
+    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveValue("");
+    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Sample portfolio positions");
+    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Sample ledger facts");
+    expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Sample cash ladder");
     expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Retained reporting rows (2)");
     expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Portfolio reporting cuts (2)");
     expect(within(grid).getByLabelText("Sector Pivot preview dataset")).toHaveTextContent("Top-N contribution analytics (1)");
@@ -2367,11 +2367,14 @@ describe("ReportingScreen", () => {
     expect(within(grid).getByRole("list", { name: "Sector Pivot Columns" })).toHaveTextContent("strategy");
     expect(within(grid).getByRole("list", { name: "Sector Pivot Metrics" })).toHaveTextContent("Market value");
     expect(within(grid).getByRole("list", { name: "Sector Pivot Formulas" })).toHaveTextContent("Return %");
-    expect(within(grid).getByRole("list", { name: "Sector Pivot source fields" })).toHaveTextContent("Gross exposure");
-    expect(within(grid).getByRole("list", { name: "Sector Pivot source fields" })).toHaveTextContent("Contribution %");
+    const palette = within(grid).getByRole("list", { name: "Sector Pivot source fields" });
+    expect(within(palette).queryByRole("listitem")).not.toBeInTheDocument();
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "portfolioPositions");
+    expect(palette).toHaveTextContent("Gross exposure");
+    expect(within(grid).getByRole("list", { name: "Sector Pivot source fields" })).not.toHaveTextContent("Contribution %");
 
     const sourceField = within(within(grid).getByRole("list", { name: "Sector Pivot source fields" }))
-      .getByText("pnl")
+      .getByText("Gross exposure")
       .closest("[role='listitem']");
     expect(sourceField).not.toBeNull();
     const formulas = within(grid).getByRole("list", { name: "Sector Pivot Formulas" });
@@ -2385,52 +2388,52 @@ describe("ReportingScreen", () => {
     fireEvent.dragStart(sourceField!, { dataTransfer });
     fireEvent.drop(formulas, { dataTransfer });
 
-    expect(within(formulas).getByText("pnl")).toBeInTheDocument();
+    expect(within(formulas).getByText("Gross exposure")).toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
       "Pivot draft · 2 dimensions · 2 metrics · 2 formulas · 1 filter in draft"
     );
     let formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
-    expect(formulaTokenLabels[1]).toContain("pnl");
-    const moveLeft = within(formulas).getByRole("button", { name: "Move pnl left" });
-    expect(within(formulas).getByRole("button", { name: "Move pnl right" })).toHaveAttribute("title", "This token is already last in the list.");
+    expect(formulaTokenLabels[1]).toContain("Gross exposure");
+    const moveLeft = within(formulas).getByRole("button", { name: "Move Gross exposure left" });
+    expect(within(formulas).getByRole("button", { name: "Move Gross exposure right" })).toHaveAttribute("title", "This token is already last in the list.");
     moveLeft.focus();
     await user.keyboard("{Enter}");
-    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toBeDisabled();
-    expect(within(formulas).getByRole("button", { name: "Move pnl left" })).toHaveAttribute("title", "This token is already first in the list.");
+    expect(within(formulas).getByRole("button", { name: "Move Gross exposure left" })).toBeDisabled();
+    expect(within(formulas).getByRole("button", { name: "Move Gross exposure left" })).toHaveAttribute("title", "This token is already first in the list.");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
-    expect(formulaTokenLabels[0]).toContain("pnl");
+    expect(formulaTokenLabels[0]).toContain("Gross exposure");
     expect(formulaTokenLabels[1]).toContain("Return %");
-    within(formulas).getByRole("button", { name: "Move pnl right" }).focus();
+    within(formulas).getByRole("button", { name: "Move Gross exposure right" }).focus();
     await user.keyboard(" ");
     formulaTokenLabels = within(formulas).getAllByRole("listitem").map((item) => item.textContent ?? "");
     expect(formulaTokenLabels[0]).toContain("Return %");
-    expect(formulaTokenLabels[1]).toContain("pnl");
-    const movedFormulaToken = within(formulas).getByText("pnl").closest("[role='listitem']");
+    expect(formulaTokenLabels[1]).toContain("Gross exposure");
+    const movedFormulaToken = within(formulas).getByText("Gross exposure").closest("[role='listitem']");
     expect(movedFormulaToken).not.toBeNull();
     const metrics = within(grid).getByRole("list", { name: "Sector Pivot Metrics" });
     fireEvent.dragStart(movedFormulaToken!, { dataTransfer });
     fireEvent.drop(metrics, { dataTransfer });
-    expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
-    expect(within(metrics).getByText("pnl")).toBeInTheDocument();
+    expect(within(formulas).queryByText("Gross exposure")).not.toBeInTheDocument();
+    expect(within(metrics).getByText("Gross exposure")).toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
       "Pivot draft · 2 dimensions · 3 metrics · 1 formula · 1 filter in draft"
     );
-    await user.click(within(metrics).getByRole("button", { name: "Remove pnl" }));
-    expect(within(metrics).queryByText("pnl")).not.toBeInTheDocument();
+    await user.click(within(metrics).getByRole("button", { name: "Remove Gross exposure" }));
+    expect(within(metrics).queryByText("Gross exposure")).not.toBeInTheDocument();
     expect(within(grid).getByRole("status", { name: "Sector Pivot current report-writer layout" })).toHaveTextContent(
       "Pivot draft · 2 dimensions · 2 metrics · 1 formula · 1 filter in draft"
     );
     fireEvent.dragStart(sourceField!, { dataTransfer });
     fireEvent.drop(formulas, { dataTransfer });
-    expect(within(formulas).getByText("pnl")).toBeInTheDocument();
-    await user.click(within(formulas).getByRole("button", { name: "Remove pnl" }));
-    expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
+    expect(within(formulas).getByText("Gross exposure")).toBeInTheDocument();
+    await user.click(within(formulas).getByRole("button", { name: "Remove Gross exposure" }));
+    expect(within(formulas).queryByText("Gross exposure")).not.toBeInTheDocument();
     fireEvent.dragStart(sourceField!, { dataTransfer });
     fireEvent.drop(formulas, { dataTransfer });
-    expect(within(formulas).getByText("pnl")).toBeInTheDocument();
+    expect(within(formulas).getByText("Gross exposure")).toBeInTheDocument();
     await user.click(within(grid).getByRole("button", { name: "Reset Sector Pivot report-writer draft" }));
-    expect(within(formulas).queryByText("pnl")).not.toBeInTheDocument();
+    expect(within(formulas).queryByText("Gross exposure")).not.toBeInTheDocument();
   });
 
   it("saves no-code report-writer drafts through the governed template endpoint", async () => {
@@ -2575,16 +2578,12 @@ describe("ReportingScreen", () => {
     expect(grid).toHaveTextContent("New report · not saved yet");
     expect(within(grid).getByLabelText("Custom report 1 draft name")).toHaveValue("custom-report-1");
     const sourceFields = within(grid).getByRole("list", { name: "Custom report 1 source fields" });
-    const transferStore = new Map<string, string>();
-    const dataTransfer = {
-      effectAllowed: "",
-      setData: vi.fn((type: string, value: string) => transferStore.set(type, value)),
-      getData: vi.fn((type: string) => transferStore.get(type) ?? "")
-    };
-    fireEvent.dragStart(within(sourceFields).getByText("Strategy").closest("[role='listitem']")!, { dataTransfer });
-    fireEvent.drop(within(grid).getByRole("group", { name: "Custom report 1 Rows drop zone" }), { dataTransfer });
-    fireEvent.dragStart(within(sourceFields).getByText("Gross exposure").closest("[role='listitem']")!, { dataTransfer });
-    fireEvent.drop(within(grid).getByRole("group", { name: "Custom report 1 Metrics drop zone" }), { dataTransfer });
+    expect(within(sourceFields).queryByRole("listitem")).not.toBeInTheDocument();
+    expect(within(grid).getByRole("button", { name: "Preview Custom report 1 report-writer grid" })).toBeDisabled();
+    await user.selectOptions(within(grid).getByLabelText("Custom report 1 preview dataset"), "source:retained-reporting-rows");
+    expect(sourceFields).toHaveTextContent("Gross exposure");
+    await user.selectOptions(within(grid).getByLabelText("Add field to Custom report 1 Rows"), "source:strategy");
+    await user.selectOptions(within(grid).getByLabelText("Add field to Custom report 1 Metrics"), "source:grossExposure");
 
     await user.click(within(grid).getByRole("button", { name: "Save Custom report 1 as report template draft" }));
 
@@ -2874,7 +2873,7 @@ describe("ReportingScreen", () => {
       name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
     });
 
-    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "ledgerFacts");
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "portfolioPositions");
     fireEvent.change(within(grid).getByLabelText("Sector Pivot custom formula name"), {
       target: { value: "gainLossRatio" }
     });
@@ -2898,7 +2897,7 @@ describe("ReportingScreen", () => {
       templateId: { name: "investor-monthly-statement", version: 1 },
       parameters: {
         preview: "browser-report-writer",
-        previewDataset: "ledgerFacts"
+        previewDataset: "portfolioPositions"
       },
       grids: [
         {
@@ -2923,18 +2922,17 @@ describe("ReportingScreen", () => {
     });
     expect(request.datasetRows).toHaveLength(4);
     expect(request.datasetRows[0]).toMatchObject({
-      previewDataset: "ledgerFacts",
-      sector: "Operating expense",
+      sector: "Technology",
       strategy: "Core",
-      marketValue: "250",
-      pnl: "25"
+      marketValue: "100",
+      pnl: "18"
     });
     expect(request.datasetRows[1]).toMatchObject({
       strategy: "Core"
     });
     await waitFor(() => {
       expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
-        "Sector Pivot preview rendered."
+        "Sector Pivot preview rendered with warnings."
       );
     });
     const preview = within(grid).getByLabelText("Sector Pivot live preview");
@@ -3145,7 +3143,7 @@ describe("ReportingScreen", () => {
       name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
     });
 
-    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "ledgerFacts");
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "portfolioPositions");
     await user.selectOptions(within(grid).getByLabelText("Sector Pivot draft grid type"), "Contribution");
     fireEvent.change(within(grid).getByLabelText("Sector Pivot filter field"), {
       target: { value: "" }
@@ -3185,8 +3183,8 @@ describe("ReportingScreen", () => {
       ]),
       filters: null
     });
-    expect(request.datasetRows.map((row: Record<string, string>) => row.pnl)).toEqual(["150", "-50", "0", "25"]);
-    expect(request.datasetRows.map((row: Record<string, string>) => row.riskLimit)).toEqual(["10", "20", "30", "40"]);
+    expect(request.datasetRows.map((row: Record<string, string>) => row.pnl)).toEqual(["18", "-6", "4", "0"]);
+    expect(request.datasetRows[0]).not.toHaveProperty("riskLimit");
     expect(request.datasetRows[0]).not.toHaveProperty("round");
     expect(request.datasetRows[0]).not.toHaveProperty("percent");
     expect(request.datasetRows[0]).not.toHaveProperty("basisPoints");
@@ -3386,12 +3384,41 @@ describe("ReportingScreen", () => {
     await user.click(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" }));
 
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
-      "Sector Pivot custom dataset is invalid."
+    expect(within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" })).toBeDisabled();
+    expect(grid).toHaveTextContent("Custom JSON dataset must be an array of row objects.");
+  });
+
+  it("drops an in-flight preview when its retained dataset disappears", async () => {
+    const user = userEvent.setup();
+    let completePreview!: (response: Response) => void;
+    fetchMock.mockReturnValueOnce(new Promise<Response>((resolve) => { completePreview = resolve; }));
+    const initialEntries = ["/reporting/report-builder"];
+    const { rerender } = renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries });
+    const grid = screen.getByRole("group", { name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid" });
+    const previewButton = within(grid).getByRole("button", { name: "Preview Sector Pivot report-writer grid" });
+
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "source:portfolio-reporting-cuts");
+    expect(grid).toHaveTextContent("Fields absent from this dataset");
+    await user.click(previewButton);
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+    const request = fetchMock.mock.calls[0][1] as RequestInit;
+
+    rerender(
+      <TestMemoryRouter initialEntries={initialEntries}>
+        <ReportingScreen data={{ ...accounting, reporting: { ...accounting.reporting, reportWriterDatasetSources: [] } }} />
+      </TestMemoryRouter>
     );
-    expect(screen.getByRole("status", { name: "Preview report-writer grid status" })).toHaveTextContent(
-      "Custom JSON dataset must be an array of row objects."
-    );
+    expect(grid).toHaveTextContent("The selected retained dataset is unavailable.");
+    expect(request.signal?.aborted).toBe(true);
+    await act(async () => {
+      completePreview(new Response(JSON.stringify({
+        templateId: { name: "investor-monthly-statement", version: 1 },
+        missingRequiredParameters: [],
+        grids: [{ gridId: "sector-pivot", title: "Stale", kind: "Pivot", columns: [], rows: [], warnings: [] }]
+      })));
+    });
+    expect(within(grid).queryByLabelText("Sector Pivot live preview")).not.toBeInTheDocument();
+    expect(previewButton).toBeDisabled();
   });
 
   it("keeps governed run controls out of Report Builder", () => {
@@ -3597,6 +3624,7 @@ describe("ReportingScreen", () => {
       name: "Investor Monthly Statement Sector Pivot Pivot report-writer grid"
     });
 
+    await user.selectOptions(within(grid).getByLabelText("Sector Pivot preview dataset"), "portfolioPositions");
     // The saved "strategy = Core" filter pre-fills the first row; add two more.
     await user.click(within(grid).getByRole("button", { name: "Add Sector Pivot filter" }));
     await user.selectOptions(within(grid).getByLabelText("Sector Pivot filter 2 field"), "marketValue");

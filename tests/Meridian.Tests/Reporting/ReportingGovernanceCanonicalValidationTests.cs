@@ -426,6 +426,44 @@ public sealed class ReportingGovernanceCanonicalValidationTests
     }
 
     [Fact]
+    public async Task Coordinator_SearchRequiresRunAudienceBeforeApplyingTheVisibleLimit()
+    {
+        var repository = new MemoryGovernanceRepository();
+        var template = CoordinatorTemplate();
+        var coordinator = CreateCoordinator(
+            repository,
+            new ReportingRunCertificationService(new VersionedCoordinatorSource(), new CoordinatorReconciliationSource()),
+            new ReportingOrchestrationService(new SingleTemplateCatalog(template), new DeterministicReportingSectionRenderer(), () => Now),
+            new RestartableArtifactStore(Now),
+            new RestartableArtifactCatalog(),
+            new RestartableArtifactAuditStore(),
+            new DeterministicReportingCertifiedArtifactProducer(),
+            template);
+        var scenario = NewScenario();
+        var service = new ReportingGovernanceService(repository, new FixedTimeProvider(Now),
+            prefix => $"{prefix}-{Guid.NewGuid():N}");
+        var hidden = await service.CreateRunAsync(scenario.Request with
+        {
+            RunId = "find-a-private",
+            Access = scenario.Request.Access with
+            {
+                Mode = ReportingGovernanceAccessMode.Private,
+                OwnerPrincipalId = scenario.Creator.ActorId,
+                AllowOwnerAccess = true
+            }
+        }, scenario.Creator);
+        var visible = await service.CreateRunAsync(scenario.Request with
+        {
+            RunId = "find-z-visible",
+            SeriesId = "another-series"
+        }, scenario.Creator);
+        var reader = CoordinatorCaller("search-reader");
+
+        (await coordinator.SearchRunsAsync("find-", limit: 1, reader)).Select(run => run.RunId).Should().Equal(visible.RunId);
+        (await coordinator.SearchRunsAsync(hidden.RunId, limit: 1, reader)).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task Coordinator_PreUpgradePackageWithoutPreviewRemainsGovernableAndDiscoverableAfterRelease()
     {
         var template = CoordinatorTemplate();
@@ -1836,6 +1874,22 @@ public sealed class ReportingGovernanceCanonicalValidationTests
             ValueTask.FromResult<IReadOnlyList<GovernedReportingRun>>(_runs.Values
                 .Where(run => run.Scope.TenantId == tenantId && run.SeriesId == seriesId)
                 .OrderBy(run => run.Revision)
+                .ToArray());
+
+        public ValueTask<IReadOnlyList<string>> FindRunIdsAsync(
+            string tenantId,
+            string companyId,
+            string query,
+            int offset,
+            int limit,
+            CancellationToken cancellationToken = default) =>
+            ValueTask.FromResult<IReadOnlyList<string>>(_runs.Values
+                .Where(run => run.Scope.TenantId == tenantId && run.Scope.CompanyId == companyId &&
+                    run.RunId.StartsWith(query, StringComparison.OrdinalIgnoreCase))
+                .Select(static run => run.RunId)
+                .Order(StringComparer.Ordinal)
+                .Skip(offset)
+                .Take(limit)
                 .ToArray());
 
         public ValueTask AddRunAsync(
