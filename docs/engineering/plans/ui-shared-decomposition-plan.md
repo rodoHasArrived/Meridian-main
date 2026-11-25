@@ -1,6 +1,6 @@
 # Ui.Shared Decomposition Plan
 
-**Status:** proposed
+**Status:** active (Phase 0 in progress)
 **Owner:** core-team
 **Reviewed:** 2026-11-25
 
@@ -52,21 +52,47 @@ dependency. Both the web host and WPF consume those projects directly.
 Non-goals: changing behaviour, routes, DTO shapes, persisted formats, or the WPF/browser feature
 set. Each phase is a pure move plus wiring change.
 
+## Phase 0 findings
+
+The [inventory](ui-shared-decomposition-inventory.md) (from `build/scripts/ui-shared-inventory.py`)
+changed the plan in four ways:
+
+1. **Reporting, Accounting and Evidence depend on each other in cycles.** For example, accounting
+   readiness reads `ReportPackRunReadService`, and Evidence reads `PostedLedgerAmountProvenanceService`
+   and `TrialBalanceAmountProvenanceService`. One-directional projects aren't possible yet, so these
+   three clusters (about 93K lines) first move together into one project. They split later, once
+   the cycles are broken behind interfaces.
+2. **50 movable files reach back into the adapter layer.** Nearly all of them go through a few
+   seams: the HTTP tenant-context accessor (`HttpContextWorkstationTenantContextAccessor` /
+   `IWorkstationTenantContextAccessor`), `EndpointAuthorization`, enums and DTOs declared next to
+   endpoints (`ApprovalState`, `OperationsContinuityWorkflowDto`, `OperationsTimelineEntryDto`), and
+   source-generated JSON contexts under `Serialization/`. These have to move down before anything
+   else can leave, so they get their own phase (1a).
+3. **About 28K lines of services have no domain prefix** (the "Workstation" bucket). These include
+   `WorkstationServiceCollectionExtensions`, `WorkstationWorkflowSummaryService`, the audit-trail
+   and intercompany authorities, and `OmsIntegrationService`. Each needs triage: stay as adapter, or
+   move with a domain.
+4. **Internals visibility crosses assemblies.** `Meridian.Application` grants
+   `InternalsVisibleTo("Meridian.Ui.Shared")`, and `Ui.Shared` grants it to `Meridian.Tests`,
+   `Meridian.Storage.Tests` and `Meridian.Execution.Tests`. Every new project needs the matching
+   grants, and moved code that uses Application internals needs an explicit grant from Application.
+   43 internal types are used outside their own cluster.
+
 ## Target shape
 
 ```text
-Meridian.Workstation.Reporting      (new)  report packs, reporting runs/schedules, statements, capital-call notices
-Meridian.Workstation.Accounting     (new)  accounting configuration/readiness, ledger provenance, fund-account close, reconciliation reads
-Meridian.Workstation.SecurityMaster (new)  security-master workstation services
-Meridian.Workstation.Operations     (new)  provider/brokerage connection, backfill coordination, Lean export, trading/risk/strategy reads
-Meridian.Workstation.Evidence       (new)  Evidence/ graph, contributors, statement-to-report workflow
-Meridian.Ui.Shared                  (kept) Endpoints/, DTO extensions, auth, streaming, serialization, HtmlTemplateGenerator
+Meridian.Workstation.Abstractions  (new)  tenant-context interface, shared workflow DTOs/enums, JSON contexts used by services
+Meridian.Workstation.Finance       (new)  reporting, accounting/ledger/fund operations and Evidence (split later once acyclic)
+Meridian.Workstation.SecurityMaster (new) security-master workstation services
+Meridian.Workstation.Operations    (new)  provider/brokerage connection, backfill coordination, Lean export, trading/risk/strategy reads
+Meridian.Ui.Shared                 (kept) Endpoints/, DTO extensions, HTTP tenant accessor, auth, streaming, HtmlTemplateGenerator
 ```
 
 Dependency rules for the new projects:
 
 - They may reference domain projects (`Contracts`, `Application`, `Reporting`, `Storage`, and so
-  on) and each other only in one direction: `Evidence` → `Reporting` → `Accounting`.
+  on) and `Workstation.Abstractions`. `Finance`, `SecurityMaster` and `Operations` must not
+  reference each other until the inventory shows the needed edges are one-directional.
 - They must **not** reference `Meridian.Ui.Shared`, `Microsoft.AspNetCore.App`, or any WPF
   assembly.
 - `Meridian.Ui.Shared` references the new projects. `Meridian.Wpf` and `Meridian.Ui.Services` move
@@ -86,22 +112,38 @@ Each phase is one or more PRs, and each must leave `Meridian CI / quality-gate` 
 
 ### Phase 0: Guardrails and inventory (1 PR, no moves)
 
-- Generate a dependency inventory of `Services/` and `Evidence/`: which types each file uses,
-  which `internal` members cross a proposed cluster boundary, and which DI registration owns them.
-  Commit it under `docs/generated/` or keep it as a CI artifact, following
-  `docs/engineering/generated-output-delivery.md`.
-- Add a ratchet test in `tests/Meridian.Tests/Architecture/` that fails if `Ui.Shared/Services/`
-  gains files or lines beyond the current baseline. This stops the project growing while the split
-  is under way. Follow the style of `AccountingSemanticsBoundaryTests.cs`.
-- Agree the project names and cluster boundaries (this document).
+- Done: `build/scripts/ui-shared-inventory.py` and the reviewed
+  [inventory snapshot](ui-shared-decomposition-inventory.md). Findings are summarized above.
+- Done: `tests/Meridian.Tests/Architecture/UiSharedServiceGrowthRatchetTests.cs`. It caps the
+  number of distinct service-like type names (`*Service`, `*Store`, `*Coordinator` and so on) in
+  `Ui.Shared/Services/` (225) and `Evidence/` (16). It counts type names rather than files or
+  lines, so bug fixes and the god-file plan's partial-class splits aren't blocked. Each move PR
+  lowers the ceilings.
+- Open: sign off on project names and the revised cluster boundaries.
 
-### Phase 1: Reporting (largest cluster, ~36K lines, 2–3 PRs)
+### Phase 1a: Move the shared seams down (1–2 PRs)
 
-- Create `Meridian.Workstation.Reporting`.
-- Move `ReportPack*`, `Reporting*`, `Report*` read and command services, `Statement*` and
-  `CapitalCall*` in batches, each PR independently green.
+- Create `Meridian.Workstation.Abstractions` (no ASP.NET reference).
+- Move `IWorkstationTenantContextAccessor`, the workflow enums and DTOs that services use
+  (`ApprovalState`, `OperationsContinuityWorkflowDto` and similar), and the JSON contexts those
+  services serialize with. `HttpContextWorkstationTenantContextAccessor` and
+  `EndpointAuthorization` stay in `Ui.Shared`. Services that call `EndpointAuthorization` directly
+  get an abstraction for it, or stay behind until they do.
+- Keep namespaces, so this is a move plus `.csproj` change only.
+- Success measure: the inventory's "Movable files that reference the adapter layer" list shrinks to
+  the files that genuinely need HTTP types.
+
+### Phase 1b: Finance (reporting, accounting and evidence, ~93K lines)
+
+- Create `Meridian.Workstation.Finance`. Because of the cycles described above, reporting,
+  accounting and Evidence move into this one project.
+- A moved file can't reference code left in `Ui.Shared` (that would be a back-reference), so a
+  batch must take a whole cycle at once. In practice that's one large pure-move PR for the three
+  clusters, plus small follow-ups for stragglers the compiler finds. Re-run the inventory first and
+  move only files whose remaining `Ui.Shared` dependencies are already in `Abstractions` or in the
+  batch itself.
 - Split the reporting part out of `WorkstationServiceCollectionExtensions` into
-  `AddWorkstationReporting(this IServiceCollection)` in the new project, and call it from the
+  `AddWorkstationFinance(this IServiceCollection)` in the new project, and call it from the
   existing extension so the host's registration order doesn't change.
 - Keep the `[Obsolete]` reporting compatibility types (`ReportingScheduleStore`,
   `ReportingScheduleService` members, `ReportingRunCertificationService` legacy overload) as they
@@ -109,20 +151,16 @@ Each phase is one or more PRs, and each must leave `Meridian CI / quality-gate` 
 - Validation: targeted test projects that cover reporting
   (`tests/Meridian.Tests` with `FullyQualifiedName~Reporting`), plus a full solution build.
 
-### Phase 2: Accounting, ledger and fund operations (~24K lines, 2 PRs)
+### Phase 2 and 3: (merged into Phase 1b)
 
-- Create `Meridian.Workstation.Accounting` and move the cluster.
-- Watch the existing rule in `AccountingSemanticsBoundaryTests`. Extend that test to cover the new
-  project rather than weakening it.
-- `AccountingProductionReadinessService.cs` (~3.4K lines) moves as one file here. Splitting it
-  belongs to `docs/engineering/plans/god-file-burn-down-plan.md`, not this plan.
+Accounting, ledger, fund operations and `Evidence/` move with reporting in Phase 1b because of the
+cycles. Two notes carried over:
 
-### Phase 3: Evidence (~16K lines, 1 PR)
-
-- Move `Evidence/` to `Meridian.Workstation.Evidence`, including
-  `StatementToReportWorkflowService.Compatibility.cs`.
+- `AccountingSemanticsBoundaryTests` must be extended to cover `Meridian.Workstation.Finance`,
+  not weakened.
 - The legacy `StatementToReport` HTTP routes stay in `Ui.Shared/Endpoints/`. Only the services
-  move.
+  move. `AccountingProductionReadinessService.cs` moves whole; splitting it belongs to
+  `god-file-burn-down-plan.md`.
 
 ### Phase 4: Security master and operations (~18K lines, 2 PRs)
 
@@ -143,6 +181,9 @@ Each phase is one or more PRs, and each must leave `Meridian CI / quality-gate` 
 
 ### Phase 6: Trim Ui.Shared and update docs (1 PR)
 
+- Triage the remaining unprefixed "Workstation" services: keep as adapter, or move with a domain.
+- Optionally split `Meridian.Workstation.Finance` into reporting, accounting and evidence projects
+  once the inventory shows one-directional edges.
 - Trim `Meridian.Ui.Shared.csproj` project references down to what endpoints actually need.
 - Decide what happens to `HtmlTemplateGenerator*.cs`: document it as the deliberate fallback page,
   or move it into the workstation. That decision is separate from this split.

@@ -22,6 +22,7 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 | [Desktop Workstation Screen Checklist Reference](desktop-workstation-screen-blueprint.md) | Preserves the twenty screen scopes and heading contract used by desktop checklist/workflow validation |
 | [God-File Burn-Down Plan](god-file-burn-down-plan.md) | Burn-down targets for oversized source files |
 | [Ui.Shared Decomposition Plan](ui-shared-decomposition-plan.md) | Phased split of domain services out of `Meridian.Ui.Shared` into ASP.NET-free projects |
+| [Ui.Shared Decomposition Inventory](ui-shared-decomposition-inventory.md) | Phase 0 dependency snapshot backing the decomposition plan |
 | [Bond Capability Expansion](bond-capability-expansion.md) | Shared bond economics, analytics, retained input replay, browser integration and reviewed full cutover |
 | [Web-UI Improvements Implementation Plan (2026-07)](web-ui-improvements-implementation-plan-2026-07.md) | Phased plan for the nine browser-workstation brainstorm ideas |
 | [Browser Workstation UX Review and Improvement Plan (2026-11)](web-workstation-ux-review-plan-2026-11.md) | UX review findings (P1–P10), the 2026-11-10 extended review (C1–C6, V1–V7, F1–F8) and the Phase 3–7 roadmap building on UI Phase 0–2; Phase 3 in progress |
