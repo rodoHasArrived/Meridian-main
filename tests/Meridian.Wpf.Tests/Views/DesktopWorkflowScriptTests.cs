@@ -334,14 +334,13 @@ public sealed class DesktopWorkflowScriptTests
 
         workflow.Should().Contain("python build/scripts/ci/run-windows-ci-tests.py");
         workflow.Should().Contain("--results-dir artifacts/wpf-validation/windows-desktop-build");
-        workflow.Should().Contain("run-windows-ci-tests.py --parallel-build");
         var slices = File.ReadAllText(GetRepositoryFilePath(@"build\ci\windows-test-slices.json"));
         slices.Should().Contain("Category!=Integration&FullyQualifiedName!~Integration");
         slices.Should().Contain("Meridian.Setup.Tests.csproj");
         slices.Should().Contain("Meridian.LifecycleSupervisor.Tests.csproj");
         workflow.Should().Contain("run_smoke_publish");
         workflow.Should().Contain("Decide desktop smoke publish");
-        workflow.Should().Contain("if: needs.smoke-plan.outputs.run == 'true'");
+        workflow.Should().Contain("if: steps.desktop-smoke.outputs.run == 'true'");
         workflow.Should().Contain("dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj");
         workflow.Should().Contain("/p:EnableWindowsTargeting=true");

@@ -321,10 +321,6 @@ only as numeric compatibility aliases for previously saved workspace state.
 envelopes, with URLs built from `UiApiRoutes`. `GetRecentQuotesAsync` returns at most one quote,
 because the server keeps only the current quote.
 
-`HttpClientFactoryProvider.PrimaryHandlerDecoratorForTests` is an internal test seam for the
-compatibility clients. Production never sets it; `Meridian.Wpf.Tests` uses it to refuse requests to
-an absent loopback backend at once instead of waiting on the socket.
-
 ## Diagrams
 
 See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
