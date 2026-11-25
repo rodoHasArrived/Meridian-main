@@ -1,3 +1,4 @@
+using System.IO.Enumeration;
 using Meridian.Contracts.Etl;
 using Meridian.Contracts.Integrity;
 using Meridian.Infrastructure.Etl.Sftp;
@@ -278,13 +279,15 @@ public sealed class SftpFileSourceReader : IEtlSourceReader
             source.HostKeySha256Fingerprint));
     }
 
+    /// <summary>
+    /// Matches <paramref name="fileName"/> against a <c>;</c>-separated list of wildcard patterns
+    /// (<c>*</c> any run of characters, <c>?</c> one character) over the whole name, case-insensitive,
+    /// the same way <see cref="LocalFileSourceReader"/> lists local files. The previous matcher
+    /// understood only <c>*.ext</c> and treated everything else as a substring, so <c>*</c> and
+    /// <c>trades_*.csv</c> matched nothing and <c>trades.csv</c> also matched <c>old_trades.csv</c>.
+    /// </summary>
     private static bool MatchesAny(string fileName, string pattern)
         => pattern
             .Split(';', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries)
-            .Any(part => Matches(fileName, part));
-
-    private static bool Matches(string fileName, string pattern)
-        => pattern.StartsWith("*.", StringComparison.Ordinal)
-            ? fileName.EndsWith(pattern[1..], StringComparison.OrdinalIgnoreCase)
-            : fileName.Contains(pattern, StringComparison.OrdinalIgnoreCase);
+            .Any(part => FileSystemName.MatchesSimpleExpression(part, fileName, ignoreCase: true));
 }

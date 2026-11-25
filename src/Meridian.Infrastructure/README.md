@@ -700,6 +700,9 @@ imports and exports fail closed before trusting a remote server identity.
 Uploads go to a temporary remote name and are renamed into place; single-file and directory
 publishes both honour `OverwriteIfExists`, and an upload or rename that fails removes its temporary
 file on a best-effort basis.
+SFTP source file patterns are `;`-separated wildcards (`*`, `?`) matched against the whole file name,
+case-insensitive, the same way the local reader lists files; `*`, `trades_*.csv` and exact names now
+behave the same over SFTP as on disk.
 SFTP imports **and exports** resolve credentials through the same `ISftpCredentialResolver`:
 `ResolveAsync` has source and destination overloads that share one secret model, so an `env:`
 reference resolves identically on both sides. Before this the publisher passed
