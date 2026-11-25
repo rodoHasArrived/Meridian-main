@@ -77,8 +77,9 @@ governed accounting ledger, keyed by an accounting `periodId`. All eleven tools 
 
 To post, correct or close a ledger, use the workstation's governed accounting flows. No MCP tool
 writes to a ledger. A refused or unavailable result means the session lacks access or the ledger is
-not retained; do not fall back to reading journal files. `LedgerToolRoutingTests` fails when a tool
-in `Tools/LedgerTools.cs` is missing from this table or from the Claude project context.
+not retained; do not fall back to reading journal files. Assistants route here through the
+`meridian-accounting` skill. `LedgerToolRoutingTests` fails when a tool in `Tools/LedgerTools.cs`
+is missing from this table, the Claude project context, or that skill.
 
 Set `MDC_API_URL` to the API origin (default `http://localhost:8080/`). HTTPS is required for
 non-loopback hosts. HTTP password sign-in on loopback is supported only when the server explicitly

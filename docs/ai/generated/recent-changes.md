@@ -1,11 +1,12 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-25T19:44:47Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-25T19:53:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
+| `src/Meridian.Mcp/README.md` | MCP Integration | 2026-11-25T19:50:44+00:00 | `9bf7b131` | docs(mcp,ai-nav): route the eleven read-only ledger MCP tools | 2 |
 | `src/Meridian.Mcp/Resources/AdrResources.cs` | MCP Integration | 2026-11-25T19:34:30+00:00 | `1ca2a0eb` | fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths | 2 |
 | `src/Meridian.Mcp/Services/RepoPathService.cs` | MCP Integration | 2026-11-25T19:34:30+00:00 | `1ca2a0eb` | fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths | 2 |
 | `src/Meridian.Mcp/Tools/AdrTools.cs` | MCP Integration | 2026-11-25T19:34:30+00:00 | `1ca2a0eb` | fix(mcp,docs): read archived ADRs, unify Python launcher, fix stale AI paths | 2 |
@@ -45,5 +46,4 @@ Rolling source-file activity for the last 14 days.
 | `src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.test.mjs` | Desktop and UI Workflows | 2026-11-25T05:29:58-07:00 | `adc8f97c` | ci: shorten the quality-gate critical path (#3742) | 1 |
 | `src/Meridian.Ui/dashboard/scripts/vitest-files.mjs` | Desktop and UI Workflows | 2026-11-25T05:29:58-07:00 | `adc8f97c` | ci: shorten the quality-gate critical path (#3742) | 1 |
 | `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 11 |
-| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 8 |
 

@@ -7,8 +7,9 @@ using Xunit;
 namespace Meridian.Tests.Mcp;
 
 /// <summary>
-/// Every ledger MCP tool must be routable: named in the MCP README routing table and in the
-/// Claude project context, so assistants know when to call it instead of reading journal files.
+/// Every ledger MCP tool must be routable: named in the MCP README routing table, the Claude
+/// project context, and the accounting skill, so assistants know when to call it instead of
+/// reading journal files.
 /// </summary>
 public sealed class LedgerToolRoutingTests
 {
@@ -16,6 +17,7 @@ public sealed class LedgerToolRoutingTests
     [
         "src/Meridian.Mcp/README.md",
         ".claude/skills/_shared/project-context.md",
+        ".claude/skills/meridian-accounting/SKILL.md",
     ];
 
     [Fact]

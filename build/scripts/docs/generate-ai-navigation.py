@@ -696,17 +696,17 @@ TASK_ROUTE_SEEDS: list[dict[str, Any]] = [
     },
     {
         "id": "ledger-mcp-reads",
-        "title": "Ledger reads over MCP",
-        "description": "Use when answering a question from a strategy run's ledger or the posted accounting books, or when changing the read-only ledger MCP tools.",
-        "keywords": ["ledger", "trial balance", "journal", "running balance", "completeness", "posted", "integrity"],
+        "title": "Accounting, posting controls, and ledger reads",
+        "description": "Use for event-based accounting design, posting-control or projection/replay review, or answering a question from a strategy run's ledger or the posted books with the read-only ledger MCP tools.",
+        "keywords": ["ledger", "accounting", "posting", "trial balance", "journal", "running balance", "completeness", "posted", "integrity", "reversal", "period lock", "projection", "replay"],
         "subsystems": ["mcp-integration", "domain-ledger-fsharp"],
         "startProjects": ["Meridian.Mcp", "Meridian.Ledger"],
         "startSymbols": ["LedgerTools"],
         "docs": [
             "src/Meridian.Mcp/README.md",
-            "docs/ai/navigation/README.md",
+            "docs/ai/context/accounting-context.md",
         ],
-        "recommendedSkill": "meridian-repo-navigation",
+        "recommendedSkill": "meridian-accounting",
         "recommendedAgent": "repo-navigation-agent",
     },
 ]

@@ -1,6 +1,6 @@
 # Meridian AI Repo Navigation
 
-> Auto-generated on 2026-11-25T19:44:47Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-25T19:53:55Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 ## Quick Start
 
@@ -14,7 +14,7 @@ Use this file when an assistant needs fast orientation before reading subsystem-
 | WPF and workstation workflow issues | `Meridian.Wpf`, `Meridian.Ui.Services`, `Meridian.Ui.Shared`, `Meridian` | `docs/engineering/plans/wpf-web-ui-alignment-plan.md`, `docs/ai/ai-known-errors.md` |
 | Storage and WAL investigations | `Meridian.Storage`, `Meridian.Application` | `docs/ai/claude/CLAUDE.storage.md`, `docs/ai/ai-known-errors.md` |
 | MCP tools, prompts, and resources | `Meridian.Mcp` | `docs/ai/navigation/README.md`, `docs/ai/README.md` |
-| Ledger reads over MCP | `Meridian.Mcp`, `Meridian.Ledger` | `src/Meridian.Mcp/README.md`, `docs/ai/navigation/README.md` |
+| Accounting, posting controls, and ledger reads | `Meridian.Mcp`, `Meridian.Ledger` | `src/Meridian.Mcp/README.md`, `docs/ai/context/accounting-context.md` |
 
 ## Subsystems
 
@@ -216,6 +216,7 @@ Recent source-file activity from the last 14 days.
 
 | File | Subsystem | Last commit | Touches |
 |---|---|---|---|
+| `src/Meridian.Mcp/README.md` | MCP Integration | `9bf7b131` (2026-11-25T19:50:44+00:00) | 2 |
 | `src/Meridian.Mcp/Resources/AdrResources.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
 | `src/Meridian.Mcp/Services/RepoPathService.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
 | `src/Meridian.Mcp/Tools/AdrTools.cs` | MCP Integration | `1ca2a0eb` (2026-11-25T19:34:30+00:00) | 2 |
@@ -230,5 +231,4 @@ Recent source-file activity from the last 14 days.
 | `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.cs` | Desktop and UI Workflows | `57f8f306` (2026-11-25T07:27:41-07:00) | 10 |
 | `src/Meridian.Application/Backfill/BackfillCoordinator.cs` | Host and Composition | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
 | `src/Meridian.Infrastructure/Adapters/Core/CompositeHistoricalDataProvider.cs` | Providers and Storage | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
-| `src/Meridian.Infrastructure/README.md` | Providers and Storage | `57f8f306` (2026-11-25T07:27:41-07:00) | 6 |
 

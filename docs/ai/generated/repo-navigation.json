@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-11-25T19:44:47Z",
+  "generatedAt": "2026-11-25T19:53:55Z",
   "generatorVersion": "1.1",
   "repositoryRoot": "Meridian-main",
   "subsystems": [
@@ -2929,16 +2929,22 @@
     },
     {
       "id": "ledger-mcp-reads",
-      "title": "Ledger reads over MCP",
-      "description": "Use when answering a question from a strategy run's ledger or the posted accounting books, or when changing the read-only ledger MCP tools.",
+      "title": "Accounting, posting controls, and ledger reads",
+      "description": "Use for event-based accounting design, posting-control or projection/replay review, or answering a question from a strategy run's ledger or the posted books with the read-only ledger MCP tools.",
       "keywords": [
         "ledger",
+        "accounting",
+        "posting",
         "trial balance",
         "journal",
         "running balance",
         "completeness",
         "posted",
-        "integrity"
+        "integrity",
+        "reversal",
+        "period lock",
+        "projection",
+        "replay"
       ],
       "subsystems": [
         "mcp-integration",
@@ -2961,9 +2967,9 @@
       ],
       "authoritativeDocs": [
         "src/Meridian.Mcp/README.md",
-        "docs/ai/navigation/README.md"
+        "docs/ai/context/accounting-context.md"
       ],
-      "recommendedSkill": "meridian-repo-navigation",
+      "recommendedSkill": "meridian-accounting",
       "recommendedAgent": "repo-navigation-agent"
     }
   ],
@@ -3471,6 +3477,14 @@
   ],
   "recentChanges": [
     {
+      "path": "src/Meridian.Mcp/README.md",
+      "subsystem": "MCP Integration",
+      "lastModified": "2026-11-25T19:50:44+00:00",
+      "lastCommit": "9bf7b131",
+      "lastSummary": "docs(mcp,ai-nav): route the eleven read-only ledger MCP tools",
+      "touches": 2
+    },
+    {
       "path": "src/Meridian.Mcp/Resources/AdrResources.cs",
       "subsystem": "MCP Integration",
       "lastModified": "2026-11-25T19:34:30+00:00",
@@ -3781,14 +3795,6 @@
       "lastCommit": "cb5d7320",
       "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
       "touches": 11
-    },
-    {
-      "path": "src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts",
-      "subsystem": "Desktop and UI Workflows",
-      "lastModified": "2026-11-25T03:02:09-07:00",
-      "lastCommit": "cb5d7320",
-      "lastSummary": "Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731)",
-      "touches": 8
     }
   ],
   "recentChangesWindowDays": 14,
