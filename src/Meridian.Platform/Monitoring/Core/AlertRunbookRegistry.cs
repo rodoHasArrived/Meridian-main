@@ -276,6 +276,30 @@ public sealed class AlertRunbookRegistry
 
         Register(new AlertRunbookEntry
         {
+            AlertName = "MeridianSlowRequests",
+            Severity = "warning",
+            IncidentPriority = "P3",
+            Summary = "API route p95 response time above threshold",
+            RunbookUrl = "docs/operators/operator-runbook.md#slow-requests",
+            ProbableCauses = new[]
+            {
+                "Expensive report or read-model query",
+                "Storage latency",
+                "Lock contention",
+                "Slow downstream dependency",
+                "Host CPU or memory pressure"
+            },
+            ImmediateActions = new[]
+            {
+                "Find the route's Slow request lines in <data-root>/_logs for status and trace ids",
+                "Check host CPU and memory and mdc_pipeline_queue_utilization_ratio",
+                "Check storage latency and mdc_disk_free_bytes",
+                "Correlate trace ids when tracing is enabled"
+            }
+        });
+
+        Register(new AlertRunbookEntry
+        {
             AlertName = "MeridianDiskSpaceLow",
             Severity = "warning",
             IncidentPriority = "P3",

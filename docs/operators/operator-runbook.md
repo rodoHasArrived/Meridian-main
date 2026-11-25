@@ -272,6 +272,29 @@ reconnection overhead.
 2. Verify network path quality to the provider endpoint.
 3. Consider switching to the backup provider if the degradation is provider-side.
 
+## Slow Requests
+
+Alert: `MeridianSlowRequests` — severity warning, priority P3.
+
+The 95th-percentile response time of an API route (`mdc_http_request_duration_seconds`, labelled by
+route template) has been above 2 seconds for 10 minutes, on a route averaging at least one request
+every 10 seconds. The threshold matches the default `ApiHost:SlowRequestThresholdMs`, so each slow
+request also has a `Slow request` Warning line in the log. It is a starting value: tune it per
+deployment once the histogram shows typical p95s.
+
+**Probable causes:** an expensive report or read-model query; storage latency; lock contention; a
+slow downstream dependency; host CPU or memory pressure.
+
+**Immediate actions**
+
+1. Find the route's `Slow request` lines in `<data-root>/_logs` (category
+   `Meridian.Ui.Shared.Endpoints.RequestTimingMiddleware`) for status codes and trace identifiers.
+2. Check host CPU and memory, and `mdc_pipeline_queue_utilization_ratio` for ingest pressure.
+3. Check storage latency and `mdc_disk_free_bytes`.
+4. When tracing is enabled, follow the trace identifiers to the slow span.
+
+**Resolved when:** the route's p95 stays below 2 seconds.
+
 ## Storage Write Errors
 
 Alert: `MeridianStorageWriteErrors` — severity critical, priority P1, objective
