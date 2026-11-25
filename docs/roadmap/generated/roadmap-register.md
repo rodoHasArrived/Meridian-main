@@ -18,7 +18,7 @@ do_not_edit: true
 
 # Roadmap Register
 
-Snapshot date: 2026-11-12
+Snapshot date: 2026-11-25
 
 ## W1-DATA-001 - Provider trust gate and data confidence baseline
 | Field | Value |
@@ -131,6 +131,49 @@ W1-DATA-DEDUP-001: planned; health yellow; evidence planned_evidence. The deskto
 - `SRC-STORAGE`
 - `SRC-UI-SHARED`
 - `SRC-UI-SERVICES`
+
+## W1-DATA-PROVCFG-001 - Provider configuration, connection templates and quota-aware backfill
+| Field | Value |
+| --- | --- |
+| Wave | W1 |
+| Status | in_progress |
+| Health | green |
+| Priority | medium |
+| Owner lane | Data Confidence and Validation |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
+
+### Current Summary
+
+W1-DATA-PROVCFG-001: in_progress; health green; evidence in_progress. Registered 2026-11-25 to anchor provider-configuration work merged since 2026-11-11 without a roadmap item. Connection templates, secret-free effective configuration, provenance receipts and quota-aware backfill are bounded implementation; acceptance remains open.
+
+### Status References
+
+- Decisions: none recorded
+- PR references (not inferred acceptance): [#3572](https://github.com/rodoHasArrived/Meridian-main/pull/3572), [#3664](https://github.com/rodoHasArrived/Meridian-main/pull/3664), [#3693](https://github.com/rodoHasArrived/Meridian-main/pull/3693), [#3694](https://github.com/rodoHasArrived/Meridian-main/pull/3694), [#3695](https://github.com/rodoHasArrived/Meridian-main/pull/3695), [#3696](https://github.com/rodoHasArrived/Meridian-main/pull/3696), [#3698](https://github.com/rodoHasArrived/Meridian-main/pull/3698), [#3701](https://github.com/rodoHasArrived/Meridian-main/pull/3701), [#3706](https://github.com/rodoHasArrived/Meridian-main/pull/3706)
+- Evidence: [src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs](../../../src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs)
+- Evidence: [src/Meridian.Application/Http/EffectiveConfigurationProjection.cs](../../../src/Meridian.Application/Http/EffectiveConfigurationProjection.cs)
+- Evidence: [tests/Meridian.Tests/Application/Ui/EffectiveConfigurationProjectionTests.cs](../../../tests/Meridian.Tests/Application/Ui/EffectiveConfigurationProjectionTests.cs)
+- Evidence: [src/Meridian.Application/Backfill/BackfillQuotaPlanner.cs](../../../src/Meridian.Application/Backfill/BackfillQuotaPlanner.cs)
+- Evidence: [tests/Meridian.Tests/Application/Backfill/WorkstationBackfillQuotaTests.cs](../../../tests/Meridian.Tests/Application/Backfill/WorkstationBackfillQuotaTests.cs)
+- Evidence: [docs/operators/provider-credentials.md](../../operators/provider-credentials.md)
+- Evidence: [docs/operators/provider-backfill-operations.md](../../operators/provider-backfill-operations.md)
+
+
+### Exit Criteria
+
+- Provider connection templates create configuration through one shared service and endpoint consumed by both workstations.
+- Effective configuration never exposes provider secrets, and the redaction rules are covered by tests.
+- Backfill scheduling respects declared provider quotas, keeps reserved quota available while backfills wait, and records why a job is waiting.
+- Provider configuration changes and backfill runs retain provenance receipts that operators can inspect.
+
+### Source Modules
+
+- `SRC-APP`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
 
 ## W2-PROMO-001 - Paper promotion evidence and operator acceptance
 | Field | Value |
@@ -813,11 +856,11 @@ W7-LIVE-001: done; health green; evidence complete. Bounded live-readiness gover
 | Priority | medium |
 | Owner lane | Workstation Shell and UX |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-07-19 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W8-UX-CONSOL-001: in_progress; health on_track; evidence in_progress. Formula Workbench fold remains withdrawn pending a real catalog endpoint; that endpoint-bearing work belongs in a separate item. Retained redirects support persisted links.
+W8-UX-CONSOL-001: in_progress; health on_track; evidence in_progress. Screen consolidation only. Formula Workbench fold remains withdrawn pending a real catalog endpoint. The 2026-11 trust-and-figures UX program is tracked separately under W8-UX-TRUST-001.
 
 ### Status References
 
@@ -840,6 +883,42 @@ W8-UX-CONSOL-001: in_progress; health on_track; evidence in_progress. Formula Wo
 
 - `SRC-UI-DASHBOARD`
 
+## W8-UX-TRUST-001 - Workstation trust-and-figures UX program
+| Field | Value |
+| --- | --- |
+| Wave | W8 |
+| Status | in_progress |
+| Health | green |
+| Priority | medium |
+| Owner lane | Workstation Shell and UX |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
+
+### Current Summary
+
+W8-UX-TRUST-001: in_progress; health green; evidence in_progress. Registered 2026-11-25 to anchor the 2026-11 workstation UX program (Phases A-F, casework, command-palette record search, chart evidence inspectors, Asset Detail, shortcut editors). Presentation work over shared contracts; acceptance remains open.
+
+### Status References
+
+- Decisions: DEC-UI-CONSOLIDATION-001
+- PR references (not inferred acceptance): [#3605](https://github.com/rodoHasArrived/Meridian-main/pull/3605), [#3631](https://github.com/rodoHasArrived/Meridian-main/pull/3631), [#3638](https://github.com/rodoHasArrived/Meridian-main/pull/3638), [#3643](https://github.com/rodoHasArrived/Meridian-main/pull/3643), [#3663](https://github.com/rodoHasArrived/Meridian-main/pull/3663), [#3665](https://github.com/rodoHasArrived/Meridian-main/pull/3665), [#3699](https://github.com/rodoHasArrived/Meridian-main/pull/3699), [#3700](https://github.com/rodoHasArrived/Meridian-main/pull/3700), [#3711](https://github.com/rodoHasArrived/Meridian-main/pull/3711), [#3713](https://github.com/rodoHasArrived/Meridian-main/pull/3713)
+- Evidence: [docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md](../../engineering/plans/web-workstation-ux-review-plan-2026-11.md)
+- Evidence: [docs/engineering/plans/wpf-web-ui-alignment-plan.md](../../engineering/plans/wpf-web-ui-alignment-plan.md)
+
+
+### Exit Criteria
+
+- Every financial figure states its trust, scope and freshness once, with the same formatting across workspaces.
+- Scope survives navigation between linked records, and exceptions are listed once with a path to closure.
+- Changes stay within the seven charter root workspaces and do not alter shared contracts, read models or endpoints.
+- WPF parity for each delivered surface is recorded in the WPF alignment plan or sequenced under W8-WPF-PARITY-001.
+
+### Source Modules
+
+- `SRC-UI-DASHBOARD`
+- `SRC-WPF`
+- `SRC-UI-SHARED`
+
 ## W8-WPF-PARITY-001 - WPF desktop workstation reactivation and web-UI parity
 | Field | Value |
 | --- | --- |
@@ -849,7 +928,7 @@ W8-UX-CONSOL-001: in_progress; health on_track; evidence in_progress. Formula Wo
 | Priority | high |
 | Owner lane | Desktop Workstation |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-07-06 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
@@ -1441,11 +1520,11 @@ W9-CORPACT-011: accepted; health green; evidence complete. Unsupported branches 
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-10-31 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-BOND-001: in_progress; health green; evidence in_progress. Bond analytics and schedule/cutover tools are bounded implementation. Curve pins, batch staging, settlement posting and floating-rate analytics remain open; no live cutover or acceptance.
+W10-BOND-001: in_progress; health green; evidence in_progress. Bond analytics, schedule/cutover tools, fixed-coupon paper settlement and a book-scoped coupon/principal receipt queue are bounded implementation. Curve pins, batch staging, ledger settlement posting and floating-rate analytics remain open; no live cutover or acceptance.
 
 ### Status References
 
@@ -1622,11 +1701,11 @@ W10-RECON-001: in_progress; health yellow; evidence in_progress. Stable business
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-10-28 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-PROV-001: in_progress; health green; evidence in_progress. Posted-ledger and governed-run proof slices are implemented. Other report families, NAV/portfolio amounts, current-candidate verification and live acceptance remain open.
+W10-PROV-001: in_progress; health green; evidence in_progress. Posted-ledger and governed-run proof slices are implemented; PR 3704 adds scoped Amount passports for posted-ledger, report and brokerage-portfolio amounts. Other report families, NAV amounts, current-candidate verification and live acceptance remain open.
 
 ### Status References
 
@@ -2030,16 +2109,16 @@ W10-PERF-001: in_progress; health green; evidence in_progress. Shared return ker
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-11-13 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-CONSOL-001: planned; health green; evidence planned_evidence. Retained consolidation slices are bounded implementation; exact versioned policy, participating entities and acceptance requirements remain in the linked detail.
+W10-CONSOL-001: in_progress; health green; evidence in_progress. Retained consolidation slices are bounded implementation; exact versioned policy, participating entities and acceptance requirements remain in the linked detail.
 
 ### Status References
 
@@ -2226,16 +2305,16 @@ W10-LOT-002: in_progress; health green; evidence in_progress. Canonical lots and
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-16 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W11-PASSPORT-001: planned; health green; evidence planned_evidence. Generalize the posted-ledger proof slice into the charter Number Passport contract; planned scope confers no delivery acceptance.
+W11-PASSPORT-001: planned; health green; evidence planned_evidence. Scoped Amount passport surfaces (PR 3704) landed under W10-PROV-001 provenance, ahead of its acceptance. No standalone versioned Number Passport contract exists yet, so this row stays planned and confers no delivery acceptance.
 
 ### Status References
 
 - Decisions: DEC-CHARTER-DIRECTION-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3704](https://github.com/rodoHasArrived/Meridian-main/pull/3704)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W11-PASSPORT-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 
@@ -2669,6 +2748,47 @@ W12-ENTITY-001: accepted; health green; evidence complete. Accepted by the repos
 - `SRC-UI-SERVICES`
 - `SRC-UI-DASHBOARD`
 - `SRC-WPF`
+
+## W12-EXTGL-001 - Governed external GL posting (QuickBooks Online)
+| Field | Value |
+| --- | --- |
+| Wave | W12 |
+| Status | in_progress |
+| Health | yellow |
+| Priority | medium |
+| Owner lane | Accounting and Ledger |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
+
+### Current Summary
+
+W12-EXTGL-001: in_progress; health yellow; evidence in_progress. Registered 2026-11-25 after PR 3703 merged without a roadmap anchor. First write path from Meridian to a third-party ledger; supported envelope, failure recovery evidence and owner acceptance remain open. Implementation presence confers no acceptance.
+
+### Status References
+
+- Decisions: none recorded
+- PR references (not inferred acceptance): [#3703](https://github.com/rodoHasArrived/Meridian-main/pull/3703)
+- Evidence: [src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs](../../../src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs)
+- Evidence: [src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs](../../../src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs)
+- Evidence: [tests/Meridian.Tests/Storage/ExternalGlPostingPostgresTests.cs](../../../tests/Meridian.Tests/Storage/ExternalGlPostingPostgresTests.cs)
+- Evidence: [docs/operators/external-gl-providers.md](../../operators/external-gl-providers.md)
+
+
+### Exit Criteria
+
+- The supported provider, entity, account-mapping and journal scope is declared; unsupported combinations are refused rather than posted.
+- Every external posting is driven from posted Meridian ledger journals through a durable outbox, retains the provider's receipt, and is idempotent across retries, restarts and lost acknowledgments.
+- Rejections, partial failures and drift between the Meridian ledger and the external GL stay visible to operators with a retained resolution path; Meridian remains the source of posted accounting truth.
+- Provider credentials follow the existing credential-ownership controls and never appear in effective configuration or logs.
+- Browser and WPF expose posting status over shared contracts, or the WPF gap is sequenced under W8-WPF-PARITY-001.
+
+### Source Modules
+
+- `SRC-DESIGN-FINANCIAL-OPERATIONS`
+- `SRC-STORAGE-ACCOUNTING`
+- `SRC-PROVIDER-SDK`
+- `SRC-CONTRACTS`
+- `SRC-UI-SHARED`
 
 ## W12-FINRPT-001 - Ledger-backed financial statement control pack
 | Field | Value |
@@ -3216,27 +3336,30 @@ W12-YEND-001: in_progress; health green; evidence in_progress. A read-only fisca
 | Field | Value |
 | --- | --- |
 | Wave | W13 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Execution and Fund Accounts |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-30 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W13-OMS-001: planned; health green; evidence planned_evidence. Planned unranked reviewed order intent and canonical OMS lifecycle direction; account, risk, broker and accounting controls remain required.
+W13-OMS-001: in_progress; health green; evidence in_progress. Bounded slices landed (order command boundary Phases 0-5, governed live order authority, retained cancel-all evidence) under accepted DEC-W13-STATUS-001. Manual-intent contract, recovery, broker reconciliation, live-support evidence and acceptance remain open.
 
 ### Status References
 
 - Decisions: DEC-TRADING-STRATEGY-DIRECTION-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3644](https://github.com/rodoHasArrived/Meridian-main/pull/3644), [#3708](https://github.com/rodoHasArrived/Meridian-main/pull/3708), [#3731](https://github.com/rodoHasArrived/Meridian-main/pull/3731)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W13-OMS-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 - Evidence: [docs/product/implementation-todo-list.md](../../product/implementation-todo-list.md)
 - Evidence: [docs/domain/strategy-order-execution.md](../../domain/strategy-order-execution.md)
 - Evidence: [tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs](../../../tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs)
 - Evidence: [tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs](../../../tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs)
+- Evidence: [docs/engineering/blueprints/governed-order-command-boundary-blueprint.md](../../engineering/blueprints/governed-order-command-boundary-blueprint.md)
+- Evidence: [src/Meridian.Ui/dashboard/src/screens/trading-screen.order-authority.test.tsx](../../../src/Meridian.Ui/dashboard/src/screens/trading-screen.order-authority.test.tsx)
+- Evidence: [tests/Meridian.Tests/Execution/CancelAllIncidentTests.cs](../../../tests/Meridian.Tests/Execution/CancelAllIncidentTests.cs)
 
 
 ### Exit Criteria
@@ -3268,27 +3391,29 @@ W13-OMS-001: planned; health green; evidence planned_evidence. Planned unranked 
 | Field | Value |
 | --- | --- |
 | Wave | W13 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Strategy Analytics |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-10-30 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W13-STRAT-001: planned; health green; evidence planned_evidence. Planned unranked strategy formulation, research, backtesting, promotion and execution direction; it grants no live activation authority.
+W13-STRAT-001: in_progress; health green; evidence in_progress. Bounded slices landed (strategy-artifact identity, governed versions, scoped Designer paper execution, Designer artifact binding) under accepted DEC-W13-STATUS-001. Supported envelope, recovery, end-to-end rehearsal and acceptance remain open. No live authority.
 
 ### Status References
 
 - Decisions: DEC-TRADING-STRATEGY-DIRECTION-001
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3644](https://github.com/rodoHasArrived/Meridian-main/pull/3644), [#3686](https://github.com/rodoHasArrived/Meridian-main/pull/3686), [#3708](https://github.com/rodoHasArrived/Meridian-main/pull/3708), [#3731](https://github.com/rodoHasArrived/Meridian-main/pull/3731)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W13-STRAT-001.md)
 - Evidence: [docs/product/meridian-design-document.md](../../product/meridian-design-document.md)
 - Evidence: [docs/development/policies/promotion-policy-matrix.md](../../development/policies/promotion-policy-matrix.md)
 - Evidence: [src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs](../../../src/Meridian.Strategies/Artifacts/StrategyArtifactRegistry.cs)
 - Evidence: [src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs](../../../src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs)
 - Evidence: [tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs](../../../tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs)
+- Evidence: [docs/engineering/blueprints/strategy-artifact-identity-blueprint.md](../../engineering/blueprints/strategy-artifact-identity-blueprint.md)
+- Evidence: [tests/Meridian.Tests/Ui/DesignerPaperRehearsalTests.cs](../../../tests/Meridian.Tests/Ui/DesignerPaperRehearsalTests.cs)
 
 
 ### Exit Criteria

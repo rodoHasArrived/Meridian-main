@@ -148,35 +148,39 @@ fatal even if those diagnostic builds pass, and no test shards start. The runner
 the solution enables every selected project in `Release` without remapping its configuration.
 Explicit `--project` overrides and other configurations keep the serial build path.
 
-Hosted `verify-dotnet` runs as two runner shards (`dotnet-shard (K/2)`), each a complete
-`bash scripts/ci.sh --lane verify-dotnet` restricted by `MERIDIAN_CI_DOTNET_SHARD=K/2` to a
-deterministic slice of the roster. `run-dotnet-ci-tests.py --shard K/N` derives the slices from
-the roster and its duration hints alone, so every shard computes the same disjoint partition and
-builds only the test projects its slice needs. Every shard restores; shard 1 also owns the
-formatting check, static ratchets and web-host build, which are whole-tree facts. The
-`verify-dotnet` job is the lane's single verdict: `merge-dotnet-shard-summaries.py` rejects the
-run unless both shards reported for one commit, together ran every default roster entry
-exactly once, and no entry failed. It publishes the combined summary and the shard evidence as
-`meridian-ci-dotnet-<run>-<attempt>`. A local or unsharded run still executes the whole lane.
-Two runners with two processes each already reach the floor set by the longest single test
-process; a third runner would repeat the build without shortening the lane.
+Hosted `verify-dotnet` and `verify-browser` each run as one job that executes the lane, proves
+its roster and reports the verdict. Measured PR runs spent far longer waiting for hosted runners
+than executing, and every job in a chain is a fresh wait, so the earlier builder → shard →
+verdict chain (`build-workstation`, `dotnet-shard (K/N)`, `browser-shard (K/N)`) was folded
+into the lane jobs. The `.NET` lane went from five queued hops before `quality-gate` to one.
 
-Hosted `verify-browser` follows the same shape with `browser-shard (K/2)` and
-`MERIDIAN_CI_BROWSER_SHARD=K/2`. Every shard installs from the lockfile, generates the UI
-contracts and runs every second test file (`run-vitest-stable.mjs --shard K/N`); shard 1 also
-owns lint, the strict typecheck, the production bundle and its validation. The
-`verify-browser` job runs `merge-vitest-shards.mjs`, which rejects the run unless the shards
-together ran every dashboard test file in the checkout exactly once with no failure, and
-publishes `meridian-ci-browser-<run>-<attempt>`. `vitest-files.mjs` is the single definition
-of the test-file roster for both the runner and the verdict.
+`verify-dotnet` sets `MERIDIAN_CI_DOTNET_SHARD=1/1` and runs the complete
+`bash scripts/ci.sh --lane verify-dotnet`, which builds and validates the workstation bundle from
+the lockfile (`ensure-workstation-assets.py`) before MSBuild evaluates the host. The same job then
+runs `merge-dotnet-shard-summaries.py --expected-shards 1` over its own summary, which rejects the
+run unless the lane reported for one commit, ran every default roster entry exactly once, and no
+entry failed. It publishes `meridian-ci-dotnet-<run>-<attempt>`. A local or unsharded run still
+executes the whole lane.
 
-The .NET shards consume the bundle from `build-workstation`, which installs from the lockfile,
-builds and validates the workstation assets without waiting for the browser tests.
-`quality-gate` still requires `verify-browser` and `verify-dotnet`, so a bundle whose browser
-lane fails cannot merge.
+`verify-dotnet` also classifies the pull request itself with `detect-dotnet-changes.py`, so it
+does not queue behind the `changes` job. On a docs-only PR it runs, skips its .NET steps and
+reports success; `quality-gate` fails unless its decision equals the `changes` job's decision.
+`changes` still feeds `service-backed-integrations` and `integration-gate`.
 
-Each shard sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner; the runner fan-out does
-not change the reviewed per-runner process count. Restore,
+`verify-browser` sets `MERIDIAN_CI_BROWSER_SHARD=1/1`, runs install, UI contract generation,
+lint, the strict typecheck, the test files (`run-vitest-stable.mjs`), the production bundle and
+its validation, then `merge-vitest-shards.mjs --expected-shards 1`, which rejects the run unless
+every dashboard test file in the checkout ran exactly once with no failure. It publishes
+`meridian-ci-browser-<run>-<attempt>`. `vitest-files.mjs` is the single definition of the
+test-file roster for both the runner and the verdict. No change classification may skip it.
+
+`run-dotnet-ci-tests.py --shard K/N` and `run-vitest-stable.mjs --shard K/N` still derive
+deterministic disjoint slices. To shard again when runner capacity allows, restore a shard
+matrix and a downstream verdict job together and raise `--expected-shards` to match; two .NET
+runners with two processes each reach the floor set by the longest single test process.
+
+The .NET lane sets `MERIDIAN_CI_TEST_MAX_PARALLEL=2` on its hosted runner, the reviewed
+per-runner process count. Restore,
 formatting, static checks, the web-host build, and test-project build retain their order; only
 the already-built test shards overlap. The runner defaults to one test process locally and accepts an explicit
 `--max-parallel` override. Each shard writes separate TRX and console logs; its temporary
@@ -205,22 +209,28 @@ reuse that Release output with `--no-build`, with the same cleared environment d
 The solution and canonical test roster include the project, and the shared PostgreSQL gate
 runs its eight integration cases as the required `demo-integrations` evidence suite.
 
-Golden Path starts its browser, WPF, and pilot harness jobs independently. The existing
-`Pilot Acceptance Evidence` check waits for all three and rejects failure, cancellation,
-or skipped validation. Uploaded harness artifacts are diagnostic evidence, not a substitute
-for that final gate. These scheduling changes require human governance review. Compare
-hosted job and shard timings separately from runner queue delays before claiming a speedup.
+Golden Path starts its browser and pilot harness jobs independently on pull requests and
+`main` pushes. Its `WPF W4 Acceptance` Windows job runs only on manual dispatch: Windows Desktop
+Build already runs the whole WPF suite, `Category=W4Acceptance` included, for every change to
+WPF or any project WPF compiles against, and a test walks the project graph to keep that path
+filter complete. The `Pilot Acceptance Evidence` check waits for all three jobs; it requires
+success from each on manual runs and accepts only a skipped WPF job otherwise. Failure,
+cancellation, an unexpected skip or an unknown event fails it. Uploaded harness artifacts are
+diagnostic evidence, not a substitute for that final gate. These scheduling changes require
+human governance review. Compare hosted job timings separately from runner queue delays before
+claiming a speedup.
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (two runner shards each, behind the `verify-dotnet` and `verify-browser` verdicts), docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (one job each that runs the lane and proves its roster), docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
 | Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, runs the Meridian suite as two declared processes with separate databases, validates every TRX, all three required suite prefixes and both process prefixes, and retains coverage plus schema evidence for each database. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
-| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | Security alerts and retained SARIF evidence |
+| CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. On pull requests, `detect-codeql-languages.py` skips a language whose analysis the change cannot affect (documentation for both; dashboard-only changes for C#; .NET source and project files for JavaScript/TypeScript). The required `Analyze <language>` check still runs and passes; unknown paths and empty diffs analyze, and every other event always analyzes. | Security alerts and retained SARIF evidence |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |
-| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, WPF W4, or manual changes | Runs browser `test:w4`, Windows `Category=W4Acceptance`, and the pilot harness/dashboard checks in parallel. The stable `Pilot Acceptance Evidence` gate requires all three jobs to succeed; diagnostic evidence remains available on failure. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
+| Golden Path Validation | `golden-path-validation.yml` | Golden-path contract, browser W4, or manual changes | Runs browser `test:w4` and the pilot harness/dashboard checks in parallel; Windows `Category=W4Acceptance` runs only on manual dispatch because Windows Desktop Build covers it otherwise. The stable `Pilot Acceptance Evidence` gate requires every expected job; diagnostic evidence remains available on failure. | `pilot-acceptance-evidence`, `wpf-w4-acceptance-evidence` |
 | Demo Smoke | `demo-smoke.yml` | Demo seed/CLI/onboarding changes or manual | Seeds the isolated demo workspace and boots the workstation on it, asserting the reconciliation and strategy screens render populated (HTTP 200, not empty, not 501), that seeded records survive a restart with `Seeded` provenance, and that `--reset-demo` refuses any non-demo root. A broken first-run fails here instead of a first evaluation. | `demo-smoke-evidence` |
-| Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Restores and builds one isolated Windows graph, then runs full WPF, dev-loop, both routes, supervisor and setup slices with separate TRX files and aggregate failure reporting. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
+| Windows Desktop Build | `windows-desktop-build.yml` | WPF or WPF dependency changes, pushes to `main`, manual | Restores and builds one isolated Windows graph (`--parallel-build`: all runner cores), then runs full WPF, dev-loop, both routes, supervisor and setup slices with separate TRX files and aggregate failure reporting. Desktop smoke publish runs as a separate parallel Windows job on `main`, manual request, or PR changes to the WPF/publish graph; a Linux `smoke-plan` job makes that decision, so the publish no longer waits for (or depends on) the validation job. | WPF validation bundle and optional desktop smoke publish output |
+| Windows Desktop Build | `windows-desktop-build.yml` | Changes to WPF or any project in its reference graph (kept complete by a test), pushes to `main`, manual | Restores and builds one isolated Windows graph, then runs full WPF, dev-loop, both routes, supervisor and setup slices with separate TRX files and aggregate failure reporting. Desktop smoke publish runs on `main`, manual request, or PR changes to the WPF/publish graph. | WPF validation bundle and optional desktop smoke publish output |
 | WPF Dev Loop Validation | `wpf-dev-validation.yml` | Manual only | Calls the shared Windows runner for the dev-loop slice, with optional filter/build-only input. | WPF dev-loop evidence |
 | WPF Route Validation | `wpf-route-validation.yml` | Manual only | Calls the shared Windows runner for both retained route filters, reusing one build. | Route validation evidence |
 | Documentation Automation | `documentation.yml` | Manual only | Explicit documentation refresh using the shared catalog, rules/memory checks, dashboard regression check and freshness validation. All automatic documentation validation belongs to Meridian CI `verify-docs`. UML binaries remain outside the required freshness delta. | Dashboard delta, generated-repair patch/drift report, maintained-generation report and logs |
