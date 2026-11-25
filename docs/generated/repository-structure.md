@@ -10144,6 +10144,7 @@ Meridian-main
 │   │   │   │   │   ├── workstation-screen-view-states.test.ts
 │   │   │   │   │   └── workstation-screen-view-states.ts
 │   │   │   │   ├── scenarios
+│   │   │   │   │   ├── accounting-journal-workbench.ts
 │   │   │   │   │   ├── accounting-payload.ts
 │   │   │   │   │   ├── accounting-support.test.tsx
 │   │   │   │   │   ├── accounting-support.ts

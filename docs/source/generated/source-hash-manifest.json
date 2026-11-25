@@ -30,8 +30,8 @@
       "id": "SRC-CONTRACTS",
       "path": "src/Meridian.Contracts",
       "readme": "src/Meridian.Contracts/README.md",
-      "readme_hash": "ae8f8b3ca3220d7d524d045d96e49179cc26fb9d00ab35ef8c1d037cd35397c4",
-      "source_hash": "3122462ae2a4a477ddf9557673cf83839a1c41d05eb14c61b2bf7361dbfdc0a9"
+      "readme_hash": "73163c0c5c5db5cafdf787788d5bfa05603ebae45a3f1239e8d5f27d815143ae",
+      "source_hash": "679f1361215f88766833983ba099228dc308365043a2b8c0071dea28433aba68"
     },
     {
       "id": "SRC-CORE",
@@ -72,8 +72,8 @@
       "id": "SRC-DESIGN-FINANCIAL-OPERATIONS",
       "path": "src/Meridian.FinancialOperations",
       "readme": "src/Meridian.FinancialOperations/README.md",
-      "readme_hash": "60d325073ddfb7948dc23b599f4e8f94e9d8af3d05a41bac84b675a26eef2cdc",
-      "source_hash": "8006b05005b6c0f8b1a80dfd1096be7677fe929a441a6c7c503a79820b0dea1e"
+      "readme_hash": "fb3322989d0f5c66f83dd7adff760a90358bdf84f4070ef6eb4df58984704b7b",
+      "source_hash": "dbef2fcbfcede4b077dc23452631de7a80748fe8ade9480016ab879e7cdc08a5"
     },
     {
       "id": "SRC-DESIGN-IDENTITY",
@@ -275,15 +275,15 @@
       "id": "SRC-UI",
       "path": "src/Meridian.Ui",
       "readme": "src/Meridian.Ui/README.md",
-      "readme_hash": "81b01032acee85650c0c133ce04ec942b229421d6c00853266a796fdd6fcfcb0",
-      "source_hash": "5d532a644ddca36bdf7d5341d17171313866ee772a8fc82d73fbeb763ad3594d"
+      "readme_hash": "336f4c77f75049b9df34d8fe35ce269f4bc5b985228f11b48af12aeaaccf49a0",
+      "source_hash": "fe688a469712871018cb172c12ed4f202fd3493cc0f11e0da0e633f330412f1d"
     },
     {
       "id": "SRC-UI-DASHBOARD",
       "path": "src/Meridian.Ui/dashboard",
       "readme": "src/Meridian.Ui/dashboard/README.md",
-      "readme_hash": "26eacbcf116c9c0e88ec26a65f592806b52404914766fbde6e3894ace2edb969",
-      "source_hash": "5d532a644ddca36bdf7d5341d17171313866ee772a8fc82d73fbeb763ad3594d"
+      "readme_hash": "efc6d1b3f5192d7263c0a795e1e1a5507fcb9161c92518cdafb4e5fcdae0f0c2",
+      "source_hash": "fe688a469712871018cb172c12ed4f202fd3493cc0f11e0da0e633f330412f1d"
     },
     {
       "id": "SRC-UI-SERVICES",

@@ -360,6 +360,12 @@ a private retained ledger snapshot. Mapping content and full decimal payloads ar
 using the legacy rounded import hash as the onboarding content identity. See
 [onboarding procedure](../../docs/operators/external-gl-providers.md#bounded-onboarding).
 
+`AccountingReportPackageService.BuildPackageAsync` requires every financial input on the request:
+beginning capital, contributions, distributions, realized gain/loss, NAV and currency. A missing or
+null input throws `ArgumentException` naming each one (the ledger endpoint returns 400) before any
+package is built; it is never filled with 0 or USD. Explicit zero amounts are accepted, and the
+currency is trimmed and upper-cased. Focused proof: `AccountingReportPackageServiceTests`.
+
 `AccountingClosePreparationService` captures immutable versions of close configuration and previews
 them against authoritative ledger books and periods. Deadline rules specify a period anchor,
 calendar/business-day offset, and subsequent weekend/holiday adjustment using an explicit retained

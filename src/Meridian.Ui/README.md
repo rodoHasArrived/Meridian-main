@@ -287,6 +287,10 @@ This folder owns browser workstation packaging and host-served assets. Active so
 
 ## Important workflows
 
+Workstation amounts follow the dashboard README's value-state rules: an amount is a value, a confirmed
+zero, "Not available", "n/a" or "No access", and is never rendered as 0 or `$` when the source did not
+supply it. The browser close cockpit refuses to send a report-package request with missing inputs.
+
 Use `dashboard/` for source changes and generated `wwwroot/workstation/` assets only when rebuilding the host-served workstation bundle is part of the task.
 Browser workflow target routing keeps desktop compatibility page tags aligned to the canonical operator lanes under `dashboard/`.
 The browser Data workspace exposes provider catalog/onboarding discovery through `/data/providers`
