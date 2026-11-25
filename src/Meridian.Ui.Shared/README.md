@@ -42,6 +42,15 @@ Designer canonical replay requires `HistoricalPriceBasis.Raw` on every retained 
 Legacy `IsAdjusted=false` without precise basis is insufficient, so previously ambiguous stored prices
 cannot enter raw-price replay or receive a second corporate-action adjustment.
 
+Tenant-scoped `/api/security-master/rate-repairs` endpoints expose paged candidates, recent and
+single retained batches (View permission), and batch creation plus `stage`, `submit`, `approve` and
+`publish` commands (Modify permission). The actor, tenant and company come from the authenticated
+session; creation and commands fail closed unless durable fund ownership for the batch's fund
+profile is verified. `WorkstationRateRepairEvidenceResolver` resolves owned Evidence Vault documents
+and hashes their bytes on the server. `AddSecurityMasterOperatorWorkflows` registers the repair
+store, revision workflow authority and service only when PostgreSQL Security Master and ledger
+stores are present; otherwise the endpoints report the service unavailable.
+
 Tenant-scoped endpoints create a retained Security Master impact receipt for a draft or submitted
 revision (`POST /api/security-master/{securityId}/revisions/{revisionId}/impact-preview`, Modify
 permission) and read one back by content hash (`GET /api/security-master/impact-previews/{receiptId}`).

@@ -25,6 +25,11 @@ legacy data is explicitly Unknown. See the [migration notes](../../docs/developm
 
 Ledger migration `V_ledger_084__security_revision_workflow_scope.sql` replaces the open-workflow
 
+Security Master migration `070_rate_repair_governance.sql` stores immutable rate-repair batch
+manifests and versioned per-item progress. Triggers reject manifest UPDATE/DELETE/TRUNCATE and
+progress DELETE/TRUNCATE. The scoped schema-control waiver covers only the lexical TRUNCATE in those
+rejection triggers.
+
 Security Master migration `069_security_revision_review_context.sql` adds the governed revision's
 maker, first submitter, optional repair batch/evidence binding and reviewed impact-receipt binding,
 with checks and a trigger that keep them write-once. Legacy rows keep unknown maker/submitter.

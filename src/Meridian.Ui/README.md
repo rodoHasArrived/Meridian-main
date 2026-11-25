@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-23
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Ui
@@ -15,6 +15,11 @@ The existing Posted Ledger view downloads complete-period journal CSV files from
 shared snapshot route. Strategy run detail shows retained source-quality warnings, and reconciliation
 views retain quantity and monetary units separately. Missing comparison evidence remains unavailable.
 The dashboard and shared-service READMEs document the source and validation boundaries.
+
+The browser source now includes paged governed Security Master rate-unit repair and retained
+impact inspection on the existing Accounting Security Master route. Rebuild the served workstation
+assets after integration. See [repairs and evidence](../../docs/operators/security-master-repairs-and-evidence.md).
+These browser workflows add no WPF implementation.
 
 Trading → Risk now includes retained cancel-all incident history for the selected execution
 account. The browser reopens complete per-order observations, shows uncertainty and broker coverage,

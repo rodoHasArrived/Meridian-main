@@ -1545,6 +1545,20 @@ erDiagram
         text updated_by
         timestamp_with_time_zone recorded_at
     }
+    security_master_security_rate_repair_batches {
+        uuid batch_id PK
+        text tenant_id
+        text company_id
+        text command_sha256
+        text created_by
+        timestamp_with_time_zone created_at
+        jsonb manifest_json
+    }
+    security_master_security_rate_repair_state {
+        uuid batch_id PK,FK
+        bigint version
+        jsonb state_json
+    }
     security_master_security_raw_prices {
         uuid security_id PK,FK
         text source_id PK
@@ -1934,6 +1948,7 @@ erDiagram
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_approvals : "security_close_price_approvals_snapshot_id_fkey"
     security_master_security_close_price_snapshots ||--o{ security_master_security_close_price_snapshots : "security_close_price_snapshot_corrects_snapshot_id_account_fkey"
     security_master_security_curves ||--o{ security_master_security_curve_versions : "security_curve_versions_curve_id_fkey"
+    security_master_security_rate_repair_batches ||--o{ security_master_security_rate_repair_state : "security_rate_repair_state_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_position_report_line : "servicer_position_report_line_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_statement_import_batch : "servicer_statement_import_batch_servicer_report_batch_id_fkey"
     security_master_servicer_report_batch ||--o{ security_master_servicer_transaction_report_line : "servicer_transaction_report_line_servicer_report_batch_id_fkey"

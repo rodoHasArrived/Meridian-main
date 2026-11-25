@@ -682,3 +682,15 @@ Reviewed authoring permits the existing leg conventions only within that bounded
 profile requests retain their previous behavior. The generic `cashFlowContract` companion remains
 readable-only, and no posting gate changes. A rollout must retain old request/receipt replay proof
 and explicitly test new authoring and refusals before operational use.
+
+## Governed repair migrations
+
+Security Master migrations `069_security_revision_review_context.sql` and
+`070_rate_repair_governance.sql` and ledger migration
+`V_ledger_083__security_revision_workflow_scope.sql` support the governed rate-unit repair workflow.
+Apply them only through the normal transactional migration runner. They retain legacy workflow
+identity as Close, add immutable revision-subject identity and write-once repair/evidence bindings,
+and preserve Close uniqueness. The scoped schema-control waivers document an index replacement and
+a rejection-trigger lexical match; they do not authorize data deletion, production execution or
+skipped hosted checks. Use [repairs and evidence operations](security-master-repairs-and-evidence.md)
+for the workflow.
