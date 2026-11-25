@@ -1,0 +1,58 @@
+# Template: scheduled or manual workflow for Meridian
+# Save to: .github/workflows/<name>.yml, then add a row to .github/workflows/README.md.
+#
+# Copy each action's SHA and version comment from an existing workflow (see pr-workflow.yml).
+# Pick an off-the-hour cron minute; the top of the hour is the busiest time on hosted runners.
+
+name: My Scheduled Task
+
+on:
+  schedule:
+    - cron: "23 6 * * 1"  # Mondays 06:23 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Scheduled and manual runs finish; a later run waits instead of cancelling this one.
+concurrency:
+  group: my-scheduled-task-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  scheduled-task:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@<40-char SHA used in the repo> # vX.Y.Z
+        with:
+          persist-credentials: false
+
+      - name: Set up Python
+        uses: actions/setup-python@<40-char SHA used in the repo> # vX.Y.Z
+        with:
+          python-version: "3.12"
+
+      - name: Run task
+        run: python build/scripts/ci/my-task.py --output artifacts/my-task
+
+      - name: Upload results
+        if: always()
+        uses: actions/upload-artifact@<40-char SHA used in the repo> # vX.Y.Z
+        with:
+          name: my-task-${{ github.run_id }}-${{ github.run_attempt }}
+          path: artifacts/my-task/
+          if-no-files-found: error
+          retention-days: 30
+
+      - name: Job summary
+        if: always()
+        env:
+          JOB_STATUS: ${{ job.status }}
+        run: |
+          {
+            echo "## My Scheduled Task"
+            echo "- Status: ${JOB_STATUS}"
+          } >> "$GITHUB_STEP_SUMMARY"
