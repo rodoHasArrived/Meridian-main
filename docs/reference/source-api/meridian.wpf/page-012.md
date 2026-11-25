@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AnalysisExportWizardViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.AnalysisExportWizardViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:10](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L10).
+
+ViewModel for the multi-step Analysis Export Wizard page, managing step navigation, symbol selection, metric configuration, and fail-closed export availability.
+
+```csharp
+public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public AnalysisExportWizardViewModel();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L33) |  |
+| <code>public ObservableCollection&lt;string&gt; SelectedSymbols { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L62) |  |
+| <code>public ObservableCollection&lt;string&gt; Formats { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L64) |  |
+| <code>public ObservableCollection&lt;MetricOption&gt; Metrics { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L66) |  |
+| <code>public IRelayCommand AddSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L68) |  |
+| <code>public IRelayCommand BackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L70) |  |
+| <code>public IRelayCommand PrimaryActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L72) |  |
+| <code>public IRelayCommand CancelCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L74) |  |
+| <code>public int CurrentStep { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L76) |  |
+| <code>public string SymbolInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L91) |  |
+| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L105) |  |
+| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L118) |  |
+| <code>public string SelectedFormat { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L131) |  |
+| <code>public string Destination { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L144) |  |
+| <code>public bool IncludeCharts { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L157) |  |
+| <code>public bool IncludeSummary { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:170](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L170) |  |
+| <code>public bool CanGoBack =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L183) |  |
+| <code>public bool CanAddSymbol =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L185) |  |
+| <code>public bool CanRunPrimaryAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L187) |  |
+| <code>public string PrimaryActionLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L195) |  |
+| <code>public string ReviewSummary { get; private set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L197) |  |
+| <code>public string ValidationSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L199) |  |
+| <code>public Visibility ValidationVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L211) |  |
+| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:215](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L215) |  |
+| <code>public Visibility StatusVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L227) |  |
+| <code>public string PreExportReport { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L232) | Availability evidence displayed on the review step. |
+| <code>public string EstimatedSize { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:239](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L239) | Estimated file size when supplied by a verified export workflow. |
+| <code>public string CurrentStepTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:245](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L245) |  |
+| <code>public string CurrentStepDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:251](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L251) |  |
+| <code>public string WizardScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:257](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L257) |  |
+| <code>public string ActionReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L263) |  |
+| <code>public string ActionReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:269](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L269) |  |
+| <code>public string Error =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:275](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L275) |  |
+| <code>public string this[string columnName] { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L277) |  |
+| <code>public void Initialize();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L290) |  |
+| <code>public void AddSymbol();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:296](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L296) |  |
+| <code>public void GoBack();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:324](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L324) |  |
+| <code>public void GoNext();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L333) |  |
+| <code>public void CancelWizard();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:362](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L362) |  |
+
 ## AuditLogViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.AuditLogViewModel</code>. Kind: `class`.
@@ -1812,51 +1868,3 @@ Declared public members:
 | <code>public static string GetGrade(double score) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:562](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L562) |  |
 | <code>public static string GetStatus(double score) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:577](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L577) |  |
 | <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs:585](../../../../src/Meridian.Wpf/ViewModels/DataQualityViewModel.cs#L585) |  |
-
-## DataSamplingViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DataSamplingViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L12).
-
-Coordinates symbol selection, sampling presets, sample generation, and recent-sample presentation.
-
-```csharp
-public sealed class DataSamplingViewModel : BindableBase, IDataErrorInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataSamplingViewModel();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L30) |  |
-| <code>public ObservableCollection&lt;string&gt; Symbols { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L47) |  |
-| <code>public ObservableCollection&lt;SampleSummary&gt; RecentSamples { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L49) |  |
-| <code>public ObservableCollection&lt;string&gt; Presets { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L51) |  |
-| <code>public RelayCommand AddSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L53) |  |
-| <code>public RelayCommand GenerateSampleCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L55) |  |
-| <code>public RelayCommand SavePresetCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L57) |  |
-| <code>public string SampleName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:59](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L59) |  |
-| <code>public string Description { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L71) |  |
-| <code>public string SymbolInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:77](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L77) |  |
-| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L89) |  |
-| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L101) |  |
-| <code>public int SampleSize { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L113) |  |
-| <code>public bool IncludeTrades { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L125) |  |
-| <code>public bool IncludeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L137) |  |
-| <code>public string SelectedPreset { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L149) |  |
-| <code>public string ValidationSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L155) |  |
-| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L161) |  |
-| <code>public string SamplingReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L167) |  |
-| <code>public string SamplingReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:173](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L173) |  |
-| <code>public string SymbolScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L179) |  |
-| <code>public string RecentSamplesStateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L185) |  |
-| <code>public string Error =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L191) |  |
-| <code>public string this[string columnName] { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L193) |  |
-| <code>public void Initialize();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:209](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L209) |  |
-| <code>public bool CanAddSymbol();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L230) |  |
-| <code>public void AddSymbol();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:236](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L236) |  |
-| <code>public bool CanGenerateSample() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L247) |  |
-| <code>public void GenerateSample();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L249) |  |
-| <code>public bool CanSavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L277) |  |
-| <code>public void SavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L283) |  |

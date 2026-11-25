@@ -6,6 +6,50 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EtlAuditEvent
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlAuditEvent</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:344](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L344).
+
+Records a timestamped message for a stage of ETL processing.
+
+```csharp
+public sealed class EtlAuditEvent
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;stage&quot;)] public required string Stage { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:347](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L347) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public required string Message { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:350](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L350) |  |
+| <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:353](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L353) |  |
+
+## EtlCheckpointToken
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlCheckpointToken</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:213](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L213).
+
+Records the file and record position needed to resume an ETL job.
+
+```csharp
+public sealed class EtlCheckpointToken
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;currentFileName&quot;)] public string? CurrentFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:216](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L216) |  |
+| <code>[JsonPropertyName(&quot;currentFileChecksum&quot;)] public string? CurrentFileChecksum { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:219](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L219) |  |
+| <code>[JsonPropertyName(&quot;currentRecordIndex&quot;)] public long? CurrentRecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:222](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L222) |  |
+| <code>[JsonPropertyName(&quot;lastSymbol&quot;)] public string? LastSymbol { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:225](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L225) |  |
+| <code>[JsonPropertyName(&quot;lastTimestampUtc&quot;)] public DateTime? LastTimestampUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:228](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L228) |  |
+| <code>[JsonPropertyName(&quot;lastRecordHash&quot;)] public string? LastRecordHash { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:231](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L231) |  |
+| <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:234](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L234) |  |
+
 ## EtlDestinationDefinition
 
 Qualified name: <code>Meridian.Contracts.Etl.EtlDestinationDefinition</code>. Kind: `class`.
@@ -1045,49 +1089,3 @@ Declared public members:
 | <code>public string[]? EventTypes { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:74](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L74) |  |
 | <code>public string Format { get; set; } = &quot;CSV&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:75](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L75) |  |
 | <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:76](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L76) |  |
-
-## OrderFlowExportOptions
-
-Qualified name: <code>Meridian.Contracts.Export.OrderFlowExportOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:55](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L55).
-
-Selects order flow metrics, aggregation, date range, and output destination for export.
-
-```csharp
-public sealed class OrderFlowExportOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:57](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L57) |  |
-| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:58](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L58) |  |
-| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:59](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L59) |  |
-| <code>public string[]? Metrics { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:60](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L60) |  |
-| <code>public string Aggregation { get; set; } = &quot;Raw&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:61](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L61) |  |
-| <code>public string Format { get; set; } = &quot;Parquet&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:62](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L62) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:63](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L63) |  |
-
-## QualityReportOptions
-
-Qualified name: <code>Meridian.Contracts.Export.QualityReportOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:43](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L43).
-
-Selects the symbols, date range, chart inclusion, and format for a data quality report.
-
-```csharp
-public sealed class QualityReportOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:45](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L45) |  |
-| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:46](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L46) |  |
-| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:47](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L47) |  |
-| <code>public bool IncludeCharts { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:48](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L48) |  |
-| <code>public string Format { get; set; } = &quot;CSV&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:49](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L49) |  |

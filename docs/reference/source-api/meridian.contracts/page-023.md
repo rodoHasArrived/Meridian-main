@@ -6,6 +6,52 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OrderFlowExportOptions
+
+Qualified name: <code>Meridian.Contracts.Export.OrderFlowExportOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:55](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L55).
+
+Selects order flow metrics, aggregation, date range, and output destination for export.
+
+```csharp
+public sealed class OrderFlowExportOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:57](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L57) |  |
+| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:58](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L58) |  |
+| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:59](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L59) |  |
+| <code>public string[]? Metrics { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:60](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L60) |  |
+| <code>public string Aggregation { get; set; } = &quot;Raw&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:61](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L61) |  |
+| <code>public string Format { get; set; } = &quot;Parquet&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:62](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L62) |  |
+| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:63](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L63) |  |
+
+## QualityReportOptions
+
+Qualified name: <code>Meridian.Contracts.Export.QualityReportOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:43](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L43).
+
+Selects the symbols, date range, chart inclusion, and format for a data quality report.
+
+```csharp
+public sealed class QualityReportOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:45](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L45) |  |
+| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:46](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L46) |  |
+| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:47](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L47) |  |
+| <code>public bool IncludeCharts { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:48](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L48) |  |
+| <code>public string Format { get; set; } = &quot;CSV&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:49](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L49) |  |
+
 ## QualityReportResponse
 
 Qualified name: <code>Meridian.Contracts.Export.QualityReportResponse</code>. Kind: `class`.
@@ -767,46 +813,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>Current</code> | [src/Meridian.Contracts/FixedIncome/BondEconomicsCompatibility.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondEconomicsCompatibility.cs#L14) | Current declared economics: Level or DayCount accrued coupon through reference-period units, payment-lag discount time measured from the accrual end, and refusal of an exercise that crosses an earned but unpaid coupon. |
 | <code>AnalyticsV1</code> | [src/Meridian.Contracts/FixedIncome/BondEconomicsCompatibility.cs:22](../../../../src/Meridian.Contracts/FixedIncome/BondEconomicsCompatibility.cs#L22) | bond-analytics-v1 arithmetic retained for settlement-receipt verification: accrued coupon is the whole coupon prorated by the day-count fraction, discount time runs to the payment date, and exercise accrual and time are prorated on the exercise date without the delayed-coupon entitlement refusal. |
-
-## BondExerciseEconomics
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondExerciseEconomics</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L14).
-
-```csharp
-public static class BondExerciseEconomics
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static decimal RedemptionCash(decimal outstandingFace, decimal pricePercentOfPar, decimal accruedCash = 0m);</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:17](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L17) | Contractual redemption cash, excluding any separately paid coupon. |
-| <code>public static bool TryCalculate(SecurityDetailDto security, StructuredCashFlowTerms terms, DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement, decimal annualRate, BondYieldConvention convention, int frequency, decimal dirtyPrice, IReadOnlyList&lt;BondAnalyticsCashFlow&gt; flows, IBusinessDayCalendarSource? calendars, out IReadOnlyList&lt;BondExerciseYield&gt; yields, out string? refusal) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:24](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L24) |  |
-| <code>public static bool TryCalculate(SecurityDetailDto security, StructuredCashFlowTerms terms, DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement, decimal annualRate, BondYieldConvention convention, int frequency, decimal dirtyPrice, IReadOnlyList&lt;BondAnalyticsCashFlow&gt; flows, IBusinessDayCalendarSource? calendars, BondEconomicsCompatibility compatibility, out IReadOnlyList&lt;BondExerciseYield&gt; yields, out string? refusal);</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:32](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L32) |  |
-| <code>public static bool TryResolveScenarios(SecurityDetailDto security, StructuredCashFlowTerms terms, DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement, decimal annualRate, BondYieldConvention convention, int frequency, IReadOnlyList&lt;BondAnalyticsCashFlow&gt; flows, IBusinessDayCalendarSource? calendars, out IReadOnlyList&lt;BondRedemptionScenario&gt; yields, out string? refusal) =&gt; …;</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:58](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L58) |  |
-| <code>public static bool TryResolveScenarios(SecurityDetailDto security, StructuredCashFlowTerms terms, DeclaredScheduleResolution declared, ScheduleGenerationResult schedule, DateOnly settlement, decimal annualRate, BondYieldConvention convention, int frequency, IReadOnlyList&lt;BondAnalyticsCashFlow&gt; flows, IBusinessDayCalendarSource? calendars, BondEconomicsCompatibility compatibility, out IReadOnlyList&lt;BondRedemptionScenario&gt; yields, out string? refusal);</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:71](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L71) | BondEconomicsCompatibility.AnalyticsV1 reproduces the retained v1 exercise arithmetic: no delayed-coupon entitlement refusal, exercise accrual prorated from the whole coupon, and exercise discount time measured on the coupon grid to the exercise date. |
-| <code>public static bool TryResolveDeclaredDates(SecurityDetailDto security, DateOnly maturity, DeclaredScheduleResolution declared, DateOnly settlement, IBusinessDayCalendarSource? calendars, out IReadOnlyList&lt;BondRedemptionScenario&gt; scenarios, out string? refusal);</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:209](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L209) | The exercise scenarios of a record whose class declares call and put schedules but has no coupon schedule kernel (its terms carry no issue date or payment frequency): each declared entry&#x27;s dates under the entry rules TryResolveScenarios(SecurityDetailDto, StructuredCashFlowTerms, DeclaredScheduleResolution, ScheduleGenerationResult, DateOnly, decimal, BondYieldConvention, int, IReadOnlyList{BondAnalyticsCashFlow}, IBusinessDayCalendarSource?, out IReadOnlyList{BondRedemptionScenario}, out string?) applies to a bond, with its notice bounds. No coupon is accrued and no discount time is taken, so BondRedemptionScenario.AccruedPer100 and BondRedemptionScenario.TimeInYears are zero: the result supports notice windows and dated rows, not pricing. |
-| <code>public static bool TryExerciseDates(JsonElement row, DateOnly start, DateOnly end, string style, string? couponFrequency, out IReadOnlyList&lt;DateOnly&gt; dates, out string? refusal, string? exerciseFrequency = null);</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs:319](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseEconomics.cs#L319) | Expands one declared redemption row into its exercise dates: a European row is its single date; a Bermudan row is its start date followed by the regular-grid period ends up to its end date, on the row&#x27;s exerciseFrequency or, absent that, the coupon frequency. Shared by analytics and the acquisition-price yield-to-worst comparison so both lists are the same dates. |
-
-## BondExerciseNoticeStatus
-
-Qualified name: <code>Meridian.Contracts.FixedIncome.BondExerciseNoticeStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs:11](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs#L11).
-
-Where an exercise notice window stands on the evaluation date.
-
-```csharp
-public enum BondExerciseNoticeStatus
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotStated</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs:14](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs#L14) | The declared entry states no notice bounds. |
-| <code>Upcoming</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs:16](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs#L16) | The earliest notice date is after the evaluation date. |
-| <code>Open</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs:18](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs#L18) | The evaluation date is inside the notice window. |
-| <code>DeadlineElapsed</code> | [src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs:20](../../../../src/Meridian.Contracts/FixedIncome/BondExerciseNoticeWatch.cs#L20) | The latest notice date has passed but the exercise date is today or later; retained notice evidence decides the actual status. |

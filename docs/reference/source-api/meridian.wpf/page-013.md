@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataSamplingViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.DataSamplingViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L12).
+
+Coordinates symbol selection, sampling presets, sample generation, and recent-sample presentation.
+
+```csharp
+public sealed class DataSamplingViewModel : BindableBase, IDataErrorInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public DataSamplingViewModel();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:30](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L30) |  |
+| <code>public ObservableCollection&lt;string&gt; Symbols { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L47) |  |
+| <code>public ObservableCollection&lt;SampleSummary&gt; RecentSamples { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L49) |  |
+| <code>public ObservableCollection&lt;string&gt; Presets { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:51](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L51) |  |
+| <code>public RelayCommand AddSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L53) |  |
+| <code>public RelayCommand GenerateSampleCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L55) |  |
+| <code>public RelayCommand SavePresetCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:57](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L57) |  |
+| <code>public string SampleName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:59](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L59) |  |
+| <code>public string Description { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L71) |  |
+| <code>public string SymbolInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:77](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L77) |  |
+| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L89) |  |
+| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:101](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L101) |  |
+| <code>public int SampleSize { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L113) |  |
+| <code>public bool IncludeTrades { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L125) |  |
+| <code>public bool IncludeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L137) |  |
+| <code>public string SelectedPreset { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L149) |  |
+| <code>public string ValidationSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L155) |  |
+| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L161) |  |
+| <code>public string SamplingReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L167) |  |
+| <code>public string SamplingReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:173](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L173) |  |
+| <code>public string SymbolScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L179) |  |
+| <code>public string RecentSamplesStateText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L185) |  |
+| <code>public string Error =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:191](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L191) |  |
+| <code>public string this[string columnName] { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L193) |  |
+| <code>public void Initialize();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:209](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L209) |  |
+| <code>public bool CanAddSymbol();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:230](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L230) |  |
+| <code>public void AddSymbol();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:236](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L236) |  |
+| <code>public bool CanGenerateSample() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L247) |  |
+| <code>public void GenerateSample();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L249) |  |
+| <code>public bool CanSavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L277) |  |
+| <code>public void SavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L283) |  |
+
 ## DataSheetRow
 
 Qualified name: <code>Meridian.Wpf.ViewModels.DataSheetRow</code>. Kind: `record`.
@@ -1772,25 +1820,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>string PageTitle { get; }</code> | [src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs:14](../../../../src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs#L14) | The title to display on the left of the action bar. |
 | <code>ObservableCollection&lt;ActionEntry&gt; Actions { get; }</code> | [src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs:19](../../../../src/Meridian.Wpf/ViewModels/IPageActionBarProvider.cs#L19) | Observable collection of actions to display in the action bar. |
-
-## IRetentionAssuranceClient
-
-Qualified name: <code>Meridian.Wpf.ViewModels.IRetentionAssuranceClient</code>. Kind: `interface`.
-
-Source: [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:718](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L718).
-
-Defines retention configuration persistence, policy validation, dry runs, and audited cleanup execution.
-
-```csharp
-public interface IRetentionAssuranceClient
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>RetentionConfiguration Configuration { get; }</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:720](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L720) |  |
-| <code>Task SaveConfigurationAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:722](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L722) |  |
-| <code>RetentionValidationResult ValidateRetentionPolicy(RetentionPolicy policy);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:724](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L724) |  |
-| <code>Task&lt;RetentionDryRunResult&gt; PerformDryRunAsync(RetentionPolicy policy, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:726](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L726) |  |
-| <code>Task&lt;RetentionAuditReport&gt; ExecuteRetentionCleanupAsync(RetentionDryRunResult dryRun, bool verifyChecksums, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs:728](../../../../src/Meridian.Wpf/ViewModels/RetentionAssuranceViewModel.cs#L728) |  |

@@ -1,11 +1,11 @@
 {
-  "total_files": 1304,
+  "total_files": 1305,
   "orphaned_count": 392,
   "no_heading_count": 231,
   "stale_count": 0,
   "todo_count": 303,
   "health_score": 86,
-  "signal_digest": "sha256:20dd1887c91b2ad37a505cf1def0482f4ef829f2f8d868e5523577bbf9b1812d",
+  "signal_digest": "sha256:93cf6ef69172d0ea24b65153d70cdaf37b49ca63ce6fa1f424491799a9a46193",
   "orphaned_files": [
     ".agents/skills/meridian-archive-organizer/SKILL.md",
     ".agents/skills/meridian-blueprint/SKILL.md",
@@ -2632,6 +2632,13 @@
     },
     {
       "path": "docs/engineering/plans/desktop-workstation-screen-blueprint.md",
+      "has_heading": true,
+      "todo_count": 0,
+      "last_modified_utc": "1970-01-01T00:00:00+00:00",
+      "stale": false
+    },
+    {
+      "path": "docs/engineering/plans/entity-master-adoption-plan.md",
       "has_heading": true,
       "todo_count": 0,
       "last_modified_utc": "1970-01-01T00:00:00+00:00",

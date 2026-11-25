@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementCaseworkHandoffObligation
+
+Qualified name: <code>Meridian.Strategies.Services.StatementCaseworkHandoffObligation</code>. Kind: `class`.
+
+Source: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:19](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L19).
+
+Durable queue-owned obligation proving that statement casework still needs to be synchronized to the source statement stores and retained on the matching Operations Continuity workflow. Completion is represented by an append-only paired marker so a crash cannot erase the pending fact without retaining the governed completion audit that cleared it.
+
+```csharp
+public static class StatementCaseworkHandoffObligation
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string CompletionSource = &quot;statement-casework-handoff&quot;;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:21](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L21) |  |
+| <code>public static string CreatePendingMarker(string commandId) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:26](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L26) |  |
+| <code>public static string CreateCompletedMarker(string commandId) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:29](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L29) |  |
+| <code>public static string CreateCompletionCommandId(string commandId) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:32](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L32) |  |
+| <code>public static bool HasPending(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:35](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L35) |  |
+| <code>public static bool HasPending(ReconciliationBreakQueueItem item, string commandId);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:49](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L49) |  |
+| <code>public static bool HasCompleted(ReconciliationBreakQueueItem item, string commandId);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:59](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L59) |  |
+| <code>public static bool HasCompleted(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:68](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L68) |  |
+| <code>public static bool IsControlMarker(string? value) =&gt; …;</code> | [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs:74](../../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs#L74) |  |
+
 ## StrategyDesignService
 
 Qualified name: <code>Meridian.Strategies.Services.StrategyDesignService</code>. Kind: `class`.

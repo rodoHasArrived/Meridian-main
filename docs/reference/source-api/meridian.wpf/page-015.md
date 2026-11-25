@@ -6,6 +6,32 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderDataProjectionViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.ProviderDataProjectionViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:7](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L7).
+
+Desktop presentation shell over the provider-neutral shared projection.
+
+```csharp
+public sealed class ProviderDataProjectionViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ProviderDataProjectionViewModel(ProviderDataReadModelService providerData);</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:12](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L12) |  |
+| <code>public ObservableCollection&lt;ProviderNewsReadModel&gt; News { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L17) |  |
+| <code>public ObservableCollection&lt;ProviderScannerReadModel&gt; ScannerResults { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L18) |  |
+| <code>public ObservableCollection&lt;ProviderPnlReadModel&gt; PnlStreams { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L19) |  |
+| <code>public ObservableCollection&lt;ProviderCalendarReadModel&gt; Calendars { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:20](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L20) |  |
+| <code>public ObservableCollection&lt;ProviderMarketRuleReadModel&gt; MarketRules { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L21) |  |
+| <code>public ObservableCollection&lt;ProviderInstrumentDiscoveryReadModel&gt; Instruments { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:22](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L22) |  |
+| <code>public ProviderDataProjectionSnapshot? Projection { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L23) |  |
+| <code>public void Refresh(string tenantId, string companyId);</code> | [src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs:25](../../../../src/Meridian.Wpf/ViewModels/ProviderDataProjectionViewModel.cs#L25) |  |
+
 ## ProviderHealthViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.ProviderHealthViewModel</code>. Kind: `class`.
@@ -1334,7 +1360,7 @@ Declared public members:
 | <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; CompanyCoverageFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L123) |  |
 | <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; InstrumentPassportFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L125) |  |
 | <code>public ObservableCollection&lt;SecurityValidationIssueDto&gt; ValidationIssues =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L127) |  |
-| <code>public ObservableCollection&lt;SecurityMasterChangeHistoryItemDto&gt; ChangeHistoryItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L129) |  |
+| <code>public ObservableCollection&lt;SecurityMasterChangeHistoryRow&gt; ChangeHistoryItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L129) |  |
 | <code>public ObservableCollection&lt;SecurityMasterPresentationField&gt; ScheduleBookFields =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L131) |  |
 | <code>public ObservableCollection&lt;SecurityMasterScheduleEventDto&gt; ScheduleBookEvents =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L133) |  |
 | <code>public ObservableCollection&lt;SecurityMasterFactorPointDto&gt; ScheduleBookFactorHistory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/SecurityMasterViewModel.cs#L135) |  |
@@ -1686,50 +1712,3 @@ One batch preview result row; amounts are never resubmitted.
 ```csharp
 public sealed record BondCutoverBatchPreviewRow(string DisplayName, long Version, int ChangedPayments, string Gaps, bool CanStage, string PreviewHash);
 ```
-
-## BondCutoverConsoleViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.Settings.BondCutoverConsoleViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:53](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L53).
-
-Desktop parity for the browser bond calculation cutover console (bond-capability-expansion steps 5–6): read the complete active inventory, require a reviewed block for every bond without supported declared conventions, and submit the fresh inventory hash. Amendments echo the current receipt hash so a receipt that changed underneath the operator is refused rather than overwritten. Nothing is read until asked.
-
-```csharp
-public sealed class BondCutoverConsoleViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public BondCutoverConsoleViewModel(IWorkstationBondCutoverApiClient client);</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L63) |  |
-| <code>public IAsyncRelayCommand PreviewBatchCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L71) |  |
-| <code>public IReadOnlyList&lt;string&gt; CouponRateUnits { get; } = [&quot;Percent&quot;, &quot;Fraction&quot;];</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L72) |  |
-| <code>public IReadOnlyList&lt;string&gt; CouponCashBases { get; } = [&quot;Level&quot;, &quot;DayCount&quot;];</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L73) |  |
-| <code>public IReadOnlyList&lt;string&gt; BusinessDayConventions { get; } = [&quot;Unadjusted&quot;, &quot;Following&quot;, &quot;ModifiedFollowing&quot;, &quot;Preceding&quot;, &quot;ModifiedPreceding&quot;];</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L74) |  |
-| <code>public string BatchCouponRateUnit { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L80) |  |
-| <code>public string BatchCouponCashBasis { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:81](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L81) |  |
-| <code>public string BatchBusinessDayConvention { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L82) |  |
-| <code>public bool BatchAccrualAdjusted { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L83) |  |
-| <code>public bool BatchEndOfMonthRule { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L84) |  |
-| <code>public ObservableCollection&lt;BondCutoverBatchPreviewRow&gt; BatchPreviews { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L85) |  |
-| <code>public string BatchSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L87) |  |
-| <code>public ObservableCollection&lt;BondCutoverRowViewModel&gt; Rows { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L123) |  |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:124](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L124) |  |
-| <code>public IAsyncRelayCommand SubmitCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L125) |  |
-| <code>public bool IsBusy { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L127) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L128) |  |
-| <code>public bool HasInventory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L129) |  |
-| <code>public string InventoryHash =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L130) |  |
-| <code>public string CurrentReceiptHash =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L131) |  |
-| <code>public bool CutoverEnabled =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L132) |  |
-| <code>public string GateText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:133](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L133) |  |
-| <code>public string SubmitLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L137) |  |
-| <code>public int UndeclaredCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L138) |  |
-| <code>public int MissingReasonCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L139) |  |
-| <code>public int BlockCount =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L140) |  |
-| <code>public bool Reviewed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L142) |  |
-| <code>public bool CanSubmit =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L148) |  |
-| <code>public BondMigrationCutoverReceiptDto? Receipt =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L149) |  |
-| <code>public string ReceiptText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/Settings/BondCutoverConsoleViewModel.cs#L150) |  |

@@ -6,6 +6,26 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondWorkflowIssue
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:27](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L27).
+
+```csharp
+public sealed record BondWorkflowIssue(string Operation, string Code, string Reason, bool BlocksCalculation = false);
+```
+
+## BondWorkflowMetric
+
+Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowMetric</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs:28](../../../../src/Meridian.Contracts/FixedIncome/BondWorkflowDtos.cs#L28).
+
+```csharp
+public sealed record BondWorkflowMetric(string Name, bool Available, string? Reason = null);
+```
+
 ## BondWorkflowModelVersions
 
 Qualified name: <code>Meridian.Contracts.FixedIncome.BondWorkflowModelVersions</code>. Kind: `class`.
@@ -820,29 +840,3 @@ Account-scoped production readiness snapshot for provider, ledger, sync, and rec
 ```csharp
 public sealed record AccountReadinessSnapshotDto(Guid AccountId, DateTimeOffset EvaluatedAt, AccountProviderLinkStatusDto ProviderLinkStatus, AccountSyncStatusDto? LatestSyncStatus, DateTimeOffset? LastSuccessfulSyncAt, DateTimeOffset? FreshUntil, bool IsReady, IReadOnlyList<AccountReadinessIssueDto> Issues);
 ```
-
-## AccountReconciliationBreakDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationBreakDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/FundStructureDtos.cs:665](../../../../src/Meridian.Contracts/FundStructure/FundStructureDtos.cs#L665).
-
-```csharp
-public sealed record AccountReconciliationBreakDto(PositionReconciliationBreakDto? PositionBreak = null, CashReconciliationBreakDto? CashBreak = null);
-```
-
-## AccountReconciliationResultDto
-
-Qualified name: <code>Meridian.Contracts.FundStructure.AccountReconciliationResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:145](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L145).
-
-```csharp
-public sealed record AccountReconciliationResultDto(Guid ResultId, Guid ReconciliationRunId, string CheckLabel, bool IsMatch, string Category, string Status, decimal? ExpectedAmount, decimal? ActualAmount, decimal? Variance, string Reason, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SupersededByResultId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateTimeOffset? ResolvedAt = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore] public bool IsOpenBreak =&gt; …;</code> | [src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs:161](../../../../src/Meridian.Contracts/FundStructure/AccountManagementDtos.cs#L161) | Shared active-blocker contract; original check outcomes remain historical evidence. |

@@ -186,20 +186,23 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityMasterValidTimeQuery</code>. Kind: `class`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:26](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L26).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:25](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L25).
 
 ADR-034 bitemporal term reads (review E1 / #3662 Phase 7, owner decision 2026-11-25: full valid time). Every economic event is a full-state assertion that holds from its valid-from (the request&#x27;s intended effective date, or the state&#x27;s own effective-from on events written before ADR-034) until the next later valid-from. Recording time is the event timestamp. &quot;Terms valid at V as known at T&quot; is the event recorded by T with the latest valid-from not after V; equal valid-froms resolve to the later recording, so a back-dated correction recorded later wins for the dates it covers without rewriting history.
 
 ```csharp
-public sealed class SecurityMasterValidTimeQuery
+public sealed class SecurityMasterValidTimeQuery : ISecurityTermsValidTimeReader
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public SecurityMasterValidTimeQuery(ISecurityMasterEventStore events);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:30](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L30) |  |
-| <code>public async Task&lt;SecurityTermsAsOf?&gt; GetAsync(Guid securityId, DateTimeOffset validAt, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:35](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L35) |  |
+| <code>public SecurityMasterValidTimeQuery(ISecurityMasterEventStore events);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:29](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L29) |  |
+| <code>public async Task&lt;SecurityTermsAsOf?&gt; GetAsync(Guid securityId, DateTimeOffset validAt, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:34](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L34) |  |
+| <code>public async Task&lt;SecurityTermsValidTimeSegment?&gt; GetValidAtAsync(Guid securityId, DateTimeOffset validAt, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:66](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L66) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;SecurityTermsValidTimeSegment&gt;&gt; GetTimelineAsync(Guid securityId, DateTimeOffset? knownAt = null, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:79](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L79) |  |
+| <code>public static SecurityDetailDto ToDetail(SecurityEconomicDefinitionRecord definition) =&gt; …;</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:130](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L130) | The economic definition of a valid-time segment as the detail shape cash-flow and accounting readers consume: the same conversion an as-of rebuild applies to a replayed event. |
 
 ## SecurityMasterWorkbenchCommandService
 
@@ -221,9 +224,9 @@ Declared public members:
 | <code>public async Task&lt;SecurityMasterEditResultDto&gt; UpdateSecurityFieldAsync(UpdateSecurityFieldRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:111](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L111) |  |
 | <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAtCurrentVersionAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:414](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L414) |  |
 | <code>public async Task&lt;SecurityMasterConflictResolutionDto&gt; ResolveSourceConflictAsync(ResolveSourceConflictRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:422](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L422) |  |
-| <code>public async Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:638](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L638) |  |
-| <code>public async Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:781](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L781) |  |
-| <code>public async Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:894](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L894) |  |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; SubmitForApprovalAsync(SubmitSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:644](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L644) |  |
+| <code>public async Task&lt;SecurityMasterEditResultDto&gt; ApproveRevisionAsync(ApproveSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:787](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L787) |  |
+| <code>public async Task&lt;SecurityMasterPublishResultDto&gt; PublishRevisionAsync(PublishSecurityMasterRevisionRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs:900](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.cs#L900) |  |
 
 Source: [src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs:14](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterWorkbenchCommandService.Discard.cs#L14).
 
@@ -436,7 +439,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Application.SecurityMaster.SecurityTermsAsOf</code>. Kind: `record`.
 
-Source: [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:9](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L9).
+Source: [src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs:8](../../../../src/Meridian.Application/SecurityMaster/SecurityMasterValidTimeQuery.cs#L8).
 
 A security&#x27;s full economic state as it applied at ValidAt, as known at KnownAt.
 

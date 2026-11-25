@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LiveBrokeragePortfolioStatus
+
+Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:11](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L11).
+
+Account-scoped execution evidence; never substitutes for the accounting import projection.
+
+```csharp
+public sealed record LiveBrokeragePortfolioStatus(Guid FundAccountId, string ProviderId, string? ExternalAccountId, bool IsConnected, bool IsFresh, bool IsComplete, bool IsConsistent, bool IsReconciled, DateTimeOffset? LastAttemptAt, DateTimeOffset? LastSuccessfulSyncAt, BrokeragePortfolioSnapshotDto? Snapshot, BrokerageExecutionReconciliationReport? Reconciliation, IReadOnlyList<string> BlockingReasons)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:29](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L29) |  |
+
 ## LiveBrokeragePortfolioSyncService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioSyncService</code>. Kind: `class`.
@@ -1040,21 +1058,3 @@ Source: [src/Meridian.Ui.Shared/Services/PeriodAdjustmentPreparationService.cs:9
 ```csharp
 public sealed record PreparePeriodAdjustmentRequest(Guid LedgerBookId, Guid SourceJournalEntryId, Guid TargetPeriodId, DateOnly AccountingDate, string IntentId, string Reason, bool ReversePeriodEndMark = false);
 ```
-
-## PrivateCapitalBankObservationService
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PrivateCapitalBankObservationService</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L14).
-
-Imports reviewed settled bank observations without creating a payment or posting cash.
-
-```csharp
-public sealed class PrivateCapitalBankObservationService(IEvidenceArtifactStore vault, IBankingStore store, TimeProvider? clock = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;PrivateCapitalBankObservationImportResultDto&gt; ImportAsync(PrivateCapitalScopeDto scope, ImportPrivateCapitalBankObservationRequest request, string actor, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs:28](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalBankObservationService.cs#L28) |  |

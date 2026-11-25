@@ -6,6 +6,33 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILedgerReportsApiClient
+
+Qualified name: <code>Meridian.Wpf.Services.ILedgerReportsApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:24](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L24).
+
+Reads the governed ledger — the fund&#x27;s posted journal — over the shared workstation API. Returns the whole ApiResponse{T} rather than an unwrapped value because the status code is load-bearing here: the trial-balance and P&amp;L routes answer 404 when a period has no closed-period summary yet, which is an expected state for an open period and must reach the operator as a notice rather than an outage. HTTP is the only correct seam for this data in the desktop process: ILedgerBookService is registered exclusively by the server-side storage composition, so an in-process call would resolve null here.
+
+```csharp
+public interface ILedgerReportsApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;List&lt;LedgerBookDto&gt;&gt;&gt; GetBooksAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:26](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L26) |  |
+| <code>Task&lt;ApiResponse&lt;List&lt;LedgerPeriodDto&gt;&gt;&gt; GetPeriodsAsync(Guid? ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:34](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L34) | Periods for one ledger book. The book scope is not optional in practice: a deployment with more than one book returns every book&#x27;s periods from the unscoped route, and nothing in a period identifies its book to the operator, so an unscoped surface can present one fund&#x27;s closed period as another&#x27;s. |
+| <code>Task&lt;ApiResponse&lt;List&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt;&gt; GetTrialBalanceAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:36](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L36) |  |
+| <code>Task&lt;ApiResponse&lt;LedgerPeriodPnlSummaryDto&gt;&gt; GetPnlSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:38](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L38) |  |
+| <code>Task&lt;ApiResponse&lt;List&lt;LedgerJournalEntryDto&gt;&gt;&gt; GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:40](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L40) |  |
+| <code>Task&lt;ApiResponse&lt;LedgerAccountRunningBalanceDto&gt;&gt; GetAccountRunningBalanceAsync(Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:44](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L44) | Posting history and running balance for one account of a ledger period. |
+| <code>Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetAmountProofAsync(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:49](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L49) |  |
+| <code>Task&lt;ApiResponse&lt;JsonDocument&gt;&gt; GetRetainedManifestAsync(string route, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:53](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L53) |  |
+| <code>Task&lt;ApiResponse&lt;BookFxSettlementSetDto&gt;&gt; GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:56](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L56) |  |
+| <code>Task&lt;ApiResponse&lt;PrivateCapitalUnitRegisterPreviewDto&gt;&gt; PreviewUnitRegisterAsync(Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:59](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L59) |  |
+
 ## ILifecycleControlClient
 
 Qualified name: <code>Meridian.Wpf.Services.ILifecycleControlClient</code>. Kind: `interface`.
@@ -1054,26 +1081,3 @@ Declared public members:
 | <code>public static ICommand? Resolve(object? pageContent) =&gt; …;</code> | [src/Meridian.Wpf/Services/PageRefreshResolver.cs:28](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L28) | Resolves the refresh command for pageContent (the navigation frame&#x27;s content). Order: IPageRefreshTarget on the content or its data context, then a public RefreshCommand property on the data context, then on the content itself. Chrome wrappers implementing IPageRefreshContentHost and hosting Frames are unwrapped first. A page or view model marked IPageRefreshOptOut is never matched by convention. |
 | <code>public static bool TryRefreshInPlace(object? pageContent);</code> | [src/Meridian.Wpf/Services/PageRefreshResolver.cs:38](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L38) | Reloads the page in place when it exposes a refresh command. |
 | <code>public static int RefreshAllInPlace(IEnumerable&lt;object?&gt;? pageContents);</code> | [src/Meridian.Wpf/Services/PageRefreshResolver.cs:60](../../../../src/Meridian.Wpf/Services/PageRefreshResolver.cs#L60) | Reloads every page in pageContents that exposes a refresh command which can execute. Content without a command, and commands that are busy, are skipped; nothing is re-navigated. Used for the pages docked in a workspace shell and for split panes. |
-
-## PendingOperation
-
-Qualified name: <code>Meridian.Wpf.Services.PendingOperation</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:18](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L18).
-
-Represents a pending operation in the queue.
-
-```csharp
-public sealed class PendingOperation
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:23](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L23) | Gets or sets the unique identifier for the operation. |
-| <code>public string OperationType { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:28](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L28) | Gets or sets the operation type. |
-| <code>public object? Payload { get; set; }</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:35](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L35) | Gets or sets the operation payload. Payloads must be JSON-serializable — the queue is persisted across restarts, and a payload restored from disk is surfaced to its handler as a JsonElement. |
-| <code>public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:40](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L40) | Gets or sets when the operation was created. |
-| <code>public int RetryCount { get; set; }</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:45](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L45) | Gets or sets the number of retry attempts. |
-| <code>public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:50](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L50) | Gets or sets the maximum number of retries before discarding. |

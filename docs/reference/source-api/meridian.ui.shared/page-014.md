@@ -253,7 +253,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingMigrationStartup</code>. Kind: `interface`.
 
-Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1731](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1731).
+Source: [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1736](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1736).
 
 Completes the existing checksummed reporting migration workflow before services that query the reporting authority are constructed.
 
@@ -265,7 +265,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1733](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1733) |  |
+| <code>Task EnsureReadyAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs:1738](../../../../src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs#L1738) |  |
 
 ## IReportingPrimaryDocumentRenderer
 
@@ -559,6 +559,25 @@ Declared public members:
 | --- | --- | --- |
 | <code>IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; Load();</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:100](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L100) |  |
 | <code>void Save(IReadOnlyList&lt;ReportTemplateGovernanceRecordDto&gt; records);</code> | [src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs:101](../../../../src/Meridian.Ui.Shared/Services/ReportingWorkflowService.cs#L101) |  |
+
+## IssuerConcentrationService
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IssuerConcentrationService</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/IssuerConcentrationService.cs:12](../../../../src/Meridian.Ui.Shared/Services/IssuerConcentrationService.cs#L12).
+
+ADR-033 consumer: groups per-symbol gross exposure by issuer through the entity master. A symbol is resolved to its security canonically (an ambiguous ticker resolves to no security), and the security to its issuer by the valid-dated issuer link as of the report date. Exposure that cannot be tied to an issuer is reported as unlinked, never dropped.
+
+```csharp
+public sealed class IssuerConcentrationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IssuerConcentrationService(IEntityMasterStore? entityMaster, ISecurityResolver? resolver = null);</code> | [src/Meridian.Ui.Shared/Services/IssuerConcentrationService.cs:19](../../../../src/Meridian.Ui.Shared/Services/IssuerConcentrationService.cs#L19) |  |
+| <code>public async Task&lt;IssuerConcentrationReport?&gt; ComputeAsync(IReadOnlyList&lt;(string Symbol, decimal Gross)&gt; symbolGross, decimal totalGross, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/IssuerConcentrationService.cs:26](../../../../src/Meridian.Ui.Shared/Services/IssuerConcentrationService.cs#L26) | The concentration, or null when the host has no entity master or canonical security resolver. |
 
 ## IStatementCaseworkCommitFaultInjector
 
@@ -915,21 +934,3 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:75](../
 ```csharp
 public sealed record LiquidityWarning(string AccountId, string Currency, DateOnly Date, decimal ProjectedNet, string Message);
 ```
-
-## LiveBrokeragePortfolioStatus
-
-Qualified name: <code>Meridian.Ui.Shared.Services.LiveBrokeragePortfolioStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:11](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L11).
-
-Account-scoped execution evidence; never substitutes for the accounting import projection.
-
-```csharp
-public sealed record LiveBrokeragePortfolioStatus(Guid FundAccountId, string ProviderId, string? ExternalAccountId, bool IsConnected, bool IsFresh, bool IsComplete, bool IsConsistent, bool IsReconciled, DateTimeOffset? LastAttemptAt, DateTimeOffset? LastSuccessfulSyncAt, BrokeragePortfolioSnapshotDto? Snapshot, BrokerageExecutionReconciliationReport? Reconciliation, IReadOnlyList<string> BlockingReasons)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs:29](../../../../src/Meridian.Ui.Shared/Services/LiveBrokeragePortfolioSyncService.cs#L29) |  |

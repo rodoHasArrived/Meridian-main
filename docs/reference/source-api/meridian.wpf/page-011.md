@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IShellNavigationCoordinator
+
+Qualified name: <code>Meridian.Wpf.Shell.Services.IShellNavigationCoordinator</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:12](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L12).
+
+Coordinates canonical routes, navigation-frame initialization, and pane content and drop operations.
+
+```csharp
+public interface IShellNavigationCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>IShellRouteRegistry RouteRegistry { get; }</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:14](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L14) |  |
+| <code>ShellRoute? ResolveRoute(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:16](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L16) |  |
+| <code>bool IsRouteRegistered(string? pageTag);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:18](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L18) |  |
+| <code>bool NavigateToRoute(string pageTag, object? parameter = null);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:20](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L20) |  |
+| <code>PaneDropResult ApplyPaneDrop(PaneHostViewModel paneHost, string? pageTag, int targetPaneIndex, PaneDropAction action = PaneDropAction.Replace);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:22](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L22) |  |
+| <code>IReadOnlyList&lt;PaneContentState&gt; GetVisiblePaneContentStates(PaneHostViewModel paneHost);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:28](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L28) |  |
+| <code>FrameworkElement CreatePaneContent(PaneContentState state);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:30](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L30) |  |
+| <code>void InitializeNavigationFrame(Frame frame);</code> | [src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs:32](../../../../src/Meridian.Wpf/Shell/Services/IShellNavigationCoordinator.cs#L32) |  |
+
 ## IShellPageRegistry
 
 Qualified name: <code>Meridian.Wpf.Shell.Services.IShellPageRegistry</code>. Kind: `interface`.
@@ -1899,59 +1924,3 @@ Declared public members:
 | <code>public void SavePreset();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs:306](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs#L306) |  |
 | <code>public bool CanRunExport() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs:311](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs#L311) |  |
 | <code>public bool CanSavePreset() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportViewModel.cs#L313) |  |
-
-## AnalysisExportWizardViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.AnalysisExportWizardViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:10](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L10).
-
-ViewModel for the multi-step Analysis Export Wizard page, managing step navigation, symbol selection, metric configuration, and fail-closed export availability.
-
-```csharp
-public sealed class AnalysisExportWizardViewModel : BindableBase, IDataErrorInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public AnalysisExportWizardViewModel();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L33) |  |
-| <code>public ObservableCollection&lt;string&gt; SelectedSymbols { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L62) |  |
-| <code>public ObservableCollection&lt;string&gt; Formats { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L64) |  |
-| <code>public ObservableCollection&lt;MetricOption&gt; Metrics { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L66) |  |
-| <code>public IRelayCommand AddSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L68) |  |
-| <code>public IRelayCommand BackCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L70) |  |
-| <code>public IRelayCommand PrimaryActionCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:72](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L72) |  |
-| <code>public IRelayCommand CancelCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L74) |  |
-| <code>public int CurrentStep { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L76) |  |
-| <code>public string SymbolInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L91) |  |
-| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:105](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L105) |  |
-| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L118) |  |
-| <code>public string SelectedFormat { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L131) |  |
-| <code>public string Destination { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L144) |  |
-| <code>public bool IncludeCharts { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L157) |  |
-| <code>public bool IncludeSummary { get; set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:170](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L170) |  |
-| <code>public bool CanGoBack =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L183) |  |
-| <code>public bool CanAddSymbol =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L185) |  |
-| <code>public bool CanRunPrimaryAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L187) |  |
-| <code>public string PrimaryActionLabel =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L195) |  |
-| <code>public string ReviewSummary { get; private set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L197) |  |
-| <code>public string ValidationSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L199) |  |
-| <code>public Visibility ValidationVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L211) |  |
-| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:215](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L215) |  |
-| <code>public Visibility StatusVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L227) |  |
-| <code>public string PreExportReport { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L232) | Availability evidence displayed on the review step. |
-| <code>public string EstimatedSize { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:239](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L239) | Estimated file size when supplied by a verified export workflow. |
-| <code>public string CurrentStepTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:245](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L245) |  |
-| <code>public string CurrentStepDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:251](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L251) |  |
-| <code>public string WizardScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:257](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L257) |  |
-| <code>public string ActionReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:263](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L263) |  |
-| <code>public string ActionReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:269](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L269) |  |
-| <code>public string Error =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:275](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L275) |  |
-| <code>public string this[string columnName] { get; }</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L277) |  |
-| <code>public void Initialize();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:290](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L290) |  |
-| <code>public void AddSymbol();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:296](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L296) |  |
-| <code>public void GoBack();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:324](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L324) |  |
-| <code>public void GoNext();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L333) |  |
-| <code>public void CancelWizard();</code> | [src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs:362](../../../../src/Meridian.Wpf/ViewModels/AnalysisExportWizardViewModel.cs#L362) |  |

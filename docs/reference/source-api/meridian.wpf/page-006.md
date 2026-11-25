@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkspaceShellActionBarContribution
+
+Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellActionBarContribution</code>. Kind: `record`.
+
+Source: [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:71](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L71).
+
+```csharp
+public sealed record WorkspaceShellActionBarContribution(string WorkspaceId, WorkspaceCommandGroup CommandGroup, int Order = 0) : IWorkspaceShellSlotContribution
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WorkspaceShellSlot Slot =&gt; …;</code> | [src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs:76](../../../../src/Meridian.Wpf/Models/WorkspaceShellChromeModels.cs#L76) |  |
+
 ## WorkspaceShellBadge
 
 Qualified name: <code>Meridian.Wpf.Models.WorkspaceShellBadge</code>. Kind: `class`.
@@ -1082,62 +1098,3 @@ Enum declarations:
 | <code>ListAll</code> | [src/Meridian.Wpf/Services/CredentialService.cs:36](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L36) |  |
 | <code>Test</code> | [src/Meridian.Wpf/Services/CredentialService.cs:37](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L37) |  |
 | <code>Refresh</code> | [src/Meridian.Wpf/Services/CredentialService.cs:38](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L38) |  |
-
-## CredentialService
-
-Qualified name: <code>Meridian.Wpf.Services.CredentialService</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/Services/CredentialService.cs:118](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L118).
-
-Service for secure credential management using DPAPI-encrypted file storage. Enhanced with OAuth support, expiration tracking, and credential testing capabilities. Implements the shared ICredentialService seam so shared UI services can consume this host implementation instead of the no-op default.
-
-```csharp
-public sealed class CredentialService : ICredentialService, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string AlpacaCredentialResource = $&quot;{ResourcePrefix}.Alpaca&quot;;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:126](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L126) |  |
-| <code>public const string NasdaqApiKeyResource = $&quot;{ResourcePrefix}.NasdaqDataLink&quot;;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:127](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L127) |  |
-| <code>public const string OpenFigiApiKeyResource = $&quot;{ResourcePrefix}.OpenFigi&quot;;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:128](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L128) |  |
-| <code>public const string OAuthTokenResource = $&quot;{ResourcePrefix}.OAuth&quot;;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:129](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L129) |  |
-| <code>public event EventHandler&lt;CredentialMetadataEventArgs&gt;? MetadataUpdated;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:153](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L153) | Event raised when credential metadata is updated. |
-| <code>public event EventHandler&lt;CredentialExpirationEventArgs&gt;? CredentialExpiring;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:158](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L158) | Event raised when a credential is about to expire. |
-| <code>public event EventHandler&lt;CredentialErrorEventArgs&gt;? CredentialError;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:163](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L163) | Event raised when a credential operation fails. |
-| <code>public (int RetrievalFailures, int SaveFailures, int RemovalFailures, int VaultAccessFailures) GetTelemetryCounters() =&gt; …;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:171](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L171) |  |
-| <code>public CredentialService(string? storageDirectory = null);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:180](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L180) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:200](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L200) | Initializes the credential service by loading metadata. |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/Services/CredentialService.cs:208](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L208) |  |
-| <code>public void SaveCredential(string resource, string username, string password);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:331](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L331) | Saves username/password credentials to the encrypted credential vault. |
-| <code>public void SaveApiKey(string resource, string apiKey);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:352](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L352) | Saves an API key (single value) to the credential vault. |
-| <code>public (string Username, string Password)? GetCredential(string resource);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:360](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L360) | Retrieves credentials from the credential vault. |
-| <code>public string? GetApiKey(string resource);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:385](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L385) | Retrieves an API key from the credential vault. |
-| <code>public void RemoveCredential(string resource);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:393](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L393) | Removes a credential from the vault. |
-| <code>public bool HasCredential(string resource);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:419](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L419) | Checks if a credential exists in the vault. |
-| <code>public IReadOnlyList&lt;string&gt; GetAllStoredResources();</code> | [src/Meridian.Wpf/Services/CredentialService.cs:430](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L430) | Gets all stored credential resource names for this application. |
-| <code>public void RemoveAllCredentials();</code> | [src/Meridian.Wpf/Services/CredentialService.cs:452](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L452) | Removes all stored credentials for this application. |
-| <code>public (string KeyId, string SecretKey)? GetAlpacaCredentials();</code> | [src/Meridian.Wpf/Services/CredentialService.cs:466](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L466) | Gets stored Alpaca credentials. |
-| <code>public void SaveAlpacaCredentials(string keyId, string secretKey);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:475](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L475) | Saves Alpaca credentials. |
-| <code>public bool HasAlpacaCredentials();</code> | [src/Meridian.Wpf/Services/CredentialService.cs:483](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L483) | Checks if Alpaca credentials are stored. |
-| <code>public void RemoveAlpacaCredentials();</code> | [src/Meridian.Wpf/Services/CredentialService.cs:491](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L491) | Removes stored Alpaca credentials. |
-| <code>public string? GetNasdaqApiKey() =&gt; …;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:498](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L498) |  |
-| <code>public void SaveNasdaqApiKey(string apiKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:499](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L499) |  |
-| <code>public string? GetOpenFigiApiKey() =&gt; …;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:503](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L503) |  |
-| <code>public void SaveOpenFigiApiKey(string apiKey) =&gt; …;</code> | [src/Meridian.Wpf/Services/CredentialService.cs:504](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L504) |  |
-| <code>public CredentialMetadata? GetMetadata(string resource);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:557](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L557) |  |
-| <code>public async Task UpdateMetadataAsync(string resource, Action&lt;CredentialMetadata&gt; update, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:566](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L566) |  |
-| <code>public async Task RecordAuthenticationAsync(string resource, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:595](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L595) |  |
-| <code>public List&lt;CredentialInfo&gt; GetAllCredentialsWithMetadata();</code> | [src/Meridian.Wpf/Services/CredentialService.cs:604](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L604) |  |
-| <code>public List&lt;CredentialInfo&gt; GetExpiringCredentials(int withinDays = 7);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:670](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L670) |  |
-| <code>public async Task&lt;CredentialTestResult&gt; TestAlpacaCredentialsAsync(bool useSandbox = false, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:679](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L679) |  |
-| <code>public async Task&lt;CredentialTestResult&gt; TestAlpacaCredentialsAsync(string keyId, string secretKey, bool useSandbox = false, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:688](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L688) |  |
-| <code>public async Task&lt;CredentialTestResult&gt; TestNasdaqApiKeyAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:754](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L754) |  |
-| <code>public async Task&lt;CredentialTestResult&gt; TestOpenFigiApiKeyAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:809](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L809) |  |
-| <code>public async Task&lt;CredentialTestResult&gt; TestCredentialAsync(string resource, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:862](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L862) |  |
-| <code>public async Task&lt;Dictionary&lt;string, CredentialTestResult&gt;&gt; TestAllCredentialsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:873](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L873) |  |
-| <code>public async Task SaveOAuthTokenAsync(string providerId, string accessToken, string? refreshToken, DateTime expiresAt, string? tokenEndpoint = null, string? clientId = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:888](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L888) |  |
-| <code>public string? GetOAuthToken(string providerId);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:921](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L921) |  |
-| <code>public async Task&lt;bool&gt; RefreshOAuthTokenAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:927](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L927) |  |
-| <code>public async Task&lt;bool&gt; EnsureTokenValidAsync(string providerId, int refreshThresholdMinutes = 5, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/CredentialService.cs:988](../../../../src/Meridian.Wpf/Services/CredentialService.cs#L988) |  |

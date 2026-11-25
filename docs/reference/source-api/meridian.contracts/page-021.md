@@ -496,6 +496,30 @@ Declared public members:
 | <code>Task&lt;SecurityIssuerLinkDto?&gt; GetIssuerAsync(Guid securityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:63](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L63) |  |
 | <code>async Task&lt;LegalEntityDto?&gt; GetUltimateParentAsync(Guid entityId, DateOnly asOf, CancellationToken ct = default);</code> | [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:66](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L66) | Follows parent links as of asOf to the top of the hierarchy (bounded depth). |
 
+## IssuerConcentrationDto
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.IssuerConcentrationDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:117](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L117).
+
+ADR-033 issuer-level concentration: gross exposure grouped by the issuer each security is linked to in the entity master, as of a date.
+
+```csharp
+public sealed record IssuerConcentrationDto(Guid IssuerEntityId, string LegalName, Guid? UltimateParentEntityId, decimal GrossExposure, decimal ShareOfGross, IReadOnlyList<string> Symbols);
+```
+
+## IssuerConcentrationReport
+
+Qualified name: <code>Meridian.Contracts.EntityMaster.IssuerConcentrationReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs:129](../../../../src/Meridian.Contracts/EntityMaster/EntityMasterDtos.cs#L129).
+
+Issuer concentration for one exposure report. Exposure whose security is unresolved or has no issuer link is reported as unlinked rather than dropped, so the linked share never overstates coverage.
+
+```csharp
+public sealed record IssuerConcentrationReport(DateOnly AsOf, IReadOnlyList<IssuerConcentrationDto> Issuers, decimal LinkedGrossExposure, decimal UnlinkedGrossExposure, IReadOnlyList<string> UnlinkedSymbols);
+```
+
 ## LegalEntityDto
 
 Qualified name: <code>Meridian.Contracts.EntityMaster.LegalEntityDto</code>. Kind: `record`.
@@ -821,47 +845,3 @@ Declared public members:
 | <code>public bool HasHeaderRow { get; init; } = true;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:360](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L360) |  |
 | <code>public char Delimiter { get; init; } = &#x27;,&#x27;;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:361](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L361) |  |
 | <code>public required IReadOnlyDictionary&lt;string, string&gt; Columns { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:362](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L362) |  |
-
-## EtlAuditEvent
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlAuditEvent</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:344](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L344).
-
-Records a timestamped message for a stage of ETL processing.
-
-```csharp
-public sealed class EtlAuditEvent
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;stage&quot;)] public required string Stage { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:347](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L347) |  |
-| <code>[JsonPropertyName(&quot;message&quot;)] public required string Message { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:350](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L350) |  |
-| <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:353](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L353) |  |
-
-## EtlCheckpointToken
-
-Qualified name: <code>Meridian.Contracts.Etl.EtlCheckpointToken</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Etl/EtlModels.cs:213](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L213).
-
-Records the file and record position needed to resume an ETL job.
-
-```csharp
-public sealed class EtlCheckpointToken
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonPropertyName(&quot;currentFileName&quot;)] public string? CurrentFileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:216](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L216) |  |
-| <code>[JsonPropertyName(&quot;currentFileChecksum&quot;)] public string? CurrentFileChecksum { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:219](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L219) |  |
-| <code>[JsonPropertyName(&quot;currentRecordIndex&quot;)] public long? CurrentRecordIndex { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:222](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L222) |  |
-| <code>[JsonPropertyName(&quot;lastSymbol&quot;)] public string? LastSymbol { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:225](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L225) |  |
-| <code>[JsonPropertyName(&quot;lastTimestampUtc&quot;)] public DateTime? LastTimestampUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:228](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L228) |  |
-| <code>[JsonPropertyName(&quot;lastRecordHash&quot;)] public string? LastRecordHash { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:231](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L231) |  |
-| <code>[JsonPropertyName(&quot;capturedAtUtc&quot;)] public DateTime CapturedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:234](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L234) |  |

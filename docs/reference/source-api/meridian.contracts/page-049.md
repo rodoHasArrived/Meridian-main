@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionSourceDisplayMetadataDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceDisplayMetadataDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:333](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L333).
+
+Non-authoritative display context retained with an observation. Consensus is evidence about source terms only; it never changes processing-case or accounting approval state.
+
+```csharp
+public sealed record CorporateActionSourceDisplayMetadataDto(string Ticker, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, IReadOnlyList<CorporateActionDissentFieldDto>? DissentingFields = null);
+```
+
+## CorporateActionSourceProposalAcceptanceResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalAcceptanceResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:708](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L708).
+
+```csharp
+public sealed record CorporateActionSourceProposalAcceptanceResultDto(CorporateActionSourceProposalDto Proposal, CorporateActionDto CorporateAction, CorporateActionProcessingCaseDto Case, CorporateActionCaseTransitionDto InitialTransition, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement, bool Replayed, CorporateActionConflictDto? SourceConflict = null);
+```
+
 ## CorporateActionSourceProposalActionAvailabilityDto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalActionAvailabilityDto</code>. Kind: `record`.
@@ -586,7 +608,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarAddress</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:58](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L58).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:62](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L62).
 
 ```csharp
 public sealed record EdgarAddress(string? Street1, string? Street2, string? City, string? StateOrCountry, string? StateOrCountryDescription, string? ZipCode);
@@ -596,7 +618,7 @@ public sealed record EdgarAddress(string? Street1, string? Street2, string? City
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarDebtOfferingTerms</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:109](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L109).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:113](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L113).
 
 ```csharp
 public sealed record EdgarDebtOfferingTerms(string Cik, string AccessionNumber, string Form, string SourceDocument, string? SourceDocumentDescription, string? IssuerName, string? SecurityTitle, string? Cusip, string? Isin, string? Currency, decimal? PrincipalAmount, decimal? IssueSize, decimal? CouponRate, string? CouponType, string? DayCount, string? InterestPaymentFrequency, DateOnly? IssueDate, DateOnly? MaturityDate, DateOnly? FirstInterestPaymentDate, string? Seniority, string? Ranking, bool? IsCallable, DateOnly? FirstCallDate, decimal? OfferingPrice, decimal? MinimumDenomination, decimal? AdditionalDenomination, string? Trustee, IReadOnlyList<string> Underwriters, IReadOnlyList<string> RedemptionTerms, decimal ExtractionConfidence, IReadOnlyList<string> ExtractionNotes);
@@ -606,7 +628,7 @@ public sealed record EdgarDebtOfferingTerms(string Cik, string AccessionNumber, 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFactsRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:212](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L212).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:216](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L216).
 
 Stored fact partition for a single EDGAR filer.
 
@@ -618,7 +640,7 @@ public sealed record EdgarFactsRecord(string Cik, IReadOnlyList<EdgarXbrlFact> F
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFilerRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L32).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L36).
 
 Local EDGAR filer reference record derived from the SEC submissions API.
 
@@ -630,7 +652,7 @@ public sealed record EdgarFilerRecord(string Cik, string Name, string? EntityTyp
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFilingSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:84](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L84).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:88](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L88).
 
 ```csharp
 public sealed record EdgarFilingSummary(string Cik, string AccessionNumber, string Form, DateOnly? FilingDate, DateOnly? ReportDate, string? PrimaryDocument, string? PrimaryDocDescription, string? FileNumber, string? FilmNumber, string? Items, long? Size, bool? IsXbrl, bool? IsInlineXbrl, IReadOnlyList<string> SecurityDataTags);
@@ -640,7 +662,7 @@ public sealed record EdgarFilingSummary(string Cik, string AccessionNumber, stri
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFormerName</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L66).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L70).
 
 ```csharp
 public sealed record EdgarFormerName(string Name, DateOnly? From, DateOnly? To);
@@ -650,7 +672,7 @@ public sealed record EdgarFormerName(string Name, DateOnly? From, DateOnly? To);
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarFundHolding</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:142](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L142).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:146](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L146).
 
 ```csharp
 public sealed record EdgarFundHolding(string Cik, string AccessionNumber, string Form, string SourceDocument, string? HoldingName, string? IssuerName, string? Title, string? Cusip, string? Isin, string? Ticker, string? Lei, string? AssetCategory, string? IssuerCategory, string? Country, string? Currency, decimal? Balance, string? Units, decimal? ValueUsd, decimal? PercentageOfNetAssets, decimal? CouponRate, DateOnly? MaturityDate, bool? Restricted, string? FairValueLevel);
@@ -677,14 +699,20 @@ Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:17](../../.
 Summary returned after an EDGAR ingest run.
 
 ```csharp
-public sealed record EdgarIngestResult(int FilersProcessed, int TickerAssociationsStored, int FactsStored, int SecurityDataStored, int SecuritiesCreated, int SecuritiesAmended, int SecuritiesSkipped, int ConflictsDetected, bool DryRun, IReadOnlyList<string> Errors);
+public sealed record EdgarIngestResult(int FilersProcessed, int TickerAssociationsStored, int FactsStored, int SecurityDataStored, int SecuritiesCreated, int SecuritiesAmended, int SecuritiesSkipped, int ConflictsDetected, bool DryRun, IReadOnlyList<string> Errors)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int IssuersLinked { get; init; }</code> | [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L30) | ADR-033: securities newly linked to their issuer in the entity master (by CIK) during this run. |
 
 ## EdgarReferenceDataManifest
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarReferenceDataManifest</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:218](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L218).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:222](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L222).
 
 ```csharp
 public sealed record EdgarReferenceDataManifest(DateTimeOffset UpdatedAtUtc, int TickerAssociationCount, int FilerPartitionCount, int FactPartitionCount, int SecurityDataPartitionCount);
@@ -694,7 +722,7 @@ public sealed record EdgarReferenceDataManifest(DateTimeOffset UpdatedAtUtc, int
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarSecurityDataRecord</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:103](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L103).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L107).
 
 Security-specific data parsed from EDGAR filing documents and retained outside Security Master.
 
@@ -706,7 +734,7 @@ public sealed record EdgarSecurityDataRecord(string Cik, IReadOnlyList<EdgarDebt
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarTickerAssociation</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L74).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:78](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L78).
 
 Association between an EDGAR filer and a listed ticker or mutual-fund series/class identifier.
 
@@ -718,7 +746,7 @@ public sealed record EdgarTickerAssociation(string Cik, string Ticker, string? N
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.EdgarXbrlFact</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:170](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L170).
+Source: [src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs:174](../../../../src/Meridian.Contracts/SecurityMaster/EdgarReferenceDtos.cs#L174).
 
 Normalized XBRL fact retained in the local EDGAR facts store.
 
@@ -792,41 +820,3 @@ Declared public members:
 | <code>public decimal AmortizedBasisAsOf(BondAmortizationMethod method, DayCountConvention convention, DateOnly maturity, DateOnly asOf, decimal annualCouponRatePercent, int paymentsPerYear = 2) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:187](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L187) | The lot&#x27;s amortized cost basis as of asOf under the requested method. BondAmortizationMethod.ConstantYield applies the effective-interest method (US GAAP ASC 310-20 for most premium amortization); BondAmortizationMethod.NoAmortization holds the book flat; BondAmortizationMethod.AuctionRate recognises the premium/discount to par immediately; the remaining methods fall back to day-count-weighted straight-line (AmortizedBasisAsOf(DayCountConvention, DateOnly, DateOnly)), the historical immaterial-difference accommodation. |
 | <code>public decimal ConstantYieldAmortizedBasisAsOf(DayCountConvention convention, DateOnly maturity, DateOnly asOf, decimal annualCouponRatePercent, int paymentsPerYear = 2, decimal? retainedAnnualEffectiveYield = null) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:242](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L242) | Effective-interest (constant-yield) amortized basis: the yield to maturity implied by the acquisition price is solved once, then the book value rolls forward period by period — interest income accrues as a constant proportion of carrying value (basis × (1 + i) less the period coupon), so a premium amortizes slowly at first and faster near maturity, and a discount accretes in reverse — the ASC 310-20 profile the straight-line method only approximates. The partial current period interpolates linearly between calendar coupon boundaries using the current period&#x27;s day-count fraction. Supports one to 1200 monthly, quarterly, semiannual or annual coupon dates after acquisition, including end-of-month schedules. Regular schedules (acquisition on a coupon date of the calendar schedule running from acquisition to maturity) roll whole periods exactly as before. Odd (short) first period — acquisition settling inside a coupon period, the usual secondary-market case. The schedule is generated backward from maturity at the regular frequency: maturity is assumed to be a regular coupon date, a maturity on the last day of its month implies an end-of-month schedule, and otherwise the maturity day is kept and clipped only in short months. The first period is a stub from acquisition to the next coupon date with fraction f = DCF(acquisition, nextCoupon) / DCF(previousCoupon, nextCoupon) under convention; the full regular coupon is paid at the next coupon date. Accrued-interest assumption: PricePercentOfPar is a clean price, so the purchased accrued interest AI = coupon × (1 − f) is not part of the cost basis — it is a separate receivable repaid by the first coupon. The yield therefore solves the street-convention dirty price clean + AI = Σ CFk / (1 + y)f + k (k = 0 … n − 1, par with the last coupon), and the ex-coupon basis at the first coupon date is (clean + AI)(1 + y)f − coupon, which equals the present value of the remaining flows at the solved yield. Inside the stub the basis interpolates linearly by day count between the clean cost and that value. A retained yield must reconcile to the clean price through this same pricing function. Odd last periods are not modelled: without a contractual first-coupon or issue-date anchor, maturity is treated as a regular coupon date, so no short final period can arise. |
 | <code>public decimal RegularScheduleAnnualYield(DateOnly redemptionDate, decimal annualCouponRatePercent, int paymentsPerYear);</code> | [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:724](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L724) | Annual yield on the same regular coupon grid used by canonical amortization, solved per period by bisection and certified against the acquisition price. Refuses an unbracketed yield. |
-
-## FaceValueLotFactorPaydown
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.FaceValueLotFactorPaydown</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs:783](../../../../src/Meridian.Contracts/SecurityMaster/FaceValueLot.cs#L783).
-
-The outcome of applying a factor decline to a FaceValueLot.
-
-```csharp
-public sealed record FaceValueLotFactorPaydown(FaceValueLot Lot, decimal PrincipalPaydown);
-```
-
-## FundUnitLot
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.FundUnitLot</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L9).
-
-Canonical open lot for unit-denominated fund holdings (investment funds, money market funds, unitized private vehicles), whose SecurityAssetClassDescriptor.LotUnit is SecurityLotUnitKind.Units. The lot is a count of units and the NAV per unit they were acquired at; cost basis is owned here so every consumer derives it identically.
-
-```csharp
-public sealed record FundUnitLot : IUnitizedLot
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public FundUnitLot(string lotId, Guid securityId, DateOnly acquiredDate, decimal units, decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L11) |  |
-| <code>public string LotId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:34](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L34) |  |
-| <code>public Guid SecurityId { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L44) | Security Master identity the lot&#x27;s reference data (fund family, pricing cadence) resolves from. |
-| <code>public DateOnly AcquiredDate { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L46) |  |
-| <code>public decimal Units { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:49](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L49) | Units held; fractional units are ordinary for funds. |
-| <code>public decimal NavPerUnit { get; }</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:52](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L52) | NAV per unit the lot was acquired at, in the fund&#x27;s currency. |
-| <code>public decimal CostBasis =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:54](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L54) |  |
-| <code>public decimal ValueAt(decimal navPerUnit);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L57) | Value of the lot at navPerUnit. |
-| <code>public FundUnitLot WithReducedUnits(decimal redeemedUnits);</code> | [src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/FundUnitLot.cs#L66) | The lot remaining after redeeming redeemedUnits; cost basis scales with the units. |

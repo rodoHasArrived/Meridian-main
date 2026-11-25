@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingScheduleWorkerOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L7).
+
+```csharp
+public sealed record ReportingScheduleWorkerOptions(TimeSpan PollInterval)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReportingScheduleWorkerOptions Default { get; } = new (TimeSpan.FromMinutes(1));</code> | [src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingScheduleHostedService.cs#L9) |  |
+
 ## ReportingScheduleWorkerReadinessState
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingScheduleWorkerReadinessState</code>. Kind: `class`.
@@ -274,7 +290,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public ReportPackRestatementCandidateResolver(ReportPackWorkflowService reportPackWorkflow, ILogger&lt;ReportPackRestatementCandidateResolver&gt; logger);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs:58](../../../../src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs#L58) |  |
-| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs#L66) |  |
+| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs:66](../../../../src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs#L66) |  |
+| <code>public Task&lt;RestatementCandidateResult&gt; ResolveAsync(Guid securityId, Guid ledgerBookId, DateOnly effectiveDate, DateOnly? governedUntil, IReadOnlyList&lt;string&gt; changedFields, string? fundProfileId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs:76](../../../../src/Meridian.Ui.Shared/Services/ReportPackRestatementCandidateResolver.cs#L76) |  |
 
 ## ReportPackRunReadService
 
@@ -872,14 +889,4 @@ Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationS
 
 ```csharp
 public sealed record SecureReportingGrantExchangeCommand(string BearerToken, string ArtifactId);
-```
-
-## SecureReportingGrantIssueCommand
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecureReportingGrantIssueCommand</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs:44](../../../../src/Meridian.Ui.Shared/Services/ReportingSecureDistributionApplicationService.cs#L44).
-
-```csharp
-public sealed record SecureReportingGrantIssueCommand(string RunId, string? RecipientPrincipalId, IReadOnlyList<string>? ArtifactIds = null, int? LifetimeSeconds = null, int? MaxUses = null, ReportingAccessPrincipalKind? RecipientPrincipalKind = null);
 ```
