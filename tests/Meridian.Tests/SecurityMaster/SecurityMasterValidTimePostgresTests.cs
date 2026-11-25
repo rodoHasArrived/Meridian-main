@@ -60,6 +60,12 @@ public sealed class SecurityMasterValidTimePostgresTests : IClassFixture<Securit
     private static JsonElement Common(string countryOfRisk)
         => JsonSerializer.SerializeToElement(new
         {
-            displayName = "Valid Time Co", currency = "USD", countryOfRisk, issuerName = "Valid Time Co", exchange = "XNAS", lotSize = 1, tickSize = 0.01m
+            displayName = "Valid Time Co",
+            currency = "USD",
+            countryOfRisk,
+            issuerName = "Valid Time Co",
+            exchange = "XNAS",
+            lotSize = 1,
+            tickSize = 0.01m
         });
 }

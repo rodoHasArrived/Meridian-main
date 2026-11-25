@@ -336,6 +336,11 @@ endpoints, and the workstation identifier-kind union includes `LoanX` and `Clip`
 The generated route table includes the income cash-flow, factor-history and term-block
 Security Master routes.
 
+The Accounting screen hosts the Security Master review inbox (`security-master-review-inbox.tsx`),
+which lists pending workbench revisions from the shared `GET /api/security-master/workbench/revisions`
+route and discards a revision through the governed workbench API. A `field-already-staged` refusal
+names who already staged the field.
+
 The host-served bundle includes Trading's governed approvals panel showing each parked order's
 economic terms from the shared escalation contract. Rebuild it from `dashboard/` after source changes.
 
