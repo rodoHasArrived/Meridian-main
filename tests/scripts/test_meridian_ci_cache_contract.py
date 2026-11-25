@@ -67,13 +67,13 @@ class MeridianCiCacheContractTests(unittest.TestCase):
             with self.subTest(lane=lane):
                 job = self._job_block(lane)
                 step = self._step_block(job, step_name)
+                self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
+                self.assertNotRegex(job, r"(?m)^\s+if:.*cache")
                 if lane == "verify-dotnet":
-                    self.assertIn("    needs: [changes, verify-browser]", job)
-                    self.assertIn("    if: needs.changes.outputs.dotnet == 'true'", job)
+                    # Only the docs-only change decision may skip the .NET lane.
+                    self.assertIn("        if: steps.changes.outputs.dotnet == 'true'\n", step)
                 else:
-                    self.assertNotRegex(job, r"(?m)^    (?:if|needs):")
-                self.assertNotRegex(job, r"(?m)^    if:.*cache")
-                self.assertNotRegex(step, r"(?m)^        if:")
+                    self.assertNotRegex(step, r"(?m)^        if:")
                 self.assertRegex(
                     step,
                     rf"(?m)^        run: bash scripts/ci\.sh --lane {re.escape(lane)}\s*$",
@@ -124,7 +124,8 @@ class MeridianCiCacheContractTests(unittest.TestCase):
                 self.assertIn("${{ needs." + lane + ".result }}", gate)
         self.assertIn(f"for lane in changes {' '.join(LANES)}; do", gate)
         self.assertIn('"$CHANGES_RESULT" == "success" && "$DOTNET_REQUIRED" == "false"', gate)
-        self.assertIn('elif [[ "$result" != "success" ]]; then\n                failed=1', gate)
+        self.assertIn('if [[ "$result" != "success" ]]; then\n                failed=1', gate)
+        self.assertIn('if [[ "$DOTNET_LANE_DECISION" != "$DOTNET_REQUIRED" ]]; then', gate)
         self.assertIn('if [[ "$failed" -ne 0 ]]; then', gate)
         self.assertIn("            exit 1", gate)
         self.assertNotRegex(self.workflow, r"(?m)^\s*(?:paths|paths-ignore|continue-on-error):")
