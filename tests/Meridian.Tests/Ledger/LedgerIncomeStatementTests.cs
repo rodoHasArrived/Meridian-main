@@ -37,7 +37,7 @@ public sealed partial class LedgerIncomeStatementTests
         Post(ledger, Start.AddDays(-1), LedgerAccounts.Cash, LedgerAccounts.CashInterestIncome, 400m);
         Post(ledger, Start.AddDays(1), LedgerAccounts.Cash, LedgerAccounts.CashInterestIncome, 100m);
         Post(ledger, Start.AddDays(2), LedgerAccounts.CommissionExpense, LedgerAccounts.Cash, 20m);
-        var projection = PeriodCloseProjector.ProjectFrom(ledger, "2026-01", AsOf, "synthetic-controller");
+        var projection = PeriodCloseTestProjections.FromLedger(ledger, "2026-01", AsOf, "synthetic-controller");
         ledger.PostLines(AsOf, "Close January", projection.JournalLines);
 
         var result = LedgerFinancialStatementBuilder.BuildIncomeStatementForPeriod(ledger, Start, AsOf);
@@ -75,13 +75,13 @@ public sealed partial class LedgerIncomeStatementTests
         var correctedIncome = ledger.Journal.Last();
         Post(ledger, Start.AddDays(2), LedgerAccounts.CommissionExpense, LedgerAccounts.Cash, 20m);
         ledger.PostLines(Start.AddDays(10), "Initial close",
-            PeriodCloseProjector.ProjectFrom(ledger, "2026-01", Start.AddDays(10), "synthetic-controller").JournalLines);
+            PeriodCloseTestProjections.FromLedger(ledger, "2026-01", Start.AddDays(10), "synthetic-controller").JournalLines);
         var originalClose = ledger.Journal.Last();
         ledger.Post(LedgerJournalReversal.Reverse(originalClose, Guid.NewGuid(), Start.AddDays(11)));
         ledger.Post(LedgerJournalReversal.Reverse(correctedIncome, Guid.NewGuid(), Start.AddDays(12)));
         Post(ledger, Start.AddDays(13), LedgerAccounts.Cash, LedgerAccounts.CashInterestIncome, 90m);
         ledger.PostLines(AsOf, "Corrected close",
-            PeriodCloseProjector.ProjectFrom(ledger, "2026-01", AsOf, "synthetic-controller").JournalLines);
+            PeriodCloseTestProjections.FromLedger(ledger, "2026-01", AsOf, "synthetic-controller").JournalLines);
 
         var result = LedgerFinancialStatementBuilder.BuildIncomeStatementForPeriod(ledger, Start, AsOf);
 

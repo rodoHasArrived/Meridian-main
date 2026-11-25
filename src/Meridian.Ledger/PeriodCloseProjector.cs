@@ -81,26 +81,6 @@ public static class PeriodCloseProjector
         return new PeriodCloseProjection(input, lines, journalLines, netIncomeByScope);
     }
 
-    /// <summary>
-    /// Convenience overload that snapshots the ledger's trial balance as of the close time.
-    /// The in-memory trial balance is dimension-flat, so the projected closing entries carry
-    /// no dimensional scope.
-    /// </summary>
-    [PostingCalculationNotYetConnected("In-memory ledger convenience overload; production closes project from retained trial balances through Project.")]
-    public static PeriodCloseProjection ProjectFrom(
-        Ledger ledger,
-        string periodId,
-        DateTimeOffset closedAtUtc,
-        string closedBy)
-    {
-        ArgumentNullException.ThrowIfNull(ledger);
-        return Project(new PeriodCloseInput(
-            periodId,
-            closedAtUtc,
-            ledger.TrialBalanceAsOf(closedAtUtc),
-            closedBy));
-    }
-
     private sealed record PeriodCloseRollScope(
         string FinancialScope,
         LedgerLineDimensionSet? Dimensions,

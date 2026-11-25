@@ -33,7 +33,7 @@ public sealed class PeriodCloseProjectorTests
             (LedgerAccounts.Cash, 0m, 300m)
         ]);
 
-        var projection = PeriodCloseProjector.ProjectFrom(ledger, "2026-Q2", CloseAt, "controller");
+        var projection = PeriodCloseTestProjections.FromLedger(ledger, "2026-Q2", CloseAt, "controller");
 
         projection.HasClosingEntries.Should().BeTrue();
         projection.IsBalanced.Should().BeTrue();
@@ -65,7 +65,7 @@ public sealed class PeriodCloseProjectorTests
             (LedgerAccounts.CashInterestIncome, 0m, 200m)
         ]);
 
-        var projection = PeriodCloseProjector.ProjectFrom(ledger, "2026-Q2", CloseAt, "controller");
+        var projection = PeriodCloseTestProjections.FromLedger(ledger, "2026-Q2", CloseAt, "controller");
 
         projection.NetIncome.Should().Be(-600m);
 
@@ -91,7 +91,7 @@ public sealed class PeriodCloseProjectorTests
             (LedgerAccounts.RealizedGainFor("broker-b"), 0m, 250m)
         ]);
 
-        var projection = PeriodCloseProjector.ProjectFrom(ledger, "2026-Q2", CloseAt, "controller");
+        var projection = PeriodCloseTestProjections.FromLedger(ledger, "2026-Q2", CloseAt, "controller");
 
         projection.NetIncomeByScope.Should().HaveCount(2);
         projection.NetIncomeByScope["broker-a"].Should().Be(500m);
@@ -112,7 +112,7 @@ public sealed class PeriodCloseProjectorTests
             (LedgerAccounts.CapitalAccount, 0m, 10_000m)
         ]);
 
-        var projection = PeriodCloseProjector.ProjectFrom(ledger, "2026-Q2", CloseAt, "controller");
+        var projection = PeriodCloseTestProjections.FromLedger(ledger, "2026-Q2", CloseAt, "controller");
 
         projection.HasClosingEntries.Should().BeFalse();
         projection.NetIncome.Should().Be(0m);
@@ -129,7 +129,7 @@ public sealed class PeriodCloseProjectorTests
             (LedgerAccounts.RealizedGain, 0m, 1_000m)
         ]);
 
-        var projection = PeriodCloseProjector.ProjectFrom(ledger, "2026-Q2", CloseAt, "controller");
+        var projection = PeriodCloseTestProjections.FromLedger(ledger, "2026-Q2", CloseAt, "controller");
         var draft = PeriodCloseDraftBuilder.BuildDraft(projection);
 
         draft.Should().NotBeNull();

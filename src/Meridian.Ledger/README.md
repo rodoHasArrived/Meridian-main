@@ -113,6 +113,11 @@ proves their inputs and queues them for review. The waterfall input names the re
 draws on. `PartnershipInvestorAccountingProjector` is marked superseded: its fees duplicate
 `FundEconomicsJournalFactory` accruals and must not be posted alongside them.
 
+`PeriodCloseProjector.Project` takes a dimension-scoped `PeriodCloseInput`; production closes build it
+from the retained period trial balance and post through `PeriodCloseDraftBuilder` and the workbench. There
+is no in-memory-ledger overload, because the in-memory trial balance is dimension-flat and would collapse
+entity and sleeve scopes into one retained-earnings line.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in the [diagram index](../../docs/source/data/diagram-index.yml).
