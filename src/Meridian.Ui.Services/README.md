@@ -174,6 +174,12 @@ companion entries are skipped. The WPF host starts the service after desktop act
 it on exit. `TimeSeriesAlignmentService` sends the same options for preview and execution and writes
 the completed rows atomically on the workstation. Exports retain the source IDs, adjustment basis
 and gap status. The service recognizes HTTP 501 from older hosts.
+
+it on exit. The first and subsequent scheduled checks share the same exception handling and
+cancellation. Concurrent scheduled and manual refreshes share one request and outcome per provider.
+A cancelled caller waiting on an existing request only stops its own wait. `TimeSeriesAlignmentService`
+reports an HTTP 501 as `IsServiceUnavailable` so callers can
+present alignment as unavailable rather than as a failed run.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain

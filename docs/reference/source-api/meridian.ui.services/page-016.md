@@ -517,7 +517,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ui.Services.TokenExpirationWarningEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:479](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L479).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:533](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L533).
 
 Event args for token expiration warning.
 
@@ -529,17 +529,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:481](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L481) |  |
-| <code>public DateTime ExpiresAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:482](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L482) |  |
-| <code>public bool CanAutoRefresh { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:483](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L483) |  |
-| <code>public TimeSpan TimeRemaining =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:484](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L484) |  |
-| <code>public TokenExpirationWarningEventArgs(string providerId, DateTime expiresAt, bool canAutoRefresh);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:486](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L486) |  |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:535](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L535) |  |
+| <code>public DateTime ExpiresAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:536](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L536) |  |
+| <code>public bool CanAutoRefresh { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:537](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L537) |  |
+| <code>public TimeSpan TimeRemaining =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:538](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L538) |  |
+| <code>public TokenExpirationWarningEventArgs(string providerId, DateTime expiresAt, bool canAutoRefresh);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:540](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L540) |  |
 
 ## TokenRefreshEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.TokenRefreshEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:449](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L449).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:503](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L503).
 
 Event args for successful token refresh.
 
@@ -551,15 +551,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:451](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L451) |  |
-| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:452](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L452) |  |
-| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:454](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L454) |  |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:505](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L505) |  |
+| <code>public DateTime RefreshedAt { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:506](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L506) |  |
+| <code>public TokenRefreshEventArgs(string providerId, DateTime refreshedAt);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:508](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L508) |  |
 
 ## TokenRefreshFailedEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.TokenRefreshFailedEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:464](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L464).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:518](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L518).
 
 Event args for failed token refresh.
 
@@ -571,9 +571,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:466](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L466) |  |
-| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:467](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L467) |  |
-| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:469](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L469) |  |
+| <code>public string ProviderId { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:520](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L520) |  |
+| <code>public string ErrorMessage { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:521](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L521) |  |
+| <code>public TokenRefreshFailedEventArgs(string providerId, string errorMessage);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:523](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L523) |  |
 
 ## TooltipPlacement
 
