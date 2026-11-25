@@ -35,7 +35,7 @@ public sealed class CanonicalBacktestQueryTests
                 {
                     var price = day < 2 ? 100m : 99m;
                     var bar = new HistoricalBar("XYZ", start.AddDays(day), price, price, price, price, 1_000_000,
-                        "synthetic", day + 1, IsAdjusted: false);
+                        "synthetic", day + 1, IsAdjusted: false, PriceBasis: HistoricalPriceBasis.Raw);
                     writer.WriteLine(JsonSerializer.Serialize(MarketEvent.HistoricalBar(bar.ToTimestampUtc(), "XYZ", bar, "synthetic", day + 1),
                         MarketDataJsonContext.HighPerformanceOptions));
                 }
