@@ -777,7 +777,7 @@ Qualified name: <code>Meridian.Application.Composition.TenantCutoverStartupPrere
 
 Source: [src/Meridian.Application/Composition/TenantCutoverStartupPrerequisites.cs:19](../../../../src/Meridian.Application/Composition/TenantCutoverStartupPrerequisites.cs#L19).
 
-Allows independently composed hosts to run the relevant schema migrations and legacy imports before tenant inspection without starting unrelated background services.
+Allows independently composed hosts to run the relevant schema migrations before tenant inspection without starting unrelated background services.
 
 ```csharp
 public sealed class TenantCutoverStartupPrerequisites(IServiceProvider services, ILogger<TenantCutoverStartupPrerequisites> logger) : ITenantCutoverStartupPrerequisites
