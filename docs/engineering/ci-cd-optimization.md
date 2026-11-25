@@ -829,3 +829,34 @@ empty commit arrays. Those events use the same Gitleaks 8.25.1 scanner and repos
 through `scan-commit-secrets.py`, with a verified download checksum. It verifies the checkout
 SHA and scans complete reachable history, including merge-resolution changes. Fresh SARIF
 evidence is mandatory; unsupported events and empty webhook arrays cannot produce a false pass.
+
+## Runner-queue findings and docs-only CodeQL skip (2026-11-25)
+
+**Evidence.** The 60 most recent completed Meridian CI runs at the time of review were 52
+cancelled, 6 successful and 2 failed. The "has job failures" percentage in the Actions usage
+export counts cancellations, so its 55% figure for Meridian CI is mostly superseded pushes, not
+red builds. A representative successful PR run (45612764201) took about 95 minutes wall time for
+about 50 minutes of job execution: each job waited 8–32 minutes for a hosted runner, and the
+one-second `quality-gate` waited 17 minutes. Latency is dominated by runner queueing caused by
+per-push fan-out across workflows, not by test duration.
+
+**Change.** CodeQL's two required `Analyze <language>` jobs (about 20 minutes each, on nearly every
+PR push) now classify pull requests with the same `detect-dotnet-changes.py` rule as the Meridian
+CI .NET lane. A docs-only pull request keeps both checks reporting success but skips checkout,
+build, analysis and SARIF upload. Unknown paths and empty diffs still analyze. Main pushes, merge
+groups, schedules, manual runs and the reusable release gate always analyze, so release SARIF
+evidence is unchanged. The skip is step-level on purpose: a skipped matrix job reports an
+unexpanded check name and would leave the required contexts pending.
+
+Roadmap Source Docs' phase-scope checkout now uses a blobless full-history clone; the gate only
+compares changed path names.
+
+**Further reductions, not applied here (owner decision).**
+
+- Each serial job hop in Meridian CI (`changes` → `build-workstation` → `dotnet-shard` →
+  `verify-dotnet` → `quality-gate`) pays a fresh queue wait. With one shard per lane, folding the
+  shard merge into the shard job would remove two hops, but changes check identities.
+- Golden Path's `WPF W4 Acceptance` (Windows) triggers on broad non-WPF paths
+  (`Execution`, `Strategies`, `Ledger`, `Ui.Shared`) and overlaps Windows Desktop Build.
+- CodeQL could also split C#-only and TypeScript-only PRs per language.
+- Larger or self-hosted runners raise the concurrency ceiling directly.
