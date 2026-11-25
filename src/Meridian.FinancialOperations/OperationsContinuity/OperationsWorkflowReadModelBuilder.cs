@@ -73,7 +73,14 @@ internal sealed class OperationsWorkflowReadModelBuilder(IOperationsStatusDeriva
             dashboardSummary,
             evidencePackages,
             reviewedAutomation,
-            workflow.LedgerBookId);
+            workflow.LedgerBookId)
+        {
+            Purpose = workflow.Purpose,
+            SubjectRevisionId = workflow.SubjectRevisionId,
+            SubjectMaker = workflow.SubjectMaker,
+            SubjectEvidenceId = workflow.SubjectEvidenceId,
+            SubjectEvidenceSha256 = workflow.SubjectEvidenceSha256
+        };
     }
 
     private static IReadOnlyList<OperationsEvidencePackageSummaryDto> BuildEvidencePackages(
