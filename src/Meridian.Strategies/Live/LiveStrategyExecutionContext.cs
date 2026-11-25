@@ -113,7 +113,8 @@ public sealed class LiveStrategyExecutionContext : IBacktestContext, IExecutionC
             foreach (var position in _portfolio.Positions.Values)
             {
                 var value = SignedMarketValue(position);
-                if (position.Quantity < 0)
+                // Exact, not whole-share, quantity: a -0.5 short rounds to 0 and would be filed long.
+                if (position.ExactQuantity < 0m)
                 {
                     holdsShort = true;
                     shortMarketValue += value;

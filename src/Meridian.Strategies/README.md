@@ -36,6 +36,7 @@ before mutation, retain existing maker-checker rules, and fail closed if configu
 cannot be read. No attestation grants waiver, supersession, material-break suppression or sign-off.
 
 `LiveRunMetricsTracker` uses the `BacktestMetricsEngine` formulas (geometric annualisation over the session's start-to-end interval, sample-deviation Sharpe, losing-day Sortino); a run with no losing day reports Sortino 0 so persisted metrics stay finite, and annualised return is capped at 1e12.
+Its daily snapshots take long and short market value (and margin balance) from the session's account snapshots, as the backtest engine does, so a long $100k / short $60k book reports $100k and -$60k rather than the $40k net that equity minus cash gave; the net figure is only a fallback when no account snapshot is supplied. The live account snapshot sorts positions by exact quantity, so a fractional short counts as short.
 
 Live/paper finalization records financing as `Unavailable` until an explicit complete allocation
 ties account charges to the run. The context's private ledger and an account's expense balance do
