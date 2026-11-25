@@ -414,7 +414,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
             OrderAdmissionRefusal? authorityRefusal;
             try
             {
-                authorityRefusal = await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false);
+                authorityRefusal = await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct, safeRequest.SecurityId)
+                    .ConfigureAwait(false);
             }
             catch
             {
@@ -673,7 +674,8 @@ public sealed partial class OrderManagementSystem : IOrderManager, IOrderIntentS
             if (await _admissionPolicy.EvaluateDispatchMarketChecksAsync(safeRequest, ct).ConfigureAwait(false) is { } marketRefusal)
                 throw new BrokerageRequestNotSentException(marketRefusal.Reason ?? "Current market conditions do not allow dispatch.");
             if (_admissionPolicy.UsesLiveStrategyAuthorization &&
-                await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct).ConfigureAwait(false) is { } authorityRefusal)
+                await _admissionPolicy.EvaluateDispatchAuthorityAsync(prepared, ct, safeRequest.SecurityId).ConfigureAwait(false)
+                    is { } authorityRefusal)
                 throw new BrokerageRequestNotSentException(authorityRefusal.Reason ?? "Live order authority was withdrawn.");
 
             Task<ExecutionReport> submission;

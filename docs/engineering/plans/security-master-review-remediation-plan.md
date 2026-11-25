@@ -705,7 +705,9 @@ Implemented together, so no holding is split between a ticker key and a Security
   and refuses a caller-supplied SecurityId that disagrees. The fill processor stamps it onto
   execution reports that do not echo it, including child orders. The identity is retained on
   `OrderState.SecurityId` in the brokerage order recovery snapshot, so fills for orders recovered
-  after a restart are stamped too.
+  after a restart are stamped too. The dispatch-time Security Master recheck of attributed orders,
+  including amendment replacements, refuses the order (`SECURITY_IDENTITY_CHANGED_BEFORE_DISPATCH`)
+  when the ticker now resolves to a different SecurityId than the one admitted.
 - Posting sites converted:
   - execution ledger consumer, automated fill accounting, posting candidates, operations posting;
   - paper trading (`ExecutionReport.SecurityId`, with a position-pinned key), block allocation

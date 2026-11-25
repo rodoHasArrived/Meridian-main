@@ -240,8 +240,9 @@ internal sealed class OrderAdmissionPolicy
     /// Re-checks typed order authority after risk validation and before the order becomes
     /// visible; see <see cref="OrderAuthorityResolver.EvaluateDispatchAsync"/>.
     /// </summary>
-    internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(PreparedOrderAdmission prepared, CancellationToken ct) =>
-        _authority.EvaluateDispatchAsync(prepared, ct);
+    internal Task<OrderAdmissionRefusal?> EvaluateDispatchAuthorityAsync(
+        PreparedOrderAdmission prepared, CancellationToken ct, Guid? admittedSecurityId = null) =>
+        _authority.EvaluateDispatchAsync(prepared, ct, admittedSecurityId);
 
     internal bool UsesLiveStrategyAuthorization => _executionMode == ExecutionMode.Live &&
         (_liveStrategyAuthorization is not null || _requireLiveStrategyAuthorization);
@@ -295,7 +296,8 @@ internal sealed class OrderAdmissionPolicy
         const string actor = "strategy-runtime";
         var grant = new ExecutionAccountGrant(account, actor, ExecutionAccountGrantSources.StrategyRun, _clock.GetUtcNow());
         var authority = OrderSubmissionAuthority.ForStrategyRun(actor, grant, runId, original.StrategyArtifactId);
-        return await EvaluateDispatchAuthorityAsync(Prepare(replacement, original.OrderId, authority), ct).ConfigureAwait(false);
+        return await EvaluateDispatchAuthorityAsync(Prepare(replacement, original.OrderId, authority), ct, original.SecurityId)
+            .ConfigureAwait(false);
     }
 
     internal static OrderAdmissionRefusal ControlRefusal(ExecutionControlDecision decision, string source) =>
