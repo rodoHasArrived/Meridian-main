@@ -101,9 +101,17 @@ internal sealed partial class TimeSeriesAlignmentEngine(StorageOptions storageOp
 
         var seconds = request.Interval?.ToUpperInvariant() switch
         {
-            "SECOND1" => 1, "SECOND5" => 5, "SECOND10" => 10, "SECOND30" => 30,
-            "MINUTE1" => 60, "MINUTE5" => 300, "MINUTE15" => 900, "MINUTE30" => 1800,
-            "HOUR1" => 3600, "HOUR4" => 14400, "DAILY" => 86400,
+            "SECOND1" => 1,
+            "SECOND5" => 5,
+            "SECOND10" => 10,
+            "SECOND30" => 30,
+            "MINUTE1" => 60,
+            "MINUTE5" => 300,
+            "MINUTE15" => 900,
+            "MINUTE30" => 1800,
+            "HOUR1" => 3600,
+            "HOUR4" => 14400,
+            "DAILY" => 86400,
             _ => throw new ArgumentException("Choose a supported alignment interval.")
         };
         var daily = seconds == 86400;
@@ -137,9 +145,17 @@ internal sealed partial class TimeSeriesAlignmentEngine(StorageOptions storageOp
 
     private static readonly Dictionary<int, string> CanonicalIntervalNames = new()
     {
-        [1] = "Second1", [5] = "Second5", [10] = "Second10", [30] = "Second30",
-        [60] = "Minute1", [300] = "Minute5", [900] = "Minute15", [1800] = "Minute30",
-        [3600] = "Hour1", [14400] = "Hour4", [86400] = "Daily"
+        [1] = "Second1",
+        [5] = "Second5",
+        [10] = "Second10",
+        [30] = "Second30",
+        [60] = "Minute1",
+        [300] = "Minute5",
+        [900] = "Minute15",
+        [1800] = "Minute30",
+        [3600] = "Hour1",
+        [14400] = "Hour4",
+        [86400] = "Daily"
     };
 
     private static T ParsePolicy<T>(string? value, string description) where T : struct, Enum =>

@@ -622,9 +622,18 @@ public sealed class TimeSeriesAlignmentViewModel : BindableBase
 
     private static string PreviewKey(AlignmentOptions options) => JsonSerializer.Serialize(new
     {
-        options.Symbols, options.Providers, options.FromDate, options.ToDate, options.Interval,
-        options.GapStrategy, options.MaxGapIntervals, options.Timezone, options.MarketHoursOnly,
-        options.InputKind, options.AdjustmentPolicy, options.Fields
+        options.Symbols,
+        options.Providers,
+        options.FromDate,
+        options.ToDate,
+        options.Interval,
+        options.GapStrategy,
+        options.MaxGapIntervals,
+        options.Timezone,
+        options.MarketHoursOnly,
+        options.InputKind,
+        options.AdjustmentPolicy,
+        options.Fields
     });
 
     private bool CanSavePreset() => !IsRunning && !string.IsNullOrWhiteSpace(AlignmentName);
