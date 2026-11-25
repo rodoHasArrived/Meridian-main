@@ -79,8 +79,12 @@ public sealed partial class ArchiveHealthPage : Page
     {
         try
         {
-            var status = await _healthService.GetHealthStatusAsync();
+            var status = await _healthService.GetHealthStatusAsync(ct: ct);
             UpdateHealthDisplay(status);
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            // Navigation away cancelled the load; nothing to report.
         }
         catch (Exception ex)
         {

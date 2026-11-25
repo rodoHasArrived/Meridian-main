@@ -161,7 +161,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.VerificationJobEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:508](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L508).
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:486](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L486).
 
 Carries the archive verification job whose state has changed.
 
@@ -173,13 +173,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public VerificationJob? Job { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:510](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L510) |  |
+| <code>public VerificationJob? Job { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:488](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L488) |  |
 
 ## VerificationProgress
 
 Qualified name: <code>Meridian.Wpf.Services.VerificationProgress</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:524](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L524).
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:502](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L502).
 
 Reports archive verification file counts, progress, current file, and processing rate.
 
@@ -191,14 +191,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int ProcessedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:526](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L526) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:527](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L527) |  |
-| <code>public int VerifiedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:528](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L528) |  |
-| <code>public int FailedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:529](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L529) |  |
-| <code>public double ProgressPercent { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:530](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L530) |  |
-| <code>public string? CurrentFile { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:531](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L531) |  |
-| <code>public double FilesPerSecond { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:532](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L532) |  |
-| <code>public int? EstimatedTimeRemainingSeconds { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:533](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L533) |  |
+| <code>public int ProcessedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:504](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L504) |  |
+| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:505](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L505) |  |
+| <code>public int VerifiedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:506](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L506) |  |
+| <code>public int FailedFiles { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:507](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L507) |  |
+| <code>public double ProgressPercent { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:508](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L508) |  |
+| <code>public string? CurrentFile { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:509](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L509) |  |
+| <code>public double FilesPerSecond { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:510](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L510) |  |
+| <code>public int? EstimatedTimeRemainingSeconds { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:511](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L511) |  |
 
 ## ViewModelViewResolver
 

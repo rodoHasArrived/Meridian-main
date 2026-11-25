@@ -498,7 +498,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.ArchiveHealthEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:500](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L500).
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:478](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L478).
 
 Carries the archive health status published by the archive health service.
 
@@ -510,15 +510,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ArchiveHealthStatus? Status { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:502](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L502) |  |
+| <code>public ArchiveHealthStatus? Status { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:480](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L480) |  |
 
 ## ArchiveHealthService
 
 Qualified name: <code>Meridian.Wpf.Services.ArchiveHealthService</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:24](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L24).
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:21](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L21).
 
-Service for monitoring archive health and verification.
+Service for monitoring archive health and verification. Health is calculated locally from the configured data root: the host maps no archive health route, so there is no server copy to read.
 
 ```csharp
 public sealed class ArchiveHealthService
@@ -528,24 +528,24 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ArchiveHealthService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:27](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L27) |  |
-| <code>public event EventHandler&lt;ArchiveHealthEventArgs&gt;? HealthStatusUpdated;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:45](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L45) |  |
-| <code>public event EventHandler&lt;VerificationJobEventArgs&gt;? VerificationStarted;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:46](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L46) |  |
-| <code>public event EventHandler&lt;VerificationJobEventArgs&gt;? VerificationCompleted;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:47](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L47) |  |
-| <code>public event EventHandler&lt;ArchiveIssueEventArgs&gt;? IssueResolved;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:48](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L48) |  |
-| <code>public async Task&lt;ArchiveHealthStatus&gt; GetHealthStatusAsync(bool forceRefresh = false, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:50](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L50) |  |
-| <code>public async Task&lt;VerificationJob&gt; StartFullVerificationAsync(IProgress&lt;VerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:89](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L89) |  |
-| <code>public async Task&lt;VerificationJob&gt; StartIncrementalVerificationAsync(DateTime since, IProgress&lt;VerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:130](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L130) |  |
-| <code>public void CancelVerification();</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:170](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L170) |  |
-| <code>public VerificationJob? GetCurrentVerificationJob() =&gt; …;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:175](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L175) |  |
-| <code>public async Task ResolveIssueAsync(string issueId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:177](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L177) |  |
-| <code>public async Task&lt;AuditChainVerifyResult&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:190](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L190) |  |
+| <code>public static ArchiveHealthService Instance =&gt; …;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:24](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L24) |  |
+| <code>public event EventHandler&lt;ArchiveHealthEventArgs&gt;? HealthStatusUpdated;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:40](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L40) |  |
+| <code>public event EventHandler&lt;VerificationJobEventArgs&gt;? VerificationStarted;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:41](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L41) |  |
+| <code>public event EventHandler&lt;VerificationJobEventArgs&gt;? VerificationCompleted;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:42](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L42) |  |
+| <code>public event EventHandler&lt;ArchiveIssueEventArgs&gt;? IssueResolved;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:43](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L43) |  |
+| <code>public async Task&lt;ArchiveHealthStatus&gt; GetHealthStatusAsync(bool forceRefresh = false, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:45](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L45) |  |
+| <code>public async Task&lt;VerificationJob&gt; StartFullVerificationAsync(IProgress&lt;VerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:60](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L60) |  |
+| <code>public async Task&lt;VerificationJob&gt; StartIncrementalVerificationAsync(DateTime since, IProgress&lt;VerificationProgress&gt;? progress = null, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:101](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L101) |  |
+| <code>public void CancelVerification();</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:141](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L141) |  |
+| <code>public VerificationJob? GetCurrentVerificationJob() =&gt; …;</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:146](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L146) |  |
+| <code>public async Task ResolveIssueAsync(string issueId, CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:148](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L148) |  |
+| <code>public async Task&lt;AuditChainVerifyResult&gt; VerifyAuditChainAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:161](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L161) |  |
 
 ## ArchiveIssueEventArgs
 
 Qualified name: <code>Meridian.Wpf.Services.ArchiveIssueEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:516](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L516).
+Source: [src/Meridian.Wpf/Services/ArchiveHealthService.cs:494](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L494).
 
 Carries an archive issue reported by the archive health service.
 
@@ -557,7 +557,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ArchiveIssue? Issue { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:518](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L518) |  |
+| <code>public ArchiveIssue? Issue { get; set; }</code> | [src/Meridian.Wpf/Services/ArchiveHealthService.cs:496](../../../../src/Meridian.Wpf/Services/ArchiveHealthService.cs#L496) |  |
 
 ## AuditIntegrityCheckOutcome
 

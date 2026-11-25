@@ -56,9 +56,6 @@ public sealed class DesktopClientRouteContractTests : EndpointIntegrationTestBas
         // Optional watchlist backend sync. A 404 returns false without logging and the service
         // keeps the locally persisted watchlists, which remain the source of truth.
         "src/Meridian.Wpf/Services/WatchlistService.cs -> /api/watchlists",
-        // Archive health probe. Any non-success response falls through to the locally calculated
-        // health status, so the page still renders.
-        "src/Meridian.Wpf/Services/ArchiveHealthService.cs -> /api/archive/health",
     };
 
     [Fact]

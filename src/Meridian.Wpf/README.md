@@ -1297,7 +1297,8 @@ was read before a change made in the meantime, is not applied: the load then rea
 persistence gate, under the state gate, so a reload cannot roll back a concurrent change. **Live data routes.** Order book, ticker strip, quote float, live data
 viewer and corporate-action recording call routes built from `UiApiRoutes`;
 `DesktopClientRouteContractTests` fails on a desktop `/api/` literal the server does not map,
-apart from two listed exceptions (`/api/watchlists`, `/api/archive/health`).
+apart from one listed exception (`/api/watchlists`). Archive Health calculates its status locally from
+the configured data root and makes no server request, because the host maps no archive health route.
 
 ## One refresh control, plain shell copy (2026-11)
 
