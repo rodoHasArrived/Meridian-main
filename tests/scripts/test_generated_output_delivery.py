@@ -150,6 +150,7 @@ class GeneratedDeliveryTests(unittest.TestCase):
         policy = json.loads((ROOT / 'build/scripts/maintained-generation-outputs.json').read_text())
         config = delivery(policy)
         self.assertIn('docs/status/wpf-screen-development-tracker.json', config['ci_files'])
-        self.assertNotIn('docs/source/generated/source-hash-manifest.json', config['ci_files'])
+        self.assertIn('docs/source/generated/source-hashes', config['reviewed_baselines'])
+        self.assertFalse(any(name.startswith('docs/source/generated/source-hashes') for name in config['ci_files']))
         self.assertNotIn('docs/generated/database', config['ci_trees'])
         self.assertNotIn('docs/status/coverage-report.md', config['ci_files'])
