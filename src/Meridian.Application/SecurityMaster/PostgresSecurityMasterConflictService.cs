@@ -282,11 +282,11 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                 "resolved_winner_source",
                 newStatus == "Resolved" ? (object?)selectedSource ?? DBNull.Value : DBNull.Value);
             command.Parameters.Add(new NpgsqlParameter("policy_winner_source", NpgsqlTypes.NpgsqlDbType.Text)
-                { Value = (object?)request.PolicyWinnerSource?.Trim() ?? DBNull.Value });
+            { Value = (object?)request.PolicyWinnerSource?.Trim() ?? DBNull.Value });
             command.Parameters.Add(new NpgsqlParameter("policy_rule", NpgsqlTypes.NpgsqlDbType.Text)
-                { Value = (object?)request.PolicyRule ?? DBNull.Value });
+            { Value = (object?)request.PolicyRule ?? DBNull.Value });
             command.Parameters.Add(new NpgsqlParameter("is_policy_deviation", NpgsqlTypes.NpgsqlDbType.Boolean)
-                { Value = newStatus == "Resolved" && request.IsPolicyDeviation is { } deviation ? deviation : DBNull.Value });
+            { Value = newStatus == "Resolved" && request.IsPolicyDeviation is { } deviation ? deviation : DBNull.Value });
             command.Parameters.AddWithValue("resolved_by", request.ResolvedBy);
             command.Parameters.AddWithValue("resolved_reason", (object?)request.Reason ?? DBNull.Value);
             command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
