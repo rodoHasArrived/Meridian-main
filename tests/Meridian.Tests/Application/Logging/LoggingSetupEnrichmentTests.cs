@@ -64,7 +64,7 @@ public sealed class LoggingSetupEnrichmentTests
 
         line.Should().Contain("[WRN]");
         line.Should().Contain("Meridian.Application.Pipeline.EventPipeline");
-        line.Should().Contain("\"CorrelationId\": \"corr-42\"");
+        line.Should().Contain("\"CorrelationId\":\"corr-42\"");
         line.Should().Contain(activity.TraceId.ToHexString());
         line.Should().Contain($"[{Environment.CurrentManagedThreadId}]");
     }
