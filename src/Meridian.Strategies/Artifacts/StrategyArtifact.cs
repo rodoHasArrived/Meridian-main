@@ -3,6 +3,7 @@ using System.Text;
 using Meridian.Backtesting.Sdk;
 using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Workstation;
+using Meridian.Strategies.Interfaces;
 using Meridian.Strategies.Live.Designer;
 using Meridian.Strategies.Live.Strategies;
 
@@ -102,6 +103,33 @@ public sealed record StrategyArtifact(
         new(document.DocumentId, StrategyAuthoringRoute.Designer, DesignerDocumentRevision.ComputeHash(document),
             parameters ?? new Dictionary<string, string>(), document.Universe, document.DatasetReference,
             request?.ToRealismDescriptor().ToCanonicalString(), DesignerDocument: document);
+
+    /// <summary>
+    /// Retains a scoped Designer executable independently of a particular replay window or dataset snapshot.
+    /// The run input hash separately binds those experiment inputs and the exact saved draft revision.
+    /// </summary>
+    public static StrategyArtifact FromScopedDesigner(
+        StrategyDesignDocument document,
+        StrategyRunRepositoryScope scope,
+        ExecutionRealismDescriptor realism)
+    {
+        ArgumentNullException.ThrowIfNull(document);
+        ArgumentNullException.ThrowIfNull(realism);
+        var realismHash = DesignerStrategyVersion.ComputeRealismHash(realism);
+        return new(
+            DesignerStrategyVersion.ComputeStrategyId(scope, document.DocumentId),
+            StrategyAuthoringRoute.Designer,
+            DesignerDocumentRevision.ComputeHash(document),
+            new Dictionary<string, string>(StringComparer.Ordinal)
+            {
+                [DesignerStrategyVersion.VersionKey] = DesignerStrategyVersion.Compute(document, realismHash),
+                [DesignerStrategyVersion.RealismKey] = realismHash
+            },
+            document.Universe,
+            document.DatasetReference,
+            realism.ToCanonicalString(),
+            DesignerDocument: document);
+    }
 
     public static string CodeRevision(Type implementation)
     {

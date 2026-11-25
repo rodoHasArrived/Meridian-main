@@ -71,13 +71,16 @@ public sealed class KillSwitchAuthorityRecordingTests : IDisposable
         await oms.StartAsync();
         (await oms.PlaceOrderAsync(RestingOrder("resting-1", "AAPL"))).Success.Should().BeTrue();
 
-        (await oms.CancelAllAsync()).Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
+        var sweep = await oms.CancelAllAsync();
+        sweep.Outcome.Should().Be(KillSwitchSweepOutcome.Completed);
 
         var entries = await audit.GetAllAsync();
         entries.Should().NotContain(entry => entry.Action == "KillSwitchSweep");
         var cancellation = entries.Should().ContainSingle(entry => entry.Action == "OrderCancelled").Subject;
         cancellation.Actor.Should().BeNull();
         cancellation.Metadata?.Keys.Should().NotContain("commandOrigin");
+        cancellation.Metadata!["cancelAllIncidentId"].Should().Be(sweep.IncidentId,
+            "public audit projections need a non-authorizing marker even without supplied authority");
     }
 
     [Fact]

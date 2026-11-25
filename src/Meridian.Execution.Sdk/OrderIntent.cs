@@ -16,7 +16,12 @@ public sealed record StrategyOrderAuthority(
     string RunId,
     string StrategyVersionSha256,
     string ApprovalReference,
-    string PaperSessionId);
+    string PaperSessionId)
+{
+    /// <summary>The exact executable artifact, when the reviewed run carries one.</summary>
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? StrategyArtifactId { get; init; }
+}
 
 public static class OrderIntentStatus
 {
