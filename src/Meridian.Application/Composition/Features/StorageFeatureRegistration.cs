@@ -277,10 +277,6 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IIntercompanyAgreementJournalValidation>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.TryAddSingleton<ILedgerSecurityEntitlementInventory>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
             services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
-            services.AddSingleton(sp => new DurableAutomatedJournalPoster(
-                sp.GetRequiredService<IGovernedLedgerPostingTarget>()));
-            services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
-                sp.GetRequiredService<DurableAutomatedJournalPoster>());
             services.AddSingleton<PostgresAccountingConfigurationStore>();
             services.AddSingleton<Meridian.Ledger.IPrivateCapitalStore, PostgresPrivateCapitalStore>();
             services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());

@@ -585,6 +585,12 @@ without a ledger database. `LoanAccountingProjector` therefore resolves the ledg
 optionally and fails closed on every ledger-impacting event when none is composed; no substitute
 ledger store is registered. Proof is in `StorageFeatureRegistrationTests`.
 
+When the ledger database is configured, `StorageFeatureRegistration` registers the governed
+`IGovernedLedgerPostingTarget` but does not bind `IAutomatedJournalPostingTarget`. Automated journal
+drafts reach the ledger only through `AutomatedJournalIntakeRunner`, which queues manual journal
+workbench drafts; the workbench lifecycle owns approval and posting, so no second automated posting
+path is composed.
+
 `LoanAccountingProjector` fails closed on amounts: a ledger-impacting loan event whose payload is
 missing its required amount, carries a non-numeric amount member, or produces a negative amount
 fails the command with a validation error instead of persisting the event with no journal. Zero

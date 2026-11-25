@@ -43,10 +43,6 @@ public static class LedgerStoreExtensions
         services.AddSingleton<ILedgerBalanceSnapshotSource>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<Meridian.Contracts.Accounting.Lots.IOpenLotBackfillStore>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
         services.AddSingleton<IGovernedLedgerPostingTarget, DurableLedgerPostingTarget>();
-        services.AddSingleton(sp => new DurableAutomatedJournalPoster(
-            sp.GetRequiredService<IGovernedLedgerPostingTarget>()));
-        services.AddSingleton<IAutomatedJournalPostingTarget>(sp =>
-            sp.GetRequiredService<DurableAutomatedJournalPoster>());
         services.AddSingleton<PostgresAccountingConfigurationStore>();
         services.AddSingleton<IPrivateCapitalStore, PostgresPrivateCapitalStore>();
         services.AddSingleton<IAccountingConfigurationStore>(sp => sp.GetRequiredService<PostgresAccountingConfigurationStore>());
