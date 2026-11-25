@@ -486,7 +486,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderToleranceBounds</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:246](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L246).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:265](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L265).
 
 ```csharp
 public sealed record CrossProviderToleranceBounds(double MaxPriceTolerancePercent, double MaxVolumeTolerancePercent, int MaxBackfillBarsToCompare, int MaxAssetClassOverrides, int MaxPreviewDays);
@@ -496,7 +496,7 @@ public sealed record CrossProviderToleranceBounds(double MaxPriceTolerancePercen
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderToleranceEndpoints</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:20](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L20).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:24](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L24).
 
 User-editable cross-provider data-quality tolerances: read, save (with bounds, a recorded reason when loosening, and before/after audit evidence) and an on-demand &quot;would have flagged&quot; preview.
 
@@ -508,15 +508,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int MaxPreviewDays = 30;</code> | [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:23](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L23) | Maximum lookback for the preview; each preview fetches one range per provider. |
-| <code>public static void MapCrossProviderToleranceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L27) |  |
-| <code>public static (AppConfig Config, CrossProviderTolerancePolicyAudit Result) ApplyPolicy(AppConfig config, CrossProviderTolerancePolicyRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:157](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L157) | Validates and saves a policy, appending before/after audit evidence in the same write. |
+| <code>public const int MaxPreviewDays = 30;</code> | [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L27) | Maximum lookback for the preview; each preview fetches one range per provider. |
+| <code>public static void MapCrossProviderToleranceEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:31](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L31) |  |
+| <code>public static (AppConfig Config, CrossProviderTolerancePolicyAudit Result) ApplyPolicy(AppConfig config, CrossProviderTolerancePolicyRequest request, string actor);</code> | [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:169](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L169) | Validates and saves a policy, appending before/after audit evidence in the same write. |
 
 ## CrossProviderTolerancePolicyRequest
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderTolerancePolicyRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:244](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L244).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:263](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L263).
 
 ```csharp
 public sealed record CrossProviderTolerancePolicyRequest(CrossProviderTolerancePolicy Policy, string? Reason = null);
@@ -526,7 +526,7 @@ public sealed record CrossProviderTolerancePolicyRequest(CrossProviderToleranceP
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderTolerancePolicyResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:253](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L253).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:272](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L272).
 
 ```csharp
 public sealed record CrossProviderTolerancePolicyResponse(CrossProviderTolerancePolicy Policy, CrossProviderTolerancePolicy Defaults, CrossProviderToleranceBounds Bounds, IReadOnlyList<CrossProviderTolerancePolicyAudit> Audit, IReadOnlyList<string> PreviewProviders, int ProviderCallsPerPreview);
@@ -536,7 +536,7 @@ public sealed record CrossProviderTolerancePolicyResponse(CrossProviderTolerance
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderTolerancePolicySaveResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:261](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L261).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:280](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L280).
 
 ```csharp
 public sealed record CrossProviderTolerancePolicySaveResponse(CrossProviderTolerancePolicy Policy, CrossProviderTolerancePolicyAudit Audit, Meridian.Contracts.Configuration.ConfigurationChangeStatus ChangeImpact);
@@ -546,7 +546,7 @@ public sealed record CrossProviderTolerancePolicySaveResponse(CrossProviderToler
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderTolerancePreviewDay</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:274](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L274).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:293](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L293).
 
 ```csharp
 public sealed record CrossProviderTolerancePreviewDay(DateOnly SessionDate, decimal? BaselineClose, decimal? ComparisonClose, decimal? CloseDifferencePercent, decimal? VolumeDifferencePercent, string FlaggedBy);
@@ -556,7 +556,7 @@ public sealed record CrossProviderTolerancePreviewDay(DateOnly SessionDate, deci
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderTolerancePreviewRequest</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:266](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L266).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:285](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L285).
 
 ```csharp
 public sealed record CrossProviderTolerancePreviewRequest(string Symbol, string BaselineProvider, string ComparisonProvider, int Days = CrossProviderToleranceEndpoints.MaxPreviewDays, CrossProviderTolerancePolicy? Policy = null, string? AssetClass = null);
@@ -566,7 +566,7 @@ public sealed record CrossProviderTolerancePreviewRequest(string Symbol, string 
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.CrossProviderTolerancePreviewResponse</code>. Kind: `record`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:282](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L282).
+Source: [src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs:301](../../../../src/Meridian.Ui.Shared/Endpoints/CrossProviderToleranceEndpoints.cs#L301).
 
 ```csharp
 public sealed record CrossProviderTolerancePreviewResponse(string Symbol, DateOnly From, DateOnly To, string BaselineProvider, string ComparisonProvider, CrossProviderTolerances Tolerances, int FlaggedDays, IReadOnlyList<CrossProviderTolerancePreviewDay> Flagged, int InformationalDays, int MissingSessions, IReadOnlyList<string> ProviderErrors, int ProviderCallsUsed);

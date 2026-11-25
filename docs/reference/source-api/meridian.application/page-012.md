@@ -6,6 +6,31 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ServiceRegistry
+
+Qualified name: <code>Meridian.Application.Services.ServiceRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Services/ServiceRegistry.cs:77](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L77).
+
+Centralized registry for application services providing discovery, categorization, and dependency resolution capabilities.
+
+```csharp
+public sealed class ServiceRegistry : IDisposable, IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ServiceRegistry(ILogger? log = null);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:84](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L84) |  |
+| <code>public void Register&lt;T&gt;(T instance, ServiceCategory category, string description) where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:96](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L96) | Registers a service with metadata. |
+| <code>public T? Get&lt;T&gt;() where T : class;</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:112](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L112) | Gets a service by type. |
+| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetByCategory(ServiceCategory category);</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:122](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L122) | Gets all services in a category. |
+| <code>public IReadOnlyList&lt;ServiceInfo&gt; GetAll();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:131](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L131) | Gets all registered services. |
+| <code>public IReadOnlyDictionary&lt;ServiceCategory, int&gt; GetSummary();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:140](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L140) | Gets a summary of registered services by category. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:147](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L147) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Application/Services/ServiceRegistry.cs:170](../../../../src/Meridian.Application/Services/ServiceRegistry.cs#L170) |  |
+
 ## ServiceRegistryExtensions
 
 Qualified name: <code>Meridian.Application.Services.ServiceRegistryExtensions</code>. Kind: `class`.
@@ -1044,22 +1069,3 @@ Declared public members:
 | <code>public (ConnectionHealthSnapshotDto? Snapshot, string? Error) GetConnectionHealth();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:536](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L536) | Gets connection health snapshot. |
 | <code>public async Task&lt;(DetailedHealthReport? Report, string? Error)&gt; GetDetailedHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:570](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L570) | Gets detailed health report (async). |
 | <code>public static IReadOnlyList&lt;BackfillProviderInfo&gt; GetBackfillProviderInfo();</code> | [src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs:591](../../../../src/Meridian.Application/Http/Endpoints/StatusEndpointHandlers.cs#L591) | Gets the list of available backfill providers (static info). |
-
-## IWizardStep
-
-Qualified name: <code>Meridian.Application.Wizard.Core.IWizardStep</code>. Kind: `interface`.
-
-Source: [src/Meridian.Application/Wizard/Core/IWizardStep.cs:9](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L9).
-
-Contract that every wizard step must implement. Steps are independent units: each one reads from and writes to WizardContext, then returns a WizardStepResult that tells the WizardCoordinator what to do next.
-
-```csharp
-public interface IWizardStep
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>WizardStepId StepId { get; }</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:12](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L12) | The unique identifier of this step in the workflow graph. |
-| <code>Task&lt;WizardStepResult&gt; ExecuteAsync(WizardContext context, CancellationToken ct);</code> | [src/Meridian.Application/Wizard/Core/IWizardStep.cs:19](../../../../src/Meridian.Application/Wizard/Core/IWizardStep.cs#L19) | Executes the step. Implementations should not throw for user-facing cancellations — return WizardStepResult.Cancelled instead. |
