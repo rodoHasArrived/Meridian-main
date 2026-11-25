@@ -1,5 +1,5 @@
 import { apiGetJson, apiPostJson, type ApiRequestOptions } from "@/lib/api";
-import { routeForOperatorWorkItem } from "@/app-shell.workflow-routing";
+import { routeForOperatorWorkItem, withOperatorWorkItemScope } from "@/app-shell.workflow-routing";
 import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import type { OperatorWorkItem } from "@/types";
 import { isApiError } from "@/lib/api-errors";
@@ -142,7 +142,10 @@ export function safeTriageRoute(route: string | null | undefined): string | null
 }
 
 export function routeForTriageItem(item: OperatorTriageItem): string | null {
-  if (!item.kind) return safeTriageRoute(item.targetRoute);
+  if (!item.kind) {
+    const route = safeTriageRoute(item.targetRoute);
+    return route ? withOperatorWorkItemScope(route, { fundAccountId: item.fundAccountId ?? null }) : null;
+  }
   return safeTriageRoute(routeForOperatorWorkItem({ ...item, kind: item.kind,
     runId: item.runId ?? null, fundAccountId: item.fundAccountId ?? null, auditReference: null }));
 }

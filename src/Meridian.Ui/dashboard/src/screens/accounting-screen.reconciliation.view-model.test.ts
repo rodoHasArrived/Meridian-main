@@ -445,15 +445,15 @@ describe("accounting-screen reconciliation view model", () => {
       ledgerHeading: "Ledger",
       matchedBadgeLabel: "24 matched",
       openBadgeLabel: "2 open",
-      statementBalanceLabel: "$120,000",
-      ledgerBalanceLabel: "$120,500",
-      varianceLabel: "Out by $500",
-      varianceTone: "warning"
+      statementBalanceLabel: "Unavailable",
+      ledgerBalanceLabel: "Unavailable",
+      varianceLabel: "Can't assess",
+      varianceTone: "default"
     });
     expect(state.rows[0]).toMatchObject({
       statementTitle: "Northern Trust",
-      statementValue: "$120,000",
-      ledgerValue: "$120,500",
+      statementValue: "24 matched",
+      ledgerValue: "2 open",
       statusTone: "warning"
     });
     expect(state.lineSource).toBe("runs");
@@ -461,10 +461,11 @@ describe("accounting-screen reconciliation view model", () => {
     expect(state.statementLines[0]).toMatchObject({
       matchKey: "statement-run-1",
       title: "Northern Trust",
-      amountLabel: "$120,000",
+      amountLabel: "24 matched",
       statusTone: "warning"
     });
     expect(state.ledgerLines[0].matchKey).toBe("statement-run-1");
+    expect(state.summaryUnavailableReason).toContain("does not declare a currency");
   });
 
   it("drives the reconciliation comparison from transaction-level external GL detail when loaded", () => {
@@ -515,17 +516,18 @@ describe("accounting-screen reconciliation view model", () => {
     expect(state.statementLines.find((line) => line.matchKey === "r-miss-mer")).toMatchObject({ statusLabel: "Missing in ledger", statusTone: "danger" });
     expect(state.ledgerLines.find((line) => line.matchKey === "r-miss-ext")).toMatchObject({ statusLabel: "Missing in statement", statusTone: "danger" });
 
-    // Line amounts are currency-aware per row — the EUR row renders with the euro symbol, not USD.
-    expect(state.statementLines[0].amountLabel).toBe("$500");
-    expect(state.statementLines.find((line) => line.matchKey === "r-variance")?.amountLabel).toBe("-€200");
+    // Every line retains its currency; amounts in different currencies are never aggregated.
+    expect(state.statementLines[0].amountLabel).toBe("500.00 USD");
+    expect(state.statementLines.find((line) => line.matchKey === "r-variance")?.amountLabel).toBe("−200.00 EUR");
 
     // Summary and badges follow the system reconciliation totals.
     expect(state.matchedBadgeLabel).toBe("1 matched");
     expect(state.openBadgeLabel).toBe("3 open");
-    expect(state.statementBalanceLabel).toBe("$800");
-    expect(state.ledgerBalanceLabel).toBe("$600");
-    expect(state.varianceLabel).toBe("Out by $200");
-    expect(state.varianceTone).toBe("warning");
+    expect(state.statementBalanceLabel).toBe("Unavailable");
+    expect(state.ledgerBalanceLabel).toBe("Unavailable");
+    expect(state.varianceLabel).toBe("Can't assess");
+    expect(state.varianceTone).toBe("default");
+    expect(state.summaryUnavailableReason).toContain("multiple currencies (USD, EUR)");
   });
 
   it("does not report balanced when a transaction-level reconciliation has open breaks despite tied totals", () => {
@@ -605,9 +607,10 @@ describe("accounting-screen reconciliation view model", () => {
 
     // No GL row detail => panes show run-level lines, so the summary must stay on the run-level source too.
     expect(state.lineSource).toBe("runs");
-    expect(state.statementBalanceLabel).toBe("$120,000");
-    expect(state.ledgerBalanceLabel).toBe("$120,500");
-    expect(state.varianceLabel).toBe("Out by $500");
+    expect(state.statementBalanceLabel).toBe("Unavailable");
+    expect(state.ledgerBalanceLabel).toBe("Unavailable");
+    expect(state.varianceLabel).toBe("Can't assess");
+    expect(state.summaryUnavailableReason).toContain("does not declare a currency");
   });
 
   it("derives reconciliation detail queue row state and empty inspector copy", () => {
@@ -854,6 +857,150 @@ describe("accounting-screen reconciliation tie-out proof", () => {
     });
   }
 
+  function exactReconciliation(statement: string, ledger: string, currency: string, variance = "0") {
+    const base = systemReconciliation();
+    return systemReconciliation({
+      matchedCount: variance === "0" ? 1 : 0, breakCount: variance === "0" ? 0 : 1,
+      totalExternalDebitsExact: statement, totalExternalCreditsExact: "0",
+      totalMeridianDebitsExact: ledger, totalMeridianCreditsExact: "0",
+      rows: [{ ...base.rows[0], currency, status: variance === "0" ? "Matched" : "Variance",
+        externalDebitExact: statement, externalCreditExact: "0", meridianDebitExact: ledger,
+        meridianCreditExact: "0", varianceExact: variance }]
+    });
+  }
+
+  it("uses retained exact operands beyond binary-number precision and preserves a subminor EUR difference", () => {
+    const state = build(exactReconciliation("9007199254740993.125", "9007199254740993.124", "EUR", "0.001"));
+
+    expect(state.statementLines[0].amountLabel).toBe("9,007,199,254,740,993.125 EUR");
+    expect(state.ledgerLines[0].amountLabel).toBe("9,007,199,254,740,993.124 EUR");
+    expect(state.statementBalanceLabel).toBe(state.statementLines[0].amountLabel);
+    expect(state.ledgerBalanceLabel).toBe(state.ledgerLines[0].amountLabel);
+    expect(state.netVarianceExact).toBe("0.001");
+    expect(state.varianceLabel).toBe("Out by 0.001 EUR");
+    expect(state.statementBalance).toBeNull();
+    expect(state.ledgerBalance).toBeNull();
+    expect(state.tieOut).toBeNull();
+    expect(state.tieOutUnavailableReason).toContain("cannot preserve");
+    expect(state.legacyPrecisionNotice).toBeUndefined();
+  });
+
+  it.each([
+    ["JPY", "1250", "1,250 JPY", 0],
+    ["KWD", "1250.125", "1,250.125 KWD", 3],
+    ["EUR", "0", "0.00 EUR", 2],
+    ["USD", "0.0001", "0.0001 USD", 4]
+  ])("keeps %s minor units and retained precision without collapsing zero", (currency, amount, label, digits) => {
+    const state = build(exactReconciliation(String(amount), String(amount), String(currency)));
+    expect(state.statementLines[0].amountLabel).toBe(label);
+    expect(state.statementBalanceLabel).toBe(label);
+    expect(state.varianceLabel).toBe("Balanced");
+    expect(state.tieOut?.digits).toBe(digits);
+  });
+
+  it("distinguishes zero, a missing operand, and an explicitly unavailable exact operand", () => {
+    const original = exactReconciliation("0", "0", "EUR");
+    const missing = { ...original.rows[0], rowId: "missing", externalDebitExact: undefined,
+      externalDebit: undefined as unknown as number };
+    const unavailable = { ...original.rows[0], rowId: "unavailable", externalDebit: 500, externalDebitExact: null };
+    const malformed = { ...original.rows[0], rowId: "malformed", externalDebit: 500, externalDebitExact: "EUR 500" };
+    const state = build({ ...original, rows: [original.rows[0], missing, unavailable, malformed] });
+    expect(state.statementLines.map((line) => line.amountLabel)).toEqual(["0.00 EUR", "Not recorded", "Unavailable", "Unavailable"]);
+    expect(state.varianceLabel).toBe("Can't assess");
+    expect(state.tieOut).toBeNull();
+    expect(state.summaryUnavailableReason).toContain("source line amount is unavailable");
+
+    const unavailableTotal = build({ ...original, totalExternalDebits: 500, totalExternalDebitsExact: null });
+    expect(unavailableTotal.statementBalanceLabel).toBe("Unavailable");
+    expect(unavailableTotal.statementBalanceExact).toBeNull();
+    expect(unavailableTotal.ledgerBalanceLabel).toBe("0.00 EUR");
+    expect(unavailableTotal.varianceLabel).toBe("Can't assess");
+  });
+
+  it("does not infer USD when a row has no declared currency", () => {
+    const state = build(exactReconciliation("500", "500", ""));
+    expect(state.statementLines[0].amountLabel).toBe("500.00 Currency unavailable");
+    expect(state.statementBalanceLabel).toBe("Unavailable");
+    expect(state.netVarianceExact).toBeNull();
+    expect(state.varianceLabel).toBe("Can't assess");
+    expect(state.summaryUnavailableReason).toContain("no declared currency");
+    expect(state.tieOut).toBeNull();
+  });
+
+  it("keeps source-side currencies distinct when the legacy row currency describes only the ledger", () => {
+    const original = exactReconciliation("500", "500", "USD");
+    const state = build({ ...original, matchedCount: 0, breakCount: 1, rows: [{ ...original.rows[0],
+      status: "Variance", externalCurrency: "EUR", meridianCurrency: "USD" }] });
+
+    expect(state.statementLines[0].amountLabel).toBe("500.00 EUR");
+    expect(state.ledgerLines[0].amountLabel).toBe("500.00 USD");
+    expect(state.statementBalanceLabel).toBe("Unavailable");
+    expect(state.ledgerBalanceLabel).toBe("Unavailable");
+    expect(state.netVarianceExact).toBeNull();
+    expect(state.varianceLabel).toBe("Can't assess");
+    expect(state.summaryUnavailableReason).toContain("multiple currencies (EUR, USD)");
+    expect(state.tieOut).toBeNull();
+  });
+
+  it("does not revive the legacy row currency when source-side currencies are explicitly unknown", () => {
+    const original = exactReconciliation("0", "0", "USD");
+    const state = build({ ...original, rows: [{ ...original.rows[0], externalCurrency: null, meridianCurrency: null }] });
+
+    expect(state.statementLines[0].amountLabel).toBe("0.00 Currency unavailable");
+    expect(state.ledgerLines[0].amountLabel).toBe("0.00 Currency unavailable");
+    expect(state.statementLines[0].meta).not.toContain("USD");
+    expect(state.statementBalanceLabel).toBe("Unavailable");
+    expect(state.varianceLabel).toBe("Can't assess");
+    expect(state.summaryUnavailableReason).toContain("no declared currency");
+    expect(state.tieOut).toBeNull();
+  });
+
+  it("uses only present source sides to assess the currencies of one-sided rows", () => {
+    const original = exactReconciliation("242", "300", "USD", "-58");
+    const state = build({ ...original, matchedCount: 0, breakCount: 2, rows: [
+      { ...original.rows[0], rowId: "external-only", status: "MissingMeridian", externalCurrency: "EUR", meridianCurrency: null,
+        externalDebitExact: "242", meridianDebitExact: "0", varianceExact: "242" },
+      { ...original.rows[0], rowId: "ledger-only", status: "MissingExternal", externalCurrency: null, meridianCurrency: "EUR",
+        externalDebitExact: "0", meridianDebitExact: "300", varianceExact: "-300" }
+    ] });
+
+    expect(state.statementLines.map((line) => line.amountLabel)).toEqual(["242.00 EUR"]);
+    expect(state.ledgerLines.map((line) => line.amountLabel)).toEqual(["300.00 EUR"]);
+    expect(state.varianceLabel).toBe("Out by 58.00 EUR");
+    expect(state.summaryUnavailableReason).toBeUndefined();
+    expect(state.tieOut?.currency).toBe("EUR");
+    expect(state.tieOut?.status).toBe("exception");
+  });
+
+  it("does not assign a balance or currency to a source with no recorded rows", () => {
+    const original = exactReconciliation("500", "0", "USD", "500");
+    const state = build({ ...original, rows: [{ ...original.rows[0], status: "MissingMeridian",
+      externalCurrency: "EUR", meridianCurrency: null }] });
+
+    expect(state.statementLines[0].amountLabel).toBe("500.00 EUR");
+    expect(state.ledgerLines).toEqual([]);
+    expect(state.ledgerBalanceLabel).toBe("Unavailable");
+    expect(state.varianceLabel).toBe("Can't assess");
+    expect(state.summaryUnavailableReason).toContain("one source has no reconciliation rows");
+    expect(state.tieOut).toBeNull();
+  });
+
+  it("suppresses the numeric proof when subtraction cannot reproduce the exact decimal difference", () => {
+    const state = build(exactReconciliation("0.3", "0.2", "EUR", "0.1"));
+    expect(state.netVarianceExact).toBe("0.1");
+    expect(state.varianceLabel).toBe("Out by 0.10 EUR");
+    expect(state.tieOut).toBeNull();
+    expect(state.tieOutUnavailableReason).toContain("cannot preserve");
+  });
+
+  it("shows a nonzero KWD residual even when the old proof's half-cent rule would call it tied", () => {
+    const state = build({ ...exactReconciliation("10.001", "10.000", "KWD", "0.001"), breakCount: 0 });
+    expect(state.varianceLabel).toBe("Difference 0.001 KWD");
+    expect(state.varianceTone).toBe("warning");
+    expect(state.tieOut).toBeNull();
+    expect(state.netVarianceExact).toBe("0.001");
+  });
+
   it("carries the numbers behind the summary labels and declares tied only when balanced", () => {
     const state = build(systemReconciliation());
 
@@ -888,7 +1035,7 @@ describe("accounting-screen reconciliation tie-out proof", () => {
       ]
     }));
 
-    expect(state.varianceLabel).toBe("Out by $58");
+    expect(state.varianceLabel).toBe("Out by 58.00 USD");
     expect(state).toMatchObject({ statementBalance: 742, ledgerBalance: 800, netVariance: -58, openCount: 2 });
     expect(state.tieOut?.status).toBe("exception");
     expect(state.tieOut?.statusNote).toBeUndefined();
@@ -933,13 +1080,14 @@ describe("accounting-screen reconciliation tie-out proof", () => {
 
     expect(state.statementBalance).toBeNull();
     expect(state.netVariance).toBeNull();
-    expect(state.tieOut?.sourceA.value).toBeNull();
-    expect(state.tieOut?.sourceB.value).toBe(500);
-    expect(state.tieOut?.status).toBe("exception");
+    expect(state.tieOut).toBeNull();
+    expect(state.statementBalanceLabel).toBe("Unavailable");
+    expect(state.ledgerBalanceLabel).toBe("500.00 USD");
+    expect(state.summaryUnavailableReason).toContain("Comparison unavailable");
     expect(state.varianceLabel).not.toBe("Balanced");
   });
 
-  it("prints bare numbers and names the currencies when rows span more than one", () => {
+  it("withholds mixed-currency aggregates while preserving each row's currency", () => {
     const state = build(systemReconciliation({
       breakCount: 1,
       totalExternalDebits: 500,
@@ -952,9 +1100,12 @@ describe("accounting-screen reconciliation tie-out proof", () => {
       ]
     }));
 
-    expect(state.tieOut?.notation).toBe("number");
-    expect(state.tieOut?.context).toBe("External GL reconciliation · 2026-06-01 to 2026-06-30 · Rows span USD, EUR; totals are summed as reported, without conversion");
-    expect(state.tieOut?.items[0].label).toBe("Fees (EUR)");
+    expect(state.tieOut).toBeNull();
+    expect(state.statementBalanceExact).toBeNull();
+    expect(state.ledgerBalanceExact).toBeNull();
+    expect(state.netVarianceExact).toBeNull();
+    expect(state.statementLines.map((line) => line.amountLabel)).toEqual(["500.00 USD", "−200.00 EUR"]);
+    expect(state.summaryUnavailableReason).toContain("multiple currencies (USD, EUR)");
   });
 
   it("offers no tie-out for the run-level fallback and keeps not-loaded balances null", () => {
@@ -982,10 +1133,11 @@ describe("accounting-screen reconciliation tie-out proof", () => {
       summary: "Cash-flow coverage is available."
     });
     expect(cashOnly.tieOut).toBeNull();
-    expect(cashOnly).toMatchObject({ statementBalance: 120000, ledgerBalance: 120500, netVariance: 500 });
+    expect(cashOnly).toMatchObject({ statementBalance: null, ledgerBalance: null, netVariance: null });
+    expect(cashOnly.summaryUnavailableReason).toContain("does not declare a currency");
   });
 
-  it("distinguishes an empty cash summary from measured zero balances", () => {
+  it("does not infer a currency or tied status from a zero-valued cash summary", () => {
     const emptyCashFlow = {
       totalCash: 0,
       totalLedgerCash: 0,
@@ -1005,14 +1157,14 @@ describe("accounting-screen reconciliation tie-out proof", () => {
     });
     const measuredCashFlow = { ...emptyCashFlow, runsWithCashSignals: 1 };
     expect(build(null, measuredCashFlow)).toMatchObject({
-      statementBalance: 0,
-      ledgerBalance: 0,
-      netVariance: 0,
-      varianceLabel: "Balanced",
-      varianceTone: "success"
+      statementBalance: null,
+      ledgerBalance: null,
+      netVariance: null,
+      varianceLabel: "Can't assess",
+      varianceTone: "default"
     });
     expect(build(null, { ...measuredCashFlow, totalLedgerCash: Number.NaN })).toMatchObject({
-      statementBalance: 0,
+      statementBalance: null,
       ledgerBalance: null,
       netVariance: null,
       varianceLabel: "Can't assess",

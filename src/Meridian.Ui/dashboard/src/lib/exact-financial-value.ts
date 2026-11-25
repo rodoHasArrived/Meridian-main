@@ -55,6 +55,15 @@ export function sumExactDecimals(values: readonly (string | number)[]): string |
   return exactDecimalText({ scale, coefficient: decimals.reduce((sum, value) => sum + value.coefficient * 10n ** BigInt(scale - value.scale), 0n) });
 }
 
+/** Subtract source operands without a binary-number conversion or a missing-to-zero coercion. */
+export function subtractExactDecimals(left: string | number | null | undefined, right: string | number | null | undefined): string | null {
+  const a = parseExactDecimal(left);
+  const b = parseExactDecimal(right);
+  if (!a || !b) return null;
+  const scale = Math.max(a.scale, b.scale);
+  return exactDecimalText({ scale, coefficient: a.coefficient * 10n ** BigInt(scale - a.scale) - b.coefficient * 10n ** BigInt(scale - b.scale) });
+}
+
 /** Presentation rounding is half away from zero. Source precision remains unchanged. */
 export function formatExactDecimal(value: string | number | null | undefined, options: {
   currency?: string; decimals?: number; signed?: boolean; parens?: boolean;

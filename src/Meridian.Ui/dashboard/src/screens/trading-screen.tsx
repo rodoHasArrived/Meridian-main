@@ -460,13 +460,13 @@ export function TradingScreen(props: TradingScreenProps) {
 }
 
 function TradingScreenContent({ data, fundAccountId: operatingFundAccountId }: TradingScreenProps) {
-  const { pathname, search } = useLocation();
+  const { pathname, search, hash, key: navigationKey } = useLocation();
   const sharedCounts = useSharedCrossScreenCounts();
   const figureContext = useWorkspaceFigureContext();
   // One open-order count for the headline card, the completeness card and every other screen.
   const crossCounts = selectCrossScreenCounts({ shared: sharedCounts, openOrders: data?.openOrders });
   const headlineMetrics = applyCrossScreenCounts(data?.metrics ?? [], crossCounts);
-  const shellVm = useTradingScreenShellViewModel({ pathname, data });
+  const shellVm = useTradingScreenShellViewModel({ pathname, data, hash, navigationKey });
   const blotterVm = useTradingBlotterViewModel(data, new URLSearchParams(search).get("positionRef"));
   const positionSource = describeBrokerageSessionSource(data?.brokerage);
   const fundAccountId = normalizeFundAccountGuid(operatingFundAccountId);
