@@ -223,11 +223,17 @@ is always the caller. A refused proposal returns 422 and a stale `expectedVersio
 Steps 2 and 3 use the existing workbench `submit`, `approve` and `publish` routes with the returned
 revision id.
 
-In the browser workstation, open a security's passport editor (Accounting coverage drill-in) and use
-**Propose historical identifier…**. The form checks the same rules before staging the draft, then
+In the browser workstation, open the security's detail screen
+(`/accounting/security-master/detail?securityId=…`, or `/portfolio/asset-detail`), choose the
+**Passport** tab, and use **Propose historical identifier…**. The form checks the same rules before staging the draft, then
 the editor's **Submit for approval**, **Approve** and **Publish** actions carry it through the gate.
 The editor tracks one working revision, so a new proposal waits until the current one is published
 or discarded.
+
+`npm --prefix src/Meridian.Ui/dashboard run e2e:historical-window` drives that browser flow end to
+end (propose, submit, approve, publish, plus a refused proposal) against the real workstation app on
+a Vite dev server, mocking only the API responses. Set `MERIDIAN_CHROMIUM_PATH` when the installed
+Chromium is not the one the dashboard's Playwright version expects. It is not part of a CI workflow.
 
 The WPF desktop passport editor has the same form under **Propose historical identifier…**. It
 checks proposals with the server's own rules (`SecurityMasterHistoricalIdentifierWindow.Validate`),

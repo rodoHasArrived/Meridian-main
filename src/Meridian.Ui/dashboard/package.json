@@ -24,6 +24,7 @@
     "build": "node scripts/workstation-governance.mjs && tsc --noEmit && vite build",
     "screenshots": "node ../../../scripts/dev/capture-web-screenshots.mjs",
     "smoke:workstation": "node scripts/smoke-workstation.mjs",
+    "e2e:historical-window": "node scripts/e2e-historical-identifier-window.mjs",
     "lint": "eslint src && node scripts/check-typography-floor.mjs",
     "typecheck:strict": "tsc --noEmit -p tsconfig.strict.json",
     "test": "node --max-old-space-size=4096 ./scripts/run-vitest-stable.mjs",
