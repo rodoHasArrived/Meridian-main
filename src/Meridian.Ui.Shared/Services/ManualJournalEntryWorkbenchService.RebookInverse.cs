@@ -1,4 +1,5 @@
 using Meridian.Contracts.Ledger;
+using static Meridian.Contracts.Text.TextPrimitives;
 
 namespace Meridian.Ui.Shared.Services;
 
