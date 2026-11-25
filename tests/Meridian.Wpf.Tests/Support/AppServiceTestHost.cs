@@ -11,16 +11,10 @@ public static class AppServiceTestHost
         if (configureServices.GetParameters().Length == 1)
         {
             configureServices.Invoke(null, [services]);
-        }
-        else
-        {
-            var configuration = new ConfigurationBuilder().Build();
-            configureServices.Invoke(null, [services, configuration]);
+            return;
         }
 
-        // Outermost on every named client, so a request to the absent local backend is refused
-        // before the retry policy can wait on it. See LoopbackFastRefusalHandler.
-        services.ConfigureHttpClientDefaults(static builder =>
-            builder.AddHttpMessageHandler(static () => new LoopbackFastRefusalHandler()));
+        var configuration = new ConfigurationBuilder().Build();
+        configureServices.Invoke(null, [services, configuration]);
     }
 }
