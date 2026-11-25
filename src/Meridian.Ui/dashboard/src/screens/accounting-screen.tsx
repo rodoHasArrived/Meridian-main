@@ -31,6 +31,7 @@ import { BondMigrationPreviewPanel } from "@/components/meridian/bond-migration-
 import { SecurityRatesIngestionPanel } from "@/components/meridian/security-rates-ingestion-panel";
 import { BondObservedFixingPanel } from "@/components/meridian/bond-observed-fixing-panel";
 import type { BondObservedFixingReceipt } from "@/lib/api/bond-observed-fixings.api";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 import { BondReferenceLadderPanel } from "@/components/meridian/bond-reference-ladder-panel";
 import { CoveragePassportDrillIn } from "@/components/meridian/coverage-passport-drill-in";
 import { ReconciliationComparisonPanel } from "@/components/accounting";
@@ -106,7 +107,9 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   // only opening the queue itself advances it, not any other Accounting route.
   const breakQueueVisit = useSinceLastVisit(BREAK_QUEUE_VISIT_SURFACE, undefined, { record: false });
   const navigate = useNavigate();
-  const operatorIdentity = session?.displayName.trim() || null;
+  // The signed-in username, not the session's desk-label displayName: it keys per-operator
+  // recovery state. Request bodies carry no actor; the server derives it from the session.
+  const operatorIdentity = useSignedInUsername();
   const workstream = resolveAccountingWorkstream(pathname);
   const taskMode = buildAccountingTaskMode(pathname);
   const sectionVisibility = buildAccountingSectionVisibility(taskMode, hash);
@@ -114,7 +117,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const closeWorkflowQuery = useMemo(() => parseCloseWorkflowQuery(search), [search]);
   const [accountingSystemReconciliation, setAccountingSystemReconciliation] = useState<AccountingSystemReconciliationSummary | null>(null);
   const reconciliationViewState = useReconciliationViewState(workstream === "reconciliation" || workstream === "exceptions" || taskMode.id === "close-cockpit");
-  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, operatorIdentity, workstream === "reconciliation" || workstream === "exceptions" ? reconciliationViewState : undefined);
+  const reconciliation = useAccountingReconciliationViewModel(data, workstream, undefined, accountingSystemReconciliation, workstream === "reconciliation" || workstream === "exceptions" ? reconciliationViewState : undefined);
   const resolveDialog = useReconciliationResolveDialogViewModel(reconciliation.resolveBreak);
   const selectedReconciliation = reconciliation.selectedReconciliation;
   const selectedReconciliationDetail = reconciliation.detailView;

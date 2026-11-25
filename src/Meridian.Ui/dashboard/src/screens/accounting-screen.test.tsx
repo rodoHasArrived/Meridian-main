@@ -66,6 +66,11 @@ async function findAlertContaining(text: string): Promise<HTMLElement> {
   return match;
 }
 
+// The signed-in username, deliberately different from any session desk label. Null by default
+// so screens without a signed-in operator keep their existing behaviour.
+const signedInUsername = vi.hoisted(() => ({ value: null as string | null }));
+vi.mock("@/lib/api/auth.api", () => ({ getSignedInUsername: vi.fn(async () => signedInUsername.value) }));
+
 vi.mock("@/lib/api/reconciliation-readiness.api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api/reconciliation-readiness.api")>("@/lib/api/reconciliation-readiness.api");
   return { ...actual, getReconciliationTaxonomy: vi.fn().mockResolvedValue({ version: 1,
@@ -5987,6 +5992,33 @@ describe("AccountingScreen", () => {
     await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Reviewed assignment");
     await user.click(screen.getByRole("button", { name: "Confirm assign" }));
     await waitFor(() => expect(api.assignReconciliationBreak).toHaveBeenCalledWith(expect.objectContaining({ actor: "", expectedVersion: 1 })));
+  });
+
+  it("keys decision recovery to the signed-in username, not the session desk label", async () => {
+    const user = userEvent.setup();
+    signedInUsername.value = "a.chen";
+    try {
+      window.sessionStorage.clear();
+      const session: SessionInfo = { displayName: "Meridian Operator", role: "Fund operations", environment: "paper", activeWorkspace: "accounting", commandCount: 3 };
+      const scoped = data.breakQueue.map((item) => ({ ...item, tenantId: "tenant-alpha", companyId: "company-alpha" }));
+      vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(scoped);
+      // The command stays in flight so its recovery entry remains retained for inspection.
+      vi.mocked(api.assignReconciliationBreak).mockReturnValueOnce(new Promise(() => undefined));
+      renderWithRouter(<AccountingScreen data={{ ...data, breakQueue: scoped }} session={session} />, { initialEntries: ["/accounting/reconciliation"] });
+      await waitForAsyncEffects();
+      await user.click(screen.getByText("Other decisions"));
+      await user.click(screen.getByRole("button", { name: "Assign" }));
+      await user.type(within(screen.getByRole("form", { name: "Assign case" })).getByRole("textbox", { name: "Assignee" }), "ops-user");
+      await user.type(screen.getByRole("textbox", { name: "Assign rationale" }), "Reviewed assignment");
+      await user.click(screen.getByRole("button", { name: "Confirm assign" }));
+      await waitFor(() => expect(api.assignReconciliationBreak).toHaveBeenCalled());
+      const keys = Object.keys(window.sessionStorage).filter((key) => key.startsWith("meridian:reconciliation:decision:"));
+      expect(keys).toEqual([`meridian:reconciliation:decision:${JSON.stringify(["a.chen", "tenant-alpha", "company-alpha", "run-42:cash"])}`]);
+      expect(keys.join()).not.toContain("Meridian Operator");
+    } finally {
+      signedInUsername.value = null;
+      window.sessionStorage.clear();
+    }
   });
 
   it("submits the reviewed version and rationale while the server supplies resolver identity", async () => {

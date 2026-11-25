@@ -268,9 +268,8 @@ function DataScreenContent({
     providerRoutingRefreshing,
     providerRoutingTrustSnapshots
   ]);
-  const operatorIdentity = session?.displayName.trim() || null;
   // Provider status belongs to the header Refresh; routing evidence is re-read with it on the provider route.
-  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence, operatorIdentity);
+  const vm = useDataViewModel(data, pathname, undefined, providerSetupLifecycle, providerEvidence);
   useOnGlobalRefresh(() => { if (vm.workstream === "providers") void onProviderRoutingRefresh?.(); });
   // "Providers healthy" counts the providers in use with the status this page shows for each, so
   // the figure is a count of the health cards beneath it.
