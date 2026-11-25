@@ -5982,6 +5982,7 @@ Meridian-main
 │   │   │   │   ├── GreeksSnapshot.cs
 │   │   │   │   ├── HistoricalAuction.cs
 │   │   │   │   ├── HistoricalBar.cs
+│   │   │   │   ├── HistoricalPriceBasis.cs
 │   │   │   │   ├── HistoricalQuote.cs
 │   │   │   │   ├── HistoricalTrade.cs
 │   │   │   │   ├── IntegrityEvent.cs
@@ -8275,6 +8276,7 @@ Meridian-main
 │   │   │   ├── AnalysisExportService.Formats.Parquet.cs
 │   │   │   ├── AnalysisExportService.Formats.Xlsx.cs
 │   │   │   ├── AnalysisExportService.IO.cs
+│   │   │   ├── AnalysisExportService.PriceBasis.cs
 │   │   │   ├── AnalysisExportService.TextTables.cs
 │   │   │   ├── AnalysisQualityReport.cs
 │   │   │   ├── ExportPreflightRules.cs
@@ -12958,6 +12960,7 @@ Meridian-main
 │   │   ├── ConservativeFillModelTests.cs
 │   │   ├── CorporateActionAdjustmentPropertyTests.cs
 │   │   ├── CorporateActionAdjustmentServiceTests.cs
+│   │   ├── CorporateActionAdjustmentServiceTests.PriceBasis.cs
 │   │   ├── CorporateActionGoldenAdjustmentTests.cs
 │   │   ├── CorporateActionKnownDefectTests.cs
 │   │   ├── CorporateActionSeriesInvariants.cs
@@ -13010,6 +13013,7 @@ Meridian-main
 │   │   │   ├── DataProvenanceTests.cs
 │   │   │   ├── DiscountMathTests.cs
 │   │   │   ├── FundStructureContractsJsonContextTests.cs
+│   │   │   ├── HistoricalPriceBasisTests.cs
 │   │   │   ├── InstrumentJournalContractCompatibilityTests.cs
 │   │   │   ├── IntercompanyAgreementRatePrecisionTests.cs
 │   │   │   ├── LedgerReconciliationContractCompatibilityTests.cs
@@ -14988,6 +14992,7 @@ Meridian-main
 │   │   │   ├── AuditChainServiceTests.cs
 │   │   │   ├── AutomatedPostingGrantTests.cs
 │   │   │   ├── AutomatedPostingGrantTests.FillAccounting.cs
+│   │   │   ├── BackfillBatchPriceBasisTests.cs
 │   │   │   ├── CanonicalDisposalTaxEconomicsTests.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.Backtesting.cs
 │   │   │   ├── CanonicalOpenLotConsumerTests.CorporateActions.cs
@@ -15858,6 +15863,7 @@ Meridian-main
 │   │   │   ├── SmartRecommendationsServiceTests.cs
 │   │   │   ├── StatusServiceBaseTests.cs
 │   │   │   ├── StorageAnalyticsServiceTests.cs
+│   │   │   ├── StoredBarPriceBasisTests.cs
 │   │   │   ├── SymbolGroupServiceTests.cs
 │   │   │   ├── SymbolManagementServiceTests.cs
 │   │   │   ├── SymbolMappingServiceTests.cs
