@@ -51,7 +51,7 @@ public static partial class SecurityMasterEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
         })
-        .WithName("MergeSecurityMasterSecurity")
+        .WithName("MergeSecurityMasterSecurity").RequirePermission(Meridian.Identity.Auth.UserPermission.ModifySecurityMaster)
         .Produces<AppSecurityMaster.MergeSecuritiesResult>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status409Conflict);

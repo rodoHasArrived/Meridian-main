@@ -6,6 +6,51 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LiveDataEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.LiveDataEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L16).
+
+Extension methods for registering live data API endpoints. Provides access to collected real-time market data (trades, quotes, order book, order flow).
+
+```csharp
+public static class LiveDataEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapLiveDataEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LiveDataEndpoints.cs#L21) | Maps all live data API endpoints. |
+
+## LoginSessionMiddleware
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.LoginSessionMiddleware</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L27).
+
+Middleware that enforces session-based authentication. Sanitized lifecycle probes (/healthz, /readyz, /livez) and the loopback-scoped Prometheus scrape path (/metrics) are always exempt. The initial-account bootstrap surface (/setup/account, /api/auth/bootstrap) is exempt while no account exists; those endpoints gate themselves on the loopback-only, one-use MDC_BOOTSTRAP_TOKEN. The login page (/login) and auth API endpoints (/api/auth/*) are exempt when authentication is configured. Unauthenticated API requests receive a 401 JSON response. Unauthenticated browser (non-/api) requests are redirected to /login. Authentication is optional in Development/Test and required elsewhere by default.
+
+```csharp
+public sealed class LoginSessionMiddleware
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SessionAuthenticationType = &quot;MeridianLoginSession&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:54](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L54) | Authentication type stamped on HttpContext.User for validated login sessions, so Identity.IsAuthenticated is true for exactly the principals a session established. |
+| <code>public const string SessionCookieName = &quot;mdc-session&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:57](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L57) | Name of the HTTP-only session cookie set after successful login. |
+| <code>public const string CurrentUserKey = &quot;CurrentUser&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:63](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L63) | Key for the authenticated username stored in Microsoft.AspNetCore.Http.HttpContext.Items. Set by the middleware after successful session validation. |
+| <code>public const string CurrentUserRoleKey = &quot;CurrentUserRole&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:69](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L69) | Key for the authenticated user&#x27;s Meridian.Identity.Auth.UserRole stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
+| <code>public const string CurrentUserRoleProfileNameKey = &quot;CurrentUserRoleProfileName&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:75](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L75) | Key for the authenticated user&#x27;s role-profile name stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
+| <code>public const string CurrentUserCompanyIdKey = &quot;CurrentUserCompanyId&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:81](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L81) | Key for the authenticated user&#x27;s company id stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
+| <code>public const string CurrentTenantIdKey = &quot;CurrentTenantId&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:87](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L87) | Key for the tenant scope resolved for the authenticated request. Until tenant ids diverge from company ids, this carries the authenticated company id. |
+| <code>public const string CurrentUserPermissionsKey = &quot;CurrentUserPermissions&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:93](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L93) | Key for the authenticated user&#x27;s Meridian.Identity.Auth.UserPermission flags stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
+| <code>public LoginSessionMiddleware(RequestDelegate next, AuthenticationConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:98](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L98) |  |
+| <code>public async Task InvokeAsync(HttpContext context, LoginSessionService sessionService);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:104](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L104) |  |
+
 ## LoginSessionMiddlewareExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.LoginSessionMiddlewareExtensions</code>. Kind: `class`.
@@ -789,27 +834,3 @@ Declared public members:
 | <code>public IReadOnlyList&lt;ProviderProvenanceReceipt&gt; ProviderProvenanceReceipts { get; init; } = [];</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:432](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L432) |  |
 | <code>public static QuantRunResponse From(ScriptRunResult result) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:435](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L435) | Maps a strongly-typed ScriptRunResult into the JSON DTO. |
 | <code>public static QuantRunResponse FromError(string message) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:477](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L477) | Constructs an error response for unhandled exceptions. |
-
-## QuantTemplateDto
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:412](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L412).
-
-A pre-built starter snippet for the lab.
-
-```csharp
-public sealed record QuantTemplateDto(string Id, string Title, string Description, string Source);
-```
-
-## QuantTemplatesResponse
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplatesResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:415](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L415).
-
-Response returned by /api/quant/templates.
-
-```csharp
-public sealed record QuantTemplatesResponse(IReadOnlyList<QuantTemplateDto> Templates);
-```

@@ -10,7 +10,7 @@ Each entry retains source-declared members and XML summaries. See the index for 
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryConflict</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:27](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L27).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:33](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L33).
 
 Two sources that state different factors for the same date.
 
@@ -22,9 +22,9 @@ public sealed record SecurityFactorHistoryConflict(DateOnly AsOfDate, IReadOnlyL
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L37).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:44](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L44).
 
-Dated factor history for a factor-amortizing security: the declared schedule, the factors observed from effective principal paydowns, and a dated scalar factor, in date order. One point is kept per date; when sources disagree on a date the paydown wins (it is the observed event), then the schedule, and the disagreement is listed in Conflicts.
+Dated factor history for a factor-amortizing security: recorded factor observations, the declared schedule, the factors observed from effective principal paydowns, and a dated scalar factor, in date order. One point is kept per date; when sources disagree on a date a recorded observation wins (it carries restatements, review C3), then the paydown, then the schedule, and the disagreement is listed in Conflicts.
 
 ```csharp
 public sealed record SecurityFactorHistoryDto(Guid SecurityId, IReadOnlyList<SecurityFactorHistoryPoint> Points, IReadOnlyList<SecurityFactorHistoryConflict> Conflicts)
@@ -34,13 +34,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public decimal? FactorAsOf(DateOnly asOf) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:43](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L43) | The factor in effect on asOf: the latest point dated on or before it. |
+| <code>public decimal? FactorAsOf(DateOnly asOf) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L50) | The factor in effect on asOf: the latest point dated on or before it. |
 
 ## SecurityFactorHistoryPoint
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryPoint</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L20).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L26).
 
 One dated factor observation.
 
@@ -52,7 +52,7 @@ public sealed record SecurityFactorHistoryPoint(DateOnly AsOfDate, decimal Facto
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryProjector</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L48).
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L55).
 
 Builds SecurityFactorHistoryDto from resolved terms and corporate actions.
 
@@ -64,7 +64,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static SecurityFactorHistoryDto Build(Guid securityId, StructuredCashFlowTerms terms, DateOnly? currentFactorDate, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L50) |  |
+| <code>public static SecurityFactorHistoryDto Build(Guid securityId, StructuredCashFlowTerms terms, DateOnly? currentFactorDate, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf, IReadOnlyList&lt;(DateOnly EffectiveDate, decimal Factor)&gt;? observations = null);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:57](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L57) |  |
 
 ## SecurityFactorSource
 
@@ -85,6 +85,7 @@ Enum declarations:
 | <code>TermsSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L10) | A point of the declared factor schedule in the security&#x27;s terms. |
 | <code>PrincipalPaydown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L13) | The post-paydown factor recorded on an effective principal-paydown corporate action. |
 | <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L16) | The scalar current factor in the terms, dated by its retained factor date. |
+| <code>Observation</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L22) | A recorded factor observation (review C3): the latest recorded observation for its effective date, so a restatement replaces the earlier value without a terms revision. |
 
 ## SecurityFieldProvenance
 

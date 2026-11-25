@@ -6,6 +6,96 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SinglePrincipalAttestationStore
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.SinglePrincipalAttestationStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs:6](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs#L6).
+
+```csharp
+public sealed partial class SinglePrincipalAttestationStore : IPreparerAttestationReferenceClassifier
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;bool&gt; IsPreparerReceiptReferenceAsync(string tenantId, string companyId, string? reference, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs:13](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.ApprovalBoundary.cs#L13) | Classifies exact identities only for denying their use as ordinary approval. This trusted server seam is not an operator read endpoint and never returns receipt contents or authority. Retained assertions remain preparer assertions after withdrawal or revocation. |
+
+Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:30](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L30).
+
+Scoped, default-off storage for non-posting evidence acknowledgments and explicit draft checks. Declarations, assertions, revocations and their audit events share one atomic snapshot and a cross-process lease. No method creates an ordinary approval, changes evidence review status or grants domain authority.
+
+```csharp
+public sealed partial class SinglePrincipalAttestationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string PolicyHash { get; } = Digest(SinglePrincipalAttestationPolicy.Version + &quot;\n&quot; + SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + &quot;\n&quot; + SinglePrincipalAttestationPolicy.Confirmation + &quot;\nNo approval, posting, waiver, certification or release authority.&quot;);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:41](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L41) |  |
+| <code>public static string DraftPolicyHash { get; } = Digest(SinglePrincipalAttestationPolicy.DraftVersion + &quot;\n&quot; + SinglePrincipalAttestationPolicy.EvidenceAcknowledgment + &quot;\n&quot; + SinglePrincipalAttestationPolicy.DraftCheck + &quot;\n&quot; + SinglePrincipalAttestationPolicy.Confirmation + &quot;\n&quot; + SinglePrincipalAttestationPolicy.DraftConfirmation + &quot;\nNo approval, posting, waiver, certification or release authority.&quot;);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:45](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L45) |  |
+| <code>public SinglePrincipalAttestationStore(string dataRoot, Func&lt;SinglePrincipalAttestationScopeDto, SinglePrincipalAttestationAuthority, RecordPreparerAttestationRequestDto, CancellationToken, Task&lt;SinglePrincipalAttestationSubjectSnapshotDto?&gt;&gt; resolveSubject, bool policyEnabled = false, Func&lt;string, string, CancellationToken, Task&gt;? stateWriter = null, bool draftChecksEnabled = false);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:53](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L53) |  |
+| <code>public async Task&lt;SinglePrincipalAttestationStateDto&gt; GetAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L71) |  |
+| <code>public async Task&lt;SinglePrincipalDeclarationDto&gt; ChangeDeclarationAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, ChangeSinglePrincipalDeclarationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:82](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L82) |  |
+| <code>public async Task&lt;PreparerAttestationReceiptDto&gt; AttestAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, RecordPreparerAttestationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:123](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L123) |  |
+| <code>public async Task&lt;PreparerAttestationRevocationDto&gt; RevokeAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, RevokePreparerAttestationRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs:186](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.cs#L186) |  |
+
+Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:11](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L11).
+
+```csharp
+public sealed partial class SinglePrincipalAttestationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;PreparerAttestationProofFile&gt; GetReceiptExportAsync(SinglePrincipalAttestationScopeDto scope, SinglePrincipalAttestationAuthority authority, Guid receiptId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs:17](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Export.cs#L17) | Reproduces historical assertion evidence without granting current authority. Current read permission is still required; withdrawal and revocation do not rewrite these bytes. |
+
+Source: [src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs:8](../../../../src/Meridian.Ui.Shared/Evidence/SinglePrincipalAttestationStore.Persistence.cs#L8).
+
+```csharp
+public sealed partial class SinglePrincipalAttestationStore
+```
+
+## StatementImportEvidenceBridge
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementImportEvidenceBridge</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L34).
+
+Retains statement-connector imports in Evidence Vault without moving reconciliation ownership out of Financial Operations.
+
+```csharp
+public sealed class StatementImportEvidenceBridge(IEvidenceArtifactStore store, string dataRoot) : IStatementImportEvidenceRetainer
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public async Task&lt;StatementImportCommitResultDto&gt; RetainAsync(StatementImportCommitResultDto result, StatementImportEvidenceBridgeRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:40](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L40) |  |
+
+## StatementImportEvidenceBridgeRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementImportEvidenceBridgeRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:5](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L5).
+
+```csharp
+public sealed record StatementImportEvidenceBridgeRequest(string SourceKind, string SourceInstitution, string FundAccountId, string ExternalAccountId, DateOnly PeriodStart, DateOnly PeriodEnd, string ImportedBy)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? TenantId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:14](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L14) |  |
+| <code>public string? CompanyId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:15](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L15) |  |
+| <code>public string? WorkflowId { get; init; }</code> | [src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs:16](../../../../src/Meridian.Ui.Shared/Evidence/StatementImportEvidenceBridge.cs#L16) |  |
+
 ## StatementReconciliationReportArtifactDownload
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportArtifactDownload</code>. Kind: `record`.
@@ -943,42 +1033,3 @@ Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:71](../
 ```csharp
 public sealed record ApprovalDecision(bool RequiresDualControl, IReadOnlyList<ApprovalStep> Steps);
 ```
-
-## ApprovalPolicy
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalPolicy</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:65](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L65).
-
-```csharp
-public sealed record ApprovalPolicy(decimal DualControlThreshold, IReadOnlyDictionary<string, decimal> CurrencyThresholds, IReadOnlyDictionary<string, decimal> AccountThresholds, IReadOnlySet<string> HighRiskCounterparties);
-```
-
-## ApprovalStep
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ApprovalStep</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs:57](../../../../src/Meridian.Ui.Shared/Services/CashSyncOrchestrationService.cs#L57).
-
-```csharp
-public sealed record ApprovalStep(string StepId, string Role, string Approver, bool IsRequired, bool IsApproved, DateTimeOffset? DecidedAt);
-```
-
-## AssetAccountingSourceReader
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AssetAccountingSourceReader</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:392](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L392).
-
-Enumerates the independently retained asset-event spine for the exact book and period.
-
-```csharp
-public sealed class AssetAccountingSourceReader(IAssetAccountingEventProjectionStore store) : ILedgerAccountingSourceReader
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerAccountingSourceKind SourceKind =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:394](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L394) |  |
-| <code>public async Task&lt;LedgerAccountingSourcePopulation&gt; ReadAsync(LedgerAccountingCompletenessQuery query, LedgerAccountingPeriod period, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs:396](../../../../src/Meridian.Ui.Shared/Services/LedgerAccountingCompletenessReadService.cs#L396) |  |

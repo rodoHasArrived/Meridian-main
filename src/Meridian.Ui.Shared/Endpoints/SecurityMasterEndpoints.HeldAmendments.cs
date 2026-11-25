@@ -57,7 +57,7 @@ public static partial class SecurityMasterEndpoints
                 ? Results.NoContent()
                 : Results.Conflict(new { error = $"Held amendment '{heldAmendmentId:D}' is no longer held." });
         })
-        .WithName("DiscardSecurityMasterHeldAmendment")
+        .WithName("DiscardSecurityMasterHeldAmendment").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status404NotFound)
         .Produces(StatusCodes.Status409Conflict);

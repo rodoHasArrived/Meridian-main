@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BondMigrationEndpoints
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondMigrationEndpoints</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs#L14).
+
+Reviewed migration preparation and an administrative live-calculation cutover.
+
+```csharp
+public static class BondMigrationEndpoints
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static void MapBondMigrationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/BondMigrationEndpoints.cs#L16) |  |
+
 ## BondReferenceEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.BondReferenceEndpoints</code>. Kind: `class`.
@@ -167,6 +185,18 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void MapCanonicalizationEndpoints(this WebApplication app, JsonSerializerOptions jsonOptions);</code> | [src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/CanonicalizationEndpoints.cs#L16) |  |
+
+## CashFlowShadowCompareRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.CashFlowShadowCompareRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L14).
+
+Securities to shadow-compare and the valuation date to compare from.
+
+```csharp
+public sealed record CashFlowShadowCompareRequest(IReadOnlyList<Guid> SecurityIds, DateOnly? ValuationDate);
+```
 
 ## CatalogEndpoints
 
@@ -738,42 +768,3 @@ Declared public members:
 | <code>public static async Task&lt;ScopedAuthorizationDecisionDto&gt; AuthorizeScopedAsync(HttpContext context, UserPermission required, AccessScopeKindDto scopeKind, Guid? scopeId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:682](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L682) |  |
 | <code>public static async Task&lt;IReadOnlySet&lt;Guid&gt;&gt; AuthorizeScopedManyAsync(HttpContext context, UserPermission required, AccessScopeKindDto scopeKind, IReadOnlyCollection&lt;Guid&gt; scopeIds, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:748](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L748) |  |
 | <code>public static async Task&lt;bool&gt; HasScopedPermissionAsync(HttpContext context, UserPermission required, AccessScopeKindDto scopeKind, Guid? scopeId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:790](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L790) |  |
-
-## EndpointAuthorizationMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointAuthorizationMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L16).
-
-Marker metadata recorded on endpoints that attach a permission gate through EndpointAuthorization.RequirePermission{TBuilder} or EndpointAuthorization.RequireAllPermissions{TBuilder} or EndpointAuthorization.RequireAnyPermission{TBuilder}. Coverage tests inspect this metadata to prove every mapped route declares an explicit authorization requirement.
-
-```csharp
-public sealed class EndpointAuthorizationMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EndpointAuthorizationMetadata(IReadOnlyList&lt;UserPermission&gt; permissions, bool requireAll);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L18) |  |
-| <code>public IReadOnlyList&lt;UserPermission&gt; Permissions { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:25](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L25) | The permission flags evaluated by the attached authorization filter. |
-| <code>public bool RequireAll { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:31](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L31) | true when every permission in Permissions is required; false when any single permission grants access. |
-
-## EndpointIndependentAuthenticationMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.EndpointIndependentAuthenticationMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:96](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L96).
-
-Declares that a route authenticates its caller by its own independent mechanism -- a provider HMAC signature, an opaque one-use grant token -- rather than by the ambient principal. The read-only-role method cap stands aside for it, because that cap judges commands issued *as* the ambient principal and this route&#x27;s caller is never that principal. Standing aside grants nothing: the route&#x27;s own check still decides the request, and it runs strictly later than the cap. Without this a deployment that names a read-only anonymous role would refuse a correctly signed delivery receipt before the signature was ever examined -- the same failure the API-key and bootstrap exemptions in LoginSessionMiddleware already avoid, for the same reason. Applied per route after reading the handler, never by convention, and never to a route whose only authentication is the ambient principal.
-
-```csharp
-public sealed class EndpointIndependentAuthenticationMetadata
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EndpointIndependentAuthenticationMetadata(string reason);</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:98](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L98) |  |
-| <code>public string Reason { get; }</code> | [src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs:105](../../../../src/Meridian.Ui.Shared/Endpoints/EndpointAuthorization.cs#L105) | How this route authenticates its caller, e.g. &quot;provider HMAC signature headers&quot;. |

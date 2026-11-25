@@ -6,6 +6,177 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PortfolioOpeningBalanceProjector
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.PortfolioOpeningBalanceProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:8](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L8).
+
+Projects a complete account at cost; subscription filters never remove opening assets.
+
+```csharp
+public static class PortfolioOpeningBalanceProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static AutomatedJournalDraft Build(PortfolioImportRun run);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:10](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L10) |  |
+
+## ProviderStatus
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.ProviderStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:613](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L613).
+
+Provider availability status.
+
+```csharp
+public sealed record ProviderStatus(string Name, string DisplayName, int Priority, bool Available);
+```
+
+## SchedulingService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SchedulingService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:16](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L16).
+
+Service for scheduling symbol subscription enable/disable by time/date.
+
+```csharp
+public sealed class SchedulingService : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SchedulingService(ConfigStore configStore, string? schedulesPath = null, ILogger? log = null) : this(configStore, schedulesPath, log, null);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:32](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L32) |  |
+| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:58](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L58) | Initialize the service and load existing schedules. |
+| <code>public IReadOnlyList&lt;SubscriptionSchedule&gt; GetAllSchedules();</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:77](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L77) | Get all schedules. |
+| <code>public SubscriptionSchedule? GetSchedule(string scheduleId);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:85](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L85) | Get a specific schedule. |
+| <code>public ScheduleExecutionStatus? GetExecutionStatus(string scheduleId);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:93](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L93) | Get execution status for a schedule. |
+| <code>public IReadOnlyList&lt;ScheduleExecutionStatus&gt; GetAllExecutionStatuses();</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:101](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L101) | Get all execution statuses. |
+| <code>public async Task&lt;SubscriptionSchedule&gt; CreateScheduleAsync(CreateScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:109](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L109) | Create a new schedule. |
+| <code>public async Task&lt;SubscriptionSchedule?&gt; UpdateScheduleAsync(string scheduleId, CreateScheduleRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:135](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L135) | Update an existing schedule. |
+| <code>public async Task&lt;bool&gt; SetScheduleEnabledAsync(string scheduleId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:166](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L166) | Enable or disable a schedule. |
+| <code>public async Task&lt;bool&gt; DeleteScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:188](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L188) | Delete a schedule. |
+| <code>public async Task&lt;ScheduleExecutionStatus&gt; ExecuteNowAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:205](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L205) | Manually execute a schedule now. |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Application/Subscriptions/Services/SchedulingService.cs:579](../../../../src/Meridian.Application/Subscriptions/Services/SchedulingService.cs#L579) |  |
+
+## SymbolAddOptions
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolAddOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:695](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L695).
+
+Options for adding symbols.
+
+```csharp
+public sealed record SymbolAddOptions(bool SubscribeTrades = true, bool SubscribeDepth = true, int DepthLevels = 10, string SecurityType = "STK", string Exchange = "SMART", string Currency = "USD", bool UpdateExisting = false);
+```
+
+## SymbolImportExportService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolImportExportService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:14](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L14).
+
+Service for bulk import and export of symbol subscriptions via CSV, text files, and other formats.
+
+```csharp
+public sealed class SymbolImportExportService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolImportExportService(ConfigStore configStore);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:21](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L21) |  |
+| <code>public async Task&lt;BulkImportResult&gt; ImportFromTextAsync(string textContent, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:30](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L30) | Import symbols from plain text content (one symbol per line). Supports comments (#, ;, //) and inline comments. |
+| <code>public async Task&lt;BulkImportResult&gt; ImportAutoDetectAsync(string content, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:159](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L159) | Detect import format and route to appropriate handler. |
+| <code>public async Task&lt;BulkImportResult&gt; ImportFromCsvAsync(string csvContent, BulkImportOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:182](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L182) | Import symbols from CSV content. |
+| <code>public string ExportToCsv(BulkExportOptions? options = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:287](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L287) | Export current symbol subscriptions to CSV. |
+| <code>public byte[] ExportToCsvBytes(BulkExportOptions? options = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs:320](../../../../src/Meridian.Application/Subscriptions/Services/SymbolImportExportService.cs#L320) | Get export as bytes for file download. |
+
+## SymbolManagementService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolManagementService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:17](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L17).
+
+Unified service for symbol management operations including: - Adding/removing symbols from configuration - Listing monitored symbols - Scanning archived data for symbols
+
+```csharp
+public sealed class SymbolManagementService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolManagementService(ConfigStore configStore, string dataRoot, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:38](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L38) |  |
+| <code>public async Task&lt;SymbolOperationResult&gt; AddSymbolsAsync(IEnumerable&lt;string&gt; symbols, SymbolAddOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:48](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L48) | Add one or more symbols to the configuration for monitoring. |
+| <code>public async Task&lt;SymbolOperationResult&gt; RemoveSymbolsAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:128](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L128) | Remove symbols from the configuration. |
+| <code>public MonitoredSymbolsResult GetMonitoredSymbols();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:176](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L176) | Get all symbols currently configured for monitoring. |
+| <code>public async Task&lt;ArchivedSymbolsResult&gt; GetArchivedSymbolsAsync(ArchivedSymbolsOptions? options = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:202](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L202) | Scan the data directory for archived symbols. |
+| <code>public async Task&lt;SymbolStatusReport&gt; GetSymbolStatusAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:253](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L253) | Get a comprehensive symbol status report combining monitored and archived data. |
+| <code>public void DisplayMonitoredSymbols(MonitoredSymbolsResult result);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:279](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L279) | Display formatted symbol management output to console. |
+| <code>public void DisplayArchivedSymbols(ArchivedSymbolsResult result);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:314](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L314) | Display formatted archived symbols output to console. |
+| <code>public async Task DisplayAllSymbolsAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:357](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L357) | Display a combined view of monitored and archived symbols. |
+
+## SymbolOperationResult
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolOperationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:682](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L682).
+
+Result of a symbol add/remove operation.
+
+```csharp
+public sealed record SymbolOperationResult(bool Success, string Message, string[] AffectedSymbols, int AddedCount = 0, int UpdatedCount = 0, int RemovedCount = 0, int SkippedCount = 0);
+```
+
+## SymbolSearchService
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolSearchService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:22](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L22).
+
+Service for searching and autocompleting symbols across multiple providers. Aggregates results from Finnhub, Polygon, Alpaca, and OpenFIGI.
+
+```csharp
+public sealed class SymbolSearchService : IDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public SymbolSearchService(MetadataEnrichmentService? metadataService = null, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null, ProviderCredentialOwnershipPolicy? ownershipPolicy = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:35](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L35) | Creates a new symbol search service with default provider configuration. |
+| <code>public SymbolSearchService(IEnumerable&lt;ISymbolSearchProvider&gt; providers, OpenFigiClient? figiClient, MetadataEnrichmentService metadataService, TimeSpan? searchCacheDuration = null, TimeSpan? detailsCacheDuration = null, ILogger? log = null);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:56](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L56) | Creates a symbol search service with custom providers. |
+| <code>public async Task&lt;IReadOnlyList&lt;ProviderStatus&gt;&gt; GetProvidersAsync(CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:90](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L90) | Get available providers and their status. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAsync(SymbolSearchRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:137](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L137) | Search for symbols with autocomplete support. |
+| <code>public Task&lt;SymbolSearchResponse&gt; SearchAuthoritativeAsync(SymbolSearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:144](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L144) | Explicit provider lookup that distinguishes provider failure from a successful empty search. Intended for candidate-review workflows where a swallowed failure would misstate availability. |
+| <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(string symbol, string? provider = null, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:387](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L387) | Get detailed information about a specific symbol. |
+| <code>public async Task&lt;IReadOnlyDictionary&lt;string, IReadOnlyList&lt;FigiMapping&gt;&gt;&gt; LookupFigiAsync(IEnumerable&lt;string&gt; symbols, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:481](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L481) | Lookup FIGI identifiers for symbols. |
+| <code>public async Task&lt;IReadOnlyList&lt;FigiMapping&gt;&gt; SearchFigiAsync(string query, int limit = 20, CancellationToken ct = default);</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:502](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L502) | Search OpenFIGI directly. |
+| <code>public void ClearCache();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:581](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L581) | Clear the search and details cache. |
+| <code>public void Dispose();</code> | [src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs:588](../../../../src/Meridian.Application/Subscriptions/Services/SymbolSearchService.cs#L588) |  |
+
+## SymbolStatusReport
+
+Qualified name: <code>Meridian.Application.Subscriptions.Services.SymbolStatusReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs:764](../../../../src/Meridian.Application/Subscriptions/Services/SymbolManagementService.cs#L764).
+
+Combined status report for a single symbol.
+
+```csharp
+public sealed record SymbolStatusReport(string Symbol, bool IsMonitored, bool HasArchivedData, SymbolConfig? MonitoredConfig, ArchivedSymbolInfo? ArchivedInfo);
+```
+
 ## TemplateService
 
 Qualified name: <code>Meridian.Application.Subscriptions.Services.TemplateService</code>. Kind: `class`.
