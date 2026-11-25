@@ -55,12 +55,13 @@ Declared public members:
 | <code>public const string UnmatchedRoute = &quot;unmatched&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:27](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L27) | The route label for requests that matched no endpoint. |
 | <code>public RequestTimingMiddleware(RequestDelegate next, TimeSpan slowRequestThreshold, ILogger&lt;RequestTimingMiddleware&gt;? logger = null);</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:46](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L46) | Creates the middleware. |
 | <code>public async Task InvokeAsync(HttpContext context);</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:54](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L54) | Times the request. |
+| <code>public const string OtherMethod = &quot;OTHER&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:92](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L92) | The method label for methods outside the standard set. |
 
 ## RequestTimingMiddlewareExtensions
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.RequestTimingMiddlewareExtensions</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:97](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L97).
+Source: [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L116).
 
 Registration for RequestTimingMiddleware.
 
@@ -72,7 +73,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static IApplicationBuilder UseRequestTiming(this IApplicationBuilder app, TimeSpan slowRequestThreshold);</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:103](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L103) | Adds request timing. Place it early, after the exception handler, so the measured duration covers authentication, rate limiting and the endpoint itself. |
+| <code>public static IApplicationBuilder UseRequestTiming(this IApplicationBuilder app, TimeSpan slowRequestThreshold);</code> | [src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs:122](../../../../src/Meridian.Ui.Shared/Endpoints/RequestTimingMiddleware.cs#L122) | Adds request timing. Place it early, after the exception handler, so the measured duration covers authentication, rate limiting and the endpoint itself. |
 
 ## ResilienceEndpoints
 
