@@ -19,6 +19,9 @@ order over these contributions. Composition refuses a catalog class without a co
 duplicate, or a disposition that differs from the catalog's `ProjectionKind`. Tables, columns and
 migrations are unchanged. `SecurityTermsStorageModuleTests` covers the composition.
 
+The backfill status store exposes a legacy summary only for a raw snapshot written without a
+provenance receipt. Reads of retained results continue to enforce tenant visibility.
+
 The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
 Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
 business folders compile through linked items in `Meridian.Storage.Accounting`. The workflow

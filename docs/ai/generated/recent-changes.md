@@ -1,49 +1,49 @@
 # Meridian AI Recent Changes
 
-> Auto-generated on 2026-11-13T09:16:45Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
+> Auto-generated on 2026-11-25T11:14:04Z by `build/scripts/docs/generate-ai-navigation.py`. Do not edit manually.
 
 Rolling source-file activity for the last 14 days.
 
 | File | Subsystem | Last modified | Commit | Summary | Touches |
 |---|---|---|---|---|---|
-| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 88 |
-| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 83 |
-| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 35 |
-| `src/Meridian.Backtesting/README.md` | Backtesting and Strategy Analytics | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 12 |
-| `src/Meridian.Execution.Sdk/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 7 |
-| `src/Meridian.Risk/README.md` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 6 |
-| `src/Meridian.Strategies/Live/BacktestStrategyLiveAdapter.cs` | Execution, Risk, and Strategies | 2026-11-13T09:12:02Z | `c24129bb68` | Review inherited documentation drift and clarify execution validation ownership | 2 |
-| `src/Meridian.Infrastructure/README.md` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 26 |
-| `src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 3 |
-| `src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs` | Providers and Storage | 2026-11-13T08:49:29Z | `e28650fd27` | fix(providers): exclude long quota waits from HTTP deadlines | 3 |
-| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 8 |
-| `src/Meridian.Ui.Shared/Services/FixedIncomeAccrualCalculation.cs` | Desktop and UI Workflows | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 2 |
-| `src/Meridian.Strategies/Storage/StrategyRunStore.cs` | Execution, Risk, and Strategies | 2026-11-13T02:44:01Z | `cf2f0e0735` | Preserve retained-run validation and align accrual contract tests | 1 |
-| `src/Meridian.Application/README.md` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 62 |
-| `src/Meridian.Ui/dashboard/src/design-system-contract.test.ts` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 12 |
-| `src/Meridian.Ui.Shared/Services/FinancialRecordExplorerReadService.cs` | Desktop and UI Workflows | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 9 |
-| `src/Meridian.DataIntegration/README.md` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 6 |
-| `src/Meridian.Application/FundStructure/IntercompanyAgreementRules.cs` | Host and Composition | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 4 |
-| `src/Meridian.DataIntegration/Reconciliation/BrokerStatementInfrastructure.cs` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 2 |
-| `src/Meridian.DataIntegration/Reconciliation/IbFlexStatementService.cs` | Unmapped | 2026-11-13T01:51:21Z | `ad80338ec2` | Reuse fingerprint primitives and bind agreement explorer filters | 2 |
-| `src/Meridian.Application/SecurityMaster/SecurityCashFlowScheduleRowCodec.cs` | Host and Composition | 2026-11-13T01:11:48Z | `e658268173` | Format pool accrual codec and refresh reviewed source fingerprint | 3 |
-| `src/Meridian.Storage/README.md` | Providers and Storage | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 35 |
-| `src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.cs` | Desktop and UI Workflows | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 10 |
-| `src/Meridian.Ui.Shared/Endpoints/StorageEndpoints.cs` | Desktop and UI Workflows | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 2 |
-| `src/Meridian.Storage/Services/TierMigrationService.cs` | Providers and Storage | 2026-11-13T00:53:23Z | `47054e6b41` | Resolve storage path authority and financial lifecycle trust boundaries | 1 |
-| `src/Meridian.Storage/Archival/AtomicFileWriter.cs` | Providers and Storage | 2026-11-13T00:11:14Z | `7798dc2b18` | Persist backup access descriptor before Windows publication | 4 |
-| `src/Meridian.FinancialOperations/README.md` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 22 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.cs` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 3 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsContinuityWorkflowService.ChecklistControls.cs` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 1 |
-| `src/Meridian.FinancialOperations/OperationsContinuity/OperationsWorkflowReadModelBuilder.cs` | Unmapped | 2026-11-12T23:09:28Z | `e2ce37f3cc` | refactor(operations): extract workflow read-model composition | 1 |
-| `src/Meridian.QuantScript/Api/QuantDataContext.cs` | Backtesting and Strategy Analytics | 2026-11-12T23:09:28Z | `a96b31b03c` | refactor(quantscript): depend on shared contracts without Application | 1 |
-| `src/Meridian.QuantScript/Meridian.QuantScript.csproj` | Backtesting and Strategy Analytics | 2026-11-12T23:09:28Z | `a96b31b03c` | refactor(quantscript): depend on shared contracts without Application | 1 |
-| `src/Meridian.QuantScript/README.md` | Backtesting and Strategy Analytics | 2026-11-12T23:09:28Z | `a96b31b03c` | refactor(quantscript): depend on shared contracts without Application | 1 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.test.tsx` | Desktop and UI Workflows | 2026-11-12T23:05:56Z | `acc807325b` | perf: speed up web screenshot capture | 2 |
-| `src/Meridian.Ui/dashboard/src/screens/accounting-screen.intercompany-agreements.tsx` | Desktop and UI Workflows | 2026-11-12T23:05:56Z | `acc807325b` | perf: speed up web screenshot capture | 2 |
-| `src/Meridian.Application/SecurityMaster/SecurityMasterAmortizationLedgerBridge.cs` | Host and Composition | 2026-11-12T22:58:20Z | `c3e4f76b55` | Refresh current public API references for typed pool accrual | 9 |
-| `src/Meridian.Application/GlobalUsings.cs` | Host and Composition | 2026-11-12T22:56:27Z | `a8f11418cd` | Isolate demo smoke tests and reuse CLI build outputs | 2 |
-| `src/Meridian/GlobalUsings.cs` | Host and Composition | 2026-11-12T22:56:27Z | `a8f11418cd` | Isolate demo smoke tests and reuse CLI build outputs | 2 |
-| `src/Meridian.Ledger/README.md` | Domain, Ledger, and F# | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 20 |
-| `src/Meridian.Execution/Services/PaperTradingPortfolio.cs` | Execution, Risk, and Strategies | 2026-11-12T22:42:19Z | `76e53dc95a` | Unify retained trade posting economics and lending templates | 15 |
+| `src/Meridian.Ui/dashboard/README.md` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 25 |
+| `src/Meridian.Ui.Shared/README.md` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 18 |
+| `src/Meridian.Ui.Shared/Services/WorkstationServiceCollectionExtensions.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 13 |
+| `src/Meridian.Ui/dashboard/src/lib/workstation-endpoints.ts` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 8 |
+| `src/Meridian.Ui/dashboard/src/screens/trading-screen.tsx` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 8 |
+| `src/Meridian.Strategies/README.md` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 7 |
+| `src/Meridian.Execution/README.md` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 6 |
+| `src/Meridian.Ui/dashboard/src/types.ts` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 6 |
+| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 5 |
+| `src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.TableViews.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 5 |
+| `src/Meridian.Ui/README.md` | Unmapped | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 5 |
+| `src/Meridian.Ui/dashboard/src/types/workstation-5.ts` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 5 |
+| `src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 4 |
+| `src/Meridian.Strategies/Live/LiveTradingEngine.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 4 |
+| `src/Meridian.Execution/OrderManagementSystem.RiskOutcomes.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 3 |
+| `src/Meridian.Execution/Serialization/ExecutionJsonContext.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 3 |
+| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpointDtos.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 3 |
+| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.Audit.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 3 |
+| `src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 3 |
+| `src/Meridian.Execution.Sdk/KillSwitchSweepResult.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution.Sdk/OrderIntent.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution.Sdk/README.md` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution/OrderManagement/BrokerOrderSweep.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution/OrderManagement/OrderExecutionAudit.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution/OrderManagement/OrderIntentJournal.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution/OrderManagementSystem.Cancellation.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution/OrderManagementSystem.KillSwitch.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution/OrderManagementSystem.OrderIntents.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution/Services/ExecutionAuditTrailService.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Strategies/Artifacts/StrategyArtifact.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Strategies/Live/Designer/DesignerPaperExecution.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Strategies/Live/Designer/DesignerStrategyVersion.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Ui.Shared/Services/DesignerBacktestService.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Ui/dashboard/src/screens/trading-screen.audit-trail.view-model.ts` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 2 |
+| `src/Meridian.Execution.Sdk/CancelAllIncident.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 1 |
+| `src/Meridian.Execution/OrderManagement/CancelAllIncidentRecorder.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 1 |
+| `src/Meridian.Execution/OrderManagementSystem.CancelIncidents.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 1 |
+| `src/Meridian.Execution/Services/ExecutionAuditTrailService.CancelIncidents.cs` | Execution, Risk, and Strategies | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 1 |
+| `src/Meridian.Ui.Shared/Endpoints/ExecutionEndpoints.CancelIncidents.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 1 |
+| `src/Meridian.Ui.Shared/Services/ExecutionAuditPublicProjection.cs` | Desktop and UI Workflows | 2026-11-25T03:02:09-07:00 | `cb5d7320` | Bind Designer artifacts, retain cancel-all evidence, and rehearse fresh-host accounting (#3731) | 1 |
 
