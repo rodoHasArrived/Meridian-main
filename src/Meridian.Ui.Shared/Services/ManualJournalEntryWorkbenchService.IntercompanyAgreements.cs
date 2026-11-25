@@ -91,7 +91,7 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 return new LedgerEntry(CreateDeterministicGuid("manual-je-line", draft.JournalEntryId.ToString("D"),
                         line.LineId, line.Side.ToString()), draft.JournalEntryId, timestamp,
                     new(account.AccountName, type, NormalizeOptional(line.LedgerAccountSymbol),
-                        NormalizeOptional(line.LedgerAccountFinancialAccountId)),
+                        NormalizeOptional(line.LedgerAccountFinancialAccountId), line.LedgerAccountSecurityId),
                     line.Side == AccountingTemplateLineSideDto.Debit ? line.Amount : 0m,
                     line.Side == AccountingTemplateLineSideDto.Credit ? line.Amount : 0m,
                     "Agreement review", ToLedgerLineDimensions(line.Dimensions),

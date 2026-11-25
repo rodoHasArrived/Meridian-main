@@ -80,7 +80,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
                     || !string.Equals(inverse.Currency, book.BaseCurrency, StringComparison.OrdinalIgnoreCase))
                     return "The original native-currency account mapping is unavailable for the correction inverse.";
                 var identity = new LedgerAccount(account.AccountName, accountType,
-                    NormalizeOptional(inverse.LedgerAccountSymbol), NormalizeOptional(inverse.LedgerAccountFinancialAccountId));
+                    NormalizeOptional(inverse.LedgerAccountSymbol), NormalizeOptional(inverse.LedgerAccountFinancialAccountId),
+                    inverse.LedgerAccountSecurityId);
                 var debit = inverse.Side == AccountingTemplateLineSideDto.Debit ? inverse.Amount : 0m;
                 var credit = inverse.Side == AccountingTemplateLineSideDto.Credit ? inverse.Amount : 0m;
                 var index = unmatched.FindIndex(line => line.Account == identity && line.Debit == credit && line.Credit == debit

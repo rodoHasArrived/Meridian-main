@@ -1230,7 +1230,8 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                     Name: line.Account.Name,
                     AccountType: line.Account.AccountType.ToString(),
                     Symbol: line.Account.Symbol,
-                    FinancialAccountId: line.Account.FinancialAccountId),
+                    FinancialAccountId: line.Account.FinancialAccountId,
+                    SecurityId: line.Account.SecurityId),
                 Debit: line.Debit,
                 Credit: line.Credit,
                 Description: line.Description)
@@ -1324,7 +1325,7 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                         throw new InvalidDataException("The retained ledger line has an unknown account type.");
                     var account = new LedgerAccount(
                         line.Account.Name, accountType,
-                        line.Account.Symbol, line.Account.FinancialAccountId);
+                        line.Account.Symbol, line.Account.FinancialAccountId, line.Account.SecurityId);
                     return new LedgerEntry(
                         line.EntryId, line.JournalEntryId, line.Timestamp,
                         account, line.Debit, line.Credit, line.Description, line.Dimensions, line.Currency)
@@ -1873,7 +1874,8 @@ public sealed partial class PaperSessionPersistenceService : IAsyncDisposable
                 line.Account.Name,
                 accountType,
                 line.Account.Symbol,
-                line.Account.FinancialAccountId);
+                line.Account.FinancialAccountId,
+                line.Account.SecurityId);
             balances.TryGetValue(account, out var balance);
             balances[account] = balance + Meridian.Ledger.Ledger.CalculateNetBalance(accountType, line.Debit, line.Credit);
         }

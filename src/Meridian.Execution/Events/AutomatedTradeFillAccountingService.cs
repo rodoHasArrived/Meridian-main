@@ -234,7 +234,10 @@ public sealed class AutomatedTradeFillAccountingService(
             var node = await accounts.ResolveAsync(new ConfiguredLedgerAccountRequestDto(grant.TenantId, grant.CompanyId,
                 book.FundProfileId, book.LedgerBookId, path, type.ToString(), grant.MappingRevision,
                 instrument ? fill.Symbol : null, fill.FinancialAccountId), ct).ConfigureAwait(false);
-            var account = new LedgerAccount(node.AccountName, type, instrument ? fill.Symbol : null, fill.FinancialAccountId);
+            // Per-security accounts are keyed by the resolved SecurityId (Security Master review F2).
+            var account = LedgerAccounts.KeyedBySecurity(
+                new LedgerAccount(node.AccountName, type, instrument ? fill.Symbol : null, fill.FinancialAccountId),
+                instrument ? (Guid?)securityId : null);
             var reference = new LedgerAccountChartReference(node.NodeId, grant.MappingRevision, node.AccountCode);
             if (!chartAccounts.TryAdd(account, reference) && chartAccounts[account] != reference)
                 throw new InvalidOperationException($"Different chart nodes resolve to one fill posting account '{account}'.");

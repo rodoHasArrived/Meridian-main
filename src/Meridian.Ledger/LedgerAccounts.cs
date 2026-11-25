@@ -249,6 +249,23 @@ public static class LedgerAccounts
     }
 
     /// <summary>
+    /// Keys a configured-chart account by Security Master identity when it is a per-security account
+    /// (by <see cref="SecurityKeyedAccountNames"/>) and <paramref name="securityId"/> is known; any
+    /// other account is returned unchanged. Used where posting paths build accounts from chart
+    /// nodes rather than the factories in this class.
+    /// </summary>
+    public static LedgerAccount KeyedBySecurity(LedgerAccount account, Guid? securityId)
+    {
+        ArgumentNullException.ThrowIfNull(account);
+        if (securityId is not { } id || id == Guid.Empty || !SecurityKeyedAccountNames.Contains(account.Name)
+            || (account.Symbol is null && account.SecurityId is null))
+            return account;
+        if (account.SecurityId is { } existing && existing != id)
+            throw new ArgumentException($"Account '{account}' is already keyed by a different security.", nameof(securityId));
+        return account with { SecurityId = id };
+    }
+
+    /// <summary>
     /// Returns the asset account representing holdings in <paramref name="security"/>.
     /// Each security has its own securities account so per-security cost basis is tracked
     /// separately. A resolved key is keyed by SecurityId (ticker kept for display), so a ticker

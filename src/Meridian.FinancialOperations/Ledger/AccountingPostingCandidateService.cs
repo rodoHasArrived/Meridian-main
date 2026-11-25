@@ -383,8 +383,10 @@ public sealed partial class AccountingPostingCandidateService :
                         line.LineId, "Use chart mappings consistent with the retained Security Master and book position."));
                     continue;
                 }
-                account = new LedgerAccount(chartNode.AccountName, accountType, canonicalSymbol,
-                    line.Dimensions?.AccountId);
+                // Per-security accounts are keyed by the authoritative SecurityId (Security Master review F2).
+                account = LedgerAccounts.KeyedBySecurity(
+                    new LedgerAccount(chartNode.AccountName, accountType, canonicalSymbol, line.Dimensions?.AccountId),
+                    authority.SecurityId);
             }
             account = BindBondAccountingAccount(account, request, line.AccountPath, amount, adoptedOwner, adoptedIncomeLot);
             if (predecessorLot is not null && IsCanonicalSuccessorLine(request, line))
