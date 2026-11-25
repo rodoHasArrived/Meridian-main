@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "60f710a130aa836dcad94729ef71a4213580217960b40e729c5937a4511058f6",
+  "database_fingerprint": "86c638d340963bef749f4eb1024a02bc26ce5cc94df921b65f75e0fb24c67748",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -25735,6 +25735,18 @@
       "object": "column:security_master.security_master_conflicts.field_path"
     },
     {
+      "fingerprint": "5cb14de4c5be01045049e7ad93d0f94b6d6fafadb8e17491268b2004629124bd",
+      "object": "column:security_master.security_master_conflicts.is_policy_deviation"
+    },
+    {
+      "fingerprint": "95de503832920cd35959dc0016883218fc476af05bd9567ca0853a19c907f402",
+      "object": "column:security_master.security_master_conflicts.policy_rule"
+    },
+    {
+      "fingerprint": "83792be344ce7d4729e459077148075a15ab66c37d740a18973037c2302584a0",
+      "object": "column:security_master.security_master_conflicts.policy_winner_source"
+    },
+    {
       "fingerprint": "2a0fde68de34956daa11b3a1d53af32c395a4ab425fca454da0f140ad0076525",
       "object": "column:security_master.security_master_conflicts.provider_a"
     },
@@ -38751,6 +38763,10 @@
       "object": "index:security_master.ix_security_identifiers_normalized_lookup"
     },
     {
+      "fingerprint": "92a0c01c08210df70a384acda922d764d63b468f2e1539660415266769132b14",
+      "object": "index:security_master.ix_security_master_conflicts_policy_deviation"
+    },
+    {
       "fingerprint": "db119c3c25a1e2d995e6115446dc5d59336dd039950d6074a04523fa9fc79b07",
       "object": "index:security_master.ix_security_master_conflicts_status"
     },
@@ -40639,7 +40655,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "ae4bd3ea661bce14a2396243cc80ebcebf9c6f6f4d15e296a05b978060382bf2",
+      "fingerprint": "dc6f5e2b81aff7ca5d2e89a06bad8ae555d458099186b0f8fcedb38c0cdbb772",
       "object": "schema:security_master"
     },
     {
@@ -41715,7 +41731,7 @@
       "object": "table:security_master.security_identifiers"
     },
     {
-      "fingerprint": "020c87bd2e573f13243786450d3ae2d183d68491ea90c0c517dc83c471ec7901",
+      "fingerprint": "3a717f835bea80fe547dc2c8f9142690e3492b5697a9e34c7af193ad27068010",
       "object": "table:security_master.security_master_conflicts"
     },
     {
@@ -187462,7 +187478,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "ae4bd3ea661bce14a2396243cc80ebcebf9c6f6f4d15e296a05b978060382bf2",
+      "fingerprint": "dc6f5e2b81aff7ca5d2e89a06bad8ae555d458099186b0f8fcedb38c0cdbb772",
       "foreign_tables": [],
       "functions": [
         {
@@ -229155,6 +229171,54 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "83792be344ce7d4729e459077148075a15ab66c37d740a18973037c2302584a0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "policy_winner_source",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "95de503832920cd35959dc0016883218fc476af05bd9567ca0853a19c907f402",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "policy_rule",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "5cb14de4c5be01045049e7ad93d0f94b6d6fafadb8e17491268b2004629124bd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "is_policy_deviation",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -229182,10 +229246,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "020c87bd2e573f13243786450d3ae2d183d68491ea90c0c517dc83c471ec7901",
+          "fingerprint": "3a717f835bea80fe547dc2c8f9142690e3492b5697a9e34c7af193ad27068010",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_master_conflicts_policy_deviation ON security_master.security_master_conflicts USING btree (resolved_at) WHERE (is_policy_deviation = true)",
+              "expression": null,
+              "fingerprint": "92a0c01c08210df70a384acda922d764d63b468f2e1539660415266769132b14",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "resolved_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_master_conflicts_policy_deviation",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "is_policy_deviation = true",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_security_master_conflicts_status ON security_master.security_master_conflicts USING btree (status, detected_at)",
@@ -280939,6 +281025,54 @@
               "security_labels": [],
               "type_name": "timestamptz",
               "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "83792be344ce7d4729e459077148075a15ab66c37d740a18973037c2302584a0",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "policy_winner_source",
+              "nullable": true,
+              "ordinal_position": 15,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "95de503832920cd35959dc0016883218fc476af05bd9567ca0853a19c907f402",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "policy_rule",
+              "nullable": true,
+              "ordinal_position": 16,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "boolean",
+              "default": null,
+              "fingerprint": "5cb14de4c5be01045049e7ad93d0f94b6d6fafadb8e17491268b2004629124bd",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "is_policy_deviation",
+              "nullable": true,
+              "ordinal_position": 17,
+              "security_labels": [],
+              "type_name": "bool",
+              "type_schema": "pg_catalog"
             }
           ],
           "comment": null,
@@ -280966,10 +281100,32 @@
           ],
           "definition": null,
           "definition_hash": null,
-          "fingerprint": "020c87bd2e573f13243786450d3ae2d183d68491ea90c0c517dc83c471ec7901",
+          "fingerprint": "3a717f835bea80fe547dc2c8f9142690e3492b5697a9e34c7af193ad27068010",
           "foreign_options": [],
           "foreign_server": null,
           "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_master_conflicts_policy_deviation ON security_master.security_master_conflicts USING btree (resolved_at) WHERE (is_policy_deviation = true)",
+              "expression": null,
+              "fingerprint": "92a0c01c08210df70a384acda922d764d63b468f2e1539660415266769132b14",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "resolved_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_master_conflicts_policy_deviation",
+              "options": [],
+              "owner": "meridian",
+              "predicate": "is_policy_deviation = true",
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
             {
               "comment": null,
               "definition": "CREATE INDEX ix_security_master_conflicts_status ON security_master.security_master_conflicts USING btree (status, detected_at)",

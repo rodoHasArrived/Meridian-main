@@ -1478,6 +1478,9 @@ erDiagram
         text resolved_by
         text resolved_reason
         timestamp_with_time_zone resolved_at
+        text policy_winner_source
+        text policy_rule
+        boolean is_policy_deviation
     }
     security_master_security_master_quality_reports {
         bigint id PK
@@ -2057,7 +2060,7 @@ erDiagram
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_identifier_revisions` | table | 17 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from`, `revision` | 1 | 2 | Append-only recorded history of security_identifiers rows. Each projection replacement appends Added/Amended/Expired/Removed revisions in the same transaction; recorded-as-of reads select the latest revision per row identity at or before the cutoff. Pre-migration rows are Baseline revisions available only from history_available_from. |
 | `security_identifiers` | table | 12 | `security_id`, `identifier_kind`, `identifier_value`, `valid_from` | 1 | 3 | - |
-| `security_master_conflicts` | table | 14 | `conflict_id` | 0 | 2 | - |
+| `security_master_conflicts` | table | 17 | `conflict_id` | 0 | 3 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
 | `security_master_revisions` | table | 16 | `revision_id` | 0 | 2 | - |

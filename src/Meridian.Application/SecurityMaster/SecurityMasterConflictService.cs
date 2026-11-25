@@ -172,10 +172,15 @@ public sealed class SecurityMasterConflictService : ISecurityMasterConflictServi
         var updated = existing with
         {
             Status = newStatus,
-            ResolvedWinnerSource = request.ChosenWinnerSource,
+            // A dismissal asserts equivalence and chooses no winner (review D3); recording the
+            // acknowledged candidate as the winner read as a decision for provider A.
+            ResolvedWinnerSource = request.IsDismissal ? null : request.ChosenWinnerSource,
             ResolvedBy = request.ResolvedBy,
             ResolvedReason = request.Reason,
             ResolvedAt = DateTimeOffset.UtcNow,
+            PolicyWinnerSource = request.PolicyWinnerSource,
+            PolicyRule = request.PolicyRule,
+            IsPolicyDeviation = request.IsDismissal ? null : request.IsPolicyDeviation,
         };
 
         // Atomic compare-and-set: only the first resolver whose snapshot still matches the stored

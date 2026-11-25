@@ -266,22 +266,27 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
                     resolved_winner_source = @resolved_winner_source,
                     resolved_by = @resolved_by,
                     resolved_reason = @resolved_reason,
-                    resolved_at = @resolved_at
+                    resolved_at = @resolved_at,
+                    policy_winner_source = @policy_winner_source,
+                    policy_rule = @policy_rule,
+                    is_policy_deviation = @is_policy_deviation
                 where conflict_id = @conflict_id and status = 'Open'
                 returning {ConflictColumns};
                 """;
             command.Parameters.AddWithValue("status", newStatus);
-            // Dismissals persist the acknowledged source too when one was selected: the workbench's
-            // DismissAsEquivalent flow requires a candidate and reports it as ChosenWinnerSource, so
-            // storing NULL here would expose the same decision WITH a winner through the workbench
-            // response but WITHOUT one through the authoritative conflict row. Field provenance is
-            // still only written for Resolved — a dismissal asserts equivalence, not attribution.
+            // A dismissal asserts the candidates are equivalent and chooses NO winner (review D3).
+            // The acknowledged candidate only drives the persisted-value check above; storing it as
+            // the winner recorded every dismissal as a decision for provider A. Field provenance is
+            // only written for Resolved.
             command.Parameters.AddWithValue(
                 "resolved_winner_source",
-                newStatus == "Resolved"
-                    ? (object?)selectedSource ?? DBNull.Value
-                    : (object?)(string.IsNullOrWhiteSpace(request.ChosenWinnerSource) ? null : request.ChosenWinnerSource.Trim())
-                        ?? DBNull.Value);
+                newStatus == "Resolved" ? (object?)selectedSource ?? DBNull.Value : DBNull.Value);
+            command.Parameters.Add(new NpgsqlParameter("policy_winner_source", NpgsqlTypes.NpgsqlDbType.Text)
+                { Value = (object?)request.PolicyWinnerSource?.Trim() ?? DBNull.Value });
+            command.Parameters.Add(new NpgsqlParameter("policy_rule", NpgsqlTypes.NpgsqlDbType.Text)
+                { Value = (object?)request.PolicyRule ?? DBNull.Value });
+            command.Parameters.Add(new NpgsqlParameter("is_policy_deviation", NpgsqlTypes.NpgsqlDbType.Boolean)
+                { Value = newStatus == "Resolved" && request.IsPolicyDeviation is { } deviation ? deviation : DBNull.Value });
             command.Parameters.AddWithValue("resolved_by", request.ResolvedBy);
             command.Parameters.AddWithValue("resolved_reason", (object?)request.Reason ?? DBNull.Value);
             command.Parameters.AddWithValue("resolved_at", DateTimeOffset.UtcNow.UtcDateTime);
@@ -1121,7 +1126,8 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
 
     private const string ConflictColumns =
         "conflict_id, security_id, conflict_kind, field_path, provider_a, value_a, provider_b, value_b, " +
-        "detected_at, status, resolved_winner_source, resolved_by, resolved_reason, resolved_at";
+        "detected_at, status, resolved_winner_source, resolved_by, resolved_reason, resolved_at, " +
+        "policy_winner_source, policy_rule, is_policy_deviation";
 
     private static SecurityMasterConflict MapConflict(DbDataReader reader) => new(
         ConflictId: reader.GetGuid(0),
@@ -1139,6 +1145,9 @@ public sealed class PostgresSecurityMasterConflictService : ISecurityMasterConfl
         ResolvedBy = reader.IsDBNull(11) ? null : reader.GetString(11),
         ResolvedReason = reader.IsDBNull(12) ? null : reader.GetString(12),
         ResolvedAt = reader.IsDBNull(13) ? null : new DateTimeOffset(reader.GetDateTime(13), TimeSpan.Zero),
+        PolicyWinnerSource = reader.IsDBNull(14) ? null : reader.GetString(14),
+        PolicyRule = reader.IsDBNull(15) ? null : reader.GetString(15),
+        IsPolicyDeviation = reader.IsDBNull(16) ? null : reader.GetBoolean(16),
     };
 
     private async Task<NpgsqlConnection> OpenConnectionAsync(CancellationToken ct)

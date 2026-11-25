@@ -441,7 +441,10 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
             ?? Array.Empty<InstrumentPassportProviderConfidenceDto>();
 
         var decision = _conflictPolicy.Evaluate(assessment, providerConfidence);
-        var isDeviation = !string.Equals(
+        // A dismissal asserts the candidates are equivalent, so no winner is chosen and there is
+        // nothing to deviate from (review D3).
+        var dismissal = assessment.Recommendation == SecurityMasterConflictRecommendationKind.DismissAsEquivalent;
+        var isDeviation = !dismissal && !string.Equals(
             request.ChosenWinnerSource?.Trim() ?? string.Empty,
             decision.PolicyWinnerSource?.Trim() ?? string.Empty,
             StringComparison.OrdinalIgnoreCase);
@@ -457,13 +460,20 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         // so there is no window in which the conflict is resolved but its winner is unrecorded. A
         // null result means another operator already resolved this conflict, so surface it as a
         // concurrency conflict rather than letting the later decision silently win.
-        var resolution = assessment.Recommendation == SecurityMasterConflictRecommendationKind.DismissAsEquivalent
-            ? "Dismiss"
-            : "Resolve";
+        var resolution = dismissal ? "Dismiss" : "Resolve";
+        // The policy decision is persisted with the close (review A5) so deviations are auditable
+        // from the database alone rather than only from logs.
         var resolved = await _conflictService
             .ResolveAsync(
                 new ResolveConflictRequest(
-                    request.ConflictId, resolution, request.Actor, request.Reason, request.ChosenWinnerSource),
+                    request.ConflictId,
+                    resolution,
+                    request.Actor,
+                    request.Reason,
+                    request.ChosenWinnerSource,
+                    PolicyWinnerSource: decision.PolicyWinnerSource,
+                    PolicyRule: decision.Rule,
+                    IsPolicyDeviation: dismissal ? null : isDeviation),
                 ct)
             .ConfigureAwait(false);
         if (resolved is null)
@@ -485,6 +495,8 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
         return new SecurityMasterConflictResolutionDto(
             request.ConflictId,
             decision.PolicyWinnerSource,
+            // For a dismissal this names the acknowledged candidate the persisted value was checked
+            // against; the durable conflict row records no winner and no deviation.
             request.ChosenWinnerSource,
             isDeviation,
             request.Reason,

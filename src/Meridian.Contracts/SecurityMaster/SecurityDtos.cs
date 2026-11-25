@@ -65,19 +65,41 @@ public sealed record SecurityMasterConflict(
 
     /// <summary>When the conflict was resolved; set atomically when the conflict resolves.</summary>
     public DateTimeOffset? ResolvedAt { get; init; }
+
+    /// <summary>The source the conflict-authority policy selected when the conflict closed.</summary>
+    public string? PolicyWinnerSource { get; init; }
+
+    /// <summary>The policy ladder rule that selected <see cref="PolicyWinnerSource"/>.</summary>
+    public string? PolicyRule { get; init; }
+
+    /// <summary>
+    /// Whether the operator's chosen source differs from <see cref="PolicyWinnerSource"/>. Null for
+    /// dismissals (which choose no winner) and for conflicts closed before the decision was recorded.
+    /// </summary>
+    public bool? IsPolicyDeviation { get; init; }
 }
 
 /// <summary>
 /// Request to resolve or dismiss a golden record conflict. <see cref="ChosenWinnerSource"/> records
 /// the operator-selected winning source so the resolution and its winner are captured atomically
-/// with the conflict's open→resolved transition.
+/// with the conflict's open→resolved transition. A dismissal records no winner: it asserts the
+/// candidates are equivalent, so <see cref="ChosenWinnerSource"/> only names the acknowledged
+/// candidate the persisted value is checked against. The policy fields are recorded with the close
+/// so an auditor can query deviations from the database alone.
 /// </summary>
 public sealed record ResolveConflictRequest(
     Guid ConflictId,
     string Resolution,
     string ResolvedBy,
     string? Reason = null,
-    string? ChosenWinnerSource = null);
+    string? ChosenWinnerSource = null,
+    string? PolicyWinnerSource = null,
+    string? PolicyRule = null,
+    bool? IsPolicyDeviation = null)
+{
+    /// <summary>Whether this request dismisses rather than resolves.</summary>
+    public bool IsDismissal => "Dismiss".Equals(Resolution, StringComparison.OrdinalIgnoreCase);
+}
 
 public sealed record SecurityProjectionRecord(
     Guid SecurityId,
