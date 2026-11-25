@@ -121,6 +121,7 @@ public sealed class SecurityValidationService : ISecurityValidationService
         issues.AddRange(ValidateIdentifiers(record, universe, evaluatedAt));
         issues.AddRange(ValidateProvenance(record, evaluatedAt));
         issues.AddRange(ValidateValuationAndAccountingMetadata(record));
+        issues.AddRange(ValidateCurrencyCodes(record));
 
         if (_assetClassValidators.TryGetValidator(record.AssetClass, out var assetClassValidator))
         {
@@ -661,6 +662,73 @@ public sealed class SecurityValidationService : ISecurityValidationService
         }
 
         return issues;
+    }
+
+    /// <summary>
+    /// FX pair fields checked against ISO 4217 per asset class. CryptoCurrency pairs are deliberately
+    /// absent: their base and quote are crypto tickers, not ISO codes.
+    /// </summary>
+    private static readonly IReadOnlyDictionary<string, string[]> CurrencyPairFields =
+        new Dictionary<string, string[]>(StringComparer.OrdinalIgnoreCase)
+        {
+            ["FxSpot"] = ["baseCurrency", "quoteCurrency"],
+            ["FxForward"] = ["baseCurrency", "quoteCurrency"],
+            ["NonDeliverableForward"] = ["baseCurrency", "quoteCurrency", "settlementCurrency"]
+        };
+
+    /// <summary>
+    /// Reports currency codes that are not ISO 4217 (or an accepted market extension) as a Warning,
+    /// so existing records can be counted before the check blocks anything. A blank record currency
+    /// is <c>SM_CURRENCY_REQUIRED</c>'s job and is not reported here.
+    /// </summary>
+    private static IReadOnlyList<SecurityValidationIssueDto> ValidateCurrencyCodes(SecurityProjectionRecord record)
+    {
+        var affected = new List<string>();
+        if (!string.IsNullOrWhiteSpace(record.Currency) && !Iso4217Currencies.IsRecognized(record.Currency))
+        {
+            affected.Add("currency");
+        }
+
+        var terms = record.AssetSpecificTerms;
+        if (CurrencyPairFields.TryGetValue(record.AssetClass, out var pairFields))
+        {
+            foreach (var field in pairFields)
+            {
+                if (JsonValidationReader.TryGetAssetTermString(terms, field, record.AssetClass, out var code)
+                    && !Iso4217Currencies.IsRecognized(code))
+                {
+                    affected.Add($"assetSpecificTerms.{field}");
+                }
+            }
+        }
+
+        if (string.Equals(record.AssetClass, "Swap", StringComparison.OrdinalIgnoreCase)
+            && JsonValidationReader.TryGetAssetTermProperty(terms, "legs", record.AssetClass, out var legs)
+            && legs.ValueKind == JsonValueKind.Array)
+        {
+            var index = 0;
+            foreach (var leg in legs.EnumerateArray())
+            {
+                if (JsonValidationReader.TryGetElementTermProperty(leg, record.AssetClass, "legs", "currency", out var currency)
+                    && JsonValidationReader.HasNonBlankString(currency)
+                    && !Iso4217Currencies.IsRecognized(currency.GetString()))
+                {
+                    affected.Add($"assetSpecificTerms.legs.{index}.currency");
+                }
+
+                index++;
+            }
+        }
+
+        return affected.Count == 0
+            ? []
+            : [SecurityValidationIssueFactory.Create(
+                SecurityValidationSeverityDto.Warning,
+                "SM_CURRENCY_NOT_ISO4217",
+                "Currency code is not ISO 4217",
+                "One or more currency codes are not current ISO 4217 codes (or an accepted market code such as CNH or GBX); codes are compared exactly, so lowercase or padded codes are reported too.",
+                affected,
+                "Correct the currency to its ISO 4217 code through a governed amendment.")];
     }
 
     private static IReadOnlyList<SecurityValidationIssueDto> ValidateValuationAndAccountingMetadata(SecurityProjectionRecord record)
