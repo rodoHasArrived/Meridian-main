@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Meridian.Tests.Application.Config;
 
-/// <summary>OAuth secrets migrate to the shared encrypted vault without plaintext rewrites.</summary>
+/// <summary>OAuth secrets persist in the shared encrypted vault without plaintext rewrites.</summary>
 public sealed class OAuthTokenPersistencePermissionTests : IDisposable
 {
     private readonly string _root = Path.Combine(Path.GetTempPath(), "meridian-oauth-vault", Guid.NewGuid().ToString("N"));
@@ -75,6 +75,32 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
     }
 
     [Fact]
+    public async Task UnscopedService_RestrictsButDoesNotImportOrDestroyRetainedPlaintextTokens()
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(TokenPath)!);
+        var legacy = JsonSerializer.Serialize(new Dictionary<string, OAuthToken> { ["provider"] = SampleToken() });
+        await File.WriteAllTextAsync(TokenPath, legacy);
+        await File.WriteAllTextAsync(TokenPath + ".migrated", "interrupted-import-secret");
+        if (!OperatingSystem.IsWindows())
+        {
+            File.SetUnixFileMode(TokenPath, UnixFileMode.UserRead | UnixFileMode.UserWrite |
+                UnixFileMode.GroupRead | UnixFileMode.OtherRead);
+            File.SetUnixFileMode(TokenPath + ".migrated", UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.OtherRead);
+        }
+        await using var service = new OAuthTokenRefreshService(_root);
+        await service.InitializeAsync();
+        service.GetToken("provider").Should().BeNull();
+        (await File.ReadAllTextAsync(TokenPath)).Should().Be(legacy);
+        (await File.ReadAllTextAsync(TokenPath + ".migrated")).Should().Be("interrupted-import-secret");
+        if (!OperatingSystem.IsWindows())
+        {
+            File.GetUnixFileMode(TokenPath).Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+            File.GetUnixFileMode(TokenPath + ".migrated").Should().Be(UnixFileMode.UserRead | UnixFileMode.UserWrite);
+        }
+        (await new FileProviderCredentialStore(_root).ReadOAuthTokensAsync()).Should().BeEmpty();
+    }
+
+    [Fact]
     public async Task ScopedService_RestrictsButDoesNotClaimOrDestroyUnassignedLegacyTokens()
     {
         Directory.CreateDirectory(Path.GetDirectoryName(TokenPath)!);
@@ -131,7 +157,7 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
     public void ScopedRestriction_PropagatesPermissionWriteFailure()
     {
         var failure = new UnauthorizedAccessException("permission change refused");
-        var restrict = () => LegacyCredentialFileMigration.RestrictOwnerOnly(TokenPath,
+        var restrict = () => RetainedCredentialFileAccess.RestrictOwnerOnly(TokenPath,
             _ => UnixFileMode.UserRead | UnixFileMode.OtherRead, (_, _) => throw failure);
         restrict.Should().Throw<UnauthorizedAccessException>().Which.Should().BeSameAs(failure);
     }
@@ -139,28 +165,9 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
     [Fact]
     public void ScopedRestriction_RefusesUnverifiedPermissionChange()
     {
-        var restrict = () => LegacyCredentialFileMigration.RestrictOwnerOnly(TokenPath,
+        var restrict = () => RetainedCredentialFileAccess.RestrictOwnerOnly(TokenPath,
             _ => UnixFileMode.UserRead | UnixFileMode.OtherRead, (_, _) => { });
         restrict.Should().Throw<UnauthorizedAccessException>();
-    }
-
-    [Fact]
-    public async Task LegacyMigration_PreservesNewerVaultTokenAndRemovesPlaintext()
-    {
-        var vault = new FileProviderCredentialStore(_root);
-        await vault.SaveOAuthTokenAsync("custom-provider", SampleToken("rotated-secret"));
-        await File.WriteAllTextAsync(TokenPath, JsonSerializer.Serialize(new Dictionary<string, OAuthToken>
-        {
-            ["custom-provider"] = SampleToken("obsolete-secret"),
-            ["another-provider"] = SampleToken()
-        }));
-        if (!OperatingSystem.IsWindows())
-            File.SetUnixFileMode(TokenPath, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.OtherRead);
-        await using var service = new OAuthTokenRefreshService(_root);
-        await service.InitializeAsync();
-        service.GetToken("custom-provider")!.AccessToken.Should().Be("rotated-secret");
-        service.GetToken("another-provider")!.AccessToken.Should().Be("access-secret");
-        File.Exists(TokenPath).Should().BeFalse();
     }
 
     [Fact]
@@ -176,41 +183,6 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await reopened.InitializeAsync();
         reopened.GetToken("first").Should().BeNull();
         reopened.GetToken("second").Should().NotBeNull();
-    }
-
-    [Fact]
-    public async Task FailedMigration_RetainsLegacySourceForRetry()
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(TokenPath)!);
-        var legacy = JsonSerializer.Serialize(new Dictionary<string, OAuthToken> { ["provider"] = SampleToken() });
-        await File.WriteAllTextAsync(TokenPath, legacy);
-        var auditPath = Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl");
-        Directory.CreateDirectory(auditPath);
-        await using var failed = new OAuthTokenRefreshService(_root);
-        var initialize = () => failed.InitializeAsync();
-        await initialize.Should().ThrowAsync<InvalidOperationException>().WithMessage("Encrypted OAuth persistence could not be initialized.");
-        (await File.ReadAllTextAsync(TokenPath)).Should().Be(legacy);
-        Directory.Delete(auditPath);
-        await using var recovered = new OAuthTokenRefreshService(_root);
-        await recovered.InitializeAsync();
-        recovered.GetToken("provider")!.RefreshToken.Should().Be("refresh-secret");
-        File.Exists(TokenPath).Should().BeFalse();
-    }
-
-    [Fact]
-    public async Task InterruptedLegacyErasure_RestartsFromVaultAndFinishesCleanup()
-    {
-        var vault = new FileProviderCredentialStore(_root);
-        await vault.SaveOAuthTokenAsync("provider", SampleToken());
-        // Persisted state after import, rename, and interrupted zero-fill of the old source.
-        await File.WriteAllBytesAsync(TokenPath + ".migrated", new byte[300]);
-
-        await using var service = new OAuthTokenRefreshService(_root);
-        await service.InitializeAsync();
-
-        service.GetToken("provider")!.AccessToken.Should().Be("access-secret");
-        File.Exists(TokenPath).Should().BeFalse();
-        File.Exists(TokenPath + ".migrated").Should().BeFalse();
     }
 
     [Fact]
@@ -277,29 +249,6 @@ public sealed class OAuthTokenPersistencePermissionTests : IDisposable
         await File.WriteAllTextAsync(vault.VaultPath, "corrupt-again");
 
         (await vault.ReadOAuthTokensAsync())["retained"].AccessToken.Should().Be("access-secret");
-    }
-
-    [Fact]
-    public async Task FailedLegacyAuditThenDeletion_RetryDoesNotResurrectOAuthToken()
-    {
-        Directory.CreateDirectory(Path.GetDirectoryName(TokenPath)!);
-        await File.WriteAllTextAsync(TokenPath, JsonSerializer.Serialize(new Dictionary<string, OAuthToken>
-        {
-            ["provider"] = SampleToken()
-        }));
-        var auditPath = Path.Combine(_root, ".mdc", "provider-credentials.audit.jsonl");
-        Directory.CreateDirectory(auditPath);
-        await using var failed = new OAuthTokenRefreshService(_root);
-        var initialize = () => failed.InitializeAsync();
-        await initialize.Should().ThrowAsync<InvalidOperationException>();
-        Directory.Delete(auditPath);
-        await new FileProviderCredentialStore(_root).SaveOAuthTokenAsync("provider", null);
-
-        await using var recovered = new OAuthTokenRefreshService(_root);
-        await recovered.InitializeAsync();
-
-        recovered.GetToken("provider").Should().BeNull();
-        File.Exists(TokenPath).Should().BeFalse();
     }
 
     [Fact]

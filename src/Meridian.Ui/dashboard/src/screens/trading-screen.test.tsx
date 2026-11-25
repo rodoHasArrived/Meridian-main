@@ -6,6 +6,7 @@ import userEvent from "@testing-library/user-event";
 import { resolveTradingRouteView, TradingScreen } from "@/screens/trading-screen";
 import * as api from "@/lib/api";
 import { renderWithRouter, TestMemoryRouter, waitForAsyncEffects } from "@/test/render";
+import { backToWorkList, expectNarrowWorkbenchViewport, inspectSelection, installViewportMatchMedia } from "@/test/narrow-workbench";
 import { WorkspaceFigureContextProvider } from "@/lib/workspace-figure-context";
 import type { PaperSessionSummary, TradingOperatorReadiness, TradingWorkspaceResponse } from "@/types";
 
@@ -332,9 +333,17 @@ const serverReadinessData: TradingWorkspaceResponse = {
   }
 };
 
+// The test viewport is the constrained layout: each blotter workbench shows its queue or its
+// detail pane, not both (see @/test/narrow-workbench).
 beforeEach(() => {
   vi.clearAllMocks();
   vi.mocked(api.getTradingReadiness).mockResolvedValue(serverReadinessData.readiness!);
+  expectNarrowWorkbenchViewport();
+  installViewportMatchMedia();
+});
+
+afterEach(() => {
+  vi.unstubAllGlobals();
 });
 
 async function renderTradingScreen(
@@ -418,6 +427,7 @@ describe("TradingScreen", () => {
     // The price basis is stated once for the page, not repeated under each table and the detail pane.
     expect(screen.getAllByText("Prices are as quoted by the source; no currency was supplied.")).toHaveLength(1);
     await user.click(fill);
+    await inspectSelection(user, fill);
     expect(screen.getByRole("region", { name: /fill detail for fl-1/i })).toBeInTheDocument();
   });
 
@@ -555,9 +565,11 @@ describe("TradingScreen", () => {
     msftPosition.focus();
     await user.keyboard("{Enter}");
 
+    // Enter selects the row and switches the constrained workbench to its detail pane.
     await waitFor(() => expect(msftPosition).toHaveAttribute("aria-selected", "true"));
     expect(msftPosition).toHaveAttribute("aria-expanded", "true");
     expect(screen.getByRole("region", { name: /position detail for msft/i })).toHaveAttribute("id", "trading-position-detail");
+    expect(screen.getByRole("button", { name: "Back to work list" })).toHaveAttribute("aria-expanded", "true");
   });
 
   it("links order and fill rows to the detail rail with keyboard selection", async () => {
@@ -578,13 +590,17 @@ describe("TradingScreen", () => {
     const queuedOrder = screen.getByRole("row", { name: /inspect order po-2/i });
     expect(queuedOrder).toHaveAttribute("aria-controls", "trading-execution-detail");
     expect(queuedOrder).toHaveAttribute("aria-expanded", "false");
+    expect(screen.queryAllByRole("region", { name: /detail for/i })).toHaveLength(0);
+    await inspectSelection(user, queuedOrder);
     expect(screen.getAllByRole("region", { name: /detail for/i })).toHaveLength(1);
     expect(screen.getByRole("region", { name: /order detail for po-1/i })).toHaveAttribute("id", "trading-execution-detail");
+    await backToWorkList(user, queuedOrder);
 
     await user.click(queuedOrder);
 
     await waitFor(() => expect(queuedOrder).toHaveAttribute("aria-selected", "true"));
     expect(queuedOrder).toHaveAttribute("aria-expanded", "true");
+    await inspectSelection(user, queuedOrder);
     const orderPane = screen.getByRole("region", { name: /order detail for po-2/i });
     expect(orderPane).toHaveAttribute("id", "trading-execution-detail");
     expect(within(orderPane).getByRole("heading", { name: "Order PO-2" })).toBeInTheDocument();
@@ -592,6 +608,7 @@ describe("TradingScreen", () => {
     expect(within(orderPane).getByRole("button", { name: "Cancel order PO-2" })).toBeInTheDocument();
     expect(within(orderPane).getByLabelText("Order details")).toHaveTextContent("Quantity10");
     expect(within(orderPane).getByLabelText("Order details")).not.toHaveTextContent("Submitted");
+    await backToWorkList(user, queuedOrder);
 
     const secondFill = screen.getByRole("row", { name: /inspect fill fl-2/i });
     expect(secondFill).toHaveAttribute("aria-controls", "trading-execution-detail");
@@ -614,7 +631,9 @@ describe("TradingScreen", () => {
     // Escape from the shared pane returns to the row it is showing, not the other table's.
     fillPane.focus();
     await user.keyboard("{Escape}");
-    expect(secondFill).toHaveFocus();
+    // The constrained layout returns to the queue first, then restores focus on the next frame.
+    await waitFor(() => expect(secondFill).toHaveFocus());
+    expect(screen.getByRole("button", { name: "Inspect selection" })).toHaveAttribute("aria-expanded", "false");
   });
 
   it("announces active workflow side panels from the trading shell view model", async () => {
@@ -1377,14 +1396,18 @@ describe("TradingScreen", () => {
   });
 
   it("marks financially destructive blotter actions before confirmation", async () => {
+    const user = userEvent.setup();
     await renderTradingScreen(data, "/trading/orders");
 
-    // The row and the detail pane both offer the cancel; each is marked destructive.
-    const cancelButtons = screen.getAllByRole("button", { name: /cancel order po-1/i });
-    expect(cancelButtons).toHaveLength(2);
-    for (const button of cancelButtons) {
-      expect(button).toHaveClass("mds-btn--danger");
-    }
+    // The row and the detail pane both offer the cancel; each is marked destructive. The
+    // constrained layout shows the pane only after the operator inspects the selection.
+    const rowCancel = screen.getByRole("button", { name: /cancel order po-1/i });
+    expect(rowCancel).toHaveClass("mds-btn--danger");
+    await inspectSelection(user, rowCancel);
+    const paneCancel = screen.getByRole("button", { name: /cancel order po-1/i });
+    expect(paneCancel).not.toBe(rowCancel);
+    expect(paneCancel).toHaveClass("mds-btn--danger");
+    await backToWorkList(user, rowCancel);
     await userEvent.setup().click(screen.getByRole("button", { name: "More order actions" }));
     const cancelAll = screen.getByRole("menuitem", { name: /cancel all open orders/i });
     expect(cancelAll).toHaveClass("text-danger");

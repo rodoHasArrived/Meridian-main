@@ -3,6 +3,7 @@ using FluentAssertions;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;
+using Meridian.Tests.TestHelpers;
 
 namespace Meridian.Tests.Integration.EndpointTests;
 
@@ -161,7 +162,7 @@ public sealed class DesktopClientRouteContractTests : EndpointIntegrationTestBas
             var directory = Path.Combine(repositoryRoot, sourceRoot.Replace('/', Path.DirectorySeparatorChar));
             Directory.Exists(directory).Should().BeTrue($"scanned source root '{sourceRoot}' must exist");
 
-            foreach (var file in Directory.EnumerateFiles(directory, "*.cs", SearchOption.AllDirectories))
+            foreach (var file in RepositoryFileWalker.EnumerateFiles(directory, "*.cs"))
             {
                 var relativePath = Path.GetRelativePath(repositoryRoot, file).Replace('\\', '/');
                 if (relativePath.Contains("/bin/", StringComparison.OrdinalIgnoreCase) ||

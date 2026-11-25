@@ -62,7 +62,6 @@ notifications, telemetry, and personal model preferences in user-level config.
 | `dense-data-grid-inspector-panel.toml` | Build scalable dense grids, stable selection, and inspector panels |
 | `desktop-test-generation.toml` | Generate focused WPF desktop workflow tests |
 | `diagnostics-audit-timeline.toml` | Build diagnostics panels, audit timelines, evidence trails, and recovery surfaces |
-| `meridian-archive-organizer.toml` | Archive stale files and preserve repository structure evidence |
 | `meridian-blueprint.toml` | Create implementation-ready technical designs |
 | `meridian-brainstorm.toml` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation.toml` | Route and implement browser workstation TypeScript/React tasks |
@@ -151,7 +150,6 @@ and should be used only when the user explicitly requests independent panel voic
 
 | Skill | Purpose |
 | --- | --- |
-| `meridian-archive-organizer` | Archive stale code/docs and keep the repository structure tidy |
 | `meridian-blueprint` | Create implementation-ready Meridian technical blueprints |
 | `meridian-brainstorm` | Generate Meridian-native product and architecture ideas |
 | `meridian-browser-workstation` | Route and implement browser workstation TypeScript/React tasks |
@@ -202,7 +200,6 @@ route by task phase:
 | Docs | `meridian-docs` | Update docs, guidance, and indexes with current repo evidence. |
 | Test | `meridian-test-writer` | Add scenario-first tests in the correct test lane. |
 | Provider | `meridian-provider-builder` | Build providers and hand off to assurance for rollout proof. |
-| Archive | `meridian-archive-organizer` | Classify stale material and update archive/navigation evidence. |
 | Roadmap | `meridian-roadmap-strategist` | Reconcile status, waves, opportunities, and target state. |
 | Cleanup | `meridian-cleanup` | Preserve behavior while removing dead code or duplication. |
 | Simulated user review | `meridian-simulated-user-panel` | Critique concrete artifacts with canonical roles, evidence sufficiency, and an explicit simulation disclaimer. |
@@ -300,8 +297,6 @@ Maintenance/reporting:
 
 - `make ai-maintenance-light`
 - `make ai-maintenance-full`
-- `make ai-docs-archive`
-- `make ai-docs-archive-execute`
 
 Local helper surfaces:
 

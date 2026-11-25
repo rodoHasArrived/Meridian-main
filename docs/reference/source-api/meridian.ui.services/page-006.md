@@ -680,7 +680,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ui.Services.FloatingWorkspaceWindowState</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:175](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L175).
+Source: [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:168](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L168).
 
 Metadata for a floating workspace window that can be restored on the next launch.
 
@@ -692,11 +692,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string WindowId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:177](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L177) |  |
-| <code>public string PaneId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:178](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L178) |  |
-| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:179](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L179) |  |
-| <code>public WindowBounds? Bounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:180](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L180) |  |
-| <code>public bool IsOpen { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:181](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L181) |  |
+| <code>public string WindowId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:170](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L170) |  |
+| <code>public string PaneId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:171](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L171) |  |
+| <code>public string Title { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:172](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L172) |  |
+| <code>public WindowBounds? Bounds { get; set; }</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:173](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L173) |  |
+| <code>public bool IsOpen { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/WorkspaceModels.cs:174](../../../../src/Meridian.Ui.Services/Services/WorkspaceModels.cs#L174) |  |
 
 ## FormatHelpers
 

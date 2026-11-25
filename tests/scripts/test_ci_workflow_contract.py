@@ -43,7 +43,10 @@ class CiWorkflowContractTests(unittest.TestCase):
     def test_secret_scan_remains_pull_request_visible(self) -> None:
         secret_block = self._job_block("secret-scan")
 
-        self.assertNotIn("if: github.event_name != 'pull_request'", secret_block)
+        # The only pull request skip is a draft, which cannot merge; ready_for_review scans it.
+        self.assertIn("if: github.event_name != 'pull_request' || github.event.pull_request.draft != true\n", secret_block)
+        self.assertEqual(secret_block.count("\n    if:"), 1, "No other job-level condition may skip the scan.")
+        self.assertIn("ready_for_review", self.workflow.split("\njobs:", 1)[0])
         gitleaks = assert_pinned_action(self, self.workflow, "secret-scan", "gitleaks/gitleaks-action")
         self.assertEqual(gitleaks.get("env", {}).get("GITLEAKS_VERSION"), "8.25.1")
         self.assertEqual(gitleaks.get("env", {}).get("GITLEAKS_CONFIG"), ".gitleaks.toml")

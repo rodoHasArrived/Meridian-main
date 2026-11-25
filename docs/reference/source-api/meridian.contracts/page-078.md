@@ -6,194 +6,11 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## StrategyRunContinuityLineage
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityLineage</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1084](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1084).
-
-Parent/child run linkage used by shared continuity drill-ins.
-
-```csharp
-public sealed record StrategyRunContinuityLineage(string? ParentRunId, StrategyRunContinuityLink? ParentRun, IReadOnlyList<StrategyRunContinuityLink> ChildRuns);
-```
-
-## StrategyRunContinuityLink
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityLink</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1069](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1069).
-
-Lightweight run identity used to connect Strategy, Trading, and Accounting flows.
-
-```csharp
-public sealed record StrategyRunContinuityLink(string RunId, string StrategyId, string StrategyName, StrategyRunMode Mode, StrategyRunStatus Status, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, StrategyRunPromotionState PromotionState, string? FundProfileId = null, string? FundDisplayName = null);
-```
-
-## StrategyRunContinuitySeamHealthStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuitySeamHealthStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1128](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1128).
-
-```csharp
-public enum StrategyRunContinuitySeamHealthStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Healthy</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1130](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1130) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1131](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1131) |  |
-| <code>Stale</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1132](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1132) |  |
-
-## StrategyRunContinuityStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityStatus</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1138](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1138).
-
-Continuity posture across run, portfolio, ledger, cash-flow, and reconciliation seams.
-
-```csharp
-public sealed record StrategyRunContinuityStatus(bool HasRun, StrategyRunContinuitySeamHealthStatus RunHealth, bool HasFills, StrategyRunContinuitySeamHealthStatus FillsHealth, bool HasPortfolio, StrategyRunContinuitySeamHealthStatus PortfolioHealth, bool HasLedger, StrategyRunContinuitySeamHealthStatus LedgerHealth, bool HasCashFlow, StrategyRunContinuitySeamHealthStatus CashFlowHealth, bool HasReconciliation, StrategyRunContinuitySeamHealthStatus ReconciliationHealth, int AsOfDriftMinutes, int OpenReconciliationBreaks, int SecurityCoverageIssueCount, bool HasWarnings, IReadOnlyList<StrategyRunContinuityWarning> Warnings);
-```
-
-## StrategyRunContinuityWarning
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityWarning</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1113](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1113).
-
-Machine-readable continuity warning for shared run-centered workflows. Known warning codes include: missing-portfolio, missing-ledger, missing-cash-flow, missing-reconciliation, as-of-drift, open-reconciliation-breaks, security-coverage, lineage-parent-source-mismatch, lineage-missing-parent-with-source, promotion-target-run-missing, and promotion-lineage-shape-inconsistent.
-
-```csharp
-public sealed record StrategyRunContinuityWarning(string Code, StrategyRunContinuityWarningSeverity Severity, string Message, string SourceSeam);
-```
-
-## StrategyRunContinuityWarningSeverity
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContinuityWarningSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1120](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1120).
-
-```csharp
-public enum StrategyRunContinuityWarningSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1122](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1122) |  |
-| <code>Warning</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1123](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1123) |  |
-| <code>Critical</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1124](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1124) |  |
-
-## StrategyRunContractCompatibility
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunContractCompatibility</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs:6](../../../../src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs#L6).
-
-Validates the canonical identity fields required on a strategy run summary.
-
-```csharp
-public static class StrategyRunContractCompatibility
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static void EnsureCanonicalIdentity(StrategyRunSummary summary);</code> | [src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs:8](../../../../src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs#L8) |  |
-| <code>public static IReadOnlyList&lt;string&gt; DescribeSourceMixDifferences(IReadOnlyList&lt;string?&gt; backtestSourceMixHashes);</code> | [src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs:19](../../../../src/Meridian.Contracts/Workstation/StrategyRunContractCompatibility.cs#L19) | Discloses observed source differences and missing evidence among compared backtests. |
-
-## StrategyRunCrossModeTransitionMetadata
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunCrossModeTransitionMetadata</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:784](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L784).
-
-Cross-mode transition metadata for lineage timeline events.
-
-```csharp
-public sealed record StrategyRunCrossModeTransitionMetadata(StrategyRunMode? SourceMode = null, StrategyRunMode? TargetMode = null, string? SourceRunId = null, string? TargetRunId = null, string? PromotionReference = null, string? ReplayAuditReference = null, DateTimeOffset? ReplayVerifiedAt = null, bool? HasReplayAudit = null);
-```
-
-## StrategyRunDetail
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunDetail</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:468](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L468).
-
-Expanded detail for a single run, including derived portfolio and ledger views.
-
-```csharp
-public sealed record StrategyRunDetail(StrategyRunSummary Summary, IReadOnlyDictionary<string, string> Parameters, PortfolioSummary? Portfolio, LedgerSummary? Ledger, StrategyRunExecutionSummary? Execution = null, StrategyRunPromotionSummary? Promotion = null, StrategyRunGovernanceSummary? Governance = null, IReadOnlyList<StrategyRunGovernanceHook>? GovernanceHooks = null, BiasDisclosureDto? BiasDisclosure = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? StrategyArtifactId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:480](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L480) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public StrategyRunReplayProvenanceDto? ReplayProvenance { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:486](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L486) | Observed replay sources and verified backfill revisions from a completed run. |
-| <code>public StrategyRunEvidenceLoop? EvidenceLoop { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:492](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L492) | Optional W6 evidence-loop projection. Kept outside the primary constructor so the established CLR constructor and deconstruction signatures remain compatible. |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public Meridian.Contracts.Operations.ProviderProvenanceReceipt? ProviderProvenance { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:495](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L495) |  |
-| <code>public IReadOnlyList&lt;StrategyRunAcceptanceChecklistItemDto&gt; AcceptanceChecklist { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:502](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L502) | Read-only canonical promotion requirements and their durable decision posture. Kept outside the primary constructor so established CLR constructor and deconstruction signatures remain compatible. |
-
-## StrategyRunDiff
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunDiff</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:879](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L879).
-
-Result of a run-vs-run diff showing position, parameter, and metric changes.
-
-```csharp
-public sealed record StrategyRunDiff(string BaseRunId, string TargetRunId, string BaseStrategyName, string TargetStrategyName, IReadOnlyList<PositionDiffEntry> AddedPositions, IReadOnlyList<PositionDiffEntry> RemovedPositions, IReadOnlyList<PositionDiffEntry> ModifiedPositions, IReadOnlyList<ParameterDiff> ParameterChanges, MetricsDiff Metrics, IReadOnlyList<string>? CompatibilityWarnings = null, StrategyRunArtifactCompleteness? BaseArtifactCompleteness = null, StrategyRunArtifactCompleteness? TargetArtifactCompleteness = null, StrategyRunMode? BaseMode = null, StrategyRunMode? TargetMode = null, StrategyRunEngine? BaseEngine = null, StrategyRunEngine? TargetEngine = null, string? BaseStrategyId = null, string? TargetStrategyId = null, string? BaseStrategyVersion = null, string? TargetStrategyVersion = null, string LineageRelation = "Unrelated", string CompatibilityLevel = "Compatible");
-```
-
-## StrategyRunDrillInLinks
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunDrillInLinks</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/StrategyBriefingDtos.cs#L6).
-
-Drill-in links attached to strategy run cards and comparisons.
-
-```csharp
-public sealed record StrategyRunDrillInLinks(string EquityCurve, string Fills, string Attribution, string? Ledger, string CashFlows, string? Continuity);
-```
-
-## StrategyRunEngine
-
-Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunEngine</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:22](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L22).
-
-Shared workstation-facing execution engine for a strategy run.
-
-```csharp
-public enum StrategyRunEngine : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:24](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L24) |  |
-| <code>MeridianNative</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:25](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L25) |  |
-| <code>Lean</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:26](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L26) |  |
-| <code>BrokerPaper</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:27](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L27) |  |
-| <code>BrokerLive</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:28](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L28) |  |
-
 ## StrategyRunEvidenceLoop
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunEvidenceLoop</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:328](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L328).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:324](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L324).
 
 Retained operator criteria and cross-workflow references that close the bounded Backtest Studio evidence loop for a strategy run.
 
@@ -205,7 +22,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static bool TryCreateRequired(string? strategyIdentity, IEnumerable&lt;string&gt;? operatorAcceptanceCriteria, IEnumerable&lt;string&gt;? retainedEvidenceReferences, IEnumerable&lt;string&gt;? accountingRecordReferences, IEnumerable&lt;string&gt;? approvalReferences, IEnumerable&lt;string&gt;? paperValidationReferences, IEnumerable&lt;string&gt;? governedReportReferences, out StrategyRunEvidenceLoop evidenceLoop, out string validationError);</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:353](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L353) | Validates and normalizes the minimum evidence required before a bounded Backtest Studio run may invoke an engine or runner. |
+| <code>public static bool TryCreateRequired(string? strategyIdentity, IEnumerable&lt;string&gt;? operatorAcceptanceCriteria, IEnumerable&lt;string&gt;? retainedEvidenceReferences, IEnumerable&lt;string&gt;? accountingRecordReferences, IEnumerable&lt;string&gt;? approvalReferences, IEnumerable&lt;string&gt;? paperValidationReferences, IEnumerable&lt;string&gt;? governedReportReferences, out StrategyRunEvidenceLoop evidenceLoop, out string validationError);</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:349](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L349) | Validates and normalizes the minimum evidence required before a bounded Backtest Studio run may invoke an engine or runner. |
 
 ## StrategyRunExecutionSummary
 
@@ -216,15 +33,15 @@ Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:135](../../
 Shared execution summary used by workstation drill-ins and Accounting control surfaces.
 
 ```csharp
-public sealed record StrategyRunExecutionSummary(int FillCount, int TotalTrades, int WinningTrades, int LosingTrades, decimal TotalCommissions, decimal? TotalMarginInterest, decimal TotalShortRebates, bool HasPortfolio, bool HasLedger, bool HasAuditTrail, string? AuditReference)
+public sealed record StrategyRunExecutionSummary(int FillCount, int TotalTrades, int WinningTrades, int LosingTrades, decimal TotalCommissions, decimal TotalMarginInterest, decimal TotalShortRebates, bool HasPortfolio, bool HasLedger, bool HasAuditTrail, string? AuditReference)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:152](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L152) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:154](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L154) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:148](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L148) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:150](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L150) |  |
 
 ## StrategyRunGovernanceHook
 
@@ -242,7 +59,7 @@ public sealed record StrategyRunGovernanceHook(string SeamId, string Label, bool
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunGovernanceSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:185](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L185).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:181](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L181).
 
 Shared governed-control summary used by audit and control surfaces.
 
@@ -254,7 +71,7 @@ public sealed record StrategyRunGovernanceSummary(DateTimeOffset LastUpdatedAt, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunHistoryQuery</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:762](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L762).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:754](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L754).
 
 Filter options used for workstation run history retrieval.
 
@@ -266,7 +83,7 @@ public sealed record StrategyRunHistoryQuery(IReadOnlyList<StrategyRunMode>? Mod
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunIdentity</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:199](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L199).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:195](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L195).
 
 Canonical run identity and provenance contract shared by run projections.
 
@@ -278,7 +95,7 @@ public sealed record StrategyRunIdentity(string CanonicalRunKey, string? ParentC
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageEventType</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:752](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L752).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:744](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L744).
 
 Promotion/lineage event type emitted on strategy run timelines.
 
@@ -290,17 +107,17 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>RunStarted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:754](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L754) |  |
-| <code>RunCompleted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:755](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L755) |  |
-| <code>PromotionDecision</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:756](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L756) |  |
-| <code>CrossModeTransition</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:757](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L757) |  |
-| <code>ReplayVerified</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:758](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L758) |  |
+| <code>RunStarted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:746](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L746) |  |
+| <code>RunCompleted</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:747](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L747) |  |
+| <code>PromotionDecision</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:748](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L748) |  |
+| <code>CrossModeTransition</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:749](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L749) |  |
+| <code>ReplayVerified</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:750](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L750) |  |
 
 ## StrategyRunLineageTimelineEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunLineageTimelineEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:795](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L795).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:787](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L787).
 
 Lineage timeline event grouped by canonical run identity.
 
@@ -378,7 +195,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunPromotionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:160](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L160).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:156](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L156).
 
 Shared promotion summary used by Strategy, Trading, and Accounting workflows.
 
@@ -390,13 +207,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public DateTimeOffset? PromotedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:179](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L179) | Timestamp from the durable promotion decision, when one exists. This remains outside the primary constructor so established constructor and deconstruction signatures stay stable. |
+| <code>public DateTimeOffset? PromotedAt { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:175](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L175) | Timestamp from the durable promotion decision, when one exists. This remains outside the primary constructor so established constructor and deconstruction signatures stay stable. |
 
 ## StrategyRunReplayProvenanceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReplayProvenanceDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:509](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L509).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:505](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L505).
 
 ```csharp
 public sealed record StrategyRunReplayProvenanceDto(IReadOnlyList<StrategyRunReplaySourceCountDto> SourceMix, IReadOnlyList<StrategyRunReplayRevisionDto> Revisions, string? SourceMixHash, string? CompletedInputHashSha256);
@@ -406,7 +223,7 @@ public sealed record StrategyRunReplayProvenanceDto(IReadOnlyList<StrategyRunRep
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReplayRevisionDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:517](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L517).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:513](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L513).
 
 ```csharp
 public sealed record StrategyRunReplayRevisionDto(string RevisionId, string ContentHash, string ServingProvider, string Instrument, string Granularity);
@@ -416,7 +233,7 @@ public sealed record StrategyRunReplayRevisionDto(string RevisionId, string Cont
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunReplaySourceCountDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:515](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L515).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:511](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L511).
 
 ```csharp
 public sealed record StrategyRunReplaySourceCountDto(string Symbol, string Source, long Bars);
@@ -460,7 +277,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:214](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L214).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:210](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L210).
 
 Summary row shown in a run browser or recent-run list.
 
@@ -472,15 +289,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? StrategyVersionSha256 { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:248](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L248) |  |
-| <code>public string? DataProvenanceToken { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:249](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L249) |  |
-| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:250](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L250) |  |
+| <code>public string? StrategyVersionSha256 { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:244](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L244) |  |
+| <code>public string? DataProvenanceToken { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:245](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L245) |  |
+| <code>public Guid? FundAccountId { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:246](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L246) |  |
 
 ## StrategyRunTimelineEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunTimelineEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:769](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L769).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:761](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L761).
 
 Merged run timeline entry used by research and trading surfaces.
 
@@ -492,7 +309,7 @@ public sealed record StrategyRunTimelineEntry(string RunId, string StrategyId, s
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategyRunTimelineProjection</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:744](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L744).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:736](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L736).
 
 Projection mode for workstation run timeline queries.
 
@@ -504,8 +321,8 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Flat</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:746](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L746) |  |
-| <code>Lineage</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:747](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L747) |  |
+| <code>Flat</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:738](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L738) |  |
+| <code>Lineage</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:739](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L739) |  |
 
 ## StrategySavedComparison
 
@@ -535,7 +352,7 @@ public sealed record StrategySavedComparisonMode(string RunId, StrategyRunMode M
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepObjectiveRanking</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:253](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L253).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:249](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L249).
 
 ```csharp
 public sealed record StrategySweepObjectiveRanking(string RunId, string StrategyName, decimal? ObjectiveValue, decimal? NetPnl, decimal? TotalReturn, decimal? FinalEquity, DateTimeOffset LastUpdatedAt);
@@ -545,7 +362,7 @@ public sealed record StrategySweepObjectiveRanking(string RunId, string Strategy
 
 Qualified name: <code>Meridian.Contracts.Workstation.StrategySweepResultGroup</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:262](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L262).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:258](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L258).
 
 ```csharp
 public sealed record StrategySweepResultGroup(string SweepId, string SweepDefinitionHash, string? Objective, DateTimeOffset StartedAt, int RunCount, IReadOnlyList<StrategyRunSummary> Runs, IReadOnlyList<StrategySweepObjectiveRanking> ObjectiveRankings, bool ComparisonContextVerified = false, bool HistoryMayBeTruncated = false, string CoverageDescription = "Expected grid was not retained; missing cells are inferred from observed parameter values.");
@@ -679,7 +496,7 @@ public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid R
 
 Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:983](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L983).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:971](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L971).
 
 Per-symbol P&amp;L attribution for one run.
 
@@ -695,4 +512,156 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:14](../../../.
 
 ```csharp
 public sealed record SyncCompletenessResult(Guid AccountId, string Counterparty, int ExpectedRecords, int ReceivedRecords, bool IsComplete, string Detail);
+```
+
+## SyncValidationResult
+
+Qualified name: <code>Meridian.Contracts.Workstation.SyncValidationResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:16](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L16).
+
+```csharp
+public sealed record SyncValidationResult(bool Passed, IReadOnlyList<SyncCompletenessResult> CompletenessChecks, IReadOnlyList<DeltaOutlierResult> OutlierChecks, IReadOnlyList<string> Warnings);
+```
+
+## ThreeWayAdjustmentProposalDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayAdjustmentProposalDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:78](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L78).
+
+```csharp
+public sealed record ThreeWayAdjustmentProposalDto(string CheckId, string Status, string Description, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Amount, string Currency, IReadOnlyList<string> EvidenceIds, string EvidenceHash);
+```
+
+## ThreeWayCashActivityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayCashActivityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:74](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L74).
+
+```csharp
+public sealed record ThreeWayCashActivityDto(string TransactionId, string TransactionType, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string Currency, DateTimeOffset PostedAtUtc, string EvidenceReference);
+```
+
+## ThreeWayFeeCorrectionEvidenceDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayFeeCorrectionEvidenceDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:88](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L88).
+
+Retained economic identity; copies cannot create a second effect for one broker fee.
+
+```csharp
+public sealed record ThreeWayFeeCorrectionEvidenceDto(string EconomicKey, string TenantId, string CompanyId, string ProviderId, string ExternalAccountId, string FeeTransactionId, Guid FinancialAccountId, Guid LedgerBookId, string SourceRunId, string SourceEvidenceHash, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Amount, string Currency, DateTimeOffset FeePostedAtUtc);
+```
+
+## ThreeWayFeeCorrectionIdentity
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayFeeCorrectionIdentity</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs:7](../../../../src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs#L7).
+
+Economic identity excludes observation/run, amount and period so retries cannot double-book a fee.
+
+```csharp
+public static class ThreeWayFeeCorrectionIdentity
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string Compute(string tenantId, string companyId, string providerId, string externalAccountId, Guid financialAccountId, Guid ledgerBookId, string feeTransactionId);</code> | [src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs:9](../../../../src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs#L9) |  |
+| <code>public static string Compute(ThreeWayFeeCorrectionEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs:34](../../../../src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs#L34) |  |
+| <code>public static Guid SourceEventId(ThreeWayFeeCorrectionEvidenceDto evidence) =&gt; …;</code> | [src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs:38](../../../../src/Meridian.Contracts/Workstation/ThreeWayFeeCorrectionIdentity.cs#L38) |  |
+
+## ThreeWayPositionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayPositionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:24](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L24).
+
+```csharp
+public sealed record ThreeWayPositionDto(Guid SecurityId, string Symbol, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Quantity, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? CostBasis);
+```
+
+## ThreeWayReconciliationCheckDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationCheckDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L45).
+
+```csharp
+public sealed record ThreeWayReconciliationCheckDto(string CheckId, string Measure, Guid? SecurityId, string? Symbol, string LeftSource, string RightSource, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? LeftAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? RightAmount, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal Tolerance, string Status, string Explanation);
+```
+
+## ThreeWayReconciliationRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L6).
+
+A comparison request; source snapshots and owner identities are resolved by the server.
+
+```csharp
+public sealed record ThreeWayReconciliationRequestDto(Guid LedgerBookId, Guid AccountingPeriodId, string OperationId, DateTimeOffset? CutoffUtc = null);
+```
+
+## ThreeWayReconciliationResultDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L58).
+
+```csharp
+public sealed record ThreeWayReconciliationResultDto(string RunId, string OperationId, ThreeWayReconciliationScopeDto Scope, DateTimeOffset CutoffUtc, DateTimeOffset RecordedAtUtc, string Status, IReadOnlyList<ThreeWaySourceSnapshotDto> Sources, IReadOnlyList<ThreeWayReconciliationCheckDto> Checks, IReadOnlyList<string> BreakIds, string DataProvenanceToken = "real")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ThreeWayAdjustmentProposalDto&gt; AdjustmentProposals { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L70) |  |
+| <code>public long? AccountingPeriodVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:71](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L71) |  |
+
+## ThreeWayReconciliationScopeDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWayReconciliationScopeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L12).
+
+```csharp
+public sealed record ThreeWayReconciliationScopeDto(string TenantId, string CompanyId, string FundProfileId, Guid EntityId, Guid FinancialAccountId, Guid LedgerBookId, Guid AccountingPeriodId, string Currency, string ProviderId = "unlinked", string ExternalAccountId = "unlinked");
+```
+
+## ThreeWaySourceSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThreeWaySourceSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:29](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L29).
+
+Retained independent source operands, including coverage failures rather than invented zeroes.
+
+```csharp
+public sealed record ThreeWaySourceSnapshotDto(string Source, DateTimeOffset AsOfUtc, string EvidenceReference, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? Cash, IReadOnlyList<ThreeWayPositionDto> Positions, string CostBasisConvention, IReadOnlyList<string> CoverageFailures, string DataProvenanceToken = "real")
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;ThreeWayCashActivityDto&gt; CashActivities { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:39](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L39) |  |
+| <code>public IReadOnlyList&lt;string&gt; PostedExternalTransactionIds { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:40](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L40) |  |
+| <code>public bool TransactionIdentityCoverageComplete { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:41](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L41) |  |
+| <code>public long? AccountingPeriodVersion { get; init; }</code> | [src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/ThreeWayReconciliationDtos.cs#L42) |  |
+
+## ThresholdBreachDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.ThresholdBreachDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L36).
+
+```csharp
+public sealed record ThresholdBreachDto(string Counterparty, string ThresholdLevel, decimal ObservedExposure, decimal LimitExposure, DateTimeOffset DetectedAtUtc, string Message);
 ```

@@ -6,42 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## ProviderSetupResult
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderSetupResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/ProviderSetupApiModels.cs:21](../../../../src/Meridian.Contracts/Api/ProviderSetupApiModels.cs#L21).
-
-Safe provider setup result. This response never includes raw provider credentials.
-
-```csharp
-public sealed record ProviderSetupResult(bool Success, string? ProviderId, string ProviderName, string Message, string? Error, string? ConnectionId = null, string[]? BindingIds = null, ProviderCredentialStateDto? CredentialState = null, ProviderCredentialSourceDto? CredentialSource = null, string? CredentialReference = null, string? Environment = null, string[]? Warnings = null);
-```
-
-## ProviderStatusResponse
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderStatusResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:129](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L129).
-
-Response containing provider connection status.
-
-```csharp
-public record ProviderStatusResponse(string ProviderId, string Name, string ProviderType, bool? IsConnected, bool IsEnabled, int Priority, int ActiveSubscriptions, DateTimeOffset? LastHeartbeat, string? LifecycleState = null, string? WebSocketState = null, bool? IsReconnecting = null, DateTimeOffset? LastHeartbeatReceivedAt = null, DateTimeOffset? LastMessageReceivedAt = null, DateTimeOffset? LastReconnectAttemptAt = null, int? ReconnectAttempts = null, string? LastFailureKind = null, int? FailedSubscriptions = null, int? RecoveringSubscriptions = null, DateTimeOffset? LastSubscriptionMessageAt = null, string? ConnectionState = null, bool DiagnosticsAvailable = false, IReadOnlyList<ProviderStreamStatusResponse>? Streams = null);
-```
-
-## ProviderStreamStatusResponse
-
-Qualified name: <code>Meridian.Contracts.Api.ProviderStreamStatusResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Api/UiDashboardModels.cs:119](../../../../src/Meridian.Contracts/Api/UiDashboardModels.cs#L119).
-
-Response containing provider connection status.
-
-```csharp
-public record ProviderStreamStatusResponse(string AssetClass, string Feed, string Entitlement, string LifecycleState, bool IsConnected, bool IsDegraded, string? DegradationReason);
-```
-
 ## ProviderTemplateBindingDto
 
 Qualified name: <code>Meridian.Contracts.Api.ProviderTemplateBindingDto</code>. Kind: `record`.
@@ -651,3 +615,65 @@ Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:51](../../
 ```csharp
 public sealed record SavedProviderTemplateConnection(string ConnectionId, string DisplayName, string ProviderKind);
 ```
+
+## SaveProviderConnectionTemplateRequest
+
+Qualified name: <code>Meridian.Contracts.Api.SaveProviderConnectionTemplateRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs:40](../../../../src/Meridian.Contracts/Api/ProviderConnectionTemplateDtos.cs#L40).
+
+```csharp
+public sealed record SaveProviderConnectionTemplateRequest(string ConnectionId, string Name);
+```
+
+## SecurityMasterActiveImportStatusResponse
+
+Qualified name: <code>Meridian.Contracts.Api.SecurityMasterActiveImportStatusResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:29](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L29).
+
+Active Security Master ingest progress.
+
+```csharp
+public sealed class SecurityMasterActiveImportStatusResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;fileExtension&quot;)] public string FileExtension { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:32](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L32) |  |
+| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:35](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L35) |  |
+| <code>[JsonPropertyName(&quot;processed&quot;)] public int Processed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:38](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L38) |  |
+| <code>[JsonPropertyName(&quot;imported&quot;)] public int Imported { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:41](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L41) |  |
+| <code>[JsonPropertyName(&quot;skipped&quot;)] public int Skipped { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:44](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L44) |  |
+| <code>[JsonPropertyName(&quot;failed&quot;)] public int Failed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:47](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L47) |  |
+| <code>[JsonPropertyName(&quot;startedAtUtc&quot;)] public DateTimeOffset StartedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:50](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L50) |  |
+| <code>[JsonPropertyName(&quot;updatedAtUtc&quot;)] public DateTimeOffset UpdatedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:53](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L53) |  |
+
+## SecurityMasterCompletedImportStatusResponse
+
+Qualified name: <code>Meridian.Contracts.Api.SecurityMasterCompletedImportStatusResponse</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:59](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L59).
+
+Summary of the last completed Security Master ingest.
+
+```csharp
+public sealed class SecurityMasterCompletedImportStatusResponse
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;fileExtension&quot;)] public string FileExtension { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:62](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L62) |  |
+| <code>[JsonPropertyName(&quot;total&quot;)] public int Total { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:65](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L65) |  |
+| <code>[JsonPropertyName(&quot;processed&quot;)] public int Processed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:68](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L68) |  |
+| <code>[JsonPropertyName(&quot;imported&quot;)] public int Imported { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:71](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L71) |  |
+| <code>[JsonPropertyName(&quot;skipped&quot;)] public int Skipped { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:74](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L74) |  |
+| <code>[JsonPropertyName(&quot;failed&quot;)] public int Failed { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:77](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L77) |  |
+| <code>[JsonPropertyName(&quot;conflictsDetected&quot;)] public int ConflictsDetected { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:80](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L80) |  |
+| <code>[JsonPropertyName(&quot;errorCount&quot;)] public int ErrorCount { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:83](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L83) |  |
+| <code>[JsonPropertyName(&quot;startedAtUtc&quot;)] public DateTimeOffset StartedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:86](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L86) |  |
+| <code>[JsonPropertyName(&quot;completedAtUtc&quot;)] public DateTimeOffset CompletedAtUtc { get; set; }</code> | [src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs:89](../../../../src/Meridian.Contracts/Api/SecurityMasterIngestStatusModels.cs#L89) |  |
