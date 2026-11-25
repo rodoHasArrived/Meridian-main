@@ -870,8 +870,6 @@ Meridian-main
 │   │   ├── desktop-evaluation-prerelease.yml
 │   │   ├── desktop-installer-packaging.yml
 │   │   ├── desktop-screenshot-capture.yml
-│   │   ├── desktop-standalone-publish.yml
-│   │   ├── desktop-user-manual.yml
 │   │   ├── desktop-workflow-runner.yml
 │   │   ├── documentation.yml
 │   │   ├── generated-repair-publish.yml
@@ -894,9 +892,7 @@ Meridian-main
 │   │   ├── service-backed-integrations.yml
 │   │   ├── targeted-test.yml
 │   │   ├── web-screenshot-capture.yml
-│   │   ├── windows-desktop-build.yml
-│   │   ├── wpf-dev-validation.yml
-│   │   └── wpf-route-validation.yml
+│   │   └── windows-desktop-build.yml
 │   ├── CODEOWNERS
 │   ├── copilot-instructions.md
 │   ├── dependabot.yml
@@ -2795,8 +2791,52 @@ Meridian-main
 │   │   │   ├── source-readme-ignore.yml
 │   │   │   └── source-todos.yml
 │   │   ├── generated
+│   │   │   ├── source-hashes
+│   │   │   │   ├── _manifest.json
+│   │   │   │   ├── SRC-APP.json
+│   │   │   │   ├── SRC-BACKTESTING-SDK.json
+│   │   │   │   ├── SRC-BACKTESTING.json
+│   │   │   │   ├── SRC-CONTRACTS.json
+│   │   │   │   ├── SRC-CORE.json
+│   │   │   │   ├── SRC-DESIGN-AUDIT.json
+│   │   │   │   ├── SRC-DESIGN-DATA-INTEGRATION.json
+│   │   │   │   ├── SRC-DESIGN-DOCUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-ENTITIES.json
+│   │   │   │   ├── SRC-DESIGN-FINANCIAL-OPERATIONS.json
+│   │   │   │   ├── SRC-DESIGN-IDENTITY.json
+│   │   │   │   ├── SRC-DESIGN-INSTRUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-PLATFORM.json
+│   │   │   │   ├── SRC-DESIGN-PORTFOLIO-RECORDS.json
+│   │   │   │   ├── SRC-DESIGN-REFERENCE-DATA.json
+│   │   │   │   ├── SRC-DESIGN-REPORTING.json
+│   │   │   │   ├── SRC-DESIGN-WORKFLOW.json
+│   │   │   │   ├── SRC-DOMAIN.json
+│   │   │   │   ├── SRC-EXECUTION-SDK.json
+│   │   │   │   ├── SRC-EXECUTION.json
+│   │   │   │   ├── SRC-FSHARP-DIRECTLENDING.json
+│   │   │   │   ├── SRC-FSHARP-LEDGER.json
+│   │   │   │   ├── SRC-FSHARP-TRADING.json
+│   │   │   │   ├── SRC-FSHARP.json
+│   │   │   │   ├── SRC-HOST.json
+│   │   │   │   ├── SRC-IBAPI-SMOKESTUB.json
+│   │   │   │   ├── SRC-INFRASTRUCTURE.json
+│   │   │   │   ├── SRC-LAUNCHER.json
+│   │   │   │   ├── SRC-LEDGER.json
+│   │   │   │   ├── SRC-LIFECYCLE-SUPERVISOR.json
+│   │   │   │   ├── SRC-MCP.json
+│   │   │   │   ├── SRC-PROVIDER-SDK.json
+│   │   │   │   ├── SRC-QUANTSCRIPT.json
+│   │   │   │   ├── SRC-REPORTING-READMODELS.json
+│   │   │   │   ├── SRC-RISK.json
+│   │   │   │   ├── SRC-STORAGE-ACCOUNTING.json
+│   │   │   │   ├── SRC-STORAGE.json
+│   │   │   │   ├── SRC-STRATEGIES.json
+│   │   │   │   ├── SRC-UI-DASHBOARD.json
+│   │   │   │   ├── SRC-UI-SERVICES.json
+│   │   │   │   ├── SRC-UI-SHARED.json
+│   │   │   │   ├── SRC-UI.json
+│   │   │   │   └── SRC-WPF.json
 │   │   │   ├── adapter-readiness-matrix.md
-│   │   │   ├── source-hash-manifest.json
 │   │   │   ├── source-module-index.md
 │   │   │   ├── source-roadmap-traceability.md
 │   │   │   ├── source-todo-checklist.md
@@ -5210,6 +5250,7 @@ Meridian-main
 │   │   │   ├── IntercompanyEntityServiceRegistration.cs
 │   │   │   ├── IStartupRefusalGuard.cs
 │   │   │   ├── LedgerStartup.cs
+│   │   │   ├── LegacySnapshotArchiver.cs
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
@@ -5408,6 +5449,7 @@ Meridian-main
 │   │   │   │   ├── CorporateActionRestatementTrigger.cs
 │   │   │   │   ├── CorporateActionScopeFanOutGate.cs
 │   │   │   │   ├── CorporateActionValidation.cs
+│   │   │   │   ├── LivePositionCorporateActionAdjusterAdapter.cs
 │   │   │   │   ├── SecurityMasterCorporateActionCommandService.cs
 │   │   │   │   └── SecurityMasterTickerChangeService.cs
 │   │   │   ├── Curves
@@ -5492,6 +5534,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterConflictDetection.cs
 │   │   │   ├── SecurityMasterConflictDetection.VersionedTerms.cs
 │   │   │   ├── SecurityMasterConflictService.cs
+│   │   │   ├── SecurityMasterContractForwarders.cs
 │   │   │   ├── SecurityMasterContractRegistrationExtensions.cs
 │   │   │   ├── SecurityMasterCostBasisAdjustmentService.cs
 │   │   │   ├── SecurityMasterCsvParser.cs
@@ -5537,6 +5580,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterWriteAuthority.cs
 │   │   │   ├── SecurityMasterWriteRefusedException.cs
 │   │   │   ├── SecurityResolver.cs
+│   │   │   ├── SecurityResolverCompatibilityAdapter.cs
 │   │   │   ├── StaleFieldProposalException.cs
 │   │   │   └── SymbolResolutionMismatchTracker.cs
 │   │   ├── Services
@@ -5834,6 +5878,7 @@ Meridian-main
 │   │   ├── Catalog
 │   │   │   ├── DirectoryIndex.cs
 │   │   │   ├── ICanonicalSymbolRegistry.cs
+│   │   │   ├── SecurityMasterLegacyIdentifierCleanup.cs
 │   │   │   ├── StorageCatalog.cs
 │   │   │   └── SymbolRegistry.cs
 │   │   ├── CertificatesOfDeposit
@@ -6119,6 +6164,9 @@ Meridian-main
 │   │   │   ├── EventSchema.cs
 │   │   │   └── ISchemaUpcaster.cs
 │   │   ├── SecurityMaster
+│   │   │   ├── Compatibility
+│   │   │   │   ├── ILivePositionCorporateActionAdjuster.cs
+│   │   │   │   └── ISecurityResolver.cs
 │   │   │   ├── Schedules
 │   │   │   │   ├── ScheduleDayCount.cs
 │   │   │   │   ├── ScheduleGenerationResult.cs
@@ -6513,13 +6561,13 @@ Meridian-main
 │   │   │   ├── ICredentialStore.cs
 │   │   │   ├── IProviderCredentialOwnershipMigration.cs
 │   │   │   ├── IProviderCredentialStore.cs
+│   │   │   ├── LegacyCredentialFileMigration.cs
 │   │   │   ├── OAuthToken.cs
 │   │   │   ├── ProviderCredentialAuditDeferredException.cs
 │   │   │   ├── ProviderCredentialCatalog.cs
 │   │   │   ├── ProviderCredentialOwnershipRequiredException.cs
 │   │   │   ├── ProviderCredentialStoreServiceKeys.cs
-│   │   │   ├── ProviderSetupHandlers.cs
-│   │   │   └── RetainedCredentialFileAccess.cs
+│   │   │   └── ProviderSetupHandlers.cs
 │   │   ├── Etl
 │   │   │   ├── EtlAbstractions.cs
 │   │   │   ├── EtlExportService.cs
@@ -7892,6 +7940,7 @@ Meridian-main
 │   │   │   ├── FundAccountStatementValidation.cs
 │   │   │   ├── IFundAccountService.cs
 │   │   │   ├── InMemoryFundAccountService.cs
+│   │   │   ├── LegacyPlaidTransactionFeedBackfill.cs
 │   │   │   └── PostgresFundAccountService.cs
 │   │   ├── PrivateCapital
 │   │   │   ├── PrivateCapitalCsv.cs
@@ -8567,6 +8616,7 @@ Meridian-main
 │   │   │   ├── ReportingDistributionStateCorruptionException.cs
 │   │   │   ├── ReportingDistributionStoreGuard.cs
 │   │   │   ├── ReportingGovernanceJsonContext.cs
+│   │   │   ├── ReportingGovernanceLegacyContracts.cs
 │   │   │   ├── ReportingGovernancePersistenceJson.cs
 │   │   │   ├── ReportingMigrationRunner.cs
 │   │   │   └── ReportingReconciliationEvidenceJsonContext.cs
@@ -8763,6 +8813,7 @@ Meridian-main
 │   │   │   ├── StorageChecksumService.cs
 │   │   │   ├── StorageSearchService.cs
 │   │   │   ├── SymbolRegistryService.cs
+│   │   │   ├── SymbolRegistryService.LegacyIdentifierCleanup.cs
 │   │   │   ├── SymbolRegistryService.OperatorMappings.cs
 │   │   │   ├── SymbolRegistryService.SecurityMaster.cs
 │   │   │   └── TierMigrationService.cs
@@ -11384,6 +11435,7 @@ Meridian-main
 │   │   │   ├── StatementReconciliationReportWorkflowService.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.Reconciliation.cs
 │   │   │   ├── StatementReconciliationReportWorkflowService.RowCases.cs
+│   │   │   ├── StatementToReportWorkflowService.Compatibility.cs
 │   │   │   └── StrategyRunEvidenceContributor.cs
 │   │   ├── Extensibility
 │   │   │   ├── ExtensibilityCatalogService.cs
@@ -13201,6 +13253,7 @@ Meridian-main
 │   │   │   │   ├── IntercompanyEntityCompositionTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationCapabilityFloorTests.cs
 │   │   │   │   ├── LedgerFeatureRegistrationTests.cs
+│   │   │   │   ├── LegacySnapshotStartupTests.cs
 │   │   │   │   ├── LocalTenantCapabilityCompositionTests.cs
 │   │   │   │   ├── MaintenanceFeatureRegistrationTests.cs
 │   │   │   │   ├── PipelineFeatureRegistrationTests.cs
@@ -13469,6 +13522,7 @@ Meridian-main
 │   │   │   ├── SchedulePeriodRollingRatchetTests.cs
 │   │   │   ├── SecurityAssetClassComparisonRatchetTests.cs
 │   │   │   ├── SecurityAssetClassLiteralRatchetTests.cs
+│   │   │   ├── SecurityMasterConstructorCompatibilityTests.cs
 │   │   │   ├── SecurityMasterContractAdapterTests.cs
 │   │   │   ├── SecurityMasterContractOwnershipTests.cs
 │   │   │   ├── SecurityMasterSchemaBoundDecodeRatchetTests.cs
@@ -15035,6 +15089,7 @@ Meridian-main
 │   │   │   ├── SecurityEntitlementInventoryPostgresTests.cs
 │   │   │   ├── SecurityMasterCanonicalMovePlanTests.cs
 │   │   │   ├── SecurityMasterCanonicalWithdrawalDefinitionTests.cs
+│   │   │   ├── SecurityMasterLegacyIdentifierCleanupTests.cs
 │   │   │   ├── SecurityMasterSymbolReconciliationTests.cs
 │   │   │   ├── SourceRegistryPersistenceTests.cs
 │   │   │   ├── StorageCatalogServiceTests.cs

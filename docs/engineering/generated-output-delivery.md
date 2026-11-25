@@ -19,7 +19,7 @@ authority and cannot encompass handwritten blocks or reviewed baselines.
 | Dashboard `ui-api-routes.generated.ts` and `workspace-catalog.generated.ts` | Generated on npm installation and before development, build and validation commands; included in CI evidence. |
 | `src/Meridian.Ui/wwwroot/workstation/` | Build artifact; the browser lane validates emitted entrypoints/assets, and the hosted `verify-dotnet` job builds and validates its own same-run bundle before project evaluation. Packaging builds from source. The canonical served path is unchanged. |
 | Actual source fingerprints | `artifacts/docs/source-hashes.json`; informational evidence, never acceptance of a review baseline. |
-| `docs/source/generated/source-hash-manifest.json` | Committed reviewed source/README baseline; regeneration must never mint review evidence. Module-specific review and freshness checks remain. |
+| `docs/source/generated/source-hashes/` | Committed reviewed source/README baseline, one file per module; regeneration must never mint review evidence. Module-specific review and freshness checks remain. |
 | `docs/status/doc-health-dashboard.{md,json}` | Committed reviewed health-score baseline; keeps the severe-regression comparison available. |
 | Roadmap/source narrative, database docs, public references, diagrams and generated blocks in authored docs | Committed for review, with deterministic freshness checks. Generated content does not authorize changes to surrounding prose. |
 | `docs/status/coverage-report.md` | Committed hybrid document; handwritten suffix remains protected. |
