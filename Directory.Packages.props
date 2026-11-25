@@ -37,7 +37,7 @@
     <PackageVersion Include="Microsoft.Extensions.Configuration.EnvironmentVariables" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Configuration.CommandLine" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.15" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.15" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="11.0.0" />
     <PackageVersion Include="Microsoft.Extensions.Hosting" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Hosting.Abstractions" Version="10.0.15" />
     <PackageVersion Include="Microsoft.Extensions.Http" Version="10.0.15" />
