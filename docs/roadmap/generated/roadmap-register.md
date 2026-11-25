@@ -660,22 +660,27 @@ W5X-FREX-001: done; health green; evidence complete. Shared financial record exp
 | Field | Value |
 | --- | --- |
 | Wave | W5X |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-06-15 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W5X-OEG-001: planned; health green; evidence planned_evidence. Planned shared evidence graph; implementation, both-workstation paths and acceptance evidence remain required.
+W5X-OEG-001: in_progress; health green; evidence in_progress. Shared EvidenceGraphService, proof drawers in both workstations and evidence manifests exist. Compact proof ribbon, full proof-graph page and explorer deep-link coverage remain open; W10-PROV-001 and W11-PASSPORT-001 feed this umbrella.
 
 ### Status References
 
 - Decisions: none recorded
 - PR references (not inferred acceptance): none recorded
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W5X-OEG-001.md)
+- Evidence: [src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs](../../../src/Meridian.Ui.Shared/Evidence/EvidenceGraphService.cs)
+- Evidence: [src/Meridian.Ui/dashboard/src/components/meridian/amount-passport-drawer.tsx](../../../src/Meridian.Ui/dashboard/src/components/meridian/amount-passport-drawer.tsx)
+- Evidence: [src/Meridian.Wpf/Controls/LedgerAmountProofDrawer.xaml](../../../src/Meridian.Wpf/Controls/LedgerAmountProofDrawer.xaml)
+- Evidence: [src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs](../../../src/Meridian.Wpf/ViewModels/LedgerAmountProofDrawerViewModel.cs)
+- Evidence: [tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs](../../../tests/Meridian.Tests/Ui/EvidenceWorkflowFabricTests.cs)
 
 
 ### Exit Criteria
@@ -1557,16 +1562,16 @@ W10-BOND-001: in_progress; health green; evidence in_progress. Bond analytics, s
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | medium |
 | Owner lane | Workstation Shell and UX |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-08-29 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-DEBT-001: planned; health green; evidence planned_evidence. Unranked engineering hygiene retains ADR-017/ADR-018 burn-down targets and ratchet containment; it adds no product dependency.
+W10-DEBT-001: in_progress; health green; evidence in_progress. Five of 50 baselined files retired (2026-11-10 to 11-13); current lines 168,123 to 118,648 (-29% vs 15%/quarter). Residual SecurityMasterViewModel.cs sits at 1,883 lines; caps total 140,149, so check tightening.
 
 ### Status References
 
@@ -1574,6 +1579,7 @@ W10-DEBT-001: planned; health green; evidence planned_evidence. Unranked enginee
 - PR references (not inferred acceptance): [#2860](https://github.com/rodoHasArrived/Meridian-main/pull/2860)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W10-DEBT-001.md)
 - Evidence: [docs/engineering/plans/god-file-burn-down-plan.md](../../engineering/plans/god-file-burn-down-plan.md)
+- Evidence: [build/config/file-size-baseline.json](../../../build/config/file-size-baseline.json)
 
 
 ### Exit Criteria
@@ -1603,11 +1609,11 @@ W10-DEBT-001: planned; health green; evidence planned_evidence. Unranked enginee
 | Priority | high |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | in_progress |
-| Last reviewed | 2026-09-23 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-MARK-001: in_progress; health green; evidence in_progress. Shared fail-closed valuation freshness is implemented; live acceptance and retained exit criteria remain open.
+W10-MARK-001: in_progress; health green; evidence in_progress. Freshness policy, both-workstation mark age and preview are implemented; acceptance waits on W10-LOT-002 in the work queue. Open gap - AssetPositionMarketValuationService (2026-11-21) applies its own staleness rule instead of ValuationFreshnessPolicy. Live acceptance remains open.
 
 ### Status References
 
@@ -1762,22 +1768,26 @@ W10-PROV-001: in_progress; health green; evidence in_progress. Posted-ledger and
 | Field | Value |
 | --- | --- |
 | Wave | W10 |
-| Status | planned |
+| Status | in_progress |
 | Health | green |
 | Priority | high |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Evidence posture | in_progress |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-RECON-002: planned; health green; evidence planned_evidence. Activate existing bulk casework and retain break classification through the shared queue; recorded exit criteria remain open.
+W10-RECON-002: in_progress; health green; evidence in_progress. Bulk triage is wired in the browser queue with dry-run then execute, per-case audit, material-action denial and reviewed-version binding (9f4366fa98, PR 3705). Cause grouping, stored classification and the gross-exposure group threshold remain open.
 
 ### Status References
 
 - Decisions: none recorded
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3705](https://github.com/rodoHasArrived/Meridian-main/pull/3705)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W10-RECON-002.md)
+- Evidence: [src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx](../../../src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage-bar.tsx)
+- Evidence: [src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage.test.ts](../../../src/Meridian.Ui/dashboard/src/screens/reconciliation-bulk-triage.test.ts)
+- Evidence: [src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs](../../../src/Meridian.Strategies/Services/FileReconciliationBreakQueueRepository.Casework.cs)
+- Evidence: [tests/Meridian.Tests/Ui/WorkstationEndpointsTests.BulkCasework.cs](../../../tests/Meridian.Tests/Ui/WorkstationEndpointsTests.BulkCasework.cs)
 
 
 ### Exit Criteria
@@ -1987,16 +1997,16 @@ W10-SEAM-001: in_progress; health green; evidence in_progress. Shared authority 
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-RECON-003: planned; health green; evidence planned_evidence. Matching-tolerance preview requires complete propagation and retained comparison evidence before operator acceptance.
+W10-RECON-003: planned; health green; evidence planned_evidence. PR 3705 retains executed tolerance policies, one prerequisite. No unified engine tolerance model, replay determinism proof or preview surface exists. Candidate to split (model and retention vs replay workbench) or defer; owner decision.
 
 ### Status References
 
 - Decisions: none recorded
-- PR references (not inferred acceptance): none recorded
+- PR references (not inferred acceptance): [#3705](https://github.com/rodoHasArrived/Meridian-main/pull/3705)
 - [Retained implementation detail and boundaries](../snapshots/status-prose-2026-11-14/W10-RECON-003.md)
 
 
@@ -2025,11 +2035,11 @@ W10-RECON-003: planned; health green; evidence planned_evidence. Matching-tolera
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
 | Evidence posture | planned_evidence |
-| Last reviewed | 2026-07-31 |
+| Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W10-RECON-004: planned; health green; evidence planned_evidence. Operator-taught matches remain candidate rules until governed promotion; retained exit criteria define activation.
+W10-RECON-004: planned; health green; evidence planned_evidence. Not started. The matcher's candidate rule IDs are fixed built-in rules, and operator matches are not captured as rules. Depends in practice on W10-RECON-002 stored classification; deferral costs nothing.
 
 ### Status References
 
