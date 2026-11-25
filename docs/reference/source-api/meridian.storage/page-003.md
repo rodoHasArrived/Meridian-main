@@ -6,6 +6,110 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ExportResult
+
+Qualified name: <code>Meridian.Storage.Export.ExportResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportResult.cs:8](../../../../src/Meridian.Storage/Export/ExportResult.cs#L8).
+
+Result of an export operation.
+
+```csharp
+public sealed class ExportResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;jobId&quot;)] public string JobId { get; set; } = Guid.NewGuid().ToString();</code> | [src/Meridian.Storage/Export/ExportResult.cs:14](../../../../src/Meridian.Storage/Export/ExportResult.cs#L14) | Unique ID for this export job. |
+| <code>[JsonPropertyName(&quot;success&quot;)] public bool Success { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:20](../../../../src/Meridian.Storage/Export/ExportResult.cs#L20) | Whether the export completed successfully. |
+| <code>[JsonPropertyName(&quot;profileId&quot;)] public string ProfileId { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportResult.cs:26](../../../../src/Meridian.Storage/Export/ExportResult.cs#L26) | Export profile used. |
+| <code>[JsonPropertyName(&quot;startedAt&quot;)] public DateTime StartedAt { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:32](../../../../src/Meridian.Storage/Export/ExportResult.cs#L32) | Start time of export. |
+| <code>[JsonPropertyName(&quot;completedAt&quot;)] public DateTime? CompletedAt { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:38](../../../../src/Meridian.Storage/Export/ExportResult.cs#L38) | Completion time of export. |
+| <code>[JsonPropertyName(&quot;durationSeconds&quot;)] public double DurationSeconds =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:44](../../../../src/Meridian.Storage/Export/ExportResult.cs#L44) | Duration in seconds. |
+| <code>[JsonPropertyName(&quot;filesGenerated&quot;)] public int FilesGenerated { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:52](../../../../src/Meridian.Storage/Export/ExportResult.cs#L52) | Number of files generated. |
+| <code>[JsonPropertyName(&quot;totalRecords&quot;)] public long TotalRecords { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:58](../../../../src/Meridian.Storage/Export/ExportResult.cs#L58) | Total records exported. |
+| <code>[JsonPropertyName(&quot;totalBytes&quot;)] public long TotalBytes { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:64](../../../../src/Meridian.Storage/Export/ExportResult.cs#L64) | Total bytes written. |
+| <code>[JsonPropertyName(&quot;symbols&quot;)] public string[] Symbols { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:70](../../../../src/Meridian.Storage/Export/ExportResult.cs#L70) | Symbols exported. |
+| <code>[JsonPropertyName(&quot;dateRange&quot;)] public ExportDateRange? DateRange { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:76](../../../../src/Meridian.Storage/Export/ExportResult.cs#L76) | Date range exported. |
+| <code>[JsonPropertyName(&quot;outputDirectory&quot;)] public string OutputDirectory { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportResult.cs:82](../../../../src/Meridian.Storage/Export/ExportResult.cs#L82) | Output directory. |
+| <code>[JsonPropertyName(&quot;files&quot;)] public ExportedFile[] Files { get; set; } = Array.Empty&lt;ExportedFile&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:88](../../../../src/Meridian.Storage/Export/ExportResult.cs#L88) | Generated files. |
+| <code>[JsonPropertyName(&quot;dataDictionaryPath&quot;)] public string? DataDictionaryPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:94](../../../../src/Meridian.Storage/Export/ExportResult.cs#L94) | Path to generated data dictionary. |
+| <code>[JsonPropertyName(&quot;loaderScriptPath&quot;)] public string? LoaderScriptPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:100](../../../../src/Meridian.Storage/Export/ExportResult.cs#L100) | Path to generated loader script. |
+| <code>[JsonPropertyName(&quot;lineageManifestPath&quot;)] public string? LineageManifestPath { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:106](../../../../src/Meridian.Storage/Export/ExportResult.cs#L106) | Path to generated lineage manifest (provenance tracking). |
+| <code>[JsonPropertyName(&quot;qualitySummary&quot;)] public ExportQualitySummary? QualitySummary { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:112](../../../../src/Meridian.Storage/Export/ExportResult.cs#L112) | Data quality summary. |
+| <code>[JsonPropertyName(&quot;warnings&quot;)] public string[] Warnings { get; set; } = Array.Empty&lt;string&gt;();</code> | [src/Meridian.Storage/Export/ExportResult.cs:118](../../../../src/Meridian.Storage/Export/ExportResult.cs#L118) | Warnings encountered during export. |
+| <code>[JsonPropertyName(&quot;error&quot;)] public string? Error { get; set; }</code> | [src/Meridian.Storage/Export/ExportResult.cs:124](../../../../src/Meridian.Storage/Export/ExportResult.cs#L124) | Error message if failed. |
+| <code>public static ExportResult CreateSuccess(string profileId, string outputDir) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:129](../../../../src/Meridian.Storage/Export/ExportResult.cs#L129) | Create a success result. |
+| <code>public static ExportResult CreateFailure(string profileId, string error) =&gt; …;</code> | [src/Meridian.Storage/Export/ExportResult.cs:140](../../../../src/Meridian.Storage/Export/ExportResult.cs#L140) | Create a failure result. |
+
+## ExportValidationIssue
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationIssue</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:292](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L292).
+
+A single issue found during pre-export validation.
+
+```csharp
+public sealed class ExportValidationIssue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;ruleId&quot;)] public string RuleId { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:295](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L295) |  |
+| <code>[JsonPropertyName(&quot;severity&quot;)] public ExportValidationSeverity Severity { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:298](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L298) |  |
+| <code>[JsonPropertyName(&quot;code&quot;)] public string Code { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:301](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L301) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:304](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L304) |  |
+| <code>[JsonPropertyName(&quot;remediation&quot;)] public string? Remediation { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:307](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L307) |  |
+
+## ExportValidationResult
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportValidator.cs:263](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L263).
+
+Result of a pre-export validation run.
+
+```csharp
+public sealed class ExportValidationResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;isValid&quot;)] public bool IsValid { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:266](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L266) |  |
+| <code>[JsonPropertyName(&quot;estimatedRecordCount&quot;)] public long EstimatedRecordCount { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:269](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L269) |  |
+| <code>[JsonPropertyName(&quot;estimatedSizeBytes&quot;)] public long EstimatedSizeBytes { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:272](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L272) |  |
+| <code>[JsonPropertyName(&quot;availableDiskSpaceBytes&quot;)] public long AvailableDiskSpaceBytes { get; init; }</code> | [src/Meridian.Storage/Export/ExportValidator.cs:275](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L275) |  |
+| <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;ExportValidationIssue&gt; Issues { get; init; } = Array.Empty&lt;ExportValidationIssue&gt;();</code> | [src/Meridian.Storage/Export/ExportValidator.cs:278](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L278) |  |
+| <code>[JsonIgnore] public IEnumerable&lt;ExportValidationIssue&gt; Errors =&gt; …;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:281](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L281) |  |
+| <code>[JsonIgnore] public IEnumerable&lt;ExportValidationIssue&gt; Warnings =&gt; …;</code> | [src/Meridian.Storage/Export/ExportValidator.cs:285](../../../../src/Meridian.Storage/Export/ExportValidator.cs#L285) |  |
+
+## ExportValidationRulesRequest
+
+Qualified name: <code>Meridian.Storage.Export.ExportValidationRulesRequest</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Export/ExportRequest.cs:284](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L284).
+
+Per-request override of export validation rules.
+
+```csharp
+public sealed class ExportValidationRulesRequest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;diskSpaceMultiplier&quot;)] public double DiskSpaceMultiplier { get; set; } = 1.2;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:291](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L291) | Multiplier applied to the estimated output size to determine required free disk space. A value of 1.2 means 20 % headroom is required. Defaults to 1.2. |
+| <code>[JsonPropertyName(&quot;requireData&quot;)] public bool RequireData { get; set; }</code> | [src/Meridian.Storage/Export/ExportRequest.cs:298](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L298) | When true the export is aborted (rather than warned) when no data is found for the requested filters. |
+| <code>[JsonPropertyName(&quot;warnCsvComplexTypes&quot;)] public bool WarnCsvComplexTypes { get; set; } = true;</code> | [src/Meridian.Storage/Export/ExportRequest.cs:304](../../../../src/Meridian.Storage/Export/ExportRequest.cs#L304) | Emit a warning when exporting nested data (e.g. LOBSnapshot) to CSV format. |
+
 ## ExportValidationSeverity
 
 Qualified name: <code>Meridian.Storage.Export.ExportValidationSeverity</code>. Kind: `enum`.
@@ -908,78 +1012,4 @@ An immutable retained record; command receipts share the financial transaction.
 
 ```csharp
 public sealed record PrivateCapitalStoredRecord(string Kind, Guid Id, string Payload);
-```
-
-## FileEntityLifecycleStore
-
-Qualified name: <code>Meridian.Storage.FundStructure.FileEntityLifecycleStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:8](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L8).
-
-Local immutable revision files published by rename after fsync; never rewrites history.
-
-```csharp
-public sealed class FileEntityLifecycleStore(string directory) : IEntityLifecycleStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IReadOnlyList&lt;EntityLifecycleRevisionDto&gt;&gt; GetHistoryAsync(string tenantId, Guid entityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:16](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L16) |  |
-| <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetLatestAsync(string tenantId, Guid entityId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:34](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L34) |  |
-| <code>public async Task&lt;EntityLifecycleRevisionDto?&gt; GetRevisionAsync(string tenantId, Guid entityId, long revision, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:37](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L37) |  |
-| <code>public async Task&lt;EntityLifecycleRevisionDto&gt; AppendAsync(EntityLifecycleRevisionDto revision, long expectedRevision, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:40](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L40) |  |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireReadLeaseAsync(string tenantId, IReadOnlyList&lt;Guid&gt; entityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs:67](../../../../src/Meridian.Storage/FundStructure/FileEntityLifecycleStore.cs#L67) |  |
-
-## FileIntercompanyAccountingArrangementStore
-
-Qualified name: <code>Meridian.Storage.FundStructure.FileIntercompanyAccountingArrangementStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:8](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L8).
-
-Local durable agreement history. Writers share a bounded cross-process lease and publish atomically.
-
-```csharp
-public sealed class FileIntercompanyAccountingArrangementStore(string rootDirectory) : IIntercompanyAccountingArrangementStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IAsyncDisposable&gt; AcquireAuthorityLeaseAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:12](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L12) |  |
-| <code>public async Task&lt;IntercompanyAccountingArrangementHistoryDto?&gt; GetAsync(string tenantId, Guid agreementId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:21](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L21) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyAccountingArrangementDto&gt;&gt; ListAsync(string tenantId, Guid? organizationId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:32](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L32) |  |
-| <code>public Task&lt;IntercompanyAccountingArrangementDto&gt; AppendAsync(string tenantId, long expectedVersion, IntercompanyAccountingArrangementEventDto item, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:50](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L50) |  |
-| <code>public async Task&lt;IntercompanyAccountingArrangementDto&gt; MutateAsync(string tenantId, Guid agreementId, Guid requestId, string requestDigest, Func&lt;IntercompanyAccountingArrangementHistoryDto?, CancellationToken, Task&lt;IntercompanyAccountingArrangementEventDto&gt;&gt; build, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs:58](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyAccountingArrangementStore.cs#L58) |  |
-
-## FileIntercompanyRateFixingStore
-
-Qualified name: <code>Meridian.Storage.FundStructure.FileIntercompanyRateFixingStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:9](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L9).
-
-Local durable fixing history: every version of every fixing, published atomically per tenant.
-
-```csharp
-public sealed class FileIntercompanyRateFixingStore(string rootDirectory, IFundScopeTenantAccessor tenants) : IIntercompanyRateFixingStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;IntercompanyRateFixingDto?&gt; GetAsync(string tenantId, Guid fixingId, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:16](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L16) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntercompanyRateFixingDto&gt;&gt; ListAsync(string tenantId, string indexReference, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:22](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L22) |  |
-| <code>public async Task&lt;IntercompanyRateFixingDto&gt; AppendAsync(IntercompanyRateFixingDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs:31](../../../../src/Meridian.Storage/FundStructure/FileIntercompanyRateFixingStore.cs#L31) |  |
-
-## FundStructureLegacyImportRequest
-
-Qualified name: <code>Meridian.Storage.FundStructure.FundStructureLegacyImportRequest</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/FundStructure/IFundStructureStore.cs:138](../../../../src/Meridian.Storage/FundStructure/IFundStructureStore.cs#L138).
-
-```csharp
-public sealed record FundStructureLegacyImportRequest(string SourceHash, IReadOnlyList<OrganizationSummaryDto> Organizations, IReadOnlyList<BusinessSummaryDto> Businesses, IReadOnlyList<ClientSummaryDto> Clients, IReadOnlyList<FundSummaryDto> Funds, IReadOnlyList<SleeveSummaryDto> Sleeves, IReadOnlyList<VehicleSummaryDto> Vehicles, IReadOnlyList<LegalEntitySummaryDto> Entities, IReadOnlyList<InvestmentPortfolioSummaryDto> InvestmentPortfolios, IReadOnlyList<OwnershipLinkDto> OwnershipLinks, IReadOnlyList<FundStructureAssignmentDto> Assignments, IReadOnlyList<Guid> LinkedAccountIds);
 ```

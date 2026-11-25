@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuantTradeDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTradeDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:390](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L390).
+
+JSON-friendly script-emitted trade row.
+
+```csharp
+public sealed record QuantTradeDto(string Timestamp, string Symbol, string Side, decimal Quantity, decimal Price, decimal Commission);
+```
+
+## RegisterFixedAssetRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RegisterFixedAssetRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.RecurringJournals.cs#L21).
+
+Registers or replaces one fixed asset on a fund book&#x27;s depreciation register.
+
+```csharp
+public sealed record RegisterFixedAssetRequest(string FundProfileId, Guid LedgerBookId, FixedAssetRecord Asset, string EvidenceUri, DateOnly? RetiredOn = null);
+```
+
 ## ReplayEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.ReplayEndpoints</code>. Kind: `class`.
@@ -329,7 +353,19 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Curves.cs:13](
 public static partial class SecurityMasterEndpoints
 ```
 
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs#L18).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs:12](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.HeldAmendments.cs#L12).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Merge.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.Merge.cs#L14).
 
 ```csharp
 public static partial class SecurityMasterEndpoints
@@ -375,6 +411,18 @@ Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.WriteRefusals.
 
 ```csharp
 public static partial class SecurityMasterEndpoints
+```
+
+## SetEntityParentRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.SetEntityParentRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs:13](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs#L13).
+
+Body linking an entity to its direct parent from a date.
+
+```csharp
+public sealed record SetEntityParentRequest(Guid ParentEntityId, DateOnly ValidFrom);
 ```
 
 ## StatusEndpoints
@@ -1205,46 +1253,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static RouteGroupBuilder RequireWorkstationTenantScope(this RouteGroupBuilder group);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:146](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L146) |  |
 | <code>public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:153](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L153) |  |
-
-## WorkstationTenantScopeMetadata
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeMetadata</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:137](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L137).
-
-Marks endpoints that require an authenticated workstation tenant scope.
-
-```csharp
-public sealed class WorkstationTenantScopeMetadata;
-```
-
-## AccountCashForecastEvidenceAdapter
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastEvidenceAdapter</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:37](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L37).
-
-Exact supported source economics and accepted review, scoped to a single account/book.
-
-```csharp
-public sealed class AccountCashForecastEvidenceAdapter(IEvidenceArtifactStore store)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task VerifyMonitoringAsync(BondMonitoringCaptureRequest request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:47](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L47) |  |
-| <code>public async Task VerifyAsync(AccountCashForecastRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:71](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L71) |  |
-
-## AccountCashForecastSourceAuthorityException
-
-Qualified name: <code>Meridian.Ui.Shared.Evidence.AccountCashForecastSourceAuthorityException</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs:34](../../../../src/Meridian.Ui.Shared/Evidence/AccountCashForecastEvidenceAdapter.cs#L34).
-
-Indicates that cash-forecast source evidence could not satisfy its authority requirements.
-
-```csharp
-public sealed class AccountCashForecastSourceAuthorityException(string message) : MeridianException(message);
-```

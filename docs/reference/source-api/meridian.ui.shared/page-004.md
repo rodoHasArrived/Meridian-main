@@ -1177,6 +1177,18 @@ Source: [src/Meridian.Ui.Shared/Endpoints/LedgerEndpoints.Tax.cs:13](../../../..
 public static partial class LedgerEndpoints
 ```
 
+## LinkSecurityIssuerRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.LinkSecurityIssuerRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs:16](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs#L16).
+
+Body linking a security to its issuer from a date.
+
+```csharp
+public sealed record LinkSecurityIssuerRequest(Guid IssuerEntityId, DateOnly ValidFrom);
+```
+
 ## LiveDataEndpoints
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.LiveDataEndpoints</code>. Kind: `class`.
@@ -1221,21 +1233,3 @@ Declared public members:
 | <code>public const string CurrentUserPermissionsKey = &quot;CurrentUserPermissions&quot;;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:93](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L93) | Key for the authenticated user&#x27;s Meridian.Identity.Auth.UserPermission flags stored in Microsoft.AspNetCore.Http.HttpContext.Items. |
 | <code>public LoginSessionMiddleware(RequestDelegate next, AuthenticationConfiguration? configuration = null);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:98](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L98) |  |
 | <code>public async Task InvokeAsync(HttpContext context, LoginSessionService sessionService);</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:104](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L104) |  |
-
-## LoginSessionMiddlewareExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.LoginSessionMiddlewareExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:420](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L420).
-
-Extension methods for registering the login session middleware.
-
-```csharp
-public static class LoginSessionMiddlewareExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IApplicationBuilder UseLoginSessionAuthentication(this IApplicationBuilder app) =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs:426](../../../../src/Meridian.Ui.Shared/Endpoints/LoginSessionMiddleware.cs#L426) | Adds session-based authentication middleware. Authentication is optional in Development/Test and required elsewhere by default. |

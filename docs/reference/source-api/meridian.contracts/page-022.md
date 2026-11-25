@@ -6,6 +6,139 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EtlDestinationDefinition
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlDestinationDefinition</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:171](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L171).
+
+Configures an ETL output location, transfer mode, package format, and credentials.
+
+```csharp
+public sealed class EtlDestinationDefinition
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;kind&quot;)] public required EtlDestinationKind Kind { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:174](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L174) |  |
+| <code>[JsonPropertyName(&quot;location&quot;)] public string? Location { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:177](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L177) |  |
+| <code>[JsonPropertyName(&quot;username&quot;)] public string? Username { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:180](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L180) |  |
+| <code>[JsonPropertyName(&quot;secretRef&quot;)] public string? SecretRef { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:183](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L183) |  |
+| <code>[JsonPropertyName(&quot;transferMode&quot;)] public EtlTransferMode TransferMode { get; init; } = EtlTransferMode.BatchExchange;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:186](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L186) |  |
+| <code>[JsonPropertyName(&quot;packageFormat&quot;)] public EtlPackageFormat? PackageFormat { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:189](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L189) |  |
+| <code>[JsonPropertyName(&quot;overwriteIfExists&quot;)] public bool OverwriteIfExists { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:192](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L192) |  |
+| <code>[JsonPropertyName(&quot;deliveryWindowStartUtc&quot;)] public DateTime? DeliveryWindowStartUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:195](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L195) |  |
+| <code>[JsonPropertyName(&quot;deliveryWindowEndUtc&quot;)] public DateTime? DeliveryWindowEndUtc { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:198](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L198) |  |
+| <code>[JsonPropertyName(&quot;deliverySlaMinutes&quot;)] public int? DeliverySlaMinutes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:201](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L201) |  |
+| <code>[JsonPropertyName(&quot;requiresRemoteAck&quot;)] public bool RequiresRemoteAck { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:204](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L204) |  |
+| <code>[JsonPropertyName(&quot;hostKeySha256Fingerprint&quot;)] public string? HostKeySha256Fingerprint { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:207](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L207) |  |
+
+## EtlDestinationKind
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlDestinationKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:21](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L21).
+
+```csharp
+public enum EtlDestinationKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>StorageCatalog = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:23](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L23) |  |
+| <code>Local = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:24](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L24) |  |
+| <code>Sftp = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:25](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L25) |  |
+
+## EtlFileManifest
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlFileManifest</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:240](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L240).
+
+Identifies a staged ETL file by relative path, SHA-256 checksum, and size.
+
+```csharp
+public sealed class EtlFileManifest
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;fileName&quot;)] public required string FileName { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:243](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L243) |  |
+| <code>[JsonPropertyName(&quot;relativePath&quot;)] public required string RelativePath { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:246](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L246) |  |
+| <code>[JsonPropertyName(&quot;checksumSha256&quot;)] public required string ChecksumSha256 { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:249](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L249) |  |
+| <code>[JsonPropertyName(&quot;sizeBytes&quot;)] public long SizeBytes { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:252](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L252) |  |
+| <code>[JsonPropertyName(&quot;stagedAtUtc&quot;)] public DateTime StagedAtUtc { get; init; } = DateTime.UtcNow;</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:255](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L255) |  |
+
+## EtlFilePreview
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlFilePreview</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:407](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L407).
+
+Carries a file&#x27;s preview disposition, sampled rows, validation issues, and content identity.
+
+```csharp
+public sealed class EtlFilePreview
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;sourceFile&quot;)] public required EtlRemoteFile SourceFile { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:410](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L410) |  |
+| <code>[JsonPropertyName(&quot;schemaId&quot;)] public required string SchemaId { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:413](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L413) |  |
+| <code>[JsonPropertyName(&quot;disposition&quot;)] public EtlPreviewDisposition Disposition { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:416](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L416) |  |
+| <code>[JsonPropertyName(&quot;recordCount&quot;)] public int RecordCount { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:419](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L419) |  |
+| <code>[JsonPropertyName(&quot;sampleRows&quot;)] public IReadOnlyList&lt;IReadOnlyDictionary&lt;string, string?&gt;&gt; SampleRows { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:422](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L422) |  |
+| <code>[JsonPropertyName(&quot;issues&quot;)] public IReadOnlyList&lt;EtlFilePreviewIssue&gt; Issues { get; init; } = [];</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:425](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L425) |  |
+| <code>[JsonPropertyName(&quot;fileHashSha256&quot;)] public string? FileHashSha256 { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:428](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L428) |  |
+| <code>[JsonPropertyName(&quot;idempotencyKey&quot;)] public string? IdempotencyKey { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:431](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L431) |  |
+
+## EtlFilePreviewIssue
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlFilePreviewIssue</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:389](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L389).
+
+Describes a field or row issue found while previewing an ETL file.
+
+```csharp
+public sealed class EtlFilePreviewIssue
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonPropertyName(&quot;severity&quot;)] public required string Severity { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:392](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L392) |  |
+| <code>[JsonPropertyName(&quot;field&quot;)] public required string Field { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:395](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L395) |  |
+| <code>[JsonPropertyName(&quot;message&quot;)] public required string Message { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:398](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L398) |  |
+| <code>[JsonPropertyName(&quot;rowNumber&quot;)] public int? RowNumber { get; init; }</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:401](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L401) |  |
+
+## EtlFlowDirection
+
+Qualified name: <code>Meridian.Contracts.Etl.EtlFlowDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Etl/EtlModels.cs:6](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L6).
+
+```csharp
+public enum EtlFlowDirection : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Import = 0</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:8](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L8) |  |
+| <code>Export = 1</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:9](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L9) |  |
+| <code>RoundTrip = 2</code> | [src/Meridian.Contracts/Etl/EtlModels.cs:10](../../../../src/Meridian.Contracts/Etl/EtlModels.cs#L10) |  |
+
 ## EtlJobDefinition
 
 Qualified name: <code>Meridian.Contracts.Etl.EtlJobDefinition</code>. Kind: `class`.
@@ -958,136 +1091,3 @@ Declared public members:
 | <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:47](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L47) |  |
 | <code>public bool IncludeCharts { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:48](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L48) |  |
 | <code>public string Format { get; set; } = &quot;CSV&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:49](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L49) |  |
-
-## QualityReportResponse
-
-Qualified name: <code>Meridian.Contracts.Export.QualityReportResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:297](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L297).
-
-Carries the generated quality report path and summary returned by the API.
-
-```csharp
-public sealed class QualityReportResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? ReportPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:299](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L299) |  |
-| <code>public QualityReportSummary? Summary { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:300](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L300) |  |
-
-## QualityReportResult
-
-Qualified name: <code>Meridian.Contracts.Export.QualityReportResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:160](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L160).
-
-Reports quality report creation status, output path, and summary metrics.
-
-```csharp
-public sealed class QualityReportResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:162](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L162) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:163](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L163) |  |
-| <code>public string? Format { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:164](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L164) |  |
-| <code>public string? ReportPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:165](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L165) |  |
-| <code>public QualityReportSummary? Summary { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:166](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L166) |  |
-
-## QualityReportSummary
-
-Qualified name: <code>Meridian.Contracts.Export.QualityReportSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:172](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L172).
-
-Summarizes symbol and day coverage, quality score, gaps, and anomalies for an exported report.
-
-```csharp
-public sealed class QualityReportSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:174](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L174) |  |
-| <code>public int TotalDays { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:175](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L175) |  |
-| <code>public float OverallScore { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:176](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L176) |  |
-| <code>public int GapsFound { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:177](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L177) |  |
-| <code>public int AnomaliesFound { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:178](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L178) |  |
-
-## ResearchPackageOptions
-
-Qualified name: <code>Meridian.Contracts.Export.ResearchPackageOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:82](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L82).
-
-Configures the data, metadata, and quality report included in a named research package.
-
-```csharp
-public sealed class ResearchPackageOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:84](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L84) |  |
-| <code>public string? Description { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:85](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L85) |  |
-| <code>public List&lt;string&gt;? Symbols { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:86](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L86) |  |
-| <code>public DateOnly? FromDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:87](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L87) |  |
-| <code>public DateOnly? ToDate { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:88](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L88) |  |
-| <code>public DataTypeInclusion IncludeData { get; set; } = new ();</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:89](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L89) |  |
-| <code>public bool IncludeMetadata { get; set; } = true;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:90](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L90) |  |
-| <code>public bool IncludeQualityReport { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:91](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L91) |  |
-| <code>public string Format { get; set; } = &quot;Parquet&quot;;</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:92](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L92) |  |
-| <code>public string? OutputPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:93](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L93) |  |
-
-## ResearchPackageResponse
-
-Qualified name: <code>Meridian.Contracts.Export.ResearchPackageResponse</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:306](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L306).
-
-Carries research package and manifest paths with the generated package size.
-
-```csharp
-public sealed class ResearchPackageResponse
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string? PackagePath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:308](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L308) |  |
-| <code>public string? ManifestPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:309](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L309) |  |
-| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:310](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L310) |  |
-
-## ResearchPackageResult
-
-Qualified name: <code>Meridian.Contracts.Export.ResearchPackageResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Export/AnalysisExportModels.cs:184](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L184).
-
-Reports research package creation status, artifact paths, and package size.
-
-```csharp
-public sealed class ResearchPackageResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:186](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L186) |  |
-| <code>public string? Error { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:187](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L187) |  |
-| <code>public string? Format { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:188](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L188) |  |
-| <code>public string? PackagePath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:189](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L189) |  |
-| <code>public string? ManifestPath { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:190](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L190) |  |
-| <code>public long SizeBytes { get; set; }</code> | [src/Meridian.Contracts/Export/AnalysisExportModels.cs:191](../../../../src/Meridian.Contracts/Export/AnalysisExportModels.cs#L191) |  |

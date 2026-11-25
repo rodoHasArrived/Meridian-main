@@ -6,6 +6,122 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IArchiveMaintenanceService
+
+Qualified name: <code>Meridian.Storage.Maintenance.IArchiveMaintenanceService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:6](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L6).
+
+Interface for archive maintenance service that orchestrates scheduled and on-demand maintenance operations.
+
+```csharp
+public interface IArchiveMaintenanceService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>bool IsRunning { get; }</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:11](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L11) | Whether the maintenance service is currently running. |
+| <code>int QueuedExecutions { get; }</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:16](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L16) | Number of maintenance executions currently queued. |
+| <code>MaintenanceExecution? CurrentExecution { get; }</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:21](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L21) | Currently running execution (if any). |
+| <code>Task&lt;MaintenanceExecution&gt; ExecuteMaintenanceAsync(MaintenanceTaskType taskType, MaintenanceTaskOptions? options = null, string[]? targetPaths = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:31](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L31) | Execute a maintenance task immediately. |
+| <code>Task&lt;MaintenanceExecution&gt; TriggerScheduleAsync(string scheduleId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:43](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L43) | Trigger a scheduled maintenance to run immediately. |
+| <code>Task&lt;bool&gt; CancelExecutionAsync(string executionId);</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:50](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L50) | Cancel a running or queued maintenance execution. |
+| <code>MaintenanceServiceStatus GetStatus();</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:55](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L55) | Get the current status of the maintenance service. |
+| <code>event EventHandler&lt;MaintenanceExecution&gt;? ExecutionStarted;</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:60](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L60) | Event raised when a maintenance execution starts. |
+| <code>event EventHandler&lt;MaintenanceExecution&gt;? ExecutionCompleted;</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:65](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L65) | Event raised when a maintenance execution completes. |
+| <code>event EventHandler&lt;MaintenanceExecution&gt;? ExecutionFailed;</code> | [src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs:70](../../../../src/Meridian.Storage/Maintenance/IArchiveMaintenanceService.cs#L70) | Event raised when a maintenance execution fails. |
+
+## IMaintenanceExecutionHistory
+
+Qualified name: <code>Meridian.Storage.Maintenance.IMaintenanceExecutionHistory</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:6](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L6).
+
+Interface for tracking maintenance execution history.
+
+```csharp
+public interface IMaintenanceExecutionHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task RecordExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:11](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L11) | Record a new execution. |
+| <code>Task UpdateExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:16](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L16) | Update an existing execution record. |
+| <code>MaintenanceExecution? GetExecution(string executionId);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:21](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L21) | Get a specific execution by ID. |
+| <code>IReadOnlyList&lt;MaintenanceExecution&gt; GetRecentExecutions(int limit = 50);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:26](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L26) | Get recent executions. |
+| <code>IReadOnlyList&lt;MaintenanceExecution&gt; GetExecutionsForSchedule(string scheduleId, int limit = 50);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:31](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L31) | Get executions for a specific schedule. |
+| <code>IReadOnlyList&lt;MaintenanceExecution&gt; GetFailedExecutions(int limit = 50);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:36](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L36) | Get failed executions. |
+| <code>IReadOnlyList&lt;MaintenanceExecution&gt; GetExecutionsByTimeRange(DateTimeOffset from, DateTimeOffset to);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:41](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L41) | Get executions within a time range. |
+| <code>ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 10);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:46](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L46) | Get summary for a specific schedule. |
+| <code>MaintenanceStatistics GetStatistics(TimeSpan? period = null);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:51](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L51) | Get overall maintenance statistics. |
+| <code>Task&lt;int&gt; CleanupOldRecordsAsync(int maxAgeDays = 90, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs:56](../../../../src/Meridian.Storage/Maintenance/IMaintenanceExecutionHistory.cs#L56) | Clean up old execution records. |
+
+## MaintenanceExecution
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceExecution</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:335](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L335).
+
+Record of a maintenance execution.
+
+```csharp
+public sealed class MaintenanceExecution
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ExecutionId { get; init; } = Guid.NewGuid().ToString(&quot;N&quot;)[..12];</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:340](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L340) | Unique identifier for this execution. |
+| <code>public string? ScheduleId { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:345](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L345) | ID of the schedule that triggered this execution (null for manual runs). |
+| <code>public string? ScheduleName { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:350](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L350) | Name of the schedule (for display purposes). |
+| <code>public MaintenanceTaskType TaskType { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:355](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L355) | Type of maintenance performed. |
+| <code>public MaintenanceExecutionStatus Status { get; set; } = MaintenanceExecutionStatus.Pending;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:360](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L360) | Current status of the execution. |
+| <code>public bool ManualTrigger { get; init; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:365](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L365) | Whether this was a manual trigger (vs scheduled). |
+| <code>public DateTimeOffset StartedAt { get; init; } = DateTimeOffset.UtcNow;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:370](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L370) | When the execution started. |
+| <code>public DateTimeOffset? CompletedAt { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:375](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L375) | When the execution completed. |
+| <code>public TimeSpan? Duration =&gt; …;</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:380](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L380) | Duration of the execution. |
+| <code>public int FilesProcessed { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:385](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L385) | Number of files processed. |
+| <code>public int IssuesFound { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:390](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L390) | Number of files with issues found. |
+| <code>public int IssuesResolved { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:395](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L395) | Number of issues resolved/repaired. |
+| <code>public long BytesProcessed { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:400](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L400) | Bytes processed during this execution. |
+| <code>public long BytesSaved { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:405](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L405) | Bytes saved (through compression, cleanup, etc.). |
+| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:410](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L410) | Error message if execution failed. |
+| <code>public List&lt;string&gt; LogMessages { get; init; } = new ();</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:415](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L415) | Detailed log messages from the execution. |
+| <code>public MaintenanceResult? Result { get; set; }</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs:420](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceModels.cs#L420) | Summary result of the maintenance operation. |
+
+## MaintenanceExecutionHistory
+
+Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceExecutionHistory</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1159](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1159).
+
+Tracks maintenance execution history with file-based persistence.
+
+```csharp
+public sealed class MaintenanceExecutionHistory : IMaintenanceExecutionHistory
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public MaintenanceExecutionHistory(string dataRoot);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1174](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1174) |  |
+| <code>public async Task RecordExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1182](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1182) |  |
+| <code>public async Task UpdateExecutionAsync(MaintenanceExecution execution, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1203](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1203) |  |
+| <code>public MaintenanceExecution? GetExecution(string executionId);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1224](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1224) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetRecentExecutions(int limit = 50);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1231](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1231) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetExecutionsForSchedule(string scheduleId, int limit = 50);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1240](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1240) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetFailedExecutions(int limit = 50);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1250](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1250) |  |
+| <code>public IReadOnlyList&lt;MaintenanceExecution&gt; GetExecutionsByTimeRange(DateTimeOffset from, DateTimeOffset to);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1261](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1261) |  |
+| <code>public ScheduleExecutionSummary GetScheduleSummary(string scheduleId, int recentCount = 10);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1270](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1270) |  |
+| <code>public MaintenanceStatistics GetStatistics(TimeSpan? period = null);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1308](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1308) |  |
+| <code>public async Task&lt;int&gt; CleanupOldRecordsAsync(int maxAgeDays = 90, CancellationToken ct = default);</code> | [src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs:1354](../../../../src/Meridian.Storage/Maintenance/ArchiveMaintenanceScheduleManager.cs#L1354) |  |
+
 ## MaintenanceExecutionStatus
 
 Qualified name: <code>Meridian.Storage.Maintenance.MaintenanceExecutionStatus</code>. Kind: `enum`.
@@ -1153,76 +1269,4 @@ Multi-dimensional partition strategy.
 
 ```csharp
 public sealed record PartitionStrategy(PartitionDimension Primary, PartitionDimension? Secondary = null, PartitionDimension? Tertiary = null, DatePartition DateGranularity = DatePartition.Daily);
-```
-
-## JsonlStoragePolicy
-
-Qualified name: <code>Meridian.Storage.Policies.JsonlStoragePolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:12](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L12).
-
-Storage policy that generates file paths based on configurable naming conventions. Supports multiple directory structures and date partitioning strategies.
-
-```csharp
-public sealed class JsonlStoragePolicy : IStoragePolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonlStoragePolicy(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:18](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L18) |  |
-| <code>public string GetPath(MarketEvent evt);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:28](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L28) | Generates the file path for a market event based on configured naming convention. |
-| <code>public string GetPathPreview();</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:59](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L59) | Gets a preview of the file path pattern for display purposes. |
-| <code>public ParsedPathMetadata? TryParsePath(string filePath);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:231](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L231) | Attempts to parse metadata from a file path based on the configured naming convention. This is the inverse of GetPath() and provides a centralized parser for storage search/indexing. |
-
-## ParsedPathMetadata
-
-Qualified name: <code>Meridian.Storage.Policies.ParsedPathMetadata</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:559](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L559).
-
-Metadata extracted from a storage file path.
-
-```csharp
-public sealed record ParsedPathMetadata(string Symbol, string EventType, string Source, DateTimeOffset? Date);
-```
-
-## DataQueryOptions
-
-Qualified name: <code>Meridian.Storage.Query.DataQueryOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:302](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L302).
-
-Limits for the data query workbench, bound from the DataQuery configuration section.
-
-```csharp
-public sealed class DataQueryOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public const string SectionName = &quot;DataQuery&quot;;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:304](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L304) |  |
-| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:306](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L306) |  |
-| <code>public int MaxRows { get; set; } = 10_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:309](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L309) | Maximum rows returned to the client; additional rows set Truncated. |
-| <code>public int TimeoutSeconds { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:312](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L312) | Wall-clock limit for a single query. |
-| <code>public int MemoryLimitMb { get; set; } = 512;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:315](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L315) | DuckDB session memory limit. |
-| <code>public int MaxThreads { get; set; } = 2;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:318](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L318) | DuckDB session thread cap, keeping analytics off the ingestion cores. |
-| <code>public int MaxSqlLength { get; set; } = 20_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:320](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L320) |  |
-| <code>public string? RetainedResultsRoot { get; set; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:323](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L323) | Private retention must remain outside RootPath, which SQL readers may access. |
-| <code>public long MaxRetainedResultBytes { get; set; } = 32L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:324](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L324) |  |
-| <code>public long MaxRetainedTotalBytes { get; set; } = 128L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:325](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L325) |  |
-| <code>public int MaxRetainedRows { get; set; } = 250_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:326](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L326) |  |
-| <code>public int RetainedResultMinutes { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:327](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L327) |  |
-
-## DataQueryOwner
-
-Qualified name: <code>Meridian.Storage.Query.DataQueryOwner</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:11](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L11).
-
-```csharp
-public sealed record DataQueryOwner(string TenantId, string CompanyId, string OperatorId);
 ```

@@ -6,6 +6,78 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## JsonlStoragePolicy
+
+Qualified name: <code>Meridian.Storage.Policies.JsonlStoragePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:12](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L12).
+
+Storage policy that generates file paths based on configurable naming conventions. Supports multiple directory structures and date partitioning strategies.
+
+```csharp
+public sealed class JsonlStoragePolicy : IStoragePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlStoragePolicy(StorageOptions options, ISourceRegistry? sourceRegistry = null);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:18](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L18) |  |
+| <code>public string GetPath(MarketEvent evt);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:28](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L28) | Generates the file path for a market event based on configured naming convention. |
+| <code>public string GetPathPreview();</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:59](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L59) | Gets a preview of the file path pattern for display purposes. |
+| <code>public ParsedPathMetadata? TryParsePath(string filePath);</code> | [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:231](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L231) | Attempts to parse metadata from a file path based on the configured naming convention. This is the inverse of GetPath() and provides a centralized parser for storage search/indexing. |
+
+## ParsedPathMetadata
+
+Qualified name: <code>Meridian.Storage.Policies.ParsedPathMetadata</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Policies/JsonlStoragePolicy.cs:559](../../../../src/Meridian.Storage/Policies/JsonlStoragePolicy.cs#L559).
+
+Metadata extracted from a storage file path.
+
+```csharp
+public sealed record ParsedPathMetadata(string Symbol, string EventType, string Source, DateTimeOffset? Date);
+```
+
+## DataQueryOptions
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:302](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L302).
+
+Limits for the data query workbench, bound from the DataQuery configuration section.
+
+```csharp
+public sealed class DataQueryOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string SectionName = &quot;DataQuery&quot;;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:304](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L304) |  |
+| <code>public bool Enabled { get; set; } = true;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:306](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L306) |  |
+| <code>public int MaxRows { get; set; } = 10_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:309](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L309) | Maximum rows returned to the client; additional rows set Truncated. |
+| <code>public int TimeoutSeconds { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:312](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L312) | Wall-clock limit for a single query. |
+| <code>public int MemoryLimitMb { get; set; } = 512;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:315](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L315) | DuckDB session memory limit. |
+| <code>public int MaxThreads { get; set; } = 2;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:318](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L318) | DuckDB session thread cap, keeping analytics off the ingestion cores. |
+| <code>public int MaxSqlLength { get; set; } = 20_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:320](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L320) |  |
+| <code>public string? RetainedResultsRoot { get; set; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:323](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L323) | Private retention must remain outside RootPath, which SQL readers may access. |
+| <code>public long MaxRetainedResultBytes { get; set; } = 32L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:324](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L324) |  |
+| <code>public long MaxRetainedTotalBytes { get; set; } = 128L * 1024 * 1024;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:325](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L325) |  |
+| <code>public int MaxRetainedRows { get; set; } = 250_000;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:326](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L326) |  |
+| <code>public int RetainedResultMinutes { get; set; } = 30;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:327](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L327) |  |
+
+## DataQueryOwner
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryOwner</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:11](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L11).
+
+```csharp
+public sealed record DataQueryOwner(string TenantId, string CompanyId, string OperatorId);
+```
+
 ## DataQueryRequest
 
 Qualified name: <code>Meridian.Storage.Query.DataQueryRequest</code>. Kind: `record`.
@@ -882,54 +954,4 @@ Source: [src/Meridian.Storage/SecurityMaster/IBondReferenceProjectionStore.cs:27
 
 ```csharp
 public sealed record BondProjectionRow(Guid SecurityId, string DisplayName, string Currency, string PrimaryIdentifierValue, string? IssuerName, string? Seniority, DateOnly? MaturityDate, string? LifecycleStat, DateOnly? IssueDate, DateOnly? CallDate, bool? IsCallable, string? DayCountConvention, int? SettlementCycleDays, string? HolidayCalendarId, string? CouponKind, decimal? FixedCouponRate, string? FloatingRateIndex, decimal? FloatingSpreadBps, long Version, string? Subclass = null, decimal? Par = null, string? PaymentFrequency = null, DateOnly? LegalFinalMaturity = null, DateOnly? PreRefundDate = null, DateOnly? MandatoryPutDate = null, JsonElement? CanonicalTerms = null, DateOnly? EffectiveTo = null);
-```
-
-## CertificateOfDepositProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CertificateOfDepositProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICertificateOfDepositReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record CertificateOfDepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string IssuerName, DateOnly Maturity, decimal? CouponRate, DateOnly? CallableDate, string? DayCount, string PrimaryIdentifierValue, long Version);
-```
-
-## CommodityProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CommodityProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/ICommodityReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record CommodityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string CommodityType, string? Denomination, decimal? ContractSize, string? ExchangeCode, string? DeliveryCountry, string PrimaryIdentifierValue, long Version);
-```
-
-## ConnectionLease
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.ConnectionLease</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:213](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L213).
-
-Holds a mutation connection and optional transaction, releasing its gate and any owned connection on disposal.
-
-```csharp
-public sealed class ConnectionLease(NpgsqlConnection connection, bool ownsConnection, NpgsqlTransaction? transaction = null, SemaphoreSlim? gate = null) : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public NpgsqlConnection Connection { get; } = connection;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:216](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L216) |  |
-| <code>public NpgsqlTransaction? Transaction { get; } = transaction;</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:217](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L217) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs:218](../../../../src/Meridian.Storage/SecurityMaster/PostgresSecurityMasterMutation.cs#L218) |  |
-
-## CorporateActionCalendarReadSet
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCalendarReadSet</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs:8](../../../../src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsStore.Calendar.cs#L8).
-
-```csharp
-public sealed record CorporateActionCalendarReadSet(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases, IReadOnlyList<CorporateActionEvidenceDto> Evidence);
 ```
