@@ -14,6 +14,19 @@ public interface IQuoteStateStore
     bool TryGet(string symbol, out BboQuotePayload? quote);
 
     /// <summary>
+    /// Try get the latest BBO for a symbol only when it came from <paramref name="source"/>
+    /// (the canonical provider id, compared case-insensitively). Returns <see langword="false"/>
+    /// when the latest quote is from another provider, so one feed's trades are never classified
+    /// against another feed's book. Stores that do not track the quoting source return
+    /// <see langword="false"/>.
+    /// </summary>
+    bool TryGetFromSource(string symbol, string source, out BboQuotePayload? quote)
+    {
+        quote = null;
+        return false;
+    }
+
+    /// <summary>
     /// Upsert a BBO update and return the resulting payload that callers can reuse for publishing/logging.
     /// </summary>
     /// <remarks>

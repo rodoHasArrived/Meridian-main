@@ -23,9 +23,10 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>bool TryGet(string symbol, out BboQuotePayload? quote);</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:14](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L14) | Try get the latest BBO for a symbol. |
-| <code>BboQuotePayload Upsert(MarketQuoteUpdate update);</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:22](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L22) | Upsert a BBO update and return the resulting payload that callers can reuse for publishing/logging. |
-| <code>bool TryRemove(string symbol, out BboQuotePayload? removed);</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:27](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L27) | Remove cached state for a symbol. Returns true if the symbol existed. |
-| <code>IReadOnlyDictionary&lt;string, BboQuotePayload&gt; Snapshot();</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:32](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L32) | Snapshot the current cache for inspection/monitoring without exposing internal mutability. |
+| <code>bool TryGetFromSource(string symbol, string source, out BboQuotePayload? quote);</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:23](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L23) | Try get the latest BBO for a symbol only when it came from source (the canonical provider id, compared case-insensitively). Returns false when the latest quote is from another provider, so one feed&#x27;s trades are never classified against another feed&#x27;s book. Stores that do not track the quoting source return false. |
+| <code>BboQuotePayload Upsert(MarketQuoteUpdate update);</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:35](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L35) | Upsert a BBO update and return the resulting payload that callers can reuse for publishing/logging. |
+| <code>bool TryRemove(string symbol, out BboQuotePayload? removed);</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:40](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L40) | Remove cached state for a symbol. Returns true if the symbol existed. |
+| <code>IReadOnlyDictionary&lt;string, BboQuotePayload&gt; Snapshot();</code> | [src/Meridian.Domain/Collectors/IQuoteStateStore.cs:45](../../../../src/Meridian.Domain/Collectors/IQuoteStateStore.cs#L45) | Snapshot the current cache for inspection/monitoring without exposing internal mutability. |
 
 ## IQuoteUpdateNotifier
 
@@ -174,12 +175,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public QuoteCollector(IMarketEventPublisher publisher, IQuoteUpdateNotifier? updates = null);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:22](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L22) |  |
-| <code>public void OnQuote(MarketQuoteUpdate update);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:31](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L31) | Adapter entry point (e.g., Alpaca WebSocket quote updates). |
-| <code>public bool TryGet(string symbol, out BboQuotePayload? quote) =&gt; …;</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:63](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L63) |  |
-| <code>public BboQuotePayload Upsert(MarketQuoteUpdate update);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:66](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L66) |  |
-| <code>public bool TryRemove(string symbol, out BboQuotePayload? removed);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:109](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L109) |  |
-| <code>public IReadOnlyDictionary&lt;string, BboQuotePayload&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:124](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L124) |  |
+| <code>public QuoteCollector(IMarketEventPublisher publisher, IQuoteUpdateNotifier? updates = null);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:26](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L26) |  |
+| <code>public void OnQuote(MarketQuoteUpdate update);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:35](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L35) | Adapter entry point (e.g., Alpaca WebSocket quote updates). |
+| <code>public bool TryGet(string symbol, out BboQuotePayload? quote);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:67](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L67) |  |
+| <code>public bool TryGetFromSource(string symbol, string source, out BboQuotePayload? quote);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:75](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L75) |  |
+| <code>public BboQuotePayload Upsert(MarketQuoteUpdate update);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:89](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L89) |  |
+| <code>public bool TryRemove(string symbol, out BboQuotePayload? removed);</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:132](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L132) |  |
+| <code>public IReadOnlyDictionary&lt;string, BboQuotePayload&gt; Snapshot() =&gt; …;</code> | [src/Meridian.Domain/Collectors/QuoteCollector.cs:148](../../../../src/Meridian.Domain/Collectors/QuoteCollector.cs#L148) |  |
 
 ## SessionStatsCollector
 
@@ -241,9 +243,9 @@ Declared public members:
 | --- | --- | --- |
 | <code>public TradeDataCollector(IMarketEventPublisher publisher, IQuoteStateStore? quotes = null, SessionStatsCollector? sessionStats = null);</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:70](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L70) |  |
 | <code>public void OnTrade(MarketTradeUpdate update);</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:114](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L114) | Entry point from router/adapter layer. Performs sequence continuity checks, emits Integrity events on anomalies, emits Trade + OrderFlow events on accepted updates. |
-| <code>public IReadOnlyList&lt;Trade&gt; GetRecentTrades(string symbol, int limit = 50);</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:285](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L285) | Returns the most recent trades for a symbol (newest first), up to limit. Returns an empty list if no trades have been recorded for the symbol. |
-| <code>public OrderFlowStatistics? GetOrderFlowSnapshot(string symbol);</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:298](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L298) | Returns the current rolling order-flow statistics for a symbol, or null if no trades recorded. |
-| <code>public IReadOnlyList&lt;string&gt; GetTrackedSymbols() =&gt; …;</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:321](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L321) | Returns all symbols that currently have trade data. |
+| <code>public IReadOnlyList&lt;Trade&gt; GetRecentTrades(string symbol, int limit = 50);</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:292](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L292) | Returns the most recent trades for a symbol (newest first), up to limit. Returns an empty list if no trades have been recorded for the symbol. |
+| <code>public OrderFlowStatistics? GetOrderFlowSnapshot(string symbol);</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:305](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L305) | Returns the current rolling order-flow statistics for a symbol, or null if no trades recorded. |
+| <code>public IReadOnlyList&lt;string&gt; GetTrackedSymbols() =&gt; …;</code> | [src/Meridian.Domain/Collectors/TradeDataCollector.cs:328](../../../../src/Meridian.Domain/Collectors/TradeDataCollector.cs#L328) | Returns all symbols that currently have trade data. |
 
 ## IBackpressureSignal
 

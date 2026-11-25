@@ -128,8 +128,8 @@
       "id": "SRC-DOMAIN",
       "path": "src/Meridian.Domain",
       "readme": "src/Meridian.Domain/README.md",
-      "readme_hash": "6585c650e7e458ac878806340330b289e9b89ebe5e235896426057acd57434ab",
-      "source_hash": "4350104144573a48e71a90a1b1ac41f35bae564037099cbab69c5ef4ad951ea9"
+      "readme_hash": "f4ed4cc485775c591bfd3c4a3de6ae2c70ba5c2576eb20687399fe9a32f7944d",
+      "source_hash": "576fd6a83521269c6de4a72eb9cb23cb5a9b1867587c20b2e4c6dda7d6374621"
     },
     {
       "id": "SRC-EXECUTION",

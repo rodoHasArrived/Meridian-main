@@ -222,15 +222,22 @@ public sealed class TradeDataCollector
         }
 
         // -------- Aggressor inference (optional) --------
-        // If upstream cannot classify aggressor, infer using latest BBO:
+        // If upstream cannot classify aggressor, infer from the quote prevailing at the trade:
         //  - Price >= Ask => Buy
         //  - Price <= Bid => Sell
         //  - Otherwise Unknown
+        // The quote must come from the same provider as the trade (another feed's book can sit
+        // at different prices) and must be at or before the trade, no older than the freshness
+        // threshold: a quote stamped after the trade may already reflect it, so it is not the
+        // prevailing quote. Anything else leaves the side Unknown rather than guessing.
         var aggressor = update.Aggressor;
-        if (aggressor == AggressorSide.Unknown && _quotes != null && _quotes.TryGet(symbol, out var bbo) && bbo != null)
+        if (aggressor == AggressorSide.Unknown
+            && _quotes != null
+            && _quotes.TryGetFromSource(symbol, source, out var bbo)
+            && bbo != null)
         {
             var quoteAge = update.Timestamp - bbo.Timestamp;
-            if (quoteAge <= QuoteFreshnessThreshold)
+            if (quoteAge >= TimeSpan.Zero && quoteAge <= QuoteFreshnessThreshold)
             {
                 if (bbo.AskPrice > 0m && update.Price >= bbo.AskPrice)
                     aggressor = AggressorSide.Buy;
