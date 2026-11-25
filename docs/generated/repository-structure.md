@@ -1169,6 +1169,7 @@ Meridian-main
 │       │   ├── ci-metrics.py
 │       │   ├── collect-actions.py
 │       │   ├── dependency-locks.py
+│       │   ├── detect-codeql-languages.py
 │       │   ├── detect-dotnet-changes.py
 │       │   ├── dispatch-targeted-test.py
 │       │   ├── duplicate-helper-baseline.json
@@ -16003,6 +16004,8 @@ Meridian-main
 │   │   │   ├── FakeScriptRunner.cs
 │   │   │   ├── FakeWorkstationReconciliationApiClient.cs
 │   │   │   ├── FakeWorkstationStrategyBriefingApiClient.cs
+│   │   │   ├── LoopbackFastRefusalHandler.cs
+│   │   │   ├── LoopbackFastRefusalHandlerTests.cs
 │   │   │   ├── MainPageUiAutomationFacade.cs
 │   │   │   ├── NavigationHostInspector.cs
 │   │   │   ├── RunMatUiAutomationFacade.cs
@@ -16269,6 +16272,7 @@ Meridian-main
 │   │   ├── test_desktop_msix_packaging.py
 │   │   ├── test_desktop_screen_blueprint_checklist.py
 │   │   ├── test_desktop_workflow_fixture.py
+│   │   ├── test_detect_codeql_languages.py
 │   │   ├── test_detect_dotnet_changes.py
 │   │   ├── test_direct_lending_outbox_claim_sql.py
 │   │   ├── test_doc_health_dashboard_merge.py
