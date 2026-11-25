@@ -2,7 +2,7 @@
 
 **Status:** active
 **Owner:** core-team
-**Reviewed:** 2026-11-02
+**Reviewed:** 2026-11-25
 
 ## Purpose and Scope
 
@@ -662,3 +662,15 @@ replacement raises the row's stamp; old stamped stray keys remain inert through 
 The economic `rateConvention` module restores that stamp on an economic-only replay. Absent modules
 leave historical economic bytes unchanged. These version advances do not enable authoring the
 calculation-only `cashFlowContract` companion or swap leg convention blocks.
+
+## Bounded CD version 6 follow-on
+
+The CD profile adds optional version-6 issue/start date, principal and payment frequency and a
+version-6 calculation context for `fixed-bullet-actual365-v1`. The storage stamp floor remains 1;
+this does not activate every old CD or rewrite historical calculations. Confirm that older CDs still
+capture/replay version-5 analysis and declared version-6 CDs cannot fall back after strict-profile
+refusal. Before publishing the new fields, inventory every reader, writer and calculation consumer
+against the release's actual startup capability lines. Deploy matching readers first, then route explicit
+governed full-term review to capable writers. Older-stamp residue must be cleared or included in
+an explicit version-6 reviewed replacement. Existing Bond/StructuredCredit version-5 replay remains
+the compatibility baseline. Do not raise a fleet floor merely because the new build is available.

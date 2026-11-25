@@ -161,6 +161,7 @@ internal static class SecurityFlatCodecGenerator
             if (!binding.VersionedSchedules)
             {
                 source.Append(" |})\n");
+                AppendOptionalScalarFilter(source, binding);
                 continue;
             }
 
@@ -178,6 +179,7 @@ internal static class SecurityFlatCodecGenerator
             source.Append("                {| payload with scheduleConventions = SecurityTermsWriteVersion.conventionsPayload terms.ScheduleConventions |})\n");
             source.Append("        else\n");
             source.Append("            JsonSerializer.Serialize(payload)\n");
+            AppendOptionalScalarFilter(source, binding);
         }
 
         return source.ToString();
@@ -203,13 +205,13 @@ internal static class SecurityFlatCodecGenerator
         var row = rows[0];
         if (row.DecodeExpression is not null)
         {
-            return row.DecodeExpression;
+            return GateIntroducedScalar(binding, row, isOption, row.DecodeExpression);
         }
 
         var key = $"\"{row.Key}\"";
         var read = row.Read ?? throw new InvalidOperationException($"{binding.AssetClass} {path} names neither a read nor an expression.");
         RequireDeclared(binding, row, read);
-        return read switch
+        var expression = read switch
         {
             SecurityTermRead.RequiredString => isOption
                 ? $"FSharpOption<string>.Some(bound.RequiredString({key}))"
@@ -233,6 +235,31 @@ internal static class SecurityFlatCodecGenerator
                 : $"ToDayCountOption(bound.OptionalConventionString({key}), mode, {key})"),
             _ => throw new InvalidOperationException($"Unhandled read {read}.")
         };
+        return GateIntroducedScalar(binding, row, isOption, expression);
+    }
+
+    private static string GateIntroducedScalar(SecurityClassCodecBinding binding, SecurityTermBinding row,
+        bool isOption, string expression)
+    {
+        if (row.Key is null || !binding.VersionedOptionalScalarKeys.Contains(row.Key, StringComparer.Ordinal))
+            return expression;
+        if (SecurityAssetTermsSchema.Field(binding.AssetClass, row.Key) is not { SinceTermsVersion: > 1 })
+            throw new InvalidOperationException($"{binding.AssetClass}.{row.Key} opts into scalar versioning without an introduced term version.");
+        if (!isOption)
+            throw new InvalidOperationException($"{binding.AssetClass}.{row.Key} is an introduced scalar with no absent representation.");
+        return $"SecurityVersionedScalarTerms.CanDecode(assetClass, json, \"{row.Key}\", mode == SecurityKindMappingMode.Write) ? {expression} : null";
+    }
+
+    private static void AppendOptionalScalarFilter(StringBuilder source, SecurityClassCodecBinding binding)
+    {
+        var keys = binding.Members.Where(static row => row.Key is not null && !row.DecodeOnly)
+            .Where(row => binding.VersionedOptionalScalarKeys.Contains(row.Key!, StringComparer.Ordinal))
+            .Select(static row => "\"" + row.Key + "\"").ToArray();
+        if (keys.Length == 0)
+            return;
+        // Pipe the entire if/elif expression, rather than only its last branch.
+        source.Append("        |> fun json -> Meridian.Contracts.SecurityMaster.SecurityVersionedScalarTerms.OmitAbsent(json, [| ")
+            .Append(string.Join("; ", keys)).Append(" |])\n");
     }
 
     private static string Optional(bool isOption, string path, string expression)

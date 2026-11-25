@@ -29,6 +29,7 @@ internal static partial class Program
                 "statement-store-stage" => await RunStatementStoreStageAsync(args).ConfigureAwait(false),
                 "etl-crash-stage" => await RunEtlUntilKilledAsync(args).ConfigureAwait(false),
                 "audit-append-batch" => await AppendAuditBatchAsync(args).ConfigureAwait(false),
+                "recurring-pin-obligation" => await PinRecurringObligationAsync(args).ConfigureAwait(false),
                 "wal-append-and-wait" => await AppendWalAndWaitAsync(args).ConfigureAwait(false),
                 "evidence-reserve-and-wait" => await ReserveEvidenceAndWaitAsync(args).ConfigureAwait(false),
                 "manifest-retain-and-hold-lock" => await RetainManifestAndHoldLockAsync(args).ConfigureAwait(false),

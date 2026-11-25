@@ -6,7 +6,7 @@ module_id: SRC-LEDGER
 path: src/Meridian.Ledger
 status: active
 owner_lane: Accounting and Ledger
-last_reviewed: 2026-11-13
+last_reviewed: 2026-11-25
 ---
 
 # src/Meridian.Ledger
@@ -109,6 +109,15 @@ exact decimal digits and preventing source descriptions from becoming spreadshee
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in the [diagram index](../../docs/source/data/diagram-index.yml).
+
+## Recurring economic-obligation evidence (2026-11-25)
+
+Recurring provenance can retain an independent digest of the CD daily-lot economic-obligation claim.
+Recovery and lifecycle checks bind that digest to the existing occurrence; schedule/template/model
+version changes cannot create a new owner for the same economic day. The optional companion is
+omitted from historical evidence, preserving old Bond receipt bytes. This adds no automatic journal
+submission, posting, period reopen or reinterpretation of accounting template declarations. See
+[recurring journal](../../docs/domain/recurring-journal.md#declared-certificateofdeposit-accrual-profile).
 
 ## Roadmap traceability
 
