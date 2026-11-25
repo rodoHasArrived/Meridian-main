@@ -229,8 +229,8 @@ adopt a reviewed confirmation close policy. Books without one keep advisory-only
 
 ### Cross-company pairs and adjustment drafts (2026-11-25)
 
-[ADR-033](../../adr/033-intercompany-confirmation-cross-company-and-adjustments.md) and the proposed decision
-`DEC-IC-CONFIRM-003` (awaiting owner acceptance) close the two remaining confirmation gaps. Same-company
+[ADR-033](../../adr/033-intercompany-confirmation-cross-company-and-adjustments.md) and decision
+`DEC-IC-CONFIRM-003` (accepted by the owner on 2026-11-25) close the two remaining confirmation gaps. Same-company
 confirmations are unchanged.
 
 | Piece | What exists | Verification |

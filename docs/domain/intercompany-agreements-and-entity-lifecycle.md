@@ -176,7 +176,7 @@ approves it; it can be rejected or disabled with a reason. While it is active, a
 close period end adds an `intercompany-confirmation` close-readiness blocker, and confirmation that
 cannot be read makes the close decision incomplete.
 
-A pair may span **two companies of one tenant** (ADR-033, proposed decision `DEC-IC-CONFIRM-003`) when the
+A pair may span **two companies of one tenant** (ADR-033, accepted decision `DEC-IC-CONFIRM-003`) when the
 approved, tenant-scoped accounting profile maps one book in each. Each side is read in the scope of the
 company that owns it; both companies see the confirmation and each acts only on its own side. A
 cross-company dispute is resolved only when each side records its own reasoned resolution. After a

@@ -129,8 +129,8 @@ posted journals only. Load the book's confirmations for the period end, then:
 The other book may belong to another company of your tenant, when the approved accounting profile
 maps it. Both companies see the confirmation, and each acts only on its own side. A dispute between
 two companies is resolved only when each side has recorded its own resolution ("Record this book's
-resolution"). `DEC-IC-CONFIRM-003` (ADR-033) records this as a proposed decision awaiting the
-repository owner's acceptance.
+resolution"). `DEC-IC-CONFIRM-003` (ADR-033) records this decision, accepted by the repository
+owner on 2026-11-25.
 
 Open findings appear in the close advisory as `intercompany.confirmation.not-proposed`,
 `awaiting-confirmation`, `disputed`, `balances-changed`, `resolved-awaiting-proposal` or

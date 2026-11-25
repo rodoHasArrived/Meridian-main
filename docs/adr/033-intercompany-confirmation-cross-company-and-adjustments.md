@@ -1,10 +1,10 @@
 # ADR-033: Cross-Company Reciprocal Balance Confirmation and Adjustment Drafts from Resolved Disputes
 
-**Status:** Proposed; first increment implemented
+**Status:** Accepted 2026-11-25; first increment implemented
 **Date:** 2026-11-25
 **Owner:** Accounting and Ledger
 **Reviewed:** 2026-11-25
-**Deciders:** Repository owner (pending acceptance of `DEC-IC-CONFIRM-003`)
+**Deciders:** Repository owner (`DEC-IC-CONFIRM-003` accepted 2026-11-25)
 **Supersedes:** None. It extends `DEC-IC-CONFIRM-001` and works beside ADR-032.
 **Superseded by:** None
 
@@ -59,8 +59,8 @@ Reciprocal balance confirmation (`W12-ICCONFIRM-001`) left two gaps out of its f
 | Desktop | `src/Meridian.Ui.Services/Services/Accounting/IntercompanyBalanceConfirmationWorkspace.Adjustments.cs`, `src/Meridian.Wpf/Views/IntercompanyBalanceConfirmationControl.xaml` | Same, over the shared route |
 | Tests | `tests/Meridian.Tests/FinancialOperations/Intercompany/IntercompanyBalanceConfirmationCrossCompanyTests.cs`, `tests/Meridian.Tests/Ui/IntercompanyConfirmationAdjustmentDraftServiceTests.cs`, `tests/Meridian.Tests/Storage/IntercompanyBalanceConfirmationStoreTests.cs` | Service, drafts, stores (file and PostgreSQL) |
 
-Implemented on 2026-11-25 with synthetic fixtures. Acceptance of `DEC-IC-CONFIRM-003` by the repository owner is
-pending.
+Implemented on 2026-11-25 with synthetic fixtures. The repository owner accepted `DEC-IC-CONFIRM-003` on
+2026-11-25. Acceptance adopts the decision; it is not production certification, and evidence remains synthetic.
 
 ## Rationale
 
