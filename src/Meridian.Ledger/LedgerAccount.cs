@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Meridian.Ledger;
 
 /// <summary>
@@ -30,9 +32,12 @@ public sealed record LedgerAccount(
     LedgerAccountType AccountType,
     string? Symbol = null,
     string? FinancialAccountId = null,
-    Guid? SecurityId = null)
+    // Omitted when null so reflection-serialized accounts (atomic tax-lot fingerprints, lot
+    // snapshots, persisted paper journals) keep their pre-F2 JSON and retained hashes still replay.
+    [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null)
 {
     /// <summary><see langword="true"/> when the account is keyed by a Security Master identity.</summary>
+    [JsonIgnore]
     public bool IsSecurityKeyed => SecurityId.HasValue;
 
     /// <inheritdoc/>

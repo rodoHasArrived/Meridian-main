@@ -1032,6 +1032,21 @@ packages, decisions and receipt observations. Approval atomically reserves a jou
 external destination and enqueues it. Worker leases fence receipt writes. Hard close checks
 required external-GL coverage under the existing period lock.
 
+Migration `V_ledger_083__security_id_account_keys.sql` adds a nullable `account_security_id` to
+`journal_legs`, `tax_lots`, `tax_lot_policies` and `ledger_balance_checkpoint_rows`, and
+`disposal_account_security_id` to `wash_sale_deferrals` (Security Master review F2). It is the
+account key of a per-security account (`LedgerAccount.SecurityId`); `symbol` is then display-only.
+It is named apart from the lot instrument column `tax_lots.security_id`, which legacy accounts also
+carry. Lot and policy uniqueness now key on `coalesce(account_security_id::text, symbol, '')`.
+Account predicates match SecurityId-keyed accounts on SecurityId and legacy accounts on ticker, and
+never match the two forms with each other. Balance reads aggregate a SecurityId-keyed account across
+ticker renames into one row, with `max(symbol)` as its display ticker. Existing rows are not
+rewritten, so existing journals keep their keys. Account-key columns are appended at the end of
+select lists and read by name, so existing ordinals keep their meaning. Null keys are omitted from
+checkpoint, fiscal-year-plan and atomic tax-lot fingerprint JSON, so retained digests still verify.
+`GovernedLedgerPostingTarget` compares a replay against a journal retained before F2 in its legacy
+(ticker) key form.
+
 `PostgresLedgerJournalStore.GetPeriodLockOwnerAsync` reads the retained close actor under the same
 tenant guard as the period. Recurring journal generation consumes the existing PostgreSQL period
 authority and this actor for blocked-occurrence evidence; its file-backed schedule store never

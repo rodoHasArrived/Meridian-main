@@ -63,7 +63,8 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerSecurityEntitlem
                        open_quantity, unit_cost, currency, source_journal_entry_id, evidence_ref,
                        version, originating_mutation_batch_id, last_mutation_batch_id,
                        created_at, updated_at, security_id, book_position_id, original_face,
-                       booked_factor, par_basis, acquisition_terms, basis_adjustment, current_factor
+                       booked_factor, par_basis, acquisition_terms, basis_adjustment, current_factor,
+                   account_security_id
                 from {Qualified("tax_lots")}
                 where ledger_book_id = @book_id and acquired_date <= @as_of
                 order by security_id, book_position_id, tax_lot_record_id;

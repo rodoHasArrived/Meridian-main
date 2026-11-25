@@ -253,7 +253,7 @@ public sealed partial class PostgresLedgerJournalStore : ILedgerOpenLotSuccessor
         guard.CommandText = $"""
             select tax_lot_record_id from {Qualified("tax_lots")}
             where ledger_book_id = @book and account_name = @account_name and account_type = @account_type
-              and coalesce(symbol, '') = coalesce(@symbol, '')
+              and {AccountInstrumentMatch()}
               and lower(coalesce(financial_account_id, '')) = lower(coalesce(@financial_account_id, ''))
               and lot_id = any(@labels)
             order by tax_lot_record_id

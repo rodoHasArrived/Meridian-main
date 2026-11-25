@@ -916,7 +916,8 @@ public sealed partial class PostgresLedgerJournalStore
                    par_basis,
                    acquisition_terms,
                    basis_adjustment,
-                   current_factor
+                   current_factor,
+                   account_security_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and tax_lot_record_id = any(@tax_lot_record_ids)
@@ -963,12 +964,13 @@ public sealed partial class PostgresLedgerJournalStore
                    wash_sale_enabled,
                    wash_sale_window_days,
                    wash_sale_scope,
-                   wash_sale_effective_date
+                   wash_sale_effective_date,
+                   account_security_id
             from {Qualified("tax_lot_policies")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
               and account_type = @account_type
-              and symbol is not distinct from @symbol
+              and {AccountInstrumentMatch()}
               and lower(financial_account_id) is not distinct from lower(@financial_account_id)
               and effective_date <= @effective_date
             order by effective_date desc, updated_at desc, policy_id desc, policy_record_id desc
@@ -1025,7 +1027,8 @@ public sealed partial class PostgresLedgerJournalStore
                    par_basis,
                    acquisition_terms,
                    basis_adjustment,
-                   current_factor
+                   current_factor,
+                   account_security_id
             from {Qualified("tax_lots")}
             where ledger_book_id = @ledger_book_id
               and account_name = @account_name
@@ -1201,7 +1204,8 @@ public sealed partial class PostgresLedgerJournalStore
                 par_basis,
                 acquisition_terms,
                 basis_adjustment,
-                current_factor)
+                current_factor,
+                account_security_id)
             values (
                 @tax_lot_record_id,
                 @ledger_book_id,
@@ -1229,7 +1233,8 @@ public sealed partial class PostgresLedgerJournalStore
                 @par_basis,
                 @acquisition_terms,
                 @basis_adjustment,
-                @current_factor)
+                @current_factor,
+                @account_security_id)
             returning tax_lot_record_id,
                       ledger_book_id,
                       account_name,
@@ -1256,7 +1261,8 @@ public sealed partial class PostgresLedgerJournalStore
                       par_basis,
                       acquisition_terms,
                       basis_adjustment,
-                      current_factor;
+                      current_factor,
+                      account_security_id;
             """;
         AddAtomicTaxLotParameters(insert, acquired);
         AddBasisAdjustmentParameter(insert, acquired.BasisAdjustment);
@@ -1348,7 +1354,8 @@ public sealed partial class PostgresLedgerJournalStore
                       par_basis,
                       acquisition_terms,
                       basis_adjustment,
-                      current_factor;
+                      current_factor,
+                      account_security_id;
             """;
         update.Parameters.AddWithValue("tax_lot_record_id", selection.TaxLotRecordId);
         update.Parameters.AddWithValue("ledger_book_id", command.LedgerBookId);
@@ -1647,7 +1654,8 @@ public sealed partial class PostgresLedgerJournalStore
                    par_basis,
                    acquisition_terms,
                    basis_adjustment,
-                   current_factor
+                   current_factor,
+                   account_security_id
             from {Qualified("tax_lots")}
             where tax_lot_record_id = @tax_lot_record_id
               and ledger_book_id = @ledger_book_id
