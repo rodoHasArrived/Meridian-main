@@ -2197,23 +2197,6 @@ public sealed partial class InMemoryFundStructureServiceTests
             FullSnapshotReadCount++;
             return Task.FromResult<IReadOnlyList<Guid>>(_linkedAccountIds.ToList());
         }
-
-        public Task<bool> IsEmptyAsync(CancellationToken ct = default)
-        {
-            ct.ThrowIfCancellationRequested();
-            return Task.FromResult(
-                _organizations.Count == 0
-                && _businesses.Count == 0
-                && _clients.Count == 0
-                && _funds.Count == 0
-                && _sleeves.Count == 0
-                && _vehicles.Count == 0
-                && _entities.Count == 0
-                && _investmentPortfolios.Count == 0
-                && _ownershipLinks.Count == 0
-                && _assignments.Count == 0
-                && _linkedAccountIds.Count == 0);
-        }
     }
 
     private sealed class FakeSecurityMasterQueryService : ISecurityMasterQueryService

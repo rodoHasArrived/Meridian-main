@@ -337,64 +337,6 @@ public sealed record StatementReconciliationReportWorkflowDto(
     public IReadOnlyList<StatementReconciliationReportArtifactGenerationDto> ArtifactHistory { get; init; } = [];
 }
 
-/// <summary>
-/// Source-compatibility status contract for clients compiled before the operation was renamed.
-/// Newly persisted and returned workflows use <see cref="StatementReconciliationReportWorkflowStatusDto"/>.
-/// </summary>
-[Obsolete("Use StatementReconciliationReportWorkflowStatusDto.")]
-[JsonConverter(typeof(JsonStringEnumConverter<StatementToReportWorkflowStatusDto>))]
-public enum StatementToReportWorkflowStatusDto : byte
-{
-    InputRetained = 0,
-    Importing = 1,
-    AwaitingReconciliation = 2,
-    RenderingReport = 3,
-    Completed = 4,
-    Failed = 5
-}
-
-/// <summary>Source-compatibility artifact contract for pre-rename clients.</summary>
-[Obsolete("Use StatementReconciliationReportArtifactDto.")]
-public sealed record StatementToReportArtifactDto(
-    string ArtifactId,
-    string ArtifactKind,
-    string FileName,
-    string ContentType,
-    long ByteLength,
-    string ContentHashSha256,
-    string DownloadRoute,
-    DateTimeOffset RetainedAtUtc);
-
-/// <summary>
-/// Source-compatibility workflow contract for pre-rename clients. Legacy HTTP routes project this
-/// wire shape directly over the canonical statement reconciliation report operation.
-/// </summary>
-[Obsolete("Use StatementReconciliationReportWorkflowDto.")]
-public sealed record StatementToReportWorkflowDto(
-    string WorkflowId,
-    StatementToReportWorkflowStatusDto Status,
-    long Version,
-    string TenantId,
-    string? CompanyId,
-    string SourceInstitution,
-    string FundAccountId,
-    string ExternalAccountId,
-    DateOnly PeriodStart,
-    DateOnly PeriodEnd,
-    string? StatementRunId,
-    EvidenceVaultIdentityDto? EvidenceVaultIdentity,
-    IReadOnlyList<StatementToReportArtifactDto> RetainedArtifacts,
-    IReadOnlyList<string> EvidenceReferences,
-    int BreakCount,
-    int CaseCount,
-    DateTimeOffset CreatedAtUtc,
-    DateTimeOffset UpdatedAtUtc,
-    DateTimeOffset? CompletedAtUtc,
-    string? FailureReason,
-    string? RecoveryAction,
-    string StatusRoute,
-    string ResumeRoute);
-
 /// <summary>A persisted scheduled-fetch configuration for a fetch-capable connector.</summary>
 public sealed record StatementFetchScheduleDto(
     string ScheduleId,
