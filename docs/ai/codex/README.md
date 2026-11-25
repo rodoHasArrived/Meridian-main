@@ -297,8 +297,6 @@ Maintenance/reporting:
 
 - `make ai-maintenance-light`
 - `make ai-maintenance-full`
-- `make ai-docs-archive`
-- `make ai-docs-archive-execute`
 
 Local helper surfaces:
 

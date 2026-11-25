@@ -116,8 +116,6 @@ Project-level migration policy:
 
 - `make ai-maintenance-light`
 - `make ai-maintenance-full`
-- `make ai-docs-archive`
-- `make ai-docs-archive-execute`
 
 The root `make help` output mirrors this split so contributors can distinguish blocking gates from optional tooling.
 
