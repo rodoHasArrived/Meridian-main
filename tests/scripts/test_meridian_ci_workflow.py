@@ -95,12 +95,17 @@ class MeridianCiWorkflowTests(unittest.TestCase):
             self.assertEqual(steps[name]["if"], guard)
         for name in ("Require the complete roster", "Upload .NET lane artifacts"):
             self.assertEqual(steps[name]["if"], f"always() && {guard}")
-        changes_detect = next(step for step in workflow["jobs"]["changes"]["steps"]
-                              if step.get("name") == "Detect .NET changes")
-        self.assertIn("build/scripts/ci/detect-dotnet-changes.py", changes_detect["run"])
+        # No separate changes job: every lane would otherwise wait for one more runner.
+        self.assertNotIn("changes", workflow["jobs"])
         gate = workflow["jobs"]["quality-gate"]["steps"][0]
         self.assertEqual(gate["env"]["DOTNET_LANE_DECISION"], "${{ needs.verify-dotnet.outputs.dotnet-required }}")
-        self.assertIn('if [[ "$DOTNET_LANE_DECISION" != "$DOTNET_REQUIRED" ]]; then', gate["run"])
+        self.assertIn('if [[ "$DOTNET_LANE_DECISION" != "true" && "$DOTNET_LANE_DECISION" != "false" ]]; then',
+                      gate["run"])
+        # The integration lane classifies independently; its gate requires the two to agree.
+        integration = workflow["jobs"]["integration-gate"]["steps"][0]
+        self.assertEqual(integration["env"]["DOTNET_LANE_DECISION"],
+                         "${{ needs.verify-dotnet.outputs.dotnet-required }}")
+        self.assertIn('if [[ "$INTEGRATION_DECISION" != "$DOTNET_LANE_DECISION" ]]; then', integration["run"])
 
     def test_dotnet_lane_proves_the_complete_roster(self):
         import yaml

@@ -23,8 +23,8 @@ at ten minutes within the twenty-minute benchmark execution cap. The hosted job
 is capped at thirty-five minutes. Timeouts terminate the benchmark process group.
 There is no parameter matrix or user-supplied benchmark filter.
 The harness starts BenchmarkDotNet in the benchmark project directory, whose
-small solution file bounds project discovery and avoids following the dashboard's
-`node_modules/meridian-tools` symlink back through the entire repository.
+small solution file bounds project discovery and keeps it out of the dashboard's
+`node_modules` tree.
 
 The hosted runner label is `ubuntu-24.04`; SDK setup uses an isolated install
 directory so the repository's normal SDK roll-forward cannot select a preinstalled

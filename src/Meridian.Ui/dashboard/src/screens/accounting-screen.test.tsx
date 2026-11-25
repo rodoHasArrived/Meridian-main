@@ -18,6 +18,7 @@ import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
 import { getOperatorSurfaceVisit, recordOperatorSurfaceVisit } from "@/lib/api/operator-workstation.api";
 import { TestMemoryRouter, renderWithRouter, waitForAsyncEffects } from "@/test/render";
 import { buildSuccessfulVerifiedOperationOutcome } from "@/test/verified-operation-outcome";
+import { backToBreakQueue, inspectReconciliationBreak } from "@/test/narrow-workbench";
 import type {
   AccountingSystemImportDetail,
   AccountingSystemProvider,
@@ -4868,6 +4869,7 @@ describe("AccountingScreen", () => {
   });
 
   it("renders operational exception workbench with queue, comment, audit, and workflow handoffs", async () => {
+    const user = userEvent.setup();
     vi.mocked(api.getReconciliationBreakQueue).mockResolvedValueOnce(data.breakQueue);
 
     await renderAccountingScreen(data, "/accounting/exceptions");
@@ -4888,7 +4890,8 @@ describe("AccountingScreen", () => {
     );
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).toBeInTheDocument();
     expect(screen.getByRole("treegrid", { name: "Reconciliation break queue" })).not.toHaveTextContent("run-42:cash");
-    const inspector = screen.getByRole("region", { name: "Case inspector" });
+    // The test viewport is the constrained layout: the case inspector opens on request.
+    const inspector = await inspectReconciliationBreak(user);
     expect(inspector).toHaveTextContent("run-42:cash");
     expect(within(inspector).getByRole("region", { name: "Comparison" })).toBeInTheDocument();
   });
@@ -5008,8 +5011,11 @@ describe("AccountingScreen", () => {
 
     await renderAccountingScreen(data, "/accounting/reconciliation");
 
-    expect(await screen.findByRole("region", { name: "Case inspector" })).toHaveTextContent("Cash variance over tolerance.");
+    // The test viewport is the constrained layout: inspect the case, then return to the queue.
+    await screen.findByRole("treegrid", { name: "Reconciliation break queue" });
+    expect(await inspectReconciliationBreak(user)).toHaveTextContent("Cash variance over tolerance.");
     expect(screen.getByText("Review cash ledger entries before resolving.")).toBeInTheDocument();
+    await backToBreakQueue(user);
 
     const nextRun = screen.getByRole("row", { name: "Inspect reconciliation run Intraday Vol Carry" });
     expect(nextRun).not.toHaveAttribute("aria-selected");
@@ -6002,6 +6008,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getReconciliationBreakDetail).mockResolvedValueOnce(initial).mockResolvedValue(updated);
     vi.mocked(api.assignReconciliationBreak).mockResolvedValueOnce(successfulReconciliationCaseworkOperation(updated));
     await renderAccountingScreen(data, "/accounting/reconciliation");
+    await inspectReconciliationBreak(user);
     await user.click(screen.getByText("Other decisions"));
     await user.click(screen.getByRole("button", { name: "Assign" }));
     await user.type(within(screen.getByRole("form", { name: "Assign case" })).getByRole("textbox", { name: "Assignee" }), "ops-user");
@@ -6021,6 +6028,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.assignReconciliationBreak).mockResolvedValueOnce(successfulReconciliationCaseworkOperation({ ...initial, version: 2, assignedTo: "ops-user" }));
     renderWithRouter(<AccountingScreen data={data} session={session} />, { initialEntries: ["/accounting/reconciliation"] });
     await waitForAsyncEffects();
+    await inspectReconciliationBreak(user);
     await user.click(screen.getByText("Other decisions"));
     await user.click(screen.getByRole("button", { name: "Assign" }));
     await user.type(within(screen.getByRole("form", { name: "Assign case" })).getByRole("textbox", { name: "Assignee" }), "ops-user");
@@ -6064,6 +6072,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getReconciliationBreakDetail).mockResolvedValueOnce(initial).mockResolvedValue(resolved);
     vi.mocked(api.resolveReconciliationBreak).mockResolvedValueOnce(successfulReconciliationCaseworkOperation(resolved));
     await renderAccountingScreen(data, "/accounting/reconciliation");
+    await inspectReconciliationBreak(user);
     await user.click(screen.getByRole("button", { name: "Resolve" }));
     await user.selectOptions(screen.getByRole("combobox", { name: "Root cause code" }), "BrokerCashTiming");
     await user.selectOptions(screen.getByRole("combobox", { name: "Resolution code" }), "EvidenceAccepted");
@@ -6083,6 +6092,7 @@ describe("AccountingScreen", () => {
       { action: "Assign", enabled: false, disabledReason: "Requires an operations role." }
     ] });
     await renderAccountingScreen(data, "/accounting/reconciliation");
+    await inspectReconciliationBreak(user);
     await user.click(screen.getByText("Other decisions"));
     expect(screen.getByRole("button", { name: "Assign" })).toBeDisabled();
     expect(screen.getByText("Requires an operations role.")).toBeInTheDocument();
@@ -6110,6 +6120,7 @@ describe("AccountingScreen", () => {
     vi.mocked(api.getReconciliationBreakDetail).mockResolvedValueOnce(initial).mockResolvedValue({ ...initial, version: 2, assignedTo: "controller" });
     vi.mocked(api.resolveReconciliationBreak).mockRejectedValueOnce(new ApiError({ path: "/case", status: 409, detail: "Ledger write rejected" }));
     await renderAccountingScreen(data, "/accounting/reconciliation");
+    await inspectReconciliationBreak(user);
     await user.click(screen.getByRole("button", { name: "Resolve" }));
     await user.type(screen.getByRole("textbox", { name: "Resolve rationale" }), "Reviewed cash mismatch");
     await user.click(screen.getByRole("button", { name: "Confirm resolve" }));
