@@ -127,7 +127,11 @@ therefore keeps one account history.
   - As-of lot reads rebuild from the current row and its dated quantity mutations, so after the
     re-key a lot's whole history reads under the SecurityId account and nothing reads under the
     legacy key.
-  - The `protect_tax_lot_account_key` trigger allows a lot's account key to change only this way.
+  - A lot whose label is already taken on the SecurityId-keyed account is relabeled to its first
+    free `{label}~rekey` form. The original and target labels are in the reviewed instruction, and
+    the record id is unchanged.
+  - The `protect_tax_lot_account_key` trigger allows a lot's account key, and label, to change only
+    as the batch's instruction lists that lot.
 - **Persistence.** Postgres stores the key in `account_security_id`
   (`V_ledger_083__security_id_account_keys`) on journal legs, tax lots, tax-lot policies, balance
   checkpoint rows and wash-sale deferrals. Account-identity predicates and indexes use

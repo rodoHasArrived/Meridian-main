@@ -499,7 +499,11 @@ public sealed record LedgerAccountRekeyLot(
     long ExpectedVersion,
     decimal ExpectedOpenQuantity,
     decimal ExpectedCostBasis,
-    Guid BookPositionId);
+    Guid BookPositionId,
+    // Set only when LotId is already taken on the SecurityId-keyed account: the reviewed label the
+    // lot moves to (see LedgerAccountRekeyRules.RelabelCandidate). Null keeps the label.
+    [property: System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    string? TargetLotId = null);
 
 /// <summary>
 /// The reviewed re-key of a legacy ticker-keyed per-security account onto its SecurityId-keyed

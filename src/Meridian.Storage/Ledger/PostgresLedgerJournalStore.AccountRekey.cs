@@ -52,6 +52,16 @@ public sealed partial class PostgresLedgerJournalStore
             throw new LedgerValidationException(
                 "Account re-key must move every open lot on the legacy account, across all of its book positions.");
 
+        // Labels are unique per account key across open and closed lots. A label already taken on the
+        // SecurityId-keyed account must have been reviewed into its relabel form; refuse otherwise
+        // rather than fail on the unique index.
+        var finalLabels = instruction.Lots.Select(LedgerAccountRekeyRules.FinalLotId).ToArray();
+        var taken = await LoadTaxLotLabelsOnAccountAsync(connection, transaction, command.LedgerBookId,
+            instruction.TargetAccount, finalLabels, ct).ConfigureAwait(false);
+        if (taken.Count > 0)
+            throw new LedgerValidationException(
+                $"Account re-key lot label(s) {string.Join(", ", taken.Order(StringComparer.Ordinal))} already exist on the SecurityId-keyed account; plan the re-key again so they are relabeled.");
+
         var balance = await ReadAccountBalanceAsync(connection, transaction, command.LedgerBookId,
             instruction.LegacyAccount, ct).ConfigureAwait(false);
         if (balance != instruction.LegacyBalance)
@@ -80,7 +90,7 @@ public sealed partial class PostgresLedgerJournalStore
             update.Transaction = transaction;
             update.CommandText = $"""
                 update {Qualified("tax_lots")}
-                set account_security_id = @target_security_id, version = version + 1,
+                set account_security_id = @target_security_id, lot_id = @target_lot_id, version = version + 1,
                     last_mutation_batch_id = @batch, updated_at = @at
                 where tax_lot_record_id = @id and ledger_book_id = @book and account_security_id is null
                   and security_id = @target_security_id and version = @version and open_quantity = @quantity
@@ -93,6 +103,7 @@ public sealed partial class PostgresLedgerJournalStore
             update.Parameters.AddWithValue("book", command.LedgerBookId);
             update.Parameters.AddWithValue("version", before.Version);
             update.Parameters.AddWithValue("quantity", before.OpenQuantity);
+            update.Parameters.AddWithValue("target_lot_id", LedgerAccountRekeyRules.FinalLotId(instruction.Lots[index]));
             LedgerTaxLotRecord after;
             await using (var reader = await update.ExecuteReaderAsync(ct).ConfigureAwait(false))
             {
@@ -102,6 +113,7 @@ public sealed partial class PostgresLedgerJournalStore
             }
 
             if (after.Account != instruction.TargetAccount || after.OpenQuantity != before.OpenQuantity
+                || after.LotId != LedgerAccountRekeyRules.FinalLotId(instruction.Lots[index])
                 || LedgerAccountRekeyRules.OpenBasis(after) != LedgerAccountRekeyRules.OpenBasis(before))
                 throw new LedgerValidationException("Account re-key changed lot economics or did not land on the target account.");
             mutations.Add(BuildMutationRecord(command, after, before, index, 0m, before.Version, evidenceId, recordedAt,
@@ -158,6 +170,36 @@ public sealed partial class PostgresLedgerJournalStore
         copy.Parameters.AddWithValue("ledger_book_id", command.LedgerBookId);
         AddAccountParameters(copy, instruction.LegacyAccount);
         await copy.ExecuteNonQueryAsync(ct).ConfigureAwait(false);
+    }
+
+    private async Task<IReadOnlyList<string>> LoadTaxLotLabelsOnAccountAsync(
+        NpgsqlConnection connection,
+        NpgsqlTransaction transaction,
+        Guid ledgerBookId,
+        LedgerAccount account,
+        IReadOnlyList<string> labels,
+        CancellationToken ct)
+    {
+        await using var query = connection.CreateCommand();
+        query.Transaction = transaction;
+        query.CommandText = $"""
+            select lot_id
+            from {Qualified("tax_lots")}
+            where ledger_book_id = @ledger_book_id
+              and account_name = @account_name
+              and account_type = @account_type
+              and {AccountInstrumentMatch()}
+              and lower(financial_account_id) is not distinct from lower(@financial_account_id)
+              and lot_id = any(@labels);
+            """;
+        query.Parameters.AddWithValue("ledger_book_id", ledgerBookId);
+        AddAccountParameters(query, account);
+        query.Parameters.AddWithValue("labels", labels.ToArray());
+        var taken = new List<string>();
+        await using var reader = await query.ExecuteReaderAsync(ct).ConfigureAwait(false);
+        while (await reader.ReadAsync(ct).ConfigureAwait(false))
+            taken.Add(reader.GetString(0));
+        return taken;
     }
 
     private async Task<IReadOnlyList<Guid>> LoadOpenLotIdsOnAccountAsync(

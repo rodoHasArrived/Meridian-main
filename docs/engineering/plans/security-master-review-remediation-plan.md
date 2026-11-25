@@ -727,6 +727,12 @@ Tax-lot re-key (follow-through, 2026-11-25):
   SecurityId and position and moving that position's lot basis. Each lot is checked against the
   position its instruction names. The batch row records the lowest position as its representative
   scope.
+- A moved lot whose label already exists on the SecurityId-keyed account (open or closed) is
+  relabeled to its first free `{label}~rekey`, `{label}~rekey2`, … form (up to eight attempts; the
+  account is blocked after that). The instruction records the original and target labels for
+  review. The store re-checks label occupancy under lock and applies the label with the re-key, and
+  the `protect_tax_lot_account_key` trigger allows a label change only to the instruction's target.
+  The record id is unchanged; wash-sale deferrals keep the label they recorded.
 - An approved proposal posts one atomic `AccountRekey` batch: the reclass journal plus an in-place
   re-key of every open lot. It also copies the relief-policy history to the target key.
 - Migration `V_ledger_084` adds the batch instruction column, widens the mutation-kind checks and
@@ -736,8 +742,7 @@ Tax-lot re-key (follow-through, 2026-11-25):
 Known follow-ups:
 
 - A legacy account with an open lot that has no book position, or whose instrument is not the
-  resolved SecurityId, is listed as blocked by `LedgerSecurityKeyRekeyService`. A re-key whose lot
-  label already exists on the target key is rejected by the unique index.
+  resolved SecurityId, is listed as blocked by `LedgerSecurityKeyRekeyService`.
 - `LedgerSecurityKeyRekeyService` is not registered in DI; callers construct it.
 - The UI correction flows and `LedgerPeriodTrialBalanceLineDto` do not yet carry the account
   SecurityId.

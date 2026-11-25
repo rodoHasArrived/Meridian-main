@@ -1447,7 +1447,7 @@
       "ordinal": null,
       "path": "src/Meridian.Storage/Ledger/Migrations/V_ledger_084__tax_lot_account_rekey.sql",
       "schema": "ledger",
-      "sha256": "efdc7f3e2f1cd5de5c29e1ba2e8dbad63e193617bf233a733374eaa5bad08738"
+      "sha256": "d2d317b353bcadd3cca7a86d2337ee2c034c285b4b467b46c148a04737988b5d"
     },
     {
       "filename": "001_fund_structure.sql",

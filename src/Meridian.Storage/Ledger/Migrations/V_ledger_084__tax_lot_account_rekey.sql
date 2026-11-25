@@ -20,7 +20,10 @@
 --     account balance) is enforced by the typed store.
 --   * protect_tax_lot_account_key (new trigger): a lot's account_security_id may change only from
 --     null to the lot's own instrument security_id, through a versioned AccountRekey batch of the
---     same book, security and position that leaves quantity unchanged.
+--     same book and security whose instruction lists the lot at its own book position (a holding
+--     may span several positions), leaving quantity unchanged. In that same update the lot label may
+--     change only to the instruction's reviewed targetLotId, used when the label is already taken on
+--     the SecurityId-keyed account.
 --
 -- The batch row is inserted before the lot compare-and-swap in the same transaction, so the trigger's
 -- join on atomic_tax_lot_posting_batches resolves in-transaction (the V043 ordering).
@@ -89,13 +92,17 @@ begin
     if not exists (
         select 1
         from __SCHEMA__.atomic_tax_lot_posting_batches rekey
+        cross join lateral jsonb_array_elements(rekey.account_rekey_instruction -> 'lots') listed(lot)
         where rekey.mutation_batch_id = new.last_mutation_batch_id
           and rekey.mutation_kind = 'AccountRekey'
           and rekey.ledger_book_id = old.ledger_book_id
           and rekey.security_id = old.security_id
-          and rekey.book_position_id = old.book_position_id
-          and rekey.account_rekey_instruction is not null) then
-        raise exception 'A tax lot''s account key changes only through an AccountRekey mutation batch';
+          and rekey.account_rekey_instruction is not null
+          and (listed.lot ->> 'taxLotRecordId')::uuid = old.tax_lot_record_id
+          and (listed.lot ->> 'bookPositionId')::uuid is not distinct from old.book_position_id
+          and listed.lot ->> 'lotId' = old.lot_id
+          and new.lot_id = coalesce(listed.lot ->> 'targetLotId', old.lot_id)) then
+        raise exception 'A tax lot''s account key and label change only as its AccountRekey instruction lists';
     end if;
     return new;
 end

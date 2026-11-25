@@ -109,7 +109,22 @@ public sealed class LedgerSecurityKeyRekeyService
                 continue;
             }
 
-            var proposal = TryPropose(ledgerBookId, period, effectiveAt, row, lots, out var reason);
+            // Labels are unique per account key across open and closed lots. Read which of the lots'
+            // labels, and their relabel candidates, are already taken on the SecurityId-keyed account.
+            IReadOnlySet<string> occupied = new HashSet<string>(StringComparer.Ordinal);
+            if (row.TargetAccount is { } target)
+            {
+                var candidates = lots.Select(static lot => lot.LotId)
+                    .Concat(lots.SelectMany(static lot => Enumerable.Range(1, LedgerAccountRekeyRules.MaxRelabelAttempts)
+                        .Select(attempt => LedgerAccountRekeyRules.RelabelCandidate(lot.LotId, attempt))))
+                    .Distinct(StringComparer.Ordinal)
+                    .ToArray();
+                occupied = (await _store.GetTaxLotsByLotIdsAsync(ledgerBookId, target, candidates, ct).ConfigureAwait(false))
+                    .Select(static lot => lot.LotId)
+                    .ToHashSet(StringComparer.Ordinal);
+            }
+
+            var proposal = TryPropose(ledgerBookId, period, effectiveAt, row, lots, out var reason, occupied);
             if (proposal is null)
                 blocked.Add(new LedgerSecurityKeyRekeyBlocked(row, reason!));
             else
@@ -129,7 +144,8 @@ public sealed class LedgerSecurityKeyRekeyService
         DateTimeOffset effectiveAt,
         LedgerSecurityKeyMappingRow row,
         IReadOnlyList<LedgerTaxLotRecord> openLots,
-        out string? reason)
+        out string? reason,
+        IReadOnlySet<string>? occupiedTargetLabels = null)
     {
         ArgumentNullException.ThrowIfNull(period);
         ArgumentNullException.ThrowIfNull(row);
@@ -166,11 +182,33 @@ public sealed class LedgerSecurityKeyRekeyService
 
         var positions = open.Select(static lot => lot.BookPositionId).Distinct().Order().ToArray();
 
+        // A label already taken on the SecurityId-keyed account moves to its first free relabel form
+        // ({label}~rekey, {label}~rekey2, ...), recorded in the instruction for review.
+        var used = new HashSet<string>(occupiedTargetLabels ?? new HashSet<string>(), StringComparer.Ordinal);
+        var targetLabels = new string?[open.Length];
+        for (var index = 0; index < open.Length; index++)
+        {
+            var label = open[index].LotId;
+            if (used.Add(label))
+                continue;
+            var relabel = Enumerable.Range(1, LedgerAccountRekeyRules.MaxRelabelAttempts)
+                .Select(attempt => LedgerAccountRekeyRules.RelabelCandidate(label, attempt))
+                .FirstOrDefault(candidate => !used.Contains(candidate));
+            if (relabel is null)
+            {
+                reason = $"Lot label '{label}' and its {LedgerAccountRekeyRules.MaxRelabelAttempts} relabel forms are all taken on the SecurityId-keyed account; relabel it first.";
+                return null;
+            }
+
+            used.Add(relabel);
+            targetLabels[index] = relabel;
+        }
+
         LedgerAccountRekeyLot[] lots;
         try
         {
-            lots = open.Select(lot => new LedgerAccountRekeyLot(lot.TaxLotRecordId, lot.LotId, lot.Version, lot.OpenQuantity,
-                LedgerAccountRekeyRules.OpenBasis(lot), lot.BookPositionId)).ToArray();
+            lots = open.Select((lot, index) => new LedgerAccountRekeyLot(lot.TaxLotRecordId, lot.LotId, lot.Version, lot.OpenQuantity,
+                LedgerAccountRekeyRules.OpenBasis(lot), lot.BookPositionId, targetLabels[index])).ToArray();
             var instruction = new LedgerAccountRekeyInstruction(row.LegacyAccount, row.TargetAccount, row.Balance, lots);
             LedgerAccountRekeyRules.ValidateInstruction(instruction, direction);
             var key = $"security-key-rekey:{ledgerBookId:D}:{row.LegacyAccount}:{securityId:D}";

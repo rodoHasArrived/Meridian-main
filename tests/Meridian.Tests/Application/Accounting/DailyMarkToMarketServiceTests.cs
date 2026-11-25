@@ -338,7 +338,7 @@ public sealed class DailyMarkToMarketServiceTests
                     MarkToMarketCarryingValueKey.FromPosition,
                     position =>
                     {
-                        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(position.Symbol), position.FinancialAccountId);
+                        var account = LedgerAccounts.Securities(LedgerSecurityKey.From(position.SecurityId, position.Symbol), position.FinancialAccountId);
                         var existsAsOf = _ledger.GetEntries(account).Any(entry => entry.Timestamp <= request.AsOf);
                         return new MarkToMarketCarryingValue(
                             existsAsOf ? _ledger.GetBalanceAsOf(account, request.AsOf) : null,

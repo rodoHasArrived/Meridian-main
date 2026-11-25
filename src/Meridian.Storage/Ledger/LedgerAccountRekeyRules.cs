@@ -15,6 +15,33 @@ public static class LedgerAccountRekeyRules
     /// <summary>Journal metadata tag carrying the reviewed legacy account, for reconciliation readers.</summary>
     public const string JournalTag = "ledger.securityKeyRekey";
 
+    /// <summary>Suffix marking a lot label changed by a re-key because the original was taken on the target key.</summary>
+    public const string RelabelMarker = "~rekey";
+
+    /// <summary>Most relabel attempts a planner tries before reporting the account as blocked.</summary>
+    public const int MaxRelabelAttempts = 8;
+
+    /// <summary>
+    /// The deterministic relabel for <paramref name="lotId"/>: <c>{lotId}~rekey</c> on the first
+    /// attempt, then <c>{lotId}~rekey2</c>, <c>{lotId}~rekey3</c> and so on.
+    /// </summary>
+    public static string RelabelCandidate(string lotId, int attempt)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(lotId);
+        ArgumentOutOfRangeException.ThrowIfLessThan(attempt, 1);
+        return attempt == 1 ? lotId + RelabelMarker : $"{lotId}{RelabelMarker}{attempt}";
+    }
+
+    /// <summary>The label <paramref name="lot"/> carries after the re-key.</summary>
+    public static string FinalLotId(LedgerAccountRekeyLot lot)
+    {
+        ArgumentNullException.ThrowIfNull(lot);
+        return lot.TargetLotId ?? lot.LotId;
+    }
+
+    private static bool IsRelabelOf(string lotId, string targetLotId)
+        => Enumerable.Range(1, MaxRelabelAttempts).Any(attempt => RelabelCandidate(lotId, attempt) == targetLotId);
+
     /// <summary>Retained-evidence subject type for the mapping-report row that authorizes a re-key.</summary>
     public const string EvidenceSubjectType = "LedgerSecurityKeyMapping";
 
@@ -71,6 +98,11 @@ public static class LedgerAccountRekeyRules
                 || lot.ExpectedVersion < 0 || lot.ExpectedOpenQuantity <= 0m || lot.ExpectedCostBasis < 0m
                 || lot.BookPositionId == Guid.Empty))
             throw new LedgerValidationException("Account re-key must list each open lot once with its reviewed version, quantity, basis and book position.");
+        if (instruction.Lots.Any(static lot => lot.TargetLotId is { } target && !IsRelabelOf(lot.LotId, target)))
+            throw new LedgerValidationException(
+                $"Account re-key may relabel a lot only to its '{RelabelMarker}' form, and only when its label is taken on the SecurityId-keyed account.");
+        if (instruction.Lots.Select(FinalLotId).Distinct(StringComparer.Ordinal).Count() != instruction.Lots.Count)
+            throw new LedgerValidationException("Account re-key would leave two lots with the same label on the SecurityId-keyed account.");
         if (instruction.Lots.Sum(static lot => lot.ExpectedCostBasis) != instruction.LegacyBalance)
             throw new LedgerValidationException(
                 "Account re-key lot basis must equal the legacy balance; a balance without lots, or lots without balance, needs its own correction first.");

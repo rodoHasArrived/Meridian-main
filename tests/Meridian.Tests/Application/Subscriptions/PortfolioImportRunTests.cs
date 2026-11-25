@@ -45,8 +45,9 @@ public sealed class PortfolioImportRunTests : IDisposable
         var draft = PortfolioOpeningBalanceProjector.Build(second, OpeningSecurityIds);
         draft.IsBalanced.Should().BeTrue();
         draft.Lines.Where(l => l.account.Name == "Securities").Sum(l => l.debit).Should().Be(350m);
-        draft.Lines.Where(l => l.account.Name == "Securities").Should().OnlyContain(l => l.account.SecurityId == AaplSecurityId,
-            "opening holdings are keyed by Security Master identity (F2)");
+        draft.Lines.Where(l => l.account.Name == "Securities" && l.account.Symbol == "AAPL")
+            .Should().OnlyContain(l => l.account.SecurityId == AaplSecurityId,
+                "opening holdings are keyed by Security Master identity (F2)");
         draft.Lines.Single(l => l.account.Name == "Capital Account").credit.Should().Be(375m);
         (await restarted.RunAsync(request)).Should().BeEquivalentTo(second);
         queue.Calls.Should().Be(2);

@@ -159,6 +159,76 @@ public sealed partial class AtomicTaxLotJournalStoreTests
     }
 
     [Fact]
+    public void AccountRekey_LabelTakenOnTheSecurityIdAccount_IsRelabeledToItsFirstFreeRekeyForm()
+    {
+        var bookId = Guid.NewGuid();
+        var period = RekeyPeriod(bookId, Guid.NewGuid(), version: 0);
+        var lot = LegacyRekeyLot(bookId, Guid.NewGuid());
+        var occupied = new HashSet<string>(StringComparer.Ordinal)
+        {
+            lot.LotId,
+            LedgerAccountRekeyRules.RelabelCandidate(lot.LotId, 1)
+        };
+
+        var proposal = LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, ResolvedRekeyRow(10_000m), [lot],
+            out var reason, occupied);
+
+        proposal.Should().NotBeNull(reason);
+        var moved = proposal!.Instruction.Lots.Should().ContainSingle().Subject;
+        moved.LotId.Should().Be(lot.LotId, "the instruction keeps the reviewed original label");
+        moved.TargetLotId.Should().Be(lot.LotId + "~rekey2");
+        LedgerAccountRekeyRules.FinalLotId(moved).Should().Be(lot.LotId + "~rekey2");
+        var validate = () => LedgerAccountRekeyRules.Validate(
+            LedgerSecurityKeyService_BuildCommand(proposal));
+        validate.Should().NotThrow();
+    }
+
+    [Fact]
+    public void AccountRekey_FreeLabel_IsKept_AndArbitraryOrDuplicateRelabelsAreRefused()
+    {
+        var bookId = Guid.NewGuid();
+        var period = RekeyPeriod(bookId, Guid.NewGuid(), version: 0);
+        var lot = LegacyRekeyLot(bookId, Guid.NewGuid());
+        var proposal = LedgerSecurityKeyRekeyService.TryPropose(bookId, period, RekeyAt, ResolvedRekeyRow(10_000m), [lot],
+            out _, new HashSet<string>(StringComparer.Ordinal) { "some-other-label" });
+        proposal!.Instruction.Lots.Single().TargetLotId.Should().BeNull();
+
+        var instruction = proposal.Instruction;
+        var arbitrary = () => LedgerAccountRekeyRules.ValidateInstruction(instruction with
+        {
+            Lots = [instruction.Lots[0] with { TargetLotId = "renamed-lot" }]
+        }, Meridian.Contracts.Accounting.Lots.OpenLotDirection.Long);
+        arbitrary.Should().Throw<LedgerValidationException>().WithMessage("*~rekey*");
+
+        var half = instruction.Lots[0] with { ExpectedCostBasis = 5_000m };
+        var other = half with { TaxLotRecordId = Guid.NewGuid(), LotId = half.LotId + "~rekey" };
+        var duplicate = () => LedgerAccountRekeyRules.ValidateInstruction(instruction with
+        {
+            Lots = [half with { TargetLotId = half.LotId + "~rekey" }, other]
+        }, Meridian.Contracts.Accounting.Lots.OpenLotDirection.Long);
+        duplicate.Should().Throw<LedgerValidationException>().WithMessage("*same label*");
+    }
+
+    [Fact]
+    public void AccountRekey_AllRelabelFormsTaken_IsBlockedWithAReason()
+    {
+        var bookId = Guid.NewGuid();
+        var lot = LegacyRekeyLot(bookId, Guid.NewGuid());
+        var occupied = Enumerable.Range(1, LedgerAccountRekeyRules.MaxRelabelAttempts)
+            .Select(attempt => LedgerAccountRekeyRules.RelabelCandidate(lot.LotId, attempt))
+            .Append(lot.LotId)
+            .ToHashSet(StringComparer.Ordinal);
+
+        LedgerSecurityKeyRekeyService.TryPropose(bookId, RekeyPeriod(bookId, Guid.NewGuid(), version: 0), RekeyAt,
+                ResolvedRekeyRow(10_000m), [lot], out var reason, occupied)
+            .Should().BeNull();
+        reason.Should().Contain("relabel forms are all taken");
+    }
+
+    private static AtomicTaxLotJournalCommand LedgerSecurityKeyService_BuildCommand(LedgerSecurityKeyRekeyProposal proposal)
+        => LedgerSecurityKeyRekeyService.BuildCommand(proposal, RekeyApproval(), RekeyBook(proposal.LedgerBookId));
+
+    [Fact]
     public void AccountRekey_FingerprintOfOtherBatchKindsIsUnchanged()
     {
         var acquisition = BuildAcquisitionCommand();
