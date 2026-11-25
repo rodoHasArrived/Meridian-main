@@ -59199,6 +59199,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Workstation.StatementRunCreateDto",
+      "target": "contract:Meridian.Contracts.Workstation.StatementReconciliationAccountingScopeDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementRunDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementBreakDto"
     },
@@ -61641,6 +61647,24 @@
       "label": "",
       "source": "database:banking.ck_bank_transactions_payment_evidence on banking.bank_transactions",
       "target": "database:banking.bank_transactions.pending_payment_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "target": "database:banking.pending_payments.company_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "target": "database:banking.pending_payments.ledger_book_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "target": "database:banking.pending_payments.tenant_id"
     },
     {
       "kind": "normal",
@@ -72118,7 +72142,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "782e2112c771980a650d0aed4b32a487d14025de678d921d02ef0e7dc2b579ea",
+  "fingerprint": "bba10b278c6feb61d3428129a2b806798b50f67cf48696bcacbecedc9dbd4bf6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -97200,6 +97224,11 @@
       "label": "banking.ck_bank_transactions_payment_evidence on banking.bank_transactions"
     },
     {
+      "id": "database:banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "kind": "database-object",
+      "label": "banking.ck_pending_payments_book_binding on banking.pending_payments"
+    },
+    {
       "id": "database:banking.ck_pending_payments_currency on banking.pending_payments",
       "kind": "database-object",
       "label": "banking.ck_pending_payments_currency on banking.pending_payments"
@@ -97219,6 +97248,11 @@
       "kind": "database-table",
       "label": "banking.pending_payments",
       "schema": "banking"
+    },
+    {
+      "id": "database:banking.pending_payments.company_id",
+      "kind": "database-object",
+      "label": "banking.pending_payments.company_id"
     },
     {
       "id": "database:banking.pending_payments.currency",
@@ -97241,9 +97275,19 @@
       "label": "banking.pending_payments.currency_remediation_reason"
     },
     {
+      "id": "database:banking.pending_payments.ledger_book_id",
+      "kind": "database-object",
+      "label": "banking.pending_payments.ledger_book_id"
+    },
+    {
       "id": "database:banking.pending_payments.pending_payment_id",
       "kind": "database-object",
       "label": "banking.pending_payments.pending_payment_id"
+    },
+    {
+      "id": "database:banking.pending_payments.tenant_id",
+      "kind": "database-object",
+      "label": "banking.pending_payments.tenant_id"
     },
     {
       "id": "database:banking.pending_payments_pkey",
@@ -105965,11 +106009,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4416,
+    "contract_references": 4417,
     "contract_set_memberships": 5821,
-    "edges": 11980,
+    "edges": 11984,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5886
+    "nodes": 5890
   }
 }

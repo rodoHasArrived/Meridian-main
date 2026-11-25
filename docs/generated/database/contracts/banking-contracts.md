@@ -44,15 +44,19 @@ classDiagram
     }
     class Meridian_Contracts_Banking_InitiatePaymentRequest["InitiatePaymentRequest"] {
         +decimal Amount
+        +string? BoundCompanyId
+        +string? BoundTenantId
         +string? Currency
         +DateOnly EffectiveDate
         +string? ExternalRef
+        +Guid? LedgerBookId
         +string? Notes
     }
     class Meridian_Contracts_Banking_PaymentApprovalStatus["PaymentApprovalStatus"] {
     }
     class Meridian_Contracts_Banking_PendingPaymentDto["PendingPaymentDto"] {
         +decimal Amount
+        +string? CompanyId
         +string? Currency
         +DateTimeOffset? CurrencyRemediatedAt
         +string? CurrencyRemediatedBy
@@ -61,9 +65,8 @@ classDiagram
         +Guid EntityId
         +string? ExternalRef
         +DateTimeOffset InitiatedAt
+        +Guid? LedgerBookId
         +string? Notes
-        +Guid PendingPaymentId
-        +DateTimeOffset? ReviewedAt
     }
     class Meridian_Contracts_Banking_RecordPaymentBankEvidenceRequest["RecordPaymentBankEvidenceRequest"] {
         +OperationsActionOriginDto ActionOrigin

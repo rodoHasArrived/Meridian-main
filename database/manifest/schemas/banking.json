@@ -66,6 +66,42 @@
       "target_schema": "banking"
     },
     {
+      "fingerprint": "ec1901a264ebba44ab92b4a3c220143b118fafc880e77027a53b8e17a0cdea94",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.company_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "ae7de30fd1d332c93c2dc8a6bfdd8a5cd93ed8afe62a26e767cb6625bd0b79d8",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.ledger_book_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
+      "fingerprint": "d17576596167263f5b333b228ade51de7370dad12016e1595857520122c5a8f6",
+      "kind": "normal",
+      "source": "banking.ck_pending_payments_book_binding on banking.pending_payments",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "banking",
+      "target": "banking.pending_payments.tenant_id",
+      "target_kind": "table column",
+      "target_name": "pending_payments",
+      "target_schema": "banking"
+    },
+    {
       "fingerprint": "384fa8323142aad546a80c041af685071d595d6b8ed663d3bfdb08cc15c9f03b",
       "kind": "normal",
       "source": "banking.ck_pending_payments_currency on banking.pending_payments",
@@ -154,7 +190,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "13eb851755849f99d829e419847342c0ee8065d83fcb48e16b188c7c1ea89b90",
+  "fingerprint": "36c365cb3d7d06cc3abeed4d4441755d5df11b587277ba8041a2a765d1b339c3",
   "foreign_tables": [],
   "functions": [],
   "logical_modules": [
@@ -959,10 +995,80 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": true,
+          "ordinal_position": 18,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "tenant_id",
+            "company_id",
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id IS NULL AND company_id IS NULL AND ledger_book_id IS NULL OR tenant_id IS NOT NULL AND btrim(tenant_id) <> ''::text AND company_id IS NOT NULL AND btrim(company_id) <> ''::text AND ledger_book_id IS NOT NULL) NOT VALID",
+          "delete_action": null,
+          "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_pending_payments_book_binding",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": false
+        },
         {
           "columns": [
             "currency"
@@ -1029,7 +1135,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+      "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -1049,6 +1155,28 @@
           "options": [],
           "owner": "meridian",
           "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_pending_payments_ledger_book_id ON banking.pending_payments USING btree (ledger_book_id) WHERE (ledger_book_id IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "ledger_book_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_pending_payments_ledger_book_id",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "ledger_book_id IS NOT NULL",
           "primary": false,
           "ready": true,
           "security_labels": [],
@@ -2099,10 +2227,80 @@
           "security_labels": [],
           "type_name": "timestamptz",
           "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "3f3f4f0d0cadce108f557ecccc69406a8dacb84df9f3c3416a7a58ade3b94ccf",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "tenant_id",
+          "nullable": true,
+          "ordinal_position": 16,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "5eb3a7b8ae05bd764bd4f1e018529bdb4ce52e9c992c4794ec01ff54e8791dd9",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "company_id",
+          "nullable": true,
+          "ordinal_position": 17,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "bacbf88be3e6ec701389564f2d4f24042b25208fc8ccc91eb67006020e91f068",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "ledger_book_id",
+          "nullable": true,
+          "ordinal_position": 18,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
         }
       ],
       "comment": null,
       "constraints": [
+        {
+          "columns": [
+            "tenant_id",
+            "company_id",
+            "ledger_book_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (tenant_id IS NULL AND company_id IS NULL AND ledger_book_id IS NULL OR tenant_id IS NOT NULL AND btrim(tenant_id) <> ''::text AND company_id IS NOT NULL AND btrim(company_id) <> ''::text AND ledger_book_id IS NOT NULL) NOT VALID",
+          "delete_action": null,
+          "fingerprint": "d610daa8c264580b303ec2304993f99f15a6fe093f07b1c4c5a9e126e311f43f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_pending_payments_book_binding",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": false
+        },
         {
           "columns": [
             "currency"
@@ -2169,7 +2367,7 @@
       ],
       "definition": null,
       "definition_hash": null,
-      "fingerprint": "2ee6d7539cb127fd3267b26c497c546db925bab9a55a503e32d095eda995a103",
+      "fingerprint": "ae6e1d36217b5a19d2f1ccfbface2d0c12b57ebfb803193a0c8a0ba6b4163721",
       "foreign_options": [],
       "foreign_server": null,
       "indexes": [
@@ -2189,6 +2387,28 @@
           "options": [],
           "owner": "meridian",
           "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_pending_payments_ledger_book_id ON banking.pending_payments USING btree (ledger_book_id) WHERE (ledger_book_id IS NOT NULL)",
+          "expression": null,
+          "fingerprint": "45b5cc10174d6f0c313c8af6fad648110cb5f9350aac0fa7fe70ba564e9a9d60",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "ledger_book_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_pending_payments_ledger_book_id",
+          "options": [],
+          "owner": "meridian",
+          "predicate": "ledger_book_id IS NOT NULL",
           "primary": false,
           "ready": true,
           "security_labels": [],
