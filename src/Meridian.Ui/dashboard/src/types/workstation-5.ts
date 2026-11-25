@@ -385,6 +385,10 @@ export interface TradingActionResult {
   stillWorking?: KillSwitchSweepFailure[] | null;
   /** True when the sweep could not read the broker book, so an empty local book proves nothing. */
   brokerViewUnavailable?: boolean | null;
+  /** Durable cancel-all evidence can be reopened under its account scope. */
+  incidentId?: string | null;
+  evidenceRetained?: boolean | null;
+  evidenceError?: string | null;
 }
 
 // --- Multi-run comparison types ---

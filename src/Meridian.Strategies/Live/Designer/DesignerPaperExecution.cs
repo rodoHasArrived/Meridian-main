@@ -47,6 +47,8 @@ public sealed class DesignerPaperExecution(
             target.RunType != RunType.Paper || target.FundAccountId != accountId ||
             target.ParentRunId != source.RunId || target.EndedAt.HasValue ||
             !Sha256Digest.FixedEquals(run.InputHashSha256, target.InputHashSha256) ||
+            !string.Equals(run.StrategyArtifactId, target.StrategyArtifactId, StringComparison.Ordinal) ||
+            !string.Equals(run.StrategyArtifactId, source.StrategyArtifactId, StringComparison.Ordinal) ||
             !Sha256Digest.FixedEquals(version, DesignerStrategyVersion.Read(source)) ||
             source.StrategyId != run.StrategyId || source.FundAccountId != accountId ||
             !DesignerStrategyVersion.HasRetainedProvenance(source) ||
@@ -62,6 +64,7 @@ public sealed class DesignerPaperExecution(
             review.SourceRunId != source.RunId || review.TargetRunId != run.RunId ||
             review.StrategyId != run.StrategyId || review.SourceRunType != RunType.Backtest ||
             review.TargetRunType != RunType.Paper ||
+            !string.Equals(review.StrategyArtifactId, run.StrategyArtifactId, StringComparison.Ordinal) ||
             !Sha256Digest.FixedEquals(review.StrategyVersionSha256, version) ||
             !Sha256Digest.FixedEquals(review.SourceInputHashSha256, source.InputHashSha256) ||
             string.IsNullOrWhiteSpace(review.ApprovedBy) || string.IsNullOrWhiteSpace(review.ApprovalReason) ||
@@ -90,7 +93,10 @@ public sealed class DesignerPaperExecution(
         if (!session.IsActive)
             return (null, "The retained paper session has already closed.");
 
-        var authority = new StrategyOrderAuthority(run.StrategyId, run.RunId, version!, review.AuditReference, session.SessionId);
+        var authority = new StrategyOrderAuthority(run.StrategyId, run.RunId, version!, review.AuditReference, session.SessionId)
+        {
+            StrategyArtifactId = run.StrategyArtifactId
+        };
         return (new PaperRunOrderContext(scope.TenantId, scope.CompanyId, accountId, authority, sessions), null);
     }
 }
