@@ -95,6 +95,25 @@ internal static class DirectLendingServiceSupport
         };
     }
 
+    /// <summary>
+    /// Refuses a daily accrual whose bounded all-in rate is negative. The day-count kernels return
+    /// zero for a non-positive rate, which silently posted a zero accrual for a loan whose rate had
+    /// gone negative; only a declared <see cref="DirectLendingTermsDto.EffectiveRateFloor"/> may
+    /// floor the rate. Returns null when the rate is supported.
+    /// </summary>
+    public static DirectLendingCommandError? EnsureSupportedAccrualRate(DirectLendingTermsDto terms, decimal annualRate)
+    {
+        ArgumentNullException.ThrowIfNull(terms);
+        var bounded = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.ApplyRateBounds(
+            terms.EffectiveRateFloor, terms.EffectiveRateCap, annualRate);
+        return bounded < 0m
+            ? new DirectLendingCommandError(
+                DirectLendingErrorCode.NegativeInterestUnsupported,
+                $"{Meridian.Contracts.SecurityMaster.SecurityInterestSupport.NegativeInterestUnsupported}: the loan's all-in rate {bounded} is negative and no contractual floor is declared. "
+                + Meridian.Contracts.SecurityMaster.SecurityInterestSupport.NegativeInterestReason)
+            : null;
+    }
+
     public static LoanTermsVersionDto CreateTermsVersion(
         int versionNumber,
         DirectLendingTermsDto terms,

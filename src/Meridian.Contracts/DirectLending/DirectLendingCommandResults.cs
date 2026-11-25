@@ -8,7 +8,14 @@ public enum DirectLendingErrorCode : byte
     Conflict = 3,
 
     /// <summary>A scheduled rate reset has no index fixing for its observation date (fail closed).</summary>
-    FixingMissing = 4
+    FixingMissing = 4,
+
+    /// <summary>
+    /// The bounded all-in rate is negative. Servicing never floors interest to zero silently
+    /// (owner decision 2026-11-11, "never floor"); a contractual floor must be declared as
+    /// <c>EffectiveRateFloor</c> for it to apply.
+    /// </summary>
+    NegativeInterestUnsupported = 5
 }
 
 public sealed record DirectLendingCommandError(

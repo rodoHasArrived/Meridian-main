@@ -139,6 +139,32 @@ public sealed class ForwardCurveCashFlowTests
     }
 
     [Fact]
+    public async Task FloatingLeg_DeclaredResetWithoutObservedFixing_BlocksInsteadOfSubstitutingTheLatestFixing()
+    {
+        // Review P3: a period that has already reset must use its observed fixing. The legacy leg walk
+        // used to substitute the latest fixing (or a forecast) and only relabelled the rate source.
+        // Both legs are floating so the walk reaches the reset check before any undeclared fixed rate.
+        var (security, _) = FloatingSwap(
+            currentIndexRate: 0.03m,
+            configureFixed: (leg, effectiveDate) =>
+            {
+                leg["legType"] = "Floating";
+                leg["index"] = "SOFR";
+                leg.Remove("fixedRate");
+                leg["currentIndexRate"] = 0.03m;
+                leg["resetSchedule"] = new object[] { new { resetDate = effectiveDate, fixingRate = (decimal?)null } };
+            });
+        var curves = new InMemorySecurityForwardCurveProvider();
+
+        var projection = await Project(security, curves);
+
+        projection.Blocker.Should().NotBeNull();
+        projection.Blocker!.Code.Should().Be("HistoricalFixingMissing");
+        projection.Schedule.Should().BeEmpty();
+        projection.BlockedReason.Should().Contain("receive-fixed").And.Contain("no observed fixing");
+    }
+
+    [Fact]
     public async Task StoredProvider_ReturnsTheLatestVersionAsOf_AndStaysFlatForwardWhenAmbiguous()
     {
         var sofr = ValuationTestSecurities.ForwardDefinition("USD-SOFR-3M", "SOFR");

@@ -539,6 +539,11 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             return new DirectLendingCommandResult<DailyAccrualEntryDto>(null, annualRateResult.Error);
         }
 
+        if (DirectLendingServiceSupport.EnsureSupportedAccrualRate(stored.Contract.CurrentTerms, annualRateResult.Value) is { } negativeRate)
+        {
+            return new DirectLendingCommandResult<DailyAccrualEntryDto>(null, negativeRate);
+        }
+
         var decision = DirectLendingAggregateInterop.PostDailyAccrual(stored.Servicing, stored.Contract.CurrentTerms, request);
         var entry = decision.Entry;
         var servicing = decision.Servicing;

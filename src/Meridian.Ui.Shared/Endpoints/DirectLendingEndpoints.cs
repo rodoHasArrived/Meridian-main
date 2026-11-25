@@ -1380,7 +1380,7 @@ public static class DirectLendingEndpoints
         {
             DirectLendingErrorCode.NotFound => StatusCodes.Status404NotFound,
             DirectLendingErrorCode.ConcurrencyConflict or DirectLendingErrorCode.Conflict => StatusCodes.Status409Conflict,
-            DirectLendingErrorCode.FixingMissing => StatusCodes.Status422UnprocessableEntity,
+            DirectLendingErrorCode.FixingMissing or DirectLendingErrorCode.NegativeInterestUnsupported => StatusCodes.Status422UnprocessableEntity,
             _ => StatusCodes.Status400BadRequest
         });
 

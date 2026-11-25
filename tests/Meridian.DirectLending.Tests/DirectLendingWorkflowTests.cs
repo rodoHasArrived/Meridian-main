@@ -254,6 +254,42 @@ public sealed class DirectLendingWorkflowTests
     }
 
 
+    [Fact]
+    public async Task PostDailyAccrualAsync_NegativeAllInRate_RefusesInsteadOfPostingZero()
+    {
+        // Review P3 / owner decision 2026-11-11 ("never floor"): a negative all-in rate used to post
+        // a silent zero accrual because the day-count kernel returns 0 for a non-positive rate.
+        var service = new InMemoryDirectLendingService();
+        var request = BuildCreateRequest();
+        var loan = await service.CreateLoanAsync(request with { Terms = request.Terms with { FixedAnnualRate = -0.001m } });
+        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 23)));
+        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-neg"));
+
+        var act = () => service.PostDailyAccrualAsync(loan.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+
+        var failure = await act.Should().ThrowAsync<DirectLendingCommandException>();
+        failure.Which.Error.Code.Should().Be(DirectLendingErrorCode.NegativeInterestUnsupported);
+        (await service.GetServicingStateAsync(loan.LoanId))!.AccrualEntries.Should().BeEmpty();
+    }
+
+    [Fact]
+    public async Task PostDailyAccrualAsync_NegativeRateWithDeclaredFloor_AccruesAtTheFloor()
+    {
+        var service = new InMemoryDirectLendingService();
+        var request = BuildCreateRequest();
+        var loan = await service.CreateLoanAsync(request with
+        {
+            Terms = request.Terms with { FixedAnnualRate = -0.001m, EffectiveRateFloor = 0m }
+        });
+        await service.ActivateLoanAsync(loan.LoanId, new ActivateLoanRequest(new DateOnly(2026, 3, 23)));
+        await service.BookDrawdownAsync(loan.LoanId, new BookDrawdownRequest(250_000m, new DateOnly(2026, 3, 23), new DateOnly(2026, 3, 23), "wire-floor"));
+
+        var entry = await service.PostDailyAccrualAsync(loan.LoanId, new PostDailyAccrualRequest(new DateOnly(2026, 3, 24)));
+
+        entry.Should().NotBeNull("a declared contractual floor is the one sanctioned way to floor the rate");
+        entry!.InterestAmount.Should().Be(0m);
+    }
+
     private static CreateLoanRequest BuildCreateRequest() =>
         new(
             LoanId: Guid.NewGuid(),

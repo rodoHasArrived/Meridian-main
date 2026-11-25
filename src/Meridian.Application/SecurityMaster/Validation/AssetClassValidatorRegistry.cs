@@ -106,7 +106,6 @@ internal static class DefaultAssetClassValidators
                 "Bond",
                 [
                     FieldRule.OptionalNonNegative("couponRate", "SM_BOND_COUPON_RATE_INVALID", "Bond coupon rate is invalid", "Fixed coupon rates must be zero or greater."),
-                    FieldRule.OptionalNonNegative("spreadBps", "SM_BOND_FLOATING_SPREAD_INVALID", "Bond floating spread is invalid", "Floating-rate spread must be zero or greater when supplied."),
                     DateOrderRule.Optional("issueDate", "maturity", "SM_BOND_ISSUE_DATE_INVALID", "Bond issue date is invalid", "Bond issue date must be on or before maturity."),
                     DateOrderRule.Optional("callDate", "maturity", "SM_BOND_CALL_DATE_INVALID", "Bond call date is invalid", "Bond call date must be on or before maturity."),
                     // ADR-022 canonical-home enforcement: securitized products (MBS/ABS/CLO/CMBS/CDO
@@ -139,9 +138,11 @@ internal static class DefaultAssetClassValidators
                 ]),
             new JsonAssetClassValidator(
                 "Deposit",
-                [
-                    FieldRule.OptionalNonNegative("interestRate", "SM_DEPOSIT_INTEREST_RATE_INVALID", "Deposit interest rate is invalid", "Deposit interest rates must be zero or greater.")
-                ]),
+                // Deposit interestRate, Repo repoRate and Bond spreadBps are SIGNED in
+                // SecurityRateFieldUnits (negative-rate deposits, repo specials, negative spreads), so
+                // no non-negative rule governs them here; the rate table's bounds apply at consumption.
+                // SignedRateValidatorParityTests keeps the two declarations from contradicting again.
+                []),
             new JsonAssetClassValidator(
                 "MoneyMarketFund",
                 [
@@ -168,14 +169,12 @@ internal static class DefaultAssetClassValidators
                 "Repo",
                 [
                     DateOrderRule.Optional("startDate", "endDate", "SM_REPO_DATE_RANGE_INVALID", "Repo date range is invalid", "Repo start date must be on or before end date."),
-                    FieldRule.OptionalNonNegative("repoRate", "SM_REPO_RATE_INVALID", "Repo rate is invalid", "Repo rates must be zero or greater."),
                     FieldRule.OptionalNonNegative("haircut", "SM_REPO_HAIRCUT_INVALID", "Repo haircut is invalid", "Repo haircuts must be zero or greater.")
                 ]),
             new JsonAssetClassValidator(
                 "CashSweep",
-                [
-                    FieldRule.OptionalNonNegative("yieldRate", "SM_CASH_SWEEP_YIELD_RATE_INVALID", "Cash sweep yield is invalid", "Cash sweep yield rates must be zero or greater.")
-                ]),
+                // yieldRate is signed in SecurityRateFieldUnits (negative-yield sweep vehicles).
+                []),
             new CompositeAssetClassValidator(
                 "OtherSecurity",
                 [
@@ -402,6 +401,9 @@ internal sealed class JsonAssetClassValidator : ISecurityAssetClassValidator
     }
 
     public string AssetClass { get; }
+
+    /// <summary>The declared rules, for parity tests against other field declarations.</summary>
+    internal IReadOnlyList<ISecurityValidationRule> Rules => _rules;
 
     public IReadOnlyList<SecurityValidationIssueDto> Validate(SecurityValidationContext context)
     {
