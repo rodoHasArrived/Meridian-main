@@ -79,8 +79,6 @@ handling, and broad scheduled jobs was removed because it either duplicated CI, 
 obsolete project assumptions, or performed automation outside the current build/test/publish/docs
 scope.
 
-## Active Workflows
-
 ## Dependency caches and artifacts
 
 `meridian-ci.yml` caches NuGet packages using project files, nested shared build/package
@@ -96,7 +94,9 @@ and restores that same NuGet cache key. Workflows whose setup is exactly that ad
 after `actions/checkout`; a step `id: nuget` still exposes `outputs.cache-hit`. `meridian-ci.yml`
 and workflows with interleaved steps, `dotnet-version` inputs, conditions, or no cache keep their
 inline steps, so the inline key must change together with the composite action's key.
-Workflow hygiene applies the same SHA-pin rule to external actions inside local composite actions.
+Workflow hygiene applies the same SHA-pin rule to external actions inside local composite actions,
+and rejects an action repository pinned to more than one commit across workflows and composite
+actions. Dependabot updates both locations in one grouped pull request.
 
 Browser CI reads its supported Node version from `.nvmrc`, which the doctor prerequisite checker
 also uses. Every local CI lane runs the shared `build/python/prerequisites.py` preflight before
@@ -231,6 +231,8 @@ cancellation, an unexpected skip or an unknown event fails it. Uploaded harness 
 diagnostic evidence, not a substitute for that final gate. These scheduling changes require
 human governance review. Compare hosted job timings separately from runner queue delays before
 claiming a speedup.
+
+## Active Workflows
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
@@ -475,6 +477,8 @@ python3 build/scripts/docs/generate-workflow-manifest.py
 
 - All workflows use repository-relative paths.
 - Default token permissions are read-only.
+- Every job declares `timeout-minutes`; workflow hygiene rejects one that does not. A job that only
+  calls a reusable workflow is exempt because the called jobs carry their own limits.
 - Manual screenshot-capture workflows never push commits directly; any repository write is proposed
   through a reviewed `peter-evans/create-pull-request` PR (for the web capture when `create_pr: true`, and for the
   desktop capture only when dispatched with `commit: true`).
