@@ -831,7 +831,7 @@ public sealed partial class AccountingPostingCandidateServiceTests
             "MBS principal paydown",
             [
                 new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Cash, 1_750m, 0m, "MBS principal paydown"),
-                new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Securities("FNPOOL1"), 0m, 1_750m, "MBS principal paydown")
+                new LedgerEntry(Guid.NewGuid(), journalId, timestamp, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("FNPOOL1")), 0m, 1_750m, "MBS principal paydown")
             ],
             new JournalEntryMetadata());
         var write = new LedgerJournalEntryWrite(

@@ -41,7 +41,7 @@ public sealed partial class AtomicTaxLotJournalStoreTests
         var gaapRefs = await database.SeedLotReferenceAuthorityAsync(gaapId, TestSecurityId, Guid.NewGuid(), financialAccountId: account);
         var cashRefs = await database.SeedLotReferenceAuthorityAsync(cashId, TestSecurityId, Guid.NewGuid(), financialAccountId: account);
         var writer = OpenStore(gaapRefs);
-        var security = LedgerAccounts.Securities(symbol, account);
+        var security = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(symbol), account);
         var receivable = new LedgerAccount(receivableName, LedgerAccountType.Asset, FinancialAccountId: account);
         var cash = LedgerAccounts.CashFor(account);
         var gain = LedgerAccounts.RealizedGainOrDefault(account);

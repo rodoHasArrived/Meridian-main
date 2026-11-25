@@ -1202,7 +1202,7 @@ public sealed class FundStructureEndpointTests : IClassFixture<FundStructureEndp
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 4, 11, 14, 10, 0, 0, TimeSpan.Zero), "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
         ]);
         return ledger;

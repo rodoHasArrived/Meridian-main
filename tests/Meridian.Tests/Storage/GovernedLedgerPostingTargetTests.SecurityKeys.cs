@@ -20,7 +20,7 @@ public sealed partial class GovernedLedgerPostingTargetTests
         var legacy = BuildWrite();
         var replay = KeySecuritiesLines(legacy, AaplSecurityId, "AAPL");
 
-        var verify = () => GovernedLedgerPostingTarget.VerifyRetainedEntry(ToRecord(legacy), replay);
+        var verify = () => DurableLedgerPostingTarget.VerifyRetainedEntry(ToRecord(legacy), replay);
 
         verify.Should().NotThrow("a journal retained before SecurityId keying keeps its ticker key");
     }
@@ -31,7 +31,7 @@ public sealed partial class GovernedLedgerPostingTargetTests
         var legacy = BuildWrite();
         var replay = KeySecuritiesLines(legacy, AaplSecurityId, "MSFT");
 
-        var verify = () => GovernedLedgerPostingTarget.VerifyRetainedEntry(ToRecord(legacy), replay);
+        var verify = () => DurableLedgerPostingTarget.VerifyRetainedEntry(ToRecord(legacy), replay);
 
         verify.Should().Throw<LedgerValidationException>()
             .WithMessage("*already retained with different accounting content*");
@@ -43,7 +43,7 @@ public sealed partial class GovernedLedgerPostingTargetTests
         var retained = KeySecuritiesLines(BuildWrite(), AaplSecurityId, "AAPL");
         var replay = KeySecuritiesLines(BuildWrite(), Guid.NewGuid(), "AAPL");
 
-        var verify = () => GovernedLedgerPostingTarget.VerifyRetainedEntry(ToRecord(retained), replay);
+        var verify = () => DurableLedgerPostingTarget.VerifyRetainedEntry(ToRecord(retained), replay);
 
         verify.Should().Throw<LedgerValidationException>(
             "a SecurityId-keyed account is a different account from any other security's, whatever the ticker");
@@ -55,7 +55,7 @@ public sealed partial class GovernedLedgerPostingTargetTests
         var retained = KeySecuritiesLines(BuildWrite(), AaplSecurityId, "AAPL");
         var legacyReplay = BuildWrite();
 
-        var verify = () => GovernedLedgerPostingTarget.VerifyRetainedEntry(ToRecord(retained), legacyReplay);
+        var verify = () => DurableLedgerPostingTarget.VerifyRetainedEntry(ToRecord(retained), legacyReplay);
 
         verify.Should().Throw<LedgerValidationException>(
             "a journal already keyed by SecurityId must not be satisfied by a ticker-keyed replay");
@@ -67,7 +67,7 @@ public sealed partial class GovernedLedgerPostingTargetTests
         var retained = KeySecuritiesLines(BuildWrite(), AaplSecurityId, "AAPL");
         var renamed = KeySecuritiesLines(BuildWrite(), AaplSecurityId, "AAPLX");
 
-        var verify = () => GovernedLedgerPostingTarget.VerifyRetainedEntry(ToRecord(retained), renamed);
+        var verify = () => DurableLedgerPostingTarget.VerifyRetainedEntry(ToRecord(retained), renamed);
 
         verify.Should().NotThrow("the ticker is a display attribute of a SecurityId-keyed account");
     }

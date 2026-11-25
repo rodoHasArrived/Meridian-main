@@ -1488,14 +1488,14 @@ public sealed class PaperTradingAccountingScenarioTests : IDisposable
         ledger.Should().NotBeNull();
         var liveLedger = ledger!;
         liveLedger.GetBalance(LedgerAccounts.Cash).Should().Be(98_916.25m);
-        liveLedger.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(1_200m);
+        liveLedger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(1_200m);
         liveLedger.GetBalance(LedgerAccounts.RealizedGain).Should().Be(120m);
         liveLedger.GetBalance(LedgerAccounts.CommissionExpense).Should().Be(3.75m);
         liveLedger.GetBalance(LedgerAccounts.CapitalAccount)
             .Should()
             .Be(InitialCash, "opening capital should be retained as equity for the paper account");
 
-        var endingAssets = liveLedger.GetBalance(LedgerAccounts.Cash) + liveLedger.GetBalance(LedgerAccounts.Securities("AAPL"));
+        var endingAssets = liveLedger.GetBalance(LedgerAccounts.Cash) + liveLedger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")));
         var endingEquity =
             liveLedger.GetBalance(LedgerAccounts.CapitalAccount) +
             liveLedger.GetBalance(LedgerAccounts.RealizedGain) -

@@ -109,7 +109,7 @@ public sealed partial class LedgerJournalInternalTransactionSourceTests
         return Journal(Timestamp(2026, 5, 28), "Buy 5 MSFT plus commission",
             new JournalEntryMetadata(ActivityType: "trade-fill", Symbol: "MSFT", FinancialAccountId: AccountLabel,
                 SettlementReference: "EXT-9", Tags: tags),
-            (LedgerAccounts.Securities("MSFT", AccountLabel), 98.75m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), AccountLabel), 98.75m, 0m),
             (LedgerAccounts.CommissionExpenseFor(AccountLabel), 1.25m, 0m),
             (LedgerAccounts.CashAccount(AccountLabel), 0m, 100m));
     }

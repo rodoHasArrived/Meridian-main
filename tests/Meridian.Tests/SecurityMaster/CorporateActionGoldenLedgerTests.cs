@@ -77,7 +77,7 @@ public sealed class CorporateActionGoldenLedgerTests
             "the announced 0.85 event was amended and must never post");
 
         var declaration = ledger.Journal.Single(entry => entry.JournalEntryId == supersedingId);
-        var receivable = LedgerAccounts.DividendReceivable(scenario.Ticker);
+        var receivable = LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved(scenario.Ticker));
         declaration.Lines.Single(line => line.Account == receivable).Debit.Should().Be(880m,
             "gross = amended 0.88/share x 1000 shares");
     }
@@ -124,7 +124,7 @@ public sealed class CorporateActionGoldenLedgerTests
         var entry = ledger.Journal.Should().ContainSingle().Subject;
         entry.Lines.Single(static line => line.Account == LedgerAccounts.Cash)
             .Debit.Should().Be(712.50m);
-        entry.Lines.Single(line => line.Account == LedgerAccounts.Securities("FNPOOL1"))
+        entry.Lines.Single(line => line.Account == LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("FNPOOL1")))
             .Credit.Should().Be(712.50m);
     }
 

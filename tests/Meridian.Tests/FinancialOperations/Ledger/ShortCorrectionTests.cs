@@ -8,7 +8,7 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 
 public sealed class ShortCorrectionTests
 {
-    private static readonly LedgerAccount Liability = LedgerAccounts.ShortSecuritiesPayable("ACME", "broker-1");
+    private static readonly LedgerAccount Liability = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("ACME"), "broker-1");
     private static readonly DateTimeOffset At = new(2026, 11, 1, 0, 0, 0, TimeSpan.Zero);
     private static readonly Guid Mutation = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000001");
 
@@ -70,7 +70,7 @@ public sealed class ShortCorrectionTests
         var receipt = Receipt(ShortCorrectionKind.Reversal, posted.JournalEntryId);
         var wrong = Entry([
             (Liability, 100m, 0m),
-            (LedgerAccounts.Securities("ACME", "broker-1"), 100m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ACME"), "broker-1"), 100m, 0m),
             (cash, 0m, 200m)
         ]);
 
@@ -105,7 +105,7 @@ public sealed class ShortCorrectionTests
         var unmatched = Entry([(Liability, 100m, 0m), (Liability, 140m, 0m), (cash, 0m, 240m)]);
         var wrongAccount = Entry([
             (Liability, 100m, 0m),
-            (LedgerAccounts.Securities("ACME", "broker-1"), 150m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("ACME"), "broker-1"), 150m, 0m),
             (cash, 0m, 250m)
         ]);
 

@@ -16,7 +16,7 @@ public sealed class LedgerTaxCharacterTests
 {
     private static readonly Guid SecurityId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000010");
 
-    private static LedgerAccount Account => LedgerAccounts.Securities("AAPL", "broker-1");
+    private static LedgerAccount Account => LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
 
     [Theory]
     // Acquired 2025-01-01: one year later is 2026-01-01, which is NOT more than a year.

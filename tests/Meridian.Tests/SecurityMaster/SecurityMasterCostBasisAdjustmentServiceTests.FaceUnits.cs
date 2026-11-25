@@ -230,6 +230,6 @@ public sealed partial class SecurityMasterCostBasisAdjustmentServiceTests
         };
 
     private static LedgerTaxLotReliefInput FaceReliefInput(LedgerTaxLot lot, DateOnly date, decimal? quantitySold = null)
-        => new(LedgerAccounts.Securities(Ticker), date, quantitySold ?? lot.Quantity,
+        => new(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker)), date, quantitySold ?? lot.Quantity,
             salePrice: 1.20m * lot.Multiplier, LedgerTaxLotReliefMethod.Fifo, [lot]);
 }

@@ -1,3 +1,4 @@
+using Meridian.Ledger;
 using FluentAssertions;
 using Meridian.Contracts.FixedIncome;
 using Meridian.Execution.Adapters;
@@ -33,7 +34,7 @@ public sealed partial class PaperBondAccruedInterestTests
         report.AccruedInterestPer100.Should().Be(accrued);
         portfolio.Cash.Should().Be(98_750m - accrued * 1_000m);
         (portfolio.Positions[Bond].AverageCostBasis * portfolio.Positions[Bond].Quantity).Should().Be(101_250m);
-        ledger.GetBalance(Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(Bond)).Should().Be(accrued * 1_000m);
+        ledger.GetBalance(Meridian.Ledger.LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved(Bond))).Should().Be(accrued * 1_000m);
         ledger.GetBalance(Meridian.Ledger.LedgerAccounts.CouponIncome).Should().Be(0m);
         portfolio.CheckLedgerIntegrity().Should().BeEmpty();
     }

@@ -169,7 +169,7 @@ public sealed class HistoricalTaxLotAccrualTests
         var sold = Guid.NewGuid();
         var partial = Guid.NewGuid();
         var full = Guid.NewGuid();
-        var lot = new LedgerTaxLotRecord(Guid.NewGuid(), Guid.NewGuid(), LedgerAccounts.Securities("POOL"),
+        var lot = new LedgerTaxLotRecord(Guid.NewGuid(), Guid.NewGuid(), LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("POOL")),
             "pool-lot", new(2026, 5, 1), 10m, 0m, 110m, "USD", DateTimeOffset.UtcNow, DateTimeOffset.UtcNow,
             Version: 4, OriginatingMutationBatchId: acquired, LastMutationBatchId: full,
             SecurityId: Guid.NewGuid(), BookPositionId: Guid.NewGuid(), OriginalFace: 1_000m, BookedFactor: 0.8m,

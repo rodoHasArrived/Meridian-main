@@ -9,7 +9,7 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 public sealed class ShortCarryTests
 {
     private static readonly Guid RecordId = Guid.Parse("4f0a7f4e-2d7e-4f2a-9f3e-1c1d2e3f4a5b");
-    private static readonly LedgerAccount Liability = LedgerAccounts.ShortSecuritiesPayable("ACME", "broker-1");
+    private static readonly LedgerAccount Liability = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("ACME"), "broker-1");
 
     private static ShortCarryInstruction BorrowFee(decimal quantity = 1_000m, decimal price = 25m, decimal rate = 0.0365m, int days = 365,
         DateOnly? start = null, DateOnly? end = null, string currency = "USD", OpenLotDirection direction = OpenLotDirection.Short) => new(
@@ -49,7 +49,7 @@ public sealed class ShortCarryTests
     public void PaymentInLieu_DebitsDividendExpenseForTheDeclaredDividendPerUnit()
     {
         ShortCarryProjector.TryComputeAmount(InLieu(), out _).Should().Be(420m);
-        var lines = ShortCarryProjector.Lines(InLieu(quantity: 333m, perUnit: 0.125m), LedgerAccounts.ShortSecuritiesPayable("ACME"));
+        var lines = ShortCarryProjector.Lines(InLieu(quantity: 333m, perUnit: 0.125m), LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("ACME")));
         lines.Should().Equal((LedgerAccounts.DividendExpense, 41.63m, 0m), (LedgerAccounts.Cash, 0m, 41.63m));
     }
 

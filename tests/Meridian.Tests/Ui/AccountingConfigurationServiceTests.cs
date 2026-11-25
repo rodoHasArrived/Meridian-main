@@ -1518,12 +1518,12 @@ public sealed partial class AccountingConfigurationServiceTests
         journalStore.Seed(BuildJournal(
             asOf.AddDays(-9),
             "buy AAPL at cost",
-            (LedgerAccounts.Securities("AAPL"), 15_000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 15_000m, 0m),
             (LedgerAccounts.Cash, 0m, 15_000m)));
         journalStore.Seed(BuildJournal(
             asOf.AddDays(-8),
             "buy MSFT at cost",
-            (LedgerAccounts.Securities("MSFT"), 10_000m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT")), 10_000m, 0m),
             (LedgerAccounts.Cash, 0m, 10_000m)));
 
         var draftStore = new InMemoryManualJournalEntryDraftStore();
@@ -1744,8 +1744,8 @@ public sealed partial class AccountingConfigurationServiceTests
             correctionAsOf,
             AccountingBasisKindDto.Primary);
         restartedLedger.Journal.Should().HaveCount(7);
-        restartedLedger.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(16_200m);
-        restartedLedger.GetBalance(LedgerAccounts.Securities("MSFT")).Should().Be(10_400m);
+        restartedLedger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(16_200m);
+        restartedLedger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"))).Should().Be(10_400m);
 
         var statements = LedgerFinancialStatementBuilder.BuildAsOf(restartedLedger, correctionAsOf);
         statements.TotalAssets.Should().Be(26_600m);

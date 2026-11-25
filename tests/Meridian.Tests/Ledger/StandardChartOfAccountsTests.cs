@@ -34,13 +34,13 @@ public sealed class StandardChartOfAccountsTests
     {
         _chart.Resolve(LedgerAccountRole.Cash).Should().Be(LedgerAccounts.Cash);
         _chart.Resolve(LedgerAccountRole.Capital, " broker-a ").Should().Be(LedgerAccounts.CapitalAccountFor("broker-a"));
-        var securities = _chart.Resolve(LedgerAccountRole.Securities, " broker-a ", " aapl ");
-        securities.Should().Be(LedgerAccounts.Securities("AAPL", "broker-a"));
-        securities.Should().Be(_chart.Resolve(LedgerAccountRole.Securities, "BROKER-A", "AAPL"));
-        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-b", "AAPL"));
-        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-a", "MSFT"));
-        _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-a", "aapl")
-            .Should().Be(LedgerAccounts.ShortSecuritiesPayable("AAPL", "broker-a"));
+        var securities = _chart.Resolve(LedgerAccountRole.Securities, " broker-a ", LedgerSecurityKey.Unresolved(" aapl "));
+        securities.Should().Be(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-a"));
+        securities.Should().Be(_chart.Resolve(LedgerAccountRole.Securities, "BROKER-A", LedgerSecurityKey.Unresolved("AAPL")));
+        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-b", LedgerSecurityKey.Unresolved("AAPL")));
+        securities.Should().NotBe(_chart.Resolve(LedgerAccountRole.Securities, "broker-a", LedgerSecurityKey.Unresolved("MSFT")));
+        _chart.Resolve(LedgerAccountRole.ShortSecuritiesPayable, "broker-a", LedgerSecurityKey.Unresolved("aapl"))
+            .Should().Be(LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("AAPL"), "broker-a"));
         _chart.Resolve(LedgerAccountRole.FuturesMtmSettlement, "broker-a", "esz6")
             .Should().Be(LedgerAccounts.FuturesMtmSettlement("ESZ6", "broker-a"));
     }
@@ -74,7 +74,7 @@ public sealed class StandardChartOfAccountsTests
         });
         ledger.PostLines(timestamp, "Security acquisition", new[]
         {
-            (_chart.Resolve(LedgerAccountRole.Securities, accountId, "AAPL"), 200m, 0m),
+            (_chart.Resolve(LedgerAccountRole.Securities, accountId, LedgerSecurityKey.Unresolved("AAPL")), 200m, 0m),
             (_chart.Resolve(LedgerAccountRole.Cash, accountId), 0m, 200m)
         });
         ledger.PostLines(timestamp, "Loan funding", new[]

@@ -28,8 +28,8 @@ public sealed class StrictTenantMutationPostgresTests
         var book = new LedgerBookRecord(Guid.NewGuid(), "fund-alpha", Guid.NewGuid(),
             FundStructureNodeKindDto.Fund, "Alpha", "USD", now, now);
         await database.JournalStore.SaveLedgerBookAsync(book, ct);
-        var account = LedgerAccounts.Securities("AAPL", "broker-1");
-        var sibling = LedgerAccounts.Securities("AAPL", "broker-2");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
+        var sibling = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-2");
         var securityId = Guid.NewGuid();
         var strict = new PostgresLedgerJournalStore(database.Options, new WorkerAccessor(), TenantScopeEnforcementOptions.FailClosed);
         using var authority = FundScopeTenantAuthority.Enter("tenant-alpha", "wash-sale lot identity regression");
@@ -111,7 +111,7 @@ public sealed class StrictTenantMutationPostgresTests
             await command.ExecuteNonQueryAsync(ct);
         }
 
-        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
         LedgerAccount[] accounts =
         [
             account,

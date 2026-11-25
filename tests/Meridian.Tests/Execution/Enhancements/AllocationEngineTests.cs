@@ -217,8 +217,8 @@ public sealed class AllocationEngineTests
         var sleeveA = book.SleeveLedger("SleevA");
         var sleeveB = book.SleeveLedger("SleevB");
 
-        sleeveA.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(50 * 200m);
-        sleeveB.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(50 * 200m);
+        sleeveA.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(50 * 200m);
+        sleeveB.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(50 * 200m);
     }
 
     [Fact]
@@ -236,7 +236,7 @@ public sealed class AllocationEngineTests
         var sleeveA = book.SleeveLedger("SleevA");
         sleeveA.GetBalance(LedgerAccounts.Cash).Should().Be(0m);
         // Securities debits == credits after buy+sell, net = 0
-        sleeveA.GetBalance(LedgerAccounts.Securities("AAPL")).Should().Be(0m);
+        sleeveA.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Should().Be(0m);
     }
 
     private static Dictionary<string, decimal> BuildGeneratedWeights(int destinationSeed, int weightSeed)

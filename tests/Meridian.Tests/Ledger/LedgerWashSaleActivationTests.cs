@@ -15,7 +15,7 @@ public sealed class LedgerWashSaleActivationTests
 {
     private static readonly Guid SecurityId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000010");
 
-    private static LedgerAccount Account => LedgerAccounts.Securities("AAPL", "broker-1");
+    private static LedgerAccount Account => LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
 
     // -------------------------------------------------------------------------
     // Policy gating
@@ -82,7 +82,7 @@ public sealed class LedgerWashSaleActivationTests
     {
         // Under a book-wide scope the absorbing account is frequently not the one that sold, so the
         // deferral has to name it or the trace back to the replacement lot is ambiguous.
-        var replacementAccount = LedgerAccounts.Securities("AAPL", "broker-2");
+        var replacementAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-2");
         var projection = LedgerTaxLotReliefProjector.Project(new LedgerTaxLotReliefInput(
             Account,
             new DateOnly(2026, 3, 1),

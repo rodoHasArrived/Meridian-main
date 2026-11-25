@@ -59,7 +59,7 @@ public sealed class OpenLotDirectionTests
         var retained = OpenLotConvergenceTests.Lot(1, 2.5m, 100m, 1.2m);
         retained = retained with
         {
-            Account = LedgerAccounts.ShortSecuritiesPayable("OLD"),
+            Account = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("OLD")),
             Acquisition = retained.Acquisition! with { Direction = OpenLotDirection.Short }
         };
         var json = JsonSerializer.Serialize(retained);

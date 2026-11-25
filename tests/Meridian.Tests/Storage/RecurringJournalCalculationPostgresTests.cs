@@ -121,7 +121,7 @@ public sealed class RecurringJournalCalculationPostgresTests
             var book = new LedgerBookRecord(Guid.NewGuid(), Fund, Guid.NewGuid(), FundStructureNodeKindDto.Fund,
                 "Golden bond book", "USD", Registered, Registered);
             var scope = new RecurringJournalScope(Fund, book.LedgerBookId, Entity, "USD", Tenant, Company);
-            var carrying = LedgerAccounts.Securities("UST30");
+            var carrying = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("UST30"));
             using (FundScopeTenantAuthority.Enter(Tenant, "golden-fixture"))
             {
                 await store.SaveLedgerBookAsync(book, ct);
@@ -247,8 +247,8 @@ public sealed class RecurringJournalCalculationPostgresTests
              new("eur-cash", "Assets:Cash EUR", EuroCash.Name, "Asset", FinancialAccountId: EuroCash.FinancialAccountId),
              new("fx-gain", "Revenue:Unrealized FX Gain", LedgerAccounts.UnrealizedFxGain.Name, "Revenue"),
              new("fx-loss", "Expenses:Unrealized FX Loss", LedgerAccounts.UnrealizedFxLoss.Name, "Expense"),
-             new("bond", "Assets:Securities UST30", LedgerAccounts.Securities("UST30").Name, "Asset", Symbol: "UST30"),
-             new("accrued-interest", "Assets:Accrued Interest Receivable UST30", LedgerAccounts.AccruedInterestReceivable("UST30").Name, "Asset", Symbol: "UST30"),
+             new("bond", "Assets:Securities UST30", LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("UST30")).Name, "Asset", Symbol: "UST30"),
+             new("accrued-interest", "Assets:Accrued Interest Receivable UST30", LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved("UST30")).Name, "Asset", Symbol: "UST30"),
              new("coupon", "Revenue:Coupon Income", LedgerAccounts.CouponIncome.Name, "Revenue")],
             [], [], [], [], TenantId: Tenant, CompanyId: Company));
         var audit = new FileAccountingConfigurationStore(Path.Combine(root, "audit.json"));

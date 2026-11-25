@@ -27,8 +27,8 @@ public sealed class PaperLedgerIntegrityTests
 
         ledger.GetBalance(LedgerAccounts.CashAccount("alpha")).Should().Be(984m);
         ledger.GetBalance(LedgerAccounts.CashAccount("beta")).Should().Be(1_960m);
-        ledger.GetBalance(LedgerAccounts.Securities("XYZ", "alpha")).Should().Be(20m);
-        ledger.GetBalance(LedgerAccounts.Securities("XYZ", "beta")).Should().Be(40m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("XYZ"), "alpha")).Should().Be(20m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("XYZ"), "beta")).Should().Be(40m);
         ledger.GetBalance(LedgerAccounts.RealizedGainFor("alpha")).Should().Be(5m);
         ledger.GetBalance(LedgerAccounts.CommissionExpenseFor("alpha")).Should().Be(1m);
         ledger.TrialBalance("beta").Keys.Should().OnlyContain(a => a.FinancialAccountId == "beta");
@@ -77,7 +77,7 @@ public sealed class PaperLedgerIntegrityTests
         var ledger = new Meridian.Ledger.Ledger();
         var portfolio = new PaperTradingPortfolio(100m, ledger);
         ledger.PostLines(DateTimeOffset.UtcNow, "Unexpected posting", [
-            (LedgerAccounts.Securities("GHOST"), 10m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("GHOST")), 10m, 0m),
             (LedgerAccounts.Cash, 0m, 10m)
         ]);
 

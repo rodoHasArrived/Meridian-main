@@ -29,9 +29,9 @@ public sealed partial class EventDrivenDecouplingTests
 
         ledger.GetBalance(LedgerAccounts.CashAccount("broker")).Should().Be(500m,
             "clean legs net to zero; the seller received $500 more accrued than the buyer paid");
-        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable("BOND1", "broker")).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved("BOND1"), "broker")).Should().Be(0m);
         ledger.GetBalance(LedgerAccounts.CouponIncomeFor("broker")).Should().Be(500m);
-        ledger.GetBalance(LedgerAccounts.Securities("BOND1", "broker")).Should().Be(0m);
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("BOND1"), "broker")).Should().Be(0m);
         target.RetainedEntries.Should().HaveCount(4).And.OnlyContain(entry => entry.IsBalanced);
     }
 

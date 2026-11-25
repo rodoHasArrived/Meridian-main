@@ -40,7 +40,7 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         result.Snapshots[^1].DividendReceivable.Should().Be(outstanding);
         result.Ledger.GetBalance(LedgerAccounts.CashAccount(BacktestDefaults.DefaultBrokerageAccountId))
             .Should().Be(result.Snapshots[^1].Cash);
-        result.Ledger.GetBalance(LedgerAccounts.DividendReceivable("XYZ", BacktestDefaults.DefaultBrokerageAccountId))
+        result.Ledger.GetBalance(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("XYZ"), BacktestDefaults.DefaultBrokerageAccountId))
             .Should().Be(outstanding);
         result.Metrics.NetPnl.Should().Be(0m);
         result.Metrics.SymbolAttribution["XYZ"].RealizedPnl.Should().Be(0m);
@@ -165,7 +165,7 @@ public sealed class CanonicalBacktestActionsTests : IDisposable
         var snapshot = result.Snapshots[^1];
         var ledger = (Meridian.Ledger.Ledger)result.Ledger;
         ledger.PostLines(snapshot.Timestamp, "Synthetic erroneous accrual",
-            [(LedgerAccounts.DividendReceivable("XYZ", BacktestDefaults.DefaultBrokerageAccountId), 1m, 0m),
+            [(LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("XYZ"), BacktestDefaults.DefaultBrokerageAccountId), 1m, 0m),
              (LedgerAccounts.DividendIncomeFor(BacktestDefaults.DefaultBrokerageAccountId), 0m, 1m)]);
         var difference = BacktestLedgerIntegrityValidator.Validate(ledger, snapshot).Should().ContainSingle().Subject;
         difference.Check.Should().Be("DividendReceivable");

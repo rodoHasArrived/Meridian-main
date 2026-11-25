@@ -34,8 +34,8 @@ public sealed class PaperTradingPortfolioBasisParityTests
         var openingSide = shortPosition ? OrderSide.Sell : OrderSide.Buy;
         var closingSide = shortPosition ? OrderSide.Buy : OrderSide.Sell;
         var account = shortPosition
-            ? LedgerAccounts.ShortSecuritiesPayable("BASIS")
-            : LedgerAccounts.Securities("BASIS");
+            ? LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("BASIS"))
+            : LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("BASIS"));
         portfolio.ApplyFill(Fill(openingSide, 1m, openingBasis, 0));
 
         portfolio.ApplyFill(Fill(closingSide, 0.3m, 1m, 1));
@@ -251,7 +251,7 @@ public sealed class PaperTradingPortfolioBasisParityTests
 
     private static decimal Balance(Meridian.Ledger.Ledger ledger, bool shortPosition)
     {
-        var account = shortPosition ? LedgerAccounts.ShortSecuritiesPayable("BASIS") : LedgerAccounts.Securities("BASIS");
+        var account = shortPosition ? LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("BASIS")) : LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("BASIS"));
         return ledger.Journal.SelectMany(entry => entry.Lines).Where(line => line.Account == account)
             .Sum(line => line.Debit - line.Credit);
     }

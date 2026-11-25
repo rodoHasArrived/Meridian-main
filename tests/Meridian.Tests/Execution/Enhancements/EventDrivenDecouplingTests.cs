@@ -116,7 +116,7 @@ public sealed partial class EventDrivenDecouplingTests
         ledger.Journal.Should().ContainSingle();
         var entry = ledger.Journal[0];
         entry.Lines.Should().HaveCount(2);
-        entry.Lines.Single(l => l.Account == LedgerAccounts.Securities("AAPL")).Debit.Should()
+        entry.Lines.Single(l => l.Account == LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Debit.Should()
             .Be(100 * 150m);
         entry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should()
             .Be(100 * 150m);

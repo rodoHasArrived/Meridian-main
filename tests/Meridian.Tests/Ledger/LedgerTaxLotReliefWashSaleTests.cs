@@ -17,7 +17,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
     private static readonly Guid SecurityId = Guid.Parse("aaaaaaaa-0000-0000-0000-000000000010");
     private static readonly Guid OtherSecurityId = Guid.Parse("bbbbbbbb-0000-0000-0000-000000000020");
 
-    private static LedgerAccount Account => LedgerAccounts.Securities("AAPL", "broker-1");
+    private static LedgerAccount Account => LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
 
     // -------------------------------------------------------------------------
     // Average cost
@@ -543,7 +543,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
         decimal expectedQuantity,
         decimal expectedDeferred)
     {
-        var siblingAccount = LedgerAccounts.Securities("AAPL", "broker-2");
+        var siblingAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-2");
         var input = MultipleLossLotsInput(
             [
                 new("same-account", new DateOnly(2026, 3, 4), 10m, SecurityId, Account),
@@ -631,8 +631,8 @@ public sealed class LedgerTaxLotReliefWashSaleTests
     [Fact]
     public void WashSale_SameReplacementLotIdInDifferentAccounts_HasDistinctDeterministicCapacity()
     {
-        var firstAccount = LedgerAccounts.Securities("AAPL", "broker-2");
-        var secondAccount = LedgerAccounts.Securities("AAPL", "broker-3");
+        var firstAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-2");
+        var secondAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-3");
         WashSaleReplacementAcquisition[] replacements =
         [
             new("shared-id", new DateOnly(2026, 3, 5), 20m, SecurityId, secondAccount),
@@ -871,7 +871,7 @@ public sealed class LedgerTaxLotReliefWashSaleTests
     public void WashSale_SameLotIdAcrossAccounts_ExcludesOnlyDisposingAccount(
         WashSaleReplacementScope scope, decimal expectedDeferred)
     {
-        var siblingAccount = LedgerAccounts.Securities("AAPL", "broker-2");
+        var siblingAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-2");
         var input = LossSaleInput(WashSalePolicy.UnitedStates with { Scope = scope },
             [
                 new("LOT-A", new DateOnly(2026, 3, 5), 100m, SecurityId),

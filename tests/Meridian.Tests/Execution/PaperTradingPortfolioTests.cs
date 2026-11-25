@@ -76,7 +76,7 @@ public sealed class PaperTradingPortfolioTests
         ledger.Journal.Should().HaveCount(2);
         var buyEntry = ledger.Journal.Last(e => e.Description.Contains("Buy"));
         buyEntry.Lines.Should().HaveCount(2);
-        buyEntry.Lines.Single(l => l.Account == LedgerAccounts.Securities("AAPL")).Debit.Should().Be(2_000m);
+        buyEntry.Lines.Single(l => l.Account == LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"))).Debit.Should().Be(2_000m);
         buyEntry.Lines.Single(l => l.Account == LedgerAccounts.Cash).Credit.Should().Be(2_000m);
     }
 
@@ -158,7 +158,7 @@ public sealed class PaperTradingPortfolioTests
         portfolio.Positions.Should().NotContainKey("AAPL");
 
         var coverEntry = ledger.Journal.Single(e => e.Description.Contains("Cover"));
-        var shortPayable = LedgerAccounts.ShortSecuritiesPayable("AAPL", financialAccountId: null);
+        var shortPayable = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("AAPL"), financialAccountId: null);
         coverEntry.Lines.Should().Contain(l => l.Account == shortPayable && l.Debit == 2_000m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 1_800m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.RealizedGain && l.Credit == 200m);
@@ -176,7 +176,7 @@ public sealed class PaperTradingPortfolioTests
         portfolio.RealisedPnl.Should().Be(-200m);
 
         var coverEntry = ledger.Journal.Single(e => e.Description.Contains("Cover"));
-        var shortPayable = LedgerAccounts.ShortSecuritiesPayable("AAPL", financialAccountId: null);
+        var shortPayable = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("AAPL"), financialAccountId: null);
         coverEntry.Lines.Should().Contain(l => l.Account == shortPayable && l.Debit == 2_000m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.Cash && l.Credit == 2_200m);
         coverEntry.Lines.Should().Contain(l => l.Account == LedgerAccounts.RealizedLoss && l.Debit == 200m);

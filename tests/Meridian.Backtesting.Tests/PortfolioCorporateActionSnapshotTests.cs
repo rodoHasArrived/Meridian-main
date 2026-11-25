@@ -453,8 +453,7 @@ public sealed class PortfolioCorporateActionSnapshotTests
         position.Quantity.Should().Be(1L);
         position.AverageCostBasis.Should().Be(180m);
         position.RealizedPnl.Should().Be(110m);
-        ledger.GetBalance(LedgerAccounts.Securities(
-                "XYZ",
+        ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("XYZ"),
                 BacktestDefaults.DefaultBrokerageAccountId))
             .Should().Be(180m);
         ledger.GetBalance(LedgerAccounts.RealizedGainFor(
@@ -487,8 +486,7 @@ public sealed class PortfolioCorporateActionSnapshotTests
         position.AverageCostBasis.Should().Be(180m);
         position.RealizedPnl.Should().Be(-110m);
         position.OpenLots.Should().ContainSingle().Which.IsShort.Should().BeTrue();
-        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable(
-                "XYZ",
+        ledger.GetBalance(LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("XYZ"),
                 BacktestDefaults.DefaultBrokerageAccountId))
             .Should().Be(180m);
         ledger.GetBalance(LedgerAccounts.RealizedLossFor(

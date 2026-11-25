@@ -156,7 +156,7 @@ public sealed class ThreeWayReconciliationSourceTests : IDisposable
             date.AddDays(-1), date.AddDays(1), "Open", now, null, 1);
         ledger.GetPeriodAsync(_period, Arg.Any<CancellationToken>()).Returns(period);
         var cash = LedgerAccounts.CashFor(_account.ToString("D"));
-        var carrying = LedgerAccounts.Securities("TEST", _account.ToString("D"));
+        var carrying = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("TEST"), _account.ToString("D"));
         var journals = new[]
         {
             Journal(1, now.AddMinutes(-1), cash, 2_000m, LedgerAccounts.CapitalAccountFor(_account.ToString("D"))),

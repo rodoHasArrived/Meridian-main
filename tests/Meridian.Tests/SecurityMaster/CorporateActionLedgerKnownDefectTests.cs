@@ -28,7 +28,7 @@ public sealed class CorporateActionLedgerKnownDefectTests
         var (scenario, ledger) = await PostAsync("t-wbd-spinoff-2022");
 
         var entry = ledger.Journal.Should().ContainSingle().Subject;
-        var securities = LedgerAccounts.Securities(scenario.Ticker);
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(scenario.Ticker));
         entry.Lines.Should().OnlyContain(line => line.Account == securities,
             "CURRENT defective behavior: both memo legs land on the parent's securities account");
         entry.Lines.Sum(static line => line.Debit).Should().Be(1m,
@@ -44,7 +44,7 @@ public sealed class CorporateActionLedgerKnownDefectTests
         var mergerCorpActId = Guid.Parse("d0000000-dddd-4000-8000-0000000000c1");
 
         var mergerEntry = ledger.Journal.Single(entry => entry.JournalEntryId == mergerCorpActId);
-        var securities = LedgerAccounts.Securities(scenario.Ticker);
+        var securities = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(scenario.Ticker));
         mergerEntry.Lines.Should().OnlyContain(line => line.Account == securities);
         mergerEntry.Lines.Sum(static line => line.Debit).Should().Be(1m,
             "CURRENT defective behavior: the exchange ratio and acquirer position are ignored");

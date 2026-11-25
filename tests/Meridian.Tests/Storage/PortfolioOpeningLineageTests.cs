@@ -15,9 +15,9 @@ public sealed class PortfolioOpeningLineageTests
         var id = Guid.NewGuid();
         var securityA = Guid.NewGuid();
         var securityB = Guid.NewGuid();
-        var lineA = new LedgerEntry(Guid.NewGuid(), id, at, LedgerAccounts.Securities("AAPL", account.ToString("D")),
+        var lineA = new LedgerEntry(Guid.NewGuid(), id, at, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), account.ToString("D")),
             100m, 0m, "Opening", new(InstrumentId: securityA));
-        var lineB = new LedgerEntry(Guid.NewGuid(), id, at, LedgerAccounts.Securities("MSFT", account.ToString("D")),
+        var lineB = new LedgerEntry(Guid.NewGuid(), id, at, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), account.ToString("D")),
             150m, 0m, "Opening", new(InstrumentId: securityB));
         var capital = new LedgerEntry(Guid.NewGuid(), id, at, LedgerAccounts.CapitalAccountFor(account.ToString("D")), 0m, 250m, "Opening");
         var tags = new Dictionary<string, string> { ["securityMaster.lineageMode"] = "per-line" };

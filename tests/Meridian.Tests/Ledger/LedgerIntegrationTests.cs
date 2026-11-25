@@ -719,9 +719,9 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerAccounts_DividendReceivable_IsNormalizedAndScopedPerSymbol()
     {
-        var aapl = LedgerAccounts.DividendReceivable("aapl");
-        var msft = LedgerAccounts.DividendReceivable("MSFT");
-        var aaplScoped = LedgerAccounts.DividendReceivable("aapl", "broker-1");
+        var aapl = LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("aapl"));
+        var msft = LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("MSFT"));
+        var aaplScoped = LedgerAccounts.DividendReceivable(LedgerSecurityKey.Unresolved("aapl"), "broker-1");
 
         aapl.Symbol.Should().Be("AAPL");
         aapl.AccountType.Should().Be(LedgerAccountType.Asset);
@@ -734,7 +734,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerAccounts_AccruedInterestReceivable_IsAssetAccount()
     {
-        var account = LedgerAccounts.AccruedInterestReceivable("USTBILL");
+        var account = LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved("USTBILL"));
         account.AccountType.Should().Be(LedgerAccountType.Asset);
         account.Symbol.Should().Be("USTBILL");
     }
@@ -742,7 +742,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerAccounts_CorpActionDistribution_IsRevenueAccount()
     {
-        var account = LedgerAccounts.CorpActionDistribution("AAPL");
+        var account = LedgerAccounts.CorpActionDistribution(LedgerSecurityKey.Unresolved("AAPL"));
         account.AccountType.Should().Be(LedgerAccountType.Revenue);
         account.Symbol.Should().Be("AAPL");
     }
@@ -2420,9 +2420,9 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void MultiCurrencyLedgerTranslator_DoesNotTreatEquityTickerSymbolsAsCurrencies()
     {
-        var ibm = LedgerAccounts.Securities("IBM", "broker-1");
-        var gld = LedgerAccounts.Securities("GLD", "broker-1");
-        var spy = LedgerAccounts.Securities("SPY", "broker-1");
+        var ibm = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("IBM"), "broker-1");
+        var gld = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("GLD"), "broker-1");
+        var spy = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), "broker-1");
         var trialBalance = new Dictionary<LedgerAccount, decimal>
         {
             [ibm] = 10_000m,
@@ -2447,8 +2447,8 @@ public sealed class LedgerIntegrationTests
     {
         // "TRY" and "CUP" are valid ISO-4217 codes, but on per-symbol instrument accounts the
         // symbol is a ticker, so the balances must stay in the base currency untranslated.
-        var tryTicker = LedgerAccounts.Securities("TRY", "broker-1");
-        var cupTicker = LedgerAccounts.ShortSecuritiesPayable("CUP", "broker-1");
+        var tryTicker = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("TRY"), "broker-1");
+        var cupTicker = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("CUP"), "broker-1");
         var trialBalance = new Dictionary<LedgerAccount, decimal>
         {
             [tryTicker] = 1_000m,
@@ -2468,7 +2468,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void MultiCurrencyLedgerTranslator_ConfiguredAccountCurrencyOverridesInstrumentSymbolContext()
     {
-        var eurDenominatedHolding = LedgerAccounts.Securities("SAP", "broker-1");
+        var eurDenominatedHolding = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SAP"), "broker-1");
         var trialBalance = new Dictionary<LedgerAccount, decimal>
         {
             [eurDenominatedHolding] = 1_000m,
@@ -2517,7 +2517,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void FixedIncomeAmortizationProjector_ProjectsCouponAndDiscountAccretionLines()
     {
-        var carryingAccount = LedgerAccounts.Securities("corp2029", "broker-1");
+        var carryingAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("corp2029"), "broker-1");
 
         var projection = FixedIncomeAmortizationProjector.Project(new FixedIncomeAmortizationInput(
             "corp2029",
@@ -2542,7 +2542,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void FixedIncomeAmortizationProjector_ProjectsPremiumAmortizationAsIncomeReduction()
     {
-        var carryingAccount = LedgerAccounts.Securities("muni2031");
+        var carryingAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("muni2031"));
 
         var projection = FixedIncomeAmortizationProjector.Project(new FixedIncomeAmortizationInput(
             "muni2031",
@@ -2559,7 +2559,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void FixedIncomeAmortizationProjector_RejectsNegativeAmounts()
     {
-        var carryingAccount = LedgerAccounts.Securities("UST2030");
+        var carryingAccount = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("UST2030"));
 
         var act = () => FixedIncomeAmortizationProjector.Project(new FixedIncomeAmortizationInput(
             "UST2030",
@@ -2575,7 +2575,7 @@ public sealed class LedgerIntegrationTests
     public void LedgerAccountTaxLotPolicyBook_ResolvesAccountSpecificReliefMethod()
     {
         var policyBook = new LedgerAccountTaxLotPolicyBook();
-        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
         var effectiveDate = new DateOnly(2026, 1, 1);
 
         var registered = policyBook.Register(
@@ -2597,7 +2597,7 @@ public sealed class LedgerIntegrationTests
     public void LedgerAccountTaxLotPolicyBook_UsesDefaultWhenAccountPolicyIsMissing()
     {
         var policyBook = new LedgerAccountTaxLotPolicyBook(LedgerTaxLotReliefMethod.Lifo);
-        var account = LedgerAccounts.Securities("MSFT", "broker-2");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), "broker-2");
 
         var resolved = policyBook.Resolve(account, new DateOnly(2026, 5, 28));
 
@@ -2610,7 +2610,7 @@ public sealed class LedgerIntegrationTests
     public void LedgerAccountTaxLotPolicyBook_RejectsPoliciesBeforeEffectiveDate()
     {
         var policyBook = new LedgerAccountTaxLotPolicyBook();
-        var account = LedgerAccounts.Securities("TSLA");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("TSLA"));
         policyBook.Register(account, LedgerTaxLotReliefMethod.SpecificId, "policy-specific", new DateOnly(2026, 6, 1));
 
         var act = () => policyBook.Resolve(account, new DateOnly(2026, 5, 28));
@@ -2623,7 +2623,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerTaxLotReliefProjector_UsesAccountPolicyToRelieveHifoLotsAndProjectGain()
     {
-        var account = LedgerAccounts.Securities("AAPL", "broker-1");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL"), "broker-1");
         var policyBook = new LedgerAccountTaxLotPolicyBook();
         var policy = policyBook.Register(
             account,
@@ -2662,7 +2662,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerTaxLotReliefProjector_UsesSpecificIdsAndRejectsMissingSpecificSelection()
     {
-        var account = LedgerAccounts.Securities("MSFT", "broker-2");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("MSFT"), "broker-2");
         var openLots = new[]
         {
             new LedgerTaxLot("lot-a", new DateOnly(2026, 1, 1), 5m, 200m) { UnitKind = SecurityLotUnitKind.Shares, Multiplier = 1m },
@@ -2699,7 +2699,7 @@ public sealed class LedgerIntegrationTests
     [Fact]
     public void LedgerTaxLotReliefProjector_RejectsInsufficientOpenLotQuantity()
     {
-        var account = LedgerAccounts.Securities("TSLA");
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("TSLA"));
         var input = new LedgerTaxLotReliefInput(
             account,
             new DateOnly(2026, 5, 28),

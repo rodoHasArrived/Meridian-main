@@ -1302,7 +1302,7 @@ public sealed partial class WorkstationEndpointsTests
         ]);
         PostBalancedEntry(ledger, completedAt, $"Buy {symbol}",
         [
-            (LedgerAccounts.Securities(symbol), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(symbol)), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
         ]);
 
@@ -1419,14 +1419,14 @@ public sealed partial class WorkstationEndpointsTests
             PostBalancedEntry(ledger, startedAt, $"Short sell {symbol}",
             [
                 (LedgerAccounts.CashAccount(accountId), 970_000m, 0m),
-                (LedgerAccounts.ShortSecuritiesPayable(symbol, accountId), 0m, 970_000m)
+                (LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved(symbol), accountId), 0m, 970_000m)
             ]);
         }
         else
         {
             PostBalancedEntry(ledger, startedAt, $"Buy {symbol}",
             [
-                (LedgerAccounts.Securities(symbol, accountId), 970_000m, 0m),
+                (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(symbol), accountId), 970_000m, 0m),
                 (LedgerAccounts.CashAccount(accountId), 0m, 970_000m)
             ]);
         }
@@ -1575,13 +1575,13 @@ public sealed partial class WorkstationEndpointsTests
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, TimeSpan.Zero), "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, TimeSpan.Zero), "Open TSLA short",
         [
             (LedgerAccounts.Cash, 150m, 0m),
-            (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)
+            (LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("TSLA")), 0m, 150m)
         ]);
         return ledger;
     }
@@ -1596,7 +1596,7 @@ public sealed partial class WorkstationEndpointsTests
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 17, 10, 0, 0, TimeSpan.Zero), "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 350m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 350m, 0m),
             (LedgerAccounts.Cash, 0m, 350m)
         ]);
         return ledger;
@@ -1614,7 +1614,7 @@ public sealed partial class WorkstationEndpointsTests
         ]);
         PostBalancedEntry(ledger, portfolioAsOf, "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
         ]);
         return ledger;

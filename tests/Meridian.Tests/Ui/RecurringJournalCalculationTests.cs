@@ -249,7 +249,7 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
             new(Guid.NewGuid(), purchase, At(new(2026, 1, 10)), LedgerAccounts.Cash, 0m, 108_000m, "Buy EUR")
         ]));
         // A EUR security bought at par and marked up in USD: a price move, not an FX exposure.
-        var security = LedgerAccounts.Securities("SAP");
+        var security = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SAP"));
         var buy = Guid.NewGuid();
         _ledger.Post(new JournalEntry(buy, At(new(2026, 1, 12)), "Buy SAP",
         [
@@ -401,7 +401,7 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
     public async Task FxRevaluation_SecurityWhoseTickerIsItsCurrency_IsNotTreatedAsCash()
     {
         // A security with the ticker "EUR" and EUR legs is still an instrument, not EUR cash.
-        var security = LedgerAccounts.Securities("EUR");
+        var security = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("EUR"));
         _ledger.PostLines(At(new(2026, 1, 10)), "Buy EUR-ticker security",
         [
             (security, 108_000m, 0m, null, new LedgerEntryCurrency("EUR", "USD", 100_000m, 0m, 1.08m)),
@@ -421,12 +421,12 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
         var position = Guid.NewGuid();
         var store = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
         store.Setup(value => value.ListOpenTaxLotsByAssetScopeAsync(Book, SecurityId, position, JanuaryEnd, It.IsAny<CancellationToken>()))
-            .ReturnsAsync([new LedgerTaxLotRecord(Guid.NewGuid(), Book, LedgerAccounts.Securities(Ticker), "lot-factored",
+            .ReturnsAsync([new LedgerTaxLotRecord(Guid.NewGuid(), Book, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker)), "lot-factored",
                 new DateOnly(2025, 12, 31), 8m, 8m, 100m, "USD", Registered, Registered,
                 SecurityId: SecurityId, BookPositionId: position, OriginalFace: 800m, BookedFactor: 0.8m, ParBasis: 100m)]);
         var inputs = new LedgerRecurringJournalCalculationInputs(store.Object);
 
-        var read = () => inputs.ListOpenLotsAsync(Scope, LedgerAccounts.Securities(Ticker), SecurityId, position, JanuaryEnd, default);
+        var read = () => inputs.ListOpenLotsAsync(Scope, LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker)), SecurityId, position, JanuaryEnd, default);
 
         (await read.Should().ThrowAsync<InvalidOperationException>()).WithMessage("*pool factor other than 1*");
     }
@@ -477,7 +477,7 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
     public async Task FixedIncome_YesterdayWithoutBookPosition_RefusesToUseTodaysOpenLots()
     {
         var today = JanuaryEnd.AddDays(1);
-        var account = LedgerAccounts.Securities(Ticker);
+        var account = LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker));
         var store = new Mock<ILedgerJournalStore>(MockBehavior.Strict);
         store.Setup(value => value.ListOpenTaxLotsAsync(Book, account, It.IsAny<CancellationToken>()))
             .ReturnsAsync(Array.Empty<LedgerTaxLotRecord>());
@@ -866,8 +866,8 @@ public sealed partial class RecurringJournalCalculationTests : IDisposable
              new("eur-cash-scoped", "Assets:Cash (EUR)", LedgerAccounts.CashInCurrency("EUR").Name, "Asset", Symbol: "EUR"),
              new("fx-gain", "Revenue:Unrealized FX Gain", LedgerAccounts.UnrealizedFxGain.Name, "Revenue"),
              new("fx-loss", "Expenses:Unrealized FX Loss", LedgerAccounts.UnrealizedFxLoss.Name, "Expense"),
-             new("bond", "Assets:Securities UST30", LedgerAccounts.Securities(Ticker).Name, "Asset", Symbol: Ticker),
-             new("accrued-interest", "Assets:Accrued Interest Receivable UST30", LedgerAccounts.AccruedInterestReceivable(Ticker).Name, "Asset", Symbol: Ticker),
+             new("bond", "Assets:Securities UST30", LedgerAccounts.Securities(LedgerSecurityKey.Unresolved(Ticker)).Name, "Asset", Symbol: Ticker),
+             new("accrued-interest", "Assets:Accrued Interest Receivable UST30", LedgerAccounts.AccruedInterestReceivable(LedgerSecurityKey.Unresolved(Ticker)).Name, "Asset", Symbol: Ticker),
              new("coupon", "Revenue:Coupon Income", LedgerAccounts.CouponIncome.Name, "Revenue"),
              new("depreciation", "Expenses:Depreciation Expense", "Depreciation Expense", "Expense"),
              new("accumulated-depreciation", "Assets:Accumulated Depreciation", "Accumulated Depreciation", "Asset")],

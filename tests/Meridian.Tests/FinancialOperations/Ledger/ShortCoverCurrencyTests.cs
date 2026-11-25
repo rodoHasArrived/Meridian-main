@@ -8,7 +8,7 @@ namespace Meridian.Tests.FinancialOperations.Ledger;
 
 public sealed class ShortCoverCurrencyTests
 {
-    private static readonly LedgerAccount Liability = LedgerAccounts.ShortSecuritiesPayable("SAP", "broker-1");
+    private static readonly LedgerAccount Liability = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("SAP"), "broker-1");
 
     private static ShortCoverTerms Terms(decimal quantity = 40m, decimal price = 100m, decimal fees = 0m, string tx = "EUR", string fn = "USD",
         decimal acquisitionFx = 1.10m, decimal coverFx = 1.10m, decimal relieved = 4_400m)
@@ -53,7 +53,7 @@ public sealed class ShortCoverCurrencyTests
     public void JpyCoverRoundsToWholeYen_AndRealizedFxGainAppearsWhenTheYenWeakened()
     {
         // 300 units @ JPY 1,234.5 = JPY 370,350; acquisition FX 0.0091 → USD 3,370.19 (rounded once); cover FX 0.0068 → USD 2,518.38.
-        var lines = ShortLotJournalProjector.CoverInCurrency(LedgerAccounts.ShortSecuritiesPayable("7203"),
+        var lines = ShortLotJournalProjector.CoverInCurrency(LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("7203")),
             Terms(quantity: 300m, price: 1_234.5m, tx: "JPY", acquisitionFx: 0.0091m, coverFx: 0.0068m, relieved: 3_500m));
 
         var cash = lines.Single(line => line.Account == LedgerAccounts.CashInCurrency("JPY"));
@@ -70,7 +70,7 @@ public sealed class ShortCoverCurrencyTests
     [InlineData(120, 4_000, "loss")]
     public void SameCurrencyWithoutFees_AgreesExactlyWithTheFunctionalCoverProjection(decimal coverPrice, decimal relieved, string outcome)
     {
-        var usd = LedgerAccounts.ShortSecuritiesPayable("ACME", "broker-1");
+        var usd = LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("ACME"), "broker-1");
         var currencyAware = ShortLotJournalProjector.CoverInCurrency(usd, Terms(price: coverPrice, tx: "USD", acquisitionFx: 1m, coverFx: 1m, relieved: relieved));
         var functional = ShortLotJournalProjector.Cover(usd, relieved, ShortLotJournalProjector.CoverCost(40m, coverPrice));
 
@@ -148,13 +148,13 @@ public sealed class ShortCoverCurrencyTests
     {
         // USD 1 at cover FX 150.4 is JPY 150.4, stated as JPY 150; the ledger tolerates one yen for a zero-decimal book.
         var terms = Terms(quantity: 1m, price: 1m, tx: "USD", fn: "JPY", acquisitionFx: 150m, coverFx: 150.4m, relieved: 150m);
-        var lines = ShortLotJournalProjector.CoverInCurrency(LedgerAccounts.ShortSecuritiesPayable("ACME", "broker-1"), terms);
+        var lines = ShortLotJournalProjector.CoverInCurrency(LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("ACME"), "broker-1"), terms);
         var cash = lines.Single(line => line.Account == LedgerAccounts.CashInCurrency("USD", "broker-1"));
         cash.Credit.Should().Be(150m);
         cash.FunctionalCurrency.Should().Be("JPY");
         var journal = Entry(lines);
         journal.Lines.Sum(line => line.Debit).Should().Be(journal.Lines.Sum(line => line.Credit));
-        ShortCoverPostingGuard.RequireJournal(terms, LedgerAccounts.ShortSecuritiesPayable("ACME", "broker-1"), journal);
+        ShortCoverPostingGuard.RequireJournal(terms, LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("ACME"), "broker-1"), journal);
     }
 
     [Fact]

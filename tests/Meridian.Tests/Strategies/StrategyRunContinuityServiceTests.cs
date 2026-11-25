@@ -531,7 +531,7 @@ public sealed class StrategyRunContinuityServiceTests
         ]);
         PostBalancedEntry(ledger, completedAt, "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
         ]);
         return ledger;

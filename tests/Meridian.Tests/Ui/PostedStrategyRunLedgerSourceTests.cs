@@ -78,7 +78,7 @@ public sealed class PostedStrategyRunLedgerSourceTests
         var posted = new Meridian.Ledger.Ledger();
         void Add(Meridian.Ledger.Ledger ledger, DateTimeOffset timestamp, decimal amount, bool attributed)
             => ledger.PostLines(timestamp, "Scoped historical posting",
-                [(LedgerAccounts.Securities("SPY", accountId), amount, 0m),
+                [(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), accountId), amount, 0m),
                  (LedgerAccounts.CashFor(accountId), 0m, amount)],
                 new JournalEntryMetadata(StrategyId: "strategy-a", FinancialAccountId: accountId,
                     Tags: attributed ? new Dictionary<string, string> { ["strategy.runId"] = Run.RunId } : null));
@@ -100,7 +100,7 @@ public sealed class PostedStrategyRunLedgerSourceTests
         summary.LedgerEntryCount.Should().Be(2);
         summary.TrialBalance.Single(line => line.AccountName == "Securities").Balance
             .Should().Be(hasPostedAttribution ? 10m : 37m);
-        snapshot.GetBalance(LedgerAccounts.Securities("SPY", accountId))
+        snapshot.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), accountId))
             .Should().Be(hasPostedAttribution ? 10m : 37m);
         summary.Journal.Should().ContainSingle().Which.Timestamp.Should().Be(At);
         (await reads.GetLedgerSummaryAsync(run.RunId, Scope))!.JournalEntryCount.Should().Be(2);
@@ -462,7 +462,7 @@ public sealed class PostedStrategyRunLedgerSourceTests
     {
         accountId ??= AccountId.ToString("D");
         var ledger = new Meridian.Ledger.Ledger();
-        ledger.PostLines(At, "Fill", [(LedgerAccounts.Securities("SPY", accountId), 10m, 0m),
+        ledger.PostLines(At, "Fill", [(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("SPY"), accountId), 10m, 0m),
             (LedgerAccounts.CashFor(accountId), 0m, 10m)], new JournalEntryMetadata(
                 StrategyId: "strategy-a", FinancialAccountId: accountId,
                 Tags: runId is null ? null : new Dictionary<string, string> { ["strategy.runId"] = runId }));

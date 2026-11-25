@@ -123,7 +123,7 @@ public sealed partial class LedgerAnalysisExportTests : IDisposable
             new HashSet<string> { "XYZ" }, [snapshot], [], [], null!, ledger, TimeSpan.Zero, 0);
         var request = BacktestLedgerExportMapper.Build(result, Start.AddTicks(-1), AsOf, _root, ExportFormat.Csv);
         request.OpenLots!.Sum(lot => lot.CostBasis).Should().Be(
-            ledger.GetBalance(LedgerAccounts.Securities("XYZ", BacktestDefaults.DefaultBrokerageAccountId)));
+            ledger.GetBalance(LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("XYZ"), BacktestDefaults.DefaultBrokerageAccountId)));
         var exported = await new AnalysisExportService(_root).ExportLedgerAsync(request);
         var corporateActions = await File.ReadAllTextAsync(exported.Files.Single(file => file.RelativePath == "corporate-action-realizations.csv").Path);
         corporateActions.Should().Contain("cash_in_lieu").And.Contain("acquisition parcel dates unavailable");
