@@ -175,6 +175,7 @@ internal static class JsonlArchiveFiles
         await AtomicFileWriter.SyncDirectoryOrThrowAsync(directory, CancellationToken.None).ConfigureAwait(false);
         File.Delete(sourcePath);
         File.Delete(sourcePath + ".sha256");
+        // Best effort: the deletes have committed; a throw would report a finished archive as failed.
         await AtomicFileWriter.SyncDirectoryAsync(directory, CancellationToken.None).ConfigureAwait(false);
         return true;
     }

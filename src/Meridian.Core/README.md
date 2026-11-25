@@ -59,6 +59,8 @@ their absent values; compatibility aliases marked always ignored remain excluded
 
 
 `IO/IAtomicFileWriter.cs` exposes only the atomic operations needed by Infrastructure consumers.
+It offers both directory syncs: best-effort `SyncDirectoryAsync` after a committed step, and
+`SyncDirectoryOrThrowAsync` before an acknowledgement or the removal of the only other copy.
 The concrete durable writer stays in Storage and is supplied through application/host composition.
 `IO/ExclusiveFileLock.cs` is the shared cross-process lock-file primitive: the open
 `FileShare.None` handle is the lock, the file is never deleted, only sharing/lock contention is

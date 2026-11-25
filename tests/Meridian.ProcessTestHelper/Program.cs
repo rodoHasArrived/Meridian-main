@@ -231,6 +231,9 @@ internal static partial class Program
             await File.WriteAllTextAsync(ready, "publication-sync", ct);
             await Task.Delay(Timeout.InfiniteTimeSpan, ct);
         }
+
+        public Task SyncDirectoryOrThrowAsync(string directory, CancellationToken ct = default) =>
+            _inner.SyncDirectoryOrThrowAsync(directory, ct);
     }
 
     private sealed class StatementStageRows(string? ready) : IReadOnlyList<Meridian.Domain.Reconciliation.CanonicalStatementRow>
