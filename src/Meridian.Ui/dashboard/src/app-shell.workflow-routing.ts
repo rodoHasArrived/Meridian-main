@@ -1,4 +1,5 @@
 import {
+  appendRouteQuery,
   normalizeLocalWorkstationRoute,
   WORKSTATION_ROUTE_CATALOG,
   workflowTargetPath,
@@ -7,13 +8,19 @@ import {
 import type { OperatorWorkItem } from "@/types";
 
 export function routeForOperatorWorkItem(item: OperatorWorkItem): string {
-  if (item.kind === "BrokerageSync") {
-    return WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
-  }
+  const route = item.kind === "BrokerageSync"
+    ? WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup
+    : normalizeLocalWorkstationRoute(item.targetRoute)
+      ?? routeFromOperatorWorkItemTarget(item)
+      ?? fallbackRouteForOperatorWorkItemKind(item.kind);
 
-  return normalizeLocalWorkstationRoute(item.targetRoute)
-    ?? routeFromOperatorWorkItemTarget(item)
-    ?? fallbackRouteForOperatorWorkItemKind(item.kind);
+  return withOperatorWorkItemScope(canonicalTradingWorkItemRoute(route, item.kind), item);
+}
+
+/** The source account owns this record link; remembered scope must not narrow it to another fund. */
+export function withOperatorWorkItemScope(route: string, item: Pick<OperatorWorkItem, "fundAccountId">): string {
+  const fundAccountId = item.fundAccountId?.trim();
+  return fundAccountId ? appendRouteQuery(route, { fundAccountId, recordScope: "1" }) : route;
 }
 
 export function actionLabelForOperatorWorkItem(item: OperatorWorkItem): string {
@@ -56,10 +63,13 @@ function routeFromOperatorWorkItemTarget(item: OperatorWorkItem): string | null 
 function fallbackRouteForOperatorWorkItemKind(kind: OperatorWorkItem["kind"]): string {
   switch (kind) {
     case "PaperReplay":
+      return `${WORKSTATION_ROUTE_CATALOG.trading}#session-replay-panel`;
     case "PromotionReview":
+      return `${WORKSTATION_ROUTE_CATALOG.trading}#promotion-gate-panel`;
     case "ExecutionControl":
+      return WORKSTATION_ROUTE_CATALOG.tradingRisk;
     case "BrokerExecutionReconciliation":
-      return WORKSTATION_ROUTE_CATALOG.tradingReadiness;
+      return `${WORKSTATION_ROUTE_CATALOG.trading}#brokerage-recovery`;
     case "BrokerageSync":
       return WORKSTATION_ROUTE_CATALOG.settingsAlpacaProviderSetup;
     case "SecurityMasterCoverage":
@@ -72,6 +82,26 @@ function fallbackRouteForOperatorWorkItemKind(kind: OperatorWorkItem["kind"]): s
     case "ProviderTrustGate":
       return WORKSTATION_ROUTE_CATALOG.dataProviders;
   }
+}
+
+/** Generic and retired Trading targets still need the work item's actual task surface. */
+function canonicalTradingWorkItemRoute(route: string, kind: OperatorWorkItem["kind"]): string {
+  const pathname = routePathname(route);
+  const canonicalPathname = pathname.replace(/\/+$/, "");
+  if (canonicalPathname !== WORKSTATION_ROUTE_CATALOG.trading && canonicalPathname !== WORKSTATION_ROUTE_CATALOG.tradingReadiness) {
+    return route;
+  }
+  const target = fallbackRouteForOperatorWorkItemKind(kind);
+  if (!target.startsWith(`${WORKSTATION_ROUTE_CATALOG.trading}#`) && target !== WORKSTATION_ROUTE_CATALOG.tradingRisk) {
+    return route;
+  }
+  const hashIndex = route.indexOf("#");
+  const search = route.slice(pathname.length, hashIndex >= 0 ? hashIndex : undefined);
+  const targetPath = routePathname(target);
+  const hash = hashIndex >= 0 && canonicalPathname !== WORKSTATION_ROUTE_CATALOG.tradingReadiness
+    ? route.slice(hashIndex)
+    : target.slice(targetPath.length);
+  return `${targetPath}${search}${hash}`;
 }
 
 function routePathname(route: string): string {

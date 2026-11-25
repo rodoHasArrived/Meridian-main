@@ -11,15 +11,7 @@ public static class BackfillRoutingPreview
     public static RoutePreviewResponse Preview(AppConfig current, RoutePreviewRequest request,
         Func<AppConfig, IReadOnlyList<IHistoricalDataProvider>> createProviders, CancellationToken ct = default)
     {
-        ct.ThrowIfCancellationRequested();
-        if (!string.Equals(request.Capability, "HistoricalBars", StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("Backfill preview supports HistoricalBars only.");
-        if (string.IsNullOrWhiteSpace(request.Symbol) || !Regex.IsMatch(request.Symbol, @"^[A-Za-z0-9.\-]{1,20}$"))
-            throw new ArgumentException("A valid symbol is required.");
-        if (request.From is null || request.To is null || request.From > request.To)
-            throw new ArgumentException("An ordered start and end date are required.");
-        if (!string.Equals(request.Granularity, "daily", StringComparison.OrdinalIgnoreCase))
-            throw new ArgumentException("This routing preview currently supports daily bars only.");
+        Validate(request, ct);
         var config = ProviderRoutingPreviewConfig.ApplyBackfill(current, request.ProposedConfig);
         var backfill = config.Backfill ?? new BackfillConfig();
         var providers = createProviders(config);
@@ -31,12 +23,8 @@ public static class BackfillRoutingPreview
                 "Configuration preview only: no provider requests were sent. Symbol coverage, date availability, current quota and network health remain unverified.",
                 $"Query: {request.Symbol} daily, {request.From:yyyy-MM-dd} through {request.To:yyyy-MM-dd}. Existing archives are unchanged."
             };
-            var candidates = providers
-                .OrderBy(p => p.IsSimulated)
-                .ThenBy(p => p.Priority)
-                .ThenBy(p => p.ProviderId, StringComparer.OrdinalIgnoreCase)
-                .Select(p => new RoutePreviewCandidateDto(p.ProviderId, p.ProviderId, false, 0, p.Priority,
-                    [p.IsSimulated ? "FABRICATED DATA: Synthetic bars." : "Credential-authorized adapter constructed; coverage and live health unverified."], []))
+            var candidates = BackfillRoutingSnapshot.Order(providers.Select(provider => new BackfillRoutingProvider(provider, provider.Priority)))
+                .Select(ToCandidate)
                 .ToArray();
             var preferred = backfill.Provider;
             var selected = string.IsNullOrWhiteSpace(preferred) || string.Equals(preferred, "composite", StringComparison.OrdinalIgnoreCase)
@@ -62,5 +50,42 @@ public static class BackfillRoutingPreview
             foreach (var provider in providers)
                 provider.Dispose();
         }
+    }
+
+    public static RoutePreviewResponse PreviewActive(BackfillRoutingSnapshot routing, RoutePreviewRequest request,
+        CancellationToken ct = default)
+    {
+        Validate(request, ct);
+        var ordered = routing.DefaultOrder;
+        var candidates = ordered.Select(ToCandidate).ToArray();
+        var selected = candidates.FirstOrDefault();
+        var warnings = new List<string>
+        {
+            "Active default backfill order for the next job. No provider requests were sent.",
+            $"Query: {request.Symbol} daily, {request.From:yyyy-MM-dd} through {request.To:yyyy-MM-dd}."
+        };
+        if (ordered.FirstOrDefault()?.Provider.IsSimulated == true)
+            warnings.Add("FABRICATED DATA WOULD WIN: Synthetic would serve this query.");
+        return new RoutePreviewResponse("HistoricalBars", selected is not null, selected?.ConnectionId,
+            selected?.ProviderFamilyId, "ReadOnlyPreview", false,
+            selected?.ReasonCodes ?? ["No eligible adapter is available for the configured provider selection."], [],
+            candidates.Skip(1).Select(candidate => candidate.ConnectionId).ToArray(), null, candidates, Warnings: warnings.ToArray());
+    }
+
+    private static RoutePreviewCandidateDto ToCandidate(BackfillRoutingProvider entry)
+        => new(entry.ProviderId, entry.ProviderId, false, 0, entry.Priority,
+            [entry.Provider.IsSimulated ? "FABRICATED DATA: Synthetic bars." : "Credential-authorized adapter constructed; coverage and live health unverified."], []);
+
+    private static void Validate(RoutePreviewRequest request, CancellationToken ct)
+    {
+        ct.ThrowIfCancellationRequested();
+        if (!string.Equals(request.Capability, "HistoricalBars", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("Backfill preview supports HistoricalBars only.");
+        if (string.IsNullOrWhiteSpace(request.Symbol) || !Regex.IsMatch(request.Symbol, @"^[A-Za-z0-9.\-]{1,20}$"))
+            throw new ArgumentException("A valid symbol is required.");
+        if (request.From is null || request.To is null || request.From > request.To)
+            throw new ArgumentException("An ordered start and end date are required.");
+        if (!string.Equals(request.Granularity, "daily", StringComparison.OrdinalIgnoreCase))
+            throw new ArgumentException("This routing preview currently supports daily bars only.");
     }
 }

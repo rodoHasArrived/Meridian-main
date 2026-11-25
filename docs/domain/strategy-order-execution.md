@@ -83,19 +83,46 @@ requires them; neither creates a mandatory origin for all platform activity.
 | [Strategies module](../../src/Meridian.Strategies/README.md) | Retained run identity, promotion, lifecycle and the approved-revision Designer activation subset already exist. Their evidence does not prove every authoring route is composed end to end. |
 | [Designer live source](../../src/Meridian.Strategies/Live/Designer/DesignerDocumentLiveSource.cs) | Preserve the approved-revision binding, supported closed-expression execution grammar, and visible refusal/deferred states for unsupported or changed definitions. |
 | [Strategy Engine foundation](../architecture/strategy-engine-foundation.md) | The pre-run validation seam's `LiveDisabled` posture remains current behavior until an independently reviewed implementation changes it. |
-| [Backtesting module](../../src/Meridian.Backtesting/README.md) | The bounded Covered Call path is host-composed; broader orchestration and generic Designer result capture have separate activation work. |
+| [Backtesting module](../../src/Meridian.Backtesting/README.md) | Covered Call and the bounded Designer replay use host-composed backtesting. Broader orchestration and generic Designer result capture have separate activation work. |
 | [QuantScript module](../../src/Meridian.QuantScript/README.md) | Worker isolation is a foundation; production/customer scripting requires the hardened-profile certification tracked by `PRD-012`. |
 
-The generic Designer compiler currently emits diagnostic output, while the workstation run route
-requires exactly one captured `BacktestResult`. Expanded formulation must close that real result
-and orchestration gap; it must not fabricate results or treat the already-supported live adapter
-as proof that the full journey works. See
-[compiler](../../src/Meridian.Strategies/Services/StrategyDesignService.cs) and
+The generic Designer compiler emits diagnostic output. The versioned Designer route uses the
+native backtest engine and retains its result for the supported closed-expression family. See
 [workstation route](../../src/Meridian.Ui.Shared/Endpoints/WorkstationEndpoints.Strategy.cs).
 
 A standalone manual OMS journey needs an explicit intent/account-authority design. It must use a
 legitimate existing authorization context or a separately reviewed equivalent contract; it cannot
 invent a strategy run or remove the current non-paper admission guard to make a ticket submit.
+
+## Paper tickets and live authorization
+
+The browser ticket submits Day Market and Limit orders for single-leg USD equities measured in
+shares through the in-process Paper gateway. The operator selects a fund account. Meridian
+authenticates the operator, checks account authority and risk, and retains the client order ID
+before dispatch. A retry with the same actor, account, session, and terms returns the retained
+outcome or a reconciliation requirement. A conflicting intent under the same ID is refused.
+
+For a future manual live workflow, the operator intent contract must bind an authenticated human
+reviewer, a retained fund account and verified external broker account, the exact order terms,
+permitted instruments and sizing, the reviewed limits, and a validity interval. The OMS must
+verify that evidence and current readiness before dispatch and retain the decision with the
+client order ID. Review the contract and broker evidence before enabling the workflow. Manual
+live orders currently receive `MANUAL_LIVE_INTENT_CONTRACT_NOT_REVIEWED`.
+
+A live strategy grant belongs to the reviewed Paper-to-Live promotion. It names the exact
+strategy artifact and run lineage, its fund and broker account, allowed symbols, USD per-order
+ceiling, and UTC expiry. The Trading promotion panel accepts these fields and shows the grant
+status in the audit trail. An authorized human reviewer can revoke the grant there or at
+`POST /api/promotion/live-authorizations/{id}/revoke` with a reason. The receipt preserves the
+reviewer and time. Expired or revoked grants block new submissions and replacements. Operators
+can still cancel and reconcile dispatched orders. A fresh Paper run and review are required for
+a new grant.
+
+The Buy and Hold rehearsal runs with one synthetic equity and in-process broker observations.
+The .NET CI lane retains the fixture, decisions, fills, reconciliation, and durable handoff
+receipts under `artifacts/test-results/dotnet/governed-execution/`. Production activation requires
+separate owner authorization and broker-backed evidence. The hosted grant currently uses
+Alpaca's verified account identity and remains `live-untested`.
 
 ## Acceptance Cases
 
@@ -118,3 +145,50 @@ prerequisites to a routine PR; AI critique cannot substitute for a required huma
 The [implementation tracker](../product/implementation-todo-list.md#expanded-strategy-and-order-management-objectives)
 links the W13 work to existing hardening tasks. Product-scope adoption does not change delivery
 ranks, accept those tasks, certify a release, or authorize broker activity.
+
+## Scoped Designer paper rehearsal
+
+The browser Designer saves tenant- and company-scoped drafts by server revision. Save uses the
+last opened revision as its compare-and-append token. Run binds the saved revision and executable
+version to one active USD equity, an authorized execution account, a completed daily-bar window,
+an acceptance criterion, and a retained Evidence Vault manifest. The first replay accepts
+explicitly unadjusted daily bars in the configured market data root's symbol directory and checks
+each required session against the US trading calendar. It requires Security Master identity and
+a window free of corporate actions. Retained snapshots use a separate artifact format so market
+replay discovery cannot read them as new input.
+
+Bar source labels alone supply insufficient authority for real-data promotion. This replay path
+carries Simulated provenance, and ordinary promotion refuses that evidence. The automated
+Designer paper rehearsal uses a named test reviewer in isolated storage to exercise the paper
+launch and accounting handoff. The browser and desktop Evidence Workbenches use the same
+strategy-run packet to show the version, review, orders, fill receipts, and reconciliation.
+
+The typed OMS submission uses a single configured simulator book with simulated accounting. For the bounded paper profile,
+set `Execution:OrderManagement:PaperIntentScope` with `TenantId`, `CompanyId`, and the
+`FundAccountId` of the active brokerage account. Both manual market/Day whole-share tickets and
+scoped strategy orders use the same sizing, risk, and gateway admission. A retained matching
+intent returns the existing receipt. A terms mismatch returns a conflict, and an interrupted
+receipt requires reconciliation. The browser retains the pending intent ID and terms across a
+reload in the same tab. The OMS reserves the reviewed run's account-bound USD paper session
+before dispatch. The session retains its journal and the intent retains the simulated handoff
+under the same fill ID. The evidence packet provides access to the run's reconciliation.
+A versioned strategy with retained order activity
+requires reconciliation before restart. Operator tickets follow governed risk approval. A parked
+Designer strategy order requires withdrawal because a risk release could race run shutdown.
+
+Run the synthetic rehearsal and fault replay in the `Meridian.Tests` project using the
+`DesignerPaperRehearsalTests` and `FaultReplay_PreservesDispatchAndExactLedgerEffects` filters.
+The expected fixture result is 10 shares at $102 with a $1 commission and $19 net marked P&L.
+The fault replay uses the durable OMS recovery store and existing accounting consumer against
+a test ledger target.
+
+### Manual live authority contract
+
+A future manual live intent requires a server-retained, single-use decision naming the operator
+and reviewer, tenant and company, canonical account and verified broker route, exact normalized
+order terms and command ID, review evidence, reason, expiry, and revocation state. At dispatch the
+OMS must recheck current account and operator permission, the approved route and supported order
+terms, current readiness, risk limits, reservations, and operator controls. The approval and
+intent receipt must be bound before any dispatch attempt. An ambiguous outcome keeps its original
+client order identity and requires broker reconciliation. Manual authority has no strategy-run
+dependency. Paper scope supplies the implementation and automated evidence for this slice.

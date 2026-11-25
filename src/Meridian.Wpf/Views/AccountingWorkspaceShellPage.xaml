@@ -69,6 +69,7 @@
         <views:WorkspaceCommandBarControl x:Name="CommandBar"
                                           Grid.Row="0"
                                           CommandInvoked="OnCommandBarCommandInvoked"
+                                          ResetLayoutCommand="{Binding ResetLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}"
                                           AutomationProperties.AutomationId="WorkspaceCommandSurfaceAccounting" />
 
         <controls:WorkspaceAttentionRibbon Grid.Row="1"

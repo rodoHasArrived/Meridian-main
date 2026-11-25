@@ -114,6 +114,38 @@ public sealed class ExecutionJournal : IAsyncDisposable
         _hashes.Add(Key(entry), ContentHash(entry));
     }
 
+    internal async Task<IReadOnlyList<ExecutionJournalEntry>?> ClaimPaperSubmissionAsync(
+        ExecutionJournalEntry intent, CancellationToken ct)
+    {
+        await _gate.WaitAsync(ct).ConfigureAwait(false);
+        try
+        {
+            await InitializeLockedAsync(ct).ConfigureAwait(false);
+            var retained = _entries.Where(entry => entry.Scope == intent.Scope &&
+                string.Equals(entry.OrderId, intent.OrderId, StringComparison.OrdinalIgnoreCase)).ToArray();
+            if (intent.Authority?.Origin == OrderCommandOrigin.OperatorTicket && retained.Length > 0)
+                return retained;
+            var originalTicket = retained.FirstOrDefault(entry => entry.Kind == "Intent" &&
+                entry.Authority?.Origin == OrderCommandOrigin.OperatorTicket);
+            if (originalTicket is not null &&
+                (intent.Authority?.Origin != OrderCommandOrigin.EscalationRelease ||
+                 OriginalAuthority(intent.Authority).CorrelationId != originalTicket.Authority!.CorrelationId ||
+                 intent.AccountId != originalTicket.AccountId))
+                return retained;
+
+            await AppendRetainedLockedAsync(intent, ct).ConfigureAwait(false);
+            return null;
+        }
+        finally { _gate.Release(); }
+    }
+
+    internal static OrderSubmissionAuthorityRecord OriginalAuthority(OrderSubmissionAuthorityRecord authority)
+    {
+        while (authority.Origin == OrderCommandOrigin.EscalationRelease && authority.ReleasedFrom is { } parked)
+            authority = parked;
+        return authority;
+    }
+
     public async Task<IReadOnlyList<ExecutionJournalEntry>> ReadAsync(Guid? accountId = null, CancellationToken ct = default)
     {
         await _gate.WaitAsync(ct).ConfigureAwait(false);

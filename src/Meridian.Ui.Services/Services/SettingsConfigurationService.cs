@@ -17,7 +17,7 @@ namespace Meridian.Ui.Services.Services;
 /// Provides settings configuration capabilities including storage path preview generation,
 /// provider catalog data, and configuration profile management.
 /// </summary>
-public sealed class SettingsConfigurationService
+public sealed partial class SettingsConfigurationService
 {
     private static readonly Lazy<SettingsConfigurationService> LazyInstance = new(() => new SettingsConfigurationService());
     private static string? _desktopPreferencesFilePathOverride;
@@ -146,11 +146,15 @@ public sealed class SettingsConfigurationService
     /// </summary>
     public async Task<ProviderCredentialStateDto> SaveProviderCredentialsAsync(string providerId, IReadOnlyDictionary<string, string?> fields,
         string? connectionId = null, CancellationToken ct = default)
+        => await SaveProviderCredentialFieldsAsync(providerId, fields,
+            CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId), null, ct).ConfigureAwait(false);
+
+    private async Task<ProviderCredentialStateDto> SaveProviderCredentialFieldsAsync(string providerId,
+        IReadOnlyDictionary<string, string?> fields, string route, string? environment, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(fields);
-        var route = CredentialRoute(UiApiRoutes.ProviderCredentialMutation, providerId, connectionId);
         var response = await _apiClient.PutWithResponseAsync<ProviderCredentialMutationResultDto>(route,
-            new ProviderCredentialUpsertRequestDto(fields), ct).ConfigureAwait(false);
+            new ProviderCredentialUpsertRequestDto(fields, environment), ct).ConfigureAwait(false);
         ThrowIfRefused(response.StatusCode, "persistence");
         if (!response.Success || response.Data is null ||
             !ProviderIdentity.EqualsId(response.Data.ProviderId, providerId) ||
@@ -184,6 +188,19 @@ public sealed class SettingsConfigurationService
             (result is { VerificationState: ProviderVerificationStateDto.Verified, LastVerifiedAt: not null } ||
              result.VerificationState == ProviderVerificationStateDto.NotRequired) &&
             ProviderIdentity.EqualsId(result.ProviderId, providerId);
+    }
+
+    /// <summary>Tests an unsaved draft on the selected owned connection.</summary>
+    public async Task<ProviderCredentialDraftVerificationResultDto> VerifyDraftProviderCredentialsAsync(
+        string providerId, IReadOnlyDictionary<string, string?> fields, string connectionId, CancellationToken ct = default)
+    {
+        var route = CredentialRoute(UiApiRoutes.ProviderCredentialVerifyDraft, providerId, connectionId);
+        var response = await _apiClient.PostWithResponseAsync<ProviderCredentialDraftVerificationResultDto>(route,
+            new ProviderCredentialDraftRequestDto(fields), ct).ConfigureAwait(false);
+        ThrowIfRefused(response.StatusCode, "draft verification");
+        return response.Success && response.Data is { } result && ProviderIdentity.EqualsId(result.ProviderId, providerId)
+            ? result
+            : new(providerId, ProviderCredentialDraftStatusDto.Unavailable, "The host could not confirm the draft test. Retry when it is reachable.");
     }
 
     private static void ThrowIfRefused(int statusCode, string operation)
@@ -293,7 +310,8 @@ public sealed class SettingsConfigurationService
             _ => "Credential status is unavailable from the service."
         };
         return new ProviderCredentialStatus(providerId, displayName, state, message, [], row.CredentialFields,
-            row.VerificationState, row.LastVerifiedAt);
+            row.VerificationState, row.LastVerifiedAt)
+        { RotationDueAt = row.RotationDueAt };
     }
 
     /// <summary>
@@ -783,6 +801,8 @@ public sealed record ProviderCredentialStatus(
     ProviderVerificationStateDto VerificationState = ProviderVerificationStateDto.NotVerified,
     DateTimeOffset? LastVerifiedAt = null)
 {
+    public DateTimeOffset? RotationDueAt { get; init; }
+
     /// <summary>
     /// True when the authenticated credential service reported this provider together with the
     /// field names its vault accepts. Editors must use these names; the local provider catalog's

@@ -308,7 +308,50 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
             }, ct).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Posted journals in an approved destination book that the link check would accept for this proposal.
+    /// A convenience for choosing the counterpart: linking still re-checks everything under its own lease.
+    /// </summary>
+    public async Task<IReadOnlyList<IntercompanyCounterpartCandidateDto>> ListCounterpartCandidatesAsync(string tenant,
+        Guid proposalId, Guid targetBookId, CancellationToken ct = default)
+    {
+        var proposal = await store.GetAsync(tenant, proposalId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The source proposal is unavailable.");
+        if (proposal.LatestLink is not null || proposal.Status == IntercompanyProposalStatusDto.Linked)
+            return [];
+        var source = proposal.Source;
+        var agreement = await agreements.ResolveApprovedRevisionAsync(tenant, source.AccountingArrangementId, source.AccountingArrangementRevisionId,
+            new DateTimeOffset(source.EffectiveDate.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero), ct).ConfigureAwait(false);
+        if (!agreement.PartyMappings.Any(x => x.EntityId == source.CounterpartyEntityId && x.LedgerBookId == targetBookId))
+            throw new InvalidOperationException("The selected book is outside the approved destination mapping.");
+        var book = await journals.GetLedgerBookAsync(targetBookId, ct).ConfigureAwait(false)
+            ?? throw new InvalidOperationException("The approved destination book is unavailable.");
+        var owner = await owners.ResolveAsync(book.FundProfileId, ct).ConfigureAwait(false);
+        if (owner is null || !owner.IsHeldBy(tenant) || (source.CompanyId is not null && !string.Equals(source.CompanyId, owner.CompanyId, StringComparison.OrdinalIgnoreCase)))
+            throw new UnauthorizedAccessException("The destination belongs to another tenant or company.");
+
+        var asOf = DateOnly.FromDateTime(_clock.GetUtcNow().UtcDateTime);
+        var evaluation = new CounterpartEvaluation(journals, agreements, owners, source.TenantId, source.CompanyId, asOf);
+        // Only journals that carry this transaction's identity can reciprocate it; the full check runs on each.
+        var posted = await journals.QueryAsync(new(LedgerBookId: targetBookId, EffectiveTo: asOf), ct).ConfigureAwait(false);
+        var candidates = new List<IntercompanyCounterpartCandidateDto>();
+        foreach (var record in posted
+                     .Where(record => record.Entry.Lines.Any(line => string.Equals(line.Dimensions?.IntercompanyTransactionId, source.TransactionId, StringComparison.Ordinal)))
+                     .GroupBy(record => record.Entry.JournalEntryId).Select(group => group.First()))
+        {
+            var check = await CounterpartCheckAsync(proposal, targetBookId, record.Entry.JournalEntryId, ct, evaluation).ConfigureAwait(false);
+            if (check.Error is null)
+                candidates.Add(new(record.Entry.JournalEntryId, IntercompanyJournalFamily.EffectiveDate(record),
+                    record.Entry.Description, check.Amount, check.Currency!));
+        }
+        return candidates.OrderByDescending(item => item.EffectiveDate).ThenBy(item => item.JournalEntryId).ToArray();
+    }
+
     private async Task<string?> CounterpartMismatchAsync(IntercompanyProposalDto proposal, Guid targetBookId,
+        Guid targetJournalId, CancellationToken ct, CounterpartEvaluation? evaluation = null)
+        => (await CounterpartCheckAsync(proposal, targetBookId, targetJournalId, ct, evaluation).ConfigureAwait(false)).Error;
+
+    private async Task<(string? Error, decimal Amount, string? Currency)> CounterpartCheckAsync(IntercompanyProposalDto proposal, Guid targetBookId,
         Guid targetJournalId, CancellationToken ct, CounterpartEvaluation? evaluation = null)
     {
         var source = proposal.Source;
@@ -317,35 +360,35 @@ public sealed class IntercompanyProposalDeliveryService(IIntercompanyProposalSto
         ResolvedIntercompanyAccountingArrangementDto agreement;
         try
         { agreement = await evaluation.TermsAsync(source, ct).ConfigureAwait(false); }
-        catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException) { return error.Message; }
+        catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException) { return (error.Message, 0m, null); }
         var sourceMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.SourceEntityId && x.LedgerBookId == source.SourceBookId);
         var targetMap = agreement.PartyMappings.SingleOrDefault(x => x.EntityId == source.CounterpartyEntityId && x.LedgerBookId == targetBookId);
         if (sourceMap is null || targetMap is null)
-            return "The source or counterpart book differs from its approved mapping.";
+            return ("The source or counterpart book differs from its approved mapping.", 0m, null);
         var sourceBook = await evaluation.BookAsync(source.SourceBookId, ct).ConfigureAwait(false);
         var targetBook = await evaluation.BookAsync(targetBookId, ct).ConfigureAwait(false);
         if (sourceBook?.FundStructureNodeId != source.SourceEntityId || targetBook?.FundStructureNodeId != source.CounterpartyEntityId)
-            return "The source or counterpart book owner differs from the approved parties.";
+            return ("The source or counterpart book owner differs from the approved parties.", 0m, null);
         try
         {
             var sourcePopulation = await evaluation.PopulationAsync(source.SourceBookId, ct).ConfigureAwait(false);
             var targetPopulation = await evaluation.PopulationAsync(targetBookId, ct).ConfigureAwait(false);
             if (!sourcePopulation.Contains(source.SourceJournalId))
-                return "The immutable source journal is unavailable on the selected accounting date.";
+                return ("The immutable source journal is unavailable on the selected accounting date.", 0m, null);
             if (!targetPopulation.Contains(targetJournalId))
-                return "An immutable posted counterpart journal is required on the selected accounting date.";
+                return ("An immutable posted counterpart journal is required on the selected accounting date.", 0m, null);
             var sourceBalance = MonetaryFamilyBalance(sourcePopulation.Resolve(source.SourceJournalId), source.SourceJournalId,
                 sourceMap, source.SourceEntityId, source.CounterpartyEntityId, source, agreement.Currency, sourceBook.BaseCurrency, sourceAnchor: true);
             if (sourceBalance.Error is not null)
-                return sourceBalance.Error;
+                return (sourceBalance.Error, 0m, null);
             var targetBalance = MonetaryFamilyBalance(targetPopulation.Resolve(targetJournalId), targetJournalId,
                 targetMap, source.CounterpartyEntityId, source.SourceEntityId, source, agreement.Currency, targetBook.BaseCurrency);
             if (targetBalance.Error is not null)
-                return targetBalance.Error;
-            return targetBalance.Amount == -sourceBalance.Amount ? null
-                : "The actual source and counterpart correction families do not reciprocate on the selected accounting date.";
+                return (targetBalance.Error, 0m, null);
+            return targetBalance.Amount == -sourceBalance.Amount ? (null, targetBalance.Amount, agreement.Currency)
+                : ("The actual source and counterpart correction families do not reciprocate on the selected accounting date.", 0m, null);
         }
-        catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException) { return error.Message; }
+        catch (Exception error) when (error is InvalidOperationException or KeyNotFoundException) { return (error.Message, 0m, null); }
     }
 
     private static (decimal Amount, string? Error) MonetaryFamilyBalance(IReadOnlyList<LedgerJournalEntryRecord> family,

@@ -99,7 +99,10 @@ public sealed class CollectorModeRunner
         ConnectionHealthMonitor? healthMonitor = null;
         StreamingFailoverService? failoverService = null;
         ProviderConfigReconciler? providerReconciler = null;
+        FailoverAwareMarketDataClient? failoverClient = null;
         IMarketDataClient dataClient;
+        var providerMap = new Dictionary<string, IMarketDataClient>(StringComparer.OrdinalIgnoreCase);
+        var startupFailures = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var gapSources = new List<IReconnectionGapSource>();
 
         if (useFailover)
@@ -107,8 +110,6 @@ public sealed class CollectorModeRunner
             _log.Information("Streaming failover enabled with {RuleCount} rules", failoverRules.Length);
 
             healthMonitor = new ConnectionHealthMonitor();
-            var providerMap = new Dictionary<string, IMarketDataClient>(StringComparer.OrdinalIgnoreCase);
-            FailoverAwareMarketDataClient? failoverClient = null;
             try
             {
                 failoverService = new StreamingFailoverService(healthMonitor);
@@ -142,8 +143,9 @@ public sealed class CollectorModeRunner
                             providerId,
                             providerKind);
                     }
-                    catch (Exception ex)
+                    catch (Exception ex) when (ex is not OperationCanceledException || !ct.IsCancellationRequested)
                     {
+                        startupFailures.Add(providerId);
                         _log.Warning(
                             ex,
                             "Failed to create streaming client for provider {ProviderId}; skipping",
@@ -209,6 +211,14 @@ public sealed class CollectorModeRunner
         // coordinator and saves stop applying live before the coordinator is disposed.
         using var liveRuntime = PublishLiveRuntime(hostStartup, ctx.ConfigPath, failoverService, providerReconciler);
         await using var dataClientDisposable = dataClient;
+        if (failoverClient is null)
+        {
+            var providerId = ProviderIdentity.NormalizeId(ctx.Config.DataSource.ToString());
+            providerMap[providerId] = dataClient;
+            startupFailures.Remove(providerId);
+        }
+        using var activation = new StreamingProviderActivation(ctx.ConfigPath, providerMap, startupFailures,
+            failoverClient, failoverService);
 
         // The failover wrapper is not itself a gap source; its inner clients were captured
         // above. In single-provider (or failover-fallback) mode the client is captured here.
@@ -253,6 +263,7 @@ public sealed class CollectorModeRunner
             using var connectTimeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
             connectTimeoutCts.CancelAfter(TimeSpan.FromSeconds(30));
             await dataClient.ConnectAsync(connectTimeoutCts.Token);
+            activation.MarkConnected();
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
@@ -261,6 +272,7 @@ public sealed class CollectorModeRunner
         }
         catch (OperationCanceledException)
         {
+            activation.MarkConnectionFailed();
             _log.Error(
                 "Connection to {DataSource} timed out after 30 seconds. " +
                 "Check network connectivity, firewall rules, and provider credentials. " +
@@ -270,6 +282,7 @@ public sealed class CollectorModeRunner
         }
         catch (Exception ex)
         {
+            activation.MarkConnectionFailed();
             var errorCode = ErrorCodeExtensions.FromException(ex);
             if (errorCode == ErrorCode.Unknown)
                 errorCode = ErrorCode.ConnectionFailed;
@@ -446,7 +459,7 @@ public sealed class CollectorModeRunner
         ProviderConfigReconciler? reconciler)
     {
         if (failoverService is null || reconciler is null)
-            return new LiveRuntimeRegistration(null, null, null, null);
+            return ConfigurationRuntimeAppliers.Attach(configPath, new SingleSourceProviderConfigApplier());
 
         var registry = hostStartup.GetService<StreamingFailoverRegistry>() ?? StreamingFailoverRegistry.Process;
         registry.Service = failoverService;

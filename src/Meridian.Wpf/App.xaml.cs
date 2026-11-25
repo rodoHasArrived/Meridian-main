@@ -298,6 +298,7 @@ public partial class App : System.Windows.Application
                 WpfServices.NavigationService.Instance.SetServiceProvider(Services);
                 Services.GetRequiredService<WpfServices.ViewModelViewResolver>()
                     .LogMissingViewModels(Services.GetRequiredService<Meridian.Wpf.Shell.Services.IShellPageRegistry>());
+                StartOAuthRefresh();
 
                 mainWindow = Services.GetRequiredService<MainWindow>();
                 Current.MainWindow = mainWindow;
@@ -1032,8 +1033,52 @@ public partial class App : System.Windows.Application
     /// <summary>
     /// Performs async shutdown with proper exception handling.
     /// </summary>
+    private static Meridian.Ui.Services.OAuthRefreshService? _oauthRefreshService;
+
+    /// <summary>
+    /// Starts background OAuth token refresh against the DPAPI-backed credential store.
+    /// A failure here must not block the shell, so it is logged and startup continues.
+    /// </summary>
+    private static void StartOAuthRefresh()
+    {
+        try
+        {
+            var service = Services.GetRequiredService<Meridian.Ui.Services.OAuthRefreshService>();
+            service.Start();
+            _oauthRefreshService = service;
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "OAuth token auto-refresh could not be started",
+                ("Error", ex.Message));
+        }
+    }
+
+    private static void StopOAuthRefresh()
+    {
+        var service = Interlocked.Exchange(ref _oauthRefreshService, null);
+        if (service is null)
+        {
+            return;
+        }
+
+        try
+        {
+            service.Dispose();
+        }
+        catch (Exception ex)
+        {
+            WpfServices.LoggingService.Instance.LogWarning(
+                "Failed to stop OAuth token auto-refresh during shutdown",
+                ("Error", ex.Message));
+        }
+    }
+
     private static async Task SafeOnExitAsync(CancellationToken ct = default)
     {
+        StopOAuthRefresh();
+
         const int ShutdownTimeoutMs = 5000; // 5 second timeout for graceful shutdown
 
         try

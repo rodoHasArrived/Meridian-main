@@ -12,6 +12,7 @@ namespace Meridian.Storage.Services;
 /// </summary>
 public sealed class CanonicalSymbolRegistry :
     ICanonicalSymbolRegistry,
+    ICanonicalSymbolOperatorMappingWriter,
     ICanonicalSymbolRegistrySecurityMasterWriter,
     ISecurityMasterLegacyIdentifierCleanupWriter,
     ICanonicalSymbolRegistryMigrationWriter
@@ -113,6 +114,32 @@ public sealed class CanonicalSymbolRegistry :
 
         return count;
     }
+
+    public async Task<int> SaveOperatorMappingsAsync(
+        IReadOnlyList<CanonicalSymbolDefinition> definitions,
+        CancellationToken ct = default)
+    {
+        var count = await GetOperatorMappingWriter()
+            .SaveOperatorMappingsAsync(definitions.Select(ToRegistryEntry).ToArray(), ct).ConfigureAwait(false);
+        RebuildResolverCache();
+        return count;
+    }
+
+    public async Task<int> RemoveOperatorMappingsAsync(
+        string canonical,
+        string? provider,
+        CancellationToken ct = default)
+    {
+        var count = await GetOperatorMappingWriter()
+            .RemoveOperatorMappingsAsync(canonical, provider, ct).ConfigureAwait(false);
+        if (count > 0)
+            RebuildResolverCache();
+        return count;
+    }
+
+    private SymbolRegistryService GetOperatorMappingWriter()
+        => _registryService as SymbolRegistryService
+           ?? throw new InvalidOperationException("The symbol registry store does not support operator mappings.");
 
     /// <inheritdoc />
     public async Task<int> ReconcileSecurityMasterAsync(

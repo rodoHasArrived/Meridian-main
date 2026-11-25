@@ -1103,6 +1103,24 @@ describe("PortfolioScreen", () => {
     expect(msftRow).toHaveAttribute("aria-expanded", "true");
   });
 
+  it("loads the linked brokerage account and opens the requested position", async () => {
+    const loadPortfolio = vi.spyOn(api, "getBrokerageHouseholdPortfolio").mockResolvedValue({
+      ...brokeragePortfolio,
+      accounts: brokeragePortfolio.accounts.filter((account) => account.fundAccountId === "fund-taxable"),
+      positions: brokeragePortfolio.positions.filter((position) => position.fundAccountId === "fund-taxable")
+    });
+    await renderPortfolioScreen(<PortfolioScreen trading={trading} strategy={strategy} accounting={accounting}
+      brokerageConnection={brokerageConnection} brokeragePortfolio={brokeragePortfolio} />, {
+      initialEntries: ["/portfolio/brokerage-sync?positionProvider=alpaca&fundAccountId=fund-taxable&brokeragePosition=fund-taxable-MSFT-pos-msft"]
+    });
+
+    expect(await screen.findByRole("region", { name: /msft brokerage position detail/i })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: /aapl brokerage position detail/i })).not.toBeInTheDocument();
+    expect(loadPortfolio).toHaveBeenCalledWith("alpaca", {
+      fundAccountId: "fund-taxable", signal: expect.any(AbortSignal), allowDevelopmentFallback: false
+    });
+  });
+
   it("keeps the raw multi-asset coverage endpoint behind technical disclosure", async () => {
     const user = userEvent.setup();
     await renderPortfolioScreen(
@@ -1551,7 +1569,7 @@ describe("PortfolioScreen", () => {
     // crosshair slider is exposed beside (not inside) the image.
     const equityTable = screen.getByRole("table", { name: "Equity and drawdown by date for Mean Reversion" });
     expect(within(equityTable).getByRole("row", { name: "2026-05-03 100,390 -0.80%" })).toBeDefined();
-    expect(equityChart.contains(screen.getByRole("slider"))).toBe(false);
+    expect(equityChart.contains(within(screen.getByRole("region", { name: "Run equity and drawdown inspector" })).getByRole("slider"))).toBe(false);
 
     // The daily-return distribution reuses the same fetched points — no extra request — and
     // surfaces the signed histogram with mean, best, worst, and positive-day readouts. Scope the

@@ -207,13 +207,79 @@ public sealed class IntercompanyCounterpartQueueWorkspaceTests
     }
 
     [Fact]
+    public async Task ChoosingTheCounterpartBookListsMatchingPostedJournalsAndTheChoiceIsWhatLinks()
+    {
+        var journal = Guid.NewGuid();
+        var client = new Client
+        {
+            Proposals = [Proposal(IntercompanyProposalStatusDto.Pending)],
+            Candidates = ApiResponse<IntercompanyCounterpartCandidateDto[]>.Ok([new(journal, new(2026, 9, 30), "Borrower recharge", -Exact, "EUR")])
+        };
+        using var view = Open(client);
+        await view.LoadCommand.ExecuteAsync(null);
+        view.SelectedProposal = Assert.Single(view.Proposals);
+        Assert.Empty(view.TargetJournalChoices);
+        Assert.StartsWith("Choose the counterpart book", view.TargetJournalChoicesStatus);
+        var book = Guid.NewGuid();
+
+        view.TargetBook = book.ToString("D");
+        var choice = Assert.Single(view.TargetJournalChoices);
+        Assert.Equal((view.SelectedProposal!.ProposalId, book), Assert.Single(client.CandidateReads));
+        Assert.Equal($"2026-09-30 · Borrower recharge · -1234567890123456.789012345678 EUR · {journal:D}", choice.Label);
+        Assert.Contains("1 matching posted journal(s)", view.TargetJournalChoicesStatus);
+
+        view.TargetJournal = choice.Id;
+        view.LinkReason = "Picked from the matching journals";
+        await view.LinkCommand.ExecuteAsync(null);
+        Assert.Equal((book, journal), (Assert.Single(client.Links).Request.TargetBookId, client.Links[0].Request.TargetJournalId));
+    }
+
+    [Fact]
+    public async Task ACandidateOutageExplainsItselfAndChangingTheBookClearsTheChosenJournal()
+    {
+        var client = new Client
+        {
+            Proposals = [Proposal(IntercompanyProposalStatusDto.Pending)],
+            Candidates = ApiResponse<IntercompanyCounterpartCandidateDto[]>.Fail("Book outside the approved mapping.", 409)
+        };
+        using var view = Open(client);
+        await view.LoadCommand.ExecuteAsync(null);
+        view.SelectedProposal = Assert.Single(view.Proposals);
+        view.TargetBook = Guid.NewGuid().ToString("D");
+        Assert.Empty(view.TargetJournalChoices);
+        Assert.Contains("Book outside the approved mapping.", view.TargetJournalChoicesStatus);
+
+        view.TargetJournal = Guid.NewGuid().ToString("D");
+        view.TargetBook = Guid.NewGuid().ToString("D");
+        Assert.Equal("", view.TargetJournal);
+    }
+
+    [Fact]
+    public async Task OpenTargetJournalHandsTheResolvedBookAndJournalToTheHost()
+    {
+        var client = new Client { Proposals = [Proposal(IntercompanyProposalStatusDto.Drafted, target: true), Proposal(IntercompanyProposalStatusDto.Pending)] };
+        using var view = Open(client);
+        await view.LoadCommand.ExecuteAsync(null);
+        var delivered = view.Proposals[0];
+        Assert.False(view.OpenTargetJournalCommand.CanExecute(delivered));
+
+        (Guid Book, Guid Journal, string? Fund)? opened = null;
+        view.JournalOpener = (book, journal, fund) => opened = (book, journal, fund);
+        Assert.True(view.OpenTargetJournalCommand.CanExecute(delivered));
+        Assert.False(view.OpenTargetJournalCommand.CanExecute(view.Proposals[1]));
+        view.OpenTargetJournalCommand.Execute(delivered);
+        Assert.Equal((delivered.Proposal.TargetBookId!.Value, delivered.Proposal.TargetJournalId!.Value, (string?)null), opened);
+    }
+
+    [Fact]
     public async Task ServerRefusalKeepsLinkInputAndShowsTheRetainedReason()
     {
         var client = new Client { Proposals = [Proposal(IntercompanyProposalStatusDto.Drafted, target: true)], LinkFailure = ApiResponse<IntercompanyProposalDto>.Fail("Retain the generated draft's rejection first.", 409) };
         using var view = Open(client);
         await view.LoadCommand.ExecuteAsync(null);
         view.SelectedProposal = Assert.Single(view.Proposals);
-        view.TargetBook = view.TargetJournal = Guid.NewGuid().ToString("D");
+        view.TargetBook = Guid.NewGuid().ToString("D");
+        view.TargetJournal = Guid.NewGuid().ToString("D");
         view.LinkReason = "Existing posted journal";
         await view.LinkCommand.ExecuteAsync(null);
         Assert.Contains("Retain the generated draft's rejection first.", view.StatusText);
@@ -376,6 +442,10 @@ public sealed class IntercompanyCounterpartQueueWorkspaceTests
         public List<(Guid Proposal, LinkIntercompanyCounterpartRequest Request)> Links { get; } = [];
         public List<(Guid Proposal, RefreshIntercompanyProposalRequest Request)> Refreshes { get; } = [];
         public int Reads { get; private set; }
+        public ApiResponse<IntercompanyCounterpartCandidateDto[]> Candidates { get; set; } = ApiResponse<IntercompanyCounterpartCandidateDto[]>.Ok([]);
+        public List<(Guid Proposal, Guid Book)> CandidateReads { get; } = [];
+        public Task<ApiResponse<IntercompanyCounterpartCandidateDto[]>> GetCounterpartCandidatesAsync(Guid proposalId, Guid targetBookId, CancellationToken ct = default)
+        { CandidateReads.Add((proposalId, targetBookId)); return Task.FromResult(Candidates); }
 
         public Task<ApiResponse<IntercompanyOperationCapabilities>> GetIntercompanyCapabilitiesAsync(CancellationToken ct = default)
         { Reads++; return Task.FromResult(CapabilityFailure ? ApiResponse<IntercompanyOperationCapabilities>.Fail("unavailable", 503) : ApiResponse<IntercompanyOperationCapabilities>.Ok(Capabilities)); }

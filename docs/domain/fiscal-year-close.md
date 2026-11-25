@@ -1,16 +1,20 @@
 # Fiscal-year close
 
+**Status:** active guidance
+**Owner:** Accounting and Ledger
+**Reviewed:** 2026-11-20
+
 Roadmap item: `W12-YEND-001` (Fiscal year-end close and opening-balance roll-forward).
 
-## What exists today (slice 1: read-only close plan)
+## Review the fiscal close
 
 `GET /api/ledger/books/{ledgerBookId}/fiscal-years/{fiscalYear}/close-plan` returns a
-`FiscalYearClosePlanDto` for one ledger book. The plan is read-only: it never posts, closes,
-reopens, or changes period state. It is built by `FiscalYearClosePlanBuilder`
+`FiscalYearClosePlanDto` for one ledger book. `FiscalYearClosePlanBuilder` builds it
 (`src/Meridian.Ui.Shared/Services/`) from retained hard-close snapshots
 (`period_close_snapshots`), not from live journals that may have been restated since. Workstations
 read it through `IWorkstationFiscalYearCloseApiClient` (`src/Meridian.Ui.Services/`) and do not
-recompute balances.
+recompute balances. Open **Fiscal-year close** in the browser Accounting workspace or the
+desktop Accounting Close page to review the plan and its constituent snapshots.
 
 ### Readiness
 
@@ -50,8 +54,24 @@ erase or create the year's income. `OpeningEquity` is equity from journals befor
 `PostClosingEquity` must equal `PreClosingEquity + ReportedNetIncome`. Balances keep account,
 financial account and dimensional scope.
 
-`PlanHashSha256` is a SHA-256 over the plan, including each period's snapshot version and hash.
+`PlanHashSha256` is a SHA-256 over the plan, including the reviewed book settings and
+each period's snapshot version and hash.
 It is stable across read order and store restarts and changes when any retained evidence changes.
+
+## Retain the close
+
+`POST /api/ledger/books/{ledgerBookId}/fiscal-years/{fiscalYear}/close-receipts`
+accepts the reviewed plan hash, a command ID, and a reason. A controller authorizes the close for
+the exact book. The store rechecks the bound period snapshots in the transaction, then retains the
+balances, linked closing journals, next-year opening representation, and authenticated actor.
+Replay of the same command recovers its receipt.
+
+The receipt carries opening balances for a continuous book. If the plan has proposed transfers,
+complete them through the governed period-close workflow and review the resulting plan again.
+Following a governed late adjustment and reclose, retaining the new plan requires the current
+receipt as its predecessor. The earlier receipt stays accessible by ID through
+`GET .../close-receipts?receiptId=<id>`. An annual Financial Statement Control Pack binds the
+selected fiscal receipt and its retained period snapshot.
 
 ### Golden example
 
@@ -59,10 +79,4 @@ The design charter's Section 22.6.3 example is covered by `FiscalYearClosePlanBu
 `FiscalYearClosePlanPostgresTests`: opening equity 1,000 and profit 100 report income of 100 after
 transfers and next-year opening equity of 1,100.
 
-## Not yet built
-
-- Posting year-end closing journals through an authorized year-end posting period or adjustment
-  route, and a retained close receipt that a retry recovers instead of posting twice.
-- Late corrections that keep the original close and create linked successor closes.
-- Browser and WPF close-plan screens.
-- Carry-forward rules for investor capital, open lots and accruals beyond plain balances.
+The +5 correction produces a linked successor of 105 reported income and 1,105 opening equity.

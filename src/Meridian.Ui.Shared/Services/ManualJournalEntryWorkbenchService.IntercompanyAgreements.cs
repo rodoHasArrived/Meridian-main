@@ -148,7 +148,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
                     && item.Source.Debit == candidate.Credit && item.Source.Credit == candidate.Debit
                     && SamePostingDimensions(LedgerDimensionMapper.ToDto(item.Source.Dimensions),
                         LedgerDimensionMapper.ToDto(candidate.Dimensions))).ToArray();
-            if (matches.Length == 0 || matches.Select(item => item.Source.Currency).Distinct().Count() != 1)
+            if (matches.Length == 0 || matches
+                    .Select(item => (item.Source.Currency, item.Source.Memo, item.Source.ChartAccount)).Distinct().Count() != 1)
                 throw new LedgerValidationException("Agreement reversal source legs are missing, changed or ambiguous; accounts, inverse amounts and every dimension must match.");
             var source = matches[0].Source;
             LedgerEntryCurrency? inverseCurrency = null;
@@ -168,7 +169,11 @@ public sealed partial class ManualJournalEntryWorkbenchService
             // Null historical evidence stays null. Native and explicit transaction evidence are
             // inverted exactly; neither a new currency nor a new rate is inferred from today's book.
             materialized.Add(new(candidate.EntryId, candidate.JournalEntryId, candidate.Timestamp, candidate.Account,
-                candidate.Debit, candidate.Credit, candidate.Description, candidate.Dimensions, inverseCurrency));
+                candidate.Debit, candidate.Credit, candidate.Description, candidate.Dimensions, inverseCurrency)
+            {
+                Memo = source.Memo,
+                ChartAccount = source.ChartAccount
+            });
             remaining.RemoveAt(matches[0].Index);
         }
         return materialized;

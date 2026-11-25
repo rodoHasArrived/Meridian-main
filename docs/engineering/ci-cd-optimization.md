@@ -499,6 +499,20 @@ five-pair concurrency adoption rule. Insufficient, incomplete or unmatched sampl
 unevaluated target, never a savings claim. Failed and cancelled final outcomes remain separately
 visible and cannot enter successful performance cohorts.
 
+## Unimplemented-surface register
+
+`build/scripts/ci/check-unimplemented-surfaces.py` runs in the workflows lane next to the test
+skip register. A route or task that refuses honestly because nothing implements it is an
+unimplemented surface. That covers `ApiProblemDetails.NotImplemented(...)`, a
+`BuildNotImplementedResult(...)` maintenance task, or a 501 whose title or detail says "not
+implemented". The source file of each one must be listed as `evidence.path` on a roadmap row in
+`docs/roadmap/data/roadmap-items.yml`. Otherwise it needs an entry with a reason in
+`build/scripts/ci/unimplemented-surface-baseline.json`.
+
+A 501 returned only because an optional service is not registered is a host configuration
+refusal and is out of scope. Baseline entries that stop matching, or that a roadmap row now
+covers, fail the gate. Removing an entry from the baseline needs a roadmap row first.
+
 ## Review sequence and rollback
 
 The initial consolidation was organized into baseline/ownership, duplicate-work removal,

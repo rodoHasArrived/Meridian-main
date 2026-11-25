@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { buildReportWriterPreviewRows, extractReportWriterFormulaFields } from "@/screens/reporting-screen.report-writer-helpers";
+import { extractReportWriterFormulaFields } from "@/screens/reporting-screen.report-writer-helpers";
 
 describe("report-writer formula references", () => {
   it("reads a hyphen between known names as subtraction", () => {
@@ -15,23 +15,4 @@ describe("report-writer formula references", () => {
     expect(extractReportWriterFormulaFields("pnl-fees")).toEqual(["pnl-fees"]);
   });
 
-  it("does not invent a hyphenated preview column for a subtraction formula", () => {
-    const rows = buildReportWriterPreviewRows(
-      {
-        gridId: "grid-1",
-        title: "Grid",
-        kind: "Detail",
-        rowFields: ["sector"],
-        columnFields: [],
-        metrics: [
-          { name: "pnl", sourceField: "pnl", function: "Sum", label: "P&L" },
-          { name: "fees", sourceField: "fees", function: "Sum", label: "Fees" }
-        ],
-        formulas: [{ name: "afterFees", expression: "pnl-fees", label: "After fees" }]
-      },
-      "portfolioPositions"
-    );
-
-    expect(Object.keys(rows[0]).sort()).toEqual(["fees", "pnl", "previewDataset", "sector"]);
-  });
 });

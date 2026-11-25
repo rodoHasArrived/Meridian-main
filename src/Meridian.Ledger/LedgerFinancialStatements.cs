@@ -17,6 +17,9 @@ public sealed record LedgerFinancialStatements(
     LedgerCashFlowStatement? CashFlow = null,
     LedgerPartnersCapitalStatement? PartnersCapital = null)
 {
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public LedgerIncomeStatement? PeriodIncome { get; init; }
+
     /// <summary>Equity after closing current-period net income to retained earnings.</summary>
     public decimal EndingEquity => TotalEquity + NetIncome;
 

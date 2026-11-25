@@ -21,7 +21,7 @@ public static class LedgerJournalExporter
         "journal_entry_id", "entry_id", "timestamp", "description", "account_name", "external_account",
         "account_type", "symbol", "financial_account_id", "debit", "credit", "strategy_id", "order_id",
         "fill_id", "activity_type", "effective_date", "idempotency_key", "metadata_json", "dimensions_json",
-        "currency_json", "posting_metadata_json"
+        "currency_json", "posting_metadata_json", "line_memo", "chart_account_node_id", "account_code", "chart_revision"
     ];
 
     public static byte[] ExportCsv(
@@ -108,6 +108,8 @@ public static class LedgerJournalExporter
             var metadataJson = JsonSerializer.Serialize(metadata, LedgerJournalExportJsonContext.Default.JournalEntryMetadata);
             foreach (var line in journal.Lines)
             {
+                var chartAccount = line.ChartAccount ??
+                    (ledger as Meridian.Ledger.Ledger)?.Policy?.Chart.GetPostingReference(line.Account);
                 var externalAccount = line.Account.Name;
                 if (accountMapping is not null &&
                     (!accountMapping.TryGetValue(line.Account.Name, out externalAccount) || string.IsNullOrWhiteSpace(externalAccount)))
@@ -126,7 +128,11 @@ public static class LedgerJournalExporter
                     metadata.IdempotencyKey ?? string.Empty, metadataJson,
                     JsonSerializer.Serialize(line.Dimensions, LedgerJournalExportJsonContext.Default.LedgerLineDimensionSet),
                     JsonSerializer.Serialize(line.Currency, LedgerJournalExportJsonContext.Default.LedgerEntryCurrency),
-                    postingMetadata?.GetValueOrDefault(journal.JournalEntryId) ?? "null"
+                    postingMetadata?.GetValueOrDefault(journal.JournalEntryId) ?? "null",
+                    line.Memo ?? string.Empty,
+                    chartAccount?.NodeId ?? string.Empty,
+                    chartAccount?.AccountCode ?? string.Empty,
+                    chartAccount?.Revision ?? string.Empty
                 ]);
             }
         }

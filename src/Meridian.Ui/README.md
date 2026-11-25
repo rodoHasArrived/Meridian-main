@@ -6,7 +6,7 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui
@@ -18,10 +18,10 @@ before project evaluation; commit authored inputs and reviewed documentation, no
 mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
-symbol rollout, validation profiles and quota history, plus the cross-provider tolerance editor in
-data-quality watch. Data and Settings share pending activation
-status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
-shared-service READMEs for validation and runtime boundaries.
+symbol rollout, quota history, and a Data quality rules panel with retained profile changes. Data
+quality watch has a cross-provider tolerance editor. Data and Settings share pending activation
+status from the host. See the dashboard and shared-service READMEs for validation and runtime
+boundaries.
 
 The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
 
@@ -228,10 +228,11 @@ No shared contract changed in that step.
 Dashboard source also carries the P4 entity, fund and period step (host bundle not yet rebuilt):
 - The scope bar reads `Scope  Entity … › Fund … › Account … › Period …`. An unset Entity, Fund
   or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
-  `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
-  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
+  `entityId` and `fundId` URL parameters, carried in ordinary workspace links and in storage, recent scopes,
+  saved layouts, Copy link and the server-side default scope. Record links marked `recordScope=1`
+  use their explicit route scope without adding remembered dimensions. Accounting applies `entityId`.
   Portfolio > Brokerage sync (household accounts and positions), Accounting > Close calendar
-  (close workflows), Accounting > Operations continuity (workflow list) and Accounting > Statement
+  (close workflows), Accounting > Close (workflow list at `/accounting/close`) and Accounting > Statement
   import (saved fetch schedules) narrow their fund-account rows to the chosen fund or entity client-side, using
   the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
   screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.
@@ -351,6 +352,13 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:begin module=SRC-UI -->
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The served Accounting bundle picks the existing counterpart journal from
+`/api/ledger/intercompany/proposals/{id}/counterpart-candidates` and includes the confirmation close-policy panel
+over `/api/ledger/intercompany/confirmation-close-policies`. See
+[ADR-032](../../docs/adr/032-intercompany-confirmation-close-policy.md).
 
 ## Validation
 

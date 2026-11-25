@@ -6,6 +6,250 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StorageQuota
+
+Qualified name: <code>Meridian.Storage.StorageQuota</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:405](../../../../src/Meridian.Storage/StorageOptions.cs#L405).
+
+Storage quota specification.
+
+```csharp
+public sealed class StorageQuota
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long MaxBytes { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:408](../../../../src/Meridian.Storage/StorageOptions.cs#L408) | Maximum bytes for this quota. |
+| <code>public long? MaxFiles { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:411](../../../../src/Meridian.Storage/StorageOptions.cs#L411) | Maximum number of files. |
+| <code>public long? MaxEventsPerDay { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:414](../../../../src/Meridian.Storage/StorageOptions.cs#L414) | Maximum events per day. |
+| <code>public QuotaEnforcementPolicy Enforcement { get; init; } = QuotaEnforcementPolicy.SoftLimit;</code> | [src/Meridian.Storage/StorageOptions.cs:417](../../../../src/Meridian.Storage/StorageOptions.cs#L417) | Enforcement policy when quota is exceeded. |
+
+## StorageSinkAttribute
+
+Qualified name: <code>Meridian.Storage.StorageSinkAttribute</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:36](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L36).
+
+Marks a class as a storage sink plugin for automatic discovery and registration. Classes decorated with this attribute will be discovered by StorageSinkRegistry at startup when their assembly is scanned.
+
+```csharp
+public sealed class StorageSinkAttribute : Attribute
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:42](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L42) | Unique identifier for this sink (e.g., &quot;jsonl&quot;, &quot;parquet&quot;, &quot;clickhouse&quot;). Used in the Storage.Sinks configuration list to activate the sink. |
+| <code>public string DisplayName { get; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:47](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L47) | Human-readable display name (e.g., &quot;JSONL Storage&quot;, &quot;Apache Parquet Storage&quot;). |
+| <code>public string? Description { get; set; }</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:52](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L52) | Optional description of the sink and its use case. |
+| <code>public bool EnabledByDefault { get; set; } = false;</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:58](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L58) | Whether this sink is included in the default composition when no explicit Sinks list is provided. Default is false. |
+| <code>public StorageSinkAttribute(string id, string displayName);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:65](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L65) | Creates a new StorageSinkAttribute. |
+
+## StorageSinkAttributeExtensions
+
+Qualified name: <code>Meridian.Storage.StorageSinkAttributeExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:102](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L102).
+
+Extension methods for StorageSinkAttribute discovery on Type.
+
+```csharp
+public static class StorageSinkAttributeExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageSinkAttribute? GetStorageSinkAttribute(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:107](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L107) | Gets the StorageSinkAttribute from a type, if present. |
+| <code>public static StorageSinkMetadata? GetStorageSinkMetadata(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:116](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L116) | Gets the StorageSinkMetadata from a type decorated with StorageSinkAttribute, or null if not decorated. |
+| <code>public static bool IsStorageSinkPlugin(this Type type);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:126](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L126) | Returns true when the type is a concrete class that implements IStorageSink and is decorated with StorageSinkAttribute. |
+
+## StorageSinkMetadata
+
+Qualified name: <code>Meridian.Storage.StorageSinkMetadata</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/StorageSinkAttribute.cs:76](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L76).
+
+Metadata extracted from a StorageSinkAttribute for use by the StorageSinkRegistry and composition root.
+
+```csharp
+public sealed record StorageSinkMetadata(string Id, string DisplayName, string? Description, bool EnabledByDefault, Type ImplementationType)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static StorageSinkMetadata FromAttribute(StorageSinkAttribute attr, Type implementationType);</code> | [src/Meridian.Storage/StorageSinkAttribute.cs:87](../../../../src/Meridian.Storage/StorageSinkAttribute.cs#L87) | Creates metadata from a StorageSinkAttribute and its implementation type. |
+
+## StorageSinkRegistry
+
+Qualified name: <code>Meridian.Storage.StorageSinkRegistry</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageSinkRegistry.cs:20](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L20).
+
+Registry for discovering and registering IStorageSink plugins that are decorated with StorageSinkAttribute.
+
+```csharp
+public sealed class StorageSinkRegistry
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;StorageSinkMetadata&gt; Sinks =&gt; …;</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:27](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L27) | Gets the discovered storage sink metadata entries, in the order they were found. |
+| <code>public void DiscoverFromAssemblies(params Assembly[] assemblies);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:40](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L40) | Scans the provided assemblies for concrete types decorated with StorageSinkAttribute that implement IStorageSink, and adds their metadata to the registry. |
+| <code>public void RegisterServices(IServiceCollection services, ServiceLifetime lifetime = ServiceLifetime.Singleton);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:77](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L77) | Registers all discovered sink implementation types into the service collection so that they can be resolved by IServiceProvider during composition. |
+| <code>public bool TryGetSink(string id, out StorageSinkMetadata? metadata);</code> | [src/Meridian.Storage/StorageSinkRegistry.cs:103](../../../../src/Meridian.Storage/StorageSinkRegistry.cs#L103) | Attempts to find a registered sink by its identifier (case-insensitive). |
+
+## StorageTier
+
+Qualified name: <code>Meridian.Storage.StorageTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:242](../../../../src/Meridian.Storage/StorageOptions.cs#L242).
+
+Storage tier designation.
+
+```csharp
+public enum StorageTier : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Hot</code> | [src/Meridian.Storage/StorageOptions.cs:245](../../../../src/Meridian.Storage/StorageOptions.cs#L245) | Hot tier - real-time access, NVMe SSD. |
+| <code>Warm</code> | [src/Meridian.Storage/StorageOptions.cs:247](../../../../src/Meridian.Storage/StorageOptions.cs#L247) | Warm tier - daily batch access, SSD/HDD. |
+| <code>Cold</code> | [src/Meridian.Storage/StorageOptions.cs:249](../../../../src/Meridian.Storage/StorageOptions.cs#L249) | Cold tier - weekly/monthly access, HDD/NAS. |
+| <code>Archive</code> | [src/Meridian.Storage/StorageOptions.cs:251](../../../../src/Meridian.Storage/StorageOptions.cs#L251) | Archive tier - rare bulk access, object storage. |
+| <code>Glacier</code> | [src/Meridian.Storage/StorageOptions.cs:253](../../../../src/Meridian.Storage/StorageOptions.cs#L253) | Glacier tier - emergency only, tape/deep archive. |
+
+## CompositeMarketDataStore
+
+Qualified name: <code>Meridian.Storage.Store.CompositeMarketDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:23](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L23).
+
+IMarketDataStore that aggregates results from multiple underlying stores and merges them in ascending MarketEvent.Timestamp order.
+
+```csharp
+public sealed class CompositeMarketDataStore : IMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CompositeMarketDataStore(IEnumerable&lt;IMarketDataStore&gt; stores);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:34](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L34) | Initialises a composite store that fans out queries to stores and merges results by timestamp. |
+| <code>public CompositeMarketDataStore(IMarketDataStore first, IMarketDataStore second) : this(new[] { first, second });</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:43](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L43) | Convenience constructor for two stores (e.g. JSONL + Parquet). |
+| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; QueryAsync(MarketDataQuery query, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:47](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L47) |  |
+
+## IBDataResultStoreOptions
+
+Qualified name: <code>Meridian.Storage.Store.IBDataResultStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:7](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L7).
+
+```csharp
+public sealed record IBDataResultStoreOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public required string DataRoot { get; init; }</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:9](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L9) |  |
+
+## JsonFileIBDataResultStore
+
+Qualified name: <code>Meridian.Storage.Store.JsonFileIBDataResultStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L16).
+
+Crash-safe IB result store. Each upsert replaces one complete atomic snapshot, so an interrupted write leaves either the previous valid result set or the new valid result set available at restart.
+
+```csharp
+public sealed class JsonFileIBDataResultStore : IIBDataResultStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonFileIBDataResultStore(IBDataResultStoreOptions options);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:22](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L22) |  |
+| <code>public async ValueTask UpsertAsync(IBDataResult result, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:29](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L29) |  |
+| <code>public async ValueTask&lt;IReadOnlyList&lt;IBDataResult&gt;&gt; QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:57](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L57) |  |
+
+## JsonFileSnapshotStore (generic arity 1)
+
+Qualified name: <code>Meridian.Storage.Store.JsonFileSnapshotStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonFileSnapshotStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileSnapshotStore.cs#L16).
+
+Base class for whole-file JSON snapshot stores: state lives in a single JSON document that is loaded on demand, mutated in memory, and persisted with AtomicFileWriter so the file is never left partially written. A SemaphoreSlim serializes read-modify-write cycles. Derived stores supply the empty snapshot, choose reflection- or source-generated serialization via the constructor, and can override the corrupt-snapshot and post-load hooks to keep their historical recovery semantics (propagate, log-and-start-fresh, or fail fast).
+
+```csharp
+public abstract class JsonFileSnapshotStore<TSnapshot> where TSnapshot : class
+```
+
+## JsonlMarketDataStore
+
+Qualified name: <code>Meridian.Storage.Store.JsonlMarketDataStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:27](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L27).
+
+IMarketDataStore implementation backed by JSONL (optionally compressed) files. Enumerates all *.jsonl files under the configured root — including any compression suffix the storage policy can emit (.gz/.gzip/.zst/.lz4/.br) — deserialises each line, and applies the MarketDataQuery predicate in-process. Concurrency posture: read-only. This type never writes, appends, or deletes — it opens each file with FileAccess.Read and shares write and delete so a concurrent writer or an archival replace does not fault the read. Writes to this JSONL tree are owned by the storage sink, so there is no mutation posture to declare here (#2697).
+
+```csharp
+public sealed class JsonlMarketDataStore : IMarketDataStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public JsonlMarketDataStore(string root);</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:49](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L49) |  |
+| <code>public long MalformedLinesSkipped =&gt; …;</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:58](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L58) | Number of malformed JSONL lines this store instance has skipped while reading. A non-zero value means query results are incomplete relative to the bytes on disk. |
+| <code>public long TruncatedTailsDetected =&gt; …;</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:65](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L65) | Number of truncated compressed file tails this store instance has stopped at while reading. Each one means a file&#x27;s final block was torn (e.g. by a crash mid-append) and events past the tear were unrecoverable. |
+| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; QueryAsync(MarketDataQuery query, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/JsonlMarketDataStore.cs:68](../../../../src/Meridian.Storage/Store/JsonlMarketDataStore.cs#L68) |  |
+
+## PostgresTenantCutoverInspector
+
+Qualified name: <code>Meridian.Storage.Tenancy.PostgresTenantCutoverInspector</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:26](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L26).
+
+Read-only upgrade guard over every nullable tenant column affected by the strict posture. It neither invents tenant attribution nor changes records while the host starts.
+
+```csharp
+public static class PostgresTenantCutoverInspector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static async Task&lt;TenantCutoverReadiness&gt; InspectAsync(FundStructureStoreOptions? fund, LedgerJournalStoreOptions? ledger, FundAccountStoreOptions? accounts, CancellationToken ct = default);</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:44](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L44) |  |
+| <code>public static TenantCutoverReadiness Evaluate(IReadOnlyList&lt;TenantCutoverRecord&gt; rows);</code> | [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:126](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L126) | Pure readiness policy; known references must resolve to exactly one matching owner. |
+
+## TenantCutoverFinding
+
+Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverFinding</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs:11](../../../../src/Meridian.Storage/Tenancy/PostgresTenantCutoverInspector.cs#L11).
+
+Counts only: startup diagnostics must not expose retained records or credentials.
+
+```csharp
+public sealed record TenantCutoverFinding(string Store, string Table, string Reason, int Count);
+```
+
 ## TenantCutoverReadiness
 
 Qualified name: <code>Meridian.Storage.Tenancy.TenantCutoverReadiness</code>. Kind: `record`.

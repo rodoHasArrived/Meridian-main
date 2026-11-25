@@ -9,3 +9,11 @@ public interface IExplicitOrderModificationGateway
         OrderModification modification,
         CancellationToken ct = default);
 }
+
+/// <summary>Places the final live authorization check at the provider's actual replacement send.</summary>
+public interface IGuardedOrderModificationGateway
+{
+    Task<ExecutionReport> ModifyOrderAsync(OrderCancellationIdentifier identifier,
+        OrderModification modification, Func<CancellationToken, Task<IAsyncDisposable>> acquireDispatch,
+        CancellationToken ct = default);
+}

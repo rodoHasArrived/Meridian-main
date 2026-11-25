@@ -6,6 +6,222 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RateLimitEventArgs
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.RateLimitEventArgs</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs:356](../../../../src/Meridian.Infrastructure/Resilience/HttpResiliencePolicy.cs#L356).
+
+Callback arguments for rate limit events.
+
+```csharp
+public sealed record RateLimitEventArgs(string ProviderName, TimeSpan? RetryAfter, int? RequestsMade = null, int? MaxRequests = null);
+```
+
+## ReconnectionGap
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.ReconnectionGap</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1079](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1079).
+
+Represents a gap in data caused by a WebSocket disconnection and reconnection. Subscribers should use this to trigger backfill for the missed time window.
+
+```csharp
+public readonly record struct ReconnectionGap(string ProviderName, DateTimeOffset DisconnectedAt, DateTimeOffset ReconnectedAt, int ReconnectAttempts)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan Duration =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:1088](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L1088) | Duration of the gap (time without data). |
+
+## WebSocketConnectionConfig
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.WebSocketConnectionConfig</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:49](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L49).
+
+Centralized configuration for WebSocket connections. Provides sensible defaults used by all streaming providers (Alpaca, Polygon, etc.) to eliminate duplicate configuration across providers.
+
+```csharp
+public sealed record WebSocketConnectionConfig
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public int MaxRetries { get; init; } = 5;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:54](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L54) | Maximum number of connection retry attempts. |
+| <code>public TimeSpan RetryBaseDelay { get; init; } = TimeSpan.FromSeconds(2);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:59](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L59) | Base delay for exponential backoff between retries. |
+| <code>public TimeSpan MaxRetryDelay { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:64](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L64) | Maximum delay between retries (caps exponential backoff). |
+| <code>public int CircuitBreakerFailureThreshold { get; init; } = 5;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:69](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L69) | Number of failures before circuit breaker opens. |
+| <code>public TimeSpan CircuitBreakerDuration { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:74](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L74) | Duration circuit breaker stays open before allowing retry. |
+| <code>public TimeSpan OperationTimeout { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:79](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L79) | Timeout for individual connection operations. |
+| <code>public TimeSpan HeartbeatInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:84](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L84) | Interval between heartbeat pings. |
+| <code>public TimeSpan HeartbeatTimeout { get; init; } = TimeSpan.FromSeconds(10);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:89](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L89) | Timeout waiting for heartbeat response before considering connection stale. |
+| <code>public int MaxReconnectAttempts { get; init; } = 10;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:94](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L94) | Maximum number of reconnection attempts after connection loss. |
+| <code>public int MaxMessageSizeBytes { get; init; } = 10 * 1024 * 1024;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:101](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L101) | Maximum total size (bytes) of a single WebSocket message after all frames are assembled. Messages exceeding this limit are discarded and a warning is logged. Default is 10 MiB — large enough for any normal market data payload. |
+| <code>public static WebSocketConnectionConfig Default { get; } = new ();</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:107](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L107) | Default configuration used by all streaming providers. These values match the previously duplicated settings in Alpaca and Polygon clients. |
+| <code>public static WebSocketConnectionConfig HighFrequency { get; } = new () { RetryBaseDelay = TimeSpan.FromSeconds(1), MaxRetryDelay = TimeSpan.FromSeconds(15), OperationTimeout = TimeSpan.FromSeconds(15), HeartbeatInterval = TimeSpan.FromSeconds(15), HeartbeatTimeout = TimeSpan.FromSeconds(5) };</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:112](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L112) | Configuration optimized for high-frequency data (shorter timeouts). |
+| <code>public static WebSocketConnectionConfig Resilient { get; } = new () { MaxRetries = 10, RetryBaseDelay = TimeSpan.FromSeconds(3), MaxRetryDelay = TimeSpan.FromSeconds(60), CircuitBreakerDuration = TimeSpan.FromSeconds(60), OperationTimeout = TimeSpan.FromSeconds(60), MaxReconnectAttempts = 20 };</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs:124](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionConfig.cs#L124) | Configuration optimized for unreliable networks (more retries, longer timeouts). |
+
+## WebSocketConnectionManager
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.WebSocketConnectionManager</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:27](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L27).
+
+Centralized WebSocket connection manager that handles connection lifecycle, resilience, heartbeat monitoring, and automatic reconnection. This class eliminates duplicate connection management code across providers (Alpaca, Polygon, NYSE) by centralizing: - Connection with resilience pipeline (retry + circuit breaker) - Heartbeat monitoring for stale connection detection - Reconnection gating (prevents reconnection storms) - Clean disposal and state management
+
+```csharp
+public sealed class WebSocketConnectionManager : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event Func&lt;Task&gt;? ConnectionLost;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:62](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L62) | Event raised when connection is lost (heartbeat timeout or WebSocket close). Subscribers should handle reconnection logic if desired. |
+| <code>public event Action&lt;int&gt;? Reconnected;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:69](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L69) | Event raised after a successful reconnection (including any onReconnected callback). Subscribers can use this for monitoring/logging reconnection events. The int parameter is the number of reconnect attempts it took. |
+| <code>public event Action&lt;ReconnectionGap&gt;? GapDetected;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:76](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L76) | Event raised when a reconnection gap is detected, providing the time window during which data may have been missed. Subscribers should trigger gap backfill for all active subscriptions covering this time range. |
+| <code>public event Action&lt;WebSocketState&gt;? StateChanged;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:81](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L81) | Event raised when connection state changes. |
+| <code>public event Action&lt;WebSocketConnectionDiagnostics&gt;? DiagnosticsChanged;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:86](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L86) | Event raised when the provider lifecycle phase changes. |
+| <code>public bool IsConnected =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:91](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L91) | Gets whether the WebSocket is currently connected and open. |
+| <code>public WebSocketState State =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:98](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L98) | Gets the current WebSocket state. |
+| <code>public bool IsReconnecting =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:103](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L103) | Gets whether a reconnection is currently in progress. |
+| <code>public ProviderConnectionLifecycleState LifecycleState =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:108](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L108) | Gets the current provider lifecycle phase. |
+| <code>public WebSocketConnectionDiagnostics GetDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:113](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L113) | Gets a safe diagnostics snapshot for logs, health surfaces, and tests. |
+| <code>public WebSocketConnectionManager(string providerName, WebSocketConnectionConfig? config = null, ILogger? logger = null) : this(providerName, config, logger, DefaultShutdownTimeout);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:143](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L143) | Creates a new WebSocket connection manager. |
+| <code>public Task ConnectAsync(Uri uri, Action&lt;ClientWebSocket&gt;? configureSocket = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:190](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L190) | Connects to the specified WebSocket endpoint with resilience. A semaphore ensures only one concurrent connection attempt proceeds at a time, preventing duplicate connections from concurrent callers. |
+| <code>public void StartReceiveLoop(Func&lt;string, Task&gt; messageHandler, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:322](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L322) | Starts the receive loop with the provided message handler. |
+| <code>public async Task&lt;string?&gt; ReadOneMessageAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:346](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L346) | Reads a single text message from the WebSocket. Must only be called after ConnectAsync(Uri, Action{ClientWebSocket}, CancellationToken) and before StartReceiveLoop — it reads directly from the socket for initial handshake sequences (e.g., Polygon &quot;connected&quot; + &quot;auth_success&quot;). |
+| <code>public async Task SendAsync(string message, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:376](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L376) | Sends a text message through the WebSocket. |
+| <code>public async Task DisconnectAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:397](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L397) | Disconnects from the WebSocket gracefully. Calls without a caller cancellation token use the manager shutdown timeout so non-cooperative heartbeat cleanup cannot block forever. |
+| <code>public Task&lt;bool&gt; TryReconnectAsync(Uri uri, Action&lt;ClientWebSocket&gt;? configureSocket = null, Func&lt;Task&gt;? onReconnected = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:567](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L567) | Attempts automatic reconnection with exponential backoff. Uses gating to prevent reconnection storms. |
+| <code>public void RecordPongReceived();</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:620](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L620) | Records that a pong/heartbeat response was received. Call this when receiving data to indicate connection is alive. |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs:627](../../../../src/Meridian.Infrastructure/Resilience/WebSocketConnectionManager.cs#L627) |  |
+
+## WebSocketHeartbeat
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.WebSocketHeartbeat</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:232](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L232).
+
+Heartbeat manager for WebSocket connections. Implements ping/pong pattern to detect stale connections. Based on best practices: send ping every 30-60 seconds, expect pong within 10 seconds.
+
+```csharp
+public sealed class WebSocketHeartbeat : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public event Func&lt;Task&gt;? ConnectionLost;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:244](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L244) |  |
+| <code>public long PingsSent =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:249](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L249) | Gets the total number of heartbeat pings sent during this connection&#x27;s lifetime. |
+| <code>public DateTimeOffset LastPongReceived =&gt; …;</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:254](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L254) | Gets the last time a heartbeat or data message confirmed the connection was alive. |
+| <code>public WebSocketHeartbeat(ClientWebSocket ws, TimeSpan? pingInterval = null, TimeSpan? pongTimeout = null) : this(ws, pingInterval, pongTimeout, sendAsync : null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:256](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L256) |  |
+| <code>public void RecordPongReceived();</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:346](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L346) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:362](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L362) |  |
+
+## WebSocketResiliencePolicy
+
+Qualified name: <code>Meridian.Infrastructure.Resilience.WebSocketResiliencePolicy</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:17](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L17).
+
+WebSocket resilience policies using Polly. Implements best practices from: - Marfusios/websocket-client patterns - Microsoft&#x27;s resilience guidance for .NET - Production-grade WebSocket patterns from fullstackcity.com
+
+```csharp
+public static class WebSocketResiliencePolicy
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ResiliencePipeline&lt;WebSocketReceiveResult&gt; CreateReceivePipeline(int maxRetries = 5, TimeSpan? baseDelay = null, TimeSpan? maxDelay = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:26](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L26) | Creates a resilience pipeline for WebSocket connection attempts. Uses exponential backoff with jitter to avoid thundering herd. |
+| <code>public static ResiliencePipeline CreateConnectionPipeline(int maxRetries = 5, TimeSpan? baseDelay = null, TimeSpan? maxDelay = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:65](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L65) | Creates a resilience pipeline for WebSocket connection establishment. |
+| <code>public static ResiliencePipeline CreateCircuitBreakerPipeline(int failureThreshold = 5, TimeSpan? breakDuration = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:105](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L105) | Creates a circuit breaker policy for WebSocket operations. Prevents cascading failures by opening the circuit after consecutive failures. |
+| <code>public static ResiliencePipeline CreateTimeoutPipeline(TimeSpan? timeout = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:149](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L149) | Creates a timeout policy for WebSocket operations. |
+| <code>public static ResiliencePipeline CreateComprehensivePipeline(int maxRetries = 5, TimeSpan? retryBaseDelay = null, TimeSpan? maxRetryDelay = null, int circuitBreakerFailureThreshold = 5, TimeSpan? circuitBreakerDuration = null, TimeSpan? operationTimeout = null);</code> | [src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs:173](../../../../src/Meridian.Infrastructure/Resilience/WebSocketResiliencePolicy.cs#L173) | Creates a comprehensive resilience pipeline combining retry, circuit breaker, and timeout. This is the recommended pipeline for production WebSocket clients. |
+
+## ExpiringSymbolStateStore (generic arity 1)
+
+Qualified name: <code>Meridian.Infrastructure.Shared.ExpiringSymbolStateStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:286](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L286).
+
+Symbol state store with automatic expiration based on last access time.
+
+```csharp
+public sealed class ExpiringSymbolStateStore<T>: ISymbolStateStore<T> where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ExpiringSymbolStateStore(TimeSpan expirationTime, TimeSpan? cleanupInterval = null, bool ignoreCase = true);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:299](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L299) | Creates a new expiring symbol state store. |
+| <code>public int Count =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:318](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L318) |  |
+| <code>public T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:321](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L321) |  |
+| <code>public bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:329](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L329) |  |
+| <code>public void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:347](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L347) |  |
+| <code>public T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:353](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L353) |  |
+| <code>public bool Remove(string symbol) =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:367](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L367) |  |
+| <code>public bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:370](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L370) |  |
+| <code>public bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:382](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L382) |  |
+| <code>public IReadOnlyList&lt;string&gt; GetSymbols() =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:392](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L392) |  |
+| <code>public IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:395](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L395) |  |
+| <code>public void Clear() =&gt; …;</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:403](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L403) |  |
+| <code>public void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:406](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L406) |  |
+| <code>public int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:418](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L418) |  |
+| <code>public int RemoveExpired();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:428](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L428) | Removes all expired entries. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:438](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L438) |  |
+
+## ISymbolStateStore (generic arity 1)
+
+Qualified name: <code>Meridian.Infrastructure.Shared.ISymbolStateStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:21](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L21).
+
+Generic interface for thread-safe symbol-keyed state storage. Abstracts the 35+ ConcurrentDictionary usages across the codebase into a reusable pattern with consistent semantics.
+
+```csharp
+public interface ISymbolStateStore<T>: IDisposable where T : class
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>int Count { get; }</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:26](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L26) | Gets the number of symbols with state. |
+| <code>T GetOrAdd(string symbol, Func&lt;string, T&gt; factory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:34](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L34) | Gets or creates state for a symbol. |
+| <code>bool TryGet(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:42](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L42) | Gets state for a symbol if it exists. |
+| <code>void Set(string symbol, T state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:49](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L49) | Updates state for a symbol. |
+| <code>T AddOrUpdate(string symbol, Func&lt;string, T&gt; addFactory, Func&lt;string, T, T&gt; updateFactory);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:58](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L58) | Updates state with a transformation function. |
+| <code>bool Remove(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:65](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L65) | Removes state for a symbol. |
+| <code>bool TryRemove(string symbol, out T? state);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:73](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L73) | Removes state for a symbol and returns it. |
+| <code>bool Contains(string symbol);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:80](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L80) | Checks if state exists for a symbol. |
+| <code>IReadOnlyList&lt;string&gt; GetSymbols();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:86](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L86) | Gets all symbols with state. |
+| <code>IReadOnlyDictionary&lt;string, T&gt; GetSnapshot();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:92](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L92) | Gets a snapshot of all state (thread-safe copy). |
+| <code>void Clear();</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:97](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L97) | Clears all state. |
+| <code>void ForEach(Action&lt;string, T&gt; action);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:103](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L103) | Applies an action to all states. |
+| <code>int RemoveStale(Func&lt;string, T, bool&gt; isStale);</code> | [src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs:110](../../../../src/Meridian.Infrastructure/Shared/ISymbolStateStore.cs#L110) | Removes stale entries based on a predicate. |
+
+## Subscription
+
+Qualified name: <code>Meridian.Infrastructure.Shared.Subscription</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Shared/SubscriptionManager.cs:18](../../../../src/Meridian.Infrastructure/Shared/SubscriptionManager.cs#L18).
+
+Represents a subscription to market data.
+
+```csharp
+public sealed record Subscription(int Id, string Symbol, string Kind, DateTimeOffset CreatedAt, SubscriptionStatus Status = SubscriptionStatus.Active, DateTimeOffset? LastMessageAt = null, string? LastError = null, int RecoveryAttempts = 0, string? SourceOfRequest = null);
+```
+
 ## SubscriptionManager
 
 Qualified name: <code>Meridian.Infrastructure.Shared.SubscriptionManager</code>. Kind: `class`.

@@ -20,6 +20,7 @@ import type {
   CloseCommandCenterViewState
 } from "@/screens/accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
+import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TextArea } from "@/components/ui/text-area";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { statusBadgeVariant, statusPanelClass } from "@/design-system/status-styles";
@@ -179,6 +180,13 @@ export function CloseCommandCenterPanel({
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
+          {view.technicalDetails?.length ? (
+            <TechnicalDetails label="Close scope system details">
+              <dl className="grid gap-3 text-xs leading-5 sm:grid-cols-2">
+                {view.technicalDetails.map((field) => <div key={field.label}><dt className="font-medium">{field.label}</dt><dd className="break-words font-mono text-muted-foreground">{field.value}</dd></div>)}
+              </dl>
+            </TechnicalDetails>
+          ) : null}
           {view.loadingText ? <p role="status" className="text-sm text-muted-foreground">{view.loadingText}</p> : null}
           {view.errorText ? (
             <div role="alert" className="rounded-md border border-warning/30 bg-warning/10 px-3 py-2 text-sm text-warning">
@@ -446,7 +454,8 @@ export function AccountingCloseReportPackagePanel({ view }: { view: AccountingCl
               <CardDescription className="mt-2">{view.materialityLabel}</CardDescription>
             </div>
             <div className="grid gap-2 text-sm">
-              <CloseCommandCenterValue label="Fund" value={view.fundLabel} />
+              <CloseCommandCenterValue label="Fund" value={view.fundLabel === "Fund pending" ? view.fundLabel : "Selected fund"} />
+              {view.fundLabel !== "Fund pending" ? <TechnicalDetails label="Fund system details"><p className="break-words font-mono text-xs">{view.fundLabel}</p></TechnicalDetails> : null}
               <CloseCommandCenterValue label="Period lock" value={view.lockLabel} />
             </div>
           </div>

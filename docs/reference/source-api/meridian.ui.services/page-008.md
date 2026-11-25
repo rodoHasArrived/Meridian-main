@@ -6,6 +6,37 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## MaintenanceResult
+
+Qualified name: <code>Meridian.Ui.Services.MaintenanceResult</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:920](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L920).
+
+Result of a maintenance task execution.
+
+```csharp
+public sealed class MaintenanceResult
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string TaskId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:922](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L922) |  |
+| <code>public string TaskName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:923](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L923) |  |
+| <code>public DateTime StartTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:924](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L924) |  |
+| <code>public DateTime? EndTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:925](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L925) |  |
+| <code>public TimeSpan? Duration { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:926](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L926) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:927](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L927) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:928](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L928) |  |
+| <code>public string? Error { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:929](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L929) |  |
+| <code>public bool IsDryRun { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:930](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L930) |  |
+| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:931](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L931) |  |
+| <code>public int FilesProcessed { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:932](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L932) |  |
+| <code>public int FilesSuccessful { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:933](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L933) |  |
+| <code>public int FilesFailed { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:934](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L934) |  |
+| <code>public long BytesSaved { get; set; }</code> | [src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs:935](../../../../src/Meridian.Ui.Services/Services/ScheduledMaintenanceService.cs#L935) |  |
+
 ## MaintenanceRunOptions
 
 Qualified name: <code>Meridian.Ui.Services.MaintenanceRunOptions</code>. Kind: `class`.
@@ -532,7 +563,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Ui.Services.OAuthRefreshResult</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/CredentialService.cs:73](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L73).
+Source: [src/Meridian.Ui.Services/Services/CredentialService.cs:76](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L76).
 
 Result of an OAuth token refresh operation.
 
@@ -544,17 +575,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/CredentialService.cs:75](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L75) |  |
-| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Ui.Services/Services/CredentialService.cs:76](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L76) |  |
-| <code>public DateTime? NewExpiration { get; set; }</code> | [src/Meridian.Ui.Services/Services/CredentialService.cs:77](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L77) |  |
+| <code>public bool Success { get; set; }</code> | [src/Meridian.Ui.Services/Services/CredentialService.cs:78](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L78) |  |
+| <code>public string? ErrorMessage { get; set; }</code> | [src/Meridian.Ui.Services/Services/CredentialService.cs:79](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L79) |  |
+| <code>public DateTime? NewExpiration { get; set; }</code> | [src/Meridian.Ui.Services/Services/CredentialService.cs:80](../../../../src/Meridian.Ui.Services/Services/CredentialService.cs#L80) |  |
 
 ## OAuthRefreshService
 
 Qualified name: <code>Meridian.Ui.Services.OAuthRefreshService</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:12](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L12).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:15](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L15).
 
-Background service that automatically refreshes OAuth tokens before they expire. Monitors credential metadata and proactively refreshes tokens based on configured thresholds.
+Background service that automatically refreshes OAuth tokens before they expire. Monitors credential metadata and proactively refreshes tokens based on configured thresholds. Construct it with the host&#x27;s real ICredentialService; the shared no-op CredentialService never yields a token to refresh.
 
 ```csharp
 public sealed class OAuthRefreshService : IDisposable
@@ -564,26 +595,26 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static OAuthRefreshService Instance =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:19](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L19) | Gets the singleton instance of the OAuth refresh service. |
-| <code>public int RefreshThresholdMinutes { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:34](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L34) | Default refresh threshold in minutes before token expiration. |
-| <code>public int CheckIntervalMs { get; set; } = 60000;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:39](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L39) | Interval between expiration checks in milliseconds. |
-| <code>public event EventHandler&lt;TokenRefreshEventArgs&gt;? TokenRefreshed;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:44](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L44) | Event raised when a token is successfully refreshed. |
-| <code>public event EventHandler&lt;TokenRefreshFailedEventArgs&gt;? TokenRefreshFailed;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:49](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L49) | Event raised when a token refresh fails. |
-| <code>public event EventHandler&lt;TokenExpirationWarningEventArgs&gt;? TokenExpirationWarning;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:54](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L54) | Event raised when a token is about to expire and cannot be auto-refreshed. |
-| <code>public event EventHandler&lt;OAuthWrapperFailureEventArgs&gt;? WrapperOperationFailed;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:58](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L58) | Event raised when a wrapper-level timer operation fails. |
-| <code>public int WrapperFailureCount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:63](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L63) | Count of wrapper-level failures observed by safe background wrappers. |
-| <code>public void Start();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:91](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L91) | Starts the automatic OAuth token refresh service. |
-| <code>public void Stop();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:107](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L107) | Stops the automatic OAuth token refresh service. |
-| <code>public List&lt;OAuthTokenStatus&gt; GetTokenStatuses();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:117](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L117) | Gets the status of all OAuth tokens. |
-| <code>public async Task&lt;bool&gt; RefreshTokenAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:156](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L156) | Manually triggers a refresh for a specific provider. |
-| <code>public async Task SetAutoRefreshAsync(string providerId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:187](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L187) | Enables or disables auto-refresh for a specific provider. |
-| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:374](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L374) |  |
+| <code>public int RefreshThresholdMinutes { get; set; } = 5;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:33](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L33) | Default refresh threshold in minutes before token expiration. |
+| <code>public int CheckIntervalMs { get; set; } = 60000;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:38](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L38) | Interval between expiration checks in milliseconds. |
+| <code>public event EventHandler&lt;TokenRefreshEventArgs&gt;? TokenRefreshed;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:43](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L43) | Event raised when a token is successfully refreshed. |
+| <code>public event EventHandler&lt;TokenRefreshFailedEventArgs&gt;? TokenRefreshFailed;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:48](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L48) | Event raised when a token refresh fails. |
+| <code>public event EventHandler&lt;TokenExpirationWarningEventArgs&gt;? TokenExpirationWarning;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:53](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L53) | Event raised when a token is about to expire and cannot be auto-refreshed. |
+| <code>public event EventHandler&lt;OAuthWrapperFailureEventArgs&gt;? WrapperOperationFailed;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:57](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L57) | Event raised when a wrapper-level timer operation fails. |
+| <code>public int WrapperFailureCount =&gt; …;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:62](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L62) | Count of wrapper-level failures observed by safe background wrappers. |
+| <code>public OAuthRefreshService(ICredentialService credentialService, ILogger&lt;OAuthRefreshService&gt;? logger = null);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:64](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L64) |  |
+| <code>public void Start();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:85](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L85) | Starts the automatic OAuth token refresh service. |
+| <code>public void Stop();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:101](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L101) | Stops the automatic OAuth token refresh service. |
+| <code>public List&lt;OAuthTokenStatus&gt; GetTokenStatuses();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:111](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L111) | Gets the status of all OAuth tokens. |
+| <code>public async Task&lt;bool&gt; RefreshTokenAsync(string providerId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:152](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L152) | Manually triggers a refresh for a specific provider. |
+| <code>public async Task SetAutoRefreshAsync(string providerId, bool enabled, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:183](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L183) | Enables or disables auto-refresh for a specific provider. |
+| <code>public void Dispose();</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:388](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L388) |  |
 
 ## OAuthTokenStatus
 
 Qualified name: <code>Meridian.Ui.Services.OAuthTokenStatus</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:390](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L390).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:404](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L404).
 
 Status information for an OAuth token.
 
@@ -595,22 +626,22 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:392](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L392) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:393](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L393) |  |
-| <code>public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:394](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L394) |  |
-| <code>public TimeSpan? TimeRemaining { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:395](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L395) |  |
-| <code>public DateTime? LastRefreshedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:396](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L396) |  |
-| <code>public bool CanAutoRefresh { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:397](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L397) |  |
-| <code>public bool IsExpired { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:398](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L398) |  |
-| <code>public bool IsExpiringSoon { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:399](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L399) |  |
-| <code>public string StatusDisplay { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:401](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L401) |  |
-| <code>public string TimeRemainingDisplay { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:415](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L415) |  |
+| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:406](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L406) |  |
+| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:407](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L407) |  |
+| <code>public DateTime? ExpiresAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:408](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L408) |  |
+| <code>public TimeSpan? TimeRemaining { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:409](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L409) |  |
+| <code>public DateTime? LastRefreshedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:410](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L410) |  |
+| <code>public bool CanAutoRefresh { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:411](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L411) |  |
+| <code>public bool IsExpired { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:412](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L412) |  |
+| <code>public bool IsExpiringSoon { get; set; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:413](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L413) |  |
+| <code>public string StatusDisplay { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:415](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L415) |  |
+| <code>public string TimeRemainingDisplay { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:429](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L429) |  |
 
 ## OAuthWrapperFailureEventArgs
 
 Qualified name: <code>Meridian.Ui.Services.OAuthWrapperFailureEventArgs</code>. Kind: `class`.
 
-Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:483](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L483).
+Source: [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:497](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L497).
 
 Event args for wrapper-level failures in background safe wrappers.
 
@@ -622,11 +653,11 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string OperationName { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:485](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L485) |  |
-| <code>public Exception Exception { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:486](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L486) |  |
-| <code>public DateTime OccurredAtUtc { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:487](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L487) |  |
-| <code>public bool EmittedStructuredLog { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:488](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L488) |  |
-| <code>public OAuthWrapperFailureEventArgs(string operationName, Exception exception, DateTime occurredAtUtc, bool emittedStructuredLog);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:490](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L490) |  |
+| <code>public string OperationName { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:499](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L499) |  |
+| <code>public Exception Exception { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:500](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L500) |  |
+| <code>public DateTime OccurredAtUtc { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:501](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L501) |  |
+| <code>public bool EmittedStructuredLog { get; }</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:502](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L502) |  |
+| <code>public OAuthWrapperFailureEventArgs(string operationName, Exception exception, DateTime occurredAtUtc, bool emittedStructuredLog);</code> | [src/Meridian.Ui.Services/Services/OAuthRefreshService.cs:504](../../../../src/Meridian.Ui.Services/Services/OAuthRefreshService.cs#L504) |  |
 
 ## OnboardingTourService
 
@@ -1157,23 +1188,3 @@ Enum declarations:
 | <code>Zip</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:839](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L839) |  |
 | <code>TarGz</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:840](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L840) |  |
 | <code>SevenZip</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:841](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L841) |  |
-
-## PackageImportOptions
-
-Qualified name: <code>Meridian.Ui.Services.PackageImportOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:887](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L887).
-
-Selects a portable package and controls validation and overwrite behavior during import.
-
-```csharp
-public sealed class PackageImportOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string PackagePath { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:889](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L889) |  |
-| <code>public bool ValidateFirst { get; set; } = true;</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:890](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L890) |  |
-| <code>public bool OverwriteExisting { get; set; }</code> | [src/Meridian.Ui.Services/Services/PortablePackagerService.cs:891](../../../../src/Meridian.Ui.Services/Services/PortablePackagerService.cs#L891) |  |

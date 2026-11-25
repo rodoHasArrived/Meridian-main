@@ -543,6 +543,36 @@ public sealed class ReportLedgerAmountProvenanceTests
     }
 
     [Fact]
+    public async Task AmountPassport_UsesTheCertifiedBalanceAndLinksOriginalPeriodPostingSubjects()
+    {
+        using var fixture = new Fixture();
+        await fixture.CaptureAsync();
+        var permissions = UserPermission.ViewReporting | UserPermission.ViewLedgerReports;
+        await using var app = await fixture.CreateAppAsync(permissions, includeRestatement: true);
+        var client = app.GetTestClient();
+        var rows = await client.GetFromJsonAsync<ReportLedgerAmountBindingDto[]>(fixture.AmountsRoute, Json);
+        var reference = rows!.Single(row => row.SubjectId == fixture.ReportSubject).AmountPassport!;
+        var route = Meridian.Tests.TestHelpers.AmountPassportTestRoutes.PassportRoute(reference.Identity);
+        var passport = (await client.GetFromJsonAsync<AmountPassportDto>(route, Json))!;
+
+        passport.Reference.Identity.Should().Be(reference.Identity);
+        passport.ExactValue.Should().Be("100", "the certified balance includes the 125 opening debit and 25 current credit");
+        passport.Reference.Origin.Should().Be("calculated");
+        var source = passport.Sources.Single(record => record.Id == fixture.OpeningSubject).Passport!;
+        source.Scope.PeriodId.Should().Be(fixture.Opening.PeriodId);
+        source.Revision.Should().Be("1");
+        passport.History.Should().ContainSingle(record => record.Kind == "successor" && record.Id == "retained-restatement");
+        passport.Status.Should().Be("superseded");
+        passport.Gaps.Should().BeEmpty();
+        fixture.LiveJournals.VerifyNoOtherCalls();
+
+        await using var mismatched = await fixture.CreateAppAsync(permissions, certifiedCheckpoint: new string('d', 64));
+        (await mismatched.GetTestClient().GetAsync(route)).StatusCode.Should().Be(HttpStatusCode.Conflict);
+        await using var denied = await fixture.CreateAppAsync(UserPermission.ViewReporting);
+        (await denied.GetTestClient().GetAsync(route)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
     public async Task OpeningSourceRoute_RevalidatesTheCompleteRetainedBalanceBeforeOpeningManifest()
     {
         using var fixture = new Fixture();
@@ -861,17 +891,25 @@ public sealed class ReportLedgerAmountProvenanceTests
             };
         }
 
-        public async Task<WebApplication> CreateAppAsync(UserPermission permission, string? companyId = null)
+        public async Task<WebApplication> CreateAppAsync(UserPermission permission, string? companyId = null,
+            bool includeRestatement = false, string? certifiedCheckpoint = null)
         {
             var coordinator = new Mock<IReportingGovernanceEndpointCoordinator>(MockBehavior.Strict);
+            var snapshot = Manifest.CertifiedSnapshot!;
             var run = new GovernedReportingRun(RunId, "series-alpha", 1, TemplateId, "1",
-                Manifest.OperationalScope!, Manifest.ImmutableAccessScope!, Manifest.CertifiedSnapshot!,
+                Manifest.OperationalScope!, Manifest.ImmutableAccessScope!,
+                certifiedCheckpoint is null ? snapshot : snapshot with { SourceCheckpointHash = certifiedCheckpoint },
                 new ReportingAuthorityScope("controller", Scope.TenantId, OrganizationId, Scope.CompanyId,
                     [ReportingGovernancePermission.CreateRun], ReportingCommandOrigin.HumanOperator, "request-alpha"),
                 DateTimeOffset.UtcNow, null, GovernedReportingExecutionState.Succeeded, GovernedReportingState.Draft,
                 1, null, null, null, []);
             coordinator.Setup(service => service.GetAsync(RunId, It.IsAny<ReportingGovernanceCallerContext>(),
                 It.IsAny<CancellationToken>())).ReturnsAsync(run);
+            coordinator.Setup(service => service.ListAsync(run.SeriesId, It.IsAny<ReportingGovernanceCallerContext>(),
+                It.IsAny<CancellationToken>())).ReturnsAsync(includeRestatement
+                ? [run, run with { RunId = "retained-restatement", RestatementOfRunId = run.RunId,
+                    Revision = 2, GovernanceState = GovernedReportingState.Released }]
+                : [run]);
             var builder = WebApplication.CreateBuilder();
             builder.WebHost.UseTestServer();
             builder.Services.AddSingleton(coordinator.Object);

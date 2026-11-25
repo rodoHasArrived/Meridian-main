@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 309,
-    "warning": 309
+    "total": 325,
+    "warning": 325
   },
   "failed": false,
   "findings": [
@@ -610,6 +610,26 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "book_fx_settlement_receipts"
+      },
+      "message": "Business table ledger.book_fx_settlement_receipts does not have a table comment.",
+      "object": "ledger.book_fx_settlement_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "book_fx_settlement_sets"
+      },
+      "message": "Business table ledger.book_fx_settlement_sets does not have a table comment.",
+      "object": "ledger.book_fx_settlement_sets",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "consolidation_fx_book_configurations"
       },
       "message": "Business table ledger.consolidation_fx_book_configurations does not have a table comment.",
@@ -660,6 +680,76 @@
     {
       "details": {
         "schema": "ledger",
+        "table": "external_gl_book_policy"
+      },
+      "message": "Business table ledger.external_gl_book_policy does not have a table comment.",
+      "object": "ledger.external_gl_book_policy",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_mapping_profiles"
+      },
+      "message": "Business table ledger.external_gl_mapping_profiles does not have a table comment.",
+      "object": "ledger.external_gl_mapping_profiles",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_decisions"
+      },
+      "message": "Business table ledger.external_gl_posting_decisions does not have a table comment.",
+      "object": "ledger.external_gl_posting_decisions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_outbox"
+      },
+      "message": "Business table ledger.external_gl_posting_outbox does not have a table comment.",
+      "object": "ledger.external_gl_posting_outbox",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_packages"
+      },
+      "message": "Business table ledger.external_gl_posting_packages does not have a table comment.",
+      "object": "ledger.external_gl_posting_packages",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "external_gl_posting_receipts"
+      },
+      "message": "Business table ledger.external_gl_posting_receipts does not have a table comment.",
+      "object": "ledger.external_gl_posting_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "fiscal_year_close_receipts"
+      },
+      "message": "Business table ledger.fiscal_year_close_receipts does not have a table comment.",
+      "object": "ledger.fiscal_year_close_receipts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
         "table": "fund_profile_tenancy"
       },
       "message": "Business table ledger.fund_profile_tenancy does not have a table comment.",
@@ -694,6 +784,16 @@
       },
       "message": "Business table ledger.intercompany_balance_confirmations does not have a table comment.",
       "object": "ledger.intercompany_balance_confirmations",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "intercompany_confirmation_close_policies"
+      },
+      "message": "Business table ledger.intercompany_confirmation_close_policies does not have a table comment.",
+      "object": "ledger.intercompany_confirmation_close_policies",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -834,6 +934,26 @@
       },
       "message": "Business table ledger.legacy_intercompany_attributions does not have a table comment.",
       "object": "ledger.legacy_intercompany_attributions",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "manual_journal_entry_drafts"
+      },
+      "message": "Business table ledger.manual_journal_entry_drafts does not have a table comment.",
+      "object": "ledger.manual_journal_entry_drafts",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "ledger",
+        "table": "manual_journal_mutation_receipts"
+      },
+      "message": "Business table ledger.manual_journal_mutation_receipts does not have a table comment.",
+      "object": "ledger.manual_journal_mutation_receipts",
       "rule_id": "business-table-must-have-comment",
       "severity": "warning"
     },
@@ -2291,6 +2411,34 @@
     {
       "details": {
         "columns": [
+          "cash_book_id"
+        ],
+        "constraint": "book_fx_settlement_sets_cash_book_id_fkey",
+        "schema": "ledger",
+        "table": "book_fx_settlement_sets"
+      },
+      "message": "Foreign key ledger.book_fx_settlement_sets.book_fx_settlement_sets_cash_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.book_fx_settlement_sets.book_fx_settlement_sets_cash_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "gaap_book_id"
+        ],
+        "constraint": "book_fx_settlement_sets_gaap_book_id_fkey",
+        "schema": "ledger",
+        "table": "book_fx_settlement_sets"
+      },
+      "message": "Foreign key ledger.book_fx_settlement_sets.book_fx_settlement_sets_gaap_book_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.book_fx_settlement_sets.book_fx_settlement_sets_gaap_book_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
           "tenant_id",
           "company_id",
           "rate_set_id",
@@ -2330,6 +2478,34 @@
       },
       "message": "Foreign key ledger.consolidation_transition_receipts.consolidation_transition_receipts_previous_transition_id_fkey is not covered by a left-prefix index.",
       "object": "ledger.consolidation_transition_receipts.consolidation_transition_receipts_previous_transition_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "journal_entry_id"
+        ],
+        "constraint": "external_gl_posting_outbox_journal_entry_id_fkey",
+        "schema": "ledger",
+        "table": "external_gl_posting_outbox"
+      },
+      "message": "Foreign key ledger.external_gl_posting_outbox.external_gl_posting_outbox_journal_entry_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.external_gl_posting_outbox.external_gl_posting_outbox_journal_entry_id_fkey",
+      "rule_id": "foreign-key-must-be-indexed",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "columns": [
+          "period_id"
+        ],
+        "constraint": "external_gl_posting_packages_period_id_fkey",
+        "schema": "ledger",
+        "table": "external_gl_posting_packages"
+      },
+      "message": "Foreign key ledger.external_gl_posting_packages.external_gl_posting_packages_period_id_fkey is not covered by a left-prefix index.",
+      "object": "ledger.external_gl_posting_packages.external_gl_posting_packages_period_id_fkey",
       "rule_id": "foreign-key-must-be-indexed",
       "severity": "warning"
     },
@@ -3448,5 +3624,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "87b1f01978d1694c9d09d5401cf4f3e91056107aa04b46746a54172c0bb7132a"
+  "fingerprint": "d47434675b0947dacf23fb0f126d3b53e0d0bd7b39ca9695eacd1d5ca0bb6cfb"
 }

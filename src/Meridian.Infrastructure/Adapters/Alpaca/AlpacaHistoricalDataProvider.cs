@@ -65,6 +65,8 @@ public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
     public override int Priority => RuntimeOptions?.Priority ?? _priority;
     public override TimeSpan RateLimitDelay => TimeSpan.FromMinutes(1) / (RuntimeOptions?.Requests ?? _maxRequestsPerWindow);
     public override int MaxRequestsPerWindow => RuntimeOptions?.Requests ?? _maxRequestsPerWindow;
+    internal string HistoricalFeed => _feed;
+    internal string HistoricalAdjustment => _adjustment;
     public override TimeSpan RateLimitWindow => TimeSpan.FromMinutes(1);
 
     /// <summary>

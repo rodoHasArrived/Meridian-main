@@ -1,3 +1,4 @@
+import { JournalLifecycleControls } from "./journal-lifecycle-controls";
 // Manual journal entry workbench panel, extracted from accounting-screen.tsx.
 import { AssetAccountingWorkflowPanel } from "./accounting-screen.asset-workflow-panel";
 import { Copy, Paperclip, RefreshCcw, X } from "lucide-react";
@@ -1218,21 +1219,7 @@ export function ManualJournalEntryWorkbenchPanel({ view, search }: { view: Manua
               </Badge>
             </div>
             {view.draft.assetAccountingDraft && view.assetWorkflow ? <AssetAccountingWorkflowPanel view={view.assetWorkflow} /> : null}
-            <div className="mt-3 grid gap-2 sm:grid-cols-2 xl:grid-cols-3">
-              {view.lifecycleCommands.map((command) => (
-                <Button
-                  key={command.action}
-                  size="sm"
-                  variant="outline"
-                  busy={command.busy}
-                  disabled={command.disabledReason !== null}
-                  disabledReason={command.disabledReason}
-                  onClick={() => void view.applyLifecycleAction(command.action)}
-                >
-                  {command.label}
-                </Button>
-              ))}
-            </div>
+            <JournalLifecycleControls view={view} />
             <div className="mt-3 rounded-md border border-border/70 bg-background/50 px-3 py-3" aria-label="Manual journal lifecycle checklist">
               <div className="text-xs font-semibold uppercase tracking-[0.14em] text-muted-foreground">Lifecycle checklist</div>
               <div role="list" className="mt-3 grid gap-2 md:grid-cols-2 xl:grid-cols-5">

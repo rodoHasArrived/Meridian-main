@@ -1254,6 +1254,7 @@ internal static class AlpacaTradeUpdateStateCodec
             new AlpacaTradeUpdateHashMaterial(report with
             {
                 LastFillQuantity = null,
+                BrokerActivityId = null,
                 AssetClass = null,
                 FillPriceIsCumulativeAverage = false,
                 ReplacesOrderId = null,

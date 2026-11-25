@@ -108,6 +108,7 @@ public static class UiEndpoints
                 IntercompanyFeeAccrualJsonContext.Default,
                 IntercompanyRateFixingJsonContext.Default,
                 IntercompanyAccrualScheduleJsonContext.Default,
+                IntercompanyConfirmationClosePolicyJsonContext.Default,
                 IntercompanyBalanceScheduleJsonContext.Default,
                 IntercompanyBalanceConfirmationJsonContext.Default,
                 IntercompanyObligationMonitorJsonContext.Default,
@@ -165,6 +166,7 @@ public static class UiEndpoints
         app.MapProviderRoutingEndpoints(jsonOptions);
         app.MapPlaidEndpoints(jsonOptions);
         app.MapAccountingSystemEndpoints(jsonOptions);
+        app.MapExternalGlPostingEndpoints(jsonOptions);
         app.MapOnboardingEndpoints(jsonOptions);
         app.MapPortfolioImportEndpoints();
 
@@ -234,6 +236,7 @@ public static class UiEndpoints
         app.MapIntercompanyRateFixingEndpoints(jsonOptions);
         app.MapIntercompanyBalanceConfirmationEndpoints(jsonOptions);
         app.MapIntercompanyAccrualScheduleEndpoints(jsonOptions);
+        app.MapIntercompanyConfirmationClosePolicyEndpoints(jsonOptions);
         app.MapReportingGovernanceEndpoints(jsonOptions);
         app.MapReportingIncomeComparisonEndpoints(jsonOptions);
         app.MapSecureReportingDistributionEndpoints();
@@ -241,6 +244,7 @@ public static class UiEndpoints
         app.MapEnvironmentDesignerEndpoints(jsonOptions);
         // Security Master endpoints
         app.MapSecurityMasterEndpoints(jsonOptions);
+        app.MapSecurityInstrumentTermsEndpoints(jsonOptions);
         app.MapBondReferenceEndpoints(jsonOptions);
         app.MapBondReferencePagingEndpoints(jsonOptions);
         app.MapBondAnalyticsEndpoints(jsonOptions);

@@ -6,6 +6,217 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DataQueryRequest
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:331](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L331).
+
+Request body for the data query endpoint.
+
+```csharp
+public sealed record DataQueryRequest(string? Sql);
+```
+
+## DataQueryResult
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:334](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L334).
+
+Bounded, string-projected query result.
+
+```csharp
+public sealed record DataQueryResult(bool Success, string? Error, IReadOnlyList<string> Columns, IReadOnlyList<string> ColumnTypes, IReadOnlyList<string?[]> Rows, int RowCount, bool Truncated, long ElapsedMs)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string? ExecutionId { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:344](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L344) |  |
+| <code>public long? RetainedRowCount { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:345](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L345) |  |
+| <code>public DateTimeOffset? ExecutionExpiresAt { get; init; }</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:346](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L346) |  |
+| <code>public static DataQueryResult Failed(string error) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:347](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L347) |  |
+
+## DataQueryRetentionReceipt
+
+Qualified name: <code>Meridian.Storage.Query.DataQueryRetentionReceipt</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:12](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L12).
+
+```csharp
+public sealed record DataQueryRetentionReceipt(string ExecutionId, long RowCount, DateTimeOffset ExpiresAt);
+```
+
+## DuckDbQueryService
+
+Qualified name: <code>Meridian.Storage.Query.DuckDbQueryService</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:23](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L23).
+
+Read-only SQL analytics over the local market-data store, backed by an in-memory DuckDB session per query. The catalog is exposed as a meridian_files view (symbol, event type, date, format, absolute path, size, event count) so operators can discover files and feed paths into read_parquet/read_json_auto without leaving SQL. Statements are guarded: single SELECT-family statement, keyword blocklist, row cap, and timeout — a runaway query can never touch the ingestion hot path or mutate the store. File access is sandboxed to the storage root via DuckDB&#x27;s allowed_directories with external access otherwise disabled and the configuration locked, so reader functions cannot reach arbitrary host files.
+
+```csharp
+public sealed partial class DuckDbQueryService(IStorageCatalogService catalogService, StorageOptions storageOptions, ILogger<DuckDbQueryService>? logger = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string QueryableRoot =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:28](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L28) |  |
+| <code>public async Task&lt;DataQueryResult&gt; ExecuteAsync(string? sql, DataQueryOptions options, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:34](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L34) | Executes sql and returns a bounded, string-projected result set. Guard violations and execution errors are returned as a failed result, not thrown, so the endpoint can map them to a 400 with the message intact. |
+| <code>public async Task&lt;DataQueryResult&gt; ExecuteRetainedAsync(string? sql, DataQueryOptions options, IDataQueryResultSink sink, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:41](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L41) | Executes once, retaining every result row while MaxRows remains the browser preview limit. |
+
+## IDataQueryResultSink
+
+Qualified name: <code>Meridian.Storage.Query.IDataQueryResultSink</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:13](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L13).
+
+```csharp
+public interface IDataQueryResultSink : IAsyncDisposable
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task BeginAsync(string sql, string[] columns, string[] columnTypes, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:15](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L15) |  |
+| <code>Task WriteRowAsync(string?[] row, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:16](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L16) |  |
+| <code>Task&lt;DataQueryRetentionReceipt&gt; CompleteAsync(long rowCount, CancellationToken ct);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:17](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L17) |  |
+
+## RetainedDataQueryException
+
+Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryException</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:20](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L20).
+
+```csharp
+public sealed class RetainedDataQueryException(string code, string message) : InvalidOperationException(message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Code { get; } = code;</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:22](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L22) |  |
+
+## RetainedDataQueryManifest
+
+Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryManifest</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:25](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L25).
+
+```csharp
+public sealed record RetainedDataQueryManifest(int Version, string ExecutionId, string OwnerHash, string Sql, string SqlSha256, string[] Columns, string[] ColumnTypes, long RowCount, long ByteCount, string RowsSha256, DateTimeOffset ExecutedAt, DateTimeOffset ExpiresAt);
+```
+
+## RetainedDataQuerySnapshot
+
+Qualified name: <code>Meridian.Storage.Query.RetainedDataQuerySnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:28](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L28).
+
+```csharp
+public sealed record RetainedDataQuerySnapshot(RetainedDataQueryManifest Manifest, IReadOnlyList<string?[]> Rows);
+```
+
+## RetainedDataQueryStore
+
+Qualified name: <code>Meridian.Storage.Query.RetainedDataQueryStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:35](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L35).
+
+Immutable, owner-bound executions, outside the DuckDB-readable root. Atomic publication and cross-process reservation accounting prevent a partial or over-quota spool becoming an export.
+
+```csharp
+public sealed class RetainedDataQueryStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string RootPath { get; }</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:40](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L40) |  |
+| <code>public RetainedDataQueryStore(DataQueryOptions options, string queryableRoot, TimeProvider? clock = null);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:42](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L42) |  |
+| <code>public async Task&lt;IDataQueryResultSink&gt; CreateAsync(DataQueryOwner owner, CancellationToken ct = default);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:70](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L70) |  |
+| <code>public async Task&lt;RetainedDataQuerySnapshot&gt; ReadAsync(DataQueryOwner owner, string executionId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Query/RetainedDataQueryStore.cs:95](../../../../src/Meridian.Storage/Query/RetainedDataQueryStore.cs#L95) |  |
+
+## SqlStatementGuard
+
+Qualified name: <code>Meridian.Storage.Query.SqlStatementGuard</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Query/DuckDbQueryService.cs:248](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L248).
+
+Validates that a statement is a single, read-only SELECT-family query. The first token must be a query verb and no write/config verb may appear anywhere — DuckDB&#x27;s in-memory session cannot mutate the store through queries, but COPY/EXPORT/ATTACH/INSTALL can touch the filesystem or network, so they are rejected outright.
+
+```csharp
+public static partial class SqlStatementGuard
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? Validate(string? sql, int maxSqlLength);</code> | [src/Meridian.Storage/Query/DuckDbQueryService.cs:262](../../../../src/Meridian.Storage/Query/DuckDbQueryService.cs#L262) | Returns an error message, or null when the statement is allowed. |
+
+## QuotaEnforcementPolicy
+
+Qualified name: <code>Meridian.Storage.QuotaEnforcementPolicy</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:259](../../../../src/Meridian.Storage/StorageOptions.cs#L259).
+
+Quota enforcement policy.
+
+```csharp
+public enum QuotaEnforcementPolicy : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Warn</code> | [src/Meridian.Storage/StorageOptions.cs:262](../../../../src/Meridian.Storage/StorageOptions.cs#L262) | Log warning, continue writing. |
+| <code>SoftLimit</code> | [src/Meridian.Storage/StorageOptions.cs:264](../../../../src/Meridian.Storage/StorageOptions.cs#L264) | Start cleanup, continue writing. |
+| <code>HardLimit</code> | [src/Meridian.Storage/StorageOptions.cs:266](../../../../src/Meridian.Storage/StorageOptions.cs#L266) | Stop writing until cleanup completes. |
+| <code>DropOldest</code> | [src/Meridian.Storage/StorageOptions.cs:268](../../../../src/Meridian.Storage/StorageOptions.cs#L268) | Delete oldest to make room. |
+
+## QuotaOptions
+
+Qualified name: <code>Meridian.Storage.QuotaOptions</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/StorageOptions.cs:384](../../../../src/Meridian.Storage/StorageOptions.cs#L384).
+
+Quota configuration for capacity management.
+
+```csharp
+public sealed class QuotaOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public StorageQuota? Global { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:387](../../../../src/Meridian.Storage/StorageOptions.cs#L387) | Global storage quota. |
+| <code>public Dictionary&lt;string, StorageQuota&gt;? PerSource { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:390](../../../../src/Meridian.Storage/StorageOptions.cs#L390) | Per-source quotas. |
+| <code>public Dictionary&lt;string, StorageQuota&gt;? PerSymbol { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:393](../../../../src/Meridian.Storage/StorageOptions.cs#L393) | Per-symbol quotas. |
+| <code>public Dictionary&lt;string, StorageQuota&gt;? PerEventType { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:396](../../../../src/Meridian.Storage/StorageOptions.cs#L396) | Per-event-type quotas. |
+| <code>public DynamicQuotaConfig? Dynamic { get; init; }</code> | [src/Meridian.Storage/StorageOptions.cs:399](../../../../src/Meridian.Storage/StorageOptions.cs#L399) | Dynamic quota configuration. |
+
+## FileStatistics
+
+Qualified name: <code>Meridian.Storage.Replay.FileStatistics</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs:500](../../../../src/Meridian.Storage/Replay/MemoryMappedJsonlReader.cs#L500).
+
+Statistics about files in a directory.
+
+```csharp
+public readonly record struct FileStatistics(int TotalFiles, long TotalBytes, int CompressedFiles, int UncompressedFiles);
+```
+
 ## JsonlReplayer
 
 Qualified name: <code>Meridian.Storage.Replay.JsonlReplayer</code>. Kind: `class`.
@@ -722,181 +933,3 @@ Source: [src/Meridian.Storage/SecurityMaster/PostgresCorporateActionOperationsSt
 ```csharp
 public sealed record CorporateActionCalendarReadSet(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases, IReadOnlyList<CorporateActionEvidenceDto> Evidence);
 ```
-
-## CorporateActionCashDividendPostingLease
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionCashDividendPostingLease</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:13](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L13).
-
-Server-created, invocation-bound authority for one exact native candidate. Its internal constructor and sealed type prevent HTTP inputs from manufacturing a posting capability.
-
-```csharp
-public sealed class CorporateActionCashDividendPostingLease
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CorporateActionCashDividendAttestationDto Attestation { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:44](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L44) |  |
-| <code>public CorporateActionCaseAccountingProjectionDto Projection { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:45](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L45) |  |
-| <code>public CashDividendAttestationDeclarationDto Declaration { get; }</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:46](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L46) |  |
-| <code>public async Task EnsureCurrentAsync(string actor, Guid ledgerBookId, Guid periodId, string draftedCandidateFingerprint, string postingIntentHash, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:50](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L50) | Checks the exact candidate and rereads native authority within the held transaction. |
-| <code>public Task EnsureCanonicalInstrumentAsync(string? symbol, Guid securityId, long expectedSecurityVersion, DateTimeOffset accountingTimestamp, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:80](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L80) |  |
-| <code>public async Task AppendJournalAsync(ITransactionalLedgerJournalStore store, LedgerJournalEntryWrite entry, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:92](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L92) |  |
-| <code>public async Task&lt;LedgerJournalEntryRecord?&gt; GetJournalAsync(ITransactionalLedgerJournalStore store, Guid journalEntryId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:101](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L101) |  |
-| <code>public async Task&lt;AssetAccountingEventAppendResult&gt; AppendSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, AssetAccountingEventSpineDto projection, long expectedSpineVersion, long expectedPositionVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:113](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L113) |  |
-| <code>public Task&lt;AssetAccountingEventProjectionRecord?&gt; GetLatestSpineAsync(ITransactionalAssetAccountingEventProjectionStore store, Guid eventId, long eventVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs:126](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionCashDividendPostingLease.cs#L126) |  |
-
-## CorporateActionInboxExportSource
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CorporateActionInboxExportSource</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/CorporateActionInboxExportSource.cs:6](../../../../src/Meridian.Storage/SecurityMaster/CorporateActionInboxExportSource.cs#L6).
-
-One repeatable-read export cut: global actionable observations plus exact scoped cases.
-
-```csharp
-public sealed record CorporateActionInboxExportSource(IReadOnlyList<CorporateActionSourceProposalDto> Proposals, IReadOnlyList<CorporateActionProcessingCaseDto> Cases);
-```
-
-## CryptoProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CryptoProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/ICryptoReferenceProjectionStore.cs#L15).
-
-```csharp
-public sealed record CryptoProjectionRow(Guid SecurityId, string DisplayName, string BaseCurrency, string QuoteCurrency, string? Network, string PrimaryIdentifierValue, long Version);
-```
-
-## CurveDefinedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CurveDefinedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:94](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L94).
-
-Curves / CurveDefined.
-
-```csharp
-public sealed record CurveDefinedPayload(Guid CurveId, string CurveKey, string Kind, string Currency, string? IndexName, string? Tenor, string DayCount, string Interpolation, string Source, string? Description) : ISecurityGovernancePayload
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingDefault)] public Meridian.Contracts.SecurityMaster.SecurityCurveRatePolicy RatePolicy { get; init; }</code> | [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:107](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L107) |  |
-
-## CurveVersionPublishedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CurveVersionPublishedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:111](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L111).
-
-Curves / CurveVersionPublished.
-
-```csharp
-public sealed record CurveVersionPublishedPayload(Guid CurveId, Guid CurveVersionId, string CurveKey, string Kind, string Currency, string? IndexName, long Version, DateOnly AsOf, int PointCount, string ContentSha256, string Source, DateTimeOffset? SourcedAt) : ISecurityGovernancePayload;
-```
-
-## CustomAssetProfileFieldProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.CustomAssetProfileFieldProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs:43](../../../../src/Meridian.Storage/SecurityMaster/ICustomAssetProfileFieldProjectionStore.cs#L43).
-
-```csharp
-public sealed record CustomAssetProfileFieldProjectionRow(Guid SecurityId, string CustomProfileId, int ProfileVersion, string FieldKey, string ValueKind, string? TextValue, decimal? NumericValue, bool? BooleanValue, string RawValueJson, long Version);
-```
-
-## DepositProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.DepositProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L15).
-
-```csharp
-public sealed record DepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string DepositType, string InstitutionName, DateOnly? Maturity, decimal? InterestRate, string? DayCount, bool IsCallable, string PrimaryIdentifierValue, long Version);
-```
-
-## DirectLoanCovenantRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanCovenantRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L51).
-
-One projected covenant. Threshold carries the value exactly as contracted (&quot;4.5x&quot;, &quot;2.00x fixed charge&quot;) — a string, because the canonical covenant term is one; coercing it to a number would drop every ratio covenant.
-
-```csharp
-public sealed record DirectLoanCovenantRow(Guid SecurityId, int Ordinal, string CovenantType, string Threshold, string? Notes);
-```
-
-## DirectLoanPrincipalPaymentRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanPrincipalPaymentRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:58](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L58).
-
-```csharp
-public sealed record DirectLoanPrincipalPaymentRow(Guid SecurityId, int Ordinal, DateOnly PaymentDate, decimal Amount);
-```
-
-## DirectLoanProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:32](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L32).
-
-```csharp
-public sealed record DirectLoanProjectionRow(Guid SecurityId, string DisplayName, string Currency, string Borrower, DateOnly? MaturityDate, string? ReferenceIndex, decimal? SpreadBps, decimal? CurrentCouponRate, string? ResetFrequency, string? PricingSource, string PrimaryIdentifierValue, long Version);
-```
-
-## EquityProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.EquityProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs:13](../../../../src/Meridian.Storage/SecurityMaster/IEquityReferenceProjectionStore.cs#L13).
-
-```csharp
-public sealed record EquityProjectionRow(Guid SecurityId, string DisplayName, string Currency, string? ShareClass, string? VotingRightsCat, string? Classification, string? ExchangeCode, string? CountryOfRisk, string? IssuerName, string PrimaryIdentifierValue, long Version);
-```
-
-## FileBondMarketDataStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondMarketDataStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:11](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L11).
-
-Atomic host-local observation history, partitioned by authenticated tenant and locked across processes.
-
-```csharp
-public sealed class FileBondMarketDataStore(string dataRoot) : IBondMarketDataStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BondMarketImportResult&gt; AppendAsync(string tenantId, IReadOnlyList&lt;BondMarketObservationDto&gt; observations, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L15) |  |
-| <code>public Task&lt;IReadOnlyList&lt;BondMarketObservationDto&gt;&gt; ReadAsync(string tenantId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs:60](../../../../src/Meridian.Storage/SecurityMaster/FileBondMarketDataStore.cs#L60) |  |
-
-## FileBondProviderResponseStore
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.FileBondProviderResponseStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:10](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L10).
-
-Immutable exact-response evidence. Content-addressed publication is atomic across processes.
-
-```csharp
-public sealed class FileBondProviderResponseStore(string dataRoot) : IBondProviderResponseStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;BondProviderResponseDto&gt; RetainAsync(string tenantId, string companyId, string providerId, string rawResponseJson, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L15) |  |
-| <code>public async Task&lt;BondProviderResponseDto?&gt; GetAsync(string tenantId, string companyId, string contentSha256, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs:59](../../../../src/Meridian.Storage/SecurityMaster/FileBondProviderResponseStore.cs#L59) |  |

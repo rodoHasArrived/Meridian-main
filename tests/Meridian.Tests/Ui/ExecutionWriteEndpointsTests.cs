@@ -1642,7 +1642,7 @@ public sealed partial class ExecutionWriteEndpointsTests
             .Where(static endpoint => endpoint.RoutePattern.RawText?.StartsWith("/api/promotion", StringComparison.Ordinal) == true)
             .ToArray();
 
-        promotionEndpoints.Should().HaveCount(5);
+        promotionEndpoints.Should().HaveCount(6);
         promotionEndpoints.Should().OnlyContain(endpoint =>
             endpoint.Metadata.GetMetadata<WorkstationTenantScopeMetadata>() != null);
     }
@@ -1664,6 +1664,9 @@ public sealed partial class ExecutionWriteEndpointsTests
             "/api/promotion/reject",
             JsonContent(new PromotionRejectionRequest("run-backtest-01", "Not approved.")));
         var history = await client.GetAsync("/api/promotion/history");
+        var revoke = await client.PostAsync(
+            "/api/promotion/live-authorizations/test-authorization/revoke",
+            JsonContent(new RevokeStrategyLiveAuthorizationRequest("Withdraw approval.")));
         var walkForward = await client.PostAsync(
             "/api/promotion/runs/run-backtest-01/walk-forward-evidence",
             JsonContent(new RecordWalkForwardEvidenceRequest(1.0d, 0.05m, 0.8d, 4)));
@@ -1672,6 +1675,7 @@ public sealed partial class ExecutionWriteEndpointsTests
         approve.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         reject.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         history.StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        revoke.StatusCode.Should().Be(HttpStatusCode.Forbidden);
         walkForward.StatusCode.Should().Be(HttpStatusCode.Forbidden);
     }
 
@@ -1826,7 +1830,8 @@ public sealed partial class ExecutionWriteEndpointsTests
             }
         };
 
-    private static void RegisterSessionServices(IServiceCollection services, string rootPath)
+    private static void RegisterSessionServices(IServiceCollection services, string rootPath,
+        ExecutionServices.ResolvePaperAccountCurrency? resolveAccountCurrency = null)
     {
         services.AddSingleton(_ => new ExecutionServices.ExecutionAuditTrailService(
             new ExecutionServices.ExecutionAuditTrailOptions(Path.Combine(rootPath, "audit")),
@@ -1837,7 +1842,8 @@ public sealed partial class ExecutionWriteEndpointsTests
         services.AddSingleton<ExecutionServices.PaperSessionPersistenceService>(sp => new ExecutionServices.PaperSessionPersistenceService(
             NullLogger<ExecutionServices.PaperSessionPersistenceService>.Instance,
             sp.GetRequiredService<ExecutionServices.IPaperSessionStore>(),
-            sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>()));
+            sp.GetRequiredService<ExecutionServices.ExecutionAuditTrailService>(),
+            resolveAccountCurrency: resolveAccountCurrency));
     }
 
     private static void RegisterPromotionServices(

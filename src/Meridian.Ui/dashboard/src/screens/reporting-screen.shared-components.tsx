@@ -5,7 +5,7 @@ import { TechnicalDetails } from "@/components/ui/technical-details";
 export interface ReportingCommandStatus {
   id: string;
   label: string;
-  state: "running" | "success" | "error";
+  state: "running" | "success" | "warning" | "error";
   message: string;
   details: string[];
   technicalDetails?: {
@@ -47,7 +47,7 @@ export function ReportingCommandStatusView({ status }: { status: ReportingComman
     <StatusBanner
       role="status"
       aria-label={`${status.label} status`}
-      tone={status.state === "success" ? "success" : status.state === "error" ? "warning" : "info"}
+      tone={status.state === "success" ? "success" : status.state === "running" ? "info" : "warning"}
       title={status.message}
       detail={status.details.length > 0 || status.technicalDetails ? (
         <div className="mt-2 space-y-2">

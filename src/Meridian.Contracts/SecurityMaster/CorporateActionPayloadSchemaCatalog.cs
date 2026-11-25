@@ -10,6 +10,16 @@ namespace Meridian.Contracts.SecurityMaster;
 /// </summary>
 public static class CorporateActionPayloadSchemaCatalog
 {
+    private static readonly IReadOnlyList<CorporateActionPayloadFieldDescriptor> SourceContextFields =
+    [
+        String(CorporateActionPayloads.ProviderEventType),
+        String(CorporateActionPayloads.DateBasis),
+        Boolean(CorporateActionPayloads.EventDateUnspecified),
+        String(CorporateActionPayloads.SourceSymbol),
+        String(CorporateActionPayloads.SourceCusip),
+        String(CorporateActionPayloads.SourceIsin),
+    ];
+
     private static readonly IReadOnlyDictionary<string, IReadOnlyList<CorporateActionPayloadFieldDescriptor>> FieldsByType =
         new Dictionary<string, IReadOnlyList<CorporateActionPayloadFieldDescriptor>>(StringComparer.Ordinal)
         {
@@ -23,6 +33,53 @@ public static class CorporateActionPayloadSchemaCatalog
             [CorporateActionEventTypes.Dividend] =
             [
                 String(CorporateActionPayloads.DistributionComponent),
+            ],
+            [CorporateActionEventTypes.StockDividend] =
+            [
+                Decimal(CorporateActionPayloads.StockDividendRate),
+            ],
+            [CorporateActionEventTypes.UnitSplit] =
+            [
+                .. SourceContextFields,
+                Decimal(CorporateActionPayloads.SourceRate, requiredForAcceptance: true),
+                // SuccessorLegs is retained as an open array; the source adapter validates each leg.
+            ],
+            [CorporateActionEventTypes.SecurityRedemption] =
+            [
+                .. SourceContextFields,
+                Decimal(CorporateActionPayloads.RedemptionRate, requiredForAcceptance: true),
+            ],
+            [CorporateActionEventTypes.NameChange] =
+            [
+                .. SourceContextFields,
+                String(CorporateActionPayloads.SuccessorSymbol),
+                String(CorporateActionPayloads.SuccessorCusip),
+                String(CorporateActionPayloads.SuccessorIsin),
+            ],
+            [CorporateActionEventTypes.WorthlessRemoval] =
+            [
+                .. SourceContextFields,
+            ],
+            [CorporateActionEventTypes.PartialCall] =
+            [
+                .. SourceContextFields,
+                Decimal(CorporateActionPayloads.Price),
+                Decimal(CorporateActionPayloads.DividendRate),
+                String(CorporateActionPayloads.LotteryType),
+                Date(CorporateActionPayloads.LotteryDate),
+                Date(CorporateActionPayloads.ResultsPublicationDate),
+            ],
+            [CorporateActionEventTypes.Reorganization] =
+            [
+                .. SourceContextFields,
+                Decimal(CorporateActionPayloads.CashRate),
+                // StockMovements retains every validated allocation; unknown source fields remain in raw evidence.
+            ],
+            [CorporateActionEventTypes.CapitalGainsDistribution] =
+            [
+                .. SourceContextFields,
+                Decimal(CorporateActionPayloads.LongTermRate),
+                Decimal(CorporateActionPayloads.ShortTermRate),
             ],
             [CorporateActionEventTypes.ReturnOfCapital] =
             [
@@ -107,8 +164,13 @@ public static class CorporateActionPayloadSchemaCatalog
             ],
             [CorporateActionEventTypes.RightsDistribution] =
             [
+                .. SourceContextFields,
                 Guid(CorporateActionPayloads.RightsSecurityId, requiredForAcceptance: true),
                 Decimal(CorporateActionPayloads.RightsPerHeldUnit, requiredForAcceptance: true),
+                String(CorporateActionPayloads.SuccessorSymbol),
+                String(CorporateActionPayloads.SuccessorCusip),
+                String(CorporateActionPayloads.SuccessorIsin),
+                Date(CorporateActionPayloads.ExpirationDate),
             ],
             [CorporateActionEventTypes.RightsExercise] =
             [
@@ -190,6 +252,14 @@ public static class CorporateActionPayloadSchemaCatalog
             {
                 return $"{schema.EventType} payload field '{field.Key}' must be a {Describe(field.ValueType)} value.";
             }
+        }
+
+        if (forAcceptance && schema.EventType == CorporateActionEventTypes.CapitalGainsDistribution
+            && CorporateActionPayloads.ReadDecimal(action.Payload, CorporateActionPayloads.LongTermRate) is null
+            && CorporateActionPayloads.ReadDecimal(action.Payload, CorporateActionPayloads.ShortTermRate) is null)
+        {
+            return $"{schema.EventType} payload schema v{schema.Version} requires at least one of " +
+                   $"'{CorporateActionPayloads.LongTermRate}' or '{CorporateActionPayloads.ShortTermRate}' before acceptance.";
         }
 
         return null;

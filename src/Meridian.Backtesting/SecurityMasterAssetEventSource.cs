@@ -77,6 +77,7 @@ public sealed class SecurityMasterAssetEventSource : IBacktestAssetEventSource
         ArgumentNullException.ThrowIfNull(symbols);
 
         var effectiveThroughUtc = new DateTimeOffset(to.ToDateTime(TimeOnly.MaxValue), TimeSpan.Zero);
+        var retainedAt = DateTimeOffset.UtcNow;
         var events = new List<AssetEvent>();
         foreach (var symbol in symbols
             .Where(static symbol => !string.IsNullOrWhiteSpace(symbol))
@@ -115,7 +116,10 @@ public sealed class SecurityMasterAssetEventSource : IBacktestAssetEventSource
             {
                 if (TryMap(symbol, action) is { } assetEvent)
                 {
-                    events.Add(assetEvent);
+                    events.Add(assetEvent with
+                    {
+                        EvidenceReferences = [SecurityMasterBacktestAssetEventSource.ActionEvidence(action, retainedAt)]
+                    });
                 }
                 else
                 {

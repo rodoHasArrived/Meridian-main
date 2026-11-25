@@ -158,58 +158,91 @@ public static partial class WorkstationEndpoints
         => $"{run.StrategyName.Trim()} {run.Mode.ToString().ToLowerInvariant()} {run.Engine} {run.Status}";
 
     private static bool CanReadWorkstationTable(HttpContext context, string tableId)
-        => tableId switch
+        => WorkstationTablePermissions.TryGetValue(tableId, out var permissions)
+            ? EndpointAuthorization.HasAnyPermission(context, permissions)
+            : FinancialRecordExplorerReadService.IsKnownExplorerId(tableId) && CanReadFinancialRecordExplorer(context, tableId);
+
+    /// <summary>
+    /// The workstation tables that support saved views and complete export, keyed by the browser's
+    /// <c>workbenchId</c>, with the permissions that may read each one (any one suffices). Each entry
+    /// mirrors the permission the table's own data endpoint requires. Explorer tables not listed here
+    /// fall back to the financial-record explorer allow-list.
+    /// </summary>
+    internal static readonly IReadOnlyDictionary<string, UserPermission[]> WorkstationTablePermissions = BuildWorkstationTablePermissions();
+
+    private static Dictionary<string, UserPermission[]> BuildWorkstationTablePermissions()
+    {
+        var map = new Dictionary<string, UserPermission[]>(StringComparer.Ordinal);
+        void Add(UserPermission[] permissions, params string[] tableIds)
         {
-            "operator-inbox" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies,
+            foreach (var tableId in tableIds)
+                map.Add(tableId, permissions);
+        }
+
+        Add([UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies,
                 UserPermission.ViewDirectLending, UserPermission.ManageDirectLending,
-                UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance),
-            "portfolio-positions" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies),
-            "portfolio-brokerage-accounts" or "portfolio-brokerage-positions" =>
-                EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewTrades),
-            "trading-positions" or "trading-orders" or "trading-fills" or "trading-execution-audit" or "trading-execution-blotter" or
-            "trading-broker-order-discrepancies" or "trading-broker-affected-runs" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewTrades),
-            "accounting-capital-command-centers" or "accounting-capital-investor-accounts" =>
-                EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance, UserPermission.ManageDirectLending),
-            "accounting-payment-intents" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewDirectLending),
-            "accounting-reconciliation-breaks" or "margin-prime-summary" or "margin-account-positions" or "accounting-statement-schedules" or
-            "accounting-external-gl-providers" or "accounting-external-gl-mappings" or "accounting-external-gl-reconciliation" or
-            "accounting-approval-workflows" or "accounting-break-audit-differences" or "close-checklist-history" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewDirectLending,
-                UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance),
-            "accounting-period-comparison" or "accounting-ledger-search" or "accounting-mark-preview" or
-            "accounting-payment-evidence-workflows" or "accounting-private-capital-events" or "accounting-private-capital-activity" or
-            "accounting-private-capital-subledgers" or "accounting-private-capital-subledger" or "accounting-private-capital-ledger-impacts" or
-            "accounting-private-capital-report-outputs" or "accounting-prepared-deadlines" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports),
-            "accounting-audit-integrity" => EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance),
-            "strategy-runs" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.ViewStrategies, UserPermission.ManageStrategies),
-            "strategy-comparison" or "strategy-position-diff" or "strategy-parameter-diff" or "strategy-promotion-history" or
-            "strategy-plot-studies" or "strategy-plot-moments" or "strategy-plot-observations" or "strategy-scatter-mark-coordinates" =>
-                EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewStrategies, UserPermission.ManageStrategies),
-            "reporting-export-profiles" or "reporting-private-capital-events" or "reporting-capital-subledgers" or
-            "reporting-released-artifacts" or "reporting-run-audit" or "reporting-series-revisions" or "reporting-access-grants" or "reporting-delivery-history" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.ViewReporting, UserPermission.ManageReporting),
-            "data-provider-health" or "provider-evidence-age-data" or "data-backfill-queue" or "data-remediation-queue" or "data-export-packages" =>
-                EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage),
-            "data-corporate-action-source-facts" or "data-corporate-action-queue" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewCorporateActions),
-            "data-provider-capabilities" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance),
-            "data-query-results" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewHistoricalData),
-            "data-upload-preview" or "data-workbook-preview" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster),
-            "data-provider-rate-limits" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance),
-            "data-ingestion-operations" or "backfill-coverage-evidence" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill),
-            "data-maintenance-executions" => EndpointAuthorization.HasAnyPermission(context, UserPermission.AdminMaintenance),
-            "close-task-progress-data" or "close-checklist-progress-data" => EndpointAuthorization.HasAnyPermission(context,
-                UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports),
-            "provider-verification-events" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ManageCredentials),
-            "account-balance-history" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewTrades),
-            "break-occurrence-age-data" => EndpointAuthorization.HasAnyPermission(context, UserPermission.ViewDirectLending,
-                UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance),
-            _ => FinancialRecordExplorerReadService.IsKnownExplorerId(tableId) && CanReadFinancialRecordExplorer(context, tableId)
-        };
+                UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance],
+            "operator-inbox");
+        Add([UserPermission.ViewTrades, UserPermission.ViewStrategies, UserPermission.ManageStrategies],
+            "portfolio-positions");
+        Add([UserPermission.ViewTrades],
+            "portfolio-brokerage-accounts", "portfolio-brokerage-positions",
+            // Mirrors the portfolio/trading position reads used by the instrument dossier.
+            "instrument-dossier-positions",
+            "trading-positions", "trading-orders", "trading-fills", "trading-execution-audit", "trading-execution-blotter",
+            "trading-broker-order-discrepancies", "trading-broker-affected-runs",
+            "account-balance-history",
+            // Mirrors /api/execution/journal/* and /api/portfolio/cash-ladder/comparison.
+            "execution-journal", "portfolio-cash-ladder-comparison");
+        // Mirrors /api/fund-structure/nav-comparison.
+        Add([UserPermission.ManageFundStructure, UserPermission.ManageDirectLending, UserPermission.AdminMaintenance],
+            "portfolio-nav-comparison");
+        Add([UserPermission.AdminMaintenance, UserPermission.ManageDirectLending],
+            "accounting-capital-command-centers", "accounting-capital-investor-accounts");
+        Add([UserPermission.ViewDirectLending],
+            "accounting-payment-intents");
+        Add([UserPermission.ViewDirectLending, UserPermission.ViewSecurityMaster, UserPermission.ManageDirectLending,
+                UserPermission.ModifySecurityMaster, UserPermission.AdminMaintenance],
+            "accounting-reconciliation-breaks", "margin-prime-summary", "margin-account-positions", "accounting-statement-schedules",
+            "accounting-external-gl-providers", "accounting-external-gl-mappings", "accounting-external-gl-reconciliation",
+            "accounting-approval-workflows", "accounting-break-audit-differences", "close-checklist-history",
+            "break-occurrence-age-data");
+        Add([UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports],
+            "accounting-period-comparison", "accounting-period-closing-balance-comparison", "accounting-ledger-search", "accounting-mark-preview",
+            // Mirrors the dossier's ledger period/journal entry reads.
+            "instrument-dossier-ledger",
+            "accounting-payment-evidence-workflows", "accounting-private-capital-events", "accounting-private-capital-activity",
+            "accounting-private-capital-subledgers", "accounting-private-capital-subledger", "accounting-private-capital-ledger-impacts",
+            "accounting-private-capital-report-outputs", "accounting-prepared-deadlines",
+            "close-task-progress-data", "close-checklist-progress-data");
+        // Mirrors the book receipt run reads; direct-lending permission alone does not admit them.
+        Add([UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance],
+            "book-income-receipts");
+        Add([UserPermission.AdminMaintenance],
+            "accounting-audit-integrity", "data-maintenance-executions");
+        Add([UserPermission.ViewStrategies, UserPermission.ManageStrategies],
+            "strategy-runs",
+            "strategy-comparison", "strategy-position-diff", "strategy-parameter-diff", "strategy-promotion-history",
+            "strategy-plot-studies", "strategy-plot-moments", "strategy-plot-observations", "strategy-scatter-mark-coordinates",
+            // Mirrors /api/workstation/runs/{runId}/attribution/period-comparison.
+            "portfolio-attribution-period-comparison");
+        Add([UserPermission.ViewReporting, UserPermission.ManageReporting],
+            "reporting-export-profiles", "reporting-private-capital-events", "reporting-capital-subledgers",
+            "reporting-released-artifacts", "reporting-run-audit", "reporting-series-revisions", "reporting-access-grants", "reporting-delivery-history");
+        Add([UserPermission.ViewHistoricalData, UserPermission.ViewDiagnostics, UserPermission.ManageStorage],
+            "data-provider-health", "provider-evidence-age-data", "data-backfill-queue", "data-remediation-queue", "data-export-packages");
+        Add([UserPermission.ViewCorporateActions],
+            "data-corporate-action-source-facts", "data-corporate-action-queue");
+        Add([UserPermission.ViewConfig, UserPermission.ViewDiagnostics, UserPermission.ManageProviders, UserPermission.AdminMaintenance],
+            "data-provider-capabilities", "data-provider-rate-limits");
+        Add([UserPermission.ViewHistoricalData],
+            "data-query-results");
+        Add([UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ModifySecurityMaster],
+            "data-upload-preview", "data-workbook-preview");
+        Add([UserPermission.ViewHistoricalData, UserPermission.TriggerBackfill],
+            "data-ingestion-operations", "backfill-coverage-evidence");
+        Add([UserPermission.ManageCredentials],
+            "provider-verification-events");
+        return map;
+    }
 }

@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## Research
+
+Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Research</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:172](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L172).
+
+Preserves legacy research workspace copy by forwarding to the strategy workspace.
+
+```csharp
+public static class Research
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string WorkspaceId = Strategy.WorkspaceId;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:174](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L174) |  |
+| <code>public static readonly WorkspaceDescriptorCopy Descriptor = Strategy.Descriptor;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:175](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L175) |  |
+| <code>public const string ShellTitle = Strategy.ShellTitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:176](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L176) |  |
+| <code>public const string ShellSubtitle = Strategy.ShellSubtitle;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:177](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L177) |  |
+| <code>public const string PrimaryScopeLabel = Strategy.PrimaryScopeLabel;</code> | [src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs:178](../../../../src/Meridian.Wpf/Copy/WorkspaceCopyCatalog.cs#L178) |  |
+
 ## Scope
 
 Qualified name: <code>Meridian.Wpf.Copy.WorkspaceCopyCatalog.Scope</code>. Kind: `class`.
@@ -127,8 +149,8 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L51) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:374](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L374) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:376](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L376) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:379](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L379) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs:381](../../../../src/Meridian.Wpf/Features/Accounting/AccountingFeatureModule.cs#L381) |  |
 
 ## DataFeatureModule
 
@@ -147,9 +169,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:70](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L70) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:157](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L157) |  |
-| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:159](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L159) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:162](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L162) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:158](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L158) |  |
+| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:160](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L160) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Data/DataFeatureModule.cs:163](../../../../src/Meridian.Wpf/Features/Data/DataFeatureModule.cs#L163) |  |
 
 ## DataWorkspaceShellActionKind
 
@@ -882,9 +904,9 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:50](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L50) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:92](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L92) |  |
-| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:94](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L94) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:97](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L97) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:97](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L97) |  |
+| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:99](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L99) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs:102](../../../../src/Meridian.Wpf/Features/Settings/SettingsFeatureModule.cs#L102) |  |
 
 ## ISettingsWorkspaceShellPresentationService
 
@@ -1133,25 +1155,6 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public void Register(IServiceCollection services);</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:28](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L28) |  |
-| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:45](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L45) |  |
-| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:47](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L47) |  |
-| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:50](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L50) |  |
-
-## MainWindow
-
-Qualified name: <code>Meridian.Wpf.MainWindow</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/MainWindow.xaml.cs:34](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L34).
-
-Main application window containing the navigation frame. Handles global keyboard shortcuts, command palette, and window state persistence.
-
-```csharp
-public partial class MainWindow : Window
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public MainWindow(MainWindowViewModel viewModel, WpfServices.NavigationService navigationService, WpfServices.KeyboardShortcutService keyboardShortcutService, WpfServices.NotificationService notificationService, WpfServices.FundContextService fundContextService, WpfServices.WorkstationOperatingContextService operatingContextService, DesktopShellCoordinator shellCoordinator, DesktopShellSessionService sessionService, DesktopLaunchRouter launchRouter, FileDropRouter fileDropRouter, IWindowStateStore windowStateStore);</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:59](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L59) |  |
-| <code>public void ForceStartupWindowRecovery();</code> | [src/Meridian.Wpf/MainWindow.xaml.cs:996](../../../../src/Meridian.Wpf/MainWindow.xaml.cs#L996) |  |
+| <code>public IReadOnlyList&lt;ShellPageDescriptor&gt; DescribePages() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:46](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L46) |  |
+| <code>public IReadOnlyList&lt;FeatureCapabilityDescriptor&gt; DeclareCapabilities() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:48](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L48) |  |
+| <code>public WorkspaceCapabilityDescriptor DescribeWorkspace() =&gt; …;</code> | [src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs:51](../../../../src/Meridian.Wpf/Features/Trading/TradingFeatureModule.cs#L51) |  |

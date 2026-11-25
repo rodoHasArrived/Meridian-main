@@ -326,6 +326,8 @@ public sealed class DurableLedgerPostingTarget : IGovernedLedgerPostingTarget, I
            && AmountsMatch(retained.Debit, candidate.Debit)
            && AmountsMatch(retained.Credit, candidate.Credit)
            && string.Equals(retained.Description, candidate.Description, StringComparison.Ordinal)
+           && string.Equals(retained.Memo, candidate.Memo, StringComparison.Ordinal)
+           && ChartReferencesMatch(retained, candidate)
            && DimensionsEquivalent(retained.Dimensions, candidate.Dimensions);
 
     private static LedgerJournalEntryWrite NormalizeWrite(LedgerJournalEntryWrite write)

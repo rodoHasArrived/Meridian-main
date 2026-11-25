@@ -4,12 +4,15 @@ import { RunAttributionPeriodComparison } from "@/screens/portfolio-screen.attri
 import { PageHeading } from "@/components/ui/page-heading";
 import { DetailFields, DetailPane } from "@/components/meridian/detail-pane";
 import { WorkspaceWorkbenchShell } from "@/components/meridian/workspace-workbench-shell";
-import type { KeyboardEvent } from "react";
+import type { KeyboardEvent, ReactNode } from "react";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { BriefcaseBusiness, FileCheck2, LineChart, Network, Settings, ShieldCheck, Wallet } from "lucide-react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation, useNavigate, useSearchParams } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 import { MarkFreshnessCell } from "@/components/meridian/mark-freshness-cell";
+import { AmountPassportTrigger } from "@/components/meridian/amount-passport";
+import { FinancialValue } from "@/components/meridian/financial-value";
+import { parseExactDecimal, readLegacyFinancialText } from "@/lib/exact-financial-value";
 import { PositionValueGraphic } from "@/components/meridian/position-value-graphic";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -20,6 +23,10 @@ import {
   FinancialRecordExplorerShell
 } from "@/components/meridian/financial-record-explorer";
 import { OperationalTrustSummary, type OperationalTrustTone } from "@/components/meridian/operational-trust-summary";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { useLinkedRecordSelection } from "@/hooks/use-linked-record-selection";
+import { appendRecordWorkspaceContext, findUniqueRecord, positionRecordIdentity, type RecordIdentity } from "@/lib/record-workspace-context";
+import { presentMarkFreshness } from "@/lib/mark-freshness";
 import type { DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 import { TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { exportTableQuery } from "@/lib/table-workbench";
@@ -33,16 +40,12 @@ import type { KpiId } from "@/lib/kpi-registry";
 import { formatDateTime } from "@/screens/portfolio-screen.presentation";
 import { EmptyState } from "@/components/data/concrete";
 import { SeverityBadge, TrustStrip, type TrustStripItem } from "@/components/operations";
+import { ChartCard, EquityCurve, Histogram } from "@/components/charts";
+import { ChartEvidenceView, type ChartEvidence } from "@/components/charts/chart-evidence";
+import { buildHistogramBins } from "@/components/charts/Histogram";
+import { workstationRunEquityCurveEndpoint } from "@/lib/workstation-endpoints";
 import {
-  EquityCurve,
-  Histogram,
-  ChartCard,
-  ChartSyncProvider,
-  useChartSync,
-  useChartCrosshairSync,
-  nearestTimestampIndex
-} from "@/components/charts";
-import {
+  getBrokerageHouseholdPortfolio,
   getFinancialRecordExplorer,
   getRunAttribution,
   getRunCashFlows,
@@ -57,8 +60,10 @@ import { getPositionSideOptions, selectPortfolioPositionRows } from "@/lib/portf
 import { usePortfolioPositionsTable } from "@/hooks/use-portfolio-positions-table";
 import { PortfolioPositionsToolbar } from "@/screens/portfolio-positions-toolbar";
 import { WORKSTATION_ROUTE_CATALOG, workstationRouteWithQuery } from "@/lib/workspace";
+import { instrumentDossierRoute } from "@/lib/instrument-dossier-route";
 import { bondWorkflowRoute, holdingBondWorkflowRoute } from "@/lib/fixed-income-navigation";
 import {
+  brokeragePositionId,
   buildPortfolioExplorerPresentation,
   resolveRetainedPortfolioRunLabel,
   resolveBrokerageAccountFilterKeyCommand,
@@ -127,16 +132,37 @@ const cashFlowBorderClass = {
   danger: "border-danger/30"
 } as const;
 
+function HoldingValue({ text, exact, row, quantity = false, price = false, markDependent = false }: {
+  text: string; exact?: string | null; row: PortfolioPositionRow; quantity?: boolean; price?: boolean; markDependent?: boolean;
+}) {
+  // Keep upstream source formatting until an exact source field is available.
+  if (exact == null) return <>{text}</>;
+  const legacy = readLegacyFinancialText(text);
+  const value = exact ?? legacy.value;
+  const hasAssessment = row.markFreshness.policyVersion !== "Unavailable";
+  return <FinancialValue value={value} currency={quantity ? undefined : row.currency ?? undefined}
+    unit={quantity ? undefined : row.currency ? undefined : legacy.unit}
+    decimals={quantity ? Math.min(28, parseExactDecimal(value)?.scale ?? 0) : price ? Math.min(28, Math.max(2, parseExactDecimal(value)?.scale ?? 2)) : undefined}
+    condition={markDependent && hasAssessment ? row.markFreshness.reviewRequired ? "review-required" : "provisional" : "unavailable"}
+    reason={markDependent ? row.markFreshness.reason : "The source has not supplied a confirmed data condition or an exact amount proof binding."}
+    freshness={markDependent ? `Observed ${row.markFreshness.observedOn}` : undefined} />;
+}
+
+function InstrumentSymbolLink({ row }: { row: PortfolioPositionRow }) {
+  const location = useLocation();
+  return <EntityLink record={{ kind: "symbol", id: row.symbol, label: row.symbol,
+    workspaceHref: row.securityId ? instrumentDossierRoute(row.securityId, location.search) : workstationRouteWithQuery("accountingSecurityMaster", { symbol: row.symbol }),
+    summary: [{ label: "Source", value: "Portfolio holdings snapshot" }, { label: "Side", value: row.side },
+      { label: "Quantity", value: row.quantity }, { label: "Mark", value: row.markPrice }] }} />;
+}
+
 const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
   { id: "mark-readiness", label: "Mark readiness", sortable: true, render: (row) => <MarkFreshnessCell mark={row.markFreshness} /> },
   {
     id: "symbol",
     label: "Symbol",
     sortable: true,
-    render: (row) => <EntityLink record={{ kind: "symbol", id: row.symbol, label: row.symbol,
-      workspaceHref: workstationRouteWithQuery("accountingSecurityMaster", { symbol: row.symbol }),
-      summary: [{ label: "Source", value: "Portfolio holdings snapshot" }, { label: "Side", value: row.side },
-        { label: "Quantity", value: row.quantity }, { label: "Mark", value: row.markPrice }] }} />
+    render: (row) => <InstrumentSymbolLink row={row} />
   },
   {
     id: "side",
@@ -149,28 +175,30 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     label: "Qty",
     numeric: true,
     hideable: true,
-    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+    render: (row) => <PositionAmount row={row} label="quantity" field="quantity" value={row.quantity} />
   },
   {
     id: "average",
     label: "Avg price",
     numeric: true,
     hideable: true,
-    render: (row) => <span className="font-mono text-foreground">{row.avgPrice}</span>
+    render: (row) => <PositionAmount row={row} label="average price" field="average-price" value={row.avgPrice}><HoldingValue text={row.avgPrice} exact={row.averagePriceExact} row={row} price /></PositionAmount>
   },
   {
     id: "mark",
     label: "Recorded mark",
     numeric: true,
     hideable: true,
-    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+    render: (row) => <PositionAmount row={row} label="recorded mark" field="mark" value={row.markPrice}><HoldingValue text={row.markPrice} exact={row.markPriceExact} row={row} price markDependent /></PositionAmount>
   },
   {
     id: "unrealized-pnl",
     label: "Unrealized P&L",
     numeric: true,
     hideable: true,
-    render: (row) => <PositionValueGraphic value={row.unrealizedPnl} measurement={row.pnlGraphic} kind="pnl" className={cn("font-semibold", pnlToneClass[row.pnlTone])} />
+    render: (row) => <PositionAmount row={row} label="unrealized P&L" field="unrealized-pnl" value={row.unrealizedPnl}>
+      <PositionValueGraphic value={row.unrealizedPnl} displayValue={<HoldingValue text={row.unrealizedPnl} exact={row.unrealizedPnlExact} row={row} markDependent />} measurement={row.pnlGraphic} kind="pnl" className={cn("font-semibold", pnlToneClass[row.pnlTone])} />
+    </PositionAmount>
   },
   {
     id: "exposure",
@@ -178,7 +206,9 @@ const positionColumns: DenseDataTableColumn<PortfolioPositionRow>[] = [
     numeric: true,
     hideable: true,
     render: (row) => <span data-holding-exposure={row.exposureAmount ?? ""} data-holding-currency={row.currency ?? ""}>
-      <PositionValueGraphic value={row.exposure} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+      <PositionAmount row={row} label="exposure" field="exposure" value={row.exposure}>
+      <PositionValueGraphic value={row.exposure} displayValue={<HoldingValue text={row.exposure} exact={row.exposureExact} row={row} markDependent />} measurement={row.exposureGraphic} kind="exposure" reviewRequired={row.markFreshness.reviewRequired} className="text-foreground" />
+      </PositionAmount>
     </span>
   }
 ];
@@ -203,7 +233,10 @@ const positionWorkbenchColumns: TableWorkbenchColumn<PortfolioPositionRow>[] = p
 })).sort((left, right) => Number(right.id === "symbol") - Number(left.id === "symbol"));
 positionWorkbenchColumns.splice(5, 0,
   { id: "currency", label: "Currency", hideable: true, exportValue: row => row.currency ?? "", render: row => <HoldingFigureCell figure={row.currencyFigure} /> },
-  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValueFigure.staleLabel ? `${row.marketValue} (${row.marketValueFigure.staleLabel})` : row.marketValue, render: row => <HoldingFigureCell figure={row.marketValueFigure} /> },
+  { id: "market-value", label: "Market value", align: "right", exportValue: row => row.marketValueFigure.staleLabel ? `${row.marketValue} (${row.marketValueFigure.staleLabel})` : row.marketValue,
+    render: row => <PositionAmount row={row} label="market value" field="market-value" value={row.marketValue} stale={row.marketValueFigure.stale}>
+      <HoldingFigureCell figure={row.marketValueFigure} />
+    </PositionAmount> },
   { id: "weight", label: "Weight", align: "right", exportValue: row => row.weight, render: row => <HoldingFigureCell figure={row.weightFigure} /> },
   { id: "day-pnl", label: "Day P&L", align: "right", exportValue: row => row.dayPnl, render: row => row.dayPnl });
 
@@ -314,31 +347,33 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
     id: "quantity",
     label: "Qty",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.quantity}</span>
+    render: (row) => <PositionAmount row={row} label="quantity" field="quantity" value={row.quantity} />
   },
   {
     id: "average",
     label: "Avg",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.averagePrice}</span>
+    render: (row) => <PositionAmount row={row} label="average entry price" field="average-price" value={row.averagePrice} />
   },
   {
     id: "mark",
     label: "Mark",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.markPrice}</span>
+    render: (row) => <PositionAmount row={row} label="mark" field="mark" value={row.markPrice} />
   },
   {
     id: "market-value",
     label: "Market value",
     align: "right",
-    render: (row) => <span className="font-mono text-foreground">{row.marketValue}</span>
+    render: (row) => <PositionAmount row={row} label="market value" field="market-value" value={row.marketValue} />
   },
   {
     id: "unrealized-pnl",
     label: "Unrealized P&L",
     align: "right",
-    render: (row) => <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+    render: (row) => <PositionAmount row={row} label="unrealized P&L" field="unrealized-pnl" value={row.unrealizedPnl}>
+      <span className={cn("font-mono font-semibold", pnlToneClass[row.pnlTone])}>{row.unrealizedPnl}</span>
+    </PositionAmount>
   },
   {
     id: "coverage",
@@ -350,6 +385,21 @@ const brokeragePositionColumns: DenseDataTableColumn<PortfolioBrokeragePositionR
     )
   }
 ];
+
+function PositionAmount({ row, label, field, value, stale, children }: {
+  row: PortfolioBrokeragePositionRow | PortfolioPositionRow; label: string; field: string;
+  value: string; stale?: boolean; children?: ReactNode;
+}) {
+  const reference = "amountPassports" in row ? row.amountPassports?.[field] : null;
+  return <AmountPassportTrigger compact className="font-mono" selection={{
+    label: `${row.symbol} ${label}`, category: "Position valuation", displayValue: value, reference,
+    currency: field === "quantity" ? null : row.currency,
+    unit: field === "quantity" ? "position units" : field === "mark" || field === "average-price" ? "currency per position unit" : "currency",
+    mark: field === "quantity" || field === "average-price" ? null : row.markFreshness,
+    freshness: stale ? "stale" : undefined,
+    unavailableReason: "This position value has no retained snapshot address. The displayed observation remains available for review."
+  }}>{children ?? value}</AmountPassportTrigger>;
+}
 
 type PortfolioRouteViewId = "overview" | "attribution" | "brokerage-sync";
 
@@ -401,12 +451,15 @@ function PortfolioScreenContent({
 }: PortfolioScreenProps) {
   const location = useLocation();
   const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const figureContext = useWorkspaceFigureContext();
   const routeView = resolvePortfolioRouteView(location.pathname);
   const routeCopy = portfolioRouteViewCopy[routeView];
   const showOverview = routeView === "overview";
   const showAttribution = routeView === "attribution";
   const showBrokerageSync = routeView === "brokerage-sync";
+  const linkedAccount = showBrokerageSync ? searchParams.get("fundAccountId") : null;
+  const positionProvider = linkedAccount ? searchParams.get("positionProvider") : null;
   const brokerageAccountButtonRefs = useRef<Record<string, HTMLButtonElement | null>>({});
   const shouldFocusBrokerageAccount = useRef(false);
   const drillInRequestId = useRef(0);
@@ -420,7 +473,35 @@ function PortfolioScreenContent({
   const retainedRunLabel = retainedRunId ? formatRetainedRunLabel(retainedRunId) : "Retained run";
   const retainedSourceLabel = retainedRunLabel === "Retained run" ? "Retained run records" : `${retainedRunLabel} records`;
   const retainedAsOf = portfolioExplorer?.scopeItems.find((item) => item.label.trim().toLowerCase() === "as of")?.value;
-  const [brokerageInspector, setBrokerageInspector] = useState<"account" | "position">("account");
+  const [linkedSnapshot, setLinkedSnapshot] = useState<{
+    provider: string;
+    account: string;
+    portfolio: BrokerageHouseholdPortfolio | null;
+  } | null>(null);
+  const activeLinkedSnapshot = linkedSnapshot?.provider === positionProvider && linkedSnapshot.account === linkedAccount
+    ? linkedSnapshot : null;
+  const household = positionProvider ? activeLinkedSnapshot?.portfolio : brokeragePortfolio;
+
+  useEffect(() => {
+    setLinkedSnapshot(null);
+    if (!positionProvider || !linkedAccount) return;
+    const controller = new AbortController();
+    void getBrokerageHouseholdPortfolio(positionProvider, {
+      fundAccountId: linkedAccount,
+      signal: controller.signal,
+      allowDevelopmentFallback: false
+    }).then((payload) => {
+      if (!controller.signal.aborted) {
+        setLinkedSnapshot({ provider: positionProvider, account: linkedAccount, portfolio: payload });
+      }
+    }).catch(() => {
+      if (!controller.signal.aborted) {
+        setLinkedSnapshot({ provider: positionProvider, account: linkedAccount, portfolio: null });
+      }
+    });
+    return () => controller.abort();
+  }, [positionProvider, linkedAccount]);
+
   // On the brokerage route the household is narrowed to the scope's fund (or entity) when the
   // organization graph places its accounts; accounts it does not place are counted, never hidden
   // silently. Other Portfolio routes keep the whole household (the bar shows the fund retained).
@@ -428,14 +509,32 @@ function PortfolioScreenContent({
   const brokerageFundScope = useMemo(() => {
     if (!showBrokerageSync || !fundScope) return null;
     const narrowed = narrowHouseholdPortfolioToFundScope(
-      brokeragePortfolio,
+      household,
       fundScope.structure,
       { entityId: fundScope.entityId, fundId: fundScope.fundId },
       fundScope.loading
     );
     return { ...narrowed, note: describeFundScopeNarrowing(narrowed.accounts, "brokerage accounts", fundScope.names) };
-  }, [showBrokerageSync, fundScope, brokeragePortfolio]);
-  const scopedBrokeragePortfolio = brokerageFundScope ? brokerageFundScope.portfolio : brokeragePortfolio;
+  }, [showBrokerageSync, fundScope, household]);
+  const scopedBrokeragePortfolio = brokerageFundScope ? brokerageFundScope.portfolio : household;
+  const requestedPositionRef = searchParams.get("positionRef");
+  const requestedBrokerageAccount = searchParams.get("brokerageAccount") ?? (positionProvider ? linkedAccount : null);
+  const requestedBrokeragePositionId = searchParams.get("brokeragePosition");
+  const [brokeragePanel, setBrokerageInspector] = useLinkedRecordSelection<"account" | "position">(requestedBrokeragePositionId);
+  const brokerageInspector = brokeragePanel ?? (requestedBrokeragePositionId ? "position" : "account");
+  const updateLinkedBrokerageAccount = (key: string) => setSearchParams((current) => {
+    const next = new URLSearchParams(current);
+    if (key === "all") {
+      next.delete("fundAccountId");
+      next.delete("positionProvider");
+      next.delete("recordScope");
+    } else {
+      next.set("fundAccountId", key);
+    }
+    next.delete("brokerageAccount");
+    next.delete("brokeragePosition");
+    return next;
+  }, { replace: true });
   const vm = usePortfolioScreenViewModel({
     portfolio,
     trading,
@@ -443,10 +542,62 @@ function PortfolioScreenContent({
     accounting,
     brokerageConnection,
     brokeragePortfolio: scopedBrokeragePortfolio,
+    onBrokerageAccountChange: positionProvider ? updateLinkedBrokerageAccount : undefined,
     multiAssetCoverage,
     selectedRunDrillIn,
+    requestedPositionRef,
+    requestedBrokerageAccount,
+    requestedBrokeragePositionId,
     pathname: location.pathname
   });
+  const holding = vm.selectedPosition;
+  const holdingContext = useRecordWorkspaceContext(holding?.record ?? null,
+    holding?.linkedRef ? { positionRef: holding.linkedRef } : null, `#${vm.positionDetailId}`);
+  const holdingAssetRoute = holding ? workstationRouteWithQuery("portfolioAssetDetail", { symbol: holding.title, source: "portfolio" }) : null;
+  const holdingAssetHref = holdingAssetRoute && holdingContext
+    ? appendRecordWorkspaceContext(holdingAssetRoute, holdingContext) ?? holdingAssetRoute : holdingAssetRoute;
+
+  const brokerageAccount = showBrokerageSync
+    ? findUniqueRecord(scopedBrokeragePortfolio?.accounts ?? [], (account) => account.fundAccountId === vm.selectedBrokerageAccountKey)
+    : null;
+  const brokerageAccountRecord: RecordIdentity | null = brokerageAccount ? {
+    kind: "account",
+    id: brokerageAccount.fundAccountId,
+    name: brokerageAccount.displayName,
+    status: brokerageAccount.health,
+    asOf: brokerageAccount.syncedAt,
+    trust: brokerageAccount.health === "Healthy" && brokerageAccount.warnings.length === 0 ? "Sync healthy" : "Sync review required",
+    trustTone: brokerageAccount.health === "Healthy" && brokerageAccount.warnings.length === 0 ? "ready" : "review",
+    scope: { fundAccountId: brokerageAccount.fundAccountId, provider: brokerageAccount.providerId }
+  } : null;
+  const brokerageAccountContext = useRecordWorkspaceContext(brokerageAccountRecord, {
+    brokerageAccount: brokerageAccount?.fundAccountId,
+    brokeragePosition: ""
+  }, "#portfolio-brokerage-active-detail");
+
+  const brokeragePosition = showBrokerageSync
+    ? findUniqueRecord(scopedBrokeragePortfolio?.positions ?? [], (position) => brokeragePositionId(position) === vm.selectedBrokeragePositionId)
+    : null;
+  const brokeragePositionRecord: RecordIdentity | null = brokeragePosition ? {
+    ...positionRecordIdentity({
+      positionKey: brokeragePosition.positionId,
+      symbol: brokeragePosition.symbol,
+      side: brokeragePosition.quantity < 0 ? "Short" : "Long"
+    }, presentMarkFreshness(brokeragePosition.markFreshness), brokeragePosition.fundAccountId),
+    assetClass: brokeragePosition.security?.assetClass ?? brokeragePosition.assetClass,
+    scope: {
+      symbol: brokeragePosition.symbol,
+      fundAccountId: brokeragePosition.fundAccountId,
+      securityId: brokeragePosition.security?.securityId,
+      provider: brokeragePosition.providerId
+    }
+  } : null;
+  const brokeragePositionContext = useRecordWorkspaceContext(brokeragePositionRecord, {
+    brokerageAccount: vm.selectedBrokerageAccountKey,
+    brokeragePosition: vm.selectedBrokeragePositionId
+  }, "#portfolio-brokerage-active-detail");
+  const brokerageRecord = brokerageInspector === "position" ? brokeragePositionRecord : brokerageAccountRecord;
+  const brokerageRecordContext = brokerageInspector === "position" ? brokeragePositionContext : brokerageAccountContext;
   const positionsTable = usePortfolioPositionsTable();
   const visiblePositionRows = useMemo(
     () => selectPortfolioPositionRows(vm.positionRows, positionsTable.state),
@@ -1076,6 +1227,11 @@ function PortfolioScreenContent({
             ))}
           </div>
 
+          {requestedBrokerageAccount && requestedBrokerageAccount !== "all" && scopedBrokeragePortfolio
+            && !scopedBrokeragePortfolio.accounts.some((account) => account.fundAccountId === requestedBrokerageAccount) ? (
+              <p role="status" className="text-sm text-muted-foreground">The linked account is unavailable in the current brokerage snapshot.</p>
+            ) : null}
+
           {vm.brokerageWarningRows.length > 0 ? (
             <div
               role="status"
@@ -1145,6 +1301,7 @@ function PortfolioScreenContent({
               title={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.title : vm.selectedBrokerageAccount.title}
               ariaLabel={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.ariaLabel ?? "Brokerage position detail" : vm.selectedBrokerageAccount.ariaLabel}
               subtitle={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.subtitle : vm.selectedBrokerageAccount.subtitle}
+              identity={brokerageRecord ? <RecordIdentitySpine record={brokerageRecord} context={brokerageRecordContext} /> : null}
               summary={brokerageInspector === "position" ? vm.selectedBrokeragePosition?.statusDetail : vm.selectedBrokerageAccount.statusDetail}
               fields={brokerageInspector === "position" ? vm.selectedBrokeragePosition ? [
                 ...vm.selectedBrokeragePosition.fields,
@@ -1153,7 +1310,12 @@ function PortfolioScreenContent({
               shownInRow={brokerageInspector === "position" ? ["Mark readiness", "Account", "Quantity", "Market value", "Unrealized P&L"] : []}
               status={brokerageInspector === "position" ? vm.selectedBrokeragePosition ? { label: vm.selectedBrokeragePosition.statusBadgeLabel, tone: vm.selectedBrokeragePosition.statusBadgeVariant } : null
                 : { label: vm.selectedBrokerageAccount.statusBadgeLabel, tone: vm.selectedBrokerageAccount.statusBadgeVariant }}
-              empty={{ title: "No brokerage position selected", text: vm.brokerageEmptyText }}
+              empty={positionProvider && !activeLinkedSnapshot ? {
+                title: "Loading position", text: "Loading the selected brokerage position."
+              } : {
+                title: "No brokerage position selected",
+                text: requestedBrokeragePositionId ? "The linked brokerage position is unavailable in the current account scope." : vm.brokerageEmptyText
+              }}
               actions={brokerageInspector === "position" && vm.selectedBrokeragePosition?.bondSecurityId ? (
                 <div className="flex flex-wrap gap-2" aria-label="Selected bond workflows">
                   <Button asChild size="sm" variant="outline">
@@ -1181,11 +1343,12 @@ function PortfolioScreenContent({
               ? { label: vm.selectedPosition.statusLabel, tone: vm.selectedPosition.statusTone }
               : null}
             subtitle={vm.selectedPosition?.subtitle}
+            identity={holding ? <RecordIdentitySpine record={holding.record} context={holdingContext} /> : null}
             summary={vm.selectedPosition?.statusDetail}
             fields={vm.selectedPosition?.fields}
             // The holdings table always shows these two; its other columns can be hidden.
             shownInRow={["Side", "Mark readiness"]}
-            empty={{ title: vm.positionDetailEmptyTitle, text: vm.positionEmptyText }}
+            empty={{ title: vm.positionDetailEmptyTitle, text: requestedPositionRef ? "The linked holding is unavailable in the current portfolio." : vm.positionEmptyText }}
             className={vm.selectedPosition ? cashFlowBorderClass[vm.selectedPosition.statusTone] : undefined}
             notice={selectedPositionOutsideResults ? (
               <div className="space-y-2">
@@ -1195,12 +1358,10 @@ function PortfolioScreenContent({
             ) : null}
             actions={vm.selectedPosition ? (
               <>
+              {vm.selectedPosition.securityId ? <Button asChild size="sm" variant="outline"><Link to={holdingContext ? appendRecordWorkspaceContext(instrumentDossierRoute(vm.selectedPosition.securityId, location.search), holdingContext) ?? instrumentDossierRoute(vm.selectedPosition.securityId, location.search) : instrumentDossierRoute(vm.selectedPosition.securityId, location.search)}>Open instrument dossier</Link></Button> : null}
               <Button asChild size="sm" variant="outline">
                 <Link
-                  to={workstationRouteWithQuery("portfolioAssetDetail", {
-                    symbol: vm.selectedPosition.title,
-                    source: "portfolio"
-                  })}
+                  to={holdingAssetHref ?? WORKSTATION_ROUTE_CATALOG.portfolioAssetDetail}
                   aria-label={`Open asset detail for ${vm.selectedPosition.title}`}
                 >
                   Open asset detail
@@ -1223,7 +1384,7 @@ function PortfolioScreenContent({
           />
         )}>
 
-          <Card className="panel-surface min-w-0">
+          <Card className="panel-surface min-w-0 overflow-x-auto">
             <CardHeader className="px-3 py-2">
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div>
@@ -1562,32 +1723,23 @@ function PortfolioChip({ label, value }: { label: string; value: string }) {
 const formatRunAmount = (value: number) => formatNumber(value, { maximumFractionDigits: 0 });
 const drillInSignedPercent = (value: number) => `${value >= 0 ? "+" : ""}${formatPercent(value, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
 
-/** Concrete equity + underwater drawdown view for a loaded run drill-in profile. Additive
- * evidence only — rendered when the selected run has a fetched equity/drawdown series. The
- * chart is scoped in its own ChartSyncProvider so crosshair and point activation stay local to
- * this drill-in (never global) and can drive a per-point evidence readout. */
-function PortfolioDrillInChart(props: { profile: EquityCurveSummary; runTitle: string }) {
-  return (
-    <ChartSyncProvider>
-      <PortfolioDrillInChartInner {...props} />
-    </ChartSyncProvider>
-  );
-}
-
-function PortfolioDrillInChartInner({
-  profile,
-  runTitle
-}: {
-  profile: EquityCurveSummary;
-  runTitle: string;
-}) {
-  const points = profile.points;
+function PortfolioDrillInChart({ profile, runTitle }: { profile: EquityCurveSummary; runTitle: string }) {
+  const { points, runId } = profile;
   const equity = points.map((point) => point.totalEquity);
   const drawdown = points.map((point) => -Math.abs(point.drawdownFromPeakPercent * 100));
   const labels = points.map((point) => point.date);
-  const timestamps = useMemo(() => points.map((point) => Date.parse(point.date)), [points]);
-  const sync = useChartCrosshairSync(timestamps);
-  // Stable reference: the chart re-renders on every crosshair move, the table should not.
+  const proof = { href: workstationRunEquityCurveEndpoint(runId), label: "Open retained run equity series" };
+  const evidence: ChartEvidence[] = points.map((point, index) => ({
+    id: `${runId}:${point.date}:${index}`,
+    label: runTitle,
+    asOf: point.date,
+    values: [
+      { series: "Total equity", value: point.totalEquity, unit: "Run currency units (currency unreported)", basis: "Total equity from the retained run snapshot." },
+      { series: "Drawdown", value: drawdown[index], unit: "%", basis: "Equity less the running peak, divided by that peak × 100. The service uses zero when the peak is nonpositive." }
+    ],
+    proof
+  }));
+
   const accessibleData = useMemo(
     () => ({
       caption: `Equity and drawdown by date for ${runTitle}`,
@@ -1612,142 +1764,112 @@ function PortfolioDrillInChartInner({
 
   return (
     <div className="space-y-3">
-      <ChartCard
-        title="Run equity and drawdown"
-        subtitle={`Retained equity curve and drawdown for ${runTitle}. Run denomination is unavailable; amounts are not assigned a currency.`}
-        readout={[
-          { label: "Final equity", value: formatRunAmount(profile.finalEquity) },
-          {
-            label: "Max drawdown",
-            value: maxDrawdownLabel,
-            color: "var(--chart-drawdown, #B54B42)"
-          },
-          { label: "Sharpe", value: formatNumber(profile.sharpeRatio, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
-        ]}
-        height={280}
-        style={{ flexShrink: 0 }}
-      >
-        <EquityCurve
-          ariaLabel={`Equity and drawdown curve for ${runTitle}`}
-          ariaDescription={
-            points.length > 0
-              ? `${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final equity ${formatRunAmount(
-                  profile.finalEquity
-                )}, maximum drawdown ${maxDrawdownLabel}.`
-              : undefined
-          }
-          accessibleData={accessibleData}
-          series={[{ label: "Equity", color: "var(--chart-equity, #2E7655)", points: equity }]}
-          drawdown={drawdown}
-          labels={labels}
-          valueFmt={formatRunAmount}
-          crosshairIndex={sync.crosshairIndex}
-          onCrosshairChange={sync.onCrosshairChange}
-          onPointActivate={sync.onPointActivate}
-        />
-        <PortfolioDrillInPointEvidence profile={profile} timestamps={timestamps} />
-      </ChartCard>
+      <ChartEvidenceView label="Run equity and drawdown" evidence={evidence} initialIndex={points.length - 1}>
+        {(inspection) => (
+          <ChartCard
+            title="Run equity and drawdown"
+            subtitle={`Retained equity curve and drawdown for ${runTitle}. Run denomination is unavailable; amounts are not assigned a currency.`}
+            readout={[
+              { label: "Final equity", value: <AmountPassportTrigger selection={{
+                label: "Final run equity", displayValue: formatRunAmount(profile.finalEquity),
+                asOf: points.at(-1)?.date, unit: "currency", origin: "calculated", zero: profile.finalEquity === 0,
+                unavailableReason: "The equity series supplies the total but does not retain a denomination or an amount address."
+              }}>{formatRunAmount(profile.finalEquity)}</AmountPassportTrigger> },
+              {
+                label: "Max drawdown",
+                value: maxDrawdownLabel,
+                color: "var(--chart-drawdown, #B54B42)"
+              },
+              { label: "Sharpe", value: formatNumber(profile.sharpeRatio, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) }
+            ]}
+            height={280}
+            style={{ flexShrink: 0 }}
+          >
+            <EquityCurve
+              ariaLabel={`Equity and drawdown curve for ${runTitle}`}
+              ariaDescription={
+                points.length > 0
+                  ? `${points.length} points from ${points[0].date} to ${points[points.length - 1].date}. Final equity ${formatRunAmount(
+                      profile.finalEquity
+                    )}, maximum drawdown ${maxDrawdownLabel}.`
+                  : undefined
+              }
+              accessibleData={accessibleData}
+              series={[{ label: "Equity", color: "var(--chart-equity, #2E7655)", points: equity }]}
+              drawdown={drawdown}
+              labels={labels}
+              valueFmt={formatRunAmount}
+              crosshairIndex={inspection.activeIndex}
+              inspection={inspection}
+            />
+          </ChartCard>
+        )}
+      </ChartEvidenceView>
       <PortfolioDrillInReturnDistribution profile={profile} runTitle={runTitle} />
     </div>
   );
 }
 
-/** Daily-return distribution for a loaded run drill-in profile. Reuses the already-fetched
- * equity-curve points (no extra request) so the same drill-in that draws the equity/drawdown
- * curve also shows the shape of its returns — a signed histogram with a mean rule. Rendered only
- * when at least two return observations exist so a single-day profile stays a curve-only view. */
-function PortfolioDrillInReturnDistribution({
-  profile,
-  runTitle
-}: {
-  profile: EquityCurveSummary;
-  runTitle: string;
-}) {
-  // Memoize the returns series and its summary stats on the fetched points so they are not
-  // recomputed on every crosshair move — the parent re-renders on each hover, but these O(n)
-  // reductions only depend on profile.points.
-  const stats = useMemo(() => {
-    const returns = profile.points.map((point) => point.dailyReturn * 100);
-    if (returns.length < 2) {
-      return null;
-    }
-    const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
-    const best = Math.max(...returns);
-    const worst = Math.min(...returns);
-    const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
-    return { returns, mean, best, worst, positiveShare };
-  }, [profile.points]);
+function PortfolioDrillInReturnDistribution({ profile, runTitle }: { profile: EquityCurveSummary; runTitle: string }) {
+  const { points, runId } = profile;
+  if (points.length < 2) return null;
+  const returns = points.map((point) => point.dailyReturn * 100);
+  const mean = returns.reduce((sum, value) => sum + value, 0) / returns.length;
+  const best = Math.max(...returns);
+  const worst = Math.min(...returns);
+  const positiveShare = (returns.filter((value) => value > 0).length / returns.length) * 100;
+  const bins = buildHistogramBins(returns);
+  const asOf = `${points[0].date} to ${points[points.length - 1].date}`;
+  const proof = { href: workstationRunEquityCurveEndpoint(runId), label: "Open retained daily returns" };
+  const evidence: ChartEvidence[] = bins.map((bin, index) => ({
+    id: `${runId}:return-bin-${index}`,
+    label: `Daily return bucket ${index + 1}`,
+    asOf,
+    values: [{ series: "Daily return frequency", value: bin.count, unit: "Days", basis: `Count of daily returns from ${bin.x0}% to ${bin.x1}%. The ${index === bins.length - 1 ? "last bucket includes both edges" : "lower edge is included and the upper edge is excluded"}.` }],
+    proof
+  }));
+  evidence.push({
+    id: `${runId}:mean-return`, label: "Mean daily return marker", asOf,
+    values: [{ series: "Mean daily return", value: mean, unit: "%", basis: "Arithmetic mean of daily returns from the retained run snapshots." }],
+    proof
+  });
 
-  if (!stats) {
-    return null;
-  }
-
-  const { returns, mean, best, worst, positiveShare } = stats;
   const positiveShareLabel = formatPercent(positiveShare, { maximumFractionDigits: 0 });
 
   return (
-    <ChartCard
-      title="Daily return distribution"
-      subtitle={`Shape of the ${runTitle} daily returns behind the equity curve above.`}
-      readout={[
-        {
-          label: "Mean / day",
-          value: drillInSignedPercent(mean),
-          color: mean >= 0 ? "var(--chart-equity, #2E7655)" : "var(--chart-drawdown, #B54B42)"
-        },
-        { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #2E7655)" },
-        { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #B54B42)" },
-        { label: "Positive days", value: positiveShareLabel }
-      ]}
-      height={220}
-      style={{ flexShrink: 0 }}
-    >
-      <Histogram
-        ariaLabel={`Daily return distribution for ${runTitle}`}
-        ariaDescription={`${returns.length} daily returns. Mean ${drillInSignedPercent(mean)}, best ${drillInSignedPercent(
-          best
-        )}, worst ${drillInSignedPercent(worst)}, ${positiveShareLabel} positive days.`}
-        values={returns}
-        signed
-        showMean
-        valueFmt={(value) => formatPercent(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
-      />
-    </ChartCard>
-  );
-}
-
-/** Evidence drill: when a chart point is activated, surface that point's source-backed
- * detail. Reads the selected timestamp from the shared chart-sync context so it stays in
- * step with the equity curve (and any future linked chart in the same provider). */
-function PortfolioDrillInPointEvidence({
-  profile,
-  timestamps
-}: {
-  profile: EquityCurveSummary;
-  timestamps: number[];
-}) {
-  const { selectedTimestamp } = useChartSync();
-  const selectedIndex = nearestTimestampIndex(timestamps, selectedTimestamp);
-  if (selectedIndex == null) {
-    return null;
-  }
-  const point = profile.points[selectedIndex];
-  if (!point) {
-    return null;
-  }
-
-  return (
-    <div
-      role="status"
-      aria-live="polite"
-      className="mt-2 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-xs"
-    >
-      <span className="font-semibold text-foreground">Selected point — {point.date}</span>
-      <span className="ml-2 text-muted-foreground">
-        Equity {formatRunAmount(point.totalEquity)} · drawdown{" "}
-        {formatRatioAsPercent(-Math.abs(point.drawdownFromPeakPercent), { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-      </span>
-    </div>
+    <ChartEvidenceView label="Daily return distribution" evidence={evidence} initialIndex={bins.length}>
+      {(inspection) => (
+        <ChartCard
+          title="Daily return distribution"
+          subtitle={`Shape of the ${runTitle} daily returns behind the equity curve above.`}
+          readout={[
+            {
+              label: "Mean / day",
+              value: drillInSignedPercent(mean),
+              color: mean >= 0 ? "var(--chart-equity, #2E7655)" : "var(--chart-drawdown, #B54B42)"
+            },
+            { label: "Best day", value: drillInSignedPercent(best), color: "var(--chart-equity, #2E7655)" },
+            { label: "Worst day", value: drillInSignedPercent(worst), color: "var(--chart-drawdown, #B54B42)" },
+            { label: "Positive days", value: positiveShareLabel }
+          ]}
+          height={220}
+          style={{ flexShrink: 0 }}
+        >
+          <Histogram
+            ariaLabel={`Daily return distribution for ${runTitle}`}
+            ariaDescription={`${returns.length} daily returns. Mean ${drillInSignedPercent(mean)}, best ${drillInSignedPercent(
+              best
+            )}, worst ${drillInSignedPercent(worst)}, ${positiveShareLabel} positive days.`}
+            bins={bins}
+            mean={mean}
+            inspection={inspection}
+            signed
+            showMean
+            valueFmt={(value) => formatPercent(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}
+          />
+        </ChartCard>
+      )}
+    </ChartEvidenceView>
   );
 }
 

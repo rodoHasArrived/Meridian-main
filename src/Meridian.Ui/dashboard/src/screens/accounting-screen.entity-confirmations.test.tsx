@@ -35,6 +35,35 @@ async function load(container: EntityOperationScope = scope) {
   return view;
 }
 
+const policy = (status: "Proposed" | "Active") => ({ policyId: "policy-1", tenantId: "tenant-a", companyId: "company-a", ledgerBookId: "lender-book",
+  blockingCodes: ["disputed", "balances-changed"], version: status === "Active" ? 2 : 1, status, activeFrom: status === "Active" ? "2026-11-18" : null,
+  events: [{ eventId: "p-1", requestId: "r-1", action: "Propose" as const, actor: "maker", recordedAt: "2026-11-18T09:00:00Z", reason: "Disputes block close." }] });
+
+describe("Confirmation close policy", () => {
+  it("proposes the chosen blocking findings with a reason", async () => {
+    vi.mocked(postEntityOperation).mockResolvedValue(policy("Proposed"));
+    renderWithRouter(<EntityBalanceConfirmations scope={scope} />);
+    await screen.findByText("No active policy: confirmation is advisory and close eligibility is unchanged.");
+    fireEvent.click(screen.getByLabelText("Balances changed since confirmation"));
+    fireEvent.change(screen.getByLabelText("Close policy reason"), { target: { value: "Disputes block close." } });
+    fireEvent.click(screen.getByRole("button", { name: "Propose close policy" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/confirmation-close-policies",
+      expect.objectContaining({ ledgerBookId: "lender-book", blockingCodes: ["disputed", "balances-changed"], reason: "Disputes block close.", requestId: expect.any(String) }), expect.any(Object)));
+  });
+
+  it("approves exactly the proposed version and shows an active policy as blocking", async () => {
+    let current = policy("Proposed");
+    vi.mocked(getEntityOperation).mockImplementation(async (path) => path.includes("confirmation-close-policies") ? [current] : []);
+    vi.mocked(postEntityOperation).mockImplementation(async () => { current = policy("Active"); return current; });
+    renderWithRouter(<EntityBalanceConfirmations scope={scope} />);
+    fireEvent.click(await screen.findByRole("button", { name: "Approve close policy" }));
+    await waitFor(() => expect(postEntityOperation).toHaveBeenCalledWith("/api/ledger/intercompany/confirmation-close-policies/policy-1/decisions?ledgerBookId=lender-book",
+      expect.objectContaining({ action: "Approve", expectedVersion: 1 }), expect.any(Object)));
+    expect(await screen.findByText(/these confirmation findings block close for Lender book — disputed, balances-changed/)).toBeVisible();
+    expect(screen.getByRole("button", { name: "Disable close policy" })).toBeDisabled();
+  });
+});
+
 describe("Reciprocal balance confirmation", () => {
   it("shows both sides' exact posted balances and states that close eligibility is unchanged", async () => {
     const { container } = await load();
@@ -42,7 +71,8 @@ describe("Reciprocal balance confirmation", () => {
     expect(Object.fromEntries(new URL(path, "https://meridian.test").searchParams)).toEqual({ ledgerBookId: "lender-book", asOf: "2026-06-30" });
     expect(screen.getByText("12345678901234567.89 USD (this book)")).toBeVisible();
     expect(screen.getByText("-12345678901234567.89 USD")).toBeVisible();
-    expect(screen.getByText(/advisory only; close eligibility is unchanged/)).toBeVisible();
+    expect(screen.getByText(/close eligibility changes only through an active confirmation close policy/)).toBeVisible();
+    expect(screen.getByText("No active policy: confirmation is advisory and close eligibility is unchanged.")).toBeVisible();
     expect(screen.getByText("Neither side has confirmed the pinned balances.")).toBeVisible();
     expect(postEntityOperation).not.toHaveBeenCalled();
     expect((await axe(container)).violations).toEqual([]);
