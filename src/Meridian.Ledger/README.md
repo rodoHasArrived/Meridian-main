@@ -111,7 +111,10 @@ exact decimal digits and preventing source descriptions from becoming spreadshee
 `PartnershipProfitAllocated`) with deterministic input-digest idempotency keys; the Ui.Shared intake runner
 proves their inputs and queues them for review. The waterfall input names the retained-earnings account it
 draws on. `PartnershipInvestorAccountingProjector` is marked superseded: its fees duplicate
-`FundEconomicsJournalFactory` accruals and must not be posted alongside them.
+`FundEconomicsJournalFactory` accruals and must not be posted alongside them. `MultiCurrencyJournalProjector`
+is also marked superseded: multi-currency journals post through workbench drafts whose lines carry the
+functional amount with transaction currency, amount and FX rate, which `LedgerEntry` checks per leg; the
+projector has no rounding line and drops dimensions.
 
 `PeriodCloseProjector.Project` takes a dimension-scoped `PeriodCloseInput`; production closes build it
 from the retained period trial balance and post through `PeriodCloseDraftBuilder` and the workbench. There
