@@ -6,6 +6,54 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CashFlowLegDirection
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegDirection</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L204).
+
+Which side of a multi-leg structure a leg sits on, from the holder&#x27;s perspective.
+
+```csharp
+public enum CashFlowLegDirection
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Receive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L206) |  |
+| <code>Pay</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L207) |  |
+
+## CashFlowLegRateKind
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegRateKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:197](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L197).
+
+How a cash-flow leg&#x27;s rate is determined.
+
+```csharp
+public enum CashFlowLegRateKind
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Fixed</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:199](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L199) |  |
+| <code>Floating</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L200) |  |
+
+## ChangeCashDividendAttestationDeclarationRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L28).
+
+```csharp
+public sealed record ChangeCashDividendAttestationDeclarationRequestDto(Guid CommandId, long ExpectedRevision, string TenantId, string CompanyId, Guid LedgerBookId, bool Enabled, string PolicyVersion, string PolicyHash, string Reason, string Actor, CashDividendDeclarationAuthorityDto? Authority = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CashDividendAccountRoleBindingDto? AccountRoleBinding = null);
+```
+
 ## ClassificationLabelReader
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.ClassificationLabelReader</code>. Kind: `class`.
@@ -679,34 +727,4 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.
 
 ```csharp
 public sealed record CorporateActionDeadlineImportPreviewDto(string PreviewHash, long ExpectedVersion, IReadOnlyList<CorporateActionDeadlineImportRowDto> Rows, IReadOnlyList<string> Errors);
-```
-
-## CorporateActionDeadlineImportRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L81).
-
-```csharp
-public sealed record CorporateActionDeadlineImportRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string Csv, string? PreviewHash = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
-```
-
-## CorporateActionDeadlineImportResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:95](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L95).
-
-```csharp
-public sealed record CorporateActionDeadlineImportResultDto(int CommittedCount, bool Complete, IReadOnlyList<CorporateActionEvidenceMutationResultDto> Results, int? FailedRow, string? Error);
-```
-
-## CorporateActionDeadlineImportRowDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L91).
-
-```csharp
-public sealed record CorporateActionDeadlineImportRowDto(int Row, CorporateActionElectionDeadlineDto Deadline, string EvidenceReference, string EvidenceHash, string Rationale);
 ```

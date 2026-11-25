@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkstationPlotToolLegendItemPayload
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolLegendItemPayload</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:232](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L232).
+
+```csharp
+public sealed record WorkstationPlotToolLegendItemPayload(string Id, string Label, string Detail, string Tone);
+```
+
 ## WorkstationPlotToolMomentPayload
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolMomentPayload</code>. Kind: `record`.
@@ -543,24 +553,3 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:56](../.
 ```csharp
 public sealed record WorkstationSecurityCoverageReferencePayload(string Source, string Symbol, string? AccountName, string? SecurityId, string DisplayName, string? AssetClass, string? SubType, string? Currency, string? Status, string? PrimaryIdentifier, string CoverageStatus, string? CoverageReason, string? MatchedIdentifierKind, string? MatchedIdentifierValue, string? MatchedProvider);
 ```
-
-## WorkstationSecurityCoverageStatus
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:524](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L524).
-
-Security Master coverage state associated with a workstation security reference.
-
-```csharp
-public enum WorkstationSecurityCoverageStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:526](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L526) |  |
-| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:527](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L527) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:528](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L528) |  |
-| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:529](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L529) |  |

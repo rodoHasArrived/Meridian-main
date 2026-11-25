@@ -6,6 +6,97 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityTermConventions
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermConventions</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:157](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L157).
+
+Parsers and typed readers for the term conventions.
+
+```csharp
+public static class SecurityTermConventions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;string&gt; CanonicalValues(SecurityTermConventionKind kind) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:160](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L160) | The canonical spellings offered when a form edits a convention field. |
+| <code>public static bool IsRecognized(SecurityTermConventionKind kind, string? raw) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:189](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L189) | Whether raw names a recognized value of the convention. |
+| <code>public static bool TryParseBusinessDayConvention(string? raw, out BusinessDayConvention convention);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:208](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L208) | Parses business-day convention spellings: the canonical names and the common abbreviations (Unadjusted/None, Following/F, ModifiedFollowing/MF, Preceding/P, ModifiedPreceding/MP). The FpML NEAREST and FRN conventions have no kernel adjustment and are refused. |
+| <code>public static bool TryParseRollConvention(string? raw, out ScheduleRoll roll);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:245](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L245) | Parses roll spellings: AnchorDay/Anchor, EndOfMonth/EOM, IMM, a day of the month from 1 to 31, or FixedDay(n). A day of the month is read from the trimmed text itself, so &quot;1.5&quot; and &quot;-3&quot; are refused rather than read as 15 and 3. |
+| <code>public static bool TryParseStubPolicy(string? raw, out ScheduleStubPolicy policy);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:301](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L301) | Parses stub-policy spellings: Short/ShortStub, Long/LongStub and RequireRegular/Regular/NoStub. FpML spellings that also name the stub&#x27;s position (ShortInitial, LongFinal) are refused: the position follows from the generation direction. |
+| <code>public static bool IsSchedulableCoupon(SecurityPaymentFrequency frequency) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:328](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L328) | Whether a cadence can drive a calculated coupon schedule: a whole number of months per period, or a single payment at maturity. |
+| <code>public static int? CouponPaymentsPerYear(string? raw) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:337](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L337) | Coupon payments per year for a schedule-driving cadence spelling, or null when the text is not a recognized monthly-or-longer cadence. LegacyCouponPaymentsPerYear, the reader the cash-flow and asset-operations schedulers share, consults it first, so they agree with the convention the write path enforces. |
+| <code>public static int LegacyCouponPaymentsPerYear(string? paymentFrequency);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:371](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L371) | Coupon payments per year as the legacy schedulers read a stored cadence. The Security Master cash-flow projection and the asset-operations bond projection (fixed-income-cash-flow-projection-v2, -v1 on stored runs) both step Math.Max(1, 12 / n) months per coupon period from it. It never returns null and never refuses. |
+| <code>public static string DescribeUnrecognized(SecurityTermConventionKind kind, string assetClass, string key, string? raw) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:408](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L408) | The shared rejection reason for an unrecognized convention value. |
+| <code>public static bool TryParseSettlementMethod(string? raw, out SecuritySettlementMethod method);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:413](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L413) | Parses settlement-method spellings (Cash, Cash settled, Physical, Physical delivery, Delivery, Elective). |
+| <code>public static bool TryParsePaymentFrequency(string? raw, out SecurityPaymentFrequency frequency);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:447](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L447) | Parses payment-frequency spellings: the canonical names, common prose variants (&quot;Semi-Annual&quot;, &quot;half-yearly&quot;, &quot;fortnightly&quot;, &quot;bullet&quot;, &quot;zero coupon&quot;), ISDA-style period tenors (&quot;1M&quot;, &quot;3M&quot;, &quot;6M&quot;, &quot;1Y&quot;, &quot;2W&quot;) and payments-per-year counts (&quot;12&quot;, &quot;4&quot;, &quot;2&quot;, &quot;1&quot;). Every spelling the cash-flow, accounting and amortization resolvers accept parses here, so a written value can never be accepted by validation and then read as an unknown cadence. |
+| <code>public static bool TryParseOptionRight(string? raw, out SecurityOptionRight right);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:530](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L530) | Parses an option right (&quot;Call&quot;/&quot;Put&quot;, case-insensitive, also &quot;C&quot;/&quot;P&quot;). |
+| <code>public static DayCountConvention? ReadDayCount(JsonElement terms, string key = &quot;dayCount&quot;) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:549](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L549) | The typed day count a terms document declares at key, or null. |
+| <code>public static SecuritySettlementMethod? ReadSettlementMethod(JsonElement terms, string key = &quot;settlementType&quot;) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:553](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L553) | The typed settlement method a terms document declares, or null. |
+| <code>public static SecurityPaymentFrequency? ReadPaymentFrequency(JsonElement terms, string key = &quot;paymentFrequency&quot;) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:557](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L557) | The typed payment frequency a terms document declares at key, or null. |
+| <code>public static SecurityOptionRight? ReadOptionRight(JsonElement terms, string key = &quot;putCall&quot;) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs:561](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermConventions.cs#L561) | The typed option right an option&#x27;s terms declare, or null. |
+
+## SecurityTermRead
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermRead</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:4](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L4).
+
+How the flat decode reads one bound key. The names follow the schema-bound reader.
+
+```csharp
+public enum SecurityTermRead
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>RequiredString</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:6](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L6) |  |
+| <code>OptionalString</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L7) |  |
+| <code>ConventionString</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:9](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L9) | An optional string read through the convention-aware reader. |
+| <code>RequiredDecimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L10) |  |
+| <code>OptionalDecimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:11](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L11) |  |
+| <code>StrictDecimal</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L13) | An optional decimal a write refuses when malformed instead of reading as absent. |
+| <code>RequiredInt</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:14](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L14) |  |
+| <code>OptionalInt</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L15) |  |
+| <code>StrictInt</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L16) |  |
+| <code>RequiredDate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:17](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L17) |  |
+| <code>OptionalDate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L18) |  |
+| <code>StrictDate</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L19) |  |
+| <code>RequiredSecurityId</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L21) | A required guid held as a security id. |
+| <code>OptionalBoolean</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:22](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L22) |  |
+| <code>BooleanDefaultFalse</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L24) | An optional boolean the codec reads and writes as false when absent. |
+| <code>DayCount</code> | [src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs:26](../../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetTermsCodecBindings.cs#L26) | A day-count convention: read through the governed parser, written as its term label. |
+
+## SecurityTermReader
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermReader</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L13).
+
+Shared low-level reader for probing economic-term JSON by case-insensitive key aliases. Centralizes the value-coercion rules (string/number/bool → string, number/string → decimal, string → date) so cash-flow and obligation projections resolve terms identically instead of each carrying its own copy of the probing helpers. A whitespace or unparseable value never short-circuits the search: the reader keeps trying the remaining aliases and sources until one resolves.
+
+```csharp
+public static class SecurityTermReader
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static string? ReadEquityClassification(JsonElement source);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L20) | Resolves the effective equity classification label. Canonical custom classifications use classification=&quot;Other&quot; as the discriminant and retain the raw label in otherClassification; legacy rows may carry that raw label directly. |
+| <code>public static bool TryGetProperty(JsonElement element, string propertyName, out JsonElement value);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:36](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L36) | Case-insensitive property lookup within a single JSON object element. |
+| <code>public static string? ReadString(JsonElement source, params string[] propertyNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L55) | Reads the first alias resolvable to a non-empty string (or number/bool) in source. |
+| <code>public static decimal? ReadDecimal(JsonElement source, params string[] propertyNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:82](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L82) | Reads the first alias resolvable to a decimal in source. |
+| <code>public static DateOnly? ReadDate(JsonElement source, params string[] propertyNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:107](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L107) | Reads the first alias resolvable to a date (date-only or timestamp) in source. |
+| <code>public static string? ReadString(IEnumerable&lt;JsonElement&gt; sources, params string[] propertyNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:133](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L133) | Reads the first resolvable string across sources in priority order. |
+| <code>public static decimal? ReadDecimal(IEnumerable&lt;JsonElement&gt; sources, params string[] propertyNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:147](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L147) | Reads the first resolvable decimal across sources in priority order. |
+| <code>public static DateOnly? ReadDate(IEnumerable&lt;JsonElement&gt; sources, params string[] propertyNames);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs:161](../../../../src/Meridian.Contracts/SecurityMaster/SecurityTermReader.cs#L161) | Reads the first resolvable date across sources in priority order. |
+
 ## SecurityTermsEnvelope
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityTermsEnvelope</code>. Kind: `class`.
@@ -831,48 +922,3 @@ Declared public members:
 | <code>public decimal? FactorAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:76](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L76) | Returns the pool factor in effect on asOf — the latest scheduled factor dated on or before that day — falling back to the scalar CurrentFactor when no schedule point applies. This is how the typed factor schedule seeds amortization instead of a single free-text scalar. |
 | <code>public bool HasStepCouponSchedule =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L91) | True when a dated step-coupon schedule was resolved from the terms. |
 | <code>public decimal? CouponRateAsOf(DateOnly asOf);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs:99](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTerms.cs#L99) | Returns the coupon rate payable on asOf — for step coupons the latest scheduled step effective on or before that day, otherwise the scalar CouponRate. This is what makes a step-rate bond computable instead of a classified-but-inert label: accrual and projection math can ask for the rate per period. |
-
-## StructuredCashFlowTermsResolver
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsResolver</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:12](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L12).
-
-Resolves a security&#x27;s raw term JSON into StructuredCashFlowTerms. This is the single place that knows the vendor key aliases for each economic term and how to walk the three term blobs (asset-specific terms, their nested profileFields, then common terms). Value coercion is delegated to SecurityTermReader so the cash-flow and obligation projections share one probing implementation instead of re-deriving fuzzy key lookups at each call site.
-
-```csharp
-public static class StructuredCashFlowTermsResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IReadOnlyCollection&lt;string&gt; LegSpellingPaths =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L67) | The swap-leg schema paths the resolver reads, under Swap. |
-| <code>public static IReadOnlyList&lt;string&gt; LegSpellings(string path) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:70](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L70) | The spellings read for the swap-leg field at path, in priority order. |
-| <code>public static StructuredCashFlowTerms Resolve(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:73](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L73) | Resolves the typed cash flow terms for security. |
-| <code>public static IEnumerable&lt;JsonElement&gt; EnumerateTermSources(SecurityDetailDto security);</code> | [src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs:342](../../../../src/Meridian.Contracts/SecurityMaster/StructuredCashFlowTermsResolver.cs#L342) | Enumerates governed profile fields, outer asset terms, and common terms in authority order. The asset terms are read at the class&#x27;s current terms version (SecurityAssetClassTermsUpgrader, ADR-024). |
-
-## StructuredCreditReclassificationBlockerDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:19](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L19).
-
-One reason a reclassification proposal needs operator input before it can be applied.
-
-```csharp
-public sealed record StructuredCreditReclassificationBlockerDto(string Code, string Message);
-```
-
-## StructuredCreditReclassificationCandidateDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.StructuredCreditReclassificationCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterStructuredCreditReclassification.cs#L30).
-
-One legacy securitised row the report proposes to re-model as StructuredCredit. DerivedAssetSpecificTerms holds the complete stamped terms document when the disposition is StructuredCreditReclassificationDisposition.Ready, and only the terms carried over from the source record when it is StructuredCreditReclassificationDisposition.Blocked.
-
-```csharp
-public sealed record StructuredCreditReclassificationCandidateDto(Guid SecurityId, string DisplayName, string PrimaryIdentifierKind, string PrimaryIdentifierValue, string SourceAssetClass, string SourceLabel, StructuredCreditReclassificationDisposition Disposition, string? ProposedKind, JsonElement DerivedAssetSpecificTerms, IReadOnlyList<StructuredCreditReclassificationBlockerDto> Blockers);
-```

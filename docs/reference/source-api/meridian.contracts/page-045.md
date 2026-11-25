@@ -6,6 +6,47 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## PlaidTransferRequest
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:262](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L262).
+
+```csharp
+public sealed record PlaidTransferRequest(string ItemId, string PlaidAccountId, Guid PendingPaymentId, Guid EntityId, decimal Amount, string Currency, string Direction, string SecCode, string RequestedBy);
+```
+
+## PlaidTransferResult
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:273](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L273).
+
+```csharp
+public sealed record PlaidTransferResult(PlaidTransferStatusDto Status, string Message, string? AuthorizationId = null, string? TransferId = null, string? PlaidAccountId = null, Guid? PendingPaymentId = null, DateTimeOffset? CreatedAt = null);
+```
+
+## PlaidTransferStatusDto
+
+Qualified name: <code>Meridian.Contracts.Plaid.PlaidTransferStatusDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Plaid/PlaidModels.cs:32](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L32).
+
+```csharp
+public enum PlaidTransferStatusDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Disabled</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:34](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L34) |  |
+| <code>PendingAuthorization</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:35](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L35) |  |
+| <code>Authorized</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:36](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L36) |  |
+| <code>Created</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:37](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L37) |  |
+| <code>Rejected</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:38](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L38) |  |
+| <code>Blocked</code> | [src/Meridian.Contracts/Plaid/PlaidModels.cs:39](../../../../src/Meridian.Contracts/Plaid/PlaidModels.cs#L39) |  |
+
 ## PlaidWebhookEventDto
 
 Qualified name: <code>Meridian.Contracts.Plaid.PlaidWebhookEventDto</code>. Kind: `record`.
@@ -529,38 +570,4 @@ Human rationale for opening a governed restatement. Changed-line evidence and re
 
 ```csharp
 public sealed record ReportingGovernanceRestatementRequestDto(long ExpectedVersion, string Reason);
-```
-
-## ReportingGovernanceRetainedArtifactDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:107](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L107).
-
-Discoverable immutable artifact retained for a successfully executed governed run. Preview access is available before release; final distribution remains release-gated.
-
-```csharp
-public sealed record ReportingGovernanceRetainedArtifactDto(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string Kind, bool IsPreview, string DownloadRoute);
-```
-
-## ReportingGovernanceSeriesHistoryDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceSeriesHistoryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:203](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L203).
-
-```csharp
-public sealed record ReportingGovernanceSeriesHistoryDto(string SeriesId, IReadOnlyList<GovernedReportingRunDto> Runs, IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);
-```
-
-## ReportingGovernanceVersionRequestDto
-
-Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceVersionRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:10](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L10).
-
-Optimistic concurrency token for a governed reporting transition. Actor, tenant, company, permissions, command origin, readiness, artifact hashes, and evidence are intentionally absent; the server resolves those values from the authenticated request and retained state.
-
-```csharp
-public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
 ```

@@ -6,6 +6,36 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CorporateActionDeadlineImportRequestDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:81](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L81).
+
+```csharp
+public sealed record CorporateActionDeadlineImportRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, string Csv, string? PreviewHash = null, CorporateActionCaseScopeDto? ScopeAssertion = null);
+```
+
+## CorporateActionDeadlineImportResultDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportResultDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:95](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L95).
+
+```csharp
+public sealed record CorporateActionDeadlineImportResultDto(int CommittedCount, bool Complete, IReadOnlyList<CorporateActionEvidenceMutationResultDto> Results, int? FailedRow, string? Error);
+```
+
+## CorporateActionDeadlineImportRowDto
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineImportRowDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:91](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L91).
+
+```csharp
+public sealed record CorporateActionDeadlineImportRowDto(int Row, CorporateActionElectionDeadlineDto Deadline, string EvidenceReference, string EvidenceHash, string Rationale);
+```
+
 ## CorporateActionDeadlineInstantConverter
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionDeadlineInstantConverter</code>. Kind: `class`.
@@ -907,36 +937,4 @@ Non-authoritative display context retained with an observation. Consensus is evi
 
 ```csharp
 public sealed record CorporateActionSourceDisplayMetadataDto(string Ticker, string WinningSource, IReadOnlyList<string> AgreeingSources, IReadOnlyList<string> DissentingSources, IReadOnlyList<CorporateActionDissentFieldDto>? DissentingFields = null);
-```
-
-## CorporateActionSourceProposalAcceptanceResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalAcceptanceResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:708](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L708).
-
-```csharp
-public sealed record CorporateActionSourceProposalAcceptanceResultDto(CorporateActionSourceProposalDto Proposal, CorporateActionDto CorporateAction, CorporateActionProcessingCaseDto Case, CorporateActionCaseTransitionDto InitialTransition, SecurityMasterCorporateActionAuditDto Audit, SecurityMasterCorporateActionRestatementDto? Restatement, bool Replayed, CorporateActionConflictDto? SourceConflict = null);
-```
-
-## CorporateActionSourceProposalActionAvailabilityDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalActionAvailabilityDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:442](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L442).
-
-Server-owned accept/reject posture for the durable source-proposal inbox.
-
-```csharp
-public sealed record CorporateActionSourceProposalActionAvailabilityDto(bool CanAccept, bool CanReject, bool CanCompareEvidence, IReadOnlyList<string> Blockers);
-```
-
-## CorporateActionSourceProposalDecisionResultDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionSourceProposalDecisionResultDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs:704](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionOperationsContracts.cs#L704).
-
-```csharp
-public sealed record CorporateActionSourceProposalDecisionResultDto(CorporateActionSourceProposalDto Proposal, bool Replayed);
 ```

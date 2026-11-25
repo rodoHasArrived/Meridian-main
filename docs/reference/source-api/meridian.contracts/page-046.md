@@ -6,6 +6,40 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingGovernanceRetainedArtifactDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceRetainedArtifactDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:107](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L107).
+
+Discoverable immutable artifact retained for a successfully executed governed run. Preview access is available before release; final distribution remains release-gated.
+
+```csharp
+public sealed record ReportingGovernanceRetainedArtifactDto(string ArtifactId, string FileName, string ContentType, long ByteLength, string ContentHashSha256, string Kind, bool IsPreview, string DownloadRoute);
+```
+
+## ReportingGovernanceSeriesHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceSeriesHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:203](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L203).
+
+```csharp
+public sealed record ReportingGovernanceSeriesHistoryDto(string SeriesId, IReadOnlyList<GovernedReportingRunDto> Runs, IReadOnlyList<ReportingGovernanceRestatementDto> RestatementRequests);
+```
+
+## ReportingGovernanceVersionRequestDto
+
+Qualified name: <code>Meridian.Contracts.Reporting.ReportingGovernanceVersionRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs:10](../../../../src/Meridian.Contracts/Reporting/ReportingGovernanceApiDtos.cs#L10).
+
+Optimistic concurrency token for a governed reporting transition. Actor, tenant, company, permissions, command origin, readiness, artifact hashes, and evidence are intentionally absent; the server resolves those values from the authenticated request and retained state.
+
+```csharp
+public sealed record ReportingGovernanceVersionRequestDto(long ExpectedVersion);
+```
+
 ## DecisionInput
 
 Qualified name: <code>Meridian.Contracts.RuleEvaluation.DecisionInput</code>. Kind: `record`.
@@ -658,52 +692,4 @@ Frozen external reconciliation evidence for every account in the complete book i
 
 ```csharp
 public sealed record CashDividendReconciliationSupportDto(string EvidenceHash, string EvidenceJson);
-```
-
-## CashFlowLegDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:204](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L204).
-
-Which side of a multi-leg structure a leg sits on, from the holder&#x27;s perspective.
-
-```csharp
-public enum CashFlowLegDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Receive</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:206](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L206) |  |
-| <code>Pay</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:207](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L207) |  |
-
-## CashFlowLegRateKind
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CashFlowLegRateKind</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:197](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L197).
-
-How a cash-flow leg&#x27;s rate is determined.
-
-```csharp
-public enum CashFlowLegRateKind
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Fixed</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:199](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L199) |  |
-| <code>Floating</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs:200](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterCashFlow.cs#L200) |  |
-
-## ChangeCashDividendAttestationDeclarationRequestDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.ChangeCashDividendAttestationDeclarationRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/CashDividendAttestationDeclarationContracts.cs#L28).
-
-```csharp
-public sealed record ChangeCashDividendAttestationDeclarationRequestDto(Guid CommandId, long ExpectedRevision, string TenantId, string CompanyId, Guid LedgerBookId, bool Enabled, string PolicyVersion, string PolicyHash, string Reason, string Actor, CashDividendDeclarationAuthorityDto? Authority = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] CashDividendAccountRoleBindingDto? AccountRoleBinding = null);
 ```

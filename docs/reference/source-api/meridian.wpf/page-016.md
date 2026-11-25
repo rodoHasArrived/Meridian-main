@@ -1596,7 +1596,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.ViewModels.TimeSeriesAlignmentViewModel</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:16](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L16).
+Source: [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:17](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L17).
 
 Coordinates symbol, frequency, timezone, and gap-strategy selection for alignment and export.
 
@@ -1608,48 +1608,59 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public TimeSeriesAlignmentViewModel() : this(TimeSeriesAlignmentService.Instance.AlignDataAsync, TimeSeriesAlignmentService.Instance.ValidateOptions);</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L48) |  |
-| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; FrequencyOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L111) |  |
-| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; PresetOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:112](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L112) |  |
-| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; GapStrategyOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L113) |  |
-| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; TimezoneOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:114](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L114) |  |
-| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; ExportFormatOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L115) |  |
-| <code>public ObservableCollection&lt;string&gt; SelectedSymbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:116](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L116) |  |
-| <code>public ObservableCollection&lt;AlignmentHistoryEntry&gt; RecentAlignments { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:117](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L117) |  |
-| <code>public IRelayCommand AddSymbolsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:118](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L118) |  |
-| <code>public IRelayCommand&lt;string&gt; RemoveSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L119) |  |
-| <code>public IAsyncRelayCommand RunAlignmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L120) |  |
-| <code>public IRelayCommand SavePresetCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:121](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L121) |  |
-| <code>public string AlignmentName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L123) |  |
-| <code>public string SelectedFrequencyKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L135) |  |
-| <code>public string SelectedPresetKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L147) |  |
-| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:160](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L160) |  |
-| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:172](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L172) |  |
-| <code>public string SymbolInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:184](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L184) |  |
-| <code>public string SelectedGapStrategyKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:196](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L196) |  |
-| <code>public string SelectedTimezoneKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:208](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L208) |  |
-| <code>public bool IncludeClose { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L220) |  |
-| <code>public bool IncludeOpen { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L232) |  |
-| <code>public bool IncludeHigh { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L244) |  |
-| <code>public bool IncludeLow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:256](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L256) |  |
-| <code>public bool IncludeVolume { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L268) |  |
-| <code>public string SelectedExportFormatKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:280](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L280) |  |
-| <code>public bool IsRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:292](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L292) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:304](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L304) |  |
-| <code>public bool HasResults { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:310](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L310) |  |
-| <code>public string ResultRowsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:316](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L316) |  |
-| <code>public string ResultSymbolsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:322](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L322) |  |
-| <code>public string ResultGapsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:328](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L328) |  |
-| <code>public string ResultFormatText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:334](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L334) |  |
-| <code>public string ResultOutputPathText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:340](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L340) |  |
-| <code>public bool IsAlignmentServiceUnavailable { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:350](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L350) | Set once the host reports that it has no alignment execution service (HTTP 501). Further runs cannot succeed, so the run action is disabled and the readiness card says so. |
-| <code>public bool CanRunAlignment =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:356](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L356) |  |
-| <code>public bool IsRecentAlignmentsEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:357](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L357) |  |
-| <code>public string SelectedSymbolsCountText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:358](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L358) |  |
-| <code>public string SelectedFieldsText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:359](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L359) |  |
-| <code>public string DateScopeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:360](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L360) |  |
-| <code>public string AlignmentReadinessTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:361](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L361) |  |
-| <code>public string AlignmentReadinessDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:364](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L364) |  |
+| <code>public TimeSeriesAlignmentViewModel() : this(TimeSeriesAlignmentService.Instance.AlignDataAsync, TimeSeriesAlignmentService.Instance.ValidateOptions, TimeSeriesAlignmentService.Instance.PreviewAlignmentAsync);</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L58) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; FrequencyOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L142) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; PresetOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L143) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; GapStrategyOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:144](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L144) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; TimezoneOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L145) |  |
+| <code>public ObservableCollection&lt;AlignmentOptionChoice&gt; ExportFormatOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L146) |  |
+| <code>public IReadOnlyList&lt;AlignmentOptionChoice&gt; InputKindOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L147) |  |
+| <code>public IReadOnlyList&lt;AlignmentOptionChoice&gt; AdjustmentOptions { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:148](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L148) |  |
+| <code>public ObservableCollection&lt;string&gt; SelectedSymbols { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:149](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L149) |  |
+| <code>public ObservableCollection&lt;AlignmentHistoryEntry&gt; RecentAlignments { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L150) |  |
+| <code>public IRelayCommand AddSymbolsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L151) |  |
+| <code>public IRelayCommand&lt;string&gt; RemoveSymbolCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:152](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L152) |  |
+| <code>public IAsyncRelayCommand RunAlignmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:153](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L153) |  |
+| <code>public IAsyncRelayCommand PreviewAlignmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:154](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L154) |  |
+| <code>public IRelayCommand CancelAlignmentCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L155) |  |
+| <code>public IRelayCommand SavePresetCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:156](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L156) |  |
+| <code>public string AlignmentName { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:158](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L158) |  |
+| <code>public string SelectedFrequencyKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:170](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L170) |  |
+| <code>public string SelectedPresetKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L182) |  |
+| <code>public DateTime? FromDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:195](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L195) |  |
+| <code>public DateTime? ToDate { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:207](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L207) |  |
+| <code>public string SymbolInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L219) |  |
+| <code>public string SelectedGapStrategyKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:231](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L231) |  |
+| <code>public string SelectedTimezoneKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:243](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L243) |  |
+| <code>public string ProviderInput { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:255](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L255) |  |
+| <code>public string SelectedInputKindKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L265) |  |
+| <code>public string SelectedAdjustmentKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:275](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L275) |  |
+| <code>public bool MarketHoursOnly { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:285](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L285) |  |
+| <code>public bool HasPreview { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:295](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L295) |  |
+| <code>public string PreviewDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L301) |  |
+| <code>public bool CanEditAlignment =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L307) |  |
+| <code>public bool IncludeClose { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:309](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L309) |  |
+| <code>public bool IncludeOpen { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:321](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L321) |  |
+| <code>public bool IncludeHigh { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L333) |  |
+| <code>public bool IncludeLow { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:345](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L345) |  |
+| <code>public bool IncludeVolume { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:357](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L357) |  |
+| <code>public string SelectedExportFormatKey { get; set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L369) |  |
+| <code>public bool IsRunning { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:381](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L381) |  |
+| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:393](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L393) |  |
+| <code>public bool HasResults { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:399](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L399) |  |
+| <code>public string ResultRowsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:405](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L405) |  |
+| <code>public string ResultSymbolsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:411](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L411) |  |
+| <code>public string ResultGapsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:417](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L417) |  |
+| <code>public string ResultFormatText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L423) |  |
+| <code>public string ResultOutputPathText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:429](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L429) |  |
+| <code>public bool IsAlignmentServiceUnavailable { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L439) | Set once the host reports that it has no alignment execution service (HTTP 501). Further runs cannot succeed, so the run action is disabled and the readiness card says so. |
+| <code>public bool CanRunAlignment =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:445](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L445) |  |
+| <code>public bool IsRecentAlignmentsEmpty =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:446](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L446) |  |
+| <code>public string SelectedSymbolsCountText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:447](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L447) |  |
+| <code>public string SelectedFieldsText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:448](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L448) |  |
+| <code>public string DateScopeText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:449](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L449) |  |
+| <code>public string AlignmentReadinessTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:450](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L450) |  |
+| <code>public string AlignmentReadinessDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs:453](../../../../src/Meridian.Wpf/ViewModels/TimeSeriesAlignmentViewModel.cs#L453) |  |
 
 ## TradingHoursViewModel
 

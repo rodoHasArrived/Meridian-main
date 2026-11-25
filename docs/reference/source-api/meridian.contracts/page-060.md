@@ -6,6 +6,46 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AmountPassportDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:53](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L53).
+
+Server-resolved facts. ExactValue is a decimal string and may be absent for unavailable evidence.
+
+```csharp
+public sealed record AmountPassportDto(AmountPassportReferenceDto Reference, string Label, string? ExactValue, string Status, string? EffectiveDate, string? Calculation, string? ExchangeRateRule, AmountPassportFreshnessDto Freshness, AmountPassportPermissionsDto Permissions, IReadOnlyList<AmountPassportComponentDto> Components, IReadOnlyList<AmountPassportRecordDto> Sources, IReadOnlyList<AmountPassportRecordDto> Evidence, IReadOnlyList<AmountPassportRecordDto> History, IReadOnlyList<string> Gaps)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] public IReadOnlyList&lt;AccountingPreparerAttestationDisclosureDto&gt;? AccountingPreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:70](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L70) |  |
+
+## AmountPassportFreshnessDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportFreshnessDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:32](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L32).
+
+```csharp
+public sealed record AmountPassportFreshnessDto(string Status, DateTimeOffset EvaluatedAt, string Policy, string Detail, DateTimeOffset? ObservedAt = null, long? AgeMinutes = null);
+```
+
+## AmountPassportIdentityDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportIdentityDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/AmountPassportDtos.cs:4](../../../../src/Meridian.Contracts/Workstation/AmountPassportDtos.cs#L4).
+
+An immutable amount address. Tenant and company are checked against the authenticated request.
+
+```csharp
+public sealed record AmountPassportIdentityDto(string SubjectKind, string SubjectId, AmountPassportScopeDto Scope, string AsOf, string Revision);
+```
+
 ## AmountPassportPermissionsDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.AmountPassportPermissionsDto</code>. Kind: `record`.
@@ -565,7 +605,7 @@ public sealed record CashFinancingSummary(string Currency, decimal TotalCash, de
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1011](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1011).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:994](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L994).
 
 A single historical cash-flow entry from a strategy run.
 
@@ -582,44 +622,3 @@ Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:35](../../../.
 ```csharp
 public sealed record CashFlowProjectionPoint(Guid AccountId, string Currency, DateOnly Date, decimal ExpectedInflow, decimal ExpectedOutflow, decimal NetFlow, decimal RunningBalance, bool LiquidityWarning, string WarningDetail);
 ```
-
-## CashForecastResult
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashForecastResult</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:36](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L36).
-
-```csharp
-public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlowProjectionPoint> Timeline, IReadOnlyList<string> Warnings);
-```
-
-## CashLadderBucketDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1021](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1021).
-
-A single time-bucket within a projected cash ladder.
-
-```csharp
-public sealed record CashLadderBucketDto(DateTimeOffset BucketStart, DateTimeOffset BucketEnd, decimal ProjectedInflows, decimal ProjectedOutflows, decimal NetFlow, string Currency, int EventCount);
-```
-
-## CashSyncSourceAvailability
-
-Qualified name: <code>Meridian.Contracts.Workstation.CashSyncSourceAvailability</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3).
-
-```csharp
-public enum CashSyncSourceAvailability : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-| <code>Available = 1</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-| <code>Delayed = 2</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |
-| <code>Offline = 3</code> | [src/Meridian.Contracts/Workstation/CashOperationsDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/CashOperationsDtos.cs#L3) |  |

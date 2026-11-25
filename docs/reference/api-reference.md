@@ -163,7 +163,8 @@ convention applied to a path prefix. These routes carry one today:
 | --- | --- | --- |
 | `POST /api/workstation/data/query` | `SqlStatementGuard` admits one `SELECT`-family statement with no embedded semicolon and a blocked-keyword list. | `ViewHistoricalData` |
 | `POST /api/workstation/evidence/vault/search` | Evidence-vault lookup by linkage criteria; the handler only reads, through `IEvidenceArtifactStore.FindByLinkageAsync`. | `ViewReporting`, plus workstation tenant scope |
-| `POST /api/alignment/preview` | Computes and returns an alignment preview from the request body; the sibling `POST /api/alignment/create` route is what persists one. | `ViewHistoricalData` |
+| `POST /api/alignment/preview` | Computes an alignment summary and up to 20 sample rows from stored provider data. | `ViewHistoricalData` |
+| `POST /api/alignment/create` | Returns the complete bounded result for client-side export. | `ViewHistoricalData` |
 | `POST /api/workstation/runs/compare` | Compares retained strategy runs through `StrategyRunComparisonService`, which holds only the run read service. | `ViewStrategies` or `ManageStrategies` |
 | `POST /api/workstation/runs/diff` | Diffs two retained runs by the same read path. | `ViewStrategies` or `ManageStrategies` |
 | `POST /api/security-master/resolve` | Resolves one record through `ISecurityMasterQueryService.GetByIdentifierAsync`; the body carries the identifier kind, value, provider and as-of. | `ViewSecurityMaster` or `ModifySecurityMaster` |
@@ -727,6 +728,37 @@ and denying or withdrawing an entry also retires any approvals linked through it
 | GET | `/api/historical` | Query stored historical bars for a symbol |
 | GET | `/api/historical/symbols` | List symbols that have stored historical data |
 | GET | `/api/historical/{symbol}/daterange` | Date range of available data for a symbol |
+
+
+### Time-Series Alignment (`/api/alignment/*`)
+
+Send the same JSON request to `POST /api/alignment/preview` and `POST /api/alignment/create`.
+Pass one to 12 `symbols`, an inclusive `fromDate` and `toDate`, and two to eight `providers` or
+omit providers to discover them. Set `interval` to `Daily` or a supported intraday interval
+such as `Minute5`. By default, daily requests read daily bars and intraday requests read
+aggregate bars. `inputKind` can select `DailyBars`, `AggregateBars`, or `Trades` directly.
+If a provider session includes both live and historical prints, select `LiveTrades` or
+`HistoricalTrades` to determine which population to use. A stored bar must fit wholly in one
+target interval. Alignment never splits a bar.
+
+Set `marketHoursOnly` to use US equity regular sessions, including exchange holidays and
+half-days. Clear it for a continuous calendar in the selected `timezone`. Daily bars use
+retained session dates and keep their recorded OHLCV values. Intraday buckets use half-open
+windows anchored to session open or local midnight. `gapStrategy` can leave nulls, skip missing
+series rows, zero-fill, carry, or interpolate within a bounded gap. Carry and interpolation apply
+within an intraday session, and synthetic rows carry zero volume and an explicit status.
+`adjustmentPolicy` selects `AsStored`, `Raw`, or `Adjusted`. The service refuses a series that
+mixes bases, makes no corporate-action adjustments, and labels differences from adjusted or
+unclassified data as as-stored comparisons. Equal observations with the same provider identity
+collapse in the derived rows, conflicting observations fail, and the source archive stays intact.
+
+The response summary includes per-provider coverage, observed close differences, and a
+deterministic content hash. Each observed row retains IDs containing the logical archive-relative
+path, line, and SHA-256 digest of its UTF-8 record text. A carried or interpolated row retains the
+IDs of its observed inputs. Set `expectedContentHash` on create to require the revision shown by
+preview. A changed result returns HTTP 409. Invalid options or a grid over the request limits
+return HTTP 400. Unusable source data returns HTTP 422. WPF saves CSV, JSON Lines or Parquet to
+the operator's workstation after it receives the complete response.
 
 ### Ingestion Jobs (`/api/ingestion/*`)
 
@@ -1472,10 +1504,10 @@ Source: [src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs](../../src/Meri
 
 | Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
 | --- | --- | --- | --- | --- | --- |
-| `/api/historical` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, DateOnly? from = null, DateOnly? to = null, string? dataType = null, int? skip = null, int? limit = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("QueryHistoricalData")` | [L24](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L24) |
-| `/api/historical/symbols` | GET | `(HistoricalDataQueryService queryService) => …` | `Produces(200)`; `Produces(400)`; `Results.Json`; `Results.BadRequest` | `WithName("GetAvailableSymbols")` | [L67](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L67) |
-| `/api/historical/{symbol}/daterange` | GET | `(HistoricalDataQueryService queryService, string symbol) => …` | `Produces(200)`; `Produces(400)`; `Results.BadRequest`; `Results.Json` | `WithName("GetSymbolDateRange")` | [L84](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L84) |
-| `/api/historical/{symbol}/bars` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, int? intervalMinutes = null, DateOnly? from = null, DateOnly? to = null, int? maxBars = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("GetSymbolBars")` | [L106](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L106) |
+| `/api/historical` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, DateOnly? from = null, DateOnly? to = null, string? dataType = null, int? skip = null, int? limit = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("QueryHistoricalData")` | [L27](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L27) |
+| `/api/historical/symbols` | GET | `(HistoricalDataQueryService queryService) => …` | `Produces(200)`; `Produces(400)`; `Results.Json`; `Results.BadRequest` | `WithName("GetAvailableSymbols")` | [L70](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L70) |
+| `/api/historical/{symbol}/daterange` | GET | `(HistoricalDataQueryService queryService, string symbol) => …` | `Produces(200)`; `Produces(400)`; `Results.BadRequest`; `Results.Json` | `WithName("GetSymbolDateRange")` | [L87](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L87) |
+| `/api/historical/{symbol}/bars` | GET | `async (HttpContext context, HistoricalDataQueryService queryService, string symbol, int? intervalMinutes = null, DateOnly? from = null, DateOnly? to = null, int? maxBars = null) => …` | `Produces(200)`; `Produces(400)`; `Produces(499)`; `Results.BadRequest`; `Results.Json`; `Results.StatusCode` | `WithName("GetSymbolBars")` | [L109](../../src/Meridian.Ui.Shared/Endpoints/HistoricalEndpoints.cs#L109) |
 
 ### IngestionJobEndpoints
 

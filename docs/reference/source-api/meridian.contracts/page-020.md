@@ -6,6 +6,190 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## BarIntervalValues
+
+Qualified name: <code>Meridian.Contracts.Domain.BarIntervalValues</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Domain/MarketDataModels.cs:391](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L391).
+
+Bar interval enumeration values.
+
+```csharp
+public static class BarIntervalValues
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Minute1 = &quot;Minute1&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:396](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L396) | Indicates a one-minute bar interval. |
+| <code>public const string Minute5 = &quot;Minute5&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:400](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L400) | Indicates a five-minute bar interval. |
+| <code>public const string Minute15 = &quot;Minute15&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:404](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L404) | Indicates a fifteen-minute bar interval. |
+| <code>public const string Minute30 = &quot;Minute30&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:408](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L408) | Indicates a thirty-minute bar interval. |
+| <code>public const string Hour1 = &quot;Hour1&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:412](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L412) | Indicates a one-hour bar interval. |
+| <code>public const string Hour4 = &quot;Hour4&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:416](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L416) | Indicates a four-hour bar interval. |
+| <code>public const string Daily = &quot;Daily&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:420](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L420) | Indicates a daily bar interval. |
+| <code>public const string Weekly = &quot;Weekly&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:424](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L424) | Indicates a weekly bar interval. |
+| <code>public const string Monthly = &quot;Monthly&quot;;</code> | [src/Meridian.Contracts/Domain/MarketDataModels.cs:428](../../../../src/Meridian.Contracts/Domain/MarketDataModels.cs#L428) | Indicates a monthly bar interval. |
+
+## CanonicalSymbol
+
+Qualified name: <code>Meridian.Contracts.Domain.CanonicalSymbol</code>. Kind: `struct`.
+
+Source: [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:14](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L14).
+
+Zero-cost value object representing a normalized, canonical market instrument symbol. Distinct from SymbolId (the raw provider symbol) to prevent accidental use of un-normalized symbols where a canonical symbol is expected and vice-versa.
+
+```csharp
+public readonly struct CanonicalSymbol : IEquatable<CanonicalSymbol>, IComparable<CanonicalSymbol>
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CanonicalSymbol(string value);</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:21](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L21) | Initializes a new CanonicalSymbol with the given canonical ticker string. |
+| <code>public string Value =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:29](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L29) | Returns the canonical ticker string (uppercase). |
+| <code>public static implicit operator string(CanonicalSymbol s) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:32](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L32) | Implicitly converts a CanonicalSymbol to its underlying string value. |
+| <code>public static explicit operator CanonicalSymbol(string value) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:35](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L35) | Explicitly converts a raw string to a CanonicalSymbol. |
+| <code>public bool Equals(CanonicalSymbol other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:38](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L38) |  |
+| <code>public override bool Equals(object? obj) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:42](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L42) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:45](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L45) |  |
+| <code>public int CompareTo(CanonicalSymbol other) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:49](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L49) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:53](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L53) |  |
+| <code>public static bool operator == (CanonicalSymbol left, CanonicalSymbol right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:56](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L56) |  |
+| <code>public static bool operator != (CanonicalSymbol left, CanonicalSymbol right) =&gt; …;</code> | [src/Meridian.Contracts/Domain/CanonicalSymbol.cs:59](../../../../src/Meridian.Contracts/Domain/CanonicalSymbol.cs#L59) |  |
+
+## AggressorSide
+
+Qualified name: <code>Meridian.Contracts.Domain.Enums.AggressorSide</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L6).
+
+Indicates which side of the market initiated the trade.
+
+```csharp
+public enum AggressorSide : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L11) | The aggressor side could not be determined. |
+| <code>Buy = 1</code> | [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L16) | The buyer initiated the trade (lifted the offer). |
+| <code>Sell = 2</code> | [src/Meridian.Contracts/Domain/Enums/AggressorSide.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/AggressorSide.cs#L21) | The seller initiated the trade (hit the bid). |
+
+## CanonicalTradeCondition
+
+Qualified name: <code>Meridian.Contracts.Domain.Enums.CanonicalTradeCondition</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:8](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L8).
+
+Provider-agnostic canonical trade condition codes. Maps raw provider-specific condition codes (CTA plan, SEC numeric, IB text) to a unified set of canonical conditions for cross-provider comparison.
+
+```csharp
+public enum CanonicalTradeCondition : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Regular = 0</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:13](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L13) | Regular trade (normal market conditions). |
+| <code>FormT_ExtendedHours = 1</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:18](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L18) | Form T / extended hours trade (pre-market or after-hours). |
+| <code>OddLot = 2</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:23](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L23) | Odd lot trade (fewer than 100 shares for equities). |
+| <code>AveragePrice = 3</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:28](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L28) | Average price trade. |
+| <code>Intermarket_Sweep = 4</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:33](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L33) | Intermarket sweep order (ISO). |
+| <code>OpeningPrint = 5</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:38](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L38) | Opening print. |
+| <code>ClosingPrint = 6</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:43](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L43) | Closing print. |
+| <code>DerivativelyPriced = 7</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:48](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L48) | Derivatively priced trade. |
+| <code>CrossTrade = 8</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:53](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L53) | Cross trade. |
+| <code>StockOption = 9</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:58](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L58) | Stock option trade. |
+| <code>Halted = 10</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:63](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L63) | Trading halt indicator. |
+| <code>CorrectedConsolidated = 11</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:68](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L68) | Corrected consolidated trade. |
+| <code>SoldOutOfSequence = 12</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:73](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L73) | Sold out of sequence (late report). |
+| <code>Contingent = 13</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:78](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L78) | Contingent trade. |
+| <code>Acquisition = 14</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:83](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L83) | Acquisition trade. |
+| <code>Bunched = 15</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:88](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L88) | Bunched trade. |
+| <code>Cash = 16</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:93](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L93) | Cash settlement. |
+| <code>NextDay = 17</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:98](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L98) | Next day settlement. |
+| <code>SellerInitiated = 18</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:103](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L103) | Seller-initiated trade (definitive aggressor inference). |
+| <code>PriorReferencePrice = 19</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:108](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L108) | Prior reference price. |
+| <code>CircuitBreakerLevel1 = 20</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:113](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L113) | Market-wide circuit breaker halt (MWCB Level 1: 7% drop in S&amp;P 500). |
+| <code>CircuitBreakerLevel2 = 21</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:118](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L118) | Market-wide circuit breaker halt (MWCB Level 2: 13% drop in S&amp;P 500). |
+| <code>CircuitBreakerLevel3 = 22</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:123](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L123) | Market-wide circuit breaker halt (MWCB Level 3: 20% drop in S&amp;P 500, trading halted for remainder of day). |
+| <code>LuldPause = 23</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:129](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L129) | LULD (Limit Up/Limit Down) trading pause. Individual stock halted due to price moving outside its LULD band for more than 15 seconds. |
+| <code>RegulatoryHalt = 24</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:134](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L134) | Regulatory halt (SEC or exchange-imposed trading halt, e.g., news pending). |
+| <code>TradingResumed = 25</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:139](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L139) | Trading resumed after halt. |
+| <code>IpoHalt = 26</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:144](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L144) | IPO halt (pre-opening, price discovery). |
+| <code>Unknown = 255</code> | [src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs:149](../../../../src/Meridian.Contracts/Domain/Enums/CanonicalTradeCondition.cs#L149) | Unknown / unmapped condition code. |
+
+## ConnectionStatus
+
+Qualified name: <code>Meridian.Contracts.Domain.Enums.ConnectionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L6).
+
+Connection status for data providers.
+
+```csharp
+public enum ConnectionStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Disconnected = 0</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L11) | Not connected. |
+| <code>Connecting = 1</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L16) | Connection in progress. |
+| <code>Connected = 2</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L21) | Successfully connected. |
+| <code>Reconnecting = 3</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L26) | Reconnection in progress. |
+| <code>Faulted = 4</code> | [src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/ConnectionStatus.cs#L31) | Connection failed or in error state. |
+
+## DepthIntegrityKind
+
+Qualified name: <code>Meridian.Contracts.Domain.Enums.DepthIntegrityKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L6).
+
+Kind of depth integrity issue detected.
+
+```csharp
+public enum DepthIntegrityKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Ok = 0</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L11) | No integrity issue detected. |
+| <code>Unknown = 1</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L16) | Unknown integrity issue. |
+| <code>Gap = 2</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L21) | Sequence gap detected. |
+| <code>OutOfOrder = 3</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:26](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L26) | Out-of-order message received. |
+| <code>InvalidPosition = 4</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:31](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L31) | Invalid position in order book. |
+| <code>Stale = 5</code> | [src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs:36](../../../../src/Meridian.Contracts/Domain/Enums/DepthIntegrityKind.cs#L36) | Stale data detected. |
+
+## DepthOperation
+
+Qualified name: <code>Meridian.Contracts.Domain.Enums.DepthOperation</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:6](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L6).
+
+Type of operation for a depth update.
+
+```csharp
+public enum DepthOperation : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Insert = 0</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:11](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L11) | Insert a new level. |
+| <code>Update = 1</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:16](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L16) | Update an existing level. |
+| <code>Delete = 2</code> | [src/Meridian.Contracts/Domain/Enums/DepthOperation.cs:21](../../../../src/Meridian.Contracts/Domain/Enums/DepthOperation.cs#L21) | Delete an existing level. |
+
 ## InstrumentType
 
 Qualified name: <code>Meridian.Contracts.Domain.Enums.InstrumentType</code>. Kind: `enum`.
@@ -1025,105 +1209,3 @@ Represents the arrival of a new order at the venue&#x27;s matching engine. Captu
 ```csharp
 public sealed record OrderAdd(string OrderId, string Symbol, OrderSide Side, decimal Price, long DisplayedSize, DateTimeOffset PriorityTimestamp, long SequenceNumber, long? HiddenSize = null, string? ParticipantId = null, string? MarketMaker = null, string? StreamId = null, string? Venue = null) : MarketEventPayload;
 ```
-
-## OrderBookLevel
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderBookLevel</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:28](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L28).
-
-One price level in an order book side. Level is 0-based (0 = best).
-
-```csharp
-public sealed record OrderBookLevel
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OrderBookSide Side { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:33](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L33) | Gets the side of the order book (bid or ask). |
-| <code>public ushort Level { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:39](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L39) | Gets the depth level in the order book (0 = best price). Max 65,535 levels — far exceeds any real order book depth. |
-| <code>public decimal Price { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:44](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L44) | Gets the price at this level. |
-| <code>public decimal Size { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:49](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L49) | Gets the total size available at this price level. |
-| <code>public string? MarketMaker { get; init; }</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:54](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L54) | Gets the market maker identifier (if available). |
-| <code>public OrderBookLevel(OrderBookSide Side, ushort Level, decimal Price, decimal Size, string? MarketMaker = null);</code> | [src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs:59](../../../../src/Meridian.Contracts/Domain/Models/OrderBookLevel.cs#L59) | Validates order book level data at construction time to prevent corrupt datasets. |
-
-## OrderCancel
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderCancel</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderCancel.cs:9](../../../../src/Meridian.Contracts/Domain/Models/OrderCancel.cs#L9).
-
-Represents the full or partial cancellation of a resting order. A CanceledSize equal to the original order size indicates a full cancel.
-
-```csharp
-public sealed record OrderCancel(string OrderId, long CanceledSize, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
-## OrderExecute
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderExecute</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderExecute.cs:11](../../../../src/Meridian.Contracts/Domain/Models/OrderExecute.cs#L11).
-
-Represents the execution of a resting order (full or partial fill). The resting order is always identified; the aggressor order ID is provided when the venue includes it in the execution message.
-
-```csharp
-public sealed record OrderExecute(string RestingOrderId, decimal ExecPrice, long ExecSize, AggressorSide AggressorSide, long SequenceNumber, string? TakerOrderId = null, string? TradeId = null, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
-## OrderFlowStatistics
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderFlowStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs:8](../../../../src/Meridian.Contracts/Domain/Models/OrderFlowStatistics.cs#L8).
-
-Rolling order-flow statistics derived from recent trades.
-
-```csharp
-public sealed record OrderFlowStatistics(DateTimeOffset Timestamp, string Symbol, long BuyVolume, long SellVolume, long UnknownVolume, decimal VWAP, decimal Imbalance, ushort TradeCount, long SequenceNumber, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
-## OrderModify
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderModify</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderModify.cs:9](../../../../src/Meridian.Contracts/Domain/Models/OrderModify.cs#L9).
-
-Represents a modification to an existing order&#x27;s price, size, or flags. Only the fields that changed are populated; null values indicate no change.
-
-```csharp
-public sealed record OrderModify(string OrderId, long SequenceNumber, decimal? NewPrice = null, long? NewDisplayedSize = null, long? NewHiddenSize = null, bool LosesPriority = false, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
-## OrderReplace
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.OrderReplace</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/OrderReplace.cs:11](../../../../src/Meridian.Contracts/Domain/Models/OrderReplace.cs#L11).
-
-Represents a venue-side order replace, where the venue cancels the original order and immediately re-enters it under a new order identifier. This is distinct from OrderModify because the venue reassigns the order ID, which breaks continuity of the original order&#x27;s life cycle.
-
-```csharp
-public sealed record OrderReplace(string OldOrderId, string NewOrderId, long SequenceNumber, decimal? NewPrice = null, long? NewDisplayedSize = null, long? NewHiddenSize = null, bool LosesPriority = true, string? StreamId = null, string? Venue = null) : MarketEventPayload;
-```
-
-## SessionStats
-
-Qualified name: <code>Meridian.Contracts.Domain.Models.SessionStats</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Domain/Models/SessionStats.cs:15](../../../../src/Meridian.Contracts/Domain/Models/SessionStats.cs#L15).
-
-Per-symbol intraday session statistics derived from observed trades. Captures the conventional &quot;today&quot; reference points a watchlist or quote display needs: open, high, low, last, total volume, and a volume-weighted average price.
-
-```csharp
-public sealed record SessionStats(string Symbol, DateOnly SessionDate, decimal Open, decimal High, decimal Low, decimal Last, long Volume, decimal Vwap, long TradeCount, DateTimeOffset FirstTradeAt, DateTimeOffset LastTradeAt)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal Change =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/SessionStats.cs:31](../../../../src/Meridian.Contracts/Domain/Models/SessionStats.cs#L31) | Absolute change in price from the session open to the most recent trade. |
-| <code>public decimal? ChangePercent =&gt; …;</code> | [src/Meridian.Contracts/Domain/Models/SessionStats.cs:37](../../../../src/Meridian.Contracts/Domain/Models/SessionStats.cs#L37) | Percentage change from the session open to the most recent trade. Returns null when the open price is zero (cannot compute a percentage). |

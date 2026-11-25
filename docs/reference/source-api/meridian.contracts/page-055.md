@@ -6,6 +6,56 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityFactorHistoryProjector
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorHistoryProjector</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:48](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L48).
+
+Builds SecurityFactorHistoryDto from resolved terms and corporate actions.
+
+```csharp
+public static class SecurityFactorHistoryProjector
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static SecurityFactorHistoryDto Build(Guid securityId, StructuredCashFlowTerms terms, DateOnly? currentFactorDate, IReadOnlyList&lt;CorporateActionDto&gt; actions, DateTimeOffset asOf);</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:50](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L50) |  |
+
+## SecurityFactorSource
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFactorSource</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:7](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L7).
+
+Where a dated factor point comes from.
+
+```csharp
+public enum SecurityFactorSource
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>TermsSchedule</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:10](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L10) | A point of the declared factor schedule in the security&#x27;s terms. |
+| <code>PrincipalPaydown</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L13) | The post-paydown factor recorded on an effective principal-paydown corporate action. |
+| <code>CurrentFactor</code> | [src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityFactorHistory.cs#L16) | The scalar current factor in the terms, dated by its retained factor date. |
+
+## SecurityFieldProvenance
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenance</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs:46](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProvenance.cs#L46).
+
+Field-level provenance: which source system asserted the value at FieldPath, as of when, and with what confidence (null when the source carries no confidence score — never fabricated).
+
+```csharp
+public sealed record SecurityFieldProvenance(string FieldPath, string SourceSystem, DateTimeOffset? AsOf, string? UpdatedBy, decimal? Confidence);
+```
+
 ## SecurityFieldProvenanceOrigins
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityFieldProvenanceOrigins</code>. Kind: `class`.
@@ -814,46 +864,3 @@ Declared public members:
 | <code>public bool TermsFormatBackfillLegacyWritersRetired { get; set; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs:45](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs#L45) | One-time migration-068 upgrade attestation that every Security Master writer running after the migration commits declares termsFormat on the terms it persists (ADR-024 amendment 2026-11-13): no binary built before that change will write again. Migration 068 adds a check constraint that refuses an untagged row, so such a writer would fail any write that persists untagged terms, for example a custom-asset profile envelope (flat writers already declared the family). The runner also takes a transaction-scoped ACCESS EXCLUSIVE NOWAIT lock and refuses active writers and open readers. Not required for a fresh installation or after migration 068 is recorded. |
 | <code>public int ProjectionCacheRefreshMinutes { get; set; }</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs:55](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs#L55) | Interval, in minutes, at which the projection warmup service re-warms the per-process projection cache from the durable store. Zero (the default) disables periodic re-warm — single-node deployments stay coherent through per-write cache upserts, and multi-node deployments through ProjectionCacheNotificationsEnabled. A positive value adds a backstop re-warm that bounds cross-node staleness even if a change notification is lost (authoritative reads always go to the durable store regardless). |
 | <code>public bool ProjectionCacheNotificationsEnabled { get; set; } = true;</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs:66](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterOptions.cs#L66) | When true (the default), every committed projection write emits a PostgreSQL NOTIFY on the schema&#x27;s projection channel inside the writing transaction, and each node runs a listener that refreshes its per-process projection cache from the durable store when another node commits a change. Cross-node staleness is then bounded by notification delivery rather than by ProjectionCacheRefreshMinutes, which remains a backstop. Disable only for single-node deployments that want to avoid the dedicated listener connection. |
-
-## SecurityMasterProfilePromotionBlockerDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionBlockerDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L20).
-
-One reason a promotion would be refused if it were applied now.
-
-```csharp
-public sealed record SecurityMasterProfilePromotionBlockerDto(string Code, string Message);
-```
-
-## SecurityMasterProfilePromotionCandidateDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionCandidateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L30).
-
-One active CustomAsset record pinned to the reported profile. A SecurityMasterProfilePromotionDisposition.Ready record decodes under TargetAssetClass, satisfies that class&#x27;s domain invariants and passes the profile catalog check, so an amendment that resubmits its pinned envelope promotes it.
-
-```csharp
-public sealed record SecurityMasterProfilePromotionCandidateDto(Guid SecurityId, string DisplayName, string PrimaryIdentifierKind, string PrimaryIdentifierValue, long Version, string SourceAssetClass, string CustomProfileId, int? ProfileVersion, string TargetAssetClass, SecurityMasterProfilePromotionDisposition Disposition, IReadOnlyList<SecurityMasterProfilePromotionBlockerDto> Blockers);
-```
-
-## SecurityMasterProfilePromotionDisposition
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.SecurityMasterProfilePromotionDisposition</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:13](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L13).
-
-Whether a CustomAsset record pinned to a reclassifying profile can be promoted to that profile&#x27;s first-class asset class by a write that carries its envelope (ADR-022). Blocked records list what the promoting envelope has to correct; for a record pinned to a reclassifying profile, repair and promotion are the same write.
-
-```csharp
-public enum SecurityMasterProfilePromotionDisposition
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Ready</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L15) |  |
-| <code>Blocked</code> | [src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs:16](../../../../src/Meridian.Contracts/SecurityMaster/SecurityMasterProfilePromotion.cs#L16) |  |

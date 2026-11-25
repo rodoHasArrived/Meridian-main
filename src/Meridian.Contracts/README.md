@@ -2410,6 +2410,10 @@ See `DIA-ASSURANCE-LOOP` in `docs/source/data/diagram-index.yml`.
 
 ## API and contract notes
 
+`Api/TimeSeriesAlignmentContracts.cs` carries the shared request, aligned rows, coverage,
+price-basis evidence and content hash used by the host and the desktop workstation.
+
+
 Canonical symbol registries retain their stable read/write interfaces. Implementations that can
 apply a startup seed batch atomically opt into `ICanonicalSymbolRegistryMigrationWriter`; callers
 must require that additive capability rather than widening the general registry contract or

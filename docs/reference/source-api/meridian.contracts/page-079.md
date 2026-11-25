@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StructuredReportingExportRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:422](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L422).
+
+```csharp
+public sealed record StructuredReportingExportRequestDto(string FundProfileId, string ExportId, DateTimeOffset? AsOf = null, string? Currency = null);
+```
+
 ## StructuredReportingExportRowLineageDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StructuredReportingExportRowLineageDto</code>. Kind: `record`.
@@ -52,7 +62,7 @@ public sealed record SubmitSecurityMasterRevisionRequest(Guid SecurityId, Guid R
 
 Qualified name: <code>Meridian.Contracts.Workstation.SymbolAttributionEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:988](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L988).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:971](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L971).
 
 Per-symbol P&amp;L attribution for one run.
 
@@ -604,16 +614,4 @@ Lightweight evidence chip supporting a workflow recommendation.
 
 ```csharp
 public sealed record WorkflowEvidenceBadge(string Label, string Value, string Tone);
-```
-
-## WorkflowLibraryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkflowLibraryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L6).
-
-Shared catalog projection for reusable workstation workflows.
-
-```csharp
-public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
 ```

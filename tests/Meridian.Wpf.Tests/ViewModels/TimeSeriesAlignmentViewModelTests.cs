@@ -1,3 +1,4 @@
+using Meridian.Contracts.Api;
 using Meridian.Ui.Services;
 using Meridian.Wpf.Tests.Support;
 using Meridian.Wpf.ViewModels;
@@ -14,7 +15,7 @@ public sealed class TimeSeriesAlignmentViewModelTests
         viewModel.CanRunAlignment.Should().BeFalse();
         viewModel.RunAlignmentCommand.CanExecute(null).Should().BeFalse();
         viewModel.AlignmentReadinessTitle.Should().Be("Alignment setup incomplete");
-        viewModel.AlignmentReadinessDetail.Should().Contain("Add at least two symbols");
+        viewModel.AlignmentReadinessDetail.Should().Contain("Add at least one symbol");
         viewModel.AlignmentReadinessDetail.Should().Contain("Choose a from and to date");
         viewModel.IsRecentAlignmentsEmpty.Should().BeTrue();
     }
@@ -129,7 +130,7 @@ public sealed class TimeSeriesAlignmentViewModelTests
         viewModel.CanRunAlignment.Should().BeFalse();
         viewModel.RunAlignmentCommand.CanExecute(null).Should().BeFalse();
         viewModel.AlignmentReadinessTitle.Should().Be("Alignment not available on this host");
-        viewModel.AlignmentReadinessDetail.Should().Contain("no time-series alignment service");
+        viewModel.AlignmentReadinessDetail.Should().Contain("does not support time-series alignment");
         viewModel.StatusText.Should().NotStartWith("Alignment failed");
         viewModel.HasResults.Should().BeFalse();
         viewModel.RecentAlignments.Should().BeEmpty();
@@ -167,6 +168,47 @@ public sealed class TimeSeriesAlignmentViewModelTests
     }
 
     [Fact]
+    public async Task PreviewUsesSelectedProvidersAndBindsExportToEvidence()
+    {
+        AlignmentOptions? previewOptions = null;
+        AlignmentOptions? runOptions = null;
+        var viewModel = new TimeSeriesAlignmentViewModel(
+            (options, _) =>
+            {
+                runOptions = options;
+                return Task.FromResult(new AlignmentResult { Success = true });
+            },
+            _ => new AlignmentValidationResult { IsValid = true },
+            (options, _) =>
+            {
+                previewOptions = options;
+                return Task.FromResult(new AlignmentPreview
+                {
+                    Success = true,
+                    Summary = new("fixture-hash", "US_EQUITIES_REGULAR", "session date", "UTC", "DailyBars", "Daily",
+                        "Null", 5, "Retain gaps.", "AsStored", "CollapseEqual", ["Close", "Volume"], 1,
+                        2, 2, 0, 0, 0, [], [new("AAPL", "ALPACA", "POLYGON", 1, 0, 0.25m, null)])
+                });
+            });
+        viewModel.SymbolInput = "AAPL";
+        viewModel.AddSymbolsCommand.Execute(null);
+        viewModel.ProviderInput = "alpaca, polygon";
+        viewModel.FromDate = new DateTime(2026, 1, 2);
+        viewModel.ToDate = new DateTime(2026, 1, 2);
+        await viewModel.PreviewAlignmentCommand.ExecuteAsync(null);
+
+        previewOptions!.Providers.Should().Equal("alpaca", "polygon");
+        previewOptions.Fields.Should().Equal("Close", "Volume");
+        viewModel.HasPreview.Should().BeTrue();
+        viewModel.PreviewDetail.Should().Contain("ALPACA vs POLYGON");
+        await viewModel.RunAlignmentCommand.ExecuteAsync(null);
+        runOptions!.ExpectedContentHash.Should().Be("fixture-hash");
+
+        viewModel.ProviderInput = "stooq, polygon";
+        viewModel.HasPreview.Should().BeFalse();
+    }
+
+    [Fact]
     public void TimeSeriesAlignmentPageSource_UsesViewModelBindingsAndCommands()
     {
         var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\TimeSeriesAlignmentPage.xaml"));
@@ -177,6 +219,7 @@ public sealed class TimeSeriesAlignmentViewModelTests
         xaml.Should().Contain("{Binding AlignmentReadinessDetail}");
         xaml.Should().Contain("Command=\"{Binding AddSymbolsCommand}\"");
         xaml.Should().Contain("Command=\"{Binding RunAlignmentCommand}\"");
+        xaml.Should().Contain("Command=\"{Binding PreviewAlignmentCommand}\"");
         xaml.Should().Contain("Command=\"{Binding SavePresetCommand}\"");
         xaml.Should().Contain("{Binding SelectedSymbols}");
         xaml.Should().Contain("{Binding HasResults");

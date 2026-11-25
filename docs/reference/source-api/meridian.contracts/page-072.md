@@ -6,6 +6,39 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReconciliationSlaPolicy
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSlaPolicy</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:666](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L666).
+
+```csharp
+public sealed record ReconciliationSlaPolicy(string PolicyId, string? FundId, string? AccountId, string? BreakType, ReconciliationBreakSeverity Severity, ReconciliationCasePriority Priority, string TimeZoneId, TimeOnly BusinessDayStart, TimeOnly BusinessDayEnd, int DueBusinessHours, int WarningBusinessHours, bool StopOnResolved = true, bool StopOnSignedOff = false, bool PauseAwaitingEvidence = true, string? BusinessCalendarId = null, IReadOnlyList<string>? HolidayCalendarIds = null, IReadOnlyList<string>? PauseRules = null, IReadOnlyList<string>? StopRules = null, IReadOnlyList<string>? EscalationRules = null);
+```
+
+## ReconciliationSourceKind
+
+Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSourceKind</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:15](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L15).
+
+Source type participating in a reconciliation comparison.
+
+```csharp
+public enum ReconciliationSourceKind : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Unknown = 0</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:17](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L17) |  |
+| <code>Portfolio = 1</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:18](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L18) |  |
+| <code>Ledger = 2</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:19](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L19) |  |
+| <code>Bank = 3</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:20](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L20) |  |
+| <code>ExternalStatement = Bank</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:21](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L21) |  |
+| <code>Cash = 4</code> | [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:22](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L22) |  |
+
 ## ReconciliationSourceRegrouping
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSourceRegrouping</code>. Kind: `record`.
@@ -39,27 +72,19 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:194](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L194).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L189).
 
 Summary of recent reconciliation posture for a fund.
 
 ```csharp
-public sealed record ReconciliationSummary(int RunCount, int OpenBreakCount, decimal BreakAmountTotal, IReadOnlyList<FundReconciliationItem> RecentRuns, int SecurityCoverageIssueCount = 0, ReconciliationBreakQueueProjectionDto? BreakQueue = null, LedgerImpactPreviewDto? LedgerImpactPreview = null, bool HasCriticalBreakOpen = false)
+public sealed record ReconciliationSummary(int RunCount, int OpenBreakCount, decimal BreakAmountTotal, IReadOnlyList<FundReconciliationItem> RecentRuns, int SecurityCoverageIssueCount = 0, ReconciliationBreakQueueProjectionDto? BreakQueue = null, LedgerImpactPreviewDto? LedgerImpactPreview = null, bool HasCriticalBreakOpen = false);
 ```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public decimal? ComparableBreakAmountTotal { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:204](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L204) |  |
-| <code>public string? BreakAmountCurrency { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:205](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L205) |  |
-| <code>public string? BreakAmountUnavailableReason { get; init; }</code> | [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:206](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L206) |  |
 
 ## ReconciliationTaxonomySnapshot
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomySnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:711](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L711).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:704](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L704).
 
 ```csharp
 public sealed record ReconciliationTaxonomySnapshot(int Version, IReadOnlyList<ReconciliationTaxonomyValue> RootCauses, IReadOnlyList<ReconciliationTaxonomyValue> ResolutionCodes);
@@ -69,7 +94,7 @@ public sealed record ReconciliationTaxonomySnapshot(int Version, IReadOnlyList<R
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationTaxonomyValue</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:704](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L704).
+Source: [src/Meridian.Contracts/Workstation/ReconciliationDtos.cs:697](../../../../src/Meridian.Contracts/Workstation/ReconciliationDtos.cs#L697).
 
 ```csharp
 public sealed record ReconciliationTaxonomyValue(string Code, string DisplayName, int Version, bool IsActive, IReadOnlyList<string>? RequiredEvidencePrefixes = null);
@@ -623,24 +648,4 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1161]
 
 ```csharp
 public sealed record ReportingStarterKitProvisionResultDto(ReportingStarterKitDto Kit, ReportingStarterKitStateDto State, IReadOnlyList<ReportingScheduleRecordDto> SeededSchedules);
-```
-
-## ReportingStarterKitStateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingStarterKitStateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1150](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1150).
-
-```csharp
-public sealed record ReportingStarterKitStateDto(bool IsProvisioned, string? SelectedKitId, string? Archetype, IReadOnlyList<string> EnabledTemplateIds, string? DefaultLayoutId, string? DefaultPeriod, IReadOnlyList<string> SeedScheduleIds, DateTimeOffset? ProvisionedAtUtc = null, string? ProvisionedBy = null);
-```
-
-## ReportingStarterSeedScheduleDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.ReportingStarterSeedScheduleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs:1130](../../../../src/Meridian.Contracts/Workstation/FundOperationsWorkspaceDtos.cs#L1130).
-
-```csharp
-public sealed record ReportingStarterSeedScheduleDto(string ScheduleId, string TemplateId, string CronExpression, string Cadence, string Description, ReportingScheduleStateDto State = ReportingScheduleStateDto.Draft, string? DefaultPeriod = null, IReadOnlyList<ReportingScheduleDeliveryTargetDto>? DeliveryTargets = null);
 ```

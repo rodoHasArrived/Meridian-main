@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WorkflowLibraryDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.WorkflowLibraryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs:6](../../../../src/Meridian.Contracts/Workstation/WorkflowLibraryDtos.cs#L6).
+
+Shared catalog projection for reusable workstation workflows.
+
+```csharp
+public sealed record WorkflowLibraryDto(DateTimeOffset GeneratedAt, IReadOnlyList<WorkflowDefinitionDto> Workflows, IReadOnlyList<WorkflowActionDto> Actions);
+```
+
 ## WorkflowNextAction
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkflowNextAction</code>. Kind: `record`.
@@ -568,14 +580,4 @@ Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:238](../
 
 ```csharp
 public sealed record WorkstationPlotToolFocusPointPayload(string Label, string XValueText, string YValueText, string Detail);
-```
-
-## WorkstationPlotToolLegendItemPayload
-
-Qualified name: <code>Meridian.Contracts.Workstation.WorkstationPlotToolLegendItemPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs:232](../../../../src/Meridian.Contracts/Workstation/WorkstationBootstrapDtos.cs#L232).
-
-```csharp
-public sealed record WorkstationPlotToolLegendItemPayload(string Id, string Label, string Detail, string Tone);
 ```
