@@ -141,8 +141,8 @@ the findings above (except `unavailable`) block close and give a reason; a diffe
 approves it, and it can be rejected or disabled with a reason. While it is active, a listed finding
 at the close period end adds an `intercompany-confirmation` close-readiness blocker, and
 confirmation status that cannot be read stops close until it can. Disabling the policy makes
-confirmation advisory again. `DEC-IC-CONFIRM-002` records this as a proposed decision awaiting the
-repository owner's acceptance.
+confirmation advisory again. `DEC-IC-CONFIRM-002` records this decision, accepted by the
+repository owner on 2026-11-25.
 
 Ordinary legal approval retains the independent-reviewer rule. To attest an external legal review,
 select the exact submitted hash and accepted retained review document, identify the distinct

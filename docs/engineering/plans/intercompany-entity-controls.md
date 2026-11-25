@@ -216,7 +216,7 @@ Opt-in close blocking was added on 2026-11-18, and both of those on 2026-11-25; 
 
 ### Opt-in confirmation close policy (2026-11-18)
 
-ADR-032 and the proposed decision `DEC-IC-CONFIRM-002` (awaiting owner acceptance) let one ledger book
+ADR-032 and decision `DEC-IC-CONFIRM-002` (accepted by the owner on 2026-11-25) let one ledger book
 adopt a reviewed confirmation close policy. Books without one keep advisory-only confirmation.
 
 | Piece | What exists | Verification |

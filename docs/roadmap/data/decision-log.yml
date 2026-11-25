@@ -505,12 +505,12 @@ decisions:
       - W12-ICSCHEDULE-001
       - W12-ICACCRUAL-001
   - id: DEC-IC-CONFIRM-002
-    title: "Proposed: opt-in, policy-governed close blocking from intercompany balance confirmation (ADR-032)"
-    status: proposed
+    title: "Opt-in, policy-governed close blocking from intercompany balance confirmation (ADR-032)"
+    status: accepted
     decided_on: 2026-11-18
     owner_lane: Accounting and Ledger
     summary: >-
-      Proposed under the owner-approved P1 plan of 2026-11-18 and awaiting the repository owner's acceptance.
+      Proposed under the owner-approved P1 plan of 2026-11-18 and accepted by the repository owner on 2026-11-25.
       Follows DEC-IC-CONFIRM-001, which kept confirmation advisory and required a separate decision for close
       blocking. Without an approved policy, close readiness is unchanged. A ledger book may adopt one reviewed
       confirmation close policy that names which confirmation findings block close: not-proposed,

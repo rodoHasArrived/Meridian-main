@@ -169,7 +169,7 @@ Confirmation status is advisory by default. It joins the intercompany close advi
 `intercompany.confirmation.*` warnings, which never change close eligibility; an unreadable status is
 reported as unavailable, not treated as confirmed.
 
-A book may adopt one reviewed **confirmation close policy** (ADR-032, proposed decision
+A book may adopt one reviewed **confirmation close policy** (ADR-032, accepted decision
 `DEC-IC-CONFIRM-002`). It names which findings block close: `not-proposed`, `awaiting-confirmation`,
 `disputed`, `balances-changed` or `resolved-awaiting-proposal`. One person proposes it and someone else
 approves it; it can be rejected or disabled with a reason. While it is active, a listed finding at the

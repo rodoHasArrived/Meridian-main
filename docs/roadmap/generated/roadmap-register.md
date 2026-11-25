@@ -2997,7 +2997,7 @@ W12-ICCOMPOUND-001: ready_for_acceptance; health green; evidence complete. Ready
 
 ### Current Summary
 
-W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Close blocking (ADR-032) and cross-company pairs with adjustment drafts (ADR-033) are implemented; DEC-IC-CONFIRM-003 is accepted and DEC-IC-CONFIRM-002 awaits owner acceptance. Synthetic evidence only.
+W12-ICCONFIRM-001: ready_for_acceptance; health green; evidence complete. Ready for owner acceptance: advisory confirmation verified on PR 3674 (hosted lanes; Windows WPF run 44431011339). Close blocking (ADR-032) and cross-company pairs with adjustment drafts (ADR-033) are implemented; DEC-IC-CONFIRM-002 and -003 are accepted. Synthetic evidence only.
 
 ### Status References
 
