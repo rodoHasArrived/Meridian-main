@@ -853,7 +853,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
-        <IntercompanyAgreementsPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment, search])} initialEntityId={closeWorkflowQuery.entityId ?? ""} initialAgreementId={new URLSearchParams(search).get("agreementId")} initialLedgerBookId={new URLSearchParams(search).get("ledgerBookId") ?? undefined} />
+        <IntercompanyAgreementsPanel key={JSON.stringify([operatorIdentity, session?.role, session?.environment, search])} initialEntityId={closeWorkflowQuery.entityId ?? ""} initialAgreementId={new URLSearchParams(search).get("agreementId")} initialLedgerBookId={new URLSearchParams(search).get("ledgerBookId") ?? undefined} />
       ) : null}
 
       {sectionVisibility.showConfiguration ? (
@@ -1512,11 +1512,11 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
           <div className="grid gap-4" aria-label="Security Master market inputs and discovery">
             <details className="rounded border border-border p-4" onToggle={(event) => setCurvesOpen(event.currentTarget.open)}>
               <summary className="cursor-pointer font-semibold">Curves: definitions, pillars and historical versions</summary>
-              {curvesOpen ? <div className="mt-4"><SecurityCurveWorkbench key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+              {curvesOpen ? <div className="mt-4"><SecurityCurveWorkbench key={JSON.stringify([search, operatorIdentity, session?.role, session?.environment])} /></div> : null}
             </details>
             <details className="rounded border border-border p-4" onToggle={(event) => setBondDiscoveryOpen(event.currentTarget.open)}>
               <summary className="cursor-pointer font-semibold">Discover provider bonds and stage candidate imports</summary>
-              {bondDiscoveryOpen ? <div className="mt-4"><BondDiscoveryPanel key={JSON.stringify([search, session?.displayName, session?.role, session?.environment])} /></div> : null}
+              {bondDiscoveryOpen ? <div className="mt-4"><BondDiscoveryPanel key={JSON.stringify([search, operatorIdentity, session?.role, session?.environment])} /></div> : null}
             </details>
           </div>
 
