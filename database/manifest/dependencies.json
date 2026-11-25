@@ -68184,6 +68184,12 @@
     {
       "kind": "normal",
       "label": "",
+      "source": "database:security_master.ck_security_factor_observations_factor on security_master.security_factor_observations",
+      "target": "database:security_master.security_factor_observations.factor"
+    },
+    {
+      "kind": "normal",
+      "label": "",
       "source": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
       "target": "database:security_master.security_master_exception_cases.closed_at"
     },
@@ -72207,6 +72213,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_factor_observations"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_field_provenance"
     },
     {
@@ -72457,7 +72469,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e327a4785cef5ef07657df2d340267b8a77f3441817e144464050fe42b877357",
+  "fingerprint": "026f448d852444bb7fd116c6779038974e4b793f51c16d3a455291b14c81e3d6",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -103934,6 +103946,11 @@
       "label": "security_master.ck_security_curves_rate_policy on security_master.security_curves"
     },
     {
+      "id": "database:security_master.ck_security_factor_observations_factor on security_master.security_factor_observations",
+      "kind": "database-object",
+      "label": "security_master.ck_security_factor_observations_factor on security_master.security_factor_observations"
+    },
+    {
       "id": "database:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases",
       "kind": "database-object",
       "label": "security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases"
@@ -105930,6 +105947,17 @@
       "label": "security_master.security_events_payload_version_check on security_master.security_events"
     },
     {
+      "id": "database:security_master.security_factor_observations",
+      "kind": "database-table",
+      "label": "security_master.security_factor_observations",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_factor_observations.factor",
+      "kind": "database-object",
+      "label": "security_master.security_factor_observations.factor"
+    },
+    {
       "id": "database:security_master.security_field_provenance",
       "kind": "database-table",
       "label": "security_master.security_field_provenance",
@@ -106587,9 +106615,9 @@
   "summary": {
     "contract_references": 4419,
     "contract_set_memberships": 5840,
-    "edges": 12036,
+    "edges": 12038,
     "foreign_keys": 224,
     "logical_references": 6,
-    "nodes": 5938
+    "nodes": 5941
   }
 }

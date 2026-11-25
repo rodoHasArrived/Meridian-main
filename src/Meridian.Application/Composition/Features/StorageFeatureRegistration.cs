@@ -428,6 +428,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<Meridian.Contracts.EntityMaster.IEntityMasterStore, Meridian.Storage.EntityMaster.PostgresEntityMasterStore>();
             // Review D2: deployment-global Security Master exception cases.
             services.AddSingleton<ISecurityMasterExceptionCaseStore, PostgresSecurityMasterExceptionCaseStore>();
+            // Review C3: append-only pool-factor observations.
+            services.AddSingleton<ISecurityFactorObservationStore, PostgresSecurityFactorObservationStore>();
             services.AddSingleton<SecurityMasterMergeService>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
@@ -644,6 +646,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<Meridian.Contracts.EntityMaster.IEntityMasterStore, Meridian.Storage.EntityMaster.InMemoryEntityMasterStore>();
         services.TryAddSingleton<ISecurityMasterExceptionCaseStore, InMemorySecurityMasterExceptionCaseStore>();
         services.TryAddSingleton<SecurityMasterExceptionCaseSync>();
+        services.TryAddSingleton<ISecurityFactorObservationStore, InMemorySecurityFactorObservationStore>();
+        services.TryAddSingleton<SecurityFactorObservationService>();
         if (!configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
         {
             services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();

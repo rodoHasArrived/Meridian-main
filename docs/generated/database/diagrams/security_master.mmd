@@ -1393,6 +1393,16 @@ erDiagram
     security_master_security_events_global_sequence_seq {
         text catalogued_object
     }
+    security_master_security_factor_observations {
+        uuid observation_id PK
+        uuid security_id
+        date effective_date
+        numeric_20_12_ factor
+        text source
+        text evidence_ref
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
     security_master_security_field_provenance {
         uuid security_id PK
         text field_path PK

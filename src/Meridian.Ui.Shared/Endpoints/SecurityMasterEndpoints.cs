@@ -786,6 +786,7 @@ public static partial class SecurityMasterEndpoints
         /// </summary>
         group.MapGet(UiApiRoutes.SecurityMasterFactorHistory, async (
             Guid securityId,
+            HttpContext context,
             [FromServices] ISecurityMasterQueryService queryService,
             CancellationToken ct) =>
         {
@@ -796,6 +797,13 @@ public static partial class SecurityMasterEndpoints
             }
 
             var actions = await queryService.GetCorporateActionsAsync(securityId, ct).ConfigureAwait(false);
+            // Review C3: recorded factor observations rank first and carry restatements.
+            var observationStore = context.RequestServices.GetService<Meridian.Storage.SecurityMaster.ISecurityFactorObservationStore>();
+            var observed = observationStore is null
+                ? null
+                : (await observationStore.ListEffectiveAsync(securityId, ct).ConfigureAwait(false))
+                    .Select(static observation => (observation.EffectiveDate, observation.Factor))
+                    .ToArray();
             var termSources = security.AssetSpecificTerms.ValueKind == System.Text.Json.JsonValueKind.Object
                 && SecurityTermReader.TryGetProperty(security.AssetSpecificTerms, "profileFields", out var profileFields)
                 && profileFields.ValueKind == System.Text.Json.JsonValueKind.Object
@@ -806,7 +814,8 @@ public static partial class SecurityMasterEndpoints
                 StructuredCashFlowTermsResolver.Resolve(security),
                 SecurityTermReader.ReadDate(termSources, "factorDate", "currentFactorDate"),
                 actions,
-                DateTimeOffset.UtcNow);
+                DateTimeOffset.UtcNow,
+                observed);
             return Results.Json(history, jsonOptions);
         })
         .WithName("GetSecurityMasterFactorHistory").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)

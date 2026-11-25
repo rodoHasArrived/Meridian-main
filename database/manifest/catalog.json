@@ -1,5 +1,5 @@
 {
-  "database_fingerprint": "d2cbaac584ecfb7bbf0ca5adbd6549b57c9eb30263de38bceab6198d195623ed",
+  "database_fingerprint": "a88a2bb616c9bceb7a50d6cea63a91f3d3c961bc71b985efa8f58af27fd8edee",
   "dependencies": [
     {
       "fingerprint": "e279d558691afb7877ace3a75b68e4c7ff3a0f0cf4d2f09daa2c58690a98e75d",
@@ -11363,6 +11363,18 @@
       "target": "security_master.security_curves.rate_policy",
       "target_kind": "table column",
       "target_name": "security_curves",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "92c00afda9a4a015ae9430c68381cedd3100e0952e444f805db316a32092c0aa",
+      "kind": "normal",
+      "source": "security_master.ck_security_factor_observations_factor on security_master.security_factor_observations",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_factor_observations.factor",
+      "target_kind": "table column",
+      "target_name": "security_factor_observations",
       "target_schema": "security_master"
     },
     {
@@ -25889,6 +25901,38 @@
       "object": "column:security_master.security_events.stream_version"
     },
     {
+      "fingerprint": "93a3491d5086abced061322d6e0cee190f776dec27ce1daa6f336acbc55bcd7f",
+      "object": "column:security_master.security_factor_observations.effective_date"
+    },
+    {
+      "fingerprint": "b5bd375cda271361e91876896e9550c3ce8731857f2987fa9792494f4f26ce26",
+      "object": "column:security_master.security_factor_observations.evidence_ref"
+    },
+    {
+      "fingerprint": "ef79dc40bfa3e7a482e93a9e488a9fb998fd92f9146b680bd07e35a3d5c64906",
+      "object": "column:security_master.security_factor_observations.factor"
+    },
+    {
+      "fingerprint": "1fc089746ac14151a1f9f572033c021ebdba319ee3d598f3da7ee26452f0680c",
+      "object": "column:security_master.security_factor_observations.observation_id"
+    },
+    {
+      "fingerprint": "2c76b5c6cc5247a461f6a51df2f12430546e959a81d79261665ea40c2d4098d8",
+      "object": "column:security_master.security_factor_observations.recorded_at"
+    },
+    {
+      "fingerprint": "b48a81ff5ca818d579443e56fb50f73c7378e74d3b719d432752dda4478b3385",
+      "object": "column:security_master.security_factor_observations.recorded_by"
+    },
+    {
+      "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+      "object": "column:security_master.security_factor_observations.security_id"
+    },
+    {
+      "fingerprint": "5fe74a1cf620e3dd4a66efca66313c628ef1316075d7f568ec824b831a9f2757",
+      "object": "column:security_master.security_factor_observations.source"
+    },
+    {
       "fingerprint": "cadead7bc748bf941114cacf48a9ef23b89a86af58b522ac68806eadde36aad7",
       "object": "column:security_master.security_field_provenance.as_of"
     },
@@ -27787,6 +27831,10 @@
     {
       "fingerprint": "8988574d8f3c8fc8ad557cc607a92180799ecee76149308f0b1e39338dd1bf36",
       "object": "comment:table:security_master.security_curves"
+    },
+    {
+      "fingerprint": "530c9af6308c055e97137ecd4b7bea1dda177bc60e72b62ceac32dd2eec3186c",
+      "object": "comment:table:security_master.security_factor_observations"
     },
     {
       "fingerprint": "8a7dff8fdaea18834824cd4cbe70c108f1408c0065625ac9d31d76947c2a9d9c",
@@ -31747,6 +31795,14 @@
     {
       "fingerprint": "45f88f5c51e88c591e8e12f7b6f77bd4e0b60d14a7cc109b374fd3bc8eace43d",
       "object": "constraint:security_master.security_events.security_events_security_id_stream_version_key"
+    },
+    {
+      "fingerprint": "411a32021174f124ad1a3f632ddd07625c82b0a6b11f4c118a61dbc961526472",
+      "object": "constraint:security_master.security_factor_observations.ck_security_factor_observations_factor"
+    },
+    {
+      "fingerprint": "456bc51c07e5e3d1a35bb5f125ef906f950d528aa7627205e96e8f6b57eb31fa",
+      "object": "constraint:security_master.security_factor_observations.security_factor_observations_pkey"
     },
     {
       "fingerprint": "66b4a20cf573669ea752d580fa2828aaf81605ad5f1adaa0feeafb95445ce736",
@@ -35841,6 +35897,10 @@
       "object": "dependency:security_master.ck_security_curves_rate_policy on security_master.security_curves->security_master.security_curves.rate_policy:normal"
     },
     {
+      "fingerprint": "92c00afda9a4a015ae9430c68381cedd3100e0952e444f805db316a32092c0aa",
+      "object": "dependency:security_master.ck_security_factor_observations_factor on security_master.security_factor_observations->security_master.security_factor_observations.factor:normal"
+    },
+    {
       "fingerprint": "a520f33307831cb8f1a6a9ed70e009f5ccb5441343004d62cb2f8d0bb3df357a",
       "object": "dependency:security_master.ck_security_master_exception_cases_closed on security_master.security_master_exception_cases->security_master.security_master_exception_cases.closed_at:normal"
     },
@@ -37203,6 +37263,10 @@
     {
       "fingerprint": "82d6ed08c434cf562919fa45759a8937051a5936efdf102f5919b6687dd22d5a",
       "object": "function:security_master.guard_corporate_action_mutation()"
+    },
+    {
+      "fingerprint": "90fa5c4cd199058391785424968576d30f93f6768a7f76a7273a3741e8390008",
+      "object": "function:security_master.reject_factor_observation_mutation()"
     },
     {
       "fingerprint": "8c3a738ba4673a8ab767d318ef962674213704c16942ff0b5ee2ea0fb402420d",
@@ -39489,6 +39553,10 @@
       "object": "index:security_master.ix_security_events_security_id_sequence"
     },
     {
+      "fingerprint": "ac11b117f27a2e82b7f5637c83846891776a9ba5b8312fc4c450aa6ab8360081",
+      "object": "index:security_master.ix_security_factor_observations_security_date"
+    },
+    {
       "fingerprint": "5aec317cc407da76fcff7d7aa42abcead177b009f49a7047aebb8ae849cdd887",
       "object": "index:security_master.ix_security_field_provenance_security"
     },
@@ -39919,6 +39987,10 @@
     {
       "fingerprint": "83d03efaa42e0f1961ee7b37ccb08fd54cc28c8d81802017a553ac61c30b02a3",
       "object": "index:security_master.security_events_security_id_stream_version_key"
+    },
+    {
+      "fingerprint": "cdcb1cffd83ff49aa9c6f3f56521fba6b8f5d82d1c3edad0a73f25e244b2827c",
+      "object": "index:security_master.security_factor_observations_pkey"
     },
     {
       "fingerprint": "6d4a103bcb63242ab25a779f6e9d2bc00c6e197b50e77b3084a11cea290f3fce",
@@ -41289,6 +41361,10 @@
       "object": "rls:security_master.security_events"
     },
     {
+      "fingerprint": "1bcdb09ceea902e1ef6188678061ff738c823a7a08053f66e973532b392778c2",
+      "object": "rls:security_master.security_factor_observations"
+    },
+    {
       "fingerprint": "27ab7ae4a165427a6a6fd1679e8712bb17508d4bfae2c021b68ae420d0099feb",
       "object": "rls:security_master.security_field_provenance"
     },
@@ -41481,7 +41557,7 @@
       "object": "schema:reporting"
     },
     {
-      "fingerprint": "e1ad3ce18f73d7a1101481807e5879bca6e43bfbcbbdf0f9696518a1b1ec3f21",
+      "fingerprint": "1a655ce9113b84e2e1a959de099a04fed22ddaa3cd24af90cd2bf21b7c387b9a",
       "object": "schema:security_master"
     },
     {
@@ -42557,6 +42633,10 @@
       "object": "table:security_master.security_events"
     },
     {
+      "fingerprint": "273c440133e8cb3c69b1a23165308d8a56558947406e67f5dcb55258b4963ae4",
+      "object": "table:security_master.security_factor_observations"
+    },
+    {
       "fingerprint": "1008a37464d084d8f6e04d34e1abd8a318aba56a8a50632ebafdda8c5e3956f4",
       "object": "table:security_master.security_field_provenance"
     },
@@ -43331,6 +43411,10 @@
     {
       "fingerprint": "076d5a6707da8ad3888670ecfbe82e73fca1c7d149d9facb58c50b4f21265b1b",
       "object": "trigger:security_master.security_events.security_events_no_truncate"
+    },
+    {
+      "fingerprint": "ed459efc00c9c3e52b127b5b07055e11dae36be7413bb6afe2bcc910c0db53b0",
+      "object": "trigger:security_master.security_factor_observations.security_factor_observations_append_only"
     },
     {
       "fingerprint": "b406ca337ee266facd364d02f5977378da53c3a449df3d3c528d24f1c638071c",
@@ -185906,6 +185990,12 @@
           "object_type": "table"
         },
         {
+          "comment": "Review C3: append-only pool-factor observations; a restatement is a later row for the same effective date.",
+          "fingerprint": "530c9af6308c055e97137ecd4b7bea1dda177bc60e72b62ceac32dd2eec3186c",
+          "object": "security_master.security_factor_observations",
+          "object_type": "table"
+        },
+        {
           "comment": "Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change.",
           "fingerprint": "8a7dff8fdaea18834824cd4cbe70c108f1408c0065625ac9d31d76947c2a9d9c",
           "object": "security_master.security_governance_events",
@@ -187580,6 +187670,18 @@
           "target": "security_master.security_curves.rate_policy",
           "target_kind": "table column",
           "target_name": "security_curves",
+          "target_schema": "security_master"
+        },
+        {
+          "fingerprint": "92c00afda9a4a015ae9430c68381cedd3100e0952e444f805db316a32092c0aa",
+          "kind": "normal",
+          "source": "security_master.ck_security_factor_observations_factor on security_master.security_factor_observations",
+          "source_kind": "table constraint",
+          "source_name": null,
+          "source_schema": "security_master",
+          "target": "security_master.security_factor_observations.factor",
+          "target_kind": "table column",
+          "target_name": "security_factor_observations",
           "target_schema": "security_master"
         },
         {
@@ -190851,7 +190953,7 @@
       "enums": [],
       "exists": true,
       "extensions": [],
-      "fingerprint": "e1ad3ce18f73d7a1101481807e5879bca6e43bfbcbbdf0f9696518a1b1ec3f21",
+      "fingerprint": "1a655ce9113b84e2e1a959de099a04fed22ddaa3cd24af90cd2bf21b7c387b9a",
       "foreign_tables": [],
       "functions": [
         {
@@ -191006,6 +191108,37 @@
           "security_definer": false,
           "security_labels": [],
           "signature": "guard_corporate_action_mutation()",
+          "strict": false,
+          "volatility": "volatile"
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "PUBLIC",
+              "grantor": "meridian",
+              "privilege": "execute"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "execute"
+            }
+          ],
+          "comment": null,
+          "definition_hash": "7ab64d9150aed8c1a471c1664a45663e064f1b46b08309a100fe581bc4350c72",
+          "fingerprint": "90fa5c4cd199058391785424968576d30f93f6768a7f76a7273a3741e8390008",
+          "kind": "function",
+          "language": "plpgsql",
+          "name": "reject_factor_observation_mutation",
+          "owner": "meridian",
+          "parallel_safety": "unsafe",
+          "result_type": "trigger",
+          "schema": "security_master",
+          "security_definer": false,
+          "security_labels": [],
+          "signature": "reject_factor_observation_mutation()",
           "strict": false,
           "volatility": "volatile"
         },
@@ -230779,6 +230912,311 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "1fc089746ac14151a1f9f572033c021ebdba319ee3d598f3da7ee26452f0680c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "observation_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "93a3491d5086abced061322d6e0cee190f776dec27ce1daa6f336acbc55bcd7f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(20,12)",
+              "default": null,
+              "fingerprint": "ef79dc40bfa3e7a482e93a9e488a9fb998fd92f9146b680bd07e35a3d5c64906",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "factor",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5fe74a1cf620e3dd4a66efca66313c628ef1316075d7f568ec824b831a9f2757",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b5bd375cda271361e91876896e9550c3ce8731857f2987fa9792494f4f26ce26",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_ref",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "2c76b5c6cc5247a461f6a51df2f12430546e959a81d79261665ea40c2d4098d8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b48a81ff5ca818d579443e56fb50f73c7378e74d3b719d432752dda4478b3385",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Review C3: append-only pool-factor observations; a restatement is a later row for the same effective date.",
+          "constraints": [
+            {
+              "columns": [
+                "factor"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (factor >= 0::numeric AND factor <= 1::numeric)",
+              "delete_action": null,
+              "fingerprint": "411a32021174f124ad1a3f632ddd07625c82b0a6b11f4c118a61dbc961526472",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_security_factor_observations_factor",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "observation_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (observation_id)",
+              "delete_action": null,
+              "fingerprint": "456bc51c07e5e3d1a35bb5f125ef906f950d528aa7627205e96e8f6b57eb31fa",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_factor_observations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "273c440133e8cb3c69b1a23165308d8a56558947406e67f5dcb55258b4963ae4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_factor_observations_security_date ON security_master.security_factor_observations USING btree (security_id, effective_date, recorded_at)",
+              "expression": null,
+              "fingerprint": "ac11b117f27a2e82b7f5637c83846891776a9ba5b8312fc4c450aa6ab8360081",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "effective_date",
+                "recorded_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_factor_observations_security_date",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_factor_observations_pkey ON security_master.security_factor_observations USING btree (observation_id)",
+              "expression": null,
+              "fingerprint": "cdcb1cffd83ff49aa9c6f3f56521fba6b8f5d82d1c3edad0a73f25e244b2827c",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "observation_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_factor_observations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_factor_observations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_factor_observations_append_only BEFORE DELETE OR UPDATE ON security_master.security_factor_observations FOR EACH ROW EXECUTE FUNCTION security_master.reject_factor_observation_mutation()",
+              "definition_hash": "93073eeab1a6c017c684811db150ffbe3f75da29841082664cb607fd688b5fbc",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "ed459efc00c9c3e52b127b5b07055e11dae36be7413bb6afe2bcc910c0db53b0",
+              "function_schema": "security_master",
+              "function_signature": "reject_factor_observation_mutation()",
+              "level": "row",
+              "name": "security_factor_observations_append_only",
+              "relation": "security_factor_observations",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
               "generated": null,
               "generated_expression": null,
@@ -244299,6 +244737,14 @@
           "forced": false,
           "policies": [],
           "relation": "security_events",
+          "schema": "security_master"
+        },
+        {
+          "enabled": false,
+          "fingerprint": "1bcdb09ceea902e1ef6188678061ff738c823a7a08053f66e973532b392778c2",
+          "forced": false,
+          "policies": [],
+          "relation": "security_factor_observations",
           "schema": "security_master"
         },
         {
@@ -284125,6 +284571,311 @@
               "comment": null,
               "data_type": "uuid",
               "default": null,
+              "fingerprint": "1fc089746ac14151a1f9f572033c021ebdba319ee3d598f3da7ee26452f0680c",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "observation_id",
+              "nullable": false,
+              "ordinal_position": 1,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
+              "fingerprint": "27e31c58056faca7f94a6a53a21a37c23a294f9e50182a79c163b6c0a5521701",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "security_id",
+              "nullable": false,
+              "ordinal_position": 2,
+              "security_labels": [],
+              "type_name": "uuid",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "date",
+              "default": null,
+              "fingerprint": "93a3491d5086abced061322d6e0cee190f776dec27ce1daa6f336acbc55bcd7f",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "effective_date",
+              "nullable": false,
+              "ordinal_position": 3,
+              "security_labels": [],
+              "type_name": "date",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "numeric(20,12)",
+              "default": null,
+              "fingerprint": "ef79dc40bfa3e7a482e93a9e488a9fb998fd92f9146b680bd07e35a3d5c64906",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "factor",
+              "nullable": false,
+              "ordinal_position": 4,
+              "security_labels": [],
+              "type_name": "numeric",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "5fe74a1cf620e3dd4a66efca66313c628ef1316075d7f568ec824b831a9f2757",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "source",
+              "nullable": false,
+              "ordinal_position": 5,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b5bd375cda271361e91876896e9550c3ce8731857f2987fa9792494f4f26ce26",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "evidence_ref",
+              "nullable": true,
+              "ordinal_position": 6,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "timestamp with time zone",
+              "default": "now()",
+              "fingerprint": "2c76b5c6cc5247a461f6a51df2f12430546e959a81d79261665ea40c2d4098d8",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_at",
+              "nullable": false,
+              "ordinal_position": 7,
+              "security_labels": [],
+              "type_name": "timestamptz",
+              "type_schema": "pg_catalog"
+            },
+            {
+              "collation": "pg_catalog.default",
+              "comment": null,
+              "data_type": "text",
+              "default": null,
+              "fingerprint": "b48a81ff5ca818d579443e56fb50f73c7378e74d3b719d432752dda4478b3385",
+              "generated": null,
+              "generated_expression": null,
+              "identity": null,
+              "name": "recorded_by",
+              "nullable": false,
+              "ordinal_position": 8,
+              "security_labels": [],
+              "type_name": "text",
+              "type_schema": "pg_catalog"
+            }
+          ],
+          "comment": "Review C3: append-only pool-factor observations; a restatement is a later row for the same effective date.",
+          "constraints": [
+            {
+              "columns": [
+                "factor"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "CHECK (factor >= 0::numeric AND factor <= 1::numeric)",
+              "delete_action": null,
+              "fingerprint": "411a32021174f124ad1a3f632ddd07625c82b0a6b11f4c118a61dbc961526472",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "ck_security_factor_observations_factor",
+              "no_inherit": false,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "check",
+              "update_action": null,
+              "validated": true
+            },
+            {
+              "columns": [
+                "observation_id"
+              ],
+              "comment": null,
+              "deferrable": false,
+              "definition": "PRIMARY KEY (observation_id)",
+              "delete_action": null,
+              "fingerprint": "456bc51c07e5e3d1a35bb5f125ef906f950d528aa7627205e96e8f6b57eb31fa",
+              "initially_deferred": false,
+              "match_type": null,
+              "name": "security_factor_observations_pkey",
+              "no_inherit": true,
+              "referenced_columns": [],
+              "referenced_schema": null,
+              "referenced_table": null,
+              "type": "primary_key",
+              "update_action": null,
+              "validated": true
+            }
+          ],
+          "definition": null,
+          "definition_hash": null,
+          "fingerprint": "273c440133e8cb3c69b1a23165308d8a56558947406e67f5dcb55258b4963ae4",
+          "foreign_options": [],
+          "foreign_server": null,
+          "indexes": [
+            {
+              "comment": null,
+              "definition": "CREATE INDEX ix_security_factor_observations_security_date ON security_master.security_factor_observations USING btree (security_id, effective_date, recorded_at)",
+              "expression": null,
+              "fingerprint": "ac11b117f27a2e82b7f5637c83846891776a9ba5b8312fc4c450aa6ab8360081",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "security_id",
+                "effective_date",
+                "recorded_at"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "ix_security_factor_observations_security_date",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": false,
+              "ready": true,
+              "security_labels": [],
+              "unique": false,
+              "valid": true
+            },
+            {
+              "comment": null,
+              "definition": "CREATE UNIQUE INDEX security_factor_observations_pkey ON security_master.security_factor_observations USING btree (observation_id)",
+              "expression": null,
+              "fingerprint": "cdcb1cffd83ff49aa9c6f3f56521fba6b8f5d82d1c3edad0a73f25e244b2827c",
+              "included_columns": [],
+              "is_replica_identity": false,
+              "key_columns": [
+                "observation_id"
+              ],
+              "live": true,
+              "method": "btree",
+              "name": "security_factor_observations_pkey",
+              "options": [],
+              "owner": "meridian",
+              "predicate": null,
+              "primary": true,
+              "ready": true,
+              "security_labels": [],
+              "unique": true,
+              "valid": true
+            }
+          ],
+          "is_partition": false,
+          "kind": "table",
+          "name": "security_factor_observations",
+          "options": [],
+          "owner": "meridian",
+          "persistence": "permanent",
+          "policies": [],
+          "replica_identity": "default",
+          "rls_enabled": false,
+          "rls_forced": false,
+          "schema": "security_master",
+          "security_labels": [],
+          "sequence": null,
+          "triggers": [
+            {
+              "comment": null,
+              "definition": "CREATE TRIGGER security_factor_observations_append_only BEFORE DELETE OR UPDATE ON security_master.security_factor_observations FOR EACH ROW EXECUTE FUNCTION security_master.reject_factor_observation_mutation()",
+              "definition_hash": "93073eeab1a6c017c684811db150ffbe3f75da29841082664cb607fd688b5fbc",
+              "enabled": "origin",
+              "events": [
+                "delete",
+                "update"
+              ],
+              "fingerprint": "ed459efc00c9c3e52b127b5b07055e11dae36be7413bb6afe2bcc910c0db53b0",
+              "function_schema": "security_master",
+              "function_signature": "reject_factor_observation_mutation()",
+              "level": "row",
+              "name": "security_factor_observations_append_only",
+              "relation": "security_factor_observations",
+              "schema": "security_master",
+              "timing": "before"
+            }
+          ]
+        },
+        {
+          "acl": [
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "delete"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "insert"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "references"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "select"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "trigger"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "truncate"
+            },
+            {
+              "grantable": false,
+              "grantee": "meridian",
+              "grantor": "meridian",
+              "privilege": "update"
+            }
+          ],
+          "columns": [
+            {
+              "collation": null,
+              "comment": null,
+              "data_type": "uuid",
+              "default": null,
               "fingerprint": "a74106ddec0227854c36263cdd550195c383d7bc6296e7615863c79655a0ebfd",
               "generated": null,
               "generated_expression": null,
@@ -297316,6 +298067,24 @@
           "level": "statement",
           "name": "security_events_no_truncate",
           "relation": "security_events",
+          "schema": "security_master",
+          "timing": "before"
+        },
+        {
+          "comment": null,
+          "definition": "CREATE TRIGGER security_factor_observations_append_only BEFORE DELETE OR UPDATE ON security_master.security_factor_observations FOR EACH ROW EXECUTE FUNCTION security_master.reject_factor_observation_mutation()",
+          "definition_hash": "93073eeab1a6c017c684811db150ffbe3f75da29841082664cb607fd688b5fbc",
+          "enabled": "origin",
+          "events": [
+            "delete",
+            "update"
+          ],
+          "fingerprint": "ed459efc00c9c3e52b127b5b07055e11dae36be7413bb6afe2bcc910c0db53b0",
+          "function_schema": "security_master",
+          "function_signature": "reject_factor_observation_mutation()",
+          "level": "row",
+          "name": "security_factor_observations_append_only",
+          "relation": "security_factor_observations",
           "schema": "security_master",
           "timing": "before"
         },

@@ -13,7 +13,13 @@ public enum SecurityFactorSource
     PrincipalPaydown,
 
     /// <summary>The scalar current factor in the terms, dated by its retained factor date.</summary>
-    CurrentFactor
+    CurrentFactor,
+
+    /// <summary>
+    /// A recorded factor observation (review C3): the latest recorded observation for its effective date,
+    /// so a restatement replaces the earlier value without a terms revision.
+    /// </summary>
+    Observation
 }
 
 /// <summary>One dated factor observation.</summary>
@@ -29,10 +35,11 @@ public sealed record SecurityFactorHistoryConflict(
     IReadOnlyList<SecurityFactorHistoryPoint> Points);
 
 /// <summary>
-/// Dated factor history for a factor-amortizing security: the declared schedule, the factors
-/// observed from effective principal paydowns, and a dated scalar factor, in date order. One point
-/// is kept per date; when sources disagree on a date the paydown wins (it is the observed event),
-/// then the schedule, and the disagreement is listed in <see cref="Conflicts"/>.
+/// Dated factor history for a factor-amortizing security: recorded factor observations, the declared
+/// schedule, the factors observed from effective principal paydowns, and a dated scalar factor, in date
+/// order. One point is kept per date; when sources disagree on a date a recorded observation wins (it
+/// carries restatements, review C3), then the paydown, then the schedule, and the disagreement is listed
+/// in <see cref="Conflicts"/>.
 /// </summary>
 public sealed record SecurityFactorHistoryDto(
     Guid SecurityId,
@@ -52,7 +59,8 @@ public static class SecurityFactorHistoryProjector
         StructuredCashFlowTerms terms,
         DateOnly? currentFactorDate,
         IReadOnlyList<CorporateActionDto> actions,
-        DateTimeOffset asOf)
+        DateTimeOffset asOf,
+        IReadOnlyList<(DateOnly EffectiveDate, decimal Factor)>? observations = null)
     {
         ArgumentNullException.ThrowIfNull(terms);
         ArgumentNullException.ThrowIfNull(actions);
@@ -75,6 +83,12 @@ public static class SecurityFactorHistoryProjector
             }
         }
 
+        if (observations is not null)
+        {
+            candidates.AddRange(observations.Select(static observation =>
+                new SecurityFactorHistoryPoint(observation.EffectiveDate, observation.Factor, SecurityFactorSource.Observation)));
+        }
+
         var points = new List<SecurityFactorHistoryPoint>();
         var conflicts = new List<SecurityFactorHistoryConflict>();
         foreach (var day in candidates.GroupBy(static point => point.AsOfDate).OrderBy(static group => group.Key))
@@ -92,8 +106,9 @@ public static class SecurityFactorHistoryProjector
 
     private static int Rank(SecurityFactorSource source) => source switch
     {
-        SecurityFactorSource.PrincipalPaydown => 0,
-        SecurityFactorSource.TermsSchedule => 1,
-        _ => 2
+        SecurityFactorSource.Observation => 0,
+        SecurityFactorSource.PrincipalPaydown => 1,
+        SecurityFactorSource.TermsSchedule => 2,
+        _ => 3
     };
 }

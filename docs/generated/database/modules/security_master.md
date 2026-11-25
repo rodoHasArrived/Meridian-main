@@ -2,9 +2,9 @@
 
 # `security_master` schema
 
-- Relations: 142
-- Functions/procedures: 16
-- Triggers: 39
+- Relations: 143
+- Functions/procedures: 17
+- Triggers: 40
 - Row-level security policies: 0
 
 The SQL migrations and the PostgreSQL catalog are authoritative. Object identifiers and hashes are normalized for review.
@@ -1405,6 +1405,16 @@ erDiagram
     security_master_security_events_global_sequence_seq {
         text catalogued_object
     }
+    security_master_security_factor_observations {
+        uuid observation_id PK
+        uuid security_id
+        date effective_date
+        numeric_20_12_ factor
+        text source
+        text evidence_ref
+        timestamp_with_time_zone recorded_at
+        text recorded_by
+    }
     security_master_security_field_provenance {
         uuid security_id PK
         text field_path PK
@@ -2104,6 +2114,7 @@ erDiagram
 | `security_curves` | table | 13 | `curve_id` | 0 | 3 | Write-once identity of a stored market curve (discount, forward or inflation): key, kind, currency, index, tenor, day count, interpolation and source. |
 | `security_events` | table | 12 | `global_sequence` | 0 | 4 | - |
 | `security_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |
+| `security_factor_observations` | table | 8 | `observation_id` | 0 | 2 | Review C3: append-only pool-factor observations; a restatement is a later row for the same effective date. |
 | `security_field_provenance` | table | 10 | `security_id`, `field_path`, `origin` | 0 | 2 | - |
 | `security_governance_events` | table | 8 | `global_sequence` | 0 | 3 | Append-only log of Security Master governance writes (operator overrides, alias changes, projection rebuilds, declared underlying-graph links, stored curves, OTC exposure snapshots, collateral balances and margin calls), written in the same transaction as the state change. |
 | `security_governance_events_global_sequence_seq` | sequence | 0 | - | 0 | 0 | - |

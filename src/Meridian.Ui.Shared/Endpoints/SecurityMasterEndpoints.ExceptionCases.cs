@@ -13,6 +13,9 @@ namespace Meridian.Ui.Shared.Endpoints;
 /// <summary>Securities to shadow-compare and the valuation date to compare from.</summary>
 public sealed record CashFlowShadowCompareRequest(IReadOnlyList<Guid> SecurityIds, DateOnly? ValuationDate);
 
+/// <summary>An observed pool factor for an effective date.</summary>
+public sealed record RecordFactorObservationRequest(DateOnly EffectiveDate, decimal Factor, string Source, string? EvidenceRef);
+
 /// <summary>Body assigning an exception case.</summary>
 public sealed record AssignSecurityMasterExceptionCaseRequest(string Assignee);
 
@@ -72,5 +75,31 @@ public static partial class SecurityMasterEndpoints
         })
         .WithName("ShadowCompareSecurityMasterCashFlows")
         .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
+
+        // Review C3: pool-factor observations (no terms revision); a restatement opens a case.
+        group.MapGet(UiApiRoutes.SecurityMasterFactorObservations, async (
+            Guid securityId, [FromServices] Meridian.Storage.SecurityMaster.ISecurityFactorObservationStore observations, CancellationToken ct) =>
+            Results.Json(await observations.ListAsync(securityId, ct).ConfigureAwait(false), jsonOptions))
+        .WithName("ListSecurityFactorObservations")
+        .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
+
+        group.MapPost(UiApiRoutes.SecurityMasterFactorObservations, async (
+            Guid securityId, RecordFactorObservationRequest request, HttpContext context,
+            [FromServices] AppSecurityMaster.SecurityFactorObservationService service, CancellationToken ct) =>
+        {
+            var authorization = RequireSecurityMasterMutationPermission(context);
+            if (authorization is not null)
+                return authorization;
+            try
+            {
+                var result = await service.RecordAsync(securityId, request.EffectiveDate, request.Factor, request.Source, request.EvidenceRef, ResolveActor(context), ct).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
+            }
+        })
+        .WithName("RecordSecurityFactorObservation");
     }
 }
