@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StartWorkflow
+
+Qualified name: <code>Meridian.Contracts.Workstation.StartWorkflow</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs:18](../../../../src/Meridian.Contracts/Workstation/FundWorkflowCommands.cs#L18).
+
+```csharp
+public sealed record StartWorkflow(Guid WorkflowId, FundWorkflowCommandMetadata Metadata);
+```
+
 ## StatementAccountSnapshotPreviewDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.StatementAccountSnapshotPreviewDto</code>. Kind: `record`.
@@ -672,16 +682,4 @@ Lightweight statement-run index row returned by the workstation reconciliation A
 
 ```csharp
 public sealed record StatementRunSummaryDto(string RunId, string ImportId, StatementRunStatus Status, DateTimeOffset StartedAtUtc, DateTimeOffset? CompletedAtUtc, int PositionMatches, int CashMatches, int TransactionMatches, int OpenExceptionCount);
-```
-
-## StatementRunValidationDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.StatementRunValidationDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs:339](../../../../src/Meridian.Contracts/Workstation/StatementReconciliationDtos.cs#L339).
-
-Validation envelope for a statement reconciliation run.
-
-```csharp
-public sealed record StatementRunValidationDto(string RunId, IReadOnlyList<StatementValidationIssueDto> Issues, bool IsBlocked);
 ```

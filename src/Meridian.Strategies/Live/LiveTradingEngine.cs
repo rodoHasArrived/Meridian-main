@@ -198,6 +198,20 @@ public sealed class LiveTradingEngine : IPromotedRunLauncher, IAsyncDisposable
                     return await DeferAsync(run, "QuantScript activation requires a supported execution runtime.", ct).ConfigureAwait(false);
                 if (artifact.Route == StrategyAuthoringRoute.Designer)
                 {
+                    if (run.ParameterSet?.ContainsKey(DesignerStrategyVersion.VersionKey) == true ||
+                        artifact.Parameters.ContainsKey(DesignerStrategyVersion.VersionKey))
+                    {
+                        if (run.ParameterSet?.ContainsKey(DesignerStrategyVersion.VersionKey) != true ||
+                            run.ExecutionRealism is null || artifact.DesignerDocument is null ||
+                            !StrategyRunRepositoryVisibility.TryGetRetainedScope(run, out var artifactScope) ||
+                            !string.Equals(artifactId, StrategyArtifact.FromScopedDesigner(
+                                artifact.DesignerDocument,
+                                new StrategyRunRepositoryScope(artifactScope.TenantId, artifactScope.CompanyId),
+                                run.ExecutionRealism).ComputeId(), StringComparison.Ordinal))
+                            return await DeferAsync(run,
+                                "The scoped Designer artifact differs from the retained strategy scope or execution settings.", ct)
+                                .ConfigureAwait(false);
+                    }
                     creationParameters = new Dictionary<string, string>(run.ParameterSet ?? new Dictionary<string, string>(),
                         StringComparer.OrdinalIgnoreCase)
                     {

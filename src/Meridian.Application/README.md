@@ -11,6 +11,13 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Application
 
+Corporate-action ingest forwards specialized source terms and the provider's original JSON
+record into durable source proposals. Exact raw-text digests are checked before recording; source
+versions remain idempotent across JSON formatting changes without replacing the first retained
+payload. Amendments retain earlier versions. Providers can preserve unknown upstream currency,
+and fetch outcomes retain explicit endpoint/type coverage. These observations remain review-only;
+source agreement does not accept a canonical event or authorize accounting.
+
 `SecurityMaster/Valuation/AssetPositionMarketValuationService` adapts an owned book's exact dated
 instrument-position projection to registered valuation models. It resolves retained-only dated
 Security Master terms, validates their economic window, checks position/state identity and all

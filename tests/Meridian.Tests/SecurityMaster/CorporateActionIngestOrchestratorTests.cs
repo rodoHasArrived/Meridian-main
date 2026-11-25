@@ -19,7 +19,7 @@ namespace Meridian.Tests.SecurityMaster;
 /// consensus voting, dedupe against already-recorded actions, and staged handling for
 /// announcements below the configured source threshold.
 /// </summary>
-public sealed class CorporateActionIngestOrchestratorTests
+public sealed partial class CorporateActionIngestOrchestratorTests
 {
     private static readonly DateOnly ExDate = new(2026, 8, 14);
 
@@ -514,7 +514,7 @@ public sealed class CorporateActionIngestOrchestratorTests
             request.RequestUri!.Query.Contains("page_token=", StringComparison.Ordinal)
                 ? new HttpResponseMessage(HttpStatusCode.InternalServerError)
                 : AlpacaJson(
-                    """{"corporate_actions":{"cash_dividends":[{"ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":"next-1"}"""));
+                    """{"corporate_actions":{"cash_dividends":[{"process_date":"2026-08-14","ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":"next-1"}"""));
         var orchestrator = CreateDurableOrchestrator(
             securityId,
             out var recordedRequests,
@@ -584,7 +584,7 @@ public sealed class CorporateActionIngestOrchestratorTests
     {
         var securityId = Guid.NewGuid();
         var alpaca = CreateAlpacaProvider(_ => AlpacaJson(
-            """{"corporate_actions":{"cash_dividends":[{"ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":null}"""));
+            """{"corporate_actions":{"cash_dividends":[{"process_date":"2026-08-14","ex_date":"2026-08-14","id":"first","rate":0.24,"symbol":"ACME"}]},"next_page_token":null}"""));
         var orchestrator = CreateDurableOrchestrator(securityId, out var recordedRequests, alpaca);
 
         var result = await orchestrator.IngestAsync(new CorporateActionIngestRequest());

@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## EvidenceDocumentReviewStateDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentReviewStateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:138](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L138).
+
+```csharp
+public sealed record EvidenceDocumentReviewStateDto(EvidenceDocumentReviewStatusDto Status, string? Reviewer = null, DateTimeOffset? ReviewedAt = null, string? Notes = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;EvidenceDocumentConfirmedFieldDto&gt; ConfirmedFields { get; init; } = [];</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:144](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L144) |  |
+
 ## EvidenceDocumentReviewStatusDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.EvidenceDocumentReviewStatusDto</code>. Kind: `enum`.
@@ -749,14 +765,4 @@ Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:44](../../
 
 ```csharp
 public sealed record ExposureTrendPointDto(DateTimeOffset AsOfUtc, decimal NetExposure, decimal CollateralCoverageRatio);
-```
-
-## FeatureCapabilitySettingsResponse
-
-Qualified name: <code>Meridian.Contracts.Workstation.FeatureCapabilitySettingsResponse</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs:3](../../../../src/Meridian.Contracts/Workstation/FeatureCapabilityDtos.cs#L3).
-
-```csharp
-public sealed record FeatureCapabilitySettingsResponse(IReadOnlyList<FeatureCapabilityToggleDto> Capabilities);
 ```
