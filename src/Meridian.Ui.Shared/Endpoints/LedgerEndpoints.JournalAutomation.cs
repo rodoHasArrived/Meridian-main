@@ -911,5 +911,50 @@ public static partial class LedgerEndpoints
         .RequireWorkstationTenantCompanyScope()
         .RequireFundScopedWriteTenant()
         .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        // Queues a soft-closed period's tiered profit allocation from retained earnings to partners'
+        // capital as a governed adjusting draft; the allocation is capped at posted retained earnings.
+        app.MapPost(UiApiRoutes.LedgerJournalAutomationPartnershipWaterfallIntake, async (RunPartnershipWaterfallDraftIntakeRequest request, HttpContext context) =>
+        {
+            if (!HasLedgerMutationPermission(context))
+            {
+                return EndpointHelpers.Forbidden();
+            }
+
+            var runner = context.RequestServices.GetService<AutomatedJournalIntakeRunner>();
+            if (runner is null)
+            {
+                return ServiceUnavailable();
+            }
+
+            try
+            {
+                var tenantContext = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+                var result = await runner.RunPartnershipWaterfallIntakeAsync(request with
+                {
+                    Actor = ResolveMutationActor(context, request.Actor),
+                    TenantId = tenantContext.TenantId,
+                    CompanyId = tenantContext.CompanyId
+                }, context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(result, jsonOptions);
+            }
+            catch (ArgumentException ex)
+            {
+                return Results.BadRequest(new { error = ex.Message });
+            }
+            catch (InvalidOperationException ex)
+            {
+                return ApiProblemDetails.Conflict(context, ex.Message);
+            }
+        })
+        .WithName("RunLedgerJournalAutomationPartnershipWaterfallIntake").RequireAnyPermission(UserPermission.AdminMaintenance, UserPermission.ManageDirectLending, UserPermission.ManageLedgerReports)
+        .Produces<AutomatedJournalIntakeRunResult>(StatusCodes.Status200OK)
+        .Produces(StatusCodes.Status400BadRequest)
+        .Produces(StatusCodes.Status403Forbidden)
+        .ProducesProblem(StatusCodes.Status409Conflict)
+        .Produces(StatusCodes.Status501NotImplemented)
+        .RequireWorkstationTenantCompanyScope()
+        .RequireFundScopedWriteTenant()
+        .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
     }
 }

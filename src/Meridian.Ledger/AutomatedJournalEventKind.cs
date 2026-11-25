@@ -64,4 +64,7 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Carrying charge on an open short lot: a stock borrow fee or a payment in lieu of dividend.</summary>
     ShortCarryCharged,
+
+    /// <summary>Period distributable profit allocated from retained earnings to partners' capital through a tiered waterfall.</summary>
+    PartnershipProfitAllocated,
 }

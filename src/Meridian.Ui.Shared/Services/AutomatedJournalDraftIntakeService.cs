@@ -511,6 +511,9 @@ public sealed class AutomatedJournalDraftIntakeService
         {
             PriorPeriodAdjustmentSource = priorPeriodSource is null ? null : priorPeriodSource with { ExpectedLines = lines },
             ReversalOfJournalEntryId = priorPeriodSource?.SourceJournalEntryId,
+            // A waterfall allocation follows the period close it draws on, so it posts as an approved
+            // adjustment into the soft-closed period rather than as an ordinary entry.
+            IsAdjustingEntry = draft.Event.Kind == AutomatedJournalEventKind.PartnershipProfitAllocated,
             PrivateCapitalAuthorityJson = draft.Metadata.Tags?.GetValueOrDefault("private-capital.authority"),
             DistributionDeclarationJson = draft.Metadata.Tags?.GetValueOrDefault(DistributionDeclarationDraftProducer.DeclarationTag)
         };

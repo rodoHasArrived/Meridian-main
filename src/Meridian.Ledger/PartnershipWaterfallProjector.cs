@@ -10,7 +10,6 @@ public static class PartnershipWaterfallProjector
 {
     private const decimal AllocationTolerance = LedgerToleranceConstants.Allocation;
 
-    [PostingCalculationNotYetConnected("Tiered waterfall allocation lines are projected and tested, but no production posting path calls this projector yet.")]
     public static PartnershipWaterfallAllocationProjection Project(PartnershipWaterfallAllocationInput input)
     {
         ArgumentNullException.ThrowIfNull(input);
@@ -21,7 +20,10 @@ public static class PartnershipWaterfallProjector
         var investorAllocations = BuildInvestorAllocations(tierAllocations, input.Investors);
         var allocatedProfit = tierAllocations.Sum(static allocation => allocation.AllocatedAmount);
         var unallocatedProfit = input.DistributableProfit - allocatedProfit;
-        var lines = BuildLines(input.FundId, allocatedProfit, investorAllocations);
+        var retainedEarnings = input.RetainedEarningsAccount ?? LedgerAccounts.RetainedEarningsFor(input.FundId);
+        if (retainedEarnings.AccountType != LedgerAccountType.Equity)
+            throw new ArgumentException("The waterfall must draw on an equity retained-earnings account.", nameof(input));
+        var lines = BuildLines(retainedEarnings, allocatedProfit, investorAllocations);
         var description = input.Description ?? $"Partnership waterfall allocation for {input.FundId} period {input.PeriodId}";
 
         return new PartnershipWaterfallAllocationProjection(
@@ -103,7 +105,7 @@ public static class PartnershipWaterfallProjector
     }
 
     private static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> BuildLines(
-        string fundId,
+        LedgerAccount retainedEarnings,
         decimal allocatedProfit,
         IReadOnlyList<PartnershipInvestorAllocation> investorAllocations)
     {
@@ -112,7 +114,7 @@ public static class PartnershipWaterfallProjector
 
         var lines = new List<(LedgerAccount account, decimal debit, decimal credit)>
         {
-            (LedgerAccounts.RetainedEarningsFor(fundId), allocatedProfit, 0m),
+            (retainedEarnings, allocatedProfit, 0m),
         };
 
         foreach (var allocation in investorAllocations)
