@@ -1451,6 +1451,10 @@ not been recorded.
     `assumedMoneyDefaults` (`balance ?? 0`, `?? "USD"`) and `placeholderVocabulary` (ad hoc
     `"—"`, `"Unavailable"`, `"Not supplied"`, `"Not recorded"`, `"Not retained"`). The
     `accounting.non-usd` scenario rebooks the accounting payload in EUR for screenshots.
+    `FinancialValue` renders each state with its own look and accessible text and exposes it as
+    `data-value-state`: a value, a confirmed zero, a dashed "Not available" chip (missing or
+    unparseable), "n/a" (`condition="not-applicable"`, read as "Not applicable"), or a lock with
+    "No access" (`restricted`, which never displays the supplied value or offers its passport).
   - *Value origin*: Amount passport triggers show worded tags (Source, Calculated, Override,
     Estimate, Zero, Stale, Blocked, No access), never `?` or abbreviations; an unknown origin
     shows no tag and reads "Origin unknown" inside the passport.
