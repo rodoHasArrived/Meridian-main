@@ -507,6 +507,23 @@ databases therefore changes the file set, not what the evidence proves. Whether
 certification should instead dump a freshly migrated database is an open owner decision
 that this change does not make.
 
+**Shard counts set to one — November 25, 2026.** After the change merged, none of the 40
+most recent Meridian CI runs (10:38 to 13:11 UTC) had completed: every run was cancelled,
+queued or pending, and the merge commit's own run was superseded before it started. With
+no free runner, a second shard buys no wall-clock time and repeats setup, so both lanes now
+run one shard. `build-workstation`, the verdict jobs, the two-process integration suite and
+the documentation-only skip are unchanged, and `quality-gate` no longer waits for browser
+tests before starting .NET. Restore two shards per lane, as described above, once runs start
+within a minute or two of being created.
+
+Two causes were visible and neither is addressed here. Pushes outpaced the queue: `main`
+received five pushes in about thirty minutes, each cancelling the previous run. And a
+cancelled run does not release its concurrency group until its `if: always()` gate jobs
+have themselves obtained a runner, so each supersession costs a full queue wait before the
+next run for that branch can start. The verdict jobs added on November 25 are two more such
+jobs per run. Skipping gates on cancellation is not a safe fix, because GitHub treats a
+skipped required check as passing.
+
 ### Benchmark promotion criteria
 
 Hosted defaults remain two .NET test processes and eight browser files per batch; local .NET

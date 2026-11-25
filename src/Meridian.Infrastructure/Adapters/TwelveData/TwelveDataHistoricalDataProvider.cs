@@ -200,8 +200,7 @@ public sealed partial class TwelveDataHistoricalDataProvider : BaseHistoricalDat
             {
                 RecordRateLimitHit(RateLimitWindow);
                 RaiseRateLimitHit(GetRateLimitInfo());
-                throw new RateLimitException("Twelve Data historical request exceeded its quota.",
-                    provider: Name, symbol: symbol, retryAfter: RateLimitWindow);
+                throw CreateRateLimitException("Twelve Data historical request exceeded its quota.", symbol, RateLimitWindow);
             }
 
             // Other 400 errors (invalid parameters, unsupported intervals, etc.) are failures.
