@@ -189,12 +189,10 @@ jobs:
         with:
           python-version: "3.12"
 
-      # --parallel-build lets MSBuild use every runner core for the one shared graph build.
-      # The local default stays serial; test slices still run one at a time.
       - name: Run isolated Windows validation
         env:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
-        run: python build/scripts/ci/run-windows-ci-tests.py --parallel-build --results-dir artifacts/wpf-validation/windows-desktop-build
+        run: python build/scripts/ci/run-windows-ci-tests.py --results-dir artifacts/wpf-validation/windows-desktop-build
 
       - name: Decide desktop smoke publish
         id: desktop-smoke

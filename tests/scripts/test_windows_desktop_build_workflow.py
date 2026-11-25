@@ -19,7 +19,7 @@ class WindowsDesktopBuildWorkflowTests(unittest.TestCase):
 
     def test_workflow_uses_isolated_wpf_validation_script(self) -> None:
         self.assertIn("Run isolated Windows validation", self.workflow)
-        self.assertIn("python build/scripts/ci/run-windows-ci-tests.py --parallel-build", self.workflow)
+        self.assertIn("python build/scripts/ci/run-windows-ci-tests.py", self.workflow)
         self.assertIn("artifacts/wpf-validation/windows-desktop-build", self.workflow)
         self.assertNotIn("dotnet test tests/Meridian.Wpf.Tests/Meridian.Wpf.Tests.csproj", self.workflow)
 
