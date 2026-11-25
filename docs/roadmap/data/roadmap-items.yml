@@ -8,7 +8,7 @@ registry:
   title: Meridian Roadmap Items
   owner: Core Team
   # Inventory snapshot only; individual rows retain their own evidence review dates.
-  snapshot_date: 2026-11-12
+  snapshot_date: 2026-11-25
 
 items:
   - id: W1-DATA-001
@@ -913,7 +913,7 @@ items:
         path: src/Meridian.Ui.Shared/Services/WorkstationKpiDefinitions.cs
       - type: test
         path: tests/Meridian.Tests/Ui/WorkstationKpiDefinitionsTests.cs
-    last_reviewed: 2026-07-06
+    last_reviewed: 2026-11-25
 
   - id: W8-UX-CONSOL-001
     title: Browser workstation screen consolidation
@@ -928,7 +928,7 @@ items:
     health: on_track
     priority: medium
     evidence_posture: in_progress
-    status_note: Formula Workbench fold remains withdrawn pending a real catalog endpoint; that endpoint-bearing work belongs in a separate item. Retained redirects support persisted links.
+    status_note: Screen consolidation only. Formula Workbench fold remains withdrawn pending a real catalog endpoint. The 2026-11 trust-and-figures UX program is tracked separately under W8-UX-TRUST-001.
     decision_ids: []
     pr_references: []
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W8-UX-CONSOL-001.md
@@ -945,7 +945,7 @@ items:
         path: docs/development/web-ui-structural-improvement-proposal.md
       - type: reference
         path: docs/engineering/plans/wpf-web-ui-alignment-plan.md
-    last_reviewed: 2026-07-19
+    last_reviewed: 2026-11-25
 
   - id: W9-TRUTH-001
     title: Loud fail-closed handling of simulated data and in-memory persistence
@@ -1735,7 +1735,7 @@ items:
     health: green
     priority: high
     evidence_posture: in_progress
-    status_note: Posted-ledger and governed-run proof slices are implemented. Other report families, NAV/portfolio amounts, current-candidate verification and live acceptance remain open.
+    status_note: Posted-ledger and governed-run proof slices are implemented; PR 3704 adds scoped Amount passports for posted-ledger, report and brokerage-portfolio amounts. Other report families, NAV amounts, current-candidate verification and live acceptance remain open.
     decision_ids: []
     pr_references:
     - 3041
@@ -1811,7 +1811,7 @@ items:
         path: src/Meridian.Ui/dashboard/src/screens/finance-standard-pages-screen.test.tsx
       - type: document
         path: docs/testing/w10-amount-provenance.md
-    last_reviewed: 2026-10-28
+    last_reviewed: 2026-11-25
   - id: W10-RECON-002
     title: Break clustering and bulk-resolution activation
     wave: W10
@@ -2216,10 +2216,10 @@ items:
       - Accounting
       - Reporting
     owner_lane: Accounting and Ledger
-    status: planned
+    status: in_progress
     health: green
     priority: medium
-    evidence_posture: planned_evidence
+    evidence_posture: in_progress
     status_note: Retained consolidation slices are bounded implementation; exact versioned policy, participating entities and acceptance requirements remain in the linked detail.
     decision_ids: []
     pr_references: []
@@ -2276,7 +2276,7 @@ items:
         path: src/Meridian.FinancialOperations/Intercompany/IntercompanyObligationMonitorService.cs
       - type: test
         path: tests/Meridian.Tests/Integration/IntercompanyAgreementStorePostgresTests.StructuredTerms.cs
-    last_reviewed: 2026-11-13
+    last_reviewed: 2026-11-25
 
   - id: W10-LOT-002
     title: Security-identified open-lot convergence
@@ -2547,7 +2547,7 @@ items:
     health: green
     priority: medium
     evidence_posture: in_progress
-    status_note: Bond analytics and schedule/cutover tools are bounded implementation. Curve pins, batch staging, settlement posting and floating-rate analytics remain open; no live cutover or acceptance.
+    status_note: Bond analytics, schedule/cutover tools, fixed-coupon paper settlement and a book-scoped coupon/principal receipt queue are bounded implementation. Curve pins, batch staging, ledger settlement posting and floating-rate analytics remain open; no live cutover or acceptance.
     decision_ids: []
     pr_references:
     - 3328
@@ -2571,7 +2571,7 @@ items:
         path: docs/engineering/plans/bond-capability-expansion.md
       - type: reference
         path: docs/testing/evidence/next-work-20261029/README.md
-    last_reviewed: 2026-10-31
+    last_reviewed: 2026-11-25
   - id: W11-PASSPORT-001
     title: Number Passport contract across amount surfaces
     wave: W11
@@ -2588,10 +2588,11 @@ items:
     health: green
     priority: high
     evidence_posture: planned_evidence
-    status_note: Generalize the posted-ledger proof slice into the charter Number Passport contract; planned scope confers no delivery acceptance.
+    status_note: Scoped Amount passport surfaces (PR 3704) landed under W10-PROV-001 provenance, ahead of its acceptance. No standalone versioned Number Passport contract exists yet, so this row stays planned and confers no delivery acceptance.
     decision_ids:
     - DEC-CHARTER-DIRECTION-001
-    pr_references: []
+    pr_references:
+    - 3704
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W11-PASSPORT-001.md
     exit_criteria:
       - One versioned Number Passport contract in Meridian.Contracts carries a stable subject identifier, subject kind, amount, currency, basis, as-of and effective dates, the complete declared scope (tenant, organization, entity, fund, book, period), an evidence status drawn from the shared vocabulary, freshness, and links to journal entries, source records, approvals, and reconciliation state.
@@ -2611,7 +2612,7 @@ items:
     evidence:
       - type: reference
         path: docs/product/meridian-design-document.md
-    last_reviewed: 2026-10-16
+    last_reviewed: 2026-11-25
 
   - id: W11-COVER-001
     title: Verified Coverage measurement and operator surface
@@ -3091,14 +3092,18 @@ items:
       - Strategy
       - Trading
     owner_lane: Strategy Analytics
-    status: planned
+    status: in_progress
     health: green
     priority: medium
-    evidence_posture: planned_evidence
-    status_note: Planned unranked strategy formulation, research, backtesting, promotion and execution direction; it grants no live activation authority.
+    evidence_posture: in_progress
+    status_note: Bounded slices landed (strategy-artifact identity, governed versions, scoped Designer paper execution, Designer artifact binding). Unranked; supported envelope, recovery, end-to-end rehearsal and acceptance remain open. Grants no live activation authority.
     decision_ids:
     - DEC-TRADING-STRATEGY-DIRECTION-001
-    pr_references: []
+    pr_references:
+    - 3644
+    - 3686
+    - 3708
+    - 3731
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W13-STRAT-001.md
     exit_criteria:
       - The declared slice identifies a supported strategy family, authoring route, instruments, data dependencies, execution modes, account, and broker capability. Existing definitions, Designer documents, QuantScript, and retained run/artifact records converge on one versioned strategy-artifact identity; parameters, universe, decision rules, cost assumptions, risk limits, and approval history remain reproducible after edits.
@@ -3131,7 +3136,11 @@ items:
         path: src/Meridian.Strategies/Services/StrategyLiveAuthorizationService.cs
       - type: test
         path: tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs
-    last_reviewed: 2026-10-30
+      - type: reference
+        path: docs/engineering/blueprints/strategy-artifact-identity-blueprint.md
+      - type: test
+        path: tests/Meridian.Tests/Ui/DesignerPaperRehearsalTests.cs
+    last_reviewed: 2026-11-25
 
   - id: W13-OMS-001
     title: Governed order management and broker execution workbench
@@ -3144,14 +3153,17 @@ items:
       - Trading
       - Portfolio
     owner_lane: Execution and Fund Accounts
-    status: planned
+    status: in_progress
     health: green
     priority: medium
-    evidence_posture: planned_evidence
-    status_note: Planned unranked reviewed order intent and canonical OMS lifecycle direction; account, risk, broker and accounting controls remain required.
+    evidence_posture: in_progress
+    status_note: Bounded slices landed (order command boundary Phases 0-5, governed live order authority, retained cancel-all evidence). Unranked; manual-intent contract, recovery, broker reconciliation, live-support evidence and acceptance remain open.
     decision_ids:
     - DEC-TRADING-STRATEGY-DIRECTION-001
-    pr_references: []
+    pr_references:
+    - 3644
+    - 3708
+    - 3731
     status_detail: docs/roadmap/snapshots/status-prose-2026-11-14/W13-OMS-001.md
     exit_criteria:
       - The declared slice names supported broker/account ownership, instrument classes, sizing conventions, order types, time-in-force rules, paper/live modes, and deployment posture. Capability evidence and refusal behavior cover unsupported combinations; configured integration alone cannot imply tested live support.
@@ -3185,7 +3197,13 @@ items:
         path: tests/Meridian.Tests/Execution/OrderAuthorityPaperRehearsalTests.cs
       - type: test
         path: tests/Meridian.Tests/Strategies/LiveTradingEngineTests.GovernedRehearsal.cs
-    last_reviewed: 2026-10-30
+      - type: reference
+        path: docs/engineering/blueprints/governed-order-command-boundary-blueprint.md
+      - type: test
+        path: src/Meridian.Ui/dashboard/src/screens/trading-screen.order-authority.test.tsx
+      - type: test
+        path: tests/Meridian.Tests/Execution/CancelAllIncidentTests.cs
+    last_reviewed: 2026-11-25
   - id: W14-ATTEST-001
     title: Single-principal attestation for governed approvals in the single-operator envelope
     wave: W14
@@ -3826,3 +3844,143 @@ items:
       - type: test
         path: tests/Meridian.Tests/Ui/IntercompanyAccrualScheduleEndpointTests.cs
     last_reviewed: 2026-11-17
+
+  - id: W12-EXTGL-001
+    title: Governed external GL posting (QuickBooks Online)
+    wave: W12
+    stage_gates:
+      - AccountingRecords
+    workspace:
+      - Accounting
+    owner_lane: Accounting and Ledger
+    status: in_progress
+    health: yellow
+    priority: medium
+    evidence_posture: in_progress
+    status_note: Registered 2026-11-25 after PR 3703 merged without a roadmap anchor. First write path from Meridian to a third-party ledger; supported envelope, failure recovery evidence and owner acceptance remain open. Implementation presence confers no acceptance.
+    decision_ids: []
+    pr_references:
+    - 3703
+    exit_criteria:
+      - The supported provider, entity, account-mapping and journal scope is declared; unsupported combinations are refused rather than posted.
+      - Every external posting is driven from posted Meridian ledger journals through a durable outbox, retains the provider's receipt, and is idempotent across retries, restarts and lost acknowledgments.
+      - Rejections, partial failures and drift between the Meridian ledger and the external GL stay visible to operators with a retained resolution path; Meridian remains the source of posted accounting truth.
+      - Provider credentials follow the existing credential-ownership controls and never appear in effective configuration or logs.
+      - Browser and WPF expose posting status over shared contracts, or the WPF gap is sequenced under W8-WPF-PARITY-001.
+    source_modules:
+      - SRC-DESIGN-FINANCIAL-OPERATIONS
+      - SRC-STORAGE-ACCOUNTING
+      - SRC-PROVIDER-SDK
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+    evidence:
+      - type: source
+        path: src/Meridian.FinancialOperations/AccountingSystem/ExternalGlPostingService.cs
+      - type: source
+        path: src/Meridian.ProviderSdk/AccountingSystem/IExternalGlPostingProvider.cs
+      - type: test
+        path: tests/Meridian.Tests/Storage/ExternalGlPostingPostgresTests.cs
+      - type: reference
+        path: docs/operators/external-gl-providers.md
+    last_reviewed: 2026-11-25
+
+  - id: W1-DATA-PROVCFG-001
+    title: Provider configuration, connection templates and quota-aware backfill
+    wave: W1
+    stage_gates:
+      - DataConfidence
+    workspace:
+      - Data
+      - Settings
+    owner_lane: Data Confidence and Validation
+    status: in_progress
+    health: green
+    priority: medium
+    evidence_posture: in_progress
+    status_note: Registered 2026-11-25 to anchor provider-configuration work merged since 2026-11-11 without a roadmap item. Connection templates, secret-free effective configuration, provenance receipts and quota-aware backfill are bounded implementation; acceptance remains open.
+    decision_ids: []
+    pr_references:
+    - 3572
+    - 3664
+    - 3693
+    - 3694
+    - 3695
+    - 3696
+    - 3698
+    - 3701
+    - 3706
+    exit_criteria:
+      - Provider connection templates create configuration through one shared service and endpoint consumed by both workstations.
+      - Effective configuration never exposes provider secrets, and the redaction rules are covered by tests.
+      - Backfill scheduling respects declared provider quotas, keeps reserved quota available while backfills wait, and records why a job is waiting.
+      - Provider configuration changes and backfill runs retain provenance receipts that operators can inspect.
+    source_modules:
+      - SRC-APP
+      - SRC-CONTRACTS
+      - SRC-UI-SHARED
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+    evidence:
+      - type: source
+        path: src/Meridian.Application/ProviderRouting/ProviderConnectionTemplateService.cs
+      - type: source
+        path: src/Meridian.Application/Http/EffectiveConfigurationProjection.cs
+      - type: test
+        path: tests/Meridian.Tests/Application/Ui/EffectiveConfigurationProjectionTests.cs
+      - type: source
+        path: src/Meridian.Application/Backfill/BackfillQuotaPlanner.cs
+      - type: test
+        path: tests/Meridian.Tests/Application/Backfill/WorkstationBackfillQuotaTests.cs
+      - type: reference
+        path: docs/operators/provider-credentials.md
+      - type: reference
+        path: docs/operators/provider-backfill-operations.md
+    last_reviewed: 2026-11-25
+
+  - id: W8-UX-TRUST-001
+    title: Workstation trust-and-figures UX program
+    wave: W8
+    stage_gates:
+      - AccountingRecords
+    workspace:
+      - Trading
+      - Portfolio
+      - Accounting
+      - Reporting
+      - Strategy
+      - Data
+      - Settings
+    owner_lane: Workstation Shell and UX
+    status: in_progress
+    health: green
+    priority: medium
+    evidence_posture: in_progress
+    status_note: Registered 2026-11-25 to anchor the 2026-11 workstation UX program (Phases A-F, casework, command-palette record search, chart evidence inspectors, Asset Detail, shortcut editors). Presentation work over shared contracts; acceptance remains open.
+    decision_ids:
+    - DEC-UI-CONSOLIDATION-001
+    pr_references:
+    - 3605
+    - 3631
+    - 3638
+    - 3643
+    - 3663
+    - 3665
+    - 3699
+    - 3700
+    - 3711
+    - 3713
+    exit_criteria:
+      - Every financial figure states its trust, scope and freshness once, with the same formatting across workspaces.
+      - Scope survives navigation between linked records, and exceptions are listed once with a path to closure.
+      - Changes stay within the seven charter root workspaces and do not alter shared contracts, read models or endpoints.
+      - WPF parity for each delivered surface is recorded in the WPF alignment plan or sequenced under W8-WPF-PARITY-001.
+    source_modules:
+      - SRC-UI-DASHBOARD
+      - SRC-WPF
+      - SRC-UI-SHARED
+    evidence:
+      - type: reference
+        path: docs/engineering/plans/web-workstation-ux-review-plan-2026-11.md
+      - type: reference
+        path: docs/engineering/plans/wpf-web-ui-alignment-plan.md
+    last_reviewed: 2026-11-25

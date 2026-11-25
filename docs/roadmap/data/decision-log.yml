@@ -23,14 +23,29 @@ decisions:
       - W2-TRD-001
   - id: DEC-UI-LANE-002
     title: Browser workstation active and WPF product work deferred
-    status: accepted
+    status: superseded
     decided_on: 2026-07-05
     owner_lane: Workstation Shell and UX
-    summary: Browser workstation work remains the active operator UI lane. WPF product/UI work is deferred until explicitly reactivated; existing WPF shell code, compatibility, tests, and release workflows remain retained support surfaces, and shared contracts/API/read models must stay client-neutral where existing WPF consumers depend on them.
+    summary: Superseded by DEC-UI-LANE-003, which records the 2026-07-06 WPF reactivation. Browser workstation work remains the active operator UI lane. WPF product/UI work is deferred until explicitly reactivated; existing WPF shell code, compatibility, tests, and release workflows remain retained support surfaces, and shared contracts/API/read models must stay client-neutral where existing WPF consumers depend on them.
     related_roadmap_items:
       - W5X-FINOPS-001
       - W5X-FREX-001
       - W7-LIVE-001
+  - id: DEC-UI-LANE-003
+    title: Browser and WPF desktop workstations are active co-equal UI lanes
+    status: accepted
+    decided_on: 2026-07-06
+    owner_lane: Workstation Shell and UX
+    summary: >-
+      Recorded on 2026-11-25 to close a gap in this log. The WPF desktop workstation was reactivated
+      on 2026-07-06 as a co-equal UI lane alongside the browser workstation, as already stated in
+      the W8-WPF-PARITY-001 status detail, program-state.yml (active_ui_lane) and CLAUDE.md. The
+      immediate WPF focus is web-UI parity over shared contracts and read models
+      (docs/engineering/plans/wpf-web-ui-alignment-plan.md); neither client forks product state.
+      This entry supersedes DEC-UI-LANE-002 and adopts no new scope beyond the recorded reactivation.
+    related_roadmap_items:
+      - W8-WPF-PARITY-001
+      - W8-UX-CONSOL-001
   - id: DEC-UI-CONSOLIDATION-001
     title: Consolidate browser screens by deepening host screens behind charter roots
     status: accepted
@@ -504,7 +519,30 @@ decisions:
       append-only. While a policy is active, a listed finding at the close period end adds a blocking close-readiness
       contributor, and confirmation balances that cannot be read make the close decision incomplete rather than
       being ignored. The advisory list is unchanged. The decision weakens no review, posting or authorization
-      control and grants no release authority.
+      control and grants no release authority. Note added 2026-11-25: PR 3674 (2026-11-19) merged the
+      opt-in close-blocking implementation (IntercompanyConfirmationCloseGate) ahead of this decision.
+      It is off by default and blocks nothing until a book adopts an approved policy, so the code
+      does not act on an unaccepted decision; the owner still needs to accept or reject this entry.
     related_roadmap_items:
       - W12-ICCONFIRM-001
       - W10-SEAM-001
+  - id: DEC-W13-STATUS-001
+    title: "Proposed: record W13-STRAT-001, W13-OMS-001 and W10-CONSOL-001 as in progress"
+    status: proposed
+    decided_on: 2026-11-25
+    owner_lane: Core Team
+    summary: >-
+      Proposed by the 2026-11-25 registry verification and awaiting the repository owner's acceptance.
+      DEC-TRADING-STRATEGY-DIRECTION-001 kept W13-STRAT-001 and W13-OMS-001 planned, but bounded
+      implementation has since merged (PRs 3644, 3686, 3708 and 3731: order command boundary, scoped
+      Designer paper execution, governed strategy versions and live order authority, Designer artifact
+      binding and retained cancel-all evidence). W10-CONSOL-001 likewise links about fifteen source and
+      test entries while still marked planned. The registry now shows all three as in_progress so
+      planners can see the work in flight. The change adopts no delivery rank, implementation
+      completion, operator acceptance, live activation authority or release certification; every
+      reservation in DEC-TRADING-STRATEGY-DIRECTION-001 stays in force. If the owner rejects this
+      entry, return the three rows to planned.
+    related_roadmap_items:
+      - W13-STRAT-001
+      - W13-OMS-001
+      - W10-CONSOL-001
