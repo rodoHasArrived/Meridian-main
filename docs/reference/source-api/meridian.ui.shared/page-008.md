@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementReconciliationReportStartCommand
+
+Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportStartCommand</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs:21](../../../../src/Meridian.Ui.Shared/Evidence/StatementReconciliationReportWorkflowService.cs#L21).
+
+```csharp
+public sealed record StatementReconciliationReportStartCommand(StatementImportCommitRequest Import, string TenantId, string? CompanyId);
+```
+
 ## StatementReconciliationReportWorkflowExecution
 
 Qualified name: <code>Meridian.Ui.Shared.Evidence.StatementReconciliationReportWorkflowExecution</code>. Kind: `record`.
@@ -984,21 +994,3 @@ Source: [src/Meridian.Ui.Shared/Services/AuditTrailExplorerService.cs:10](../../
 ```csharp
 public sealed class AuditTrailExportLimitException(string message) : InvalidOperationException(message);
 ```
-
-## AutomatedJournalDividendPositionResolution
-
-Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDividendPositionResolution</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L12).
-
-Authoritative position history resolved for one dividend cycle.
-
-```csharp
-public sealed record AutomatedJournalDividendPositionResolution(IReadOnlyList<DividendAccrualPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L17) |  |

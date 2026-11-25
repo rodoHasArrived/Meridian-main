@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingStarterKitStoreOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStarterKitStoreOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L9).
+
+```csharp
+public sealed record ReportingStarterKitStoreOptions(string SnapshotPath);
+```
+
 ## ReportingStateCorruptionException
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStateCorruptionException</code>. Kind: `class`.
@@ -842,22 +852,3 @@ Declared public members:
 | <code>public int QualityHardBlockDays { get; init; } = 1;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L22) | Days to resolve a HardBlock data quality violation before SLA breach. |
 | <code>public int QualityErrorDays { get; init; } = 3;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L25) | Days to resolve an Error data quality violation before SLA breach. |
 | <code>public int QualityWarningDays { get; init; } = 5;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs:28](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterExceptionCaseworkService.cs#L28) | Days to resolve a Warning data quality violation before SLA breach. |
-
-## SecurityMasterReconciliationSlaPolicyProvider
-
-Qualified name: <code>Meridian.Ui.Shared.Services.SecurityMasterReconciliationSlaPolicyProvider</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:13](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L13).
-
-Supplies Security Master-specific SLA policies for reconciliation cases, honoring the per-category windows in SecurityMasterExceptionSlaConfig. The configured calendar-day windows are expressed as business-day equivalents so they integrate with the shared ReconciliationSlaCalculator business-hour model (weekends excluded), consistent with the rest of the reconciliation SLA system.
-
-```csharp
-public sealed class SecurityMasterReconciliationSlaPolicyProvider : IReconciliationSlaPolicyProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public SecurityMasterReconciliationSlaPolicyProvider(SecurityMasterExceptionSlaConfig? config = null) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:22](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L22) |  |
-| <code>public ReconciliationSlaPolicy? ResolvePolicy(ReconciliationBreakQueueItem item);</code> | [src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs:25](../../../../src/Meridian.Ui.Shared/Services/SecurityMasterReconciliationSlaPolicyProvider.cs#L25) |  |

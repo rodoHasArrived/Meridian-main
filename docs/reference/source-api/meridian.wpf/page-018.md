@@ -507,6 +507,22 @@ Declared public members:
 | --- | --- | --- |
 | <code>public IntercompanyAgreementsControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementsControl.xaml.cs#L7) |  |
 
+## IntercompanyAgreementWorkQueueControl
+
+Qualified name: <code>Meridian.Wpf.Views.IntercompanyAgreementWorkQueueControl</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs:5](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs#L5).
+
+```csharp
+public partial class IntercompanyAgreementWorkQueueControl : UserControl
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyAgreementWorkQueueControl() =&gt; …;</code> | [src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs:7](../../../../src/Meridian.Wpf/Views/IntercompanyAgreementWorkQueueControl.xaml.cs#L7) |  |
+
 ## IntercompanyBalanceConfirmationControl
 
 Qualified name: <code>Meridian.Wpf.Views.IntercompanyBalanceConfirmationControl</code>. Kind: `class`.

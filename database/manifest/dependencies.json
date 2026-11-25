@@ -5872,24 +5872,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisValues"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Domain.Models.HistoricalQuote"
     },
     {
@@ -10966,6 +10948,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyAgreementWorkQueueService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
     },
     {
@@ -11152,6 +11140,66 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueObserveRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUnavailableException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUpdateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
     },
     {
@@ -11309,6 +11357,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyGuaranteeDisclosureDto"
     },
     {
       "kind": "contract-set-member",
@@ -29704,6 +29758,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IIntercompanyAgreementWorkQueueService"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
     },
     {
@@ -29890,6 +29950,66 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemActionDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemStateDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueConflictException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueJsonContext"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueObserveRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUnavailableException"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUpdateRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
     },
     {
@@ -30047,6 +30167,12 @@
       "label": "",
       "source": "contract-set:ledger-contracts",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:ledger-contracts",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyGuaranteeDisclosureDto"
     },
     {
       "kind": "contract-set-member",
@@ -40425,12 +40551,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.Domain.Models.AdjustedHistoricalBar",
-      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.Domain.Models.AggregateBarPayload",
       "target": "contract:Meridian.Contracts.Domain.Events.MarketEventPayload"
     },
@@ -40499,18 +40619,6 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Domain.Models.HistoricalBar",
       "target": "contract:Meridian.Contracts.Domain.Events.MarketEventPayload"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Domain.Models.HistoricalBar",
-      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter",
-      "target": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
     },
     {
       "kind": "contract-reference",
@@ -46383,6 +46491,48 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemStateDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyObligationSourceVersionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyGuaranteeDisclosureDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUpdateRequestDto",
+      "target": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemActionDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionRequest",
       "target": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
     },
@@ -46505,6 +46655,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualProposalDto",
       "target": "contract:Meridian.Contracts.Ledger.ManualJournalEntryDraftDto"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.Ledger.IntercompanyGuaranteeDisclosureDto",
+      "target": "contract:Meridian.Contracts.FundStructure.IntercompanyAgreementStatusDto"
     },
     {
       "kind": "contract-reference",
@@ -72154,7 +72310,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "e8c9e3058c8146819b153236e62280b5ab47bf6d4e8d724b5375e8e8463648c3",
+  "fingerprint": "34378b9db09aa2d11665d612812c2dfc814ac79d5c683a3fdd72ebb9febf97e8",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78076,24 +78232,6 @@
       "label": "Meridian.Contracts.Domain.Models.HistoricalBar"
     },
     {
-      "classification": "enum",
-      "id": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasis",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Domain.Models.HistoricalPriceBasis"
-    },
-    {
-      "classification": "class",
-      "id": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Domain.Models.HistoricalPriceBasisJsonConverter"
-    },
-    {
-      "classification": "class",
-      "id": "contract:Meridian.Contracts.Domain.Models.HistoricalPriceBasisValues",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Domain.Models.HistoricalPriceBasisValues"
-    },
-    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Domain.Models.HistoricalQuote",
       "kind": "contract-type",
@@ -83171,6 +83309,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.Ledger.IIntercompanyAgreementWorkQueueService",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IIntercompanyAgreementWorkQueueService"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore"
@@ -83357,6 +83501,66 @@
     },
     {
       "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemActionDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemActionDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto"
+    },
+    {
+      "classification": "enum",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemStateDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemStateDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueConflictException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueConflictException"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueJsonContext",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueJsonContext"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueObserveRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueObserveRequestDto"
+    },
+    {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUnavailableException",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUnavailableException"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUpdateRequestDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUpdateRequestDto"
+    },
+    {
+      "classification": "enum",
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyBalanceConfirmationActionDto"
@@ -83516,6 +83720,12 @@
       "id": "contract:Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Ledger.IntercompanyFeeAccrualRequestDto"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.Ledger.IntercompanyGuaranteeDisclosureDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.Ledger.IntercompanyGuaranteeDisclosureDto"
     },
     {
       "classification": "dto",
@@ -106019,11 +106229,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4419,
-    "contract_set_memberships": 5824,
-    "edges": 11986,
+    "contract_references": 4424,
+    "contract_set_memberships": 5845,
+    "edges": 12012,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5889
+    "nodes": 5898
   }
 }

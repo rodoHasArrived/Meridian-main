@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IReportingArtifactRetentionAuthorityProvider
+
+Qualified name: <code>Meridian.Ui.Shared.Services.IReportingArtifactRetentionAuthorityProvider</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:146](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L146).
+
+Resolves the service-principal authority used only to retain renderer output. This keeps a human release authority from being silently elevated to ExecuteRun and preserves an explicit machine actor in the artifact audit chain.
+
+```csharp
+public interface IReportingArtifactRetentionAuthorityProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>ValueTask&lt;ReportingAuthorityScope&gt; ResolveAsync(GovernedReportingRun governedRun, ReportingGovernanceCallerContext releaseCaller, CancellationToken cancellationToken = default);</code> | [src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs:148](../../../../src/Meridian.Ui.Shared/Services/ReportingGovernanceCoordinatorService.cs#L148) |  |
+
 ## IReportingAuthoritativeSource
 
 Qualified name: <code>Meridian.Ui.Shared.Services.IReportingAuthoritativeSource</code>. Kind: `interface`.
@@ -1044,21 +1062,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public string? AssetPostPlanForCommandKey { get; init; }</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:27](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L27) |  |
-
-## ManualJournalMutationRecoveryOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ManualJournalMutationRecoveryOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L30).
-
-```csharp
-public sealed record ManualJournalMutationRecoveryOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public TimeSpan MaxCompletedAge { get; init; } = TimeSpan.FromDays(30);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:32](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L32) |  |
-| <code>public int MaxCompletedCount { get; init; } = 1000;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L33) |  |
-| <code>public long MaxCompletedBytes { get; init; } = 64 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:34](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L34) |  |

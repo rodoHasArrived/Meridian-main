@@ -26,6 +26,12 @@ this marker and `registration-established` receipt with the three collection fil
 first write to retry without treating a lost retained document as new. The file store still supports
 one process per directory; it does not fence concurrent hosts.
 
+`IntercompanyAgreementWorkQueueService` combines the authorized obligation monitor with durable
+operational case history. Explicit observation, assignment, notes and state changes preserve first
+seen, actor, evidence and source fingerprint under case-sequence/hash concurrency checks. A missing
+finding never resolves a case. Approved guarantee caps remain separate from unavailable measured
+exposure. See [agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
+
 External-GL reconciliation projects each row's external trial-balance currency and resolved ledger
 book currency separately. Unknown or absent source currencies remain null rather than inheriting
 the legacy display fallback. This additive metadata lets the workstation preserve conflicting units;

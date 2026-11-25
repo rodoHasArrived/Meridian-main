@@ -7,6 +7,8 @@ path: src/Meridian.Wpf
 status: active
 owner_lane: Workstation Shell and UX
 last_reviewed: 2026-11-21
+
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Wpf
@@ -19,6 +21,12 @@ Strategy reconciliation queues and detail preserve typed quantity and cost-basis
 as-of values and unavailable reasons. Run and fund monetary totals require comparable currency
 evidence; quantities and mixed currencies remain unavailable as monetary totals. Focused view-model/service tests cover
 these projections and stale downloads; native rendering and save dialogs require Windows.
+
+`IntercompanyAgreementWorkQueueControl` exposes the shared lifecycle queue in Fund Operations:
+explicitly track findings, assign owners, retain notes/evidence and update follow-up state against
+case/source versions. It shares `IntercompanyAgreementWorkQueueWorkspace` with the host API and
+shows guarantee caps separately from unavailable measured exposure. See
+[lifecycle casework](../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work).
 
 Provider Accounting exposes host quota settings for Twelve Data and Alpha Vantage, adapter-managed
 FRED limits, and seven UTC days of retained throttling and rotation totals. Saved and running quotas

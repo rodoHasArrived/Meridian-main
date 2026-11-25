@@ -6,6 +6,27 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ReportingDeliveryWorkerReadinessState
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeliveryWorkerReadinessState</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:7](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L7).
+
+Process-local liveness receipt for the server-owned secure reporting distribution worker. A snapshot observes its heartbeat, failure count, and initial-start window together.
+
+```csharp
+public sealed class ReportingDeliveryWorkerReadinessState
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:19](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L19) |  |
+| <code>public int ConsecutiveFailures =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:21](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L21) |  |
+| <code>public DateTimeOffset? LastSuccessfulCycleUtc =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:25](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L25) |  |
+| <code>public bool IsHealthy(DateTimeOffset nowUtc, TimeSpan maximumHeartbeatAge) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs:27](../../../../src/Meridian.Ui.Shared/Services/ReportingDeliveryWorkerReadinessState.cs#L27) |  |
+
 ## ReportingDeploymentReadinessService
 
 Qualified name: <code>Meridian.Ui.Shared.Services.ReportingDeploymentReadinessService</code>. Kind: `class`.
@@ -851,13 +872,3 @@ Declared public members:
 | <code>public IReadOnlySet&lt;string&gt; GetEnabledTemplateIds(ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:239](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L239) |  |
 | <code>public ReportingStarterKitProvisionResultDto Provision(string kitId, string actor, ReportAccessQueryContext? accessContext);</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:247](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L247) |  |
 | <code>public static ReportingStarterKitDto ToDto(ReportingStarterKitDefinition kit) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:341](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L341) |  |
-
-## ReportingStarterKitStoreOptions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.ReportingStarterKitStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs:9](../../../../src/Meridian.Ui.Shared/Services/ReportingStarterKitService.cs#L9).
-
-```csharp
-public sealed record ReportingStarterKitStoreOptions(string SnapshotPath);
-```

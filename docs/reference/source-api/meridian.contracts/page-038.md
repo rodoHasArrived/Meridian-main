@@ -6,37 +6,6 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
-## IntercompanyAccrualRequestDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs:9](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualEvidenceDtos.cs#L9).
-
-Operator selection only. Rates, day counts, principal and amounts are always server-resolved.
-
-```csharp
-public sealed record IntercompanyAccrualRequestDto(Guid SourceBookId, Guid InterestArrangementId, Guid PrincipalArrangementId, DateOnly AccrualFrom, DateOnly AccrualTo);
-```
-
-## IntercompanyAccrualScheduleActionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualScheduleActionDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13).
-
-```csharp
-public enum IntercompanyAccrualScheduleActionDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Propose</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13) |  |
-| <code>Approve</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13) |  |
-| <code>Reject</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13) |  |
-| <code>Disable</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13) |  |
-
 ## IntercompanyAccrualScheduleDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto</code>. Kind: `record`.
@@ -147,6 +116,149 @@ One completed schedule period and what a run did, or would do, with it.
 
 ```csharp
 public sealed record IntercompanyAccrualScheduleWindowDto(DateOnly AccrualFrom, DateOnly AccrualTo, IntercompanyAccrualScheduleOutcomeDto Outcome, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? DraftId, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? DraftStatus, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? Reason);
+```
+
+## IntercompanyAgreementWorkItemActionDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemActionDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L10).
+
+```csharp
+public enum IntercompanyAgreementWorkItemActionDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AssignOwner</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L10) |  |
+| <code>AddNote</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L10) |  |
+| <code>AwaitReview</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L10) |  |
+| <code>Resolve</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L10) |  |
+| <code>Reopen</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:10](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L10) |  |
+
+## IntercompanyAgreementWorkItemDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L27).
+
+Stable case identity is independent of amount, horizon, observation date and approved revision. DueDate identifies a distinct obligation boundary. AgeDays measures retained first observation, while DaysOverdue measures the explicit due date against the selected as-of date.
+
+```csharp
+public sealed record IntercompanyAgreementWorkItemDto(string CaseId, Guid LedgerBookId, Guid AgreementId, int? AgreementVersion, string FindingCode, string Severity, string Message, string SuggestedAction, DateOnly? DueDate, DateOnly ObservedAsOf, bool IsCurrentlyObserved, bool IsTracked, IntercompanyAgreementWorkItemStateDto State, string? Owner, DateTimeOffset? FirstSeenAtUtc, DateTimeOffset? LastObservedAtUtc, int? AgeDays, int? DaysOverdue, string LastObservedSourceFingerprint, long Version, string? RecordHash, IReadOnlyList<IntercompanyAgreementWorkItemHistoryDto> History);
+```
+
+## IntercompanyAgreementWorkItemHistoryDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemHistoryDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L13).
+
+One retained operator action. A queue decision never approves legal terms or a journal.
+
+```csharp
+public sealed record IntercompanyAgreementWorkItemHistoryDto(Guid CommandId, long Version, string RecordHash, string Action, IntercompanyAgreementWorkItemStateDto State, string Actor, DateTimeOffset RecordedAtUtc, string Reason, string? Owner, string? Note, IReadOnlyList<string> EvidenceReferences, DateOnly ObservedAsOf, string SourceFingerprint)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;IntercompanyObligationSourceVersionDto&gt; SourceVersions { get; init; } = [];</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L19) |  |
+
+## IntercompanyAgreementWorkItemStateDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkItemStateDto</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:7](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L7).
+
+```csharp
+public enum IntercompanyAgreementWorkItemStateDto
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Open</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:7](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L7) |  |
+| <code>AwaitingReview</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:7](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L7) |  |
+| <code>Resolved</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:7](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L7) |  |
+| <code>Reopened</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:7](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L7) |  |
+
+## IntercompanyAgreementWorkQueueConflictException
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueConflictException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:85](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L85).
+
+```csharp
+public sealed class IntercompanyAgreementWorkQueueConflictException(string message) : InvalidOperationException(message);
+```
+
+## IntercompanyAgreementWorkQueueDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:48](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L48).
+
+Read-only observation plus durable case history. Missing findings never resolve retained cases.
+
+```csharp
+public sealed record IntercompanyAgreementWorkQueueDto(DateOnly AsOf, int ExpiryHorizonDays, DateTimeOffset EvaluatedAtUtc, string Status, bool IsComplete, string SourceFingerprint, IReadOnlyList<IntercompanyAgreementWorkItemDto> Cases, IReadOnlyList<IntercompanyGuaranteeDisclosureDto> Guarantees, IReadOnlyList<string> Diagnostics)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid LedgerBookId { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:55](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L55) |  |
+| <code>public string? FundProfileId { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:56](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L56) |  |
+| <code>public bool CanManage { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L58) | Host permission projection; command authorization never trusts this value. |
+
+## IntercompanyAgreementWorkQueueJsonContext
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueJsonContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:94](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L94).
+
+```csharp
+public partial class IntercompanyAgreementWorkQueueJsonContext : JsonSerializerContext;
+```
+
+## IntercompanyAgreementWorkQueueObserveRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueObserveRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:62](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L62).
+
+Explicitly tracks or refreshes one observed finding; GET never appends history.
+
+```csharp
+public sealed record IntercompanyAgreementWorkQueueObserveRequestDto(Guid CommandId, string CaseId, string ExpectedSourceFingerprint, string Reason, long ExpectedVersion = 0, string? ExpectedRecordHash = null);
+```
+
+## IntercompanyAgreementWorkQueueUnavailableException
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUnavailableException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:86](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L86).
+
+```csharp
+public sealed class IntercompanyAgreementWorkQueueUnavailableException(string message) : InvalidOperationException(message);
+```
+
+## IntercompanyAgreementWorkQueueUpdateRequestDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAgreementWorkQueueUpdateRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:67](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L67).
+
+Compare-and-append case action against the exact current source observation and retained case.
+
+```csharp
+public sealed record IntercompanyAgreementWorkQueueUpdateRequestDto(Guid CommandId, string CaseId, IntercompanyAgreementWorkItemActionDto Action, long ExpectedVersion, string ExpectedRecordHash, string ExpectedSourceFingerprint, string Reason, string? Owner = null, string? Note = null, IReadOnlyList<string>? EvidenceReferences = null);
 ```
 
 ## IntercompanyBalanceConfirmationActionDto
@@ -541,6 +653,18 @@ Operator selection only. The fee, basis, schedule and amount are always server-r
 public sealed record IntercompanyFeeAccrualRequestDto(Guid SourceBookId, Guid FeeArrangementId, DateOnly AccrualFrom, DateOnly AccrualTo);
 ```
 
+## IntercompanyGuaranteeDisclosureDto
+
+Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyGuaranteeDisclosureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:37](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L37).
+
+Approved legal disclosure only. A declared cap is never a measured exposure.
+
+```csharp
+public sealed record IntercompanyGuaranteeDisclosureDto(Guid AgreementId, string Code, string Name, int AgreementVersion, string PayloadHash, Guid PartyOneId, string PartyOneRole, Guid PartyTwoId, string PartyTwoRole, string Currency, string? BeneficiaryReference, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? LimitAmount, DateOnly EffectiveFrom, DateOnly? EffectiveTo, DateOnly? TerminationEffectiveDate, IntercompanyAgreementStatusDto EffectiveStatus, [property : JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? CurrentExposure, string ExposureStatus, string ExposureUnavailableReason);
+```
+
 ## IntercompanyObligationFindingDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationFindingDto</code>. Kind: `record`.
@@ -548,14 +672,20 @@ Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationFindingDto
 Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:12](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L12).
 
 ```csharp
-public sealed record IntercompanyObligationFindingDto(string Code, string Severity, string Message, Guid? EntityId = null, Guid? AgreementId = null, int? AgreementVersion = null, Guid? LedgerBookId = null, Guid? JournalEntryId = null, string? DrillThrough = null);
+public sealed record IntercompanyObligationFindingDto(string Code, string Severity, string Message, Guid? EntityId = null, Guid? AgreementId = null, int? AgreementVersion = null, Guid? LedgerBookId = null, Guid? JournalEntryId = null, string? DrillThrough = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public DateOnly? DueDate { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:19](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L19) | Explicit legal boundary, when applicable; clients never parse dates from a message. |
 
 ## IntercompanyObligationMonitorDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L22).
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L27).
 
 Advisory result only. IsComplete describes observation evidence and never changes close eligibility.
 
@@ -567,7 +697,7 @@ public sealed record IntercompanyObligationMonitorDto(DateOnly AsOf, int ExpiryH
 
 Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationMonitorJsonContext</code>. Kind: `class`.
 
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:42](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L42).
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:47](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L47).
 
 ```csharp
 public partial class IntercompanyObligationMonitorJsonContext : JsonSerializerContext;
@@ -584,131 +714,3 @@ Explicit observation scope. Amounts come only from the canonical posted balance 
 ```csharp
 public sealed record IntercompanyObligationMonitorRequestDto(string? FundProfileId, Guid? LedgerBookId, DateOnly AsOf, int ExpiryHorizonDays = 30, Guid? EntityId = null);
 ```
-
-## IntercompanyObligationSourceVersionDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyObligationSourceVersionDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:18](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L18).
-
-Retained source authority for this observation, separate from readiness or posting authority.
-
-```csharp
-public sealed record IntercompanyObligationSourceVersionDto(string SourceKind, string SourceId, string Version, string ContentHash);
-```
-
-## IntercompanyProposalDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:27](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L27).
-
-```csharp
-public sealed record IntercompanyProposalDto(IntercompanyProposalSourceDto Source, string SourceDigest, IntercompanyProposalStatusDto Status, int Attempts, DateTimeOffset RecordedAt, Guid? TargetBookId = null, Guid? TargetJournalId = null, string? LastError = null, string? ClaimToken = null, DateTimeOffset? LeaseUntil = null, DateOnly? DueDate = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public IntercompanyCounterpartLinkDto? LatestLink { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:33](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L33) |  |
-| <code>public Guid? ResolvedTargetBookId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:34](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L34) |  |
-| <code>public Guid? ResolvedTargetJournalId =&gt; …;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L35) |  |
-
-## IntercompanyProposalJsonContext
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalJsonContext</code>. Kind: `class`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:80](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L80).
-
-```csharp
-public partial class IntercompanyProposalJsonContext : JsonSerializerContext;
-```
-
-## IntercompanyProposalSourceDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalSourceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L13).
-
-Immutable source facts retained atomically with the source journal.
-
-```csharp
-public sealed record IntercompanyProposalSourceDto(Guid ProposalId, string TenantId, string? CompanyId, Guid SourceJournalId, Guid SourceBookId, Guid SourceEntityId, Guid CounterpartyEntityId, Guid AccountingArrangementId, Guid AccountingArrangementRevisionId, string TransactionId, DateOnly EffectiveDate, string SourceFunctionalCurrency, IReadOnlyList<IntercompanyProposalSourceLineDto> Lines, Guid? ReversesJournalId = null, string RuleVersion = "intercompany-mirror-v1")
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] public bool RequiresSourceAllocation { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:21](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L21) | Unattributed contra legs cannot be allocated between multiple retained event groups. |
-| <code>public Guid IntercompanyAgreementId { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:22](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L22) |  |
-| <code>public int IntercompanyAgreementVersion { get; init; }</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:23](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L23) |  |
-| <code>public string IntercompanyAgreementPayloadHash { get; init; } = string.Empty;</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:24](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L24) |  |
-
-## IntercompanyProposalSourceLineDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalSourceLineDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:8](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L8).
-
-```csharp
-public sealed record IntercompanyProposalSourceLineDto(Guid LineId, string AccountName, string AccountType, string? ChartAccountNodeId, decimal Debit, decimal Credit, string Currency, decimal TransactionDebit, decimal TransactionCredit);
-```
-
-## IntercompanyProposalStatusDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyProposalStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6).
-
-```csharp
-public enum IntercompanyProposalStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Pending</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
-| <code>NeedsFix</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
-| <code>Drafted</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
-| <code>Linked</code> | [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:6](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L6) |  |
-
-## IntercompanyRefreshPreviewDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyRefreshPreviewDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs:63](../../../../src/Meridian.Contracts/Ledger/IntercompanyProposalDtos.cs#L63).
-
-```csharp
-public sealed record IntercompanyRefreshPreviewDto(ManualJournalEntryDraftDto Draft, string Fingerprint, ManualJournalEntryDraftDto? CurrentDraft = null);
-```
-
-## InvestorCapitalStatementDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.InvestorCapitalStatementDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:809](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L809).
-
-```csharp
-public sealed record InvestorCapitalStatementDto(string StatementId, string FundProfileId, Guid? LedgerBookId, string CapitalAccountId, string? InvestorId, string PeriodId, LedgerDimensionSetDto Dimensions, decimal BeginningCapital, decimal Contributions, decimal Distributions, decimal RealizedGainLoss, decimal EndingCapital, string Currency, AccountingCertificationStateDto CertificationState, IReadOnlyList<string> EvidenceLinks);
-```
-
-## IPrivateCapitalFundEventCommandCenterService
-
-Qualified name: <code>Meridian.Contracts.Ledger.IPrivateCapitalFundEventCommandCenterService</code>. Kind: `interface`.
-
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1134](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1134).
-
-Builds the command center view for a specific private capital fund event.
-
-```csharp
-public interface IPrivateCapitalFundEventCommandCenterService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;PrivateCapitalFundEventCommandCenterDto?&gt; GetCommandCenterAsync(string? fundProfileId, Guid? ledgerBookId, string fundEventId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs:1136](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationCloseReportingDtos.cs#L1136) |  |

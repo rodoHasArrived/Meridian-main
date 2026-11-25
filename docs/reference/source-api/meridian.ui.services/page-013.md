@@ -6,6 +6,87 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IPeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.IPeriodComparisonApiClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:9](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L9).
+
+Reads the shared prior-period comparisons that the desktop does not compose in process.
+
+```csharp
+public interface IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:12](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L12) | The portfolio cash ladder today against the ladder rebuilt as of baselineAsOf (default: the end of last month). |
+
+## PeriodComparisonApiClient
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonApiClient</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:20](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L20).
+
+HTTP client for UiApiRoutes.PortfolioCashLadderComparison. The cash ladder service needs host-composed holdings and cash providers, so the desktop reads it over the API; a host without them answers 501, which PeriodComparisonProjection.DescribeFailure{T} explains.
+
+```csharp
+public sealed class PeriodComparisonApiClient : IPeriodComparisonApiClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public PeriodComparisonApiClient(ApiClientService apiClient);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:24](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L24) |  |
+| <code>public Task&lt;ApiResponse&lt;PeriodComparisonDto&gt;&gt; GetCashLadderComparisonAsync(DateOnly? baselineAsOf = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:30](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L30) |  |
+| <code>public static string BuildCashLadderComparisonRoute(DateOnly? baselineAsOf) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs:34](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonApiClient.cs#L34) | The comparison route, with the prior date when one is given. |
+
+## PeriodComparisonProjection
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonProjection</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:58](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L58).
+
+Presentation projection for PeriodComparisonDto, shared by the desktop NAV, run attribution and cash ladder comparisons (UX Phase E parity). Lives here rather than in the desktop assembly so it runs in tests on any platform. It mirrors the browser&#x27;s period-comparison-panel.tsx: amounts to two places with negatives in parentheses, counts as whole numbers, the server&#x27;s percent (never recomputed) to two places, &quot;Not comparable · prior zero&quot; for a zero prior, and the Portfolio materiality threshold from lib/reporting-materiality.ts on amount lines.
+
+```csharp
+public static class PeriodComparisonProjection
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const decimal PortfolioMaterialAbsoluteVariance = 250_000m;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:61](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L61) | The Portfolio policy&#x27;s absolute-variance threshold in lib/reporting-materiality.ts. |
+| <code>public const string NotComparablePriorZero = &quot;Not comparable · prior zero&quot;;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:64](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L64) | Shown in place of a percent when the prior is zero. |
+| <code>public static readonly IReadOnlyCollection&lt;string&gt; CashLadderCountKeys = [&quot;breaches&quot;];</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:67](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L67) | Lines of the cash ladder comparison that are counts, not amounts. |
+| <code>public static PeriodComparisonView Project(PeriodComparisonDto? comparison, decimal? materialThreshold = PortfolioMaterialAbsoluteVariance, IReadOnlyCollection&lt;string&gt;? countKeys = null);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:70](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L70) | Formats a comparison. A null comparison reads as still loading. |
+| <code>public static string FormatAmount(decimal value);</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:113](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L113) | Two places, thousands separated, negatives in parentheses. |
+| <code>public static string FormatCount(decimal value) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:120](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L120) | A whole number, negative with a minus sign. |
+| <code>public static string FormatPercent(decimal? percent) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:124](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L124) | The server&#x27;s percent to two places, or the not-comparable text when there is none. |
+| <code>public static string DescribeFailure&lt;T&gt;(ApiResponse&lt;T&gt; response) where T : class;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:130](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L130) | What to tell the operator when a comparison request fails. |
+
+## PeriodComparisonRow
+
+Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:17](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L17).
+
+One line of a prior-period comparison, formatted for display.
+
+```csharp
+public sealed record PeriodComparisonRow(string Key, string Label, string Current, string Prior, string Change, string ChangePercent, bool IsTotal, bool IsMaterial, bool IsPriorZero)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string MaterialLabel =&gt; …;</code> | [src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs:29](../../../../src/Meridian.Ui.Services/Services/Comparisons/PeriodComparisonProjection.cs#L29) | &quot;Material&quot; when the change is past the threshold, otherwise empty. |
+
 ## PeriodComparisonView
 
 Qualified name: <code>Meridian.Ui.Services.Services.Comparisons.PeriodComparisonView</code>. Kind: `record`.
@@ -1062,95 +1143,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public DateTimeOffset? RotationDueAt { get; init; }</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:804](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L804) |  |
 | <code>public bool HasServiceFieldSchema =&gt; …;</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:811](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L811) | True when the authenticated credential service reported this provider together with the field names its vault accepts. Editors must use these names; the local provider catalog&#x27;s field names are not the vault schema. |
-
-## ProviderInfo
-
-Qualified name: <code>Meridian.Ui.Services.Services.ProviderInfo</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:77](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L77).
-
-Provider information for display.
-
-```csharp
-public sealed class ProviderInfo
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:79](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L79) |  |
-| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:80](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L80) |  |
-| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:81](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L81) |  |
-| <code>public string ProviderType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:82](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L82) |  |
-| <code>public bool RequiresCredentials { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:83](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L83) |  |
-
-## ProviderTier
-
-Qualified name: <code>Meridian.Ui.Services.Services.ProviderTier</code>. Kind: `enum`.
-
-Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:768](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L768).
-
-Provider tier classification.
-
-```csharp
-public enum ProviderTier : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Free</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:770](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L770) |  |
-| <code>FreeWithAccount</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:771](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L771) |  |
-| <code>LimitedFree</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:772](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L772) |  |
-| <code>Premium</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:773](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L773) |  |
-
-## QualityAlert
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityAlert</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:107](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L107).
-
-Tracks a symbol quality alert, its severity, and acknowledgement details.
-
-```csharp
-public sealed class QualityAlert
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L109) |  |
-| <code>public string AlertType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:110](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L110) |  |
-| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:111](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L111) |  |
-| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:112](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L112) |  |
-| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:113](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L113) |  |
-| <code>public string Details { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:114](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L114) |  |
-| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:115](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L115) |  |
-| <code>public bool IsAcknowledged { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:116](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L116) |  |
-| <code>public DateTime? AcknowledgedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:117](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L117) |  |
-| <code>public string? AcknowledgedBy { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:118](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L118) |  |
-
-## QualityArchiveStore
-
-Qualified name: <code>Meridian.Ui.Services.Services.QualityArchiveStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:40](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L40).
-
-JSON file-backed archive store using %LOCALAPPDATA%\Meridian\quality-archive.json. Stores data as Dictionary&lt;symbol -&gt; Dictionary&lt;date string -&gt; score&gt;&gt;. Thread-safe using concurrent dictionary wrapper.
-
-```csharp
-public sealed class QualityArchiveStore : IQualityArchiveStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public QualityArchiveStore(ILogger&lt;QualityArchiveStore&gt; logger);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:54](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L54) |  |
-| <code>public Task RecordAsync(string symbol, DateOnly date, double completenessScore, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:80](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L80) | Records a daily quality score, updating in-memory cache and persisting to disk. |
-| <code>public Task&lt;IReadOnlyList&lt;DailyQualityRecord&gt;&gt; GetHistoryAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:103](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L103) | Retrieves historical records for a symbol within a date range. |
-| <code>public Task&lt;IReadOnlyList&lt;string&gt;&gt; GetSymbolsAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:129](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L129) | Gets all tracked symbols. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:204](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L204) |  |

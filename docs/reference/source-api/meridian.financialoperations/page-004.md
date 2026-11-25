@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LedgerTextReportOptions
+
+Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextReportOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportOptions.cs:3](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportOptions.cs#L3).
+
+```csharp
+public sealed record LedgerTextReportOptions(string Report, string? AccountFilter);
+```
+
 ## LedgerTextReportRenderer
 
 Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextReportRenderer</code>. Kind: `class`.
@@ -968,24 +978,3 @@ Enum declarations:
 | <code>Committed</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs:704](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs#L704) |  |
 | <code>Rejected</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs:704](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs#L704) |  |
 | <code>Proceed</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs:704](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsLedgerPostingService.cs#L704) |  |
-
-## OperationsApprovalPolicyMatrixService
-
-Qualified name: <code>Meridian.FinancialOperations.OperationsContinuity.OperationsApprovalPolicyMatrixService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:27](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L27).
-
-Maintains the approval-policy matrix used to govern operations workflow actions.
-
-```csharp
-public sealed class OperationsApprovalPolicyMatrixService : IOperationsApprovalPolicyMatrixService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public OperationsApprovalPolicyMatrixService();</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:43](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L43) |  |
-| <code>public OperationsApprovalPolicyMatrixService(StorageOptions storageOptions);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:47](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L47) |  |
-| <code>public OperationsApprovalPolicyMatrixDto GetMatrix() =&gt; …;</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:53](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L53) |  |
-| <code>public async Task&lt;OperationsApprovalPolicyRuleUpsertResultDto&gt; UpsertRuleAsync(OperationsApprovalPolicyRuleUpsertRequestDto request, string actor, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs:60](../../../../src/Meridian.FinancialOperations/OperationsContinuity/OperationsApprovalPolicyMatrixService.cs#L60) |  |

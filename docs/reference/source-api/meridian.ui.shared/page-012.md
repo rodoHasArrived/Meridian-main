@@ -6,6 +6,16 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ManualJournalEntryDraftSnapshot
+
+Qualified name: <code>Meridian.Ui.Shared.Services.FileManualJournalEntryDraftStore.ManualJournalEntryDraftSnapshot</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:256](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L256).
+
+```csharp
+public sealed record ManualJournalEntryDraftSnapshot(IReadOnlyList<ManualJournalEntryDraftDto> Drafts);
+```
+
 ## FileManualJournalMutationRecoveryStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.FileManualJournalMutationRecoveryStore</code>. Kind: `class`.
@@ -1132,21 +1142,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;AccountingTenantAdministrationProfileDto?&gt; GetAsync(string? tenantId, string? companyId, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:16](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L16) |  |
 | <code>Task&lt;AccountingTenantAdministrationProfileDto&gt; UpsertAsync(AccountingTenantAdministrationProfileUpsertRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs:21](../../../../src/Meridian.Ui.Shared/Services/AccountingTenantAdministrationProfileStore.cs#L21) |  |
-
-## IAutomatedJournalDividendPositionResolver
-
-Qualified name: <code>Meridian.Ui.Shared.Services.IAutomatedJournalDividendPositionResolver</code>. Kind: `interface`.
-
-Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:23](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L23).
-
-Resolves authoritative positions used to prepare automated dividend journals.
-
-```csharp
-public interface IAutomatedJournalDividendPositionResolver
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Task&lt;AutomatedJournalDividendPositionResolution&gt; ResolveAsync(AutomatedJournalScheduleWorkItem workItem, DateTimeOffset evaluatedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:25](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L25) |  |

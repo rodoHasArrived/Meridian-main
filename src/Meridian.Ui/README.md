@@ -53,6 +53,12 @@ The served Entity operations bundle adds a Rate fixings tab over
 The served Entity operations bundle adds a Balance confirmation tab over
 `/api/ledger/intercompany/confirmations`. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
 
+The served Obligation monitor includes retained lifecycle cases and the guarantee register over
+`/api/ledger/intercompany/work-queue`. Tracking, ownership and case disposition use shared durable
+history and version checks; approved caps remain separate from unavailable measured exposure.
+See [lifecycle casework](../../docs/operators/intercompany-entity-controls.md#tracking-agreement-lifecycle-work)
+and rebuild the dashboard after source changes.
+
 The rebuilt bundle also includes explicit retained quote and observed-fixing selection, typed
 rates ingestion, provider identity-review evidence and shared chart accessibility. Dashboard reads
 preserve exact decimal text from fixed-income responses; calculation and review authority remains

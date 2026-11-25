@@ -985,7 +985,7 @@ This source reference records literal `MapGet`, `MapPost`, `MapPut`, `MapDelete`
 
 Handler parameters retain C# binding types, including injected services and infrastructure parameters; they are not all request-body fields. Body-read operations list explicitly decoded types. Response entries quote declared `.Produces*` metadata and observed `Results`/`TypedResults` factories, not an exhaustive response schema or status guarantee. A dash means the declaration supplies no extractable metadata; follow the source and detailed contracts above.
 
-**496 declarations** from **62 source files**.
+**499 declarations** from **63 source files**.
 
 
 ### HostAdapters
@@ -1555,6 +1555,16 @@ Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs](../
 | `/api/fund-structure/intercompany-agreements` | POST | `async (IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("CreateIntercompanyAgreement")` | [L132](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L132) |
 | `/api/fund-structure/intercompany-agreements/{id}/proposals` | POST | `async (Guid id, IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("CreateIntercompanyAgreementProposal")` | [L136](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L136) |
 | `/api/fund-structure/intercompany-agreements/{id}/proposals/{proposalId}` | PUT | `async (Guid id, Guid proposalId, IntercompanyAgreementCommandDto command, HttpContext http) => …` | `Results.Json` | `WithName("SaveIntercompanyAgreementDraft")` | [L140](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementEndpoints.cs#L140) |
+
+### IntercompanyAgreementWorkQueueEndpoints
+
+Source: [src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs)
+
+| Path declaration | Method | Handler / decoded body types | Response declarations / factories | Endpoint metadata | Source |
+| --- | --- | --- | --- | --- | --- |
+| `/api/ledger/intercompany/work-queue` | GET | `(string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, int? expiryHorizonDays, Guid? entityId, HttpContext http) => …` | — | — | [L23](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L23) |
+| `/api/ledger/intercompany/work-queue/observe` | POST | `(string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, int? expiryHorizonDays, Guid? entityId, HttpContext http) => …` | — | — | [L29](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L29) |
+| `/api/ledger/intercompany/work-queue/update` | POST | `(string? fundProfileId, Guid? ledgerBookId, DateOnly asOf, int? expiryHorizonDays, Guid? entityId, HttpContext http) => …` | — | — | [L35](../../src/Meridian.Ui.Shared/Endpoints/IntercompanyAgreementWorkQueueEndpoints.cs#L35) |
 
 ### IntercompanyObligationEndpoints
 

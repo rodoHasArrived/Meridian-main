@@ -6,6 +6,18 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SampleTradePrint
+
+Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleTradePrint</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:96](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L96).
+
+One deterministic seeded trade print for durable market history.
+
+```csharp
+public sealed record SampleTradePrint(DateTimeOffset Timestamp, decimal Price, long Size);
+```
+
 ## DemoTenantProvisioner
 
 Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantProvisioner</code>. Kind: `class`.
@@ -882,13 +894,3 @@ Declared public members:
 | <code>public async Task&lt;ManualJournalEntryDraftDto?&gt; GetAsync(string fundProfileId, Guid journalEntryId, CancellationToken ct = default, string? tenantId = null, string? companyId = null);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:188](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L188) |  |
 | <code>public async Task SaveAsync(ManualJournalEntryDraftDto draft, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:207](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L207) |  |
 | <code>public async Task SaveBatchAsync(IReadOnlyList&lt;ManualJournalEntryDraftDto&gt; drafts, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:210](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L210) |  |
-
-## ManualJournalEntryDraftSnapshot
-
-Qualified name: <code>Meridian.Ui.Shared.Services.FileManualJournalEntryDraftStore.ManualJournalEntryDraftSnapshot</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs:256](../../../../src/Meridian.Ui.Shared/Services/ManualJournalEntryDraftStores.cs#L256).
-
-```csharp
-public sealed record ManualJournalEntryDraftSnapshot(IReadOnlyList<ManualJournalEntryDraftDto> Drafts);
-```

@@ -123,6 +123,13 @@ External-review evidence verifies accepted immutable documents, separately from 
 operator. The close-readiness companion does not become a blocker. See
 [the intercompany procedure](../../docs/operators/intercompany-entity-controls.md).
 
+`IntercompanyAgreementWorkQueueEndpoints` serves read-only `GET /api/ledger/intercompany/work-queue`
+and explicit `POST /observe` and `/update` commands under that route. The host derives actor,
+tenant/company and fund from the owned book. Commands require management grants for the legal
+parties; read grants cannot authorize updates. Conflict responses require refreshing the case,
+while unavailable history is reported without exposing storage details. See
+[agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
+
 `IntercompanyAccrualDraftService` backs `/api/ledger/intercompany/accruals/preview` and `/drafts`
 (ADR-028). It resolves approved `LoanInterest` profile revisions, their pinned legal revisions and
 posted `Loan`-profile principal, calls the pure calculator, and retains a source-side journal draft

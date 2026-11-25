@@ -87,6 +87,12 @@ attestations retain reviewer and operator identities, while obligation-monitor D
 source/freshness evidence outside blocking close contributors. See
 [the native legal contract](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyAgreementWorkQueueDtos` separates current lifecycle findings from durable operator
+cases, version/hash-bound actions and case history. Guarantee disclosure retains exact decimal caps
+and nullable unavailable measured exposure. The obligation finding's optional typed due date
+identifies its legal boundary without parsing display text. See
+[agreement lifecycle casework](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#agreement-lifecycle-work-queue).
+
 Fixed management-fee terms add a null-omitted `FixedFeeBasis` (per period or per annum).
 `IntercompanyFeeAccrualDtos` and `IntercompanyFeeAccrualEvidenceDtos` define rule `intercompany-fee-v1`, its
 retained evidence and `IntercompanyFeeAccrualEvidenceGuard`, which the accrual guard dispatches to for fee

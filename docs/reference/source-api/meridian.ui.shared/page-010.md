@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CapitalCallDefaultTermsInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallDefaultTermsInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L14).
+
+The default terms of one commitment on a capital call. The ledger holds the call and its receipts but not the due date, default rate, day-count convention or grace period, so the operator attests them here with retained evidence (the fund agreement or call notice).
+
+```csharp
+public sealed record CapitalCallDefaultTermsInput(string CommitmentId, string CapitalAccountId, string InvestorId, DateOnly DueDate, decimal DefaultInterestRateAnnual, DefaultInterestConvention Convention, int GraceDays, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:24](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L24) |  |
+
 ## CapitalCallFundingInput
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallFundingInput</code>. Kind: `record`.
@@ -920,16 +938,4 @@ Fixed definition of a sample reconciliation break, before it is stamped with tim
 
 ```csharp
 public sealed record SampleBreakDefinition(string Id, string Title, ReconciliationBreakCategory Category, ReconciliationBreakSeverity Severity, decimal Variance, string Summary);
-```
-
-## SampleTradePrint
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleTradePrint</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:96](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L96).
-
-One deterministic seeded trade print for durable market history.
-
-```csharp
-public sealed record SampleTradePrint(DateTimeOffset Timestamp, decimal Price, long Size);
 ```
