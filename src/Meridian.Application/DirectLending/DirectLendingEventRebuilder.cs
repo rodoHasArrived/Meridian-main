@@ -10,7 +10,7 @@ namespace Meridian.Application.DirectLending;
 /// <summary>
 /// Reconstructs persisted loan state from retained direct-lending event history.
 /// </summary>
-public sealed class DirectLendingEventRebuilder
+public sealed partial class DirectLendingEventRebuilder
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
     private static readonly JsonSerializerOptions HashJsonOptions = new()
@@ -27,6 +27,7 @@ public sealed class DirectLendingEventRebuilder
 
         LoanContractDetailDto? contract = null;
         LoanServicingStateDto? servicing = null;
+        var lifecycleContext = new LifecycleReplayContext();
 
         foreach (var entry in OrderForRebuild(history))
         {
@@ -442,6 +443,7 @@ public sealed class DirectLendingEventRebuilder
                     }
 
                 case "loan.pik-toggled":
+                case "PikToggled":
                     {
                         EnsureInitialized(contract, servicing, entry.EventType);
                         var enablePik = root.GetProperty("enablePik").GetBoolean();
@@ -453,18 +455,9 @@ public sealed class DirectLendingEventRebuilder
                                 ? reasonText
                                 : enablePik ? "PIK enabled" : "PIK disabled";
 
-                        servicing = servicing! with
-                        {
-                            IsPikToggled = enablePik,
-                            ServicingRevision = servicing.ServicingRevision + 1,
-                            RevisionHistory = PrependRevision(
-                                servicing.RevisionHistory,
-                                servicing.ServicingRevision + 1,
-                                "PikToggle",
-                                effectiveDate,
-                                reason,
-                                entry.RecordedAt)
-                        };
+                        servicing = RestoreLifecycleRevision(
+                            servicing!, servicing! with { IsPikToggled = enablePik },
+                            ReadLifecycleFields(root), entry, "PikToggle", effectiveDate, reason);
                         break;
                     }
 
@@ -498,6 +491,24 @@ public sealed class DirectLendingEventRebuilder
                         break;
                     }
 
+                case "loan.fee-assessed":
+                case "loan.write-off-applied":
+                case "loan.servicer-position-imported":
+                case "loan.collateral-added":
+                case "CollateralAdded":
+                case "loan.collateral-removed":
+                case "CollateralRemoved":
+                case "loan.collateral-value-updated":
+                case "CollateralValueUpdated":
+                case "loan.status-transitioned":
+                case "LoanStatusTransitioned":
+                case "loan.discount-premium-amortized":
+                case "DiscountPremiumAmortized":
+                    EnsureInitialized(contract, servicing, entry.EventType);
+                    (contract, servicing) = RebuildLifecycleEvent(
+                        loanId, contract!, servicing!, entry, root, lifecycleContext);
+                    break;
+
                 default:
                     throw new InvalidOperationException($"Unsupported direct-lending event type '{entry.EventType}' during rebuild.");
             }
@@ -507,42 +518,6 @@ public sealed class DirectLendingEventRebuilder
         var latestVersion = history.Max(static item => item.AggregateVersion);
         return new PersistedDirectLendingState(loanId, latestVersion, contract!, servicing!);
     }
-
-    private static IEnumerable<LoanEventLineageDto> OrderForRebuild(IReadOnlyList<LoanEventLineageDto> history)
-    {
-        var identities = new Dictionary<Guid, LoanEventLineageDto>();
-        var versions = new Dictionary<long, LoanEventLineageDto>();
-        foreach (var entry in history.OrderBy(static item => item.AggregateVersion))
-        {
-            var restructuring = IsRestructuring(entry);
-            if (restructuring && (entry.EventId == Guid.Empty || entry.AggregateVersion < 1))
-                throw new InvalidDataException("A retained loan.restructured event requires its event identity and aggregate version.");
-
-            // The stored history is unique by event and aggregate version. A repeated delivery of
-            // the same restructuring is harmless; conflicting facts must not apply a second loss.
-            // Other event families retain their existing replay behavior.
-            if (identities.TryGetValue(entry.EventId, out var sameIdentity)
-                && (restructuring || IsRestructuring(sameIdentity)))
-            {
-                if (entry != sameIdentity)
-                    throw new InvalidDataException("Conflicting retained loan.restructured event identity during rebuild.");
-                continue;
-            }
-            if (versions.TryGetValue(entry.AggregateVersion, out var sameVersion)
-                && (restructuring || IsRestructuring(sameVersion)))
-            {
-                if (entry != sameVersion)
-                    throw new InvalidDataException("Conflicting retained loan.restructured aggregate version during rebuild.");
-                continue;
-            }
-            identities.TryAdd(entry.EventId, entry);
-            versions.TryAdd(entry.AggregateVersion, entry);
-            yield return entry;
-        }
-    }
-
-    private static bool IsRestructuring(LoanEventLineageDto entry)
-        => entry.EventType is "loan.restructured" or "LoanRestructured";
 
     private static (LoanContractDetailDto Contract, LoanServicingStateDto Servicing) RebuildRestructuring(
         Guid loanId,

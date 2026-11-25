@@ -669,8 +669,13 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var existing = stored.Servicing.Collateral ?? new List<CollateralDto>();
             var updated = new List<CollateralDto>(existing) { collateral };
             stored.Servicing = stored.Servicing with { Collateral = updated };
-            AppendEvent(stored, "CollateralAdded", request.AppraisalDate, collateral, metadata);
             AppendRevision(stored, "CollateralAdded", request.AppraisalDate, $"Added collateral {collateral.CollateralId}");
+            AppendEvent(stored, "CollateralAdded", request.AppraisalDate, new
+            {
+                collateral.CollateralId, collateral.CollateralType, collateral.Description,
+                collateral.EstimatedValue, collateral.Currency, collateral.AppraisalDate,
+                ServicingRevision = stored.Servicing.RevisionHistory[^1]
+            }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }
@@ -688,8 +693,13 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
             var updated = existing.Where(c => c.CollateralId != request.CollateralId).ToList();
             stored.Servicing = stored.Servicing with { Collateral = updated };
-            AppendEvent(stored, "CollateralRemoved", DateOnly.FromDateTime(DateTime.UtcNow), request, metadata);
-            AppendRevision(stored, "CollateralRemoved", DateOnly.FromDateTime(DateTime.UtcNow), request.Reason);
+            var effectiveDate = DateOnly.FromDateTime(DateTime.UtcNow);
+            AppendRevision(stored, "CollateralRemoved", effectiveDate, request.Reason);
+            AppendEvent(stored, "CollateralRemoved", effectiveDate, new
+            {
+                request.CollateralId, request.Reason,
+                ServicingRevision = stored.Servicing.RevisionHistory[^1]
+            }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }
@@ -711,8 +721,12 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                     : c).ToList();
 
             stored.Servicing = stored.Servicing with { Collateral = updated };
-            AppendEvent(stored, "CollateralValueUpdated", request.NewAppraisalDate, request, metadata);
             AppendRevision(stored, "CollateralValueUpdated", request.NewAppraisalDate, $"Revalued collateral {request.CollateralId}");
+            AppendEvent(stored, "CollateralValueUpdated", request.NewAppraisalDate, new
+            {
+                request.CollateralId, request.NewEstimatedValue, request.NewAppraisalDate,
+                ServicingRevision = stored.Servicing.RevisionHistory[^1]
+            }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }
@@ -738,8 +752,12 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
 
             stored.Status = request.NewStatus;
             stored.Servicing = stored.Servicing with { Status = request.NewStatus };
-            AppendEvent(stored, "LoanStatusTransitioned", request.EffectiveDate, request, metadata);
             AppendRevision(stored, "StatusTransition", request.EffectiveDate, request.Reason);
+            AppendEvent(stored, "LoanStatusTransitioned", request.EffectiveDate, new
+            {
+                request.NewStatus, request.EffectiveDate, request.Reason,
+                ServicingRevision = stored.Servicing.RevisionHistory[^1]
+            }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }
@@ -752,8 +770,12 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
                 return Task.FromResult<LoanServicingStateDto?>(null);
 
             stored.Servicing = stored.Servicing with { IsPikToggled = request.EnablePik };
-            AppendEvent(stored, "PikToggled", request.EffectiveDate, request, metadata);
             AppendRevision(stored, "PikToggle", request.EffectiveDate, request.Reason ?? (request.EnablePik ? "PIK enabled" : "PIK disabled"));
+            AppendEvent(stored, "PikToggled", request.EffectiveDate, new
+            {
+                request.EnablePik, request.EffectiveDate, request.Reason,
+                ServicingRevision = stored.Servicing.RevisionHistory[^1]
+            }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }
@@ -849,14 +871,25 @@ public sealed partial class InMemoryDirectLendingService : INonProductionOnlySer
             var premiumAmort = Meridian.FSharp.DirectLendingInterop.DirectLendingInterop.CalculateStraightLineAmortization(
                 stored.Servicing.UnamortizedPremium, remaining);
 
+            var discountBefore = stored.Servicing.UnamortizedDiscount;
+            var premiumBefore = stored.Servicing.UnamortizedPremium;
             stored.Servicing = stored.Servicing with
             {
                 UnamortizedDiscount = Math.Max(0m, stored.Servicing.UnamortizedDiscount - discountAmort),
                 UnamortizedPremium = Math.Max(0m, stored.Servicing.UnamortizedPremium - premiumAmort)
             };
 
-            AppendEvent(stored, "DiscountPremiumAmortized", request.AccrualDate, new { discountAmort, premiumAmort }, metadata);
             AppendRevision(stored, "DiscountPremiumAmortization", request.AccrualDate, $"Amortized discount={discountAmort:F4} premium={premiumAmort:F4}");
+            AppendEvent(stored, "DiscountPremiumAmortized", request.AccrualDate, new
+            {
+                discountAmort,
+                premiumAmort,
+                UnamortizedDiscountBefore = discountBefore,
+                UnamortizedDiscountAfter = stored.Servicing.UnamortizedDiscount,
+                UnamortizedPremiumBefore = premiumBefore,
+                UnamortizedPremiumAfter = stored.Servicing.UnamortizedPremium,
+                ServicingRevision = stored.Servicing.RevisionHistory[^1]
+            }, metadata);
             return Task.FromResult<LoanServicingStateDto?>(ToServicingState(stored));
         }
     }

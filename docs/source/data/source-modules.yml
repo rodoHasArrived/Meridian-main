@@ -87,6 +87,7 @@ modules:
       - AccountingRecords
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AccrualLedgerServiceTests|FullyQualifiedName~DirectLendingJournalLinesTests|FullyQualifiedName~DirectLendingOutboxDispatcherTests" --logger "console;verbosity=normal"
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DirectLendingLifecycleReplayTests|FullyQualifiedName~DirectLendingEventRebuilderTests|FullyQualifiedName~AccountingCloseMarkPriceSourceTests|FullyQualifiedName~CrossSourceBackfillReconciliationServiceTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.FundStructure.Tests/Meridian.FundStructure.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementServiceTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~DatabaseStartupPlanTests|FullyQualifiedName~HostStartupLifecycleTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~SecurityMasterContractOwnershipTests|FullyQualifiedName~SecurityMasterContractAdapterTests|FullyQualifiedName~StorageFeatureRegistrationTests" --logger "console;verbosity=normal"
@@ -251,12 +252,13 @@ modules:
       - PaperSession
       - LiveReadiness
     validation:
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~AlpacaAccountingClosePriceTests|FullyQualifiedName~AlpacaHistoricalDataProviderTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~YahooFinanceProviderModuleCompositionTests|FullyQualifiedName~ProviderCatalogCompositionTests" --logger "console;verbosity=normal"
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "Category!=Integration" --logger "console;verbosity=normal"
     diagrams:
       - DIA-ASSURANCE-LOOP
     todos: []
-    last_reviewed: 2026-07-02
+    last_reviewed: 2026-11-23
 
   - id: SRC-STORAGE
     path: src/Meridian.Storage
@@ -1108,6 +1110,7 @@ modules:
       - BacktestingEvidence
     validation:
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ExecutionGovernanceEndpointsTests|FullyQualifiedName~EquityOrderSessionPolicyTests" /p:EnableWindowsTargeting=true
+      - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~CrossProviderToleranceEndpointTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Execution.Tests/Meridian.Execution.Tests.csproj --filter "FullyQualifiedName~ExecutionWorkflowTests|FullyQualifiedName~ExecutionJournalAttemptTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~IntercompanyAgreementEndpointTests|FullyQualifiedName~IntercompanyAgreementWorkQueueEndpointTests|FullyQualifiedName~IntercompanyAgreementAuthorityTests|FullyQualifiedName~IntercompanyAgreementJournalProjectionTests|FullyQualifiedName~ManualJournalAgreementReviewTests" /p:EnableWindowsTargeting=true
       - dotnet test tests/Meridian.Tests/Meridian.Tests.csproj --filter "FullyQualifiedName~ReportingTemplateRegistryServiceTests" --logger "console;verbosity=normal"

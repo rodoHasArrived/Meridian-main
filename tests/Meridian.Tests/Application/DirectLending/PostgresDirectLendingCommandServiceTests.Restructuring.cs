@@ -194,8 +194,10 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
                 .Returns(call =>
                 {
                     SaveCount++;
-                    if (SimulatedConflict is { } uncommittedConflict && !RetainCompetingCommit)
-                        throw new DirectLendingCommandException(new(uncommittedConflict, "Injected storage conflict without a receipt."));
+                    var failure = SimulatedStorageFailure ?? (SimulatedConflict is { } conflict
+                        ? new DirectLendingCommandException(new(conflict, "Injected competing storage conflict.")) : null);
+                    if (failure is not null && !RetainCompetingCommit)
+                        throw failure;
                     State = new(LoanId, call.ArgAt<long>(2), call.ArgAt<LoanContractDetailDto>(3), call.ArgAt<LoanServicingStateDto>(4));
                     var metadata = call.ArgAt<DirectLendingEventWriteMetadata>(9);
                     History.Add(new(call.ArgAt<Guid>(12), State.AggregateVersion, call.ArgAt<string>(5), call.ArgAt<int>(6),
@@ -203,8 +205,8 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
                         metadata.CausationId, metadata.CorrelationId, CompetingCommandId ?? metadata.CommandId, metadata.SourceSystem, metadata.ReplayFlag));
                     Writes.AddRange(call.ArgAt<IReadOnlyList<LedgerJournalEntryWrite>?>(11) ?? []);
                     OutboxMessages.AddRange(call.ArgAt<DirectLendingPersistenceBatch?>(10)?.OutboxMessages ?? []);
-                    if (SimulatedConflict is { } committedConflict)
-                        throw new DirectLendingCommandException(new(committedConflict, "Injected competing commit after the initial history read."));
+                    if (failure is not null)
+                        throw failure;
                     return Task.CompletedTask;
                 });
             Service = CreateService();
@@ -218,6 +220,7 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
         public List<DirectLendingOutboxMessageWrite> OutboxMessages { get; } = [];
         public int SaveCount { get; private set; }
         public DirectLendingErrorCode? SimulatedConflict { get; init; }
+        public Exception? SimulatedStorageFailure { get; init; }
         public bool RetainCompetingCommit { get; init; }
         public Guid? CompetingCommandId { get; init; }
         public PostgresDirectLendingCommandService Service { get; }

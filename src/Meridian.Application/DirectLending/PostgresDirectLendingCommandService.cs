@@ -6,9 +6,6 @@ using Meridian.FSharp.DirectLending.Aggregates;
 using Meridian.FSharp.DirectLendingInterop;
 using Meridian.Instruments.AssetOperations;
 using Meridian.Storage.DirectLending;
-using Meridian.Storage.Ledger;
-using Meridian.Contracts.Ledger;
-using Meridian.Contracts.Tenancy;
 
 namespace Meridian.Application.DirectLending;
 
@@ -25,9 +22,6 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     private readonly IAssetOperationsCommandService? _assetOperationsCommandService;
     private readonly ISecurityMasterTermsCapabilityVerifier? _termsCapabilityVerifier;
     private readonly IDirectLendingIndexFixingStore? _indexFixingStore;
-    private readonly ILedgerJournalStore? _reconciliationJournalStore;
-    private readonly IConfiguredLedgerAccountResolver? _reconciliationAccountResolver;
-    private readonly IFundProfileTenancyRegistry? _reconciliationTenancy;
 
     public PostgresDirectLendingCommandService(
         IDirectLendingStateStore stateStore,
@@ -37,10 +31,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         DirectLendingOptions options,
         IAssetOperationsCommandService? assetOperationsCommandService = null,
         ISecurityMasterTermsCapabilityVerifier? termsCapabilityVerifier = null,
-        IDirectLendingIndexFixingStore? indexFixingStore = null,
-        ILedgerJournalStore? reconciliationJournalStore = null,
-        IConfiguredLedgerAccountResolver? reconciliationAccountResolver = null,
-        IFundProfileTenancyRegistry? reconciliationTenancy = null)
+        IDirectLendingIndexFixingStore? indexFixingStore = null)
     {
         _stateStore = stateStore;
         _operationsStore = operationsStore;
@@ -50,9 +41,6 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         _assetOperationsCommandService = assetOperationsCommandService;
         _termsCapabilityVerifier = termsCapabilityVerifier;
         _indexFixingStore = indexFixingStore;
-        _reconciliationJournalStore = reconciliationJournalStore;
-        _reconciliationAccountResolver = reconciliationAccountResolver;
-        _reconciliationTenancy = reconciliationTenancy;
     }
 
     public async Task<DirectLendingCommandResult<LoanContractDetailDto>> CreateLoanAsync(CreateLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -430,12 +418,15 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> AssessFeeAsync(Guid loanId, AssessFeeRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.fee-assessed", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
         if (request.Amount <= 0m)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, "Fee amount must be positive.");
         }
 
-        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -451,18 +442,19 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             request.FeeType,
             request.Amount,
             request.EffectiveDate,
-            request.Note
+            request.Note,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             stored.Contract,
             servicing,
             eventType: "loan.fee-assessed",
             effectiveDate: request.EffectiveDate,
             payload,
+            request,
             metadata,
             persistenceBatch: new DirectLendingPersistenceBatch(
                 [],
@@ -479,18 +471,20 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 []),
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> ApplyWriteOffAsync(Guid loanId, ApplyWriteOffRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
+        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.write-off-applied", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
         if (request.Amount <= 0m)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.Validation, "Write-off amount must be positive.");
         }
 
-        var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -506,22 +500,22 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             RequestedAmount = request.Amount,
             AppliedAmount = writeOffAmount,
             request.EffectiveDate,
-            request.Reason
+            request.Reason,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             stored.Contract,
             servicing,
             eventType: "loan.write-off-applied",
             effectiveDate: request.EffectiveDate,
             payload,
+            request,
             metadata,
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<DailyAccrualEntryDto>> PostDailyAccrualAsync(Guid loanId, PostDailyAccrualRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -656,55 +650,109 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             : DirectLendingCommandResult<JournalEntryDto>.Success(entry);
     }
 
-    public Task<DirectLendingCommandResult<ReconciliationRunDto>> ReconcileAsync(Guid loanId, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
-        => ReconcileAsync(loanId, new ReconcileLoanRequest(0m, 0), metadata, ct);
-
-    public async Task<DirectLendingCommandResult<ReconciliationRunDto>> ReconcileAsync(Guid loanId, ReconcileLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
+    public async Task<DirectLendingCommandResult<ReconciliationRunDto>> ReconcileAsync(Guid loanId, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
-        request = LoanCashReconciliation.Normalize(request);
         var runId = DirectLendingServiceSupport.CreateRunIdentity(loanId, "reconciliation", metadata);
         var committed = (await _operationsStore.GetReconciliationRunsAsync(loanId, ct).ConfigureAwait(false))
             .FirstOrDefault(candidate => candidate.ReconciliationRunId == runId);
         if (committed is not null)
         {
-            LoanCashReconciliation.EnsureReplay(committed, request);
+            var committedResults = await _operationsStore.GetReconciliationResultsAsync(runId, ct).ConfigureAwait(false);
+            await _operationsStore.SaveReconciliationRunAsync(committed, committedResults, [], ct).ConfigureAwait(false);
             return DirectLendingCommandResult<ReconciliationRunDto>.Success(committed);
         }
-        var state = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
-        if (state is null)
-            return DirectLendingCommandResult<ReconciliationRunDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
-        var observedAt = DateTimeOffset.UtcNow;
-        var asOf = DateOnly.FromDateTime(observedAt.UtcDateTime);
-        var latestProjection = (await _operationsStore.GetProjectionRunsAsync(loanId, ct).ConfigureAwait(false))
-            .OrderByDescending(static run => run.GeneratedAt).FirstOrDefault();
+
+        var projections = await _operationsStore.GetProjectionRunsAsync(loanId, ct).ConfigureAwait(false);
+        var latestProjection = projections.OrderByDescending(static x => x.GeneratedAt).FirstOrDefault();
         if (latestProjection is null)
         {
-            var projected = await RequestProjectionAsync(loanId, projectionAsOf: null, metadata, ct).ConfigureAwait(false);
-            if (!projected.IsSuccess)
-                return new(null, projected.Error);
-            latestProjection = projected.Value!;
+            var requested = await RequestProjectionAsync(loanId, projectionAsOf: null, metadata, ct).ConfigureAwait(false);
+            if (!requested.IsSuccess)
+            {
+                return new DirectLendingCommandResult<ReconciliationRunDto>(null, requested.Error);
+            }
+
+            latestProjection = requested.Value!;
         }
+
         var flows = await _operationsStore.GetProjectedCashFlowsAsync(latestProjection.ProjectionRunId, ct).ConfigureAwait(false);
-        var cash = await _operationsStore.GetCashTransactionsAsync(loanId, ct).ConfigureAwait(false);
-        var allocations = await _operationsStore.GetPaymentAllocationsAsync(loanId, ct).ConfigureAwait(false);
-        var history = await _queryService.GetHistoryAsync(loanId, ct).ConfigureAwait(false);
-        var results = LoanCashReconciliation.Match(runId, loanId, asOf, observedAt, flows, cash, allocations, request,
-            history, state.Contract.CurrentTerms.BaseCurrency).ToList();
-        results.AddRange(await LoanLedgerReconciliation.ReadAsync(runId, loanId, state, _reconciliationJournalStore,
-            _options, _reconciliationAccountResolver, _reconciliationTenancy, asOf, observedAt, request, ct).ConfigureAwait(false));
-        var current = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
-        if (current?.AggregateVersion != state.AggregateVersion)
-            return DirectLendingCommandResult<ReconciliationRunDto>.Failure(DirectLendingErrorCode.ConcurrencyConflict,
-                "Loan state changed while capturing reconciliation evidence; retry with a new command identity.");
-        var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, observedAt, DateTimeOffset.UtcNow, "Completed")
+        var cashTransactions = await _operationsStore.GetCashTransactionsAsync(loanId, ct).ConfigureAwait(false);
+        var results = new List<ReconciliationResultDto>();
+        var exceptions = new List<ReconciliationExceptionDto>();
+
+        foreach (var flow in flows)
         {
-            RequestHash = LoanCashReconciliation.RequestHash(request),
-            AsOfDate = asOf,
-            AmountTolerance = request.AmountTolerance,
-            DateToleranceDays = request.DateToleranceDays
-        };
-        return DirectLendingCommandResult<ReconciliationRunDto>.Success(await _operationsStore.SaveReconciliationRunAsync(run, results,
-            LoanCashReconciliation.Exceptions(results, observedAt), ct).ConfigureAwait(false));
+            var cash = cashTransactions.FirstOrDefault(x =>
+                DirectLendingServiceSupport.IsIncomingReceipt(x) && x.SettlementDate == flow.DueDate && x.Amount == flow.Amount);
+            var matchStatus = cash is null ? "MissingCash" : "Matched";
+            var variance = cash is null ? flow.Amount : 0m;
+            var result = new ReconciliationResultDto(
+                Guid.NewGuid(),
+                runId,
+                loanId,
+                flow.ProjectedCashFlowId,
+                cash?.CashTransactionId,
+                matchStatus,
+                flow.Amount,
+                cash?.Amount,
+                variance,
+                flow.DueDate,
+                cash?.SettlementDate,
+                cash is null ? "ExpectedFlowVsCash" : "ExactAmountDate",
+                "{\"amountTolerance\":0,\"dateToleranceDays\":0}",
+                cash is null ? ["Projected flow did not match cash transaction."] : ["Matched."],
+                DateTimeOffset.UtcNow);
+            results.Add(result);
+
+            if (cash is null)
+            {
+                exceptions.Add(new ReconciliationExceptionDto(
+                    Guid.NewGuid(),
+                    result.ReconciliationResultId,
+                    "MissingCash",
+                    "High",
+                    "Open",
+                    null,
+                    null,
+                    DateTimeOffset.UtcNow,
+                    null));
+            }
+        }
+
+        foreach (var cash in cashTransactions.Where(cash => flows.All(flow => flow.DueDate != cash.SettlementDate || flow.Amount != cash.Amount)))
+        {
+            var result = new ReconciliationResultDto(
+                Guid.NewGuid(),
+                runId,
+                loanId,
+                null,
+                cash.CashTransactionId,
+                "UnexpectedCash",
+                null,
+                cash.Amount,
+                cash.Amount,
+                null,
+                cash.SettlementDate,
+                "UnexpectedCash",
+                "{\"amountTolerance\":0,\"dateToleranceDays\":0}",
+                ["Cash transaction did not match any projected flow."],
+                DateTimeOffset.UtcNow);
+            results.Add(result);
+            exceptions.Add(new ReconciliationExceptionDto(
+                Guid.NewGuid(),
+                result.ReconciliationResultId,
+                "UnexpectedCash",
+                "Medium",
+                "Open",
+                null,
+                null,
+                DateTimeOffset.UtcNow,
+                null));
+        }
+
+        var run = new ReconciliationRunDto(runId, loanId, latestProjection.ProjectionRunId, DateTimeOffset.UtcNow, DateTimeOffset.UtcNow, "Completed");
+        var savedRun = await _operationsStore.SaveReconciliationRunAsync(run, results, exceptions, ct).ConfigureAwait(false);
+        return DirectLendingCommandResult<ReconciliationRunDto>.Success(savedRun);
     }
 
     public async Task<DirectLendingCommandResult<ServicerReportBatchDto>> CreateServicerReportBatchAsync(CreateServicerReportBatchRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -803,7 +851,8 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                     line.InterestAccruedUnpaid,
                     line.FeesAccruedUnpaid,
                     line.PenaltyAccruedUnpaid,
-                    line.CommitmentAvailable
+                    line.CommitmentAvailable,
+                    ServicingRevision = servicing.RevisionHistory[0]
                 });
 
                 await SaveAsync(
@@ -1050,8 +1099,11 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> AddCollateralAsync(Guid loanId, AddCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.collateral-added", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
+
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -1077,29 +1129,32 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         using var payload = DirectLendingServiceSupport.CreatePayloadDocument(new
         {
             loanId,
-            Collateral = collateral
+            Collateral = collateral,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             stored.Contract,
             servicing,
             eventType: "loan.collateral-added",
             effectiveDate: request.AppraisalDate,
             payload,
+            request,
             metadata,
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> RemoveCollateralAsync(Guid loanId, RemoveCollateralRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.collateral-removed", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
+
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -1125,29 +1180,32 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
         {
             loanId,
             request.CollateralId,
-            request.Reason
+            request.Reason,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             stored.Contract,
             servicing,
             eventType: "loan.collateral-removed",
             effectiveDate,
             payload,
+            request,
             metadata,
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> UpdateCollateralValueAsync(Guid loanId, UpdateCollateralValueRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.collateral-value-updated", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
+
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -1177,29 +1235,32 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             loanId,
             request.CollateralId,
             request.NewEstimatedValue,
-            request.NewAppraisalDate
+            request.NewAppraisalDate,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             stored.Contract,
             servicing,
             eventType: "loan.collateral-value-updated",
             effectiveDate: request.NewAppraisalDate,
             payload,
+            request,
             metadata,
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> TransitionLoanStatusAsync(Guid loanId, TransitionLoanStatusRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.status-transitioned", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
+
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -1217,29 +1278,32 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             loanId,
             request.NewStatus,
             request.Reason,
-            request.EffectiveDate
+            request.EffectiveDate,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             contract,
             servicing,
             eventType: "loan.status-transitioned",
             effectiveDate: request.EffectiveDate,
             payload,
+            request,
             metadata,
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> TogglePikAsync(Guid loanId, TogglePikRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.pik-toggled", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
+
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -1256,22 +1320,22 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             loanId,
             request.EnablePik,
             request.EffectiveDate,
-            request.Reason
+            request.Reason,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             stored.Contract,
             servicing,
             eventType: "loan.pik-toggled",
             effectiveDate: request.EffectiveDate,
             payload,
+            request,
             metadata,
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<LoanContractDetailDto>> RestructureLoanAsync(Guid loanId, RestructureLoanRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
@@ -1377,7 +1441,7 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
                 metadata,
                 ct: ct).ConfigureAwait(false);
         }
-        catch (DirectLendingCommandException ex) when (ex.Error.Code is DirectLendingErrorCode.Conflict or DirectLendingErrorCode.ConcurrencyConflict)
+        catch (Exception ex) when (IsRetainedCommandPersistenceRace(ex))
         {
             // A concurrent retry can have captured different projection timestamps before the first
             // request committed. Only the same retained command request may resolve that conflict.
@@ -1428,8 +1492,11 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
     public async Task<DirectLendingCommandResult<LoanServicingStateDto>> AmortizeDiscountPremiumAsync(Guid loanId, AmortizeDiscountPremiumRequest request, DirectLendingCommandMetadataDto? metadata = null, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(request);
-
         var stored = await _queryService.LoadAggregateAsync(loanId, ct).ConfigureAwait(false);
+        var replay = await TryReplayCommittedLifecycleCommandAsync(loanId, "loan.discount-premium-amortized", request, metadata, ct).ConfigureAwait(false);
+        if (replay is not null)
+            return replay;
+
         if (stored is null)
         {
             return DirectLendingCommandResult<LoanServicingStateDto>.Failure(DirectLendingErrorCode.NotFound, $"Loan '{loanId}' was not found.");
@@ -1465,22 +1532,26 @@ public sealed partial class PostgresDirectLendingCommandService : IDirectLending
             DiscountAmortization = discountAmortization,
             PremiumAmortization = premiumAmortization,
             discountAmort = discountAmortization,
-            premiumAmort = premiumAmortization
+            premiumAmort = premiumAmortization,
+            UnamortizedDiscountBefore = stored.Servicing.UnamortizedDiscount,
+            UnamortizedDiscountAfter = servicing.UnamortizedDiscount,
+            UnamortizedPremiumBefore = stored.Servicing.UnamortizedPremium,
+            UnamortizedPremiumAfter = servicing.UnamortizedPremium,
+            ServicingRevision = servicing.RevisionHistory[0]
         });
 
-        await SaveAsync(
+        return await SaveLifecycleCommandAsync(
             loanId,
-            stored.AggregateVersion,
-            stored.AggregateVersion + 1,
+            stored,
             stored.Contract,
             servicing,
             eventType: "loan.discount-premium-amortized",
             effectiveDate: request.AccrualDate,
             payload,
+            request,
             metadata,
             ct: ct).ConfigureAwait(false);
 
-        return DirectLendingCommandResult<LoanServicingStateDto>.Success(servicing);
     }
 
     public async Task<DirectLendingCommandResult<IReadOnlyList<LoanAggregateSnapshotDto>>> RebuildAllAsync(CancellationToken ct = default)

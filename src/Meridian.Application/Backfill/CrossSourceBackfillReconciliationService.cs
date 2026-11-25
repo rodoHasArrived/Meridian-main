@@ -1,5 +1,7 @@
 using Meridian.Contracts.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
+using Meridian.Platform.Scheduling;
+using Meridian.Storage.Backfill;
 
 namespace Meridian.Application.Backfill;
 
@@ -10,6 +12,14 @@ namespace Meridian.Application.Backfill;
 public sealed class CrossSourceBackfillReconciliationService
 {
     private readonly IReadOnlyDictionary<string, IHistoricalDataProvider> _providers;
+
+    /// <summary>
+    /// Resolves the complete expected session population for the requested symbol and bounded
+    /// range. A missing calendar, unresolved listing or partial coverage cannot close a comparison.
+    /// Without a host resolver, only an explicit supported listing identity can resolve.
+    /// </summary>
+    public Func<string, DateOnly, DateOnly, CancellationToken, Task<CrossSourceBackfillSessionCoverage?>>?
+        ResolveSessionCoverageAsync { get; init; }
 
     public CrossSourceBackfillReconciliationService(IEnumerable<IHistoricalDataProvider> providers)
     {
@@ -26,6 +36,7 @@ public sealed class CrossSourceBackfillReconciliationService
     {
         ArgumentNullException.ThrowIfNull(request);
         ValidateRequest(request);
+        ct.ThrowIfCancellationRequested();
 
         var baselineProviderKey = NormalizeProviderName(request.BaselineProvider);
         var comparisonProviderKeys = request.ComparisonProviders
@@ -38,6 +49,16 @@ public sealed class CrossSourceBackfillReconciliationService
         if (comparisonProviderKeys.Length == 0)
         {
             throw new InvalidOperationException("At least one non-baseline comparison provider is required.");
+        }
+
+        var discrepancies = new List<CrossSourceBackfillDiscrepancy>();
+        var sessionCoverage = await ResolveCoverageAsync(request, ct).ConfigureAwait(false);
+        if (sessionCoverage is null)
+        {
+            discrepancies.Add(new CrossSourceBackfillDiscrepancy(
+                request.From, baselineProviderKey, "session-calendar", "SessionCalendarMissingEvidence",
+                null, null, null, null, null, null,
+                "The symbol has no verified exchange-session calendar covering the entire requested range; agreeing provider rows cannot prove complete coverage."));
         }
 
         var providerErrors = new List<CrossSourceBackfillProviderError>();
@@ -55,12 +76,12 @@ public sealed class CrossSourceBackfillReconciliationService
                 request,
                 baselineProviderKey,
                 comparisonProviderKeys,
-                Array.Empty<CrossSourceBackfillDiscrepancy>(),
-                providerErrors);
+                discrepancies,
+                providerErrors,
+                sessionCoverage);
         }
 
         var requestedSymbol = NormalizeSymbol(request.Symbol);
-        var discrepancies = new List<CrossSourceBackfillDiscrepancy>();
         discrepancies.AddRange(CreateSymbolMismatchDiscrepancies(
             requestedSymbol,
             baselineProviderKey,
@@ -68,6 +89,9 @@ public sealed class CrossSourceBackfillReconciliationService
             baselineFetch.Bars,
             isBaseline: true));
         var baselineSymbolBars = FilterBarsForRequestedSymbol(baselineFetch.Bars, requestedSymbol);
+        discrepancies.AddRange(CreateUnexpectedSessionDiscrepancies(
+            baselineProviderKey, baselineProviderKey, request, baselineSymbolBars, sessionCoverage, isBaseline: true));
+        baselineSymbolBars = FilterBarsForRequestedRange(baselineSymbolBars, request);
         discrepancies.AddRange(CreateMissingEvidenceDiscrepancies(
             requestedSymbol,
             baselineProviderKey,
@@ -75,6 +99,7 @@ public sealed class CrossSourceBackfillReconciliationService
             request.From,
             request.To,
             baselineSymbolBars,
+            sessionCoverage,
             isBaseline: true));
         var baselineBars = IndexBySessionDate(baselineSymbolBars);
 
@@ -102,6 +127,9 @@ public sealed class CrossSourceBackfillReconciliationService
                 comparisonFetch.Bars,
                 isBaseline: false));
             var comparisonSymbolBars = FilterBarsForRequestedSymbol(comparisonFetch.Bars, requestedSymbol);
+            discrepancies.AddRange(CreateUnexpectedSessionDiscrepancies(
+                baselineProviderKey, comparisonProviderKey, request, comparisonSymbolBars, sessionCoverage, isBaseline: false));
+            comparisonSymbolBars = FilterBarsForRequestedRange(comparisonSymbolBars, request);
             discrepancies.AddRange(CreateMissingEvidenceDiscrepancies(
                 requestedSymbol,
                 baselineProviderKey,
@@ -109,6 +137,7 @@ public sealed class CrossSourceBackfillReconciliationService
                 request.From,
                 request.To,
                 comparisonSymbolBars,
+                sessionCoverage,
                 isBaseline: false));
             var comparisonBars = IndexBySessionDate(comparisonSymbolBars);
             discrepancies.AddRange(CompareProviderBars(
@@ -116,6 +145,7 @@ public sealed class CrossSourceBackfillReconciliationService
                 comparisonProviderKey,
                 baselineBars,
                 comparisonBars,
+                sessionCoverage?.ExpectedSessions,
                 request.CloseToleranceRatio,
                 request.VolumeToleranceRatio));
         }
@@ -129,7 +159,51 @@ public sealed class CrossSourceBackfillReconciliationService
                 .ThenBy(discrepancy => discrepancy.ComparisonProvider, StringComparer.OrdinalIgnoreCase)
                 .ThenBy(discrepancy => discrepancy.Kind, StringComparer.Ordinal)
                 .ToArray(),
-            providerErrors);
+            providerErrors,
+            sessionCoverage);
+    }
+
+    /// <summary>Adapts the shared exchange-calendar resolver without inferring sessions from provider rows.</summary>
+    public static async Task<CrossSourceBackfillSessionCoverage?> ResolveExchangeSessionCoverageAsync(
+        HistoricalSessionScheduleResolver resolver, string symbol, DateOnly from, DateOnly to,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(resolver);
+        ct.ThrowIfCancellationRequested();
+        var schedule = await resolver.ResolveAsync(symbol, from, to, ct).ConfigureAwait(false);
+        ct.ThrowIfCancellationRequested();
+        return schedule is null ? null : new(schedule.Calendar, from, to, schedule.Sessions);
+    }
+
+    private async Task<CrossSourceBackfillSessionCoverage?> ResolveCoverageAsync(
+        CrossSourceBackfillReconciliationRequest request, CancellationToken ct)
+    {
+        try
+        {
+            var coverage = ResolveSessionCoverageAsync is { } resolve
+                ? await resolve(NormalizeSymbol(request.Symbol), request.From, request.To, ct).ConfigureAwait(false)
+                : await ResolveExchangeSessionCoverageAsync(new HistoricalSessionScheduleResolver(null),
+                    NormalizeSymbol(request.Symbol), request.From, request.To, ct).ConfigureAwait(false);
+            ct.ThrowIfCancellationRequested();
+            if (coverage is null || !coverage.Covers(request.From, request.To))
+                return null;
+
+            // Freeze exactly the requested range; neither mutable resolver output nor a wider
+            // calendar population may change the retained expectation after provider retrieval.
+            return new CrossSourceBackfillSessionCoverage(coverage.Calendar, request.From, request.To,
+                Array.AsReadOnly(coverage.ExpectedSessions.Where(date => date >= request.From && date <= request.To)
+                    .Order().ToArray()));
+        }
+        catch (OperationCanceledException) when (ct.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            // Lookup outages, provider timeouts and malformed calendars all leave coverage
+            // unavailable. Provider comparisons still run and retain any independent drift.
+            return null;
+        }
     }
 
     public async Task<CrossSourceBackfillBatchReconciliationResult> ReconcileDailyBatchAsync(
@@ -276,6 +350,27 @@ public sealed class CrossSourceBackfillReconciliationService
             .Where(bar => SymbolMatches(bar.Symbol, requestedSymbol))
             .ToArray();
 
+    private static IReadOnlyList<HistoricalBar> FilterBarsForRequestedRange(
+        IReadOnlyList<HistoricalBar> bars, CrossSourceBackfillReconciliationRequest request)
+        => bars.Where(bar => bar.SessionDate >= request.From && bar.SessionDate <= request.To).ToArray();
+
+    private static IEnumerable<CrossSourceBackfillDiscrepancy> CreateUnexpectedSessionDiscrepancies(
+        string baselineProvider, string provider, CrossSourceBackfillReconciliationRequest request,
+        IReadOnlyList<HistoricalBar> bars, CrossSourceBackfillSessionCoverage? coverage, bool isBaseline)
+    {
+        var expected = coverage?.ExpectedSessions.ToHashSet();
+        foreach (var bar in bars.Where(bar => bar.SessionDate < request.From || bar.SessionDate > request.To ||
+                                             expected is not null && !expected.Contains(bar.SessionDate)))
+        {
+            yield return new CrossSourceBackfillDiscrepancy(
+                bar.SessionDate, baselineProvider, provider,
+                isBaseline ? "BaselineUnexpectedSession" : "ComparisonUnexpectedSession",
+                isBaseline ? bar.Close : null, isBaseline ? null : bar.Close,
+                isBaseline ? bar.Volume : null, isBaseline ? null : bar.Volume, null, null,
+                $"{provider} returned a bar outside the requested range or on a confirmed non-trading date ({bar.SessionDate}); it cannot establish expected-session coverage.");
+        }
+    }
+
     private static IEnumerable<CrossSourceBackfillDiscrepancy> CreateSymbolMismatchDiscrepancies(
         string requestedSymbol,
         string baselineProvider,
@@ -311,9 +406,10 @@ public sealed class CrossSourceBackfillReconciliationService
         DateOnly from,
         DateOnly to,
         IReadOnlyList<HistoricalBar> symbolScopedBars,
+        CrossSourceBackfillSessionCoverage? sessionCoverage,
         bool isBaseline)
     {
-        if (symbolScopedBars.Count > 0)
+        if (symbolScopedBars.Count > 0 || sessionCoverage?.ExpectedSessions.Count == 0)
         {
             yield break;
         }
@@ -337,13 +433,26 @@ public sealed class CrossSourceBackfillReconciliationService
         string comparisonProvider,
         IReadOnlyDictionary<DateOnly, HistoricalBar> baselineBars,
         IReadOnlyDictionary<DateOnly, HistoricalBar> comparisonBars,
+        IReadOnlyList<DateOnly>? expectedSessions,
         decimal closeToleranceRatio,
         decimal volumeToleranceRatio)
     {
-        foreach (var sessionDate in baselineBars.Keys.Union(comparisonBars.Keys).OrderBy(static date => date))
+        IEnumerable<DateOnly> sessionDates = expectedSessions is null
+            ? baselineBars.Keys.Union(comparisonBars.Keys)
+            : expectedSessions;
+        foreach (var sessionDate in sessionDates.OrderBy(static date => date))
         {
             var hasBaseline = baselineBars.TryGetValue(sessionDate, out var baselineBar);
             var hasComparison = comparisonBars.TryGetValue(sessionDate, out var comparisonBar);
+
+            if (!hasBaseline && !hasComparison)
+            {
+                yield return new CrossSourceBackfillDiscrepancy(
+                    sessionDate, baselineProvider, comparisonProvider, "SharedMissingSession",
+                    null, null, null, null, null, null,
+                    $"Neither {baselineProvider} nor {comparisonProvider} returned a bar for expected exchange session {sessionDate}; provider agreement does not establish complete coverage.");
+                continue;
+            }
 
             if (!hasBaseline && hasComparison)
             {
@@ -449,7 +558,8 @@ public sealed class CrossSourceBackfillReconciliationService
         string baselineProvider,
         IReadOnlyList<string> comparisonProviders,
         IReadOnlyList<CrossSourceBackfillDiscrepancy> discrepancies,
-        IReadOnlyList<CrossSourceBackfillProviderError> providerErrors)
+        IReadOnlyList<CrossSourceBackfillProviderError> providerErrors,
+        CrossSourceBackfillSessionCoverage? sessionCoverage)
         => new(
             NormalizeSymbol(request.Symbol),
             request.From,
@@ -458,7 +568,10 @@ public sealed class CrossSourceBackfillReconciliationService
             comparisonProviders,
             discrepancies,
             providerErrors,
-            DateTimeOffset.UtcNow);
+            DateTimeOffset.UtcNow)
+        {
+            SessionCoverage = sessionCoverage
+        };
 
     private sealed record ProviderFetchResult(
         IReadOnlyList<HistoricalBar> Bars,
@@ -499,7 +612,12 @@ public sealed record CrossSourceBackfillReconciliationResult(
     IReadOnlyList<CrossSourceBackfillProviderError> ProviderErrors,
     DateTimeOffset ReconciledAt)
 {
-    public bool IsClean => Discrepancies.Count == 0 && ProviderErrors.Count == 0;
+    /// <summary>Expected sessions from an identified calendar, independent of provider observations.</summary>
+    public CrossSourceBackfillSessionCoverage? SessionCoverage { get; init; }
+
+    public bool HasVerifiedSessionCoverage => SessionCoverage?.Covers(From, To) == true;
+
+    public bool IsClean => HasVerifiedSessionCoverage && Discrepancies.Count == 0 && ProviderErrors.Count == 0;
 
     public bool IsSlaClosed => ClosureDecision.Status == CrossSourceBackfillClosureStatus.Closed;
 
@@ -553,10 +671,12 @@ public sealed record CrossSourceBackfillClosureDecision(
 
         var providerErrorCount = symbolResults.Sum(static result => result.ProviderErrors.Count);
         var missingEvidenceCount = symbolResults.Sum(static result =>
-            result.Discrepancies.Count(static discrepancy => IsMissingEvidenceDiscrepancy(discrepancy.Kind)));
+            result.Discrepancies.Count(static discrepancy => IsMissingEvidenceDiscrepancy(discrepancy.Kind)) +
+            (!result.HasVerifiedSessionCoverage && !result.Discrepancies.Any(static discrepancy =>
+                discrepancy.Kind == "SessionCalendarMissingEvidence") ? 1 : 0));
         var discrepancyCount = symbolResults.Sum(static result => result.Discrepancies.Count);
         var symbolsRequiringReview = symbolResults
-            .Where(static result => result.ProviderErrors.Count > 0 || result.Discrepancies.Count > 0)
+            .Where(static result => !result.HasVerifiedSessionCoverage || result.ProviderErrors.Count > 0 || result.Discrepancies.Count > 0)
             .Select(static result => result.Symbol)
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToArray();
@@ -575,7 +695,7 @@ public sealed record CrossSourceBackfillClosureDecision(
             return new CrossSourceBackfillClosureDecision(
                 CrossSourceBackfillClosureStatus.BlockedByMissingEvidence,
                 "MissingEvidence",
-                $"{FormatSymbolCount(symbolsRequiringReview.Length)} require operator review because {missingEvidenceCount} provider evidence gap(s) were retained.",
+                $"{FormatSymbolCount(symbolsRequiringReview.Length)} require operator review because {missingEvidenceCount} calendar or provider evidence gap(s) were retained.",
                 symbolsRequiringReview);
         }
 
@@ -591,7 +711,7 @@ public sealed record CrossSourceBackfillClosureDecision(
         return new CrossSourceBackfillClosureDecision(
             CrossSourceBackfillClosureStatus.Closed,
             "Closed",
-            "Cross-source backfill remediation is closed because all symbols matched tolerance and providers returned evidence.",
+            "Cross-source backfill remediation is closed because every expected exchange session has provider evidence and all symbols matched tolerance.",
             Array.Empty<string>());
     }
 
@@ -600,7 +720,20 @@ public sealed record CrossSourceBackfillClosureDecision(
 
     private static bool IsMissingEvidenceDiscrepancy(string kind)
         => string.Equals(kind, "BaselineMissingEvidence", StringComparison.Ordinal) ||
-           string.Equals(kind, "ComparisonMissingEvidence", StringComparison.Ordinal);
+           string.Equals(kind, "ComparisonMissingEvidence", StringComparison.Ordinal) ||
+           string.Equals(kind, "SessionCalendarMissingEvidence", StringComparison.Ordinal) ||
+           string.Equals(kind, "SharedMissingSession", StringComparison.Ordinal);
+}
+
+/// <summary>Complete session population attested by a trusted exchange-calendar resolver over explicit bounds.</summary>
+public sealed record CrossSourceBackfillSessionCoverage(
+    string Calendar, DateOnly From, DateOnly To, IReadOnlyList<DateOnly> ExpectedSessions)
+{
+    public bool Covers(DateOnly from, DateOnly to)
+        => !string.IsNullOrWhiteSpace(Calendar) && From <= To && from <= to &&
+           ExpectedSessions is not null && ExpectedSessions.All(date => date >= From && date <= To) &&
+           ExpectedSessions.Distinct().Count() == ExpectedSessions.Count &&
+           BackfillCoverageMath.Missing(from, to, [new BackfillCoverageRange(From, To, 0)]).Count == 0;
 }
 
 public sealed record CrossSourceBackfillDiscrepancy(

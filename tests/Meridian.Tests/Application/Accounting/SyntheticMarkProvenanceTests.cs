@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Accounting;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Integrity;
 using Meridian.Contracts.Operations;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Infrastructure.Adapters.Synthetic;
@@ -25,8 +26,7 @@ public sealed class SyntheticMarkProvenanceTests
     private static readonly DateTimeOffset AsOfUtc = new(2026, 7, 3, 21, 0, 0, TimeSpan.Zero);
 
     private static HistoricalBar Bar(string source, decimal close = 187.42m)
-        => new("AAPL", AsOf, 186m, 188m, 185m, close, 1_000_000, Source: source,
-            PriceBasis: HistoricalPriceBasis.Raw);
+        => new("AAPL", AsOf, 186m, 188m, 185m, close, 1_000_000, Source: source);
 
     [Fact]
     public async Task SyntheticProvider_MarkIsNeverStampedLevel1()
@@ -82,7 +82,7 @@ public sealed class SyntheticMarkProvenanceTests
     }
 
     [Fact]
-    public async Task RealSyntheticHistoricalProvider_DeclaresItselfSimulatedAndCannotSupplyRawAccountingMarks()
+    public async Task RealSyntheticHistoricalProvider_DeclaresItselfSimulated_AndDoesNotOfferAnObservedClose()
     {
         // Exercises the shipped provider rather than a stub, so the declaration cannot rot.
         using var provider = new SyntheticHistoricalDataProvider();
@@ -90,7 +90,7 @@ public sealed class SyntheticMarkProvenanceTests
 
         var quote = await new HistoricalCloseMarkPriceSource(provider).GetMarkPriceAsync("AAPL", AsOf);
 
-        quote.Should().BeNull("the shipped synthetic adapter does not declare an authoritative raw-price basis");
+        quote.Should().BeNull("generic simulated research bars do not establish an observed raw accounting close");
     }
 
     [Fact]
@@ -208,5 +208,11 @@ public sealed class SyntheticMarkProvenanceTests
         public Task<IReadOnlyList<HistoricalBar>> GetDailyBarsAsync(
             string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default)
             => Task.FromResult<IReadOnlyList<HistoricalBar>>([_bar]);
+
+        public Task<AccountingClosePrice?> GetRawAccountingCloseAsync(
+            string symbol, DateOnly from, DateOnly to, CancellationToken ct = default)
+            => Task.FromResult<AccountingClosePrice?>(new(_bar.Symbol, _bar.SessionDate, _bar.Close,
+                _bar.Source!, "synthetic-test-feed", AccountingClosePriceBasis.Raw,
+                Sha256Digest.ComputeUtf8("synthetic raw close fixture")));
     }
 }

@@ -206,6 +206,10 @@ live coordinator in desktop mode.
 defaults, audit; `ModifyConfig`, rate-limited, reason required when loosening, atomic audit, live
 apply reported through the change status) and `POST /api/quality/cross-provider/preview` (one
 symbol, two non-simulated historical providers, at most 30 days, about two provider calls).
+Preview resolves the symbol's exchange-session calendar from retained Security Master identity and
+the operational trading calendar. Shared missing sessions appear as coverage gaps; unavailable calendar
+evidence is explicit and cannot be presented as a clean comparison. Focused coverage:
+`CrossProviderToleranceEndpointTests`.
 Whole-document saves cannot change `DataQuality.CrossProvider` or its audit.
 Rule deletion requires a JSON body with an operator-supplied `reason` and retains the removed
 provider chain and thresholds atomically. Recreating the rule cannot erase that deletion evidence.

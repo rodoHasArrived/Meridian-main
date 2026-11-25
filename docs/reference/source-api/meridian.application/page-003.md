@@ -6,6 +6,22 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## SecurityMasterTermsCapabilityServiceCollectionExtensions
+
+Qualified name: <code>Meridian.Application.Composition.SecurityMasterTermsCapabilityServiceCollectionExtensions</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs:85](../../../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs#L85).
+
+```csharp
+public static class SecurityMasterTermsCapabilityServiceCollectionExtensions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IServiceCollection AddSecurityMasterTermsCapability(this IServiceCollection services, Func&lt;IServiceProvider, string&gt; dataRoot);</code> | [src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs:98](../../../../src/Meridian.Application/Composition/SecurityMasterTermsCapabilityHostedService.cs#L98) | Registers the business-day calendar source for declared schedule conventions (ADR-025), read from files under &lt;dataRoot&gt;/calendars once at host start, and the hosted service that checks the persisted minimum capability for configured writers and logs the Security Master terms capability line. An unknown calendar id never falls back to weekends only. Idempotent; StorageFeatureRegistration calls this for every host composed through AddMarketDataServices, and the WPF desktop, which composes its own graph and still writes Security Master terms in-process, calls it directly. |
+
 ## ServiceCompositionRoot
 
 Qualified name: <code>Meridian.Application.Composition.ServiceCompositionRoot</code>. Kind: `class`.
@@ -1014,26 +1030,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static bool IsAvailable();</code> | [src/Meridian.Application/Config/IBGatewayProbe.cs:24](../../../../src/Meridian.Application/Config/IBGatewayProbe.cs#L24) | Returns true when any default IB API port accepts a TCP connection on loopback. |
-
-## PipelineOptions
-
-Qualified name: <code>Meridian.Application.Config.PipelineOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Application/Config/ConfigurationPipeline.cs:472](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L472).
-
-Options for controlling the configuration pipeline behavior.
-
-```csharp
-public sealed record PipelineOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool ApplySelfHealing { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:477](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L477) | Whether to apply self-healing fixes to the configuration. |
-| <code>public bool ValidateConfig { get; init; } = true;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:482](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L482) | Whether to validate the configuration. |
-| <code>public SelfHealingStrictness HealingStrictness { get; init; } = SelfHealingStrictness.Development;</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:492](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L492) | Controls how aggressively self-healing behaviours are applied. SelfHealingStrictness.Development (default) applies all fixes and logs significant ones as warnings. SelfHealingStrictness.Production applies only cosmetic SelfHealingSeverity.AutoFix changes and refuses SelfHealingSeverity.Warn-level fixes with a startup error so that operators must correct the configuration manually. |
-| <code>public static PipelineOptions Default { get; } = new () { HealingStrictness = ParseStrictness(Environment.GetEnvironmentVariable(&quot;MDC_CONFIG_STRICTNESS&quot;)) };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:498](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L498) | Default options — self-healing and validation enabled, strictness from MDC_CONFIG_STRICTNESS environment variable (defaults to Development). |
-| <code>public static PipelineOptions Strict { get; } = new () { ApplySelfHealing = false, ValidateConfig = true };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:506](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L506) | Options for strict validation without self-healing. |
-| <code>public static PipelineOptions Lenient { get; } = new () { ApplySelfHealing = false, ValidateConfig = false };</code> | [src/Meridian.Application/Config/ConfigurationPipeline.cs:515](../../../../src/Meridian.Application/Config/ConfigurationPipeline.cs#L515) | Options for lenient loading (no validation, no self-healing). |

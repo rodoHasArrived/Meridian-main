@@ -654,6 +654,14 @@ public abstract class BaseHistoricalDataProvider : IHistoricalDataProvider, IRat
         DateOnly? to,
         CancellationToken ct = default);
 
+    /// <inheritdoc />
+    public virtual Task<AccountingClosePrice?> GetRawAccountingCloseAsync(
+        string symbol, DateOnly from, DateOnly to, CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        return Task.FromResult<AccountingClosePrice?>(null);
+    }
+
 
 
     /// <summary>

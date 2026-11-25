@@ -6,6 +6,8 @@ using FluentAssertions;
 using Meridian.Application.Backfill;
 using Meridian.Contracts.Api;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.SecurityMaster;
+using Meridian.Contracts.Services;
 using Meridian.Core.Config;
 using Meridian.Identity;
 using Meridian.Identity.Auth;
@@ -127,6 +129,10 @@ public sealed class CrossProviderToleranceEndpointTests
             var preview = await response.Content.ReadFromJsonAsync<JsonElement>();
             preview.GetProperty("flaggedDays").GetInt32().Should().Be(1, "only one session is 0.3% apart");
             preview.GetProperty("providerCallsUsed").GetInt32().Should().Be(2);
+            preview.GetProperty("missingSessions").GetInt32().Should().Be(0,
+                "an unavailable calendar cannot establish which market sessions are missing");
+            preview.GetProperty("providerErrors").EnumerateArray().Select(error => error.GetString())
+                .Should().Contain("session-calendar: MissingCoverageEvidence", "the host has no retained listing identity for this symbol");
 
             var defaults = await client.PostAsJsonAsync(UiApiRoutes.QualityCrossProviderPreview,
                 request with { Policy = null });
@@ -147,6 +153,82 @@ public sealed class CrossProviderToleranceEndpointTests
     }
 
     [Fact]
+    public async Task Preview_UsesRetainedListingAndConfiguredCalendarToFindSharedGap()
+    {
+        var to = DateOnly.FromDateTime(DateTime.UtcNow.Date).AddDays(-1);
+        var from = to.AddDays(-4);
+        var closure = from.AddDays(1);
+        var missing = from.AddDays(2);
+        var effectiveFrom = new DateTimeOffset(from.AddYears(-1).ToDateTime(TimeOnly.MinValue), TimeSpan.Zero);
+        var identity = new SecurityDetailDto(Guid.NewGuid(), "Equity", SecurityStatusDto.Active, "Fixture SPY", "USD",
+            JsonSerializer.SerializeToElement(new { }), JsonSerializer.SerializeToElement(new { }),
+            [new SecurityIdentifierDto(SecurityIdentifierKind.ListingId, "SPY:ARCX", true, effectiveFrom)],
+            [], 1, effectiveFrom, null);
+        var identities = new Mock<ISecurityIdentityQueryService>();
+        identities.Setup(service => service.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "SPY", null,
+            It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset?>())).ReturnsAsync(identity);
+        var calendar = new Mock<IOperationalTradingCalendar>();
+        calendar.Setup(service => service.IsTradingDay(It.IsAny<DateOnly>(), "US"))
+            .Returns((DateOnly date, string _) => date != closure);
+        var (app, _, directory) = await CreateApp(UserPermission.ViewConfig | UserPermission.ModifyConfig, services =>
+        {
+            services.AddSingleton(identities.Object);
+            services.AddSingleton(calendar.Object);
+            services.AddSingleton<IEnumerable<IHistoricalDataProvider>>(new[]
+            {
+                Provider("stooq", _ => 100m, date => date != missing && date != closure).Object,
+                Provider("tiingo", _ => 100m, date => date != missing && date != closure).Object
+            });
+        });
+        try
+        {
+            var response = await app.GetTestClient().PostAsJsonAsync(UiApiRoutes.QualityCrossProviderPreview,
+                new CrossProviderTolerancePreviewRequest("SPY", "stooq", "tiingo", 5));
+
+            response.StatusCode.Should().Be(HttpStatusCode.OK, await response.Content.ReadAsStringAsync());
+            var preview = await response.Content.ReadFromJsonAsync<JsonElement>();
+            preview.GetProperty("missingSessions").GetInt32().Should().Be(1, "the shared missing session counts, but the declared closure does not");
+            preview.GetProperty("providerErrors").GetArrayLength().Should().Be(0);
+            preview.GetProperty("flaggedDays").GetInt32().Should().Be(0);
+            identities.Verify(service => service.GetByIdentifierAsync(SecurityIdentifierKind.Ticker, "SPY", null,
+                It.IsAny<CancellationToken>(), It.IsAny<DateTimeOffset?>()), Times.Once);
+            calendar.Verify(service => service.IsTradingDay(missing, "US"), Times.Once);
+        }
+        finally
+        {
+            await app.DisposeAsync();
+            Directory.Delete(directory, true);
+        }
+    }
+
+    [Fact]
+    public async Task BuildPreview_MatchingBarsOnConfirmedClosure_RetainsBothProviderErrors()
+    {
+        var day = new DateOnly(2024, 7, 4);
+        var service = new CrossSourceBackfillReconciliationService(new[]
+        {
+            Provider("stooq", _ => 100m).Object,
+            Provider("tiingo", _ => 100m).Object
+        })
+        {
+            ResolveSessionCoverageAsync = (_, from, to, _) =>
+                Task.FromResult<CrossSourceBackfillSessionCoverage?>(new("fixture-us-closure-v1", from, to, []))
+        };
+        var result = await service.ReconcileDailyAsync(new CrossSourceBackfillReconciliationRequest(
+            "SPY", day, day, "stooq", ["tiingo"]));
+
+        var preview = CrossProviderToleranceEndpoints.BuildPreview("SPY", day, day, "stooq", "tiingo",
+            CrossProviderTolerancePolicy.Default.Resolve((string?)null), result);
+
+        result.IsClean.Should().BeFalse();
+        preview.FlaggedDays.Should().Be(0);
+        preview.MissingSessions.Should().Be(0);
+        preview.ProviderErrors.Should().Equal(
+            "stooq: BaselineUnexpectedSession (2024-07-04)",
+            "tiingo: ComparisonUnexpectedSession (2024-07-04)");
+    }
+
+    [Fact]
     public void BuildPreview_InformationalVolumeIsCountedSeparately()
     {
         var day = new DateOnly(2026, 11, 2);
@@ -161,7 +243,7 @@ public sealed class CrossProviderToleranceEndpointTests
         preview.InformationalDays.Should().Be(1);
     }
 
-    private static Mock<IHistoricalDataProvider> Provider(string name, Func<DateOnly, decimal> close)
+    private static Mock<IHistoricalDataProvider> Provider(string name, Func<DateOnly, decimal> close, Func<DateOnly, bool>? include = null)
     {
         var mock = new Mock<IHistoricalDataProvider>();
         mock.Setup(p => p.Name).Returns(name);
@@ -172,6 +254,8 @@ public sealed class CrossProviderToleranceEndpointTests
                 var bars = new List<HistoricalBar>();
                 for (var date = from!.Value; date <= to!.Value; date = date.AddDays(1))
                 {
+                    if (include is not null && !include(date))
+                        continue;
                     var c = close(date);
                     bars.Add(new HistoricalBar(symbol, date, c, c + 1, c - 1, c, 1000, name, 0));
                 }
@@ -181,7 +265,8 @@ public sealed class CrossProviderToleranceEndpointTests
         return mock;
     }
 
-    private static async Task<(WebApplication App, ConfigStore Store, string Directory)> CreateApp(UserPermission permissions)
+    private static async Task<(WebApplication App, ConfigStore Store, string Directory)> CreateApp(
+        UserPermission permissions, Action<IServiceCollection>? configure = null)
     {
         var directory = Path.Combine(Path.GetTempPath(), "meridian-tolerance-endpoint-" + Guid.NewGuid().ToString("N"));
         Directory.CreateDirectory(directory);
@@ -200,6 +285,7 @@ public sealed class CrossProviderToleranceEndpointTests
         });
         builder.Services.AddRateLimiter(options => options.AddPolicy(UiEndpoints.MutationRateLimitPolicy,
             _ => RateLimitPartition.GetNoLimiter("test")));
+        configure?.Invoke(builder.Services);
         var app = builder.Build();
         app.Use(async (context, next) =>
         {

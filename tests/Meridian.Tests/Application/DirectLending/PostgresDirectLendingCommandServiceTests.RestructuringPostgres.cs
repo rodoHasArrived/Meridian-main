@@ -25,8 +25,7 @@ public sealed partial class PostgresDirectLendingCommandServiceTests
             FundStructureNodeKindDto.Fund, "Synthetic loan book", "USD", at, at);
         await database.JournalStore.SaveLedgerBookAsync(book, ct);
         var period = new LedgerAccountingPeriod(Guid.NewGuid(), book.LedgerBookId, 2026, 3, "March 2026",
-            new(2026, 3, 1), new(2026, 3, 31), "Open", at, null, 0)
-        { MutationActor = "fixture-controller" };
+            new(2026, 3, 1), new(2026, 3, 31), "Open", at, null, 0) { MutationActor = "fixture-controller" };
         await database.JournalStore.SavePeriodAsync(period, 0, ct: ct);
         var options = new DirectLendingOptions
         {

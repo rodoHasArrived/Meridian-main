@@ -1,6 +1,7 @@
 using FluentAssertions;
 using Meridian.Application.Accounting;
 using Meridian.Contracts.Domain.Models;
+using Meridian.Contracts.Integrity;
 using Meridian.Domain.Models;
 using Meridian.Infrastructure.Adapters.Core;
 using Meridian.Ledger;
@@ -224,56 +225,25 @@ public sealed class DailyMarkToMarketServiceTests
     }
 
     [Fact]
-    public async Task HistoricalCloseMarkPriceSource_UsesLatestSessionOnOrBeforeAsOf()
+    public async Task HistoricalCloseMarkPriceSource_RetainsExplicitRawSessionOnOrBeforeAsOf()
     {
-        var friday = new DateOnly(2026, 07, 03);
+        var priorSession = new DateOnly(2026, 07, 02);
         var sunday = new DateOnly(2026, 07, 05);
-        IReadOnlyList<HistoricalBar> bars =
-        [
-            new HistoricalBar("AAPL", friday.AddDays(-1), 149m, 151m, 148m, 150.5m, 1_000L, "fixture", 0,
-                PriceBasis: HistoricalPriceBasis.Raw),
-            new HistoricalBar("AAPL", friday, 150m, 152m, 149m, 151.25m, 1_000L, "fixture", 1,
-                PriceBasis: HistoricalPriceBasis.Raw)
-        ];
+        var close = new AccountingClosePrice("AAPL", priorSession, 151.25m, "stooq", "daily",
+            AccountingClosePriceBasis.Raw, Sha256Digest.ComputeUtf8("synthetic raw close fixture"));
         var provider = new Mock<IHistoricalDataProvider>();
         provider.Setup(p => p.Name).Returns("composite");
-        provider.Setup(p => p.GetDailyBarsAsync("AAPL", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(bars);
+        provider.Setup(p => p.GetRawAccountingCloseAsync("AAPL", sunday.AddDays(-7), sunday, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(close);
 
         var source = new HistoricalCloseMarkPriceSource(provider.Object);
 
         var quote = await source.GetMarkPriceAsync("AAPL", sunday);
 
         quote.Should().NotBeNull();
-        quote!.Price.Should().Be(151.25m, "the latest session on or before the valuation date wins");
-        quote.Source.Should().Be("fixture");
-        quote.EvidenceReference.Should().Contain("2026-07-03");
-        quote.EvidenceReference.Should().Contain("basis=Raw");
-    }
-
-    [Theory]
-    [InlineData(HistoricalPriceBasis.Unknown)]
-    [InlineData(HistoricalPriceBasis.SplitAdjusted)]
-    [InlineData(HistoricalPriceBasis.DividendAdjusted)]
-    [InlineData(HistoricalPriceBasis.FullyAdjusted)]
-    public async Task HistoricalCloseMarkPriceSource_RejectsNonRawLatestClose(HistoricalPriceBasis basis)
-    {
-        var asOf = new DateOnly(2026, 7, 3);
-        IReadOnlyList<HistoricalBar> bars =
-        [
-            new("AAPL", asOf.AddDays(-1), 98m, 102m, 96m, 100m, 1_000,
-                PriceBasis: HistoricalPriceBasis.Raw),
-            new("AAPL", asOf, 49m, 51m, 48m, 50m, 2_000,
-                IsAdjusted: basis == HistoricalPriceBasis.Unknown ? false : null, PriceBasis: basis)
-        ];
-        var provider = new Mock<IHistoricalDataProvider>();
-        provider.Setup(p => p.Name).Returns("composite");
-        provider.Setup(p => p.GetDailyBarsAsync("AAPL", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
-            .ReturnsAsync(bars);
-
-        var quote = await new HistoricalCloseMarkPriceSource(provider.Object).GetMarkPriceAsync("AAPL", asOf);
-
-        quote.Should().BeNull("an adjusted or unverified latest observation cannot become an accounting mark or silently use an older raw close");
+        quote!.Price.Should().Be(151.25m, "the provider returned the latest raw session within the requested window");
+        quote.Source.Should().Be("stooq");
+        quote.EvidenceReference.Should().Contain("2026-07-02");
     }
 
     [Fact]
@@ -281,7 +251,7 @@ public sealed class DailyMarkToMarketServiceTests
     {
         var provider = new Mock<IHistoricalDataProvider>();
         provider.Setup(p => p.Name).Returns("composite");
-        provider.Setup(p => p.GetDailyBarsAsync("AAPL", It.IsAny<DateOnly?>(), It.IsAny<DateOnly?>(), It.IsAny<CancellationToken>()))
+        provider.Setup(p => p.GetRawAccountingCloseAsync("AAPL", It.IsAny<DateOnly>(), It.IsAny<DateOnly>(), It.IsAny<CancellationToken>()))
             .ThrowsAsync(new AggregateException("All providers failed for AAPL"));
 
         var source = new HistoricalCloseMarkPriceSource(provider.Object);
