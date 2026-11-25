@@ -195,6 +195,30 @@ that its writers are drained.
    remaining conditions and explicit accept/hold decision. Reopen writer admission only after all
    required receipts are present and the decision is accept. Retain the admission/controller receipt.
 
+## Historical Identifier Windows
+
+Bulk imports (`SecurityMasterImportService`) restamp every identifier's `ValidFrom` with the ingest
+time, so an import file cannot backdate an identifier, and a security imported today does not
+resolve before its ingest date. To load an identifier the security carried earlier (for example, a
+ticker used before a rename), stage it through the governed workbench instead:
+
+1. The maker calls `ProposeHistoricalIdentifierWindowAsync` with the kind, value, optional provider,
+   `ValidFrom`, optional `ValidTo`, an Evidence Vault reference, and a justification. The window
+   must start in the past. This creates a Draft revision on the reserved field path
+   `identifiers.historicalWindow`. The ordinary field-edit route refuses that path.
+2. Submit and approve the revision through the usual workbench gate. An independent reviewer is
+   always required for these revisions, whatever `RequireIndependentReviewer` says. The proposer
+   cannot be the assigned reviewer or the approver, even when another operator submits on the
+   proposer's behalf.
+3. Publish. `ApprovedHistoricalIdentifierWindowHandler` (order 6) adds the identifier as
+   non-primary through the governed publication amender, keeping the proposed `ValidFrom` and
+   `ValidTo`. The amendment itself takes effect at publish time. A retried publish detects that the
+   window is already in place and does not amend again. Discarding the proposal only rejects the
+   revision, because it stages no overlay value.
+
+There is no HTTP route or workstation UI for proposals yet; the command is available on
+`ISecurityMasterWorkbenchCommandService`.
+
 ## Concurrency and Recovery Rehearsal
 
 On an isolated non-production database, load `MERIDIAN_SECURITY_MASTER_CONNECTION_STRING` through

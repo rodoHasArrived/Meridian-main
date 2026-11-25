@@ -111,6 +111,11 @@ public sealed partial class SecurityMasterWorkbenchCommandService
         {
             await ExecuteMutationAsync(request.SecurityId, async () =>
             {
+                // A historical identifier window proposal stages no overlay value, so its discard is
+                // the transition alone: there is no key to withdraw, restore, or re-attribute.
+                var governsOverlayValue = !string.IsNullOrWhiteSpace(revision.FieldPath)
+                    && !SecurityMasterHistoricalIdentifierWindow.IsWindowRevision(revision);
+
                 // Overlay ownership resolves BEFORE any transition so sibling preconditions can fail
                 // the discard closed while the revision is still untouched. Ownership follows staging
                 // ORDER: the overlay key holds the value of the LATEST-staged live revision for the
@@ -129,7 +134,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                 var laterSiblingOwnsPath = false;
                 SecurityMasterRevisionRecord? restoreOwner = null;
                 SecurityMasterRevisionRecord[] supersededDraftSiblings = [];
-                if (!string.IsNullOrWhiteSpace(revision.FieldPath))
+                if (governsOverlayValue)
                 {
                     var revisions = await _revisions.ListBySecurityAsync(request.SecurityId, ct).ConfigureAwait(false);
                     var samePathSiblings = revisions
@@ -208,7 +213,7 @@ public sealed partial class SecurityMasterWorkbenchCommandService
                 // the withdrawal runs on CancellationToken.None — a canceled request must not strand
                 // a Rejected revision with its Pending value still in the overlay (and if anything
                 // here still fails, re-discarding the Rejected revision reconciles it).
-                if (!string.IsNullOrWhiteSpace(revision.FieldPath))
+                if (governsOverlayValue)
                 {
                     // Ownership is verified against the overlay's CURRENT value, not only revision
                     // siblings: a generic-route patch can replace the key after this revision staged

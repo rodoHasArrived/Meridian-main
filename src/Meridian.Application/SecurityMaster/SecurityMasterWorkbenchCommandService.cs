@@ -115,6 +115,17 @@ public sealed partial class SecurityMasterWorkbenchCommandService : ISecurityMas
                 "Operator field edits require a justification.", nameof(request));
         }
 
+        if (SecurityMasterHistoricalIdentifierWindow.IsWindowPath(request.FieldPath))
+        {
+            // The window path is reserved for ProposeHistoricalIdentifierWindowAsync, which requires
+            // the evidence reference and always requires independent review. Staging it as a field
+            // edit would let a free-form value reach the publish-time window amendment.
+            throw new ArgumentException(
+                $"'{SecurityMasterHistoricalIdentifierWindow.FieldPath}' is reserved for governed historical identifier " +
+                "window proposals; use the historical identifier window proposal instead of a field edit.",
+                nameof(request));
+        }
+
         // The passport-displayed security version is an optimistic-concurrency staleness guard: a
         // stale view of the canonical security (it was amended/deactivated since the operator
         // loaded it) is rejected before any overlay write and rechecked atomically by the store.

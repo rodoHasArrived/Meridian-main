@@ -83,6 +83,12 @@ public sealed class ApprovedFieldEditCanonicalMergeHandler : ISecurityMasterRevi
             return;
         }
 
+        if (evt.ChangedFields.Any(SecurityMasterHistoricalIdentifierWindow.IsWindowPath))
+        {
+            // ApprovedHistoricalIdentifierWindowHandler applies and reports window proposals.
+            return;
+        }
+
         var fieldPath = evt.ChangedFields
             .FirstOrDefault(static path => SecurityAssetTermsFieldEditValidator.TargetsAssetSpecificTerms(path));
         if (fieldPath is null)
