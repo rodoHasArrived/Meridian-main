@@ -2818,8 +2818,52 @@ Meridian-main
 │   │   │   ├── source-readme-ignore.yml
 │   │   │   └── source-todos.yml
 │   │   ├── generated
+│   │   │   ├── source-hashes
+│   │   │   │   ├── _manifest.json
+│   │   │   │   ├── SRC-APP.json
+│   │   │   │   ├── SRC-BACKTESTING-SDK.json
+│   │   │   │   ├── SRC-BACKTESTING.json
+│   │   │   │   ├── SRC-CONTRACTS.json
+│   │   │   │   ├── SRC-CORE.json
+│   │   │   │   ├── SRC-DESIGN-AUDIT.json
+│   │   │   │   ├── SRC-DESIGN-DATA-INTEGRATION.json
+│   │   │   │   ├── SRC-DESIGN-DOCUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-ENTITIES.json
+│   │   │   │   ├── SRC-DESIGN-FINANCIAL-OPERATIONS.json
+│   │   │   │   ├── SRC-DESIGN-IDENTITY.json
+│   │   │   │   ├── SRC-DESIGN-INSTRUMENTS.json
+│   │   │   │   ├── SRC-DESIGN-PLATFORM.json
+│   │   │   │   ├── SRC-DESIGN-PORTFOLIO-RECORDS.json
+│   │   │   │   ├── SRC-DESIGN-REFERENCE-DATA.json
+│   │   │   │   ├── SRC-DESIGN-REPORTING.json
+│   │   │   │   ├── SRC-DESIGN-WORKFLOW.json
+│   │   │   │   ├── SRC-DOMAIN.json
+│   │   │   │   ├── SRC-EXECUTION-SDK.json
+│   │   │   │   ├── SRC-EXECUTION.json
+│   │   │   │   ├── SRC-FSHARP-DIRECTLENDING.json
+│   │   │   │   ├── SRC-FSHARP-LEDGER.json
+│   │   │   │   ├── SRC-FSHARP-TRADING.json
+│   │   │   │   ├── SRC-FSHARP.json
+│   │   │   │   ├── SRC-HOST.json
+│   │   │   │   ├── SRC-IBAPI-SMOKESTUB.json
+│   │   │   │   ├── SRC-INFRASTRUCTURE.json
+│   │   │   │   ├── SRC-LAUNCHER.json
+│   │   │   │   ├── SRC-LEDGER.json
+│   │   │   │   ├── SRC-LIFECYCLE-SUPERVISOR.json
+│   │   │   │   ├── SRC-MCP.json
+│   │   │   │   ├── SRC-PROVIDER-SDK.json
+│   │   │   │   ├── SRC-QUANTSCRIPT.json
+│   │   │   │   ├── SRC-REPORTING-READMODELS.json
+│   │   │   │   ├── SRC-RISK.json
+│   │   │   │   ├── SRC-STORAGE-ACCOUNTING.json
+│   │   │   │   ├── SRC-STORAGE.json
+│   │   │   │   ├── SRC-STRATEGIES.json
+│   │   │   │   ├── SRC-UI-DASHBOARD.json
+│   │   │   │   ├── SRC-UI-SERVICES.json
+│   │   │   │   ├── SRC-UI-SHARED.json
+│   │   │   │   ├── SRC-UI.json
+│   │   │   │   └── SRC-WPF.json
 │   │   │   ├── adapter-readiness-matrix.md
-│   │   │   ├── source-hash-manifest.json
 │   │   │   ├── source-module-index.md
 │   │   │   ├── source-roadmap-traceability.md
 │   │   │   ├── source-todo-checklist.md
