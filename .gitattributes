@@ -19,8 +19,10 @@ docs/source/generated/* merge=binary
 docs/generated/repository-structure.md merge=binary
 docs/generated/workflow-command-reference.md merge=binary
 docs/generated/workflows-overview.md merge=binary
-# This is accepted source/README review evidence, not a disposable hash cache.
-docs/source/generated/source-hash-manifest.json merge=binary
+# Accepted source/README review evidence, not a disposable hash cache. One file per
+# module: branches that review different modules never conflict, while concurrent
+# reviews of the same module still conflict for the reviewed-hash merger.
+docs/source/generated/source-hashes/* merge=binary
 
 # Retained visual evidence is stored outside ordinary Git blobs for new revisions.
 # Source diagrams (.mmd/.dot/.svg), Markdown and machine-readable manifests remain inspectable.

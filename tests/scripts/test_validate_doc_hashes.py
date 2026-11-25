@@ -21,6 +21,8 @@ assert spec is not None and spec.loader is not None
 doc_hashes = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(doc_hashes)
 
+import reviewed_doc_fingerprints as fingerprints  # noqa: E402  (resolved through DOCS_SCRIPT_DIR)
+
 
 class SourceDocHashPortabilityTests(unittest.TestCase):
     def test_source_order_is_ordinal_and_independent_of_checkout_root(self) -> None:
@@ -100,6 +102,13 @@ REPO_ROOT = Path(__file__).resolve().parents[2]
 DASHBOARD_PACKAGE = REPO_ROOT / "src/Meridian.Ui/dashboard/package.json"
 
 
+def snapshot(directory: Path) -> dict[str, bytes] | None:
+    """Bytes of every reviewed fingerprint file, or None when the baseline is absent."""
+    if not directory.exists():
+        return None
+    return {child.name: child.read_bytes() for child in sorted(directory.iterdir())}
+
+
 def write_json(path: Path, value: dict) -> None:
     path.write_text(json.dumps(value, indent=2) + "\n", encoding="utf-8")
 
@@ -142,8 +151,7 @@ class DependencyManifestFingerprintTests(unittest.TestCase):
         write_json(self.package_path, self.package)
         self.lockfile.write_text('{"lockfileVersion": 3, "packages": {"node_modules/react": {"version": "19.3.1"}}}\n')
         self.manifest_path = self.root / doc_hashes.HASH_MANIFEST
-        self.manifest_path.parent.mkdir(parents=True)
-        self.manifest_path.write_text(json.dumps(doc_hashes.build_manifest(self.root)), encoding="utf-8")
+        doc_hashes.write_manifest_directory(self.manifest_path, doc_hashes.build_manifest(self.root))
 
     def source_drift(self) -> list:
         findings = doc_hashes.validate_source_hash_manifest(self.root, doc_hashes.build_manifest(self.root))
@@ -282,15 +290,14 @@ class ReviewedReadmeFingerprintTests(unittest.TestCase):
         )
         self.readme.write_text(self.text)
         self.manifest_path = self.root / doc_hashes.HASH_MANIFEST
-        self.manifest_path.parent.mkdir(parents=True)
         self.legacy = doc_hashes.build_manifest(self.root)
-        self.manifest_path.write_text(json.dumps(self.legacy))
+        doc_hashes.write_manifest_directory(self.manifest_path, self.legacy)
 
     def migrate(self) -> dict:
         changed, count = doc_hashes.migrate_reviewed_readmes(self.root)
         self.assertTrue(changed)
         self.assertEqual(count, 1)
-        return json.loads(self.manifest_path.read_text())
+        return doc_hashes.load_reviewed_manifest(self.root)
 
     def test_v1_default_preserves_full_readme_fingerprint(self) -> None:
         self.readme.write_text(self.text.replace("- No roadmap items registered.", "New generated text."))
@@ -308,16 +315,16 @@ class ReviewedReadmeFingerprintTests(unittest.TestCase):
         self.assertTrue(any("source hash drift" in finding.message for finding in findings))
 
     def test_migration_preview_preserves_manifest_bytes(self) -> None:
-        before = self.manifest_path.read_bytes()
+        before = snapshot(self.manifest_path)
         self.assertEqual(doc_hashes.migrate_reviewed_readmes(self.root, apply=False), (False, 1))
-        self.assertEqual(before, self.manifest_path.read_bytes())
+        self.assertEqual(before, snapshot(self.manifest_path))
 
     def test_unreviewed_readme_migration_refuses_without_writing(self) -> None:
-        before = self.manifest_path.read_bytes()
+        before = snapshot(self.manifest_path)
         self.readme.write_text(self.text.replace("Handwritten workflow.", "Unreviewed workflow."))
         with self.assertRaisesRegex(ValueError, "do not match the reviewed baseline"):
             doc_hashes.migrate_reviewed_readmes(self.root)
-        self.assertEqual(before, self.manifest_path.read_bytes())
+        self.assertEqual(before, snapshot(self.manifest_path))
 
     def test_generated_only_changes_keep_review_hash_but_fail_freshness(self) -> None:
         migrated = self.migrate()
@@ -363,26 +370,65 @@ class ReviewedReadmeFingerprintTests(unittest.TestCase):
     def test_schema_downgrade_or_upgrade_is_not_a_narrow_refresh(self) -> None:
         self.migrate()
         old_actual = doc_hashes.build_manifest(self.root, "1.0.0")
-        before = self.manifest_path.read_bytes()
+        before = snapshot(self.manifest_path)
         with self.assertRaisesRegex(ValueError, "Narrow writes cannot change"):
             doc_hashes.refresh_source_hash_manifest(self.root, old_actual, ["SRC-SAMPLE"])
-        self.assertEqual(before, self.manifest_path.read_bytes())
+        self.assertEqual(before, snapshot(self.manifest_path))
 
     def test_migration_rejects_duplicate_entries_and_changed_identity(self) -> None:
-        for manifest in (
-            {**self.legacy, "modules": self.legacy["modules"] * 2},
-            {**self.legacy, "modules": [{**self.legacy["modules"][0], "path": "src/Other"}]},
-        ):
-            self.manifest_path.write_text(json.dumps(manifest))
-            before = self.manifest_path.read_bytes()
-            with self.assertRaises(ValueError):
-                doc_hashes.migrate_reviewed_readmes(self.root)
-            self.assertEqual(before, self.manifest_path.read_bytes())
+        # One file per module cannot represent a duplicate entry at all.
+        before = snapshot(self.manifest_path)
+        with self.assertRaisesRegex(ValueError, "Duplicate reviewed module entry"):
+            doc_hashes.write_manifest_directory(self.manifest_path, {**self.legacy, "modules": self.legacy["modules"] * 2})
+        self.assertEqual(before, snapshot(self.manifest_path))
+        doc_hashes.write_manifest_directory(
+            self.manifest_path, {**self.legacy, "modules": [{**self.legacy["modules"][0], "path": "src/Other"}]})
+        before = snapshot(self.manifest_path)
+        with self.assertRaises(ValueError):
+            doc_hashes.migrate_reviewed_readmes(self.root)
+        self.assertEqual(before, snapshot(self.manifest_path))
 
     def test_validation_rejects_unknown_schema(self) -> None:
-        self.manifest_path.write_text(json.dumps({**self.legacy, "schema": {"id": "meridian.source-doc-hashes", "version": "999"}}))
+        doc_hashes.write_manifest_directory(self.manifest_path, {**self.legacy, "schema": {"id": "meridian.source-doc-hashes", "version": "999"}})
         with self.assertRaises(ValueError):
             doc_hashes.build_manifest(self.root)
+
+class ReviewedFingerprintLayoutTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.temp = tempfile.TemporaryDirectory(ignore_cleanup_errors=True)
+        self.addCleanup(self.temp.cleanup)
+        self.directory = Path(self.temp.name) / "source-hashes"
+        entry = {"id": "SRC-A", "path": "src/A", "readme": "src/A/README.md", "readme_hash": None, "source_hash": "0" * 64}
+        self.manifest = {**fingerprints.metadata("2.0.0"), "modules": [entry, {**entry, "id": "SRC-B", "path": "src/B"}]}
+
+    def test_round_trip_writes_one_file_per_module(self) -> None:
+        self.assertTrue(fingerprints.write_manifest_directory(self.directory, self.manifest))
+        self.assertEqual(["SRC-A.json", "SRC-B.json", "_manifest.json"], sorted(child.name for child in self.directory.iterdir()))
+        self.assertEqual(self.manifest, fingerprints.read_manifest_directory(self.directory))
+        self.assertFalse(fingerprints.write_manifest_directory(self.directory, self.manifest))
+
+    def test_dropped_module_file_is_removed(self) -> None:
+        fingerprints.write_manifest_directory(self.directory, self.manifest)
+        fingerprints.write_manifest_directory(self.directory, {**self.manifest, "modules": self.manifest["modules"][:1]})
+        self.assertFalse((self.directory / "SRC-B.json").exists())
+
+    def test_misnamed_stray_or_headerless_files_are_rejected(self) -> None:
+        fingerprints.write_manifest_directory(self.directory, self.manifest)
+        files = {child.name: child.read_bytes() for child in self.directory.iterdir()}
+        for label, variant in (
+            ("misnamed", {**{k: v for k, v in files.items() if k != "SRC-B.json"}, "SRC-C.json": files["SRC-B.json"]}),
+            ("stray", {**files, "notes.txt": b"{}"}),
+            ("headerless", {k: v for k, v in files.items() if k != "_manifest.json"}),
+            ("header with modules", {**files, "_manifest.json": json.dumps({**fingerprints.metadata("2.0.0"), "modules": []}).encode()}),
+        ):
+            with self.subTest(label), self.assertRaises(ValueError):
+                fingerprints.assemble_manifest(variant)
+
+    def test_unsafe_module_ids_cannot_name_files(self) -> None:
+        for module_id in ("../escape", "_manifest", "a/b", "", "x.json"):
+            with self.subTest(module_id=module_id), self.assertRaises(ValueError):
+                fingerprints.module_file_name(module_id)
+
 
 if __name__ == "__main__":
     unittest.main()
