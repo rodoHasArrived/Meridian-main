@@ -56,7 +56,13 @@ public sealed class JournalTemplateBook
     }
 
     /// <summary>Instantiates a registered template against the supplied inputs.</summary>
-    [PostingCalculationNotYetConnected("Recurring journals instantiate their retained JournalTemplate directly; no production path instantiates through this registry yet.")]
+    /// <remarks>
+    /// Superseded for posting: production recurring journals instantiate the retained, versioned template
+    /// definition each occurrence was claimed against (<c>RecurringJournalRunner</c> over
+    /// <c>RecurringTemplateDefinition</c>), so an approved template version and content hash govern what posts.
+    /// This registry resolves whatever template currently holds the id, and re-registering an id replaces it.
+    /// </remarks>
+    [PostingCalculationNotYetConnected("Superseded, do not connect: recurring journals instantiate the retained, versioned template definition each occurrence was claimed against (RecurringJournalRunner over RecurringTemplateDefinition, pinned by template version and content hash); this registry resolves the current template for an id and replaces it on re-registration, so posting through it would let a later replacement change what posts.")]
     public JournalTemplateInstance Instantiate(string templateId, JournalTemplateInstantiation instantiation)
         => Get(templateId).Instantiate(instantiation);
 }

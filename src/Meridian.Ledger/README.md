@@ -114,7 +114,9 @@ draws on. `PartnershipInvestorAccountingProjector` is marked superseded: its fee
 `FundEconomicsJournalFactory` accruals and must not be posted alongside them. `MultiCurrencyJournalProjector`
 is also marked superseded: multi-currency journals post through workbench drafts whose lines carry the
 functional amount with transaction currency, amount and FX rate, which `LedgerEntry` checks per leg; the
-projector has no rounding line and drops dimensions.
+projector has no rounding line and drops dimensions. `JournalTemplateBook.Instantiate` is superseded for
+posting too: recurring journals instantiate the retained template version each occurrence was claimed against,
+whereas the registry resolves whichever template currently holds an id.
 
 `PeriodCloseProjector.Project` takes a dimension-scoped `PeriodCloseInput`; production closes build it
 from the retained period trial balance and post through `PeriodCloseDraftBuilder` and the workbench. There
