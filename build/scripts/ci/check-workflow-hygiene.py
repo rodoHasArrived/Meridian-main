@@ -31,6 +31,8 @@ OLD_WORKFLOW_FILENAMES = {
     "build-observability.yml",
     "code-quality.yml",
     "desktop-builds.yml",
+    "desktop-standalone-publish.yml",
+    "desktop-user-manual.yml",
     "docker.yml",
     "export-project-artifact.yml",
     "export-standalone-exe.yml",
@@ -44,6 +46,8 @@ OLD_WORKFLOW_FILENAMES = {
     "security.yml",
     "test-matrix.yml",
     "validate-workflows.yml",
+    "wpf-dev-validation.yml",
+    "wpf-route-validation.yml",
 }
 
 
