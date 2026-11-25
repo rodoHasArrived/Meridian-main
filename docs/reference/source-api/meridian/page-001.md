@@ -29,9 +29,11 @@ Declared public members:
 | <code>public string[] AllowedOrigins { get; init; } = [];</code> | [src/Meridian/ApiHostOptions.cs:16](../../../../src/Meridian/ApiHostOptions.cs#L16) |  |
 | <code>public bool AllowInsecureTransportForReverseProxy { get; init; }</code> | [src/Meridian/ApiHostOptions.cs:17](../../../../src/Meridian/ApiHostOptions.cs#L17) |  |
 | <code>public bool ServeWorkstationAssets { get; init; } = true;</code> | [src/Meridian/ApiHostOptions.cs:18](../../../../src/Meridian/ApiHostOptions.cs#L18) |  |
-| <code>public bool IsProductionApi =&gt; …;</code> | [src/Meridian/ApiHostOptions.cs:20](../../../../src/Meridian/ApiHostOptions.cs#L20) |  |
-| <code>public MeridianDeploymentPosture ToDeploymentPosture() =&gt; …;</code> | [src/Meridian/ApiHostOptions.cs:26](../../../../src/Meridian/ApiHostOptions.cs#L26) | Maps the host deployment mode onto the shared typed posture (ADR-019) so the production registration policy resolves the same production answer as the host configuration. |
-| <code>public static ApiHostOptions FromConfiguration(IConfiguration configuration, int port);</code> | [src/Meridian/ApiHostOptions.cs:36](../../../../src/Meridian/ApiHostOptions.cs#L36) |  |
+| <code>public const int DefaultSlowRequestThresholdMs = 2000;</code> | [src/Meridian/ApiHostOptions.cs:21](../../../../src/Meridian/ApiHostOptions.cs#L21) | Default for SlowRequestThresholdMs. |
+| <code>public int SlowRequestThresholdMs { get; init; } = DefaultSlowRequestThresholdMs;</code> | [src/Meridian/ApiHostOptions.cs:29](../../../../src/Meridian/ApiHostOptions.cs#L29) | Requests taking at least this many milliseconds are logged at Warning with their route template, status and trace identifier (ApiHost:SlowRequestThresholdMs). Zero or a negative value turns the log off; mdc_http_request_duration_seconds is recorded either way. |
+| <code>public bool IsProductionApi =&gt; …;</code> | [src/Meridian/ApiHostOptions.cs:31](../../../../src/Meridian/ApiHostOptions.cs#L31) |  |
+| <code>public MeridianDeploymentPosture ToDeploymentPosture() =&gt; …;</code> | [src/Meridian/ApiHostOptions.cs:37](../../../../src/Meridian/ApiHostOptions.cs#L37) | Maps the host deployment mode onto the shared typed posture (ADR-019) so the production registration policy resolves the same production answer as the host configuration. |
+| <code>public static ApiHostOptions FromConfiguration(IConfiguration configuration, int port);</code> | [src/Meridian/ApiHostOptions.cs:47](../../../../src/Meridian/ApiHostOptions.cs#L47) |  |
 
 ## MeridianDataProvider
 
@@ -133,7 +135,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.MeridianApiDeploymentMode</code>. Kind: `enum`.
 
-Source: [src/Meridian/ApiHostOptions.cs:131](../../../../src/Meridian/ApiHostOptions.cs#L131).
+Source: [src/Meridian/ApiHostOptions.cs:146](../../../../src/Meridian/ApiHostOptions.cs#L146).
 
 ```csharp
 public enum MeridianApiDeploymentMode
@@ -143,10 +145,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>LocalWorkstation</code> | [src/Meridian/ApiHostOptions.cs:133](../../../../src/Meridian/ApiHostOptions.cs#L133) |  |
-| <code>ProductionApi</code> | [src/Meridian/ApiHostOptions.cs:134](../../../../src/Meridian/ApiHostOptions.cs#L134) |  |
-| <code>Worker</code> | [src/Meridian/ApiHostOptions.cs:135](../../../../src/Meridian/ApiHostOptions.cs#L135) |  |
-| <code>Migration</code> | [src/Meridian/ApiHostOptions.cs:136](../../../../src/Meridian/ApiHostOptions.cs#L136) |  |
+| <code>LocalWorkstation</code> | [src/Meridian/ApiHostOptions.cs:148](../../../../src/Meridian/ApiHostOptions.cs#L148) |  |
+| <code>ProductionApi</code> | [src/Meridian/ApiHostOptions.cs:149](../../../../src/Meridian/ApiHostOptions.cs#L149) |  |
+| <code>Worker</code> | [src/Meridian/ApiHostOptions.cs:150](../../../../src/Meridian/ApiHostOptions.cs#L150) |  |
+| <code>Migration</code> | [src/Meridian/ApiHostOptions.cs:151](../../../../src/Meridian/ApiHostOptions.cs#L151) |  |
 
 ## Program
 
@@ -242,9 +244,9 @@ Declared public members:
 | <code>public const string LocalShutdownTokenHeader = &quot;X-Meridian-Shutdown-Token&quot;;</code> | [src/Meridian/UiServer.cs:61](../../../../src/Meridian/UiServer.cs#L61) |  |
 | <code>public const string ExecutionBrokerageSectionKey = &quot;Execution:Brokerage&quot;;</code> | [src/Meridian/UiServer.cs:65](../../../../src/Meridian/UiServer.cs#L65) | Configuration section that binds BrokerageConfiguration for the host. |
 | <code>public UiServer(string configPath, int port = 8080, IApplicationLifecycleCoordinator? lifecycle = null, ApiHostOptions? apiHostOptions = null) : this(configPath, port, lifecycle?? ApplicationLifecycleCoordinator.Create(Serilog.Log.Logger), ownsLifecycle : lifecycle is null, apiHostOptions : apiHostOptions);</code> | [src/Meridian/UiServer.cs:93](../../../../src/Meridian/UiServer.cs#L93) | Creates a new UiServer using the centralized ServiceCompositionRoot. |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1229](../../../../src/Meridian/UiServer.cs#L1229) |  |
-| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1370](../../../../src/Meridian/UiServer.cs#L1370) |  |
-| <code>public ValueTask DisposeAsync();</code> | [src/Meridian/UiServer.cs:1388](../../../../src/Meridian/UiServer.cs#L1388) |  |
+| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1289](../../../../src/Meridian/UiServer.cs#L1289) |  |
+| <code>public async Task StopAsync(CancellationToken ct = default);</code> | [src/Meridian/UiServer.cs:1430](../../../../src/Meridian/UiServer.cs#L1430) |  |
+| <code>public ValueTask DisposeAsync();</code> | [src/Meridian/UiServer.cs:1448](../../../../src/Meridian/UiServer.cs#L1448) |  |
 
 ## WorkstationAssetTree
 

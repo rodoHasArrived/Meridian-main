@@ -421,6 +421,60 @@ public class JsonlBatchWriteTests : TempDirectoryTestBase
     }
 
     [Fact]
+    public async Task FlushAsync_WhenBatchWriteFails_CountsTheFailureForAlerting()
+    {
+        // mdc_sink_write_failures_total is what MeridianSinkWriteFailing watches; a failed flush
+        // that only logged would leave a sink that cannot write invisible to alerting.
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
+        var writeAttempts = 0;
+        await using var sink = new JsonlStorageSink(
+            options,
+            policy,
+            batchOptions,
+            writeBatchAsync: (_, _, _) =>
+            {
+                writeAttempts++;
+                if (writeAttempts == 1)
+                    throw new IOException("simulated disk failure");
+                return Task.CompletedTask;
+            });
+        var exportedBefore = JsonlStorageSink.WriteFailuresValue;
+
+        await sink.AppendAsync(CreateTestEvent("MSFT", 1));
+        var failedFlush = () => sink.FlushAsync();
+        await failedFlush.Should().ThrowAsync<IOException>();
+
+        sink.WriteFailures.Should().Be(1);
+        JsonlStorageSink.WriteFailuresValue.Should().BeGreaterThanOrEqualTo(exportedBefore + 1,
+            "the process-wide counter is shared with other sinks, so it can only be checked for an increase");
+
+        await sink.FlushAsync();
+        sink.WriteFailures.Should().Be(1, "a successful retry is not another failure");
+        sink.EventsWritten.Should().Be(1);
+    }
+
+    [Fact]
+    public async Task FlushAsync_WhenBatchWriteIsCancelled_DoesNotCountAWriteFailure()
+    {
+        var batchOptions = new JsonlBatchOptions { BatchSize = 100, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };
+        var options = new StorageOptions { RootPath = TestDataRoot };
+        var policy = new TestStoragePolicy(TestDataRoot);
+        await using var sink = new JsonlStorageSink(
+            options,
+            policy,
+            batchOptions,
+            writeBatchAsync: (_, _, _) => throw new OperationCanceledException("simulated shutdown"));
+
+        await sink.AppendAsync(CreateTestEvent("MSFT", 1));
+        var cancelledFlush = () => sink.FlushAsync();
+        await cancelledFlush.Should().ThrowAsync<OperationCanceledException>();
+
+        sink.WriteFailures.Should().Be(0, "cancellation during shutdown is not a failing data root");
+    }
+
+    [Fact]
     public async Task AppendAsync_WhenSizeTriggeredFlushFails_RestoresEventsForNextFlush()
     {
         var batchOptions = new JsonlBatchOptions { BatchSize = 2, Enabled = true, FlushInterval = TimeSpan.FromMinutes(5) };

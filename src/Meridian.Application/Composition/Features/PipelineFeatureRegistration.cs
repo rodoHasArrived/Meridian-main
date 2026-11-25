@@ -107,10 +107,14 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
             var policy = sp.GetRequiredService<JsonlStoragePolicy>();
+            // Pass the logger: without it the sink falls back to NullLogger and its flush and
+            // retention failures never reach the host's log file.
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<JsonlStorageSink>>();
             return new JsonlStorageSink(
                 storageOptions,
                 policy,
-                JsonlBatchOptions.Default);
+                JsonlBatchOptions.Default,
+                logger);
         });
 
         // ParquetStorageSink - writes events to Parquet files (optional). Shares the same
@@ -222,6 +226,9 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             var wal = sp.GetService<Storage.Archival.WriteAheadLog>();
             var auditTrail = sp.GetService<Pipeline.DroppedEventAuditTrail>();
             var dedupLedger = sp.GetService<PersistentDedupLedger>();
+            // Without a logger the pipeline falls back to NullLogger, losing its backpressure,
+            // flush-failure and consumer-fault logs together with their correlation scope.
+            var logger = sp.GetService<Microsoft.Extensions.Logging.ILogger<EventPipeline>>();
 
             var configStore = sp.GetRequiredService<ConfigStore>();
             var config = configStore.Load();
@@ -246,6 +253,7 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
             return new EventPipeline(
                 sink,
                 EventPipelinePolicy.DurableStreaming,
+                logger: logger,
                 metrics: metrics,
                 wal: wal,
                 auditTrail: auditTrail,
@@ -268,6 +276,12 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
         // IMarketEventPublisher - facade for publishing events. The composed publisher is
         // wrapped with QualityMonitoringPublisher so live trade/quote ingress feeds the
         // data-quality monitoring suite (dashboards, gap analysis, anomaly detection).
+        // Provider latency, fed from a sample of live trades and quotes by the quality publisher.
+        // A 2,000-sample window per provider keeps percentile maintenance cheap (the default
+        // 50,000 makes each record shift a large list once the window is full).
+        services.AddSingleton(_ => new Meridian.DataIntegration.Monitoring.ProviderLatencyService(
+            new Meridian.DataIntegration.Monitoring.ProviderLatencyConfig { MaxSamplesPerProvider = 2_000 }));
+
         services.AddSingleton<IMarketEventPublisher>(sp =>
         {
             var publisher = BuildCorePublisher(sp);
@@ -275,7 +289,8 @@ internal sealed class PipelineFeatureRegistration : IServiceFeatureRegistration
                 publisher,
                 sp.GetRequiredService<DataQualityMonitoringService>(),
                 sp.GetService<Microsoft.Extensions.Logging.ILogger<QualityMonitoringPublisher>>(),
-                freshness: sp.GetRequiredService<DataFreshnessSlaMonitor>());
+                freshness: sp.GetRequiredService<DataFreshnessSlaMonitor>(),
+                latency: sp.GetRequiredService<Meridian.DataIntegration.Monitoring.ProviderLatencyService>());
         });
 
         return services;

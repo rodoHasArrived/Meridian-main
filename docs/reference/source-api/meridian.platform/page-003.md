@@ -636,6 +636,42 @@ Declared public members:
 | <code>public static readonly ActivitySource ActivitySource = new (&quot;Meridian&quot;, &quot;1.0.0&quot;);</code> | [src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs:22](../../../../src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs#L22) | The activity source for Meridian tracing. |
 | <code>public static IServiceCollection AddOpenTelemetryTracing(this IServiceCollection services, OpenTelemetryConfiguration config, bool enablePipelineMetrics = false);</code> | [src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs:28](../../../../src/Meridian.Platform/Tracing/OpenTelemetrySetup.cs#L28) | Registers one DI-owned tracing provider. Calling this method is an explicit opt-in; exporters remain disabled by default. The compatibility opt-in can also collect pipeline metrics. |
 
+## RunScopedEventMetrics
+
+Qualified name: <code>Meridian.Platform.Tracing.RunScopedEventMetrics</code>. Kind: `class`.
+
+Source: [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:22](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L22).
+
+An IEventMetrics with its own counters, independent of the process-wide static Metrics.
+
+```csharp
+public sealed class RunScopedEventMetrics : IEventMetrics
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public long Published =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:38](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L38) |  |
+| <code>public long Dropped =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:41](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L41) |  |
+| <code>public long Integrity =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:44](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L44) |  |
+| <code>public long Trades =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:47](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L47) |  |
+| <code>public long DepthUpdates =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:50](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L50) |  |
+| <code>public long Quotes =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:53](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L53) |  |
+| <code>public long HistoricalBars =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:56](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L56) |  |
+| <code>public double EventsPerSecond =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:59](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L59) |  |
+| <code>public double DropRate { get; }</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:62](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L62) |  |
+| <code>public void IncPublished() =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:74](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L74) |  |
+| <code>public void IncDropped() =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:77](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L77) |  |
+| <code>public void IncIntegrity() =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:80](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L80) |  |
+| <code>public void IncTrades() =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:83](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L83) |  |
+| <code>public void IncDepthUpdates() =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:86](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L86) |  |
+| <code>public void IncQuotes() =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:89](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L89) |  |
+| <code>public void IncHistoricalBars() =&gt; …;</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:92](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L92) |  |
+| <code>public void RecordLatency(long startTimestamp);</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:95](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L95) |  |
+| <code>public void Reset();</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:119](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L119) | Clears this instance&#x27;s counters only. Process-wide metrics are unaffected. |
+| <code>public MetricsSnapshot GetSnapshot();</code> | [src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs:136](../../../../src/Meridian.Platform/Tracing/RunScopedEventMetrics.cs#L136) |  |
+
 ## TracedEventMetrics
 
 Qualified name: <code>Meridian.Platform.Tracing.TracedEventMetrics</code>. Kind: `class`.

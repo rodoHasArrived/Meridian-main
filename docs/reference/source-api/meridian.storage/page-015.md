@@ -689,24 +689,25 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public long EventsBuffered =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:144](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L144) | Total events currently buffered across all paths. |
-| <code>public long EventsWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:149](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L149) | Total events written to disk. |
-| <code>public long BatchesWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:154](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L154) | Total batches written to disk. |
-| <code>public bool IsBatchingEnabled =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L159) | Gets whether sink-side batching is enabled. |
-| <code>public int BatchSize =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:164](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L164) | Gets the configured batch size threshold. |
-| <code>public TimeSpan FlushInterval =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:169](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L169) | Gets the configured periodic flush interval for buffered batches. |
-| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:174](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L174) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
-| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:193](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L193) | Creates a JsonlStorageSink with configurable batch options. |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:241](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L241) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:423](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L423) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:440](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L440) |  |
-| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:505](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L505) | Returns a diagnostics snapshot for buffered JSONL persistence. |
+| <code>public long EventsBuffered =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:159](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L159) | Total events currently buffered across all paths. |
+| <code>public long EventsWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:164](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L164) | Total events written to disk. |
+| <code>public long BatchesWritten =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:169](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L169) | Total batches written to disk. |
+| <code>public long WriteFailures =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:175](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L175) | Gets the number of write attempts by this sink that failed (excluding cancellation). Each is also counted in mdc_sink_write_failures_total{sink=&quot;jsonl&quot;}. |
+| <code>public bool IsBatchingEnabled =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:180](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L180) | Gets whether sink-side batching is enabled. |
+| <code>public int BatchSize =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:185](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L185) | Gets the configured batch size threshold. |
+| <code>public TimeSpan FlushInterval =&gt; …;</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:190](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L190) | Gets the configured periodic flush interval for buffered batches. |
+| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, ILogger&lt;JsonlStorageSink&gt;? logger = null) : this(options, policy, JsonlBatchOptions.NoBatching, logger);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:195](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L195) | Creates a JsonlStorageSink with default options (no batching for backward compatibility). |
+| <code>public JsonlStorageSink(StorageOptions options, IStoragePolicy policy, JsonlBatchOptions batchOptions, ILogger&lt;JsonlStorageSink&gt;? logger = null);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:214](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L214) | Creates a JsonlStorageSink with configurable batch options. |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:262](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L262) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:461](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L461) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:478](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L478) |  |
+| <code>public JsonlStorageSinkStatistics GetStatistics();</code> | [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:543](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L543) | Returns a diagnostics snapshot for buffered JSONL persistence. |
 
 ## JsonlStorageSinkStatistics
 
 Qualified name: <code>Meridian.Storage.Sinks.JsonlStorageSinkStatistics</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1219](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1219).
+Source: [src/Meridian.Storage/Sinks/JsonlStorageSink.cs:1257](../../../../src/Meridian.Storage/Sinks/JsonlStorageSink.cs#L1257).
 
 ```csharp
 public sealed record JsonlStorageSinkStatistics(bool IsBatchingEnabled, int BatchSize, TimeSpan FlushInterval, long EventsBuffered, long EventsWritten, long BatchesWritten, int WriterCount, int BufferCount, DateTimeOffset Timestamp, long FsyncCount = 0, int OpenWriterHandles = 0);

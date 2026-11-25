@@ -772,9 +772,10 @@ This command verifies referenced files and directories exist; it does not valida
     `<dataRoot>/_logs/meridian-<yyyyMMdd>.log`: a `HostStartup` graph logs through Serilog from
     Information, and `UiServer` (`--mode workstation`, which the lifecycle supervisor starts, and
     the UI half of `--mode desktop`) leaves its default providers as before, at Warning unless a
-    configured `Logging` level lowers them, and sends these two categories alone to Serilog from
-    Information. A `--mode desktop` host composes both graphs, so it logs each line twice. The WPF
-    desktop logs them to the generic host's default providers only.
+    configured `Logging` level lowers them, and sends these two categories to Serilog from
+    Information (other `Meridian.*` categories reach Serilog only from Warning, so pipeline and
+    storage failures also land in the file; framework categories never do). A `--mode desktop`
+    host composes both graphs, so it logs each line twice. The WPF desktop logs them to the generic host's default providers only.
   - **`ResolveShape`.** It applies every factory rule above except calendar resolution, then runs
     the kernel over the spec with no adjustments and no lag; a kernel failure is `KernelRefused`,
     "Declared schedule could not be generated: {kernel failure message}". Increment 5b-1's write

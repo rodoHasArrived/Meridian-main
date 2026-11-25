@@ -277,17 +277,57 @@ public sealed class UiServer : IAsyncDisposable
                 builder.Services.AddSingleton<IRuntimeReadinessService, RuntimeReadinessService>();
             }
 
+            // Disk-space and memory probes for /health/detailed and mdc_disk_free_bytes. The checker
+            // samples on its own timer, so neither the health endpoint nor the scrape touches the
+            // disk; the data root also holds the WAL, so it is the one volume to watch.
+            builder.Services.AddSingleton(_ =>
+            {
+                var checker = new Meridian.Platform.Diagnostics.SystemHealthChecker();
+                checker.AddMonitoredPath(resolvedDataRoot);
+                return checker;
+            });
+            builder.Services.AddSingleton(sp =>
+            {
+                var detailed = new DetailedHealthCheck();
+                detailed.RegisterProviders(
+                    pipelineStats: sp.GetRequiredService<EventPipeline>().GetStatistics,
+                    systemHealth: sp.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>().GetSnapshot);
+                return detailed;
+            });
+            // Recent Error/Fatal log events for /api/errors.
+            builder.Services.AddSingleton(_ => new ErrorLogRecorder(new Meridian.Platform.Diagnostics.ErrorRingBuffer()));
+            // Queue-utilization backpressure for /api/backpressure. It samples the pipeline on its
+            // own timer and logs warning/critical transitions; no webhook is configured here.
+            builder.Services.AddSingleton(sp =>
+            {
+                var backpressure = new Meridian.Platform.Monitoring.BackpressureAlertService(
+                    logger: sp.GetService<ILogger<Meridian.Platform.Monitoring.BackpressureAlertService>>());
+                backpressure.RegisterPipelineProvider(sp.GetRequiredService<EventPipeline>().GetStatistics);
+                return backpressure;
+            });
+
             builder.Services.AddSingleton<StatusEndpointHandlers>(sp =>
             {
                 var pipeline = sp.GetRequiredService<EventPipeline>();
                 var depthCollector = sp.GetRequiredService<MarketDepthCollector>();
+                var errors = sp.GetRequiredService<ErrorLogRecorder>();
+                var detailed = sp.GetRequiredService<DetailedHealthCheck>();
+                var systemHealth = sp.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>();
+                var backpressure = sp.GetRequiredService<Meridian.Platform.Monitoring.BackpressureAlertService>();
+                var latency = sp.GetRequiredService<Meridian.DataIntegration.Monitoring.ProviderLatencyService>();
 
-                return new StatusEndpointHandlers(
+                var handlers = new StatusEndpointHandlers(
                     Metrics.GetSnapshot,
                     pipeline.GetStatistics,
                     () => depthCollector.GetRecentIntegrityEvents(),
-                    () => null,
+                    () => errors.Buffer,
                     degradedModeProvider: () => EvaluateDegradedMode(sp));
+                handlers.RegisterExtendedProviders(
+                    detailedHealth: () => detailed.GetDetailedHealthAsync(),
+                    backpressure: backpressure.GetStatus,
+                    providerLatency: latency.GetSummary,
+                    diskSpace: () => systemHealth.GetSnapshot().DiskInfo);
+                return handlers;
             });
 
             builder.Services.AddSingleton<IReconciliationGovernanceAuditStore>(_ =>
@@ -573,6 +613,11 @@ public sealed class UiServer : IAsyncDisposable
             _app = builtApp;
             appBuildStopwatch.Stop();
             _logger = _app.Services.GetRequiredService<ILoggerFactory>().CreateLogger<UiServer>();
+            // Start recording errors and sampling disk space now rather than on the first request
+            // that happens to resolve them, so /api/errors and mdc_disk_free_bytes cover startup.
+            _app.Services.GetRequiredService<ErrorLogRecorder>();
+            _app.Services.GetRequiredService<Meridian.Platform.Diagnostics.SystemHealthChecker>();
+            _app.Services.GetRequiredService<Meridian.Platform.Monitoring.BackpressureAlertService>();
             _logger.LogInformation(
                 "UiServer service graph built (ServiceRegistrationMs={ServiceRegistrationMs}, AppBuildMs={AppBuildMs})",
                 serviceRegistrationStopwatch.ElapsedMilliseconds,
@@ -581,6 +626,9 @@ public sealed class UiServer : IAsyncDisposable
             // Standardize fail-closed endpoint failures before authentication and other
             // middleware can short-circuit the request pipeline.
             _app.UseExceptionHandler();
+            // Time every request (mdc_http_request_duration_seconds) and log slow ones; placed
+            // before authentication and rate limiting so the duration covers the whole pipeline.
+            _app.UseRequestTiming(TimeSpan.FromMilliseconds(_apiHostOptions.SlowRequestThresholdMs));
             _app.UseWhen(
                 context => context.Request.Path.StartsWithSegments("/api"),
                 apiPipeline => apiPipeline.UseStatusCodePages(async statusCodeContext =>
@@ -869,10 +917,19 @@ public sealed class UiServer : IAsyncDisposable
     ];
 
     /// <summary>
+    /// The category prefix whose Warning-and-above lines reach the process's Serilog logger, so the
+    /// pipeline, storage and provider failures a supervised host writes land in <c>_logs</c>.
+    /// </summary>
+    internal const string MeridianLogCategoryPrefix = "Meridian";
+
+    /// <summary>
     /// The host's logging. Every category stops below Warning through the default providers, as
-    /// before; the startup inventory categories alone also reach <paramref name="serilogLogger"/>, the
-    /// process's Serilog logger and its file sink, from Information, so the rollout can read the
-    /// capability and calendar lines from a workstation-mode host's log file.
+    /// before. <paramref name="serilogLogger"/>, the process's Serilog logger and its file sink,
+    /// receives Warning and above from <c>Meridian.*</c> categories, so a supervised host (whose
+    /// console output is not kept) still records pipeline backpressure, flush failures and consumer
+    /// faults in its log file; the startup inventory categories also reach it from Information, so the
+    /// rollout can read the capability and calendar lines. ASP.NET Core and other framework
+    /// categories never reach it.
     /// </summary>
     internal static void ConfigureLogging(ILoggingBuilder logging, Serilog.ILogger serilogLogger)
     {
@@ -883,9 +940,12 @@ public sealed class UiServer : IAsyncDisposable
         logging.SetMinimumLevel(LogLevel.Warning);
 
         // Provider-specific rules beat the global level and configured rules, so the Serilog provider
-        // receives these categories and nothing else; it never disposes the process logger.
+        // receives Meridian warnings and the inventory lines and nothing else; the longest matching
+        // category prefix wins, so the inventory categories keep their Information floor. It never
+        // disposes the process logger.
         Serilog.SerilogLoggingBuilderExtensions.AddSerilog(logging, serilogLogger, dispose: false);
         logging.AddFilter<SerilogLoggerProvider>(category: null, LogLevel.None);
+        logging.AddFilter<SerilogLoggerProvider>(MeridianLogCategoryPrefix, LogLevel.Warning);
         foreach (var category in StartupInventoryLogCategories)
         {
             logging.AddFilter<SerilogLoggerProvider>(category, LogLevel.Information);

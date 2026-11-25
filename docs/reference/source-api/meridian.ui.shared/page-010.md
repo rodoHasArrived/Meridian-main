@@ -6,6 +6,42 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CapitalCallCommitmentInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallCommitmentInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:13](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L13).
+
+Compatibility projection of one commitment-register line backing a capital call. Native intake resolves its terms from the approved durable commitment revision; caller totals are consistency checks. Each line carries retained register evidence; called-to-date is never taken from the caller — it is recomputed server-side from commitment-scoped posting receipts before any native draft is produced.
+
+```csharp
+public sealed record CapitalCallCommitmentInput(string CommitmentId, string CapitalAccountId, string InvestorId, decimal TotalCommitment, DateOnly CommitmentDate, CommitmentStatus Status = CommitmentStatus.Active, DateOnly? InvestmentPeriodEndDate = null, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:23](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L23) |  |
+
+## CapitalCallDefaultTermsInput
+
+Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallDefaultTermsInput</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L14).
+
+The default terms of one commitment on a capital call. The ledger holds the call and its receipts but not the due date, default rate, day-count convention or grace period, so the operator attests them here with retained evidence (the fund agreement or call notice).
+
+```csharp
+public sealed record CapitalCallDefaultTermsInput(string CommitmentId, string CapitalAccountId, string InvestorId, DateOnly DueDate, decimal DefaultInterestRateAnnual, DefaultInterestConvention Convention, int GraceDays, IReadOnlyList<string>? EvidenceLinks = null)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:24](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L24) |  |
+
 ## CapitalCallFundingInput
 
 Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallFundingInput</code>. Kind: `record`.
@@ -909,27 +945,3 @@ Declared public members:
 | <code>public static decimal PortfolioValue =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:184](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L184) |  |
 | <code>public static decimal UnrealizedPnl =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:186](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L186) |  |
 | <code>public static SampleWorkspaceDto BuildSampleWorkspace(bool reconciliationLoaded = true, bool strategyLoaded = true);</code> | [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:193](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L193) | Builds the populated snapshot surfaced to onboarding clients. Desk highlights (with links) are included only for surfaces that actually loaded, so a click-through never contradicts what onboarding claimed; the illustrative sample portfolio is always shown as a preview. |
-
-## SampleBreakDefinition
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleBreakDefinition</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:279](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L279).
-
-Fixed definition of a sample reconciliation break, before it is stamped with timestamps.
-
-```csharp
-public sealed record SampleBreakDefinition(string Id, string Title, ReconciliationBreakCategory Category, ReconciliationBreakSeverity Severity, decimal Variance, string Summary);
-```
-
-## SampleTradePrint
-
-Qualified name: <code>Meridian.Ui.Shared.Services.DemoTenantBlueprint.SampleTradePrint</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs:96](../../../../src/Meridian.Ui.Shared/Services/DemoTenantBlueprint.cs#L96).
-
-One deterministic seeded trade print for durable market history.
-
-```csharp
-public sealed record SampleTradePrint(DateTimeOffset Timestamp, decimal Price, long Size);
-```

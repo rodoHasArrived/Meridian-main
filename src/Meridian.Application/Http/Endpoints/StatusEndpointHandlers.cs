@@ -34,6 +34,7 @@ public sealed class StatusEndpointHandlers
     private Func<BackpressureStatus>? _backpressureProvider;
     private Func<ProviderLatencySummary>? _providerLatencyProvider;
     private Func<ConnectionHealthSnapshot>? _connectionHealthProvider;
+    private Func<IReadOnlyList<DiskSpaceInfo>>? _diskSpaceProvider;
 
     // Health check thresholds
     public const double HighDropRateThreshold = 5.0;
@@ -63,8 +64,10 @@ public sealed class StatusEndpointHandlers
         Func<Task<DetailedHealthReport>>? detailedHealth = null,
         Func<BackpressureStatus>? backpressure = null,
         Func<ProviderLatencySummary>? providerLatency = null,
-        Func<ConnectionHealthSnapshot>? connectionHealth = null)
+        Func<ConnectionHealthSnapshot>? connectionHealth = null,
+        Func<IReadOnlyList<DiskSpaceInfo>>? diskSpace = null)
     {
+        _diskSpaceProvider = diskSpace;
         _detailedHealthProvider = detailedHealth;
         _backpressureProvider = backpressure;
         _providerLatencyProvider = providerLatency;
@@ -320,6 +323,9 @@ public sealed class StatusEndpointHandlers
     {
         // Pull current values into the registry before collecting it.
         PrometheusMetrics.UpdateFromSnapshot();
+        PrometheusMetrics.UpdatePipelineMetrics(_pipelineProvider());
+        if (_diskSpaceProvider is { } diskSpace)
+            PrometheusMetrics.UpdateDiskMetrics(diskSpace());
 
         var legacy = GetPrometheusMetrics();
 

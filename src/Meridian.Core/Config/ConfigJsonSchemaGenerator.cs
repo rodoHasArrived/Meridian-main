@@ -120,6 +120,7 @@ public sealed class ConfigJsonSchemaGenerator
                         "Migration")
                 },
                 ["ServeWorkstationAssets"] = CreateTypedSchema("boolean"),
+                ["SlowRequestThresholdMs"] = CreateTypedSchema("integer"),
                 ["Urls"] = new JsonObject
                 {
                     ["type"] = "array",

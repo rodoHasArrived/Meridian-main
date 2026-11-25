@@ -774,6 +774,26 @@ Declared public members:
 | <code>public void EnsurePath(string path);</code> | [src/Meridian.Core/IO/RootedPathGuard.cs:74](../../../../src/Meridian.Core/IO/RootedPathGuard.cs#L74) | Verifies that an already-composed path remains beneath the configured root and that every existing descendant from the root to that path is not a symbolic link or reparse point. Callers should invoke this again immediately after creating a parent directory and before a destructive operation. |
 | <code>public static void ValidatePathSegment(string segment, string? parameterName = null);</code> | [src/Meridian.Core/IO/RootedPathGuard.cs:131](../../../../src/Meridian.Core/IO/RootedPathGuard.cs#L131) | Rejects values that are not one portable, identity-preserving file-name component. |
 
+## ErrorLogTap
+
+Qualified name: <code>Meridian.Core.Logging.ErrorLogTap</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Logging/ErrorLogTap.cs:16](../../../../src/Meridian.Core/Logging/ErrorLogTap.cs#L16).
+
+A Serilog sink that hands Error and Fatal events to in-process subscribers, such as the host&#x27;s recent-errors buffer behind /api/errors.
+
+```csharp
+public sealed class ErrorLogTap : ILogEventSink
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ErrorLogTap Instance { get; } = new ();</code> | [src/Meridian.Core/Logging/ErrorLogTap.cs:26](../../../../src/Meridian.Core/Logging/ErrorLogTap.cs#L26) | The process-wide tap attached to the logger built by LoggingSetup. |
+| <code>public IDisposable Subscribe(Action&lt;LogEvent&gt; subscriber);</code> | [src/Meridian.Core/Logging/ErrorLogTap.cs:31](../../../../src/Meridian.Core/Logging/ErrorLogTap.cs#L31) | Subscribes to Error and Fatal events. Dispose the result to unsubscribe. |
+| <code>public void Emit(LogEvent logEvent);</code> | [src/Meridian.Core/Logging/ErrorLogTap.cs:43](../../../../src/Meridian.Core/Logging/ErrorLogTap.cs#L43) |  |
+
 ## LoggingSetup
 
 Qualified name: <code>Meridian.Core.Logging.LoggingSetup</code>. Kind: `class`.
@@ -790,17 +810,37 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ILogger Logger =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:23](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L23) | Gets the configured logger instance. |
-| <code>public static LogEventLevel CurrentLevel =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:28](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L28) | Gets the current minimum log level. |
-| <code>public static void SetLogLevel(LogEventLevel level);</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:34](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L34) | Sets the minimum log level at runtime (QW-53: Log Level Runtime Toggle). |
-| <code>public static bool SetLogLevel(string levelName);</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:50](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L50) | Sets the minimum log level at runtime using a string (case-insensitive). Valid values: Verbose, Debug, Information, Warning, Error, Fatal |
-| <code>public static void ToggleDebug();</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:63](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L63) | Toggles between Information and Debug log levels. |
-| <code>public static bool IsDebugEnabled =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:78](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L78) | Gets whether debug logging is currently enabled. |
-| <code>public static void Initialize(IConfiguration? configuration = null, string dataRoot = &quot;data&quot;);</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:86](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L86) | Initializes the logging infrastructure with bounded default file logging. Call this early in application startup. |
-| <code>public static ILogger ForContext&lt;T&gt;() =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:140](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L140) | Creates a contextual logger for a specific component. |
-| <code>public static ILogger ForContext(string sourceContext) =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:145](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L145) | Creates a contextual logger with a custom source context. |
-| <code>public static ILogger ForContext(Type sourceType) =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:150](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L150) | Creates a contextual logger for a specific type. |
-| <code>public static void CloseAndFlush();</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:156](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L156) | Flushes any buffered log entries and closes the logger. Call this during application shutdown. |
+| <code>public const string FileOutputTemplate = &quot;{Timestamp:yyyy-MM-dd HH:mm:ss.fff zzz} [{Level:u3}] [{ThreadId}] {SourceContext} {Message:lj} {Properties:j} {TraceId} {SpanId}{NewLine}{Exception}&quot;;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:23](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L23) | The file sink&#x27;s output template. {TraceId}/{SpanId} carry the ambient System.Diagnostics.Activity, and {Properties:j} renders the remaining event and scope properties (for example the pipeline&#x27;s CorrelationId and Symbol) that the message text does not already show. |
+| <code>public static ILogger Logger =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:32](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L32) | Gets the configured logger instance. |
+| <code>public static LogEventLevel CurrentLevel =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:37](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L37) | Gets the current minimum log level. |
+| <code>public static void SetLogLevel(LogEventLevel level);</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:43](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L43) | Sets the minimum log level at runtime (QW-53: Log Level Runtime Toggle). |
+| <code>public static bool SetLogLevel(string levelName);</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:59](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L59) | Sets the minimum log level at runtime using a string (case-insensitive). Valid values: Verbose, Debug, Information, Warning, Error, Fatal |
+| <code>public static void ToggleDebug();</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:72](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L72) | Toggles between Information and Debug log levels. |
+| <code>public static bool IsDebugEnabled =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:87](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L87) | Gets whether debug logging is currently enabled. |
+| <code>public static void Initialize(IConfiguration? configuration = null, string dataRoot = &quot;data&quot;);</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:95](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L95) | Initializes the logging infrastructure with bounded default file logging. Call this early in application startup. |
+| <code>public static ILogger ForContext&lt;T&gt;() =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:151](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L151) | Creates a contextual logger for a specific component. |
+| <code>public static ILogger ForContext(string sourceContext) =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:156](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L156) | Creates a contextual logger with a custom source context. |
+| <code>public static ILogger ForContext(Type sourceType) =&gt; …;</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:161](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L161) | Creates a contextual logger for a specific type. |
+| <code>public static void CloseAndFlush();</code> | [src/Meridian.Core/Logging/LoggingSetup.cs:167](../../../../src/Meridian.Core/Logging/LoggingSetup.cs#L167) | Flushes any buffered log entries and closes the logger. Call this during application shutdown. |
+
+## ThreadIdEnricher
+
+Qualified name: <code>Meridian.Core.Logging.ThreadIdEnricher</code>. Kind: `class`.
+
+Source: [src/Meridian.Core/Logging/ThreadIdEnricher.cs:10](../../../../src/Meridian.Core/Logging/ThreadIdEnricher.cs#L10).
+
+Adds the managed thread ID of the thread that writes each log event, so the file log&#x27;s &#91;{ThreadId}&#93; field names the emitting thread rather than the one that configured logging.
+
+```csharp
+public sealed class ThreadIdEnricher : ILogEventEnricher
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string PropertyName = &quot;ThreadId&quot;;</code> | [src/Meridian.Core/Logging/ThreadIdEnricher.cs:13](../../../../src/Meridian.Core/Logging/ThreadIdEnricher.cs#L13) | The property name the file output template renders. |
+| <code>public void Enrich(LogEvent logEvent, ILogEventPropertyFactory propertyFactory);</code> | [src/Meridian.Core/Logging/ThreadIdEnricher.cs:16](../../../../src/Meridian.Core/Logging/ThreadIdEnricher.cs#L16) |  |
 
 ## ConnectionLostEvent
 
@@ -892,36 +932,3 @@ Declared public members:
 | <code>public static readonly AlertFilter CriticalOnly = new (MinSeverity : AlertSeverity.Critical);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:128](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L128) | Filter for critical alerts only. |
 | <code>public static readonly AlertFilter ErrorsAndAbove = new (MinSeverity : AlertSeverity.Error);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:133](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L133) | Filter for errors and above. |
 | <code>public bool Matches(MonitoringAlert alert);</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:138](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L138) | Checks if an alert matches this filter. |
-
-## AlertSeverity
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.AlertSeverity</code>. Kind: `enum`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:8](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L8).
-
-Severity levels for monitoring alerts.
-
-```csharp
-public enum AlertSeverity : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Info</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:11](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L11) | Informational message, no action required. |
-| <code>Warning</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:14](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L14) | Warning that may require attention. |
-| <code>Error</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:17](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L17) | Error that requires investigation. |
-| <code>Critical</code> | [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:20](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L20) | Critical issue requiring immediate attention. |
-
-## AlertStatistics
-
-Qualified name: <code>Meridian.Core.Monitoring.Core.AlertStatistics</code>. Kind: `record`.
-
-Source: [src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs:218](../../../../src/Meridian.Core/Monitoring/Core/IAlertDispatcher.cs#L218).
-
-Statistics about published alerts.
-
-```csharp
-public sealed record AlertStatistics(long TotalAlerts, IReadOnlyDictionary<AlertSeverity, long> AlertsBySeverity, IReadOnlyDictionary<AlertCategory, long> AlertsByCategory, IReadOnlyDictionary<string, long> AlertsBySource, DateTimeOffset Since);
-```
