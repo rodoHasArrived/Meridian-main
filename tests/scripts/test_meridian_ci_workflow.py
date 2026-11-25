@@ -29,7 +29,7 @@ class MeridianCiWorkflowTests(unittest.TestCase):
                 self.assertIn(f"bash scripts/ci.sh --lane {lane}", self.workflow)
 
     def test_dotnet_lane_uses_bounded_test_concurrency_without_changing_gate(self) -> None:
-        dotnet_job = self.workflow.split("  dotnet-shards:\n", 1)[1].split("  verify-browser:\n", 1)[0]
+        dotnet_job = self.workflow.split("  dotnet-shards:\n", 1)[1].split("  verify-dotnet:\n", 1)[0]
         # Runner fan-out is not a process-count promotion: each runner keeps two processes.
         self.assertIn('MERIDIAN_CI_TEST_MAX_PARALLEL: "2"', dotnet_job)
         self.assertIn("bash scripts/ci.sh --lane verify-dotnet", dotnet_job)
@@ -60,7 +60,7 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         # The .NET shards need the bundle, not the browser test verdict, so they must not
         # queue behind the browser lane. quality-gate still requires both lanes.
         self.assertEqual(shards["needs"], ["changes", "build-workstation"])
-        self.assertNotIn("needs", workflow["jobs"]["verify-browser"])
+        self.assertNotIn("needs", workflow["jobs"]["browser-shards"])
         steps = shards["steps"]
         download = next(step for step in steps if step.get("name") == "Download same-revision workstation assets")
         run = next(step for step in steps if step.get("name") == "Run .NET lane")
@@ -137,8 +137,69 @@ class MeridianCiWorkflowTests(unittest.TestCase):
         self.assertIn("dotnet format whitespace Meridian.sln --verify-no-changes", static)
         self.assertIn("dotnet build Meridian.WebWorkstation.slnf", static)
         self.assertIn("check-file-size.py", static)
-        # Unset means the whole lane; index 0 is the unsharded default.
-        self.assertIn("dotnet_shard_index=0", ci_script)
+        # Unset means the whole lane: parse_lane_shard reports index 0 for it.
+        self.assertIn('dotnet_shard_index="$(parse_lane_shard MERIDIAN_CI_DOTNET_SHARD verify-dotnet)" || exit 2', ci_script)
+
+    def test_browser_shards_cover_the_test_files_and_report_one_verdict(self):
+        import yaml
+        workflow = yaml.load(self.workflow, Loader=yaml.BaseLoader)
+        shards = workflow["jobs"]["browser-shards"]
+        indices = shards["strategy"]["matrix"]["shard"]
+        total = len(indices)
+        self.assertEqual(indices, [str(index) for index in range(1, total + 1)])
+        self.assertEqual(shards["strategy"]["fail-fast"], "false")
+        self.assertEqual(shards["env"]["MERIDIAN_CI_BROWSER_SHARD"], "${{ matrix.shard }}/" + str(total))
+        # The browser lane always runs: no change classification may skip it.
+        self.assertNotIn("if", shards)
+        self.assertNotIn("needs", shards)
+        self.assertEqual(sorted(shards["outputs"]), [f"artifact-id-{index}" for index in range(1, total + 1)])
+        upload = next(step for step in shards["steps"] if step.get("name") == "Upload browser shard artifacts")
+        self.assertEqual(upload["if"], "always()")
+        self.assertIn("${{ matrix.shard }}", upload["with"]["name"])
+
+        verdict = workflow["jobs"]["verify-browser"]
+        self.assertEqual(verdict["name"], "verify-browser")
+        self.assertEqual(verdict["needs"], ["browser-shards"])
+        self.assertEqual(verdict["if"], "always()")
+        steps = {step["name"]: step for step in verdict["steps"]}
+        merge = steps["Require every dashboard test file across shards"]["run"]
+        self.assertIn("src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.mjs", merge)
+        self.assertIn(f"--expected-shards {total}", merge)
+        self.assertNotIn("if", steps["Require every dashboard test file across shards"])
+        download = steps["Download shard evidence"]["with"]["artifact-ids"]
+        for index in range(1, total + 1):
+            self.assertIn(f"needs.browser-shards.outputs.artifact-id-{index}", download)
+        result = steps["Require every shard to succeed"]
+        self.assertEqual(result["env"]["SHARDS_RESULT"], "${{ needs.browser-shards.result }}")
+        self.assertIn('"$SHARDS_RESULT" != "success"', result["run"])
+        # Release promotion requires this exact evidence name for the lane.
+        self.assertEqual(
+            steps["Upload browser lane artifacts"]["with"]["name"],
+            "meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}",
+        )
+        for job in (shards, verdict):
+            self.assertNotIn("continue-on-error", str(job))
+
+    def test_first_browser_shard_owns_static_checks_and_unsharded_runs_keep_them(self) -> None:
+        ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")
+        lane = ci_script.split("verify_browser() {\n", 1)[1].split("\n}\n", 1)[0]
+        guarded = lane.split('if [[ "$browser_shard_index" -le 1 ]]; then\n')
+        self.assertEqual(len(guarded), 3)
+        # Every shard installs from the lockfile, generates contracts and runs its tests.
+        for always in ("npm --prefix src/Meridian.Ui/dashboard ci --include=optional", "Generate UI contracts"):
+            self.assertIn(always, guarded[0])
+        between = guarded[1].split("\n  fi\n", 1)
+        self.assertIn("run lint", between[0])
+        self.assertIn("run typecheck:strict", between[0])
+        self.assertIn("npm --prefix src/Meridian.Ui/dashboard run test", between[1])
+        self.assertIn('-- --shard ${MERIDIAN_CI_BROWSER_SHARD}', between[1])
+        self.assertIn("run build", guarded[2])
+        self.assertIn("check-workstation-assets.py", guarded[2])
+        self.assertIn('browser_shard_index="$(parse_lane_shard MERIDIAN_CI_BROWSER_SHARD verify-browser)" || exit 2', ci_script)
+        # The runner and the verdict share one definition of the test-file roster.
+        scripts = REPO_ROOT / "src" / "Meridian.Ui" / "dashboard" / "scripts"
+        for name in ("run-vitest-stable.mjs", "merge-vitest-shards.mjs"):
+            self.assertIn('from "./vitest-files.mjs"', (scripts / name).read_text(encoding="utf-8"))
 
     def test_docs_lane_keeps_subset_receipt_out_of_tracked_status_docs(self) -> None:
         ci_script = (REPO_ROOT / "scripts" / "ci.sh").read_text(encoding="utf-8")

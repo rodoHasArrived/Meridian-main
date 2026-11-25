@@ -104,19 +104,24 @@ fi
 
 # An unset shard means the complete lane. A malformed one must stop the lane rather than
 # silently run everything, or nothing, under a shard's name.
-dotnet_shard_index=0
-if [[ -n "${MERIDIAN_CI_DOTNET_SHARD:-}" ]]; then
-  if [[ "$selected_lane" != "verify-dotnet" ]]; then
-    echo "MERIDIAN_CI_DOTNET_SHARD applies only to verify-dotnet." >&2
-    exit 2
+parse_lane_shard() {
+  local variable="$1" lane="$2" value="${!1:-}"
+  if [[ -z "$value" ]]; then
+    echo 0
+    return
   fi
-  if [[ ! "$MERIDIAN_CI_DOTNET_SHARD" =~ ^([1-9][0-9]*)/([1-9][0-9]*)$ ]] ||
-     (( BASH_REMATCH[1] > BASH_REMATCH[2] )); then
-    echo "MERIDIAN_CI_DOTNET_SHARD must be INDEX/TOTAL with 1 <= INDEX <= TOTAL." >&2
-    exit 2
+  if [[ "$selected_lane" != "$lane" ]]; then
+    echo "${variable} applies only to ${lane}." >&2
+    return 2
   fi
-  dotnet_shard_index="${BASH_REMATCH[1]}"
-fi
+  if [[ ! "$value" =~ ^([1-9][0-9]*)/([1-9][0-9]*)$ ]] || (( BASH_REMATCH[1] > BASH_REMATCH[2] )); then
+    echo "${variable} must be INDEX/TOTAL with 1 <= INDEX <= TOTAL." >&2
+    return 2
+  fi
+  echo "${BASH_REMATCH[1]}"
+}
+dotnet_shard_index="$(parse_lane_shard MERIDIAN_CI_DOTNET_SHARD verify-dotnet)" || exit 2
+browser_shard_index="$(parse_lane_shard MERIDIAN_CI_BROWSER_SHARD verify-browser)" || exit 2
 
 export MERIDIAN_CI_ARTIFACT_ROOT="${MERIDIAN_CI_ARTIFACT_ROOT:-artifacts}"
 if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
@@ -265,7 +270,9 @@ verify_dotnet_static() {
 }
 
 verify_browser() {
-  run_step "Validate browser evidence reader" node --test src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs
+  run_step "Validate browser evidence reader" node --test \
+    src/Meridian.Ui/dashboard/scripts/vitest-evidence.test.mjs \
+    src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.test.mjs
   verify_toolchain_browser
 
   run_step "Install dashboard dependencies from lockfile" \
@@ -274,22 +281,35 @@ verify_browser() {
   run_step "Generate UI contracts" \
     bash -c 'set -euo pipefail; "$0" build/scripts/generate-ui-api-routes-ts.py 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/ui-api-routes-check.log"; "$0" build/scripts/generate-workspace-catalog-ts.py 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/workspace-catalog-check.log"' "$python_cmd"
 
-  run_step "Lint dashboard source" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-lint.log"'
+  # Hosted CI runs the dashboard tests as several runner shards (MERIDIAN_CI_BROWSER_SHARD=K/N).
+  # Lint, the strict typecheck and the production bundle are whole-tree facts, so the first
+  # shard owns them once; an unsharded run, including every local run, still performs all.
+  if [[ "$browser_shard_index" -le 1 ]]; then
+    run_step "Lint dashboard source" \
+      bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run lint 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-lint.log"'
 
-  run_step "Enforce strictNullChecks on dashboard source" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run typecheck:strict 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-typecheck-strict.log"'
+    run_step "Enforce strictNullChecks on dashboard source" \
+      bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run typecheck:strict 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-typecheck-strict.log"'
+  else
+    echo "Shard ${MERIDIAN_CI_BROWSER_SHARD}: lint, strict typecheck and the bundle build run in shard 1."
+  fi
 
+  local test_shard_args=""
+  if [[ -n "${MERIDIAN_CI_BROWSER_SHARD:-}" ]]; then
+    test_shard_args=" -- --shard ${MERIDIAN_CI_BROWSER_SHARD}"
+  fi
   run_step "Run dashboard tests" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-test.log"'
+    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run test'"$test_shard_args"' 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-test.log"'
 
-  run_step "Build dashboard bundle" \
-    bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-build.log"'
+  if [[ "$browser_shard_index" -le 1 ]]; then
+    run_step "Build dashboard bundle" \
+      bash -c 'set -euo pipefail; npm --prefix src/Meridian.Ui/dashboard run build 2>&1 | tee "${MERIDIAN_CI_ARTIFACT_ROOT}/build-logs/dashboard-build.log"'
 
-  # Assets are CI products. Validate the complete built tree instead of
-  # requiring its hashed filenames to have been committed by a contributor.
-  run_step "Validate workstation bundle" \
-    "$python_cmd" build/scripts/ci/check-workstation-assets.py
+    # Assets are CI products. Validate the complete built tree instead of
+    # requiring its hashed filenames to have been committed by a contributor.
+    run_step "Validate workstation bundle" \
+      "$python_cmd" build/scripts/ci/check-workstation-assets.py
+  fi
 
 }
 

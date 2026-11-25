@@ -65,8 +65,9 @@ class MeridianCiCacheContractTests(unittest.TestCase):
             ("verify-workflows", "Run workflow hygiene lane"),
         ):
             with self.subTest(lane=lane):
-                # The .NET lane executes in runner shards; verify-dotnet is their verdict.
-                job = self._job_block("dotnet-shards" if lane == "verify-dotnet" else lane)
+                # The .NET and browser lanes execute in runner shards; the jobs that keep
+                # the lane names are their verdicts.
+                job = self._job_block({"verify-dotnet": "dotnet-shards", "verify-browser": "browser-shards"}.get(lane, lane))
                 step = self._step_block(job, step_name)
                 if lane == "verify-dotnet":
                     self.assertIn("    needs: [changes, build-workstation]", job)
@@ -105,7 +106,7 @@ class MeridianCiCacheContractTests(unittest.TestCase):
         build_path = (dashboard / out_dir.group(1)).resolve().relative_to(REPO_ROOT).as_posix()
 
         upload = self._step_block(
-            self._job_block("verify-browser"), "Upload browser lane artifacts"
+            self._job_block("browser-shards"), "Upload browser shard artifacts"
         )
         self.assertIn(f"            {build_path}/\n", upload)
         self.assertIn("            artifacts/build-logs/\n", upload)

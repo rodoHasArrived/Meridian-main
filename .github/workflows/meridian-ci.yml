@@ -114,9 +114,11 @@ jobs:
 
   # One complete verify-dotnet lane per runner, each restricted to a deterministic slice of
   # the test roster. Every runner keeps the reviewed two test processes; only the number of
-  # runners changes. The verify-dotnet job below is the lane's single verdict.
+  # runners changes. Two runners already reach the floor set by the longest single test
+  # process, so a third would add build work without shortening the lane. The verify-dotnet
+  # job below is the lane's single verdict.
   dotnet-shards:
-    name: dotnet-shard (${{ matrix.shard }}/3)
+    name: dotnet-shard (${{ matrix.shard }}/2)
     needs: [changes, build-workstation]
     if: needs.changes.outputs.dotnet == 'true'
     runs-on: ubuntu-latest
@@ -125,16 +127,15 @@ jobs:
       # A failing shard must not hide failures in the others.
       fail-fast: false
       matrix:
-        shard: [1, 2, 3]
+        shard: [1, 2]
     outputs:
       artifact-id-1: ${{ steps.evidence.outputs.artifact-id-1 }}
       artifact-id-2: ${{ steps.evidence.outputs.artifact-id-2 }}
-      artifact-id-3: ${{ steps.evidence.outputs.artifact-id-3 }}
     env:
       # Build shared projects once, then overlap two isolated test processes.
       # Local runs remain sequential unless explicitly configured.
       MERIDIAN_CI_TEST_MAX_PARALLEL: "2"
-      MERIDIAN_CI_DOTNET_SHARD: ${{ matrix.shard }}/3
+      MERIDIAN_CI_DOTNET_SHARD: ${{ matrix.shard }}/2
 
     steps:
       - name: Check out repository
@@ -225,10 +226,10 @@ jobs:
       # A shard that never uploaded leaves its ID empty. Its own artifact, if any, stays
       # downloadable; the roster check below then fails on the missing summary.
       - name: Download shard evidence
-        if: needs.dotnet-shards.outputs.artifact-id-1 != '' && needs.dotnet-shards.outputs.artifact-id-2 != '' && needs.dotnet-shards.outputs.artifact-id-3 != ''
+        if: needs.dotnet-shards.outputs.artifact-id-1 != '' && needs.dotnet-shards.outputs.artifact-id-2 != ''
         uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
-          artifact-ids: ${{ format('{0},{1},{2}', needs.dotnet-shards.outputs.artifact-id-1, needs.dotnet-shards.outputs.artifact-id-2, needs.dotnet-shards.outputs.artifact-id-3) }}
+          artifact-ids: ${{ format('{0},{1}', needs.dotnet-shards.outputs.artifact-id-1, needs.dotnet-shards.outputs.artifact-id-2) }}
           path: artifacts/dotnet-shards
 
       # The shards' own exit codes are not enough: this proves that together they ran the
@@ -237,7 +238,7 @@ jobs:
         run: >-
           python build/scripts/ci/merge-dotnet-shard-summaries.py
           --shards-dir artifacts/dotnet-shards
-          --expected-shards 3
+          --expected-shards 2
           --json-output artifacts/test-results/dotnet/ci-dotnet-test-summary.json
           --summary-output artifacts/test-results/dotnet/ci-dotnet-test-summary.md
           --github-step-summary "$GITHUB_STEP_SUMMARY"
@@ -265,13 +266,25 @@ jobs:
           compression-level: 1
           retention-days: 14
 
-  verify-browser:
-    name: verify-browser
+  # The dashboard tests run as sequential batches, so two runners halve the lane. Each is a
+  # complete verify-browser lane restricted to every second test file; shard 1 also owns
+  # lint, the strict typecheck and the production bundle. verify-browser is the verdict.
+  browser-shards:
+    name: browser-shard (${{ matrix.shard }}/2)
     runs-on: ubuntu-latest
     timeout-minutes: 25
+    strategy:
+      # A failing shard must not hide failures in the other.
+      fail-fast: false
+      matrix:
+        shard: [1, 2]
+    outputs:
+      artifact-id-1: ${{ steps.evidence.outputs.artifact-id-1 }}
+      artifact-id-2: ${{ steps.evidence.outputs.artifact-id-2 }}
     env:
       # Reuse cached tarballs; npm still fetches missing packages and enforces the lockfile.
       npm_config_prefer_offline: "true"
+      MERIDIAN_CI_BROWSER_SHARD: ${{ matrix.shard }}/2
 
     steps:
       - name: Check out repository
@@ -299,16 +312,89 @@ jobs:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.node.outputs.cache-hit || 'false' }}
         run: bash scripts/ci.sh --lane verify-browser
 
+      - name: Upload browser shard artifacts
+        id: upload
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: meridian-ci-browser-shard-${{ matrix.shard }}-${{ github.run_number }}-${{ github.run_attempt }}
+          path: |
+            src/Meridian.Ui/wwwroot/workstation/
+            artifacts/test-results/browser/
+            artifacts/build-logs/
+            artifacts/ci-summary/
+          if-no-files-found: ignore
+          compression-level: 1
+          retention-days: 14
+
+      # Each matrix leg sets only its own output, so a rerun of one failed shard keeps the
+      # immutable evidence ID of the shard that already passed.
+      - name: Record shard evidence identity
+        id: evidence
+        if: always() && steps.upload.outputs.artifact-id != ''
+        env:
+          SHARD: ${{ matrix.shard }}
+          ARTIFACT_ID: ${{ steps.upload.outputs.artifact-id }}
+        run: echo "artifact-id-${SHARD}=${ARTIFACT_ID}" >> "$GITHUB_OUTPUT"
+
+  verify-browser:
+    name: verify-browser
+    needs: [browser-shards]
+    # A failed or cancelled shard must still produce a failing verdict, never a skipped one.
+    if: always()
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          ref: ${{ github.sha }}
+          fetch-depth: 1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+
+      # A shard that never uploaded leaves its ID empty. Its own artifact, if any, stays
+      # downloadable; the file check below then fails on the missing summary.
+      - name: Download shard evidence
+        if: needs.browser-shards.outputs.artifact-id-1 != '' && needs.browser-shards.outputs.artifact-id-2 != ''
+        uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          artifact-ids: ${{ format('{0},{1}', needs.browser-shards.outputs.artifact-id-1, needs.browser-shards.outputs.artifact-id-2) }}
+          path: artifacts/browser-shards
+
+      # The shards' own exit codes are not enough: this proves that together they ran every
+      # dashboard test file in this checkout exactly once, for one commit, with no failure.
+      - name: Require every dashboard test file across shards
+        run: >-
+          node src/Meridian.Ui/dashboard/scripts/merge-vitest-shards.mjs
+          --shards-dir artifacts/browser-shards
+          --expected-shards 2
+          --output-dir artifacts/test-results/browser
+
+      - name: Require every shard to succeed
+        if: always()
+        env:
+          SHARDS_RESULT: ${{ needs.browser-shards.result }}
+        run: |
+          set -euo pipefail
+          if [[ "$SHARDS_RESULT" != "success" ]]; then
+            echo "One or more browser shards did not succeed: ${SHARDS_RESULT}." >&2
+            exit 1
+          fi
+
       - name: Upload browser lane artifacts
         if: always()
         uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:
           name: meridian-ci-browser-${{ github.run_number }}-${{ github.run_attempt }}
           path: |
-            src/Meridian.Ui/wwwroot/workstation/
+            artifacts/browser-shards/
             artifacts/test-results/browser/
-            artifacts/build-logs/
-            artifacts/ci-summary/
           if-no-files-found: ignore
           compression-level: 1
           retention-days: 14

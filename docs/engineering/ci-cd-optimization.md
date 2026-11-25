@@ -436,29 +436,50 @@ Job timings from pull-request run
 [45483483086](https://github.com/rodoHasArrived/Meridian-main/actions/runs/45483483086)
 (31 minutes to `quality-gate`) showed that the gate's length was scheduling, not work:
 `verify-dotnet` (17 minutes) declared `needs: verify-browser` (13 minutes) only to obtain
-the workstation bundle, and its 11.75 minutes of tests ran as about 1,420 process-seconds
-through two processes on one runner. Two changes follow from that one observation; neither
-removes or narrows a validation.
+the workstation bundle; its 11.75 minutes of tests ran as about 1,420 process-seconds
+through two processes on one runner; and about 11 of the browser lane's 13 minutes were 84
+sequential ten-second Vitest batches. The changes below follow from those observations;
+none removes or narrows a validation.
 
 - **`build-workstation`** builds and validates the bundle with
   `build/scripts/ensure-workstation-assets.py` and uploads it by immutable artifact ID. The
-  .NET shards consume it and start without waiting for browser tests. `verify-browser` still
+  .NET shards consume it and start without waiting for browser tests. The browser lane still
   builds, validates and retains its own bundle, and `quality-gate` still requires both lanes.
-- **`dotnet-shards`** runs the unchanged roster on three runners, each a complete
+- **`dotnet-shards`** runs the unchanged roster on two runners, each a complete
   `scripts/ci.sh --lane verify-dotnet` restricted to a deterministic slice by
-  `MERIDIAN_CI_DOTNET_SHARD`. Shard 1 owns formatting, ratchets and the web-host build. The
-  `verify-dotnet` job keeps its name, its evidence artifact name and its place in
-  `quality-gate`; it fails unless the shards together ran every roster entry exactly once.
+  `MERIDIAN_CI_DOTNET_SHARD`. Shard 1 owns formatting, ratchets and the web-host build.
+- **`browser-shards`** runs the unchanged test files on two runners, each a complete
+  `scripts/ci.sh --lane verify-browser` restricted by `MERIDIAN_CI_BROWSER_SHARD`. Shard 1
+  owns lint, the strict typecheck and the production bundle.
+- **`verify-dotnet` and `verify-browser`** keep their names, their evidence artifact names
+  and their places in `quality-gate`. Each is now the verdict over its shards and fails
+  unless they together ran the complete roster, or every test file, exactly once.
+- **Pipeline Budget Benchmark** cancels the superseded run when a pull request receives a
+  newer push. Main pushes and manual dispatches still run to completion.
 
-This is runner fan-out, not the process-count promotion governed below: every runner keeps two
-test processes and `tests/xunit.runner.json` is unchanged. It adds one small Ubuntu job, two
-additional .NET runners and one short verdict job per run that needs .NET. The October 5
-review recorded queue delay before assignment; if hosted capacity is again the constraint,
-reduce the `shard` matrix and `--expected-shards` together, which the workflow contract test
-keeps consistent. Rollback is reverting this change. The expected gate time is an estimate
-from one run until post-merge runs are measured, and `service-backed-integrations` (19
-minutes, one serial `Meridian.Tests` step that also produces certification evidence) is
-unchanged and now the longest job in the workflow.
+This is runner fan-out, not the process-count or batch-size promotion governed below: every
+.NET runner keeps two test processes, Vitest keeps two workers and eight files per batch,
+and `tests/xunit.runner.json` is unchanged.
+
+**Shard counts are deliberately two.** A lane cannot finish before its longest test process
+(about 360 seconds for `core-ui-workstation-endpoints-map`), and two runners with two
+processes each already reach that floor; a third .NET runner would repeat the restore and
+build for no gain. Each additional shard repeats setup (about four minutes of restore and
+build for .NET, under a minute of install for the browser lane).
+
+**Fan-out helps only when runners are available.** While this change was prepared, the
+account had about 120 queued and 16 running workflow runs across roughly twenty open pull
+requests, and this change's own jobs waited in the queue. Under that saturation, run latency
+is set by total runner-seconds demanded, which this change raises slightly, not by any one
+run's critical path. A run that needs .NET now occupies up to five runners at once in these
+lanes instead of two, plus `build-workstation` and two short verdict jobs. If queueing
+dominates again, set a lane's `shard` matrix, its `K/N` suffix, its outputs and
+`--expected-shards` back to one together; the workflow contract tests keep them consistent.
+Rollback is reverting this change. The expected gate time is an estimate from one run until
+post-merge runs are measured, and `service-backed-integrations` (19 minutes: a five-minute
+build and one serial 11.5-minute `Meridian.Tests` step that also produces the certification
+receipt, coverage and single-database schema evidence) is unchanged and now the longest job
+in the workflow.
 
 ### Benchmark promotion criteria
 
