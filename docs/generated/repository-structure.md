@@ -1180,6 +1180,7 @@ Meridian-main
 │       │   ├── integration_evidence.py
 │       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
+│       │   ├── merge-dotnet-shard-summaries.py
 │       │   ├── publish-certified-release.py
 │       │   ├── release-envelope.py
 │       │   ├── release-preflight.py
@@ -1187,6 +1188,7 @@ Meridian-main
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
+│       │   ├── run-meridian-integrations.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
 │       │   ├── scan-commit-secrets.py
@@ -5282,6 +5284,7 @@ Meridian-main
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
+│   │   │   ├── PipelineWorkload.cs
 │   │   │   ├── PortfolioRecordsServiceRegistration.cs
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
@@ -9019,6 +9022,8 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke.test.mjs
 │   │   │   │   ├── generate-contracts.mjs
 │   │   │   │   ├── generate-contracts.test.mjs
+│   │   │   │   ├── merge-vitest-shards.mjs
+│   │   │   │   ├── merge-vitest-shards.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
@@ -9033,6 +9038,7 @@ Meridian-main
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   ├── vitest-evidence.test.mjs
+│   │   │   │   ├── vitest-files.mjs
 │   │   │   │   ├── workstation-governance-baseline.json
 │   │   │   │   ├── workstation-governance.mjs
 │   │   │   │   └── workstation-governance.test.mjs
@@ -13254,7 +13260,8 @@ Meridian-main
 │   │   │   │   ├── SimulationCommandsTests.cs
 │   │   │   │   ├── StatementImportCommandsTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
-│   │   │   │   └── ValidateConfigCommandTests.cs
+│   │   │   │   ├── ValidateConfigCommandTests.cs
+│   │   │   │   └── WalRepairCommandTests.cs
 │   │   │   ├── Composition
 │   │   │   │   ├── Startup
 │   │   │   │   │   ├── ModeRunners
@@ -14922,6 +14929,7 @@ Meridian-main
 │   │   │   ├── ArchiveCompressionCrashTests.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManagerDurabilityTests.cs
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
+│   │   │   ├── AtomicFileWriterDirectorySyncTests.cs
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
@@ -15138,8 +15146,10 @@ Meridian-main
 │   │   │   ├── WriteAheadLogChecksumTests.cs
 │   │   │   ├── WriteAheadLogChecksumVersionTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
+│   │   │   ├── WriteAheadLogDirectorySyncTests.cs
 │   │   │   ├── WriteAheadLogFlushFaultTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
+│   │   │   ├── WriteAheadLogOwnershipTests.cs
 │   │   │   ├── WriteAheadLogProcessTests.cs
 │   │   │   ├── WriteAheadLogTests.cs
 │   │   │   └── XlsxWorkbookWriterTests.cs
@@ -16273,6 +16283,7 @@ Meridian-main
 │   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
+│   │   ├── test_dotnet_ci_shards.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_fund_economics_golden_consistency.py

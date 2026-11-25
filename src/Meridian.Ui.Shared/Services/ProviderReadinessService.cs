@@ -318,7 +318,10 @@ public sealed class ProviderReadinessService
     {
         if (metrics is not null)
         {
-            return $"{(metrics.IsConnected ? "Connected" : "Disconnected")} with {metrics.ActiveSubscriptions} subscription(s), {metrics.ConnectionFailures} failure(s), {metrics.AverageLatencyMs:0.#} ms average latency.";
+            var latency = ProviderMetricsLookup.GetMeasuredAverageLatencyMs(metrics) is { } average
+                ? $"{average:0.##} ms average latency"
+                : "average latency unavailable";
+            return $"{(metrics.IsConnected ? "Connected" : "Disconnected")} with {metrics.ActiveSubscriptions} subscription(s), {metrics.ConnectionFailures} failure(s), {latency}.";
         }
 
         return connection is null

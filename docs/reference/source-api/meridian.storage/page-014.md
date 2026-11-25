@@ -6,6 +6,44 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ITierMigrationService
+
+Qualified name: <code>Meridian.Storage.Services.ITierMigrationService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:583](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L583).
+
+Interface for tier migration service.
+
+```csharp
+public interface ITierMigrationService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;MigrationResult&gt; MigrateAsync(string sourcePath, StorageTier targetTier, MigrationOptions options, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:585](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L585) |  |
+| <code>Task&lt;MigrationPlan&gt; PlanMigrationAsync(TimeSpan horizon, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:586](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L586) |  |
+| <code>StorageTier DetermineTargetTier(string filePath);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:587](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L587) |  |
+| <code>Task&lt;TierStatistics&gt; GetTierStatisticsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/TierMigrationService.cs:588](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L588) |  |
+
+## JobExecutionStatus
+
+Qualified name: <code>Meridian.Storage.Services.JobExecutionStatus</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1676](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1676).
+
+```csharp
+public sealed record JobExecutionStatus(string JobId, MaintenanceType Type, DateTimeOffset StartedAt, DateTimeOffset? CompletedAt, JobStatus Status, int Progress, string Message, IReadOnlyList<string> Errors)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public VerifiedOperationOutcome? Outcome { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1687](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1687) |  |
+| <code>public bool AdmissionRetained { get; init; }</code> | [src/Meridian.Storage/Services/MaintenanceScheduler.cs:1688](../../../../src/Meridian.Storage/Services/MaintenanceScheduler.cs#L1688) |  |
+
 ## JobPriority
 
 Qualified name: <code>Meridian.Storage.Services.JobPriority</code>. Kind: `enum`.
@@ -348,7 +386,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.MigrationOptions</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:591](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L591).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:592](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L592).
 
 ```csharp
 public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChecksum = true, bool ConvertFormat = false, int ParallelFiles = 4, Action<MigrationProgress>? OnProgress = null);
@@ -358,7 +396,7 @@ public sealed record MigrationOptions(bool DeleteSource = false, bool VerifyChec
 
 Qualified name: <code>Meridian.Storage.Services.MigrationPlan</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:616](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L616).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:617](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L617).
 
 ```csharp
 public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon, IReadOnlyList<PlannedMigrationAction> Actions, long EstimatedBytesToMigrate, TimeSpan EstimatedDuration);
@@ -368,7 +406,7 @@ public sealed record MigrationPlan(DateTimeOffset GeneratedAt, TimeSpan Horizon,
 
 Qualified name: <code>Meridian.Storage.Services.MigrationProgress</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:599](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L599).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:600](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L600).
 
 ```csharp
 public sealed record MigrationProgress(string CurrentFile, int FilesProcessed, int TotalFiles, long BytesProcessed);
@@ -388,7 +426,7 @@ public sealed record MigrationRecord(DateTime TimestampUtc, string SourceTier, s
 
 Qualified name: <code>Meridian.Storage.Services.MigrationResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:606](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L606).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:607](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L607).
 
 ```csharp
 public sealed record MigrationResult(bool Success, int FilesProcessed, int FilesFailed, long BytesProcessed, long BytesSaved, TimeSpan Duration, IReadOnlyList<string> Errors);
@@ -464,7 +502,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Storage.Services.PlannedMigrationAction</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/TierMigrationService.cs:624](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L624).
+Source: [src/Meridian.Storage/Services/TierMigrationService.cs:625](../../../../src/Meridian.Storage/Services/TierMigrationService.cs#L625).
 
 ```csharp
 public sealed record PlannedMigrationAction(string SourcePath, StorageTier TargetTier, string Reason, long SizeBytes, TimeSpan FileAge, long EstimatedSavings);
@@ -736,23 +774,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public double UsagePercentage =&gt; …;</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:389](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L389) |  |
 | <code>public long OverageBytes =&gt; …;</code> | [src/Meridian.Storage/Services/QuotaEnforcementService.cs:390](../../../../src/Meridian.Storage/Services/QuotaEnforcementService.cs#L390) |  |
-
-## RebuildOptions
-
-Qualified name: <code>Meridian.Storage.Services.RebuildOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/StorageSearchService.cs:865](../../../../src/Meridian.Storage/Services/StorageSearchService.cs#L865).
-
-```csharp
-public sealed record RebuildOptions(int ParallelIndexers = 4);
-```
-
-## RepairOptions
-
-Qualified name: <code>Meridian.Storage.Services.RepairOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:908](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L908).
-
-```csharp
-public sealed record RepairOptions(RepairStrategy Strategy, bool DryRun = false, bool BackupBeforeRepair = true, string? BackupPath = null, RepairScope Scope = RepairScope.All, string? ScopeTarget = null);
-```

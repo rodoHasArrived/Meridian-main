@@ -6,6 +6,34 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IntercompanyAgreementTimelineResult
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyAgreementTimelineResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs:5](../../../../src/Meridian.Application/FundStructure/IntercompanyAgreementTimeline.cs#L5).
+
+```csharp
+public sealed record IntercompanyAgreementTimelineResult(IntercompanyAgreementRevisionDto? Revision, IntercompanyAgreementStatusDto Status, DateOnly? TerminationCutoff);
+```
+
+## IntercompanyFeeAccrualPreviewService
+
+Qualified name: <code>Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:20](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L20).
+
+Turns a declared fixed management fee into an amount for a half-open window (rule IntercompanyFeeAccrualRules.RuleVersion). Pure: it reads no ledger and creates nothing.
+
+```csharp
+public sealed class IntercompanyFeeAccrualPreviewService(IBusinessDayCalendarSource calendars) : IIntercompanyFeeAccrualPreviewService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IntercompanyFeeAccrualPreviewDto Preview(IntercompanyFeeAccrualComputationInput input);</code> | [src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs:22](../../../../src/Meridian.Application/FundStructure/IntercompanyFeeAccrualPreviewService.cs#L22) |  |
+
 ## IntercompanyRateFixingRules
 
 Qualified name: <code>Meridian.Application.FundStructure.IntercompanyRateFixingRules</code>. Kind: `class`.
@@ -968,40 +996,3 @@ Enum declarations:
 | --- | --- | --- |
 | <code>LiveIngress = 0</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:23](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L23) | Live-ingress admission. Any unexpired committed entry (version 1 or version 2) suppresses the event as a duplicate. |
 | <code>WalRecovery = 1</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:30](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L30) | WAL recovery replay. Only durability-confirmed (version 2) entries suppress the replay. Legacy version-1 entries are untrusted here: the WAL record must be replayed to the sink, after which committing the reservation upgrades the identity to version 2. |
-
-## DedupReservation
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupReservation</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:68](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L68).
-
-A pending, memory-only claim on an event identity.
-
-```csharp
-public readonly record struct DedupReservation(string Key, long Token)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsHeld =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:71](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L71) | True when this value represents an actual held reservation. |
-
-## DedupReservationResult
-
-Qualified name: <code>Meridian.Application.Pipeline.DedupReservationResult</code>. Kind: `record struct`.
-
-Source: [src/Meridian.Application/Pipeline/DedupReservation.cs:85](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L85).
-
-Result of an IDedupStore.TryReserveAsync call.
-
-```csharp
-public readonly record struct DedupReservationResult(DedupReservationStatus Status, DedupReservation Reservation)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsReserved =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:88](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L88) | The caller holds the reservation and must commit or release it. |
-| <code>public bool IsSuppressed =&gt; …;</code> | [src/Meridian.Application/Pipeline/DedupReservation.cs:91](../../../../src/Meridian.Application/Pipeline/DedupReservation.cs#L91) | The event must be suppressed (committed duplicate or pending elsewhere). |

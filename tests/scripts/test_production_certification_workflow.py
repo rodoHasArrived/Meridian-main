@@ -50,8 +50,14 @@ class ProductionCertificationWorkflowTests(unittest.TestCase):
         })
         self.assertIn("image: postgres:17", self.integrations)
         self.assertIn('MERIDIAN_DISABLE_DOCKER_TESTS: "false"', self.integrations)
-        self.assertEqual(self.integrations.count('--collect:"XPlat Code Coverage"'), 3)
-        self.assertEqual(self.integrations.count("--settings tests/coverlet.runsettings"), 3)
+        # Direct Lending and Demo collect in their own steps. The Meridian suite collects in
+        # every process its runner starts, with the same settings file.
+        self.assertEqual(self.integrations.count('--collect:"XPlat Code Coverage"'), 2)
+        self.assertEqual(self.integrations.count("--settings tests/coverlet.runsettings"), 2)
+        self.assertIn("python build/scripts/ci/run-meridian-integrations.py", self.integrations)
+        runner = (REPO_ROOT / "build/scripts/ci/run-meridian-integrations.py").read_text(encoding="utf-8")
+        self.assertIn('"--collect", "XPlat Code Coverage", "--settings", settings,', runner)
+        self.assertIn('parser.add_argument("--settings", default="tests/coverlet.runsettings")', runner)
         self.assertIn('"Category=Integration&Category!=LiveProvider"', self.integrations)
         self.assertIn('"Category=Integration"', self.integrations)
 

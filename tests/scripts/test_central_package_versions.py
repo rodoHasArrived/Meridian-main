@@ -24,18 +24,10 @@ class CentralPackageVersionTests(unittest.TestCase):
         }
 
     def test_microsoft_extensions_pins_keep_reviewed_compatible_patch_overrides(self) -> None:
-        # Hosting remains on 10.0.7. These exact, reviewed overrides meet its
-        # minimum dependency versions without permitting unreviewed major/minor drift.
-        # Configuration/DI abstractions/logging abstractions/options move together:
-        # the 10.0.14 packages depend on the matching abstraction patch floor.
-        approved_patch_overrides = {
-            "Microsoft.Extensions.Configuration": "10.0.14",
-            "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.14",
-            "Microsoft.Extensions.Hosting.Abstractions": "10.0.14",
-            "Microsoft.Extensions.Caching.Memory": "10.0.14",
-            "Microsoft.Extensions.Logging.Abstractions": "10.0.14",
-            "Microsoft.Extensions.Options": "10.0.14",
-        }
+        # The Microsoft.Extensions family moves together on one reviewed patch line.
+        # Mixing patch levels makes Hosting's dependency floors restore as NU1109
+        # package downgrades, so every pinned member must share the same version.
+        approved_patch_overrides: dict[str, str] = {}
         packages = [
             "Microsoft.Extensions.Configuration",
             "Microsoft.Extensions.Configuration.Json",
@@ -56,10 +48,10 @@ class CentralPackageVersionTests(unittest.TestCase):
 
         for package in packages:
             with self.subTest(package=package):
-                expected = approved_patch_overrides.get(package, "10.0.7")
+                expected = approved_patch_overrides.get(package, "10.0.15")
                 self.assertEqual(self.versions[package], expected)
 
-        self.assertEqual(self.versions["Microsoft.Extensions.ObjectPool"], "10.0.14")
+        self.assertEqual(self.versions["Microsoft.Extensions.ObjectPool"], "10.0.15")
 
     def test_json_stack_pins_match_system_text_json_transitives(self) -> None:
         self.assertEqual(self.versions["System.Text.Json"], "10.0.7")
@@ -81,8 +73,8 @@ class CentralPackageVersionTests(unittest.TestCase):
                 self.assertNotEqual(self.versions[package], "2.5.17677")
 
     def test_aspnet_test_host_has_central_pin(self) -> None:
-        self.assertEqual(self.versions["Microsoft.AspNetCore.Mvc.Testing"], "10.0.14")
-        self.assertEqual(self.versions["Microsoft.AspNetCore.TestHost"], "10.0.14")
+        self.assertEqual(self.versions["Microsoft.AspNetCore.Mvc.Testing"], "10.0.15")
+        self.assertEqual(self.versions["Microsoft.AspNetCore.TestHost"], "10.0.15")
 
     def test_security_transitive_pins_cover_current_audit_fixes(self) -> None:
         self.assertEqual(self.properties["CentralPackageTransitivePinningEnabled"], "true")

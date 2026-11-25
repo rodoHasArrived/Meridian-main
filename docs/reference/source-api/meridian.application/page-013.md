@@ -6,6 +6,55 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## WizardContext
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardContext</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardContext.cs:11](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L11).
+
+Mutable bag of state threaded through all wizard steps. Each step reads from it, updates it, and the coordinator persists it across calls.
+
+```csharp
+public sealed class WizardContext
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;AutoConfigurationService.DetectedProvider&gt; DetectedProviders { get; set; } = Array.Empty&lt;AutoConfigurationService.DetectedProvider&gt;();</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:16](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L16) | Providers detected from environment variables. |
+| <code>public UseCase? SelectedUseCase { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:22](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L22) | Use-case chosen by the user in SelectUseCaseStep. |
+| <code>public DataSourceSelection? DataSource { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:25](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L25) | Data-source selection assembled by ConfigureDataSourceStep. |
+| <code>public SymbolConfig[]? Symbols { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:28](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L28) | Symbol list assembled by ConfigureSymbolsStep. |
+| <code>public StorageConfig? Storage { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:31](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L31) | Storage config assembled by ConfigureStorageStep. |
+| <code>public BackfillConfig? Backfill { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:34](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L34) | Backfill config assembled by ConfigureBackfillStep. |
+| <code>public AppConfig? FinalConfig { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:39](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L39) | The assembled application config, available after ReviewConfigurationStep. |
+| <code>public string? SavedConfigPath { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:42](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L42) | File path where configuration was saved by SaveConfigurationStep. |
+| <code>public Dictionary&lt;string, object&gt; Metadata { get; } = new (StringComparer.OrdinalIgnoreCase);</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:50](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L50) | Open bag for steps to exchange information that does not fit a typed property. Keys are step-specific strings; values must be serialisable. |
+| <code>public bool IsCancelled { get; set; }</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:55](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L55) | When true the coordinator stops execution immediately. |
+| <code>public T? GetMeta&lt;T&gt;(string key) =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:60](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L60) | Gets a typed metadata value set by a previous step, or the default if not present. |
+| <code>public void SetMeta&lt;T&gt;(string key, T value) where T : notnull =&gt; …;</code> | [src/Meridian.Application/Wizard/Core/WizardContext.cs:64](../../../../src/Meridian.Application/Wizard/Core/WizardContext.cs#L64) | Stores a typed metadata value. |
+
+## WizardCoordinator
+
+Qualified name: <code>Meridian.Application.Wizard.Core.WizardCoordinator</code>. Kind: `class`.
+
+Source: [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:12](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L12).
+
+Orchestrates execution of a wizard step graph. Steps are registered via AddStep; transitions are declared via AddTransition. Call RunAsync to execute the graph from the entry step.
+
+```csharp
+public sealed class WizardCoordinator
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public WizardCoordinator AddStep(IWizardStep step);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:19](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L19) | Registers a step implementation. |
+| <code>public WizardCoordinator AddTransition(WizardStepId from, WizardStepId to, Func&lt;WizardContext, bool&gt;? condition = null);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:26](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L26) | Adds a directed transition between two steps. |
+| <code>public async Task&lt;WizardContext&gt; RunAsync(WizardContext context, WizardStepId entryStep, CancellationToken ct = default);</code> | [src/Meridian.Application/Wizard/Core/WizardCoordinator.cs:37](../../../../src/Meridian.Application/Wizard/Core/WizardCoordinator.cs#L37) | Runs the step graph starting at entryStep and returns the final WizardContext after all steps have been executed. |
+
 ## WizardStepId
 
 Qualified name: <code>Meridian.Application.Wizard.Core.WizardStepId</code>. Kind: `enum`.

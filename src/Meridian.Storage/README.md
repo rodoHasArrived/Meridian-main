@@ -11,6 +11,9 @@ last_reviewed: 2026-11-20
 
 # src/Meridian.Storage
 
+The backfill status store exposes a legacy summary only for a raw snapshot written without a
+provenance receipt. Reads of retained results continue to enforce tenant visibility.
+
 The `Meridian.Storage` assembly owns storage primitives and does not depend on Ledger or Reporting.
 Business adapters whose source remains under `Ledger/`, `Reporting/`, Security Master and other
 business folders compile through linked items in `Meridian.Storage.Accounting`. The workflow
@@ -342,23 +345,24 @@ the truncate lock, and every segment listing sorts ordinally. A WAL directory ha
 `WalDirectoryInUseException` when another process, or another instance in the same process, holds
 it; constructing a WAL takes no lock, and a crashed owner releases with its handles.
 `WalOptions.LegacySegmentDirectory` moves `*.wal` segments left in an older shared directory into
-the owned one, under that directory's lock, before recovery.
+the owned one, under that directory's lock, before recovery. `AtomicFileWriter.AppendAsync`
+serializes appends to one path within the process, so concurrent copy-on-write appends keep
+every line.
 
 `AtomicFileWriter.SyncDirectoryAsync` is best effort for operations that have already committed:
 a failed directory open or fsync is retried once for `EINTR`/`EMFILE`/`ENFILE`, then logged at Error
-and counted in `mdc_storage_directory_fsync_failures_total` (label `operation`), but not thrown. `SyncDirectoryOrThrowAsync` throws `DirectorySyncException` instead and guards steps
-that acknowledge data or delete the only other copy: WAL segment creation, archiving before
-truncation and legacy adoption, `JsonlStorageSink` flushes of new files, dedup-ledger commits, tier
-migration and JSONL archiving before deleting the source. Maintenance also uses it before mutating a
-source: each compression or repair backup, the published or resumed compression archive and its
-checksum sidecar before the source is deleted, and a repair's `.corrupt-lines` quarantine before
-the rewrite. Package import syncs moved and identical destination files before reporting success,
-and backfill receipts sync before `WriteAsync` records the run. `JsonlAppendWriter` and ETL
-audit/reject appends stay best effort, because a retry would append the lines twice.
-Filesystems that cannot fsync a directory
-at all (`EINVAL`, `EBADF`, `ENOTSUP`) are counted as `fsync_unsupported` and never thrown. `AtomicFileWriter.AppendAsync`
-serializes appends to one path within the process, so concurrent copy-on-write appends keep
-every line.
+and counted in `mdc_storage_directory_fsync_failures_total` (label `operation`), but not thrown.
+`SyncDirectoryOrThrowAsync` throws `DirectorySyncException` instead and guards steps that
+acknowledge data or delete the only other copy: WAL segment creation, archiving before truncation
+and legacy adoption, `JsonlStorageSink` flushes of new files, dedup-ledger commits, tier migration
+and JSONL archiving before deleting the source. Maintenance also uses it before mutating a source:
+each compression or repair backup, the published or resumed compression archive and its checksum
+sidecar before the source is deleted, and a repair's `.corrupt-lines` quarantine before the
+rewrite. Package import syncs moved and identical destination files before reporting success, and
+backfill receipts sync before `WriteAsync` records the run. `JsonlAppendWriter` and ETL
+audit/reject appends stay best effort, because a retry would append the lines twice. Filesystems
+that cannot fsync a directory at all (`EINVAL`, `EBADF`, `ENOTSUP`) are counted as
+`fsync_unsupported` and never thrown.
 
 `JsonlAppendWriter` appends lines to an append-only JSONL log in place and fsyncs them, truncating a
 torn final line first; `JsonlStorageSink` uses the same torn-tail repair for its day files. Use it

@@ -118,17 +118,29 @@ public sealed class BackfillStatusStore
 
     public BackfillResult? TryRead()
     {
+        var result = TryReadSnapshot();
+        if (result?.ProviderProvenance is not { } receipt)
+            return result;
+
+        var retained = TryReadRetainedResult(receipt.ReceiptId);
+        return result with { ProviderProvenance = retained?.Receipt, ProvenanceAccess = retained?.Access };
+    }
+
+    /// <summary>
+    /// Reads the last pre-provenance summary. A snapshot carrying a receipt belongs to the
+    /// scoped retained-results path, even if that receipt is unavailable.
+    /// </summary>
+    public BackfillResult? TryReadLegacySummary() =>
+        TryReadSnapshot() is { ProviderProvenance: null } legacy ? legacy : null;
+
+    private BackfillResult? TryReadSnapshot()
+    {
         try
         {
             if (!File.Exists(_path))
                 return null;
             var json = File.ReadAllText(_path);
-            var result = JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.BackfillResult);
-            if (result?.ProviderProvenance is not { } receipt)
-                return result;
-
-            var retained = TryReadRetainedResult(receipt.ReceiptId);
-            return result with { ProviderProvenance = retained?.Receipt, ProvenanceAccess = retained?.Access };
+            return JsonSerializer.Deserialize(json, BackfillStatusStoreJsonContext.Default.BackfillResult);
         }
         catch (Exception ex) when (ex is JsonException or IOException)
         {
