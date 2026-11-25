@@ -10,7 +10,7 @@ namespace Meridian.Application.ProviderRouting;
 /// </summary>
 public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore, IProviderCredentialStore credentialStore,
     ProviderCredentialOwnershipPolicy? ownershipPolicy = null)
-    : IProviderCredentialStore, ILegacyProviderCredentialImporter
+    : IProviderCredentialStore
 {
     public string VaultPath => credentialStore.VaultPath;
 
@@ -35,24 +35,6 @@ public sealed class LegacyProviderRuntimeCredentialStore(ConfigStore configStore
 
     public Task RecordVerificationAsync(ProviderCredentialVerificationUpdate update, CancellationToken ct = default)
         => RunAsync(update.ProviderId, () => credentialStore.RecordVerificationAsync(update, ct), ct);
-
-    public async Task ImportLegacyAsync(IReadOnlyList<ProviderCredentialSaveRequest> requests, CancellationToken ct = default)
-    {
-        ArgumentNullException.ThrowIfNull(requests);
-        var snapshot = requests.ToArray();
-        foreach (var request in snapshot)
-            ArgumentNullException.ThrowIfNull(request);
-
-        using var lease = await configStore.AcquireWriteLeaseAsync(ct).ConfigureAwait(false);
-        var config = configStore.LoadRequired();
-        // The sidecar may be erased after this call succeeds. Validate every provider before
-        // passing the complete snapshot to the atomic importer, under the same ownership lease.
-        foreach (var request in snapshot)
-            RequireLegacy(config, request.ProviderId);
-        var importer = credentialStore as ILegacyProviderCredentialImporter
-            ?? throw new InvalidOperationException("Credential store cannot atomically import legacy provider credentials.");
-        await importer.ImportLegacyAsync(snapshot, ct).ConfigureAwait(false);
-    }
 
     private async Task<T> RunAsync<T>(string providerId, Func<Task<T>> action, CancellationToken ct)
     {

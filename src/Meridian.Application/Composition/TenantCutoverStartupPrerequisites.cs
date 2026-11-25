@@ -13,7 +13,7 @@ public interface ITenantCutoverStartupPrerequisites
 }
 
 /// <summary>
-/// Allows independently composed hosts to run the relevant schema migrations and legacy imports
+/// Allows independently composed hosts to run the relevant schema migrations
 /// before tenant inspection without starting unrelated background services.
 /// </summary>
 public sealed class TenantCutoverStartupPrerequisites(

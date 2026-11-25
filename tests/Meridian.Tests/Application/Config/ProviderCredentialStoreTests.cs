@@ -67,7 +67,7 @@ public sealed class ProviderCredentialStoreTests : IDisposable
     {
         using var fallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "false");
         var store = new FileProviderCredentialStore(_root);
-        await WriteLegacyNasdaqVaultAsync(store, includeCredential: true);
+        await WriteLegacyNasdaqVaultAsync(store);
         var originalVault = await File.ReadAllTextAsync(store.VaultPath);
 
         var read = await store.ReadForProviderAsync("nasdaq");
@@ -84,20 +84,6 @@ public sealed class ProviderCredentialStoreTests : IDisposable
 
         await store.DeleteAsync("nasdaqdatalink");
         (await store.ReadForProviderAsync("nasdaq")).Should().BeNull();
-    }
-
-    [Fact]
-    public async Task LegacyVaultAlias_DeletionMarkerPreventsCredentialResurrection()
-    {
-        using var fallback = new EnvironmentScope("MDC_PROVIDER_ALLOW_ENV_FALLBACK", "false");
-        var store = new FileProviderCredentialStore(_root);
-        await WriteLegacyNasdaqVaultAsync(store, includeCredential: false);
-
-        await store.ImportLegacyAsync([
-            new ProviderCredentialSaveRequest("nasdaq", new Dictionary<string, string?> { ["ApiKey"] = "stale-sidecar-key" })
-        ]);
-
-        (await store.ReadForProviderAsync("nasdaqdatalink")).Should().BeNull();
     }
 
     [Fact]
@@ -274,21 +260,18 @@ public sealed class ProviderCredentialStoreTests : IDisposable
             }
         };
 
-    private static async Task WriteLegacyNasdaqVaultAsync(FileProviderCredentialStore store, bool includeCredential)
+    private static async Task WriteLegacyNasdaqVaultAsync(FileProviderCredentialStore store)
     {
         // Build an encrypted v1 fixture using the retained on-disk identity. This exercises the
         // public vault read path without teaching the current save API to emit legacy aliases.
         var records = new Dictionary<string, object>();
-        if (includeCredential)
+        records["nasdaqdatalink"] = new
         {
-            records["nasdaqdatalink"] = new
-            {
-                providerId = "nasdaqdatalink",
-                fields = new Dictionary<string, string> { ["ApiKey"] = "legacy-test-key" },
-                savedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
-                updatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
-            };
-        }
+            providerId = "nasdaqdatalink",
+            fields = new Dictionary<string, string> { ["ApiKey"] = "legacy-test-key" },
+            savedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero),
+            updatedAt = new DateTimeOffset(2026, 1, 1, 0, 0, 0, TimeSpan.Zero)
+        };
 
         await WriteEncryptedFixtureAsync(store, records, scoped: false);
     }
