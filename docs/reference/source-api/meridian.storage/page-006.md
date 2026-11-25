@@ -6,6 +6,62 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## IControlledCloseAuthorizationStore
+
+Qualified name: <code>Meridian.Storage.Ledger.IControlledCloseAuthorizationStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:7](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L7).
+
+```csharp
+public interface IControlledCloseAuthorizationStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;ControlledCloseAuthorizationDto&gt; SaveCloseAuthorizationAsync(ControlledCloseAuthorizationDto authorization, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:9](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L9) |  |
+| <code>Task&lt;ControlledCloseAuthorizationDto?&gt; GetCloseAuthorizationAsync(Guid authorizationId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:10](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L10) |  |
+| <code>Task&lt;ControlledCloseAuthorizationDto?&gt; FindCloseAuthorizationAsync(Guid bookId, Guid journalId, int draftVersion, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs:11](../../../../src/Meridian.Storage/Ledger/IControlledCloseAuthorizationStore.cs#L11) |  |
+
+## IFiscalYearCloseReceiptStore
+
+Qualified name: <code>Meridian.Storage.Ledger.IFiscalYearCloseReceiptStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:6](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L6).
+
+Projects and retains the authorized fiscal close of one continuous ledger book.
+
+```csharp
+public interface IFiscalYearCloseReceiptStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;FiscalYearClosePlanDto&gt; GetFiscalYearClosePlanAsync(Guid ledgerBookId, int fiscalYear, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:8](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L8) |  |
+| <code>Task&lt;FiscalYearCloseReceiptDto?&gt; GetFiscalYearCloseReceiptAsync(Guid ledgerBookId, int fiscalYear, Guid? receiptId = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:11](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L11) |  |
+| <code>Task&lt;FiscalYearCloseReceiptDto&gt; FinalizeFiscalYearCloseAsync(Guid ledgerBookId, int fiscalYear, FinalizeFiscalYearCloseRequestDto request, string actor, string controllerRole, string tenantId, string companyId, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs:14](../../../../src/Meridian.Storage/Ledger/IFiscalYearCloseReceiptStore.cs#L14) |  |
+
+## IGovernedLedgerPostingTarget
+
+Qualified name: <code>Meridian.Storage.Ledger.IGovernedLedgerPostingTarget</code>. Kind: `interface`.
+
+Source: [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:13](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L13).
+
+Durable posting seam used after a governed workflow has approved a journal write. The workflow remains responsible for validation and approval; this target owns the idempotent handoff to the authoritative journal store.
+
+```csharp
+public interface IGovernedLedgerPostingTarget
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;GovernedLedgerPostingResult&gt; PostAsync(LedgerJournalEntryWrite write, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs:15](../../../../src/Meridian.Storage/Ledger/GovernedLedgerPostingTarget.cs#L15) |  |
+
 ## IIntercompanyAgreementBatchPostingAuthority
 
 Qualified name: <code>Meridian.Storage.Ledger.IIntercompanyAgreementBatchPostingAuthority</code>. Kind: `interface`.
@@ -856,66 +912,3 @@ Declared public members:
 | <code>public static Task&lt;Meridian.Ledger.Ledger&gt; HydrateLedgerAsOfAsync(this ILedgerJournalStore store, Guid ledgerBookId, DateTimeOffset asOfUtc, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:23](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L23) |  |
 | <code>public static Task&lt;Meridian.Ledger.Ledger&gt; HydrateLedgerPeriodAsync(this ILedgerJournalStore store, Guid ledgerBookId, Guid periodId, LedgerLineDimensionSet? lineDimensions = null, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:45](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L45) |  |
 | <code>public static async Task&lt;Meridian.Ledger.Ledger&gt; HydrateFundLedgerAsOfAsync(this ILedgerJournalStore store, string fundProfileId, DateTimeOffset asOfUtc, AccountingBasisKindDto? accountingBasis = AccountingBasisKindDto.Primary, CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs:77](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreHydrationExtensions.cs#L77) | Rebuilds one fund-wide ledger projection from every durable ledger book on the requested accounting basis. Journal records retain durable global-sequence order when timestamps are equal, so statements, trial balance, and NAV share replay semantics. |
-
-## LedgerJournalStoreOptions
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalStoreOptions</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:4](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L4).
-
-Configuration for the Postgres-backed ledger journal store.
-
-```csharp
-public sealed class LedgerJournalStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ConnectionString { get; set; } = string.Empty;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:7](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L7) | Postgres connection string used for journal and accounting-period persistence. |
-| <code>public string SchemaName { get; set; } = &quot;ledger&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:10](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L10) | Database schema that owns the ledger tables. |
-| <code>public string PrivateCapitalBankingSchema { get; set; } = &quot;banking&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L13) | Same-database banking authority required for atomic capital-call funding. |
-| <code>public bool EnablePeriodLocking { get; set; } = true;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:20](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L20) | Enables explicit row locking when period records are updated. Serializable transactions still protect writes; this flag controls whether the store also issues FOR UPDATE before applying the optimistic-version guard. |
-| <code>public bool RequireGovernedPostingCommand { get; set; }</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:27](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L27) | Rejects every append that does not carry the typed accounting posting command and every standalone tax-lot save. Production lot mutations must use the atomic journal/lot boundary. Supported production composition enables this; isolated compatibility tests may leave it disabled. |
-| <code>public bool RequireExpectedVersion { get; set; }</code> | [src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs:33](../../../../src/Meridian.Storage/Ledger/LedgerJournalStoreOptions.cs#L33) | Requires the typed posting command to carry the accounting-period version observed by the caller. The store compares it while holding the same transaction/row lock as the append. |
-
-## LedgerJournalStream
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerJournalStream</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:16](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L16).
-
-Streams every entry posted to a global::Meridian.Ledger.Ledger into an ILedgerJournalLog in posting order. Posting stays synchronous: entries are handed to a bounded channel and written by one background writer, so a run is not slowed by an fsync per entry until the channel fills, and then posting waits for the writer to catch up.
-
-```csharp
-public sealed class LedgerJournalStream : IAsyncDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerJournalStream Attach(global::Meridian.Ledger.Ledger ledger, ILedgerJournalLog log, int capacity = 4096);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:41](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L41) | Starts streaming ledger into log. The ledger must be empty so the log holds its complete history. |
-| <code>public ILedgerJournalLog Log =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:55](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L55) | The journal log entries are written to. |
-| <code>public async Task CompleteAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:88](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L88) | Waits until every posted entry is durable, then stops accepting entries. |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Ledger/LedgerJournalStream.cs:99](../../../../src/Meridian.Storage/Ledger/LedgerJournalStream.cs#L99) | Stops the writer. Entries already written stay durable; entries still queued are not written, which matches a crash at the same point. Call CompleteAsync first for a clean finish. |
-
-## LedgerMigrationRunner
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerMigrationRunner</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:8](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L8).
-
-Applies the PostgreSQL migrations used by the ledger journal store.
-
-```csharp
-public sealed class LedgerMigrationRunner
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerMigrationRunner(LedgerJournalStoreOptions options);</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L12) |  |
-| <code>public Task EnsureMigratedAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs:36](../../../../src/Meridian.Storage/Ledger/LedgerMigrationRunner.cs#L36) |  |
