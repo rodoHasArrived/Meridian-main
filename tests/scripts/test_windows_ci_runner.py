@@ -116,6 +116,19 @@ class WindowsCiRunnerTests(unittest.TestCase):
             with patch.object(module.platform, "system", return_value="Windows"), patch.object(module.subprocess, "run", side_effect=command), patch.object(module.runner, "run_tests", side_effect=test_slices):
                 self.assertEqual(module.main(), 1)
 
+    def test_build_is_serial_by_default_and_parallel_only_on_request(self):
+        for extra, expected, absent in (([], "/m:1", "/m"), (["--parallel-build"], "/m", "/m:1")):
+            with self.subTest(extra=extra), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as tmp, \
+                    patch.object(sys, "argv", ["runner", "--dry-run", "--build-only", "--results-dir", tmp, *extra]), \
+                    redirect_stdout(io.StringIO()) as output:
+                self.assertEqual(module.main(), 0)
+                for line in output.getvalue().splitlines()[:2]:
+                    arguments = line.split()
+                    self.assertIn(expected, arguments)
+                    self.assertNotIn(absent, arguments)
+                    self.assertIn("/nr:false", arguments)
+                    self.assertIn("/p:UseSharedCompilation=false", arguments)
+
     def test_unicode_build_failure_tail_on_legacy_console_preserves_failure_and_utf8_log(self):
         failure = "Build failed: expected \u2193; caf\u00e9\n"
         calls = []
