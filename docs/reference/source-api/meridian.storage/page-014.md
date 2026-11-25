@@ -463,7 +463,7 @@ public sealed record OperationalState(bool IsRealTimeCollectionActive, TradingSe
 
 Qualified name: <code>Meridian.Storage.Services.OrphanedFile</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:977](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L977).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:979](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L979).
 
 ```csharp
 public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, DateTime LastModified);
@@ -473,7 +473,7 @@ public sealed record OrphanedFile(string Path, string Reason, long SizeBytes, Da
 
 Qualified name: <code>Meridian.Storage.Services.OrphanReport</code>. Kind: `record`.
 
-Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:971](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L971).
+Source: [src/Meridian.Storage/Services/FileMaintenanceService.cs:973](../../../../src/Meridian.Storage/Services/FileMaintenanceService.cs#L973).
 
 ```csharp
 public sealed record OrphanReport(DateTime GeneratedAt, IReadOnlyList<OrphanedFile> OrphanedFiles, long TotalOrphanedBytes);
