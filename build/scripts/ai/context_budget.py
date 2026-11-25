@@ -322,6 +322,10 @@ def _slice_code(lines: list[str], terms: list[str]) -> tuple[int, int]:
     return 1, min(len(lines), MAX_CODE_LINES)
 
 
+# Installed third-party dependencies never make useful context candidates.
+_EXPANSION_EXCLUDED_DIRS = frozenset({"node_modules"})
+
+
 def _expand_candidate_path(root: Path, relative_path: str, *, limit: int = 2) -> list[str]:
     normalized = _normalize_rel_path(relative_path)
     absolute = root / normalized
@@ -340,6 +344,8 @@ def _expand_candidate_path(root: Path, relative_path: str, *, limit: int = 2) ->
     suffixes = {".cs", ".fs", ".py", ".md", ".json", ".xaml", ".ts", ".tsx"}
     for file_path in sorted(absolute.rglob("*")):
         if not file_path.is_file() or file_path.suffix.lower() not in suffixes:
+            continue
+        if _EXPANSION_EXCLUDED_DIRS.intersection(file_path.relative_to(absolute).parts):
             continue
         collected.append(file_path)
         if len(collected) >= max(1, limit) + len(preferred):

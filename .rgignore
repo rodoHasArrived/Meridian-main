@@ -1,3 +1,8 @@
 # Archived material is intentionally excluded from default ripgrep/search results.
 # Include with: rg --no-ignore -g 'archive/**' <pattern>
 archive/**
+
+# Installed npm dependencies (e.g. src/Meridian.Ui/dashboard/node_modules) are third-party noise.
+# Excluded here as well as in .gitignore so searches with --no-ignore-vcs or outside a git
+# checkout still skip them. Include with: rg --no-ignore <pattern>
+**/node_modules/
