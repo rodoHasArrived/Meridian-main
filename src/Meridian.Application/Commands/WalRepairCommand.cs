@@ -1,4 +1,3 @@
-using Meridian.Core.Config;
 using Meridian.Platform.Results;
 using Meridian.Storage.Archival;
 using Serilog;
@@ -7,17 +6,27 @@ namespace Meridian.Application.Commands;
 
 /// <summary>
 /// Handles the --wal-repair CLI command.
-/// Scans all WAL files for corrupted records, rewrites valid records only,
-/// and optionally dumps corrupted record sequences for manual inspection.
+/// Scans all WAL files for corrupted records and rewrites affected segments with only their
+/// valid records, after copying each original into the WAL's quarantine folder.
 /// </summary>
+/// <remarks>
+/// A repair needs the WAL directory to itself: it refuses to run while a Meridian process is
+/// writing there. <c>--dry-run</c> runs the same checksum-validating scan without modifying
+/// anything and may be used beside a running process.
+/// </remarks>
 internal sealed class WalRepairCommand : ICliCommand
 {
-    private readonly AppConfig _cfg;
+    private const int MaxLocationsShown = 20;
+
+    private readonly string _walDirectory;
     private readonly ILogger _log;
 
-    public WalRepairCommand(AppConfig cfg, ILogger log)
+    /// <param name="dataRoot">The resolved data root the pipeline writes under.</param>
+    /// <param name="log">Logger.</param>
+    public WalRepairCommand(string dataRoot, ILogger log)
     {
-        _cfg = cfg;
+        ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
+        _walDirectory = Path.Combine(dataRoot, "_wal");
         _log = log;
     }
 
@@ -27,7 +36,7 @@ internal sealed class WalRepairCommand : ICliCommand
 
     public async Task<CliResult> ExecuteAsync(string[] args, CancellationToken ct = default)
     {
-        var walDir = Path.Combine(_cfg.DataRoot, "_wal");
+        var walDir = _walDirectory;
 
         if (!Directory.Exists(walDir))
         {
@@ -62,165 +71,147 @@ internal sealed class WalRepairCommand : ICliCommand
         Console.WriteLine($"  Found {walFiles.Length} WAL file(s).");
         Console.WriteLine();
 
-        if (dryRun)
-        {
-            // In dry-run mode, just scan and report without rewriting files
-            return await RunDryRepairAsync(walDir, walFiles, outputPath, ct);
-        }
-
         var walOptions = new WalOptions
         {
             SyncMode = WalSyncMode.NoSync,
             CorruptionMode = WalCorruptionMode.Alert
         };
 
+        // Deliberately never initialized: initializing would start a new segment. RepairAsync
+        // takes the directory's single-writer lock itself for a real repair.
         await using var wal = new WriteAheadLog(walDir, walOptions);
-        long corruptedDetected = 0;
-        wal.CorruptionDetected += count => corruptedDetected += count;
 
-        _log.Information("Starting WAL repair in {WalDir}", walDir);
+        _log.Information("Starting WAL repair in {WalDir} (dry run: {DryRun})", walDir, dryRun);
 
-        var result = await wal.RepairAsync(ct);
+        WalRepairResult result;
+        try
+        {
+            result = await wal.RepairAsync(dryRun, ct);
+        }
+        catch (WalDirectoryInUseException)
+        {
+            Console.WriteLine("  ERROR: the WAL directory is in use by a running Meridian process.");
+            Console.WriteLine("  Stop that process before repairing, or use --dry-run to scan without changes.");
+            Console.WriteLine("  No files were modified.");
+            Console.WriteLine();
+            return CliResult.Fail(ErrorCode.StorageError);
+        }
 
-        Console.WriteLine("  Repair Results");
+        Console.WriteLine(dryRun ? "  Dry-Run Scan Results" : "  Repair Results");
         Console.WriteLine("  " + new string('-', 50));
         Console.WriteLine($"  Total records scanned:   {result.TotalRecords:N0}");
-        Console.WriteLine($"  Valid records kept:      {result.ValidRecords:N0}");
+        Console.WriteLine($"  Valid records:           {result.ValidRecords:N0}");
         Console.WriteLine($"  Corrupted records found: {result.CorruptedRecords:N0}");
-        Console.WriteLine($"  WAL files repaired:      {result.RepairedFiles}");
+        Console.WriteLine($"  Incomplete final writes: {result.IncompleteTailRecords:N0}");
+        if (!dryRun)
+            Console.WriteLine($"  WAL files repaired:      {result.RepairedFiles}");
         Console.WriteLine();
+
+        foreach (var finding in result.Findings.Where(f => f.Kind == WalRepairFindingKind.InvalidHeader))
+            Console.WriteLine($"  WARNING: {finding.File} has an invalid or unsupported header and was not scanned.");
+
+        if (result.IncompleteTailRecords > 0)
+        {
+            Console.WriteLine("  Incomplete final writes are interrupted, unacknowledged appends.");
+            Console.WriteLine("  Recovery ignores them; they are not corruption and were left in place.");
+            Console.WriteLine();
+        }
 
         if (result.CorruptedRecords > 0)
         {
-            Console.WriteLine($"  WARNING: {result.CorruptedRecords} corrupted record(s) were discarded.");
-            Console.WriteLine("  These records could not be recovered and have been permanently removed.");
+            Console.WriteLine("  Corrupted locations:");
+            var corrupt = result.Findings.Where(f => f.Kind == WalRepairFindingKind.CorruptRecord).ToList();
+            foreach (var finding in corrupt.Take(MaxLocationsShown))
+                Console.WriteLine("    " + Describe(finding));
+            if (result.CorruptedRecords > MaxLocationsShown)
+                Console.WriteLine($"    ... and {result.CorruptedRecords - MaxLocationsShown} more");
             Console.WriteLine();
 
-            if (!string.IsNullOrWhiteSpace(outputPath))
+            if (dryRun)
             {
-                await WriteRepairReportAsync(outputPath, result, ct);
-                Console.WriteLine($"  Repair report written to: {outputPath}");
-                Console.WriteLine();
+                Console.WriteLine("  Run without --dry-run (with Meridian stopped) to perform the repair.");
+            }
+            else if (result.RepairedFiles > 0)
+            {
+                Console.WriteLine($"  WARNING: {result.CorruptedRecords} corrupted record(s) were removed from the WAL.");
+                Console.WriteLine("  The original segment(s) were kept for inspection:");
+                foreach (var path in result.QuarantinedFiles)
+                    Console.WriteLine($"    {path}");
             }
             else
             {
-                Console.WriteLine("  Tip: use --output <path> to save a detailed repair report.");
-                Console.WriteLine();
+                Console.WriteLine("  The affected segment was the most recently written one and was not rewritten.");
             }
+
+            Console.WriteLine();
         }
         else
         {
-            Console.WriteLine("  All WAL records are valid. No corruption found.");
+            Console.WriteLine("  All complete WAL records are valid. No corruption found.");
             Console.WriteLine();
         }
 
-        return result.CorruptedRecords > 0
+        if (!string.IsNullOrWhiteSpace(outputPath))
+        {
+            await WriteRepairReportAsync(outputPath, result, dryRun, ct);
+            Console.WriteLine($"  {(dryRun ? "Dry-run" : "Repair")} report written to: {outputPath}");
+            Console.WriteLine();
+        }
+        else if (result.CorruptedRecords > 0)
+        {
+            Console.WriteLine("  Tip: use --output <path> to save a detailed report.");
+            Console.WriteLine();
+        }
+
+        // A dry run is a diagnostic and reports through its output; only a real repair that
+        // found damaged records signals corruption through the exit code.
+        return !dryRun && result.CorruptedRecords > 0
             ? CliResult.Fail(ErrorCode.DataCorruption)
             : CliResult.Ok();
     }
 
-    private static async Task<CliResult> RunDryRepairAsync(
-        string walDir,
-        string[] walFiles,
-        string? outputPath,
-        CancellationToken ct)
+    private static string Describe(WalRepairFinding finding)
     {
-        int totalRecords = 0;
-        int corruptedRecords = 0;
-        var corruptedInfo = new List<string>();
-
-        foreach (var walFile in walFiles.OrderBy(f => f))
+        var what = finding.Kind switch
         {
-            ct.ThrowIfCancellationRequested();
-
-            await using var stream = new FileStream(
-                walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-            using var reader = new StreamReader(stream);
-
-            var header = await reader.ReadLineAsync(ct);
-            if (header == null || !header.StartsWith("MDCWAL01", StringComparison.Ordinal))
-            {
-                Console.WriteLine($"  WARNING: {Path.GetFileName(walFile)} has an invalid header.");
-                continue;
-            }
-
-            int lineNum = 1;
-            while (!reader.EndOfStream && !ct.IsCancellationRequested)
-            {
-                var line = await reader.ReadLineAsync(ct);
-                lineNum++;
-                if (string.IsNullOrWhiteSpace(line))
-                    continue;
-
-                totalRecords++;
-                var parts = line.Split('|', 5);
-                if (parts.Length < 5 ||
-                    !long.TryParse(parts[0], out _) ||
-                    !DateTime.TryParse(parts[1], System.Globalization.CultureInfo.InvariantCulture,
-                        System.Globalization.DateTimeStyles.RoundtripKind, out _))
-                {
-                    corruptedRecords++;
-                    corruptedInfo.Add($"    {Path.GetFileName(walFile)}:{lineNum} — malformed record");
-                    continue;
-                }
-
-                // We don't re-validate checksums in dry-run; we just count structural parse errors
-                // for a quick diagnostic. A full repair is needed to validate checksums.
-            }
-        }
-
-        Console.WriteLine("  Dry-Run Scan Results");
-        Console.WriteLine("  " + new string('-', 50));
-        Console.WriteLine($"  Total records scanned:      {totalRecords:N0}");
-        Console.WriteLine($"  Structurally corrupt lines: {corruptedRecords:N0}");
-        Console.WriteLine();
-
-        if (corruptedRecords > 0)
-        {
-            Console.WriteLine("  Corrupted locations:");
-            foreach (var info in corruptedInfo.Take(20))
-                Console.WriteLine(info);
-            if (corruptedInfo.Count > 20)
-                Console.WriteLine($"    ... and {corruptedInfo.Count - 20} more");
-            Console.WriteLine();
-            Console.WriteLine("  Run without --dry-run to perform the actual repair.");
-        }
-        else
-        {
-            Console.WriteLine("  No structural corruption found in dry-run scan.");
-            Console.WriteLine("  Run without --dry-run for full checksum validation.");
-        }
-
-        Console.WriteLine();
-
-        if (!string.IsNullOrWhiteSpace(outputPath))
-        {
-            await AtomicFileWriter.WriteAsync(outputPath, string.Join(Environment.NewLine, corruptedInfo) + Environment.NewLine, ct);
-            Console.WriteLine($"  Dry-run report written to: {outputPath}");
-            Console.WriteLine();
-        }
-
-        return CliResult.Ok();
+            WalRepairFindingKind.CorruptRecord => "corrupt record",
+            WalRepairFindingKind.IncompleteTail => "incomplete final write",
+            _ => "invalid header"
+        };
+        return finding.Sequence is { } sequence
+            ? $"{finding.File}:{finding.LineNumber} — {what} (sequence {sequence})"
+            : $"{finding.File}:{finding.LineNumber} — {what}";
     }
 
     private static async Task WriteRepairReportAsync(
         string outputPath,
         WalRepairResult result,
+        bool dryRun,
         CancellationToken ct)
     {
         var lines = new List<string>
         {
-            $"WAL Repair Report — {DateTime.UtcNow:O}",
+            $"WAL {(dryRun ? "Dry-Run Scan" : "Repair")} Report — {DateTime.UtcNow:O}",
             new string('=', 60),
             $"Total records scanned:   {result.TotalRecords}",
-            $"Valid records kept:      {result.ValidRecords}",
+            $"Valid records:           {result.ValidRecords}",
             $"Corrupted records:       {result.CorruptedRecords}",
+            $"Incomplete final writes: {result.IncompleteTailRecords}",
             $"WAL files repaired:      {result.RepairedFiles}",
             string.Empty,
-            "Corrupted records were permanently discarded during repair.",
-            "Recovery from primary storage may be required if these sequences",
-            "represent data that was not yet committed to primary storage."
+            "Findings:"
         };
+        lines.AddRange(result.Findings.Select(f => "  " + Describe(f)));
+
+        if (result.QuarantinedFiles.Count > 0)
+        {
+            lines.Add(string.Empty);
+            lines.Add("Original segments kept for inspection:");
+            lines.AddRange(result.QuarantinedFiles.Select(path => "  " + path));
+            lines.Add(string.Empty);
+            lines.Add("Corrupted records were removed from the WAL. Recovery from primary storage");
+            lines.Add("may be required if those sequences were not yet committed to primary storage.");
+        }
 
         await AtomicFileWriter.WriteAsync(outputPath, string.Join(Environment.NewLine, lines) + Environment.NewLine, ct);
     }

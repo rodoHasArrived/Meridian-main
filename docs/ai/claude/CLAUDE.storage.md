@@ -117,6 +117,22 @@ rollback or foreign segment names can make enumeration order differ from sequenc
 commit a higher sequence while lower records remain unreplayed. Truncation must preserve active
 segments and files with invalid headers rather than deleting a scan that appears empty.
 
+### WAL Single Writer And Repair
+
+A WAL directory has one writer. `WriteAheadLog.InitializeAsync` takes an exclusive handle on
+`writer.lock` inside the directory and holds it until disposal; a second writer fails with
+`WalDirectoryInUseException` after `WalOptions.WriterLockTimeout`. The operating system releases
+the lock when a holder crashes. Read-only use that never initializes (for example
+`GetUncommittedRecordsAsync` on a fresh instance) takes no lock. Do not add a second
+`WriteAheadLog` over a directory another component already owns.
+
+`RepairAsync` on an uninitialized instance takes the same lock for the repair, so `--wal-repair`
+refuses to run beside a live writer; `RepairAsync(dryRun: true)` scans with full checksum
+validation, changes nothing and takes no lock. Before a repair rewrites a segment it copies the
+original to `<wal>/quarantine/<segment>.<utc>.quarantined`. An unterminated, unparseable final
+line is an incomplete tail (`WalRepairResult.IncompleteTailRecords`), not corruption, and never
+causes a rewrite.
+
 ### WAL Sync Modes
 
 Use the actual `WalOptions` and writer flush behavior rather than the former illustrative sync-mode

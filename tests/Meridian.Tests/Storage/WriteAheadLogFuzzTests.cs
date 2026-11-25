@@ -268,7 +268,7 @@ public sealed class WriteAheadLogFuzzTests : TempDirectoryAsyncTestBase
     // ── RepairAsync with partial writes ──────────────────────────────────
 
     [Fact]
-    public async Task RepairAsync_TruncatedLastRecord_RewritesFileWithOnlyValidRecords()
+    public async Task RepairAsync_TruncatedLastRecord_ReportsIncompleteTailNotCorruption()
     {
         // Arrange — write 4 valid records then truncate the last one
         const int validCount = 4;
@@ -287,11 +287,12 @@ public sealed class WriteAheadLogFuzzTests : TempDirectoryAsyncTestBase
         // Assert
         result.ValidRecords.Should().Be(validCount,
             "all {0} complete records must survive repair", validCount);
-        result.CorruptedRecords.Should().Be(1,
-            "exactly the one truncated record must be counted as corrupted");
+        result.CorruptedRecords.Should().Be(0,
+            "an interrupted final write is not corruption; recovery ignores it too");
+        result.IncompleteTailRecords.Should().Be(1,
+            "exactly the one truncated record must be reported as an incomplete tail");
         result.RepairedFiles.Should().Be(0,
-            "the active WAL file is excluded from repair; " +
-            "only rotated/closed files are repaired in-place");
+            "a segment whose only defect is an incomplete tail is never rewritten");
     }
 
     [Fact]

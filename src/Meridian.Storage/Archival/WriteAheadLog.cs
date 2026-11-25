@@ -58,6 +58,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
     // Guarded by _writeLock.
     private readonly List<WalRecord> _unflushedRecords = new();
     private readonly bool _walDirectoryCreated;
+    // The cross-process single-writer lock, held from InitializeAsync until disposal.
+    private FileStream? _directoryLock;
     private bool _walDirectoryParentSynced;
     private long _corruptedRecordCount;
     private long _skippedRecordCount;
@@ -146,7 +148,37 @@ public sealed class WriteAheadLog : IAsyncDisposable
     /// <summary>
     /// Initialize the WAL, recovering any uncommitted transactions.
     /// </summary>
+    /// <exception cref="WalDirectoryInUseException">
+    /// Another writer or a running repair holds this WAL directory.
+    /// </exception>
     public async Task InitializeAsync(CancellationToken ct = default)
+    {
+        // Recovery, commit and truncation all assume this instance is the only writer: a second
+        // one would hide this one's records behind its commit markers and delete its segments.
+        _directoryLock ??= await WalDirectoryLock
+            .AcquireAsync(_walDirectory, _options.WriterLockTimeout, ct)
+            .ConfigureAwait(false);
+        try
+        {
+            await InitializeCoreAsync(ct).ConfigureAwait(false);
+        }
+        catch
+        {
+            // A failed start-up (for example Halt-mode corruption) leaves no writer behind, so
+            // the directory must stay available to a repair or to a later attempt.
+            if (_currentWriter is null)
+                ReleaseDirectoryLock();
+            throw;
+        }
+    }
+
+    private void ReleaseDirectoryLock()
+    {
+        _directoryLock?.Dispose();
+        _directoryLock = null;
+    }
+
+    private async Task InitializeCoreAsync(CancellationToken ct)
     {
         _log.Information("Initializing WAL in {WalDirectory}", _walDirectory);
 
@@ -1052,13 +1084,7 @@ public sealed class WriteAheadLog : IAsyncDisposable
             walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
         // A record is framed by a newline. A crash can leave a partial final write;
         // distinguish that uncommitted suffix from corruption of a complete record.
-        var terminatedTail = true;
-        if (stream.Length > 0)
-        {
-            stream.Position = stream.Length - 1;
-            terminatedTail = stream.ReadByte() == '\n';
-            stream.Position = 0;
-        }
+        var terminatedTail = IsTailTerminated(stream);
         using var reader = new StreamReader(stream);
 
         // Skip header
@@ -1244,29 +1270,83 @@ public sealed class WriteAheadLog : IAsyncDisposable
     private static void ComputeChecksumCore(long sequence, DateTime timestamp, string recordType, string payload,
         Span<byte> destination) => WalChecksum.ComputeCore(sequence, timestamp, recordType, payload, destination);
 
+    // Whether the file ends on a record boundary. Records are newline-framed, so a file whose
+    // last byte is not a newline ends in a write the crash interrupted. Leaves the stream at 0.
+    private static bool IsTailTerminated(FileStream stream)
+    {
+        var terminated = true;
+        if (stream.Length > 0)
+        {
+            stream.Position = stream.Length - 1;
+            terminated = stream.ReadByte() == '\n';
+            stream.Position = 0;
+        }
+
+        return terminated;
+    }
+
+    private const string QuarantineDirectoryName = "quarantine";
+    private const string RepairTempSuffix = ".repair";
+    private const int MaxRepairFindings = 1000;
+
     /// <summary>
     /// Repairs all WAL files by scanning every record, validating checksums,
-    /// and rewriting only valid records into new WAL files.
-    /// Corrupted records are discarded and counted in the result.
+    /// and rewriting segments that contain corrupted records with only their valid records.
+    /// The original of every rewritten segment is first copied to the <c>quarantine</c>
+    /// subdirectory, so the corrupt bytes stay available for inspection.
     /// </summary>
-    public async Task<WalRepairResult> RepairAsync(CancellationToken ct = default)
+    /// <remarks>
+    /// An interrupted final write (an unterminated, unparseable last line) is reported as an
+    /// incomplete tail, not as corruption, and does not cause a rewrite: recovery already
+    /// ignores it. An instance that was never initialized takes the directory's single-writer
+    /// lock for the duration of the repair.
+    /// </remarks>
+    /// <exception cref="WalDirectoryInUseException">
+    /// A live writer or another repair holds this WAL directory.
+    /// </exception>
+    public Task<WalRepairResult> RepairAsync(CancellationToken ct = default) =>
+        RepairAsync(dryRun: false, ct);
+
+    /// <summary>
+    /// Runs the repair scan. With <paramref name="dryRun"/> set, every record is still
+    /// checksum-validated but no file is rewritten, nothing is quarantined and no lock is taken,
+    /// so it is safe beside a live writer.
+    /// </summary>
+    public async Task<WalRepairResult> RepairAsync(bool dryRun, CancellationToken ct = default)
     {
         // Truncation deletes and rewrites committed segments. Rewriting a segment while a
         // truncation runs could restore records it has just removed, so they would replay.
         await _truncateLock.WaitAsync(ct).ConfigureAwait(false);
+        FileStream? repairLock = null;
         try
         {
-            return await RepairCoreAsync(ct).ConfigureAwait(false);
+            // An initialized instance already owns the directory and protects its own active
+            // segment below. Any other caller must exclude live writers first: renaming a
+            // repaired file over a segment another process has open would strand that writer
+            // on an unlinked file and lose everything it appends afterwards.
+            if (!dryRun && _directoryLock is null)
+                repairLock = WalDirectoryLock.Acquire(_walDirectory);
+
+            return await RepairCoreAsync(dryRun, ct).ConfigureAwait(false);
         }
         finally
         {
+            repairLock?.Dispose();
             _truncateLock.Release();
         }
     }
 
-    private async Task<WalRepairResult> RepairCoreAsync(CancellationToken ct)
+    private async Task<WalRepairResult> RepairCoreAsync(bool dryRun, CancellationToken ct)
     {
-        _log.Information("Starting WAL repair in {WalDirectory}", _walDirectory);
+        _log.Information("Starting WAL repair in {WalDirectory} (dry run: {DryRun})", _walDirectory, dryRun);
+
+        if (!dryRun)
+        {
+            // A repair that died between writing its temp file and the rename leaves the temp
+            // behind. The original segment is intact, so the leftover is only clutter.
+            foreach (var stale in Directory.GetFiles(_walDirectory, "*.wal" + RepairTempSuffix))
+                File.Delete(stale);
+        }
 
         var walFiles = Directory.GetFiles(_walDirectory, "*.wal")
             .OrderBy(f => f, StringComparer.Ordinal)
@@ -1275,7 +1355,16 @@ public sealed class WriteAheadLog : IAsyncDisposable
         int totalRecords = 0;
         int validRecords = 0;
         int corruptedRecords = 0;
+        int incompleteTails = 0;
         int repairedFiles = 0;
+        var quarantined = new List<string>();
+        var findings = new List<WalRepairFinding>();
+
+        void AddFinding(string file, int lineNumber, WalRepairFindingKind kind, long? sequence)
+        {
+            if (findings.Count < MaxRepairFindings)
+                findings.Add(new WalRepairFinding(Path.GetFileName(file), lineNumber, kind, sequence));
+        }
 
         foreach (var walFile in walFiles)
         {
@@ -1303,66 +1392,89 @@ public sealed class WriteAheadLog : IAsyncDisposable
             await using (var stream = new FileStream(
                 walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
             {
+                var terminatedTail = IsTailTerminated(stream);
                 using var reader = new StreamReader(stream);
 
                 // Read and validate header
-                var header = await reader.ReadLineAsync();
+                var header = await reader.ReadLineAsync(ct).ConfigureAwait(false);
                 if (header == null || !TryParseWalHeader(header, out var version))
                 {
                     _log.Warning("Skipping WAL file with invalid or unsupported header during repair: {File}", walFile);
+                    AddFinding(walFile, 1, WalRepairFindingKind.InvalidHeader, null);
                     continue;
                 }
                 retainedHeader = header;
 
-                while (!reader.EndOfStream && !ct.IsCancellationRequested)
+                var lineNumber = 1;
+                while (!reader.EndOfStream)
                 {
-                    var line = await reader.ReadLineAsync();
+                    // Cancellation must throw, never end the scan early: a partial list of
+                    // valid records would otherwise be written back as the whole segment.
+                    ct.ThrowIfCancellationRequested();
+
+                    var line = await reader.ReadLineAsync(ct).ConfigureAwait(false);
+                    lineNumber++;
                     if (string.IsNullOrWhiteSpace(line))
                         continue;
 
-                    totalRecords++;
+                    // Same rule as recovery: an invalid, unterminated final line is a write the
+                    // crash interrupted before it was acknowledged, not a damaged record.
+                    var incompleteTail = !terminatedTail && reader.EndOfStream;
 
+                    long? parsedSequence = null;
+                    WalRecord? record = null;
                     var parts = line.Split('|', 5);
-                    if (parts.Length < 5 ||
-                        !long.TryParse(parts[0], out var sequence) ||
-                        !DateTime.TryParse(parts[1], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var timestamp))
+                    if (parts.Length >= 5 &&
+                        long.TryParse(parts[0], out var sequence) &&
+                        DateTime.TryParse(parts[1], CultureInfo.InvariantCulture, DateTimeStyles.RoundtripKind, out var timestamp))
                     {
-                        fileCorruptedCount++;
-                        corruptedRecords++;
+                        parsedSequence = sequence;
+                        var expectedChecksum = WalChecksum.Compute(sequence, timestamp, parts[2], parts[4], version);
+                        if (string.Equals(parts[3], expectedChecksum, StringComparison.Ordinal))
+                        {
+                            record = new WalRecord
+                            {
+                                Sequence = sequence,
+                                Timestamp = timestamp,
+                                RecordType = parts[2],
+                                Checksum = parts[3],
+                                Payload = parts[4]
+                            };
+                        }
+                    }
+
+                    if (record is not null)
+                    {
+                        totalRecords++;
+                        validRecords++;
+                        fileValidRecords.Add(record);
                         continue;
                     }
 
-                    var recordType = parts[2];
-                    var checksum = parts[3];
-                    var payload = parts[4];
-
-                    var expectedChecksum = WalChecksum.Compute(sequence, timestamp, recordType, payload, version);
-                    if (!string.Equals(checksum, expectedChecksum, StringComparison.Ordinal))
+                    if (incompleteTail)
                     {
-                        _log.Warning(
-                            "Repair: corrupted record with sequence {Sequence} in {File}",
-                            sequence, walFile);
-                        fileCorruptedCount++;
-                        corruptedRecords++;
+                        incompleteTails++;
+                        AddFinding(walFile, lineNumber, WalRepairFindingKind.IncompleteTail, null);
+                        _log.Information(
+                            "Repair: incomplete final write in {File} is not corruption and is left in place",
+                            walFile);
                         continue;
                     }
 
-                    validRecords++;
-                    fileValidRecords.Add(new WalRecord
-                    {
-                        Sequence = sequence,
-                        Timestamp = timestamp,
-                        RecordType = recordType,
-                        Checksum = checksum,
-                        Payload = payload
-                    });
+                    totalRecords++;
+                    fileCorruptedCount++;
+                    corruptedRecords++;
+                    AddFinding(walFile, lineNumber, WalRepairFindingKind.CorruptRecord, parsedSequence);
+                    _log.Warning(
+                        "Repair: corrupted record at line {Line} (sequence {Sequence}) in {File}",
+                        lineNumber, parsedSequence, walFile);
                 }
             }
 
             // Only rewrite files that are eligible for in-place repair and actually contain corruption.
-            if (fileCorruptedCount > 0 && canRewriteInPlace)
+            if (fileCorruptedCount > 0 && canRewriteInPlace && !dryRun)
             {
-                var tempPath = walFile + ".repair";
+                var tempPath = walFile + RepairTempSuffix;
 
                 await using (var outStream = new FileStream(
                     tempPath, FileMode.Create, FileAccess.Write, FileShare.None,
@@ -1390,6 +1502,21 @@ public sealed class WriteAheadLog : IAsyncDisposable
                     outStream.Flush(flushToDisk: true);
                 }
 
+                // The rename below destroys the corrupt lines. Keep the original first, as
+                // recovery and truncation do for files they cannot trust; if the copy cannot be
+                // made durable the segment is left exactly as it was.
+                string quarantinePath;
+                try
+                {
+                    quarantinePath = await QuarantineOriginalAsync(walFile, ct).ConfigureAwait(false);
+                }
+                catch
+                {
+                    File.Delete(tempPath);
+                    throw;
+                }
+                quarantined.Add(quarantinePath);
+
                 // Replace the original with the repaired file in a single atomic rename.
                 // A prior File.Delete + File.Move sequence had a crash window between the two
                 // calls in which the WAL file could be lost entirely; File.Move(overwrite: true)
@@ -1404,10 +1531,10 @@ public sealed class WriteAheadLog : IAsyncDisposable
                 repairedFiles++;
 
                 _log.Information(
-                    "Repaired WAL file {File}: kept {ValidCount} records, removed {CorruptedCount} corrupted",
-                    walFile, fileValidRecords.Count, fileCorruptedCount);
+                    "Repaired WAL file {File}: kept {ValidCount} records, removed {CorruptedCount} corrupted; original kept at {QuarantinePath}",
+                    walFile, fileValidRecords.Count, fileCorruptedCount, quarantinePath);
             }
-            else if (fileCorruptedCount > 0)
+            else if (fileCorruptedCount > 0 && !dryRun)
             {
                 _log.Information(
                     "Scanned WAL file {File}: kept {ValidCount} records and found {CorruptedCount} corrupted, but skipped in-place rewrite because it was the last recovered file",
@@ -1415,13 +1542,51 @@ public sealed class WriteAheadLog : IAsyncDisposable
             }
         }
 
-        var result = new WalRepairResult(totalRecords, validRecords, corruptedRecords, repairedFiles);
+        var result = new WalRepairResult(totalRecords, validRecords, corruptedRecords, repairedFiles)
+        {
+            IncompleteTailRecords = incompleteTails,
+            QuarantinedFiles = quarantined,
+            Findings = findings
+        };
 
         _log.Information(
-            "WAL repair complete: {TotalRecords} total, {ValidRecords} valid, {CorruptedRecords} corrupted, {RepairedFiles} files repaired",
-            result.TotalRecords, result.ValidRecords, result.CorruptedRecords, result.RepairedFiles);
+            "WAL repair complete: {TotalRecords} total, {ValidRecords} valid, {CorruptedRecords} corrupted, {IncompleteTails} incomplete tails, {RepairedFiles} files repaired",
+            result.TotalRecords, result.ValidRecords, result.CorruptedRecords, result.IncompleteTailRecords, result.RepairedFiles);
 
         return result;
+    }
+
+    // Copies a segment that is about to be rewritten into the quarantine subdirectory and makes
+    // the copy durable. Top-level "*.wal" listings never see it: it lives one level down and
+    // does not carry the segment extension.
+    private async Task<string> QuarantineOriginalAsync(string walFile, CancellationToken ct)
+    {
+        var quarantineDirectory = Path.Combine(_walDirectory, QuarantineDirectoryName);
+        var created = !Directory.Exists(quarantineDirectory);
+        Directory.CreateDirectory(quarantineDirectory);
+
+        var baseName = $"{Path.GetFileName(walFile)}.{DateTime.UtcNow:yyyyMMdd'T'HHmmssfff'Z'}";
+        var quarantinePath = Path.Combine(quarantineDirectory, baseName + ".quarantined");
+        for (var disambiguator = 1; File.Exists(quarantinePath); disambiguator++)
+            quarantinePath = Path.Combine(quarantineDirectory, $"{baseName}_{disambiguator}.quarantined");
+
+        await using (var source = new FileStream(
+            walFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite,
+            bufferSize: 64 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan))
+        await using (var destination = new FileStream(
+            quarantinePath, FileMode.CreateNew, FileAccess.Write, FileShare.None,
+            bufferSize: 64 * 1024, FileOptions.Asynchronous))
+        {
+            await source.CopyToAsync(destination, ct).ConfigureAwait(false);
+            await destination.FlushAsync(ct).ConfigureAwait(false);
+            destination.Flush(flushToDisk: true);
+        }
+
+        await AtomicFileWriter.SyncDirectoryAsync(quarantineDirectory, ct).ConfigureAwait(false);
+        if (created)
+            await AtomicFileWriter.SyncDirectoryAsync(_walDirectory, ct).ConfigureAwait(false);
+
+        return quarantinePath;
     }
 
     public async ValueTask DisposeAsync()
@@ -1488,6 +1653,8 @@ public sealed class WriteAheadLog : IAsyncDisposable
             _writeLock.Dispose();
             _truncateLock.Dispose();
             _flushLoopCts?.Dispose();
+            // Released last: the segment is flushed and closed before another writer may start.
+            ReleaseDirectoryLock();
         }
     }
 
@@ -1595,6 +1762,14 @@ public sealed class WalOptions
     public long UncommittedSizeWarningThreshold { get; set; } = 50 * 1024 * 1024;
 
     /// <summary>
+    /// How long <see cref="WriteAheadLog.InitializeAsync"/> waits for the directory's
+    /// single-writer lock before failing with <see cref="WalDirectoryInUseException"/>. The wait
+    /// covers a predecessor that is still flushing on shutdown; it is not a queue for a second
+    /// live writer.
+    /// </summary>
+    public TimeSpan WriterLockTimeout { get; set; } = TimeSpan.FromSeconds(2);
+
+    /// <summary>
     /// Controls how the WAL behaves when corrupted records are detected during recovery.
     /// Defaults to <see cref="WalCorruptionMode.Alert"/> so corruption is never silent:
     /// the durability backstop must not discard records without an operator signal.
@@ -1656,4 +1831,37 @@ public sealed record WalRepairResult(
     int TotalRecords,
     int ValidRecords,
     int CorruptedRecords,
-    int RepairedFiles);
+    int RepairedFiles)
+{
+    /// <summary>
+    /// Interrupted final writes found: an unterminated, unparseable last line. These are not
+    /// corruption, are not counted in <see cref="TotalRecords"/>, and are left in place.
+    /// </summary>
+    public int IncompleteTailRecords { get; init; }
+
+    /// <summary>Full paths of the original segments copied aside before being rewritten.</summary>
+    public IReadOnlyList<string> QuarantinedFiles { get; init; } = [];
+
+    /// <summary>Where each problem was found, capped at the first 1000.</summary>
+    public IReadOnlyList<WalRepairFinding> Findings { get; init; } = [];
+}
+
+/// <summary>What a repair scan found at one location.</summary>
+public enum WalRepairFindingKind
+{
+    /// <summary>A complete line that is malformed or fails its checksum.</summary>
+    CorruptRecord,
+
+    /// <summary>An interrupted final write; harmless and ignored by recovery.</summary>
+    IncompleteTail,
+
+    /// <summary>The segment header is missing, invalid or an unsupported version; the file was not scanned.</summary>
+    InvalidHeader
+}
+
+/// <summary>One location reported by a repair scan.</summary>
+/// <param name="File">Segment file name.</param>
+/// <param name="LineNumber">1-based line number in the segment; the header is line 1.</param>
+/// <param name="Kind">What was found.</param>
+/// <param name="Sequence">The record's sequence number when it could still be parsed.</param>
+public sealed record WalRepairFinding(string File, int LineNumber, WalRepairFindingKind Kind, long? Sequence);
