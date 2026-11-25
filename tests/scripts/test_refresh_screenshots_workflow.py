@@ -212,6 +212,18 @@ class RefreshScreenshotsWorkflowTests(unittest.TestCase):
         self.assertIn("manual-accounting", self.desktop_workflow_runner)
         self.assertIn("scripts/dev/run-desktop-workflow.ps1", self.desktop_workflow_runner)
 
+    def test_desktop_workflow_runner_generates_full_manual(self) -> None:
+        workflow = yaml.load(self.desktop_workflow_runner, Loader=yaml.BaseLoader)
+        options = workflow["on"]["workflow_dispatch"]["inputs"]["workflow"]["options"]
+        self.assertIn("full-manual", options)
+        steps = workflow["jobs"]["run-workflow"]["steps"]
+        manual = next(step for step in steps if "generate-desktop-user-manual.ps1" in step.get("run", ""))
+        self.assertEqual(manual["if"], "inputs.workflow == 'full-manual'")
+        runner = next(step for step in steps if "run-desktop-workflow.ps1" in step.get("run", ""))
+        self.assertEqual(runner["if"], "inputs.workflow != 'full-manual'")
+        upload = next(step for step in steps if step.get("uses", "").startswith("actions/upload-artifact@"))
+        self.assertIn("artifacts/desktop-manuals/", upload["with"]["path"])
+
     def test_desktop_strategy_runs_workflows_use_canonical_checklist_id(self) -> None:
         serialized = json.dumps(self.desktop_workflows)
 
