@@ -932,13 +932,13 @@ describe("app shell view model", () => {
     });
 
     expect(state.workflowContinuity.operatorFocusItems.find((item) => item.label === "Brokerage sync failed")).toMatchObject({
-      route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+      route: "/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup"
     });
     expect(state.workflowContinuity.operatorFocusCommandItems.find((item) => item.label === "Replay audit")).toMatchObject({
       route: "/trading/readiness?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(state.workflowContinuity.decisionBrief).toMatchObject({
-      actionHref: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+      actionHref: "/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup"
     });
     expect(state.workflowContinuity.linkedContextItems.find((item) => item.label === "Trading cockpit")).toMatchObject({
       route: "/trading?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
@@ -950,7 +950,7 @@ describe("app shell view model", () => {
       route: "/reporting/evidence?symbol=MSFT&fundAccountId=fund-1&runId=run-9&provider=Alpaca&from=2026-05-01&to=2026-05-15"
     });
     expect(state.workflowContinuity.evidenceTimelineItems[0]).toMatchObject({
-      route: "/settings?fundAccountId=fund-1&provider=Alpaca#alpaca-provider-setup"
+      route: "/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup"
     });
   });
 
@@ -1479,7 +1479,7 @@ describe("app shell view model", () => {
       item.actionLabel,
       item.tone
     ])).toEqual([
-      ["Brokerage sync failed", "/settings#alpaca-provider-setup", "Settings", "Fix provider setup", "blocked"],
+      ["Brokerage sync failed", "/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup", "Settings", "Fix provider setup", "blocked"],
       ["Replay audit", "/trading/readiness", "Trading", "Open readiness", "blocked"],
       ["Report pack approval waiting", "/reporting/report-packs", "Reporting", "Open report packs", "review"]
     ]);
@@ -1501,7 +1501,7 @@ describe("app shell view model", () => {
       statusTone: "blocked",
       evidenceLabel: "Latest evidence: Reporting 2026-05-14 21:00 UTC",
       actionLabel: "Fix provider setup",
-      actionHref: "/settings#alpaca-provider-setup",
+      actionHref: "/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup",
       actionAriaLabel: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
     });
     expect(state.workflowContinuity.evidenceTimelineSummary)
@@ -1514,7 +1514,7 @@ describe("app shell view model", () => {
       item.tone
     ])).toEqual([
       ["Report pack approval waiting", "Reporting", "2026-05-14 21:00 UTC", "/reporting/report-packs", "review"],
-      ["Brokerage sync failed", "Settings", "2026-05-14 20:00 UTC", "/settings#alpaca-provider-setup", "blocked"]
+      ["Brokerage sync failed", "Settings", "2026-05-14 20:00 UTC", "/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup", "blocked"]
     ]);
     expect(state.workflowContinuity.evidenceTimelineItems[0].ariaLabel)
       .toBe("Reporting: Report pack approval waiting. Monthly board pack still needs an operator sign-off. Audit: audit-2. 2026-05-14 21:00 UTC. Open evidence.");

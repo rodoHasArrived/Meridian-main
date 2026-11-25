@@ -1,4 +1,4 @@
-import { render, screen } from "@testing-library/react";
+import { render, screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { ReconciliationComparisonPanel } from "./ReconciliationComparisonPanel";
 import type { ReconciliationComparisonViewState } from "@/screens/accounting-screen.view-model";
@@ -51,6 +51,27 @@ const view: ReconciliationComparisonViewState = {
 };
 
 describe("ReconciliationComparisonPanel", () => {
+  it("renders exact currency-labelled amounts and run-status labels without reinterpreting them", () => {
+    const labels = ["9,007,199,254,740,993.125 EUR", "0.00 EUR", "1,250 JPY", "1.001 KWD", "24 matched", "2 open", "Not recorded", "Unavailable"];
+    render(<ReconciliationComparisonPanel view={{ ...view, statementLines: labels.map((amountLabel, index) => ({
+      ...view.statementLines[0], id: `line-${index}`, matchKey: `match-${index}`, title: `Line ${index}`, amountLabel
+    })), ledgerLines: [] }} />);
+
+    const table = screen.getByRole("table", { name: "Statement reconciliation lines" });
+    for (const label of labels) expect(within(table).getByText(label)).toBeInTheDocument();
+    expect(table).not.toHaveTextContent("USD");
+    expect(table).not.toHaveTextContent("$24");
+  });
+
+  it("states why aggregate values and a numeric proof are unavailable", () => {
+    render(<ReconciliationComparisonPanel view={{ ...view,
+      summaryUnavailableReason: "Totals are unavailable because rows use multiple currencies (EUR, JPY).",
+      tieOutUnavailableReason: "the proof cannot preserve the retained precision."
+    }} />);
+    expect(screen.getByRole("status")).toHaveTextContent("multiple currencies (EUR, JPY)");
+    expect(screen.getByText("Tie-out proof unavailable: the proof cannot preserve the retained precision.")).toBeInTheDocument();
+  });
+
   it("renders statement and ledger panes with balances", () => {
     render(<ReconciliationComparisonPanel view={view} />);
 
