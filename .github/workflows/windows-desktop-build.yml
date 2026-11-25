@@ -178,7 +178,6 @@ jobs:
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-          fetch-depth: 2
 
       - name: Set up .NET SDK and NuGet cache
         id: nuget
@@ -189,10 +188,36 @@ jobs:
         with:
           python-version: "3.12"
 
+      # --parallel-build lets MSBuild use every runner core for the one shared graph build.
+      # The local default stays serial; test slices still run one at a time.
       - name: Run isolated Windows validation
         env:
           MERIDIAN_DEPENDENCY_CACHE_HIT: ${{ steps.nuget.outputs.cache-hit || 'false' }}
-        run: python build/scripts/ci/run-windows-ci-tests.py --results-dir artifacts/wpf-validation/windows-desktop-build
+        run: python build/scripts/ci/run-windows-ci-tests.py --parallel-build --results-dir artifacts/wpf-validation/windows-desktop-build
+
+      - name: Upload WPF validation artifacts
+        if: always()
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: windows-desktop-validation-${{ github.run_number }}
+          path: artifacts/wpf-validation/windows-desktop-build/
+          if-no-files-found: ignore
+          retention-days: 14
+
+  # Cheap Linux decision so a Windows runner starts only when the smoke publish will run.
+  smoke-plan:
+    name: plan desktop smoke publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      run: ${{ steps.desktop-smoke.outputs.run }}
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          fetch-depth: 2
 
       - name: Decide desktop smoke publish
         id: desktop-smoke
@@ -242,8 +267,25 @@ jobs:
           "run=$($runSmoke.ToString().ToLowerInvariant())" | Out-File -FilePath $env:GITHUB_OUTPUT -Append
           "Desktop smoke publish: $runSmoke" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append
 
+  # Runs beside verify-desktop instead of after it: the publish uses its own RID-specific
+  # outputs and never reused the validation build, so waiting only added wall-clock time.
+  smoke:
+    name: desktop smoke publish
+    needs: smoke-plan
+    if: needs.smoke-plan.outputs.run == 'true'
+    runs-on: windows-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Set up .NET SDK and NuGet cache
+        uses: ./.github/actions/setup-dotnet-nuget
+
       - name: Restore WPF publish graph
-        if: steps.desktop-smoke.outputs.run == 'true'
         shell: pwsh
         run: >
           dotnet restore src/Meridian.Wpf/Meridian.Wpf.csproj
@@ -252,7 +294,6 @@ jobs:
           /p:EnableFullWpfBuild=true
 
       - name: Smoke publish WPF app
-        if: steps.desktop-smoke.outputs.run == 'true'
         shell: pwsh
         run: >
           dotnet publish src/Meridian.Wpf/Meridian.Wpf.csproj
@@ -267,7 +308,6 @@ jobs:
           /p:PublishReadyToRun=false
 
       - name: Confirm desktop executable
-        if: steps.desktop-smoke.outputs.run == 'true'
         shell: pwsh
         run: |
           $exe = "artifacts/publish/desktop-smoke/Meridian.Desktop.exe"
@@ -275,15 +315,6 @@ jobs:
             throw "Expected desktop executable not found: $exe"
           }
           Get-Item $exe | Select-Object FullName, Length
-
-      - name: Upload WPF validation artifacts
-        if: always()
-        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
-        with:
-          name: windows-desktop-validation-${{ github.run_number }}
-          path: artifacts/wpf-validation/windows-desktop-build/
-          if-no-files-found: ignore
-          retention-days: 14
 
       - name: Upload desktop smoke publish artifacts
         if: always()

@@ -127,9 +127,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static HttpClient CreateClient(string name) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs:244](../../../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs#L244) | Gets an HttpClient for the specified named client. The returned fallback client is owned by the caller. |
-| <code>public static HttpClient CreateClient(string name, Action&lt;HttpClient&gt; configure);</code> | [src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs:250](../../../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs#L250) | Gets an HttpClient for the specified named client with header configuration. |
-| <code>public static bool IsInitialized =&gt; …;</code> | [src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs:260](../../../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs#L260) | Indicates that the compatibility factory is available. |
+| <code>public static HttpClient CreateClient(string name) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs:250](../../../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs#L250) | Gets an HttpClient for the specified named client. The returned fallback client is owned by the caller. |
+| <code>public static HttpClient CreateClient(string name, Action&lt;HttpClient&gt; configure);</code> | [src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs:256](../../../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs#L256) | Gets an HttpClient for the specified named client with header configuration. |
+| <code>public static bool IsInitialized =&gt; …;</code> | [src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs:266](../../../../src/Meridian.Ui.Services/Services/HttpClientConfiguration.cs#L266) | Indicates that the compatibility factory is available. |
 
 ## HttpClientNames
 
