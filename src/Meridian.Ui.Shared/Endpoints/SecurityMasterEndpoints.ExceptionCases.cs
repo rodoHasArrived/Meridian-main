@@ -10,6 +10,9 @@ using AppSecurityMaster = Meridian.Application.SecurityMaster;
 
 namespace Meridian.Ui.Shared.Endpoints;
 
+/// <summary>Securities to shadow-compare and the valuation date to compare from.</summary>
+public sealed record CashFlowShadowCompareRequest(IReadOnlyList<Guid> SecurityIds, DateOnly? ValuationDate);
+
 /// <summary>Body assigning an exception case.</summary>
 public sealed record AssignSecurityMasterExceptionCaseRequest(string Assignee);
 
@@ -55,5 +58,19 @@ public static partial class SecurityMasterEndpoints
                 : Results.Conflict(new { error = $"Case '{caseId:D}' is not open." });
         })
         .WithName("AssignSecurityMasterExceptionCase");
+
+        // Review B1: read-only diff of the legacy and contractual cash-flow engines; no behaviour switch.
+        group.MapPost(UiApiRoutes.SecurityMasterCashFlowShadowCompare, async (
+            CashFlowShadowCompareRequest request,
+            [FromServices] Meridian.Application.SecurityMaster.CashFlow.CashFlowEngineShadowComparer comparer,
+            CancellationToken ct) =>
+        {
+            if (request.SecurityIds is not { Count: > 0 and <= 500 })
+                return Results.Problem("Name between 1 and 500 security ids.", statusCode: StatusCodes.Status400BadRequest);
+            var report = await comparer.CompareAsync(request.SecurityIds, request.ValuationDate ?? DateOnly.FromDateTime(DateTime.UtcNow), ct).ConfigureAwait(false);
+            return Results.Json(report, jsonOptions);
+        })
+        .WithName("ShadowCompareSecurityMasterCashFlows")
+        .RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster);
     }
 }

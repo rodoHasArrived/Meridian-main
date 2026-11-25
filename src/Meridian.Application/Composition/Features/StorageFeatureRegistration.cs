@@ -112,6 +112,8 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IBondExerciseNoticeStore>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IExerciseNoticeVerifier>(sp => sp.GetRequiredService<FileBondExerciseNoticeStore>());
         services.TryAddScoped<Meridian.Contracts.CashFlows.IContractualCashFlowPreviewService, ContractualCashFlowPreviewService>();
+        // Review B1: read-only shadow comparison of the legacy and contractual cash-flow engines.
+        services.TryAddScoped<Meridian.Application.SecurityMaster.CashFlow.CashFlowEngineShadowComparer>();
         services.TryAddSingleton<Meridian.Contracts.CashFlows.IContractualCashFlowRunStore, FileContractualCashFlowRunStore>();
         services.TryAddSingleton<ISecurityValidationGateService, SecurityValidationGateService>();
         services.TryAddSingleton<DatabaseMigrationReadinessReceipt>();
