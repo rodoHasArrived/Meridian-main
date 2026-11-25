@@ -32,7 +32,6 @@ public static class ShortCarryProjector
     }
 
     /// <summary>Expected journal lines for the instruction against the lot's liability carrying account.</summary>
-    [PostingCalculationNotYetConnected("Borrow-fee and payment-in-lieu lines are checked by ShortCarryPostingGuard, but no production workflow posts short carry charges or calls that guard yet.")]
     public static IReadOnlyList<(LedgerAccount account, decimal debit, decimal credit)> Lines(
         ShortCarryInstruction instruction, LedgerAccount carryingAccount)
     {

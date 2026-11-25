@@ -1413,7 +1413,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IManualJournalEntryWorkbenchService>(),
                 sp.GetService<IPrivateCapitalStore>(),
                 sp.GetService<Meridian.Contracts.Banking.IBankTransactionSource>(),
-                sp.GetService<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>());
+                sp.GetService<Meridian.FinancialOperations.FundAdministration.IDistributionRegister>(),
+                journalStore);
         });
         // Durable ledger and reporting-evidence services are present only when persistence-backed
         // storage is configured. Resolve them optionally so lightweight hosts still compose; when

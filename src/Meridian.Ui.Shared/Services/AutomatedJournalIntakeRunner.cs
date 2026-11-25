@@ -154,6 +154,7 @@ public sealed partial class AutomatedJournalIntakeRunner
     private readonly IPrivateCapitalStore? _privateCapitalStore;
     private readonly Meridian.Contracts.Banking.IBankTransactionSource? _privateCapitalBankSource;
     private readonly Meridian.FinancialOperations.FundAdministration.IDistributionRegister? _distributionRegister;
+    private readonly Meridian.Storage.Ledger.ILedgerJournalStore? _ledgerJournalStore;
 
     public AutomatedJournalIntakeRunner(
         AutomatedJournalDraftIntakeService intake,
@@ -168,9 +169,11 @@ public sealed partial class AutomatedJournalIntakeRunner
         IManualJournalEntryWorkbenchService? manualJournalWorkbench = null,
         IPrivateCapitalStore? privateCapitalStore = null,
         Meridian.Contracts.Banking.IBankTransactionSource? bankTransactionSource = null,
-        Meridian.FinancialOperations.FundAdministration.IDistributionRegister? distributionRegister = null)
+        Meridian.FinancialOperations.FundAdministration.IDistributionRegister? distributionRegister = null,
+        Meridian.Storage.Ledger.ILedgerJournalStore? ledgerJournalStore = null)
     {
         _distributionRegister = distributionRegister;
+        _ledgerJournalStore = ledgerJournalStore;
         _intake = intake ?? throw new ArgumentNullException(nameof(intake));
         _feeProducer = feeProducer ?? throw new ArgumentNullException(nameof(feeProducer));
         _dividendProducer = dividendProducer;

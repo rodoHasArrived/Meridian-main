@@ -61,4 +61,7 @@ public enum AutomatedJournalEventKind
 
     /// <summary>Source-linked correction prepared in a later open period for independent approval.</summary>
     PriorPeriodAdjustment,
+
+    /// <summary>Carrying charge on an open short lot: a stock borrow fee or a payment in lieu of dividend.</summary>
+    ShortCarryCharged,
 }

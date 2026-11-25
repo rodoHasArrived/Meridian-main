@@ -525,7 +525,9 @@ public sealed class AutomatedJournalDraftIntakeService
             AutomatedJournalEventKind.PerformanceFeeAccrued or
             AutomatedJournalEventKind.CommissionAccrued or
             AutomatedJournalEventKind.WithholdingTaxAccrued => ManualJournalEntryTypeDto.AccruedExpense,
-            AutomatedJournalEventKind.CorporateActionExpense => ManualJournalEntryTypeDto.Expense,
+            AutomatedJournalEventKind.CorporateActionExpense or
+            // Borrow fees and payments in lieu are period expenses paid in cash.
+            AutomatedJournalEventKind.ShortCarryCharged => ManualJournalEntryTypeDto.Expense,
             // Closing entries carry a dedicated type so the workbench posts them as the sanctioned
             // ClosingEntry kind into the (closed) period being finalized.
             AutomatedJournalEventKind.PeriodCloseClosingEntries => ManualJournalEntryTypeDto.ClosingEntry,
