@@ -1450,7 +1450,7 @@ Qualified name: <code>Meridian.Wpf.ViewModels.ActivityLogViewModel</code>. Kind:
 
 Source: [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:23](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L23).
 
-ViewModel for the Activity Log page. Holds all state, HTTP loading, filtering, and timer management so that the code-behind is thinned to lifecycle wiring and the single UI-level action (auto-scroll).
+ViewModel for the Activity Log page. Shows the desktop&#x27;s own log entries live from WpfServices.LoggingService; the server exposes no log feed, matching the browser workstation&#x27;s client-side activity log. Holds all state and filtering so that the code-behind is thinned to lifecycle wiring and the single UI-level action (auto-scroll).
 
 ```csharp
 public sealed class ActivityLogViewModel : BindableBase, IDisposable
@@ -1460,46 +1460,46 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ObservableCollection&lt;LogEntryModel&gt; FilteredLogs { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L54) | The filtered and sorted log entries bound to the list view. |
-| <code>public string LogCount { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:59](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L59) |  |
-| <code>public string VisibleLogCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L62) |  |
-| <code>public string ErrorLogCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:65](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L65) |  |
-| <code>public string WarningLogCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L68) |  |
-| <code>public string LatestLogTimeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L71) |  |
-| <code>public string LatestLogSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:74](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L74) |  |
-| <code>public string ActivityPostureTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:77](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L77) |  |
-| <code>public string ActivityPostureDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:80](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L80) |  |
-| <code>public string ActiveFilterSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L83) |  |
-| <code>public bool NoLogsVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:86](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L86) |  |
-| <code>public bool IsAutoScrollEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L89) |  |
-| <code>public string LevelFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:91](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L91) |  |
-| <code>public string CategoryFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:103](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L103) |  |
-| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:115](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L115) |  |
-| <code>public bool HasLogHistory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L127) |  |
-| <code>public bool HasActiveFilters =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L129) |  |
-| <code>public bool HasFilterRecoveryAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L134) |  |
-| <code>public bool CanClearLog =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L136) |  |
-| <code>public bool CanExportVisibleLogs =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L138) |  |
-| <code>public string ExportVisibleLogsTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L140) |  |
-| <code>public string ClearLogTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:146](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L146) |  |
-| <code>public bool IsClearConfirmationVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L151) |  |
-| <code>public string ClearConfirmationTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:165](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L165) |  |
-| <code>public string ClearConfirmationDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L167) |  |
-| <code>public string EmptyStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L171) |  |
-| <code>public string EmptyStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L175) |  |
-| <code>public event EventHandler? ScrollToTopRequested;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L182) | Raised when a new log entry is prepended and auto-scroll is enabled. |
-| <code>public IRelayCommand ClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L186) |  |
-| <code>public IRelayCommand RequestClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L187) |  |
-| <code>public IRelayCommand ConfirmClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:188](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L188) |  |
-| <code>public IRelayCommand CancelClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:189](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L189) |  |
-| <code>public IRelayCommand ClearFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L190) |  |
-| <code>public ActivityLogViewModel(WpfServices.StatusService statusService, WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService, IRemoteWorkstationClient? remoteClient = null);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:194](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L194) |  |
-| <code>public async Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L217) | Starts the background refresh timer and subscribes to log events. |
-| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:231](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L231) | Stops the timer and unsubscribes from events. |
-| <code>public void UpdateLevelFilter(string level);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:240](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L240) |  |
-| <code>public void UpdateCategoryFilter(string category);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:245](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L245) |  |
-| <code>public void UpdateSearch(string text);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L250) |  |
-| <code>public void ExportAsCsv(System.IO.Stream stream);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:257](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L257) |  |
+| <code>public ObservableCollection&lt;LogEntryModel&gt; FilteredLogs { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:50](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L50) | The filtered and sorted log entries bound to the list view. |
+| <code>public string LogCount { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:55](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L55) |  |
+| <code>public string VisibleLogCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:58](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L58) |  |
+| <code>public string ErrorLogCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:61](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L61) |  |
+| <code>public string WarningLogCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L64) |  |
+| <code>public string LatestLogTimeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L67) |  |
+| <code>public string LatestLogSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:70](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L70) |  |
+| <code>public string ActivityPostureTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L73) |  |
+| <code>public string ActivityPostureDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:76](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L76) |  |
+| <code>public string ActiveFilterSummary { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L79) |  |
+| <code>public bool NoLogsVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L82) |  |
+| <code>public bool IsAutoScrollEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:85](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L85) |  |
+| <code>public string LevelFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:87](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L87) |  |
+| <code>public string CategoryFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:99](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L99) |  |
+| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L111) |  |
+| <code>public bool HasLogHistory =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:123](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L123) |  |
+| <code>public bool HasActiveFilters =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L125) |  |
+| <code>public bool HasFilterRecoveryAction =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L130) |  |
+| <code>public bool CanClearLog =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:132](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L132) |  |
+| <code>public bool CanExportVisibleLogs =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L134) |  |
+| <code>public string ExportVisibleLogsTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L136) |  |
+| <code>public string ClearLogTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:142](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L142) |  |
+| <code>public bool IsClearConfirmationVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L147) |  |
+| <code>public string ClearConfirmationTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:161](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L161) |  |
+| <code>public string ClearConfirmationDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L163) |  |
+| <code>public string EmptyStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L167) |  |
+| <code>public string EmptyStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L171) |  |
+| <code>public event EventHandler? ScrollToTopRequested;</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:178](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L178) | Raised when a new log entry is prepended and auto-scroll is enabled. |
+| <code>public IRelayCommand ClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:182](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L182) |  |
+| <code>public IRelayCommand RequestClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L183) |  |
+| <code>public IRelayCommand ConfirmClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:184](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L184) |  |
+| <code>public IRelayCommand CancelClearCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L185) |  |
+| <code>public IRelayCommand ClearFiltersCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L186) |  |
+| <code>public ActivityLogViewModel(WpfServices.LoggingService loggingService, WpfServices.NotificationService notificationService);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L190) |  |
+| <code>public Task StartAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:206](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L206) | Subscribes to the desktop&#x27;s log events. |
+| <code>public void Stop();</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:215](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L215) | Unsubscribes from log events. |
+| <code>public void UpdateLevelFilter(string level);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:222](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L222) |  |
+| <code>public void UpdateCategoryFilter(string category);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L227) |  |
+| <code>public void UpdateSearch(string text);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:232](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L232) |  |
+| <code>public void ExportAsCsv(System.IO.Stream stream);</code> | [src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs:239](../../../../src/Meridian.Wpf/ViewModels/ActivityLogViewModel.cs#L239) |  |
 
 ## AddProviderWizardViewModel
 
