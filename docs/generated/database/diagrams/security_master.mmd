@@ -1503,6 +1503,13 @@ erDiagram
     security_master_security_master_quality_reports_id_seq {
         text catalogued_object
     }
+    security_master_security_master_redirects {
+        uuid retired_security_id PK
+        uuid survivor_security_id
+        timestamp_with_time_zone merged_at
+        text merged_by
+        text reason
+    }
     security_master_security_master_revisions {
         uuid revision_id PK
         uuid security_id

@@ -416,6 +416,9 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<ISecurityMasterHeldAmendmentStore, PostgresSecurityMasterHeldAmendmentStore>();
             // Review A4/P4: gap-safe change outbox written with every economic event append.
             services.AddSingleton<ISecurityMasterChangeOutbox, PostgresSecurityMasterChangeOutbox>();
+            // Review C1: survivorship redirects followed by identifier resolution.
+            services.AddSingleton<ISecurityMasterRedirectStore, PostgresSecurityMasterRedirectStore>();
+            services.AddSingleton<SecurityMasterMergeService>();
             services.AddSingleton<ISecurityMasterService, SecurityMasterService>();
             // Three typed write paths over one service: ISecurityMasterService is the operator-direct path
             // (refused while governed term amendments are required, by setting or by the Institutional profile), ISecurityMasterAmender
@@ -624,6 +627,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.AddOptions<SecurityMasterWorkbenchOptions>();
         services.TryAddSingleton<ISecurityMasterSourceAdmissionPolicy, SourcePrecedenceAdmissionPolicy>();
         services.TryAddSingleton<ISecurityMasterHeldAmendmentStore, InMemorySecurityMasterHeldAmendmentStore>();
+        services.TryAddSingleton<ISecurityMasterRedirectStore, InMemorySecurityMasterRedirectStore>();
         if (!configuration.IsConfigured(AssetOperationsStartup.ConnectionStringVariable))
         {
             services.TryAddSingleton<InMemoryAssetOperationsProjectionStore>();

@@ -18,10 +18,12 @@ public sealed class SecurityResolver : ISecurityResolver
 #pragma warning restore CS0618
 {
     private readonly ISecurityMasterStore _store;
+    private readonly ISecurityMasterRedirectStore? _redirects;
 
-    public SecurityResolver(ISecurityMasterStore store)
+    public SecurityResolver(ISecurityMasterStore store, ISecurityMasterRedirectStore? redirects = null)
     {
         _store = store;
+        _redirects = redirects;
     }
 
     public async Task<Guid?> ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default)
@@ -60,7 +62,33 @@ public sealed class SecurityResolver : ISecurityResolver
                 ignoreValidityWindow: false,
                 ct)
             .ConfigureAwait(false);
-        return SecurityCanonicalResolution.FromClaims(claims, request.ActiveOnly);
+        var resolution = SecurityCanonicalResolution.FromClaims(claims, request.ActiveOnly);
+        return await FollowMergeRedirectAsync(resolution, ct).ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Review C1: an identifier that lands only on a security merged into a survivor resolves to the
+    /// active survivor. Lots and history stay keyed to the retired id; only resolution is redirected.
+    /// </summary>
+    private async Task<SecurityCanonicalResolution> FollowMergeRedirectAsync(SecurityCanonicalResolution resolution, CancellationToken ct)
+    {
+        if (_redirects is null
+            || resolution.Status != SecurityResolutionStatus.Inactive
+            || resolution.SecurityId is not { } retired)
+        {
+            return resolution;
+        }
+
+        var survivor = await _redirects.ResolveSurvivorAsync(retired, ct).ConfigureAwait(false);
+        if (survivor == retired)
+        {
+            return resolution;
+        }
+
+        var survivorProjection = await _store.GetProjectionAsync(survivor, ct).ConfigureAwait(false);
+        return survivorProjection?.Status == SecurityStatusDto.Active
+            ? new SecurityCanonicalResolution(SecurityResolutionStatus.Resolved, survivor, [retired, survivor])
+            : resolution;
     }
 
     private static bool UsesCanonicalPath(ResolveSecurityRequest request)

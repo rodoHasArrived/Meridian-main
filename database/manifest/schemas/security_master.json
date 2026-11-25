@@ -2005,6 +2005,30 @@
       "target_schema": "security_master"
     },
     {
+      "fingerprint": "63635bb3916959bd07224e09b8ac40c4649913c25d81ab791ad6cb972e5142f0",
+      "kind": "normal",
+      "source": "security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_redirects.retired_security_id",
+      "target_kind": "table column",
+      "target_name": "security_master_redirects",
+      "target_schema": "security_master"
+    },
+    {
+      "fingerprint": "fd388bd8c844367aa3aa34df672d12a59cb771ca640b083134f482eb65b845e2",
+      "kind": "normal",
+      "source": "security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "source_kind": "table constraint",
+      "source_name": null,
+      "source_schema": "security_master",
+      "target": "security_master.security_master_redirects.survivor_security_id",
+      "target_kind": "table column",
+      "target_name": "security_master_redirects",
+      "target_schema": "security_master"
+    },
+    {
       "fingerprint": "83dcefa50abea855290bdbff7f8a1a3449e64e63191ed7965b5aaee1dec974fb",
       "kind": "normal",
       "source": "security_master.commitment_guarantee_covenant_projection_security_id_fkey on security_master.commitment_guarantee_covenant_projection",
@@ -5177,7 +5201,7 @@
   "enums": [],
   "exists": true,
   "extensions": [],
-  "fingerprint": "d0a22e4ef915f6cd52336c3592287baf097002d2c5fae27f9f7d5108142ed887",
+  "fingerprint": "26427d2fb41ad6a35a7b6e0824179e71a1be6cf85696ca1cfb11894cd2992041",
   "foreign_tables": [],
   "functions": [
     {
@@ -48082,6 +48106,243 @@
           "comment": null,
           "data_type": "uuid",
           "default": null,
+          "fingerprint": "d54e8e54b1b37270b3daca45d315512f564a056ed2a81c3279bf67f1d2c6b1bc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retired_security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "24d55bdbe267f7c2405d0f6ec8a51d884b03dae162bacc60140fb27080dde38e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "survivor_security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "41222569c4f6d47db287ca523a442168d0905259ef355d3b5acb8def00200044",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "merged_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a6698aa8505183829c55c17e32b1b2d9ec321b6460c27d6fc75fe8babe2c7628",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "merged_by",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "fadbfbfc4b47cf14c6fb2b8c7b645aa8d33d901913e53c76dc8ba2bf477eb07d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reason",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "retired_security_id",
+            "survivor_security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (retired_security_id <> survivor_security_id)",
+          "delete_action": null,
+          "fingerprint": "c91aa4a88f9f1da0df69eeeb237b21b1e6016e8db8c9895f3ddbdfd01007d02f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_security_master_redirects_distinct",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "retired_security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (retired_security_id)",
+          "delete_action": null,
+          "fingerprint": "44d19934e59a90a67b1339a8938bc7e747deacfe35705a5122962d83bafbf5c8",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_master_redirects_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f06a12773cdd4ade17366a6b5487b46af13593e1276cbf3907eb43b472ed8f8b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_master_redirects_survivor ON security_master.security_master_redirects USING btree (survivor_security_id)",
+          "expression": null,
+          "fingerprint": "ffe5f385988fd920c3f95f8d2a2eee65e81beb30f4135e85f0db6e932cbdfa96",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "survivor_security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_master_redirects_survivor",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_master_redirects_pkey ON security_master.security_master_redirects USING btree (retired_security_id)",
+          "expression": null,
+          "fingerprint": "6f7499f53cfdd0ff1eba6127bc018f026a6e463f530ded992fb8d8d74ef41907",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "retired_security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_master_redirects_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_master_redirects",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
           "fingerprint": "c9a52e1b1c0e9187f02f3725d0ef3b6dcac4a883743c55ef7d1cbb32bbebe125",
           "generated": null,
           "generated_expression": null,
@@ -58013,6 +58274,14 @@
       "forced": false,
       "policies": [],
       "relation": "security_master_quality_reports",
+      "schema": "security_master"
+    },
+    {
+      "enabled": false,
+      "fingerprint": "ad3dc95feca963332aa86fe649766c77e0d95b7901f139cd1ad26b10470d52f3",
+      "forced": false,
+      "policies": [],
+      "relation": "security_master_redirects",
       "schema": "security_master"
     },
     {
@@ -100567,6 +100836,243 @@
       "is_partition": false,
       "kind": "table",
       "name": "security_master_quality_reports",
+      "options": [],
+      "owner": "meridian",
+      "persistence": "permanent",
+      "policies": [],
+      "replica_identity": "default",
+      "rls_enabled": false,
+      "rls_forced": false,
+      "schema": "security_master",
+      "security_labels": [],
+      "sequence": null,
+      "triggers": []
+    },
+    {
+      "acl": [
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "delete"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "insert"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "references"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "select"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "trigger"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "truncate"
+        },
+        {
+          "grantable": false,
+          "grantee": "meridian",
+          "grantor": "meridian",
+          "privilege": "update"
+        }
+      ],
+      "columns": [
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "d54e8e54b1b37270b3daca45d315512f564a056ed2a81c3279bf67f1d2c6b1bc",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "retired_security_id",
+          "nullable": false,
+          "ordinal_position": 1,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "uuid",
+          "default": null,
+          "fingerprint": "24d55bdbe267f7c2405d0f6ec8a51d884b03dae162bacc60140fb27080dde38e",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "survivor_security_id",
+          "nullable": false,
+          "ordinal_position": 2,
+          "security_labels": [],
+          "type_name": "uuid",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": null,
+          "comment": null,
+          "data_type": "timestamp with time zone",
+          "default": "now()",
+          "fingerprint": "41222569c4f6d47db287ca523a442168d0905259ef355d3b5acb8def00200044",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "merged_at",
+          "nullable": false,
+          "ordinal_position": 3,
+          "security_labels": [],
+          "type_name": "timestamptz",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "a6698aa8505183829c55c17e32b1b2d9ec321b6460c27d6fc75fe8babe2c7628",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "merged_by",
+          "nullable": false,
+          "ordinal_position": 4,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        },
+        {
+          "collation": "pg_catalog.default",
+          "comment": null,
+          "data_type": "text",
+          "default": null,
+          "fingerprint": "fadbfbfc4b47cf14c6fb2b8c7b645aa8d33d901913e53c76dc8ba2bf477eb07d",
+          "generated": null,
+          "generated_expression": null,
+          "identity": null,
+          "name": "reason",
+          "nullable": false,
+          "ordinal_position": 5,
+          "security_labels": [],
+          "type_name": "text",
+          "type_schema": "pg_catalog"
+        }
+      ],
+      "comment": null,
+      "constraints": [
+        {
+          "columns": [
+            "retired_security_id",
+            "survivor_security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "CHECK (retired_security_id <> survivor_security_id)",
+          "delete_action": null,
+          "fingerprint": "c91aa4a88f9f1da0df69eeeb237b21b1e6016e8db8c9895f3ddbdfd01007d02f",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "ck_security_master_redirects_distinct",
+          "no_inherit": false,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "check",
+          "update_action": null,
+          "validated": true
+        },
+        {
+          "columns": [
+            "retired_security_id"
+          ],
+          "comment": null,
+          "deferrable": false,
+          "definition": "PRIMARY KEY (retired_security_id)",
+          "delete_action": null,
+          "fingerprint": "44d19934e59a90a67b1339a8938bc7e747deacfe35705a5122962d83bafbf5c8",
+          "initially_deferred": false,
+          "match_type": null,
+          "name": "security_master_redirects_pkey",
+          "no_inherit": true,
+          "referenced_columns": [],
+          "referenced_schema": null,
+          "referenced_table": null,
+          "type": "primary_key",
+          "update_action": null,
+          "validated": true
+        }
+      ],
+      "definition": null,
+      "definition_hash": null,
+      "fingerprint": "f06a12773cdd4ade17366a6b5487b46af13593e1276cbf3907eb43b472ed8f8b",
+      "foreign_options": [],
+      "foreign_server": null,
+      "indexes": [
+        {
+          "comment": null,
+          "definition": "CREATE INDEX ix_security_master_redirects_survivor ON security_master.security_master_redirects USING btree (survivor_security_id)",
+          "expression": null,
+          "fingerprint": "ffe5f385988fd920c3f95f8d2a2eee65e81beb30f4135e85f0db6e932cbdfa96",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "survivor_security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "ix_security_master_redirects_survivor",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": false,
+          "ready": true,
+          "security_labels": [],
+          "unique": false,
+          "valid": true
+        },
+        {
+          "comment": null,
+          "definition": "CREATE UNIQUE INDEX security_master_redirects_pkey ON security_master.security_master_redirects USING btree (retired_security_id)",
+          "expression": null,
+          "fingerprint": "6f7499f53cfdd0ff1eba6127bc018f026a6e463f530ded992fb8d8d74ef41907",
+          "included_columns": [],
+          "is_replica_identity": false,
+          "key_columns": [
+            "retired_security_id"
+          ],
+          "live": true,
+          "method": "btree",
+          "name": "security_master_redirects_pkey",
+          "options": [],
+          "owner": "meridian",
+          "predicate": null,
+          "primary": true,
+          "ready": true,
+          "security_labels": [],
+          "unique": true,
+          "valid": true
+        }
+      ],
+      "is_partition": false,
+      "kind": "table",
+      "name": "security_master_redirects",
       "options": [],
       "owner": "meridian",
       "persistence": "permanent",

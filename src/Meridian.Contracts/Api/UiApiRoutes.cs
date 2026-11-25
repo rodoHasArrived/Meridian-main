@@ -464,6 +464,7 @@ public static class UiApiRoutes
     public const string SecurityMasterConflicts = "/api/security-master/conflicts";
     public const string SecurityMasterConflictResolve = "/api/security-master/conflicts/{conflictId:guid}/resolve";
     public const string SecurityMasterHeldAmendments = "/api/security-master/held-amendments";
+    public const string SecurityMasterMerge = "/api/security-master/{securityId:guid}/merge";
     public const string SecurityMasterHeldAmendmentDiscard = "/api/security-master/held-amendments/{heldAmendmentId:guid}/discard";
 
     // Passport Workbench governed-write surface (see docs/engineering/blueprints/security-master-passport-workbench.md).

@@ -631,6 +631,15 @@
       "sha256": "77980a29a604dbed15ef10f41a6616f8070a386a9fe823806a58d6b3e5ebf44b"
     },
     {
+      "filename": "073_security_master_redirects.sql",
+      "immutable": true,
+      "migration_set_id": "security-master",
+      "ordinal": 73,
+      "path": "src/Meridian.Storage/SecurityMaster/Migrations/073_security_master_redirects.sql",
+      "schema": "security_master",
+      "sha256": "1e7d6a2181a0d69961b46d93ac3ac4fe9818b301bfad297cb3a409806a87dc50"
+    },
+    {
       "filename": "001_direct_lending.sql",
       "immutable": true,
       "migration_set_id": "direct-lending",
@@ -1811,7 +1820,7 @@
     }
   ],
   "findings": [],
-  "fingerprint": "348cfcaf0ec343b27c29d8d5e3de4d6377af3f2c2f5efb74192a0be76dcbe51c",
+  "fingerprint": "6c7ab08d51ffda48f94b10efa76608aa08b04f8ef39a5b4d15d20d0d5386fb94",
   "format": "meridian.migration-manifest.v1",
   "migration_sets": [
     {
@@ -2073,7 +2082,7 @@
   ],
   "summary": {
     "errors": 0,
-    "files": 201,
+    "files": 202,
     "migration_sets": 11,
     "waivers": 57,
     "warnings": 0

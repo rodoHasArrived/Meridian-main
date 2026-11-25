@@ -2,7 +2,7 @@
 
 # `security_master` schema
 
-- Relations: 140
+- Relations: 141
 - Functions/procedures: 16
 - Triggers: 39
 - Row-level security policies: 0
@@ -1515,6 +1515,13 @@ erDiagram
     security_master_security_master_quality_reports_id_seq {
         text catalogued_object
     }
+    security_master_security_master_redirects {
+        uuid retired_security_id PK
+        uuid survivor_security_id
+        timestamp_with_time_zone merged_at
+        text merged_by
+        text reason
+    }
     security_master_security_master_revisions {
         uuid revision_id PK
         uuid security_id
@@ -2090,6 +2097,7 @@ erDiagram
 | `security_master_held_amendments` | table | 11 | `held_amendment_id` | 0 | 2 | - |
 | `security_master_quality_reports` | table | 3 | `id` | 0 | 2 | - |
 | `security_master_quality_reports_id_seq` | sequence | 0 | - | 0 | 0 | - |
+| `security_master_redirects` | table | 5 | `retired_security_id` | 0 | 2 | - |
 | `security_master_revisions` | table | 16 | `revision_id` | 0 | 2 | - |
 | `security_master_terms_capability_floor` | table | 6 | `singleton` | 0 | 1 | One reviewed minimum declared-mapping/kernel capability floor for configured Security Master writers. Empty during 5b-1; activated only after the fleet inventory and data gates, before 5b-2. Server and WPF writer startup refuse unknown/newer active floors. Does not enable declared terms or authorize deployment. |
 | `security_operator_overrides` | table | 9 | `security_id` | 1 | 1 | - |

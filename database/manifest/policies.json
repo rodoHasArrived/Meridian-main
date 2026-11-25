@@ -2,8 +2,8 @@
   "counts": {
     "error": 0,
     "info": 0,
-    "total": 327,
-    "warning": 327
+    "total": 328,
+    "warning": 328
   },
   "failed": false,
   "findings": [
@@ -2000,6 +2000,16 @@
     {
       "details": {
         "schema": "security_master",
+        "table": "security_master_redirects"
+      },
+      "message": "Business table security_master.security_master_redirects does not have a table comment.",
+      "object": "security_master.security_master_redirects",
+      "rule_id": "business-table-must-have-comment",
+      "severity": "warning"
+    },
+    {
+      "details": {
+        "schema": "security_master",
         "table": "security_master_revisions"
       },
       "message": "Business table security_master.security_master_revisions does not have a table comment.",
@@ -3644,5 +3654,5 @@
       "severity": "warning"
     }
   ],
-  "fingerprint": "b6402718838645a7ff21482330fdb8685920f47f326ca55abcd4813f348530f0"
+  "fingerprint": "98d8796602ba4856ee237eccbd2ffecb8e4efa9ca23b75111c571a1876df3a5e"
 }

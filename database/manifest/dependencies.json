@@ -68059,6 +68059,18 @@
       "target": "database:security_master.security_master_held_amendments.status"
     },
     {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "target": "database:security_master.security_master_redirects.retired_security_id"
+    },
+    {
+      "kind": "normal",
+      "label": "",
+      "source": "database:security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "target": "database:security_master.security_master_redirects.survivor_security_id"
+    },
+    {
       "constraint": "commitment_guarantee_covenant_projection_security_id_fkey",
       "kind": "foreign-key",
       "label": "security_id",
@@ -72066,6 +72078,12 @@
       "kind": "contains",
       "label": "",
       "source": "schema:security_master",
+      "target": "database:security_master.security_master_redirects"
+    },
+    {
+      "kind": "contains",
+      "label": "",
+      "source": "schema:security_master",
       "target": "database:security_master.security_master_revisions"
     },
     {
@@ -72244,7 +72262,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "8cc110aa4d7bee4d2d6268d6c785fd851349d8ff1157d58037f55d239886d2bb",
+  "fingerprint": "e84692e3c2c8c8f9e013e222428f3e5382f3712f3e2d94e5b5f0c6c3a0ef6c6c",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -103581,6 +103599,11 @@
       "label": "security_master.ck_security_master_held_amendments_status on security_master.security_master_held_amendments"
     },
     {
+      "id": "database:security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects",
+      "kind": "database-object",
+      "label": "security_master.ck_security_master_redirects_distinct on security_master.security_master_redirects"
+    },
+    {
       "id": "database:security_master.commercial_paper_projection",
       "kind": "database-table",
       "label": "security_master.commercial_paper_projection",
@@ -105672,6 +105695,22 @@
       "schema": "security_master"
     },
     {
+      "id": "database:security_master.security_master_redirects",
+      "kind": "database-table",
+      "label": "security_master.security_master_redirects",
+      "schema": "security_master"
+    },
+    {
+      "id": "database:security_master.security_master_redirects.retired_security_id",
+      "kind": "database-object",
+      "label": "security_master.security_master_redirects.retired_security_id"
+    },
+    {
+      "id": "database:security_master.security_master_redirects.survivor_security_id",
+      "kind": "database-object",
+      "label": "security_master.security_master_redirects.survivor_security_id"
+    },
+    {
       "id": "database:security_master.security_master_revisions",
       "kind": "database-table",
       "label": "security_master.security_master_revisions",
@@ -106167,9 +106206,9 @@
   "summary": {
     "contract_references": 4419,
     "contract_set_memberships": 5834,
-    "edges": 12001,
+    "edges": 12004,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5899
+    "nodes": 5903
   }
 }
