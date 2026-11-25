@@ -602,3 +602,66 @@ tests:
       - eval_time: 25m
         alertname: MeridianDiskSpaceCritical
         exp_alerts: []
+
+  # --- MeridianSlowRequests ----------------------------------------------------
+  # One request per second on a route, every request in the (2.5, 5] bucket: the
+  # p95 interpolates to about 4.9 s, well over the 2 s threshold.
+  - interval: 1m
+    name: MeridianSlowRequests fires on a busy route whose p95 stays above 2 s
+    input_series:
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/reports/{id}",method="GET",status="200",le="2.5"}'
+        values: "0+0x30"
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/reports/{id}",method="GET",status="200",le="5"}'
+        values: "0+60x30"
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/reports/{id}",method="GET",status="200",le="+Inf"}'
+        values: "0+60x30"
+      - series: 'mdc_http_request_duration_seconds_count{route="/api/reports/{id}",method="GET",status="200"}'
+        values: "0+60x30"
+    alert_rule_test:
+      - eval_time: 5m
+        alertname: MeridianSlowRequests
+        exp_alerts: []
+      - eval_time: 25m
+        alertname: MeridianSlowRequests
+        exp_alerts:
+          - exp_labels:
+              severity: warning
+              incident_priority: P3
+              route: /api/reports/{id}
+            exp_annotations:
+              summary: "Slow responses on /api/reports/{id} (p95 4.875s)"
+              description: "The 95th-percentile response time for /api/reports/{id} has been above 2 s for 10 minutes."
+              runbook_url: "docs/operators/operator-runbook.md#slow-requests"
+              probable_causes: "Expensive report or read-model query, storage latency, lock contention, a slow downstream dependency, host CPU or memory pressure"
+              immediate_mitigation: "1. Find the route's Slow request lines in <data-root>/_logs for status and trace ids. 2. Check host CPU and memory and mdc_pipeline_queue_utilization_ratio. 3. Check storage latency and mdc_disk_free_bytes. 4. Correlate trace ids when tracing is enabled."
+
+  - interval: 1m
+    name: MeridianSlowRequests stays silent on a rarely called slow route
+    input_series:
+      # Slow, but one request every 5 minutes is under the 0.1 req/s guard.
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/admin/export",method="GET",status="200",le="2.5"}'
+        values: "0+0x30"
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/admin/export",method="GET",status="200",le="5"}'
+        values: "0+0.2x30"
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/admin/export",method="GET",status="200",le="+Inf"}'
+        values: "0+0.2x30"
+      - series: 'mdc_http_request_duration_seconds_count{route="/api/admin/export",method="GET",status="200"}'
+        values: "0+0.2x30"
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: MeridianSlowRequests
+        exp_alerts: []
+
+  - interval: 1m
+    name: MeridianSlowRequests stays silent on a busy fast route
+    input_series:
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/status",method="GET",status="200",le="0.1"}'
+        values: "0+60x30"
+      - series: 'mdc_http_request_duration_seconds_bucket{route="/api/status",method="GET",status="200",le="+Inf"}'
+        values: "0+60x30"
+      - series: 'mdc_http_request_duration_seconds_count{route="/api/status",method="GET",status="200"}'
+        values: "0+60x30"
+    alert_rule_test:
+      - eval_time: 25m
+        alertname: MeridianSlowRequests
+        exp_alerts: []
