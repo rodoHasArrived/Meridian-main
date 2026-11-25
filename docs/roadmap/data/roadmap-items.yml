@@ -2831,7 +2831,6 @@ items:
     - DEC-PACK-SPLIT-001
     pr_references:
     - 3760
-    status_detail: docs/engineering/plans/security-master-class-plumbing-codegen.md
     exit_criteria:
       - One declaration per class, built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# plumbing (ToSecurityKind decode dispatch, SecurityAssetClassNames constants, catalog row heads).
       - An equivalence test regenerates every covered site and fails when the hand-written source differs.
