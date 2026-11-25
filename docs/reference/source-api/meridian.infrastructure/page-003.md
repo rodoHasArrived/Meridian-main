@@ -264,7 +264,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.ProviderRateLimitHistory</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L8).
+Source: [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L10).
 
 Recent quota events and durable UTC daily totals, without request payloads or credentials.
 
@@ -276,13 +276,14 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:12](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L12) |  |
-| <code>public ProviderRateLimitHistory(int capacity = 1024) : this(capacity, TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:19](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L19) |  |
-| <code>public ProviderRateLimitHistory(string dataRoot, IAtomicFileWriter writer, TimeProvider? timeProvider = null, int capacity = 1024) : this(capacity, timeProvider?? TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:24](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L24) |  |
-| <code>public static ProviderRateLimitHistory ForDataRoot(string dataRoot, IAtomicFileWriter writer);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L39) | Shares recent observations between host surfaces using the same data root. |
-| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L45) |  |
-| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:60](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L60) |  |
-| <code>public bool TryReadDailyRollups(string provider, out IReadOnlyList&lt;ProviderRateLimitDailyRollupDto&gt; rollups);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:68](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L68) |  |
+| <code>public static ProviderRateLimitHistory Shared { get; } = new ();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:15](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L15) |  |
+| <code>public ProviderRateLimitHistory(int capacity = 1024) : this(capacity, TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:25](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L25) |  |
+| <code>public ProviderRateLimitHistory(string dataRoot, IAtomicFileWriter writer, TimeProvider? timeProvider = null, int capacity = 1024) : this(capacity, timeProvider?? TimeProvider.System);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:30](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L30) |  |
+| <code>public static ProviderRateLimitHistory ForDataRoot(string dataRoot, IAtomicFileWriter writer);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:45](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L45) | Shares recent observations between host surfaces using the same data root. |
+| <code>public IDisposable BeginScope();</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:54](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L54) | Directs adapter observations to this history for the current asynchronous request. |
+| <code>public void Record(string provider, RateLimitStatus? status, string? nextProvider = null, int? httpStatus = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:61](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L61) |  |
+| <code>public IReadOnlyList&lt;ProviderRateLimitEventDto&gt; Read(string provider, int hours, DateTimeOffset? now = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:140](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L140) |  |
+| <code>public bool TryReadDailyRollups(string provider, out IReadOnlyList&lt;ProviderRateLimitDailyRollupDto&gt; rollups);</code> | [src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs:148](../../../../src/Meridian.Infrastructure/Adapters/Core/ProviderRateLimitHistory.cs#L148) |  |
 
 ## ProviderRateLimitProfile
 

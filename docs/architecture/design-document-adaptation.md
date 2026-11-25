@@ -66,8 +66,10 @@ strategy/backtesting seams. These shared runtime projects retain their distinct 
 responsibilities; listing them does not transfer accounting authority or create a new module.
 
 The [scope-adoption decision](../roadmap/data/decision-log.yml) records
-`DEC-TRADING-STRATEGY-DIRECTION-001`. Both W13 outcomes remain `planned` with `planned_evidence`
-in the [roadmap registry](../roadmap/data/roadmap-items.yml). Existing W2/W3/W6/W7 and accepted
+`DEC-TRADING-STRATEGY-DIRECTION-001`. Accepted `DEC-W13-STATUS-001` (2026-11-25) records both W13
+outcomes as `in_progress` with `in_progress` evidence in the
+[roadmap registry](../roadmap/data/roadmap-items.yml); the adapted contexts stay `planned` until
+those outcomes are accepted. Existing W2/W3/W6/W7 and accepted
 W9 evidence keeps its original scope. The financial MVP is not a development ceiling, and a
 planned strategy or OMS outcome is not an enabled live capability. Supported account/intent
 authority, broker readiness, independent review, and release certification retain their own gates.
@@ -99,6 +101,9 @@ The adaptation validator checks that:
 - the financial baseline remains bounded, the two adopted W13 contexts remain planned with exact
   roadmap/decision references and existing runtime owners, and unrelated deferred contexts stay
   deferred;
+- each W13 roadmap row stays `planned`/`planned_evidence`, or is `in_progress`/`in_progress` only
+  while `DEC-W13-STATUS-001` is accepted and names it; ready-for-acceptance, accepted, and done
+  claims are rejected;
 - the browser and WPF workspace catalogs preserve the seven root workspaces;
 - no mobile development lane is enabled in the adaptation contract;
 - every screen-inventory evidence path exists.

@@ -169,24 +169,12 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Alpaca.AlpacaHistoricalDataProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.Accounting.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.Accounting.cs#L8).
-
-```csharp
-public sealed partial class AlpacaHistoricalDataProvider
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public override async Task&lt;AccountingClosePrice?&gt; GetRawAccountingCloseAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.Accounting.cs:14](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.Accounting.cs#L14) | Requests unadjusted observations independently of the configured research dataset. The shared HTTP/quota owner is retained; no provider mutation or second credential context is used. |
-
 Source: [src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs:39](../../../../src/Meridian.Infrastructure/Adapters/Alpaca/AlpacaHistoricalDataProvider.cs#L39).
 
 Historical data provider using Alpaca Markets Data API v2. Provides daily and intraday OHLCV bars with split/dividend adjustments, as well as tick-level quotes (NBBO), trades, and auction data. Coverage: US equities, ETFs. Extends BaseHistoricalDataProvider for common functionality including: - HTTP resilience (retry, circuit breaker) - Rate limit tracking with IRateLimitAwareProvider - Centralized error handling
 
 ```csharp
-public sealed partial class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
+public sealed class AlpacaHistoricalDataProvider : BaseHistoricalDataProvider
 ```
 
 Declared public members:
@@ -656,7 +644,7 @@ Declared public members:
 | <code>public override async Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs:84](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs#L84) |  |
 | <code>public override async Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs:111](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs#L111) |  |
 | <code>public override async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs:121](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs#L121) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs:187](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs#L187) | Get intraday historical bars. This is the unique capability of Alpha Vantage. |
+| <code>public async Task&lt;IReadOnlyList&lt;IntradayBar&gt;&gt; GetIntradayBarsAsync(string symbol, string interval, DateTimeOffset? from, DateTimeOffset? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs:185](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageHistoricalDataProvider.cs#L185) | Get intraday historical bars. This is the unique capability of Alpha Vantage. |
 
 ## AlphaVantageSymbolSearchProvider
 
@@ -680,44 +668,6 @@ Declared public members:
 | <code>public override IReadOnlyList&lt;string&gt; SupportedAssetTypes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageSymbolSearchProvider.cs:54](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageSymbolSearchProvider.cs#L54) |  |
 | <code>public override IReadOnlyList&lt;string&gt; SupportedExchanges =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageSymbolSearchProvider.cs:61](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageSymbolSearchProvider.cs#L61) |  |
 | <code>public AlphaVantageSymbolSearchProvider(string? apiKey = null, HttpClient? httpClient = null, ILogger? log = null, RateLimiterRegistry? rateLimiterRegistry = null, AlphaVantageQuotaConfig? quotaConfig = null, BackfillProviderRuntimeOptions? runtimeOptions = null) : base(apiKey, httpClient, log, rateLimiterRegistry?.TimeProvider, runtimeOptions);</code> | [src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageSymbolSearchProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/AlphaVantage/AlphaVantageSymbolSearchProvider.cs#L70) |  |
-
-## AccountingClosePrice
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.AccountingClosePrice</code>. Kind: `record`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs:18](../../../../src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs#L18).
-
-One explicitly requested accounting close, separate from a provider&#x27;s configured research bars. Provider and feed identify the actual serving dataset; the digest identifies the original source record. Returning a price does not grant valuation or posting approval.
-
-```csharp
-public sealed record AccountingClosePrice(string Symbol, DateOnly SessionDate, decimal Close, string Provider, string Feed, AccountingClosePriceBasis PriceBasis, string SourceContentHash)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string ToEvidenceReference() =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs:31](../../../../src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs#L31) | Immutable evidence identity carried unchanged through mark evidence and journal fingerprints. The digest is a source-record hash, not a claim that a fetch proves market-wide completeness. |
-
-## AccountingClosePriceBasis
-
-Qualified name: <code>Meridian.Infrastructure.Adapters.Core.AccountingClosePriceBasis</code>. Kind: `enum`.
-
-Source: [src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs:6](../../../../src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs#L6).
-
-The provider-declared price basis; an unknown or adjusted basis cannot price an accounting close.
-
-```csharp
-public enum AccountingClosePriceBasis
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Unknown</code> | [src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs:8](../../../../src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs#L8) |  |
-| <code>Raw</code> | [src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs:9](../../../../src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs#L9) |  |
-| <code>Adjusted</code> | [src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs:10](../../../../src/Meridian.Infrastructure/Adapters/Core/AccountingClosePrice.cs#L10) |  |
 
 ## BackfillBarValidation
 
@@ -1061,10 +1011,10 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public BackfillRoutingAdmission(IEnumerable&lt;IHistoricalDataProvider&gt; providers, int perProvider, ProviderRateLimitHistory? history = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:127](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L127) |  |
-| <code>public RateLimitStatus? GetStatus(string providerName) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:143](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L143) |  |
-| <code>public async Task&lt;IReadOnlyList&lt;TResult&gt;&gt; FetchPinnedAsync&lt;TResult&gt;(IHistoricalDataProvider provider, string symbol, Func&lt;CancellationToken, Task&lt;IReadOnlyList&lt;TResult&gt;&gt;&gt; fetch, Action&lt;BackfillRoutingAttempt&gt;? capture, CancellationToken ct, BackfillProvenanceCapture? provenance = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:146](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L146) | Uses the same admission and observations for a strictly pinned request. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:208](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L208) |  |
+| <code>public BackfillRoutingAdmission(IEnumerable&lt;IHistoricalDataProvider&gt; providers, int perProvider, ProviderRateLimitHistory? history = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:128](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L128) |  |
+| <code>public RateLimitStatus? GetStatus(string providerName) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:144](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L144) |  |
+| <code>public async Task&lt;IReadOnlyList&lt;TResult&gt;&gt; FetchPinnedAsync&lt;TResult&gt;(IHistoricalDataProvider provider, string symbol, Func&lt;CancellationToken, Task&lt;IReadOnlyList&lt;TResult&gt;&gt;&gt; fetch, Action&lt;BackfillRoutingAttempt&gt;? capture, CancellationToken ct, BackfillProvenanceCapture? provenance = null);</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:147](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L147) | Uses the same admission and observations for a strictly pinned request. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs:211](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/BackfillRoutingSnapshot.cs#L211) |  |
 
 ## BackfillRoutingProvider
 
@@ -1204,7 +1154,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BaseHistoricalDataProvider</code>. Kind: `class`.
 
-Source: [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:40](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L40).
+Source: [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:41](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L41).
 
 Base class for historical data providers to eliminate duplicate code patterns across all backfill provider implementations. Provides common functionality for: - Rate limiting initialization and management - HTTP client setup and error handling - HTTP resilience (retry, circuit breaker, timeout) - Credential validation - Symbol normalization - Disposed state tracking
 
@@ -1216,31 +1166,30 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public abstract string Name { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:69](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L69) | Unique identifier for the provider (e.g., &quot;alpaca&quot;, &quot;tiingo&quot;). |
-| <code>public virtual string CoverageFeed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:72](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L72) |  |
-| <code>public abstract string DisplayName { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:77](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L77) | Human-readable display name. |
-| <code>public abstract string Description { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:82](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L82) | Description of the provider&#x27;s capabilities. |
-| <code>public virtual int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:91](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L91) |  |
-| <code>public virtual TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L92) |  |
-| <code>public virtual int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:93](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L93) |  |
-| <code>public virtual TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:94](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L94) |  |
-| <code>public virtual HistoricalDataCapabilities Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:107](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L107) | Consolidated capability flags for this provider. Override in derived classes to specify supported features. |
-| <code>public bool SupportsAdjustedPrices =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:113](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L113) | Whether this provider returns split/dividend adjusted prices. |
-| <code>public bool SupportsIntraday =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:119](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L119) | Whether this provider supports intraday bar data. |
-| <code>public bool SupportsDividends =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:125](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L125) | Whether this provider includes dividend data. |
-| <code>public bool SupportsSplits =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:131](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L131) | Whether this provider includes split data. |
-| <code>public bool SupportsQuotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:137](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L137) | Whether this provider supports historical quote (NBBO) data. |
-| <code>public bool SupportsTrades =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:143](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L143) | Whether this provider supports historical trade data. |
-| <code>public bool SupportsAuctions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:149](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L149) | Whether this provider supports historical auction data. |
-| <code>public IReadOnlyList&lt;string&gt; SupportedMarkets =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:155](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L155) | Market regions/countries supported (e.g., &quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;). |
-| <code>public virtual event Action&lt;RateLimitInfo&gt;? OnRateLimitHit;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:163](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L163) | Event raised when the provider hits a rate limit (HTTP 429). Derived classes can subscribe or override to handle rate limit events. |
-| <code>public RateLimitInfo GetRateLimitInfo();</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:276](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L276) | Get current rate limit information. |
-| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:286](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L286) |  |
-| <code>public abstract Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:626](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L626) | Fetch daily OHLCV bars for a symbol within the specified date range. Must be implemented by derived classes. |
-| <code>public virtual Task&lt;AccountingClosePrice?&gt; GetRawAccountingCloseAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:633](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L633) |  |
-| <code>public virtual Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:646](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L646) | Check if the provider is currently available and healthy. Default implementation validates credentials. |
-| <code>public virtual async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:655](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L655) | Get extended bar data with adjustment information when supported. Default implementation converts standard bars to adjusted bars. |
-| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:669](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L669) |  |
+| <code>public abstract string Name { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:70](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L70) | Unique identifier for the provider (e.g., &quot;alpaca&quot;, &quot;tiingo&quot;). |
+| <code>public virtual string CoverageFeed =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:73](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L73) |  |
+| <code>public abstract string DisplayName { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:78](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L78) | Human-readable display name. |
+| <code>public abstract string Description { get; }</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:83](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L83) | Description of the provider&#x27;s capabilities. |
+| <code>public virtual int Priority =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:92](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L92) |  |
+| <code>public virtual TimeSpan RateLimitDelay =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:93](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L93) |  |
+| <code>public virtual int MaxRequestsPerWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:94](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L94) |  |
+| <code>public virtual TimeSpan RateLimitWindow =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:95](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L95) |  |
+| <code>public virtual HistoricalDataCapabilities Capabilities =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:108](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L108) | Consolidated capability flags for this provider. Override in derived classes to specify supported features. |
+| <code>public bool SupportsAdjustedPrices =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:114](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L114) | Whether this provider returns split/dividend adjusted prices. |
+| <code>public bool SupportsIntraday =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:120](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L120) | Whether this provider supports intraday bar data. |
+| <code>public bool SupportsDividends =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:126](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L126) | Whether this provider includes dividend data. |
+| <code>public bool SupportsSplits =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:132](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L132) | Whether this provider includes split data. |
+| <code>public bool SupportsQuotes =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:138](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L138) | Whether this provider supports historical quote (NBBO) data. |
+| <code>public bool SupportsTrades =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:144](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L144) | Whether this provider supports historical trade data. |
+| <code>public bool SupportsAuctions =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:150](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L150) | Whether this provider supports historical auction data. |
+| <code>public IReadOnlyList&lt;string&gt; SupportedMarkets =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:156](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L156) | Market regions/countries supported (e.g., &quot;US&quot;, &quot;UK&quot;, &quot;DE&quot;). |
+| <code>public virtual event Action&lt;RateLimitInfo&gt;? OnRateLimitHit;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:164](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L164) | Event raised when the provider hits a rate limit (HTTP 429). Derived classes can subscribe or override to handle rate limit events. |
+| <code>public RateLimitInfo GetRateLimitInfo();</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:278](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L278) | Get current rate limit information. |
+| <code>public ProviderRateLimitDiagnosticSnapshot GetRateLimitDiagnosticsSnapshot();</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:288](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L288) |  |
+| <code>public abstract Task&lt;IReadOnlyList&lt;HistoricalBar&gt;&gt; GetDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:651](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L651) | Fetch daily OHLCV bars for a symbol within the specified date range. Must be implemented by derived classes. |
+| <code>public virtual Task&lt;bool&gt; IsAvailableAsync(CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:663](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L663) | Check if the provider is currently available and healthy. Default implementation validates credentials. |
+| <code>public virtual async Task&lt;IReadOnlyList&lt;AdjustedHistoricalBar&gt;&gt; GetAdjustedDailyBarsAsync(string symbol, DateOnly? from, DateOnly? to, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:672](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L672) | Get extended bar data with adjustment information when supported. Default implementation converts standard bars to adjusted bars. |
+| <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs:686](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseHistoricalDataProvider.cs#L686) |  |
 
 ## BaseSymbolSearchProvider
 
@@ -1269,3 +1218,35 @@ Declared public members:
 | <code>public Task&lt;IReadOnlyList&lt;SymbolSearchResult&gt;&gt; SearchAuthoritativeAsync(string query, int limit = 10, string? assetType = null, string? exchange = null, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs:222](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs#L222) | Candidate review lookup: HTTP and transport failures must not become empty matches. |
 | <code>public async Task&lt;SymbolDetails?&gt; GetDetailsAsync(SymbolId symbol, CancellationToken ct = default);</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs:311](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs#L311) | Get detailed information about a specific symbol. |
 | <code>public void Dispose();</code> | [src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs:582](../../../../src/Meridian.Infrastructure/Adapters/Core/BaseSymbolSearchProvider.cs#L582) |  |
+
+## BatchEnqueueError
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BatchEnqueueError</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:64](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L64).
+
+Error information for a failed batch enqueue operation.
+
+```csharp
+public sealed record BatchEnqueueError(string Symbol, string ErrorMessage);
+```
+
+## BatchEnqueueOptions
+
+Qualified name: <code>Meridian.Infrastructure.Adapters.Core.BatchEnqueueOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:72](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L72).
+
+Options for batch enqueueing.
+
+```csharp
+public sealed record BatchEnqueueOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool ContinueOnError { get; init; } = true;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:75](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L75) | Continue enqueueing if individual jobs fail. |
+| <code>public bool CreateDependencyChain { get; init; } = false;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:78](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L78) | Create dependency chain between jobs (each depends on previous). |
+| <code>public BackfillPriority DefaultPriority { get; init; } = BackfillPriority.Normal;</code> | [src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs:81](../../../../src/Meridian.Infrastructure/Adapters/Core/Backfill/PriorityBackfillQueue.cs#L81) | Default priority for all jobs in batch. |

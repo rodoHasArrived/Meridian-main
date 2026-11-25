@@ -1180,6 +1180,7 @@ Meridian-main
 │       │   ├── integration_evidence.py
 │       │   ├── local_gate.py
 │       │   ├── maintenance_refresh.py
+│       │   ├── merge-dotnet-shard-summaries.py
 │       │   ├── publish-certified-release.py
 │       │   ├── release-envelope.py
 │       │   ├── release-preflight.py
@@ -1187,6 +1188,7 @@ Meridian-main
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
+│       │   ├── run-meridian-integrations.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
 │       │   ├── scan-commit-secrets.py
@@ -5313,7 +5315,6 @@ Meridian-main
 │   │   │   ├── AccrualLedgerService.cs
 │   │   │   ├── DailyAccrualWorker.cs
 │   │   │   ├── DirectLendingEventRebuilder.cs
-│   │   │   ├── DirectLendingEventRebuilder.Lifecycle.cs
 │   │   │   ├── DirectLendingJournalLines.cs
 │   │   │   ├── DirectLendingJournalLines.Events.cs
 │   │   │   ├── DirectLendingOutboxDispatcher.cs
@@ -5335,7 +5336,6 @@ Meridian-main
 │   │   │   ├── LoanAccountingProjector.cs
 │   │   │   ├── LoanPortfolioSummaryBuilder.cs
 │   │   │   ├── PostgresDirectLendingCommandService.cs
-│   │   │   ├── PostgresDirectLendingCommandService.LifecycleReplay.cs
 │   │   │   ├── PostgresDirectLendingCommandService.ServicingSchedules.cs
 │   │   │   ├── PostgresDirectLendingQueryService.cs
 │   │   │   └── PostgresDirectLendingService.cs
@@ -7361,7 +7361,6 @@ Meridian-main
 │   │   │   │   ├── AlpacaCorporateActionProvider.AdditionalMappings.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.cs
 │   │   │   │   ├── AlpacaCorporateActionProvider.Mapping.cs
-│   │   │   │   ├── AlpacaHistoricalDataProvider.Accounting.cs
 │   │   │   │   ├── AlpacaHistoricalDataProvider.cs
 │   │   │   │   ├── AlpacaMarketDataClient.cs
 │   │   │   │   ├── AlpacaOptionsChainProvider.cs
@@ -7393,7 +7392,6 @@ Meridian-main
 │   │   │   │   ├── SymbolResolution
 │   │   │   │   │   ├── CanonicalRegistrySymbolResolver.cs
 │   │   │   │   │   └── ISymbolResolver.cs
-│   │   │   │   ├── AccountingClosePrice.cs
 │   │   │   │   ├── BackfillBarValidation.cs
 │   │   │   │   ├── BackfillProgressTracker.cs
 │   │   │   │   ├── BackfillProviderRuntimeOptions.cs
@@ -9023,6 +9021,8 @@ Meridian-main
 │   │   │   │   ├── design-system-smoke.test.mjs
 │   │   │   │   ├── generate-contracts.mjs
 │   │   │   │   ├── generate-contracts.test.mjs
+│   │   │   │   ├── merge-vitest-shards.mjs
+│   │   │   │   ├── merge-vitest-shards.test.mjs
 │   │   │   │   ├── run-vitest-stable.mjs
 │   │   │   │   ├── smoke-design-system-adoption.mjs
 │   │   │   │   ├── smoke-design-system.mjs
@@ -9037,6 +9037,7 @@ Meridian-main
 │   │   │   │   ├── typography-floor-baseline.json
 │   │   │   │   ├── vitest-evidence.mjs
 │   │   │   │   ├── vitest-evidence.test.mjs
+│   │   │   │   ├── vitest-files.mjs
 │   │   │   │   ├── workstation-governance-baseline.json
 │   │   │   │   ├── workstation-governance.mjs
 │   │   │   │   └── workstation-governance.test.mjs
@@ -13063,7 +13064,6 @@ Meridian-main
 │   │   ├── DirectLendingDatabaseFactAttribute.cs
 │   │   ├── DirectLendingPostgresIntegrationTests.cs
 │   │   ├── DirectLendingPostgresTestDatabase.cs
-│   │   ├── DirectLendingRestructuringTests.cs
 │   │   ├── DirectLendingServiceTests.cs
 │   │   ├── DirectLendingServicingSchedulePostgresTests.cs
 │   │   ├── DirectLendingServicingScheduleScenarioTests.cs
@@ -13201,7 +13201,6 @@ Meridian-main
 │   │   │   └── LotQuantityBasisRulesTests.cs
 │   │   ├── Application
 │   │   │   ├── Accounting
-│   │   │   │   ├── AccountingCloseMarkPriceSourceTests.cs
 │   │   │   │   ├── DailyMarkToMarketServiceTests.cs
 │   │   │   │   ├── DailyValuationPolicyTests.cs
 │   │   │   │   ├── SyntheticMarkProvenanceTests.cs
@@ -13345,8 +13344,6 @@ Meridian-main
 │   │   │   │   ├── DirectLendingExcessBalancesCompatibilityTests.cs
 │   │   │   │   ├── DirectLendingExcessRoutingParityTests.cs
 │   │   │   │   ├── DirectLendingJournalLinesTests.cs
-│   │   │   │   ├── DirectLendingLifecycleReplayTests.cs
-│   │   │   │   ├── DirectLendingLifecycleReplayTests.Inventory.cs
 │   │   │   │   ├── DirectLendingOutboxDispatcherTests.cs
 │   │   │   │   ├── DirectLendingOutboxFailureTests.cs
 │   │   │   │   ├── DirectLendingPrepaidInterestConsumptionTests.cs
@@ -13358,11 +13355,6 @@ Meridian-main
 │   │   │   │   ├── ManualPaymentResolutionTests.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.CapabilityFloor.cs
 │   │   │   │   ├── PostgresDirectLendingCommandServiceTests.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecyclePersistenceRace.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecycleReplay.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.LifecycleRetry.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.Restructuring.cs
-│   │   │   │   ├── PostgresDirectLendingCommandServiceTests.RestructuringPostgres.cs
 │   │   │   │   ├── PostgresDirectLendingProjectionCharacterizationTests.cs
 │   │   │   │   └── RateUnitNormalizerTests.cs
 │   │   │   ├── FundStructure
@@ -14089,7 +14081,6 @@ Meridian-main
 │   │   │   │   │       ├── polygon-recorded-session-nvda-multi-batch.json
 │   │   │   │   │       ├── polygon-recorded-session-spy-etf.json
 │   │   │   │   │       └── polygon-recorded-session-tsla-opening-cross.json
-│   │   │   │   ├── AlpacaAccountingClosePriceTests.cs
 │   │   │   │   ├── AlpacaAssetStreamRoutingTests.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.AccountIdentity.cs
 │   │   │   │   ├── AlpacaBrokerageGatewayTests.Amendments.cs
@@ -16264,6 +16255,7 @@ Meridian-main
 │   │   ├── test_check_test_skip_register.py
 │   │   ├── test_check_unimplemented_surfaces.py
 │   │   ├── test_check_workflow_docs_parity.py
+│   │   ├── test_ci_browser_results_dir.py
 │   │   ├── test_ci_evidence_controls.py
 │   │   ├── test_ci_metrics.py
 │   │   ├── test_ci_summary.py
@@ -16287,6 +16279,7 @@ Meridian-main
 │   │   ├── test_documentation_reference_integration.py
 │   │   ├── test_documentation_workflow.py
 │   │   ├── test_documentation_workflow_consolidation.py
+│   │   ├── test_dotnet_ci_shards.py
 │   │   ├── test_endpoint_benchmark.py
 │   │   ├── test_export_project_artifact_workflow.py
 │   │   ├── test_fund_economics_golden_consistency.py
