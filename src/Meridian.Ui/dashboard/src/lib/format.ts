@@ -175,7 +175,12 @@ export function formatPrefixedCurrency(value: NullableNumber, options: NumberFor
   return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
-/** Explicitly signed dollar amount, e.g. "+$1,234" / "-$1,234". */
+/**
+ * Explicitly signed dollar amount, e.g. "+$1,234" / "-$1,234".
+ *
+ * @deprecated It always prints "$". Use `formatCurrencyAmount(value, currency, { signed: true })`.
+ * Counted by the `prefixedCurrency` design-system ratchet.
+ */
 export function formatSignedCurrency(value: NullableNumber, options: SignedCurrencyFormatOptions = {}): string {
   const { zeroLabel, fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
@@ -190,7 +195,12 @@ export function formatSignedCurrency(value: NullableNumber, options: SignedCurre
   return `${prefix}${formatNumber(Math.abs(value), { ...options, signed: false })}`;
 }
 
-/** Compact dollar amount, e.g. "$1.2M", "$3.4K", "-$512". */
+/**
+ * Compact dollar amount, e.g. "$1.2M", "$3.4K", "-$512".
+ *
+ * @deprecated It always prints "$". Use `formatCurrencyAmount(value, currency, { compact: true })`.
+ * Counted by the `prefixedCurrency` design-system ratchet.
+ */
 export function formatCompactCurrency(value: NullableNumber, options: Pick<NumberFormatOptions, "fallback"> = {}): string {
   const { fallback = DEFAULT_FALLBACK } = options;
   if (!isRenderable(value)) {
@@ -503,6 +513,11 @@ export interface CurrencyAmountFormatOptions extends Omit<MoneyFormatOptions, "c
   showCode?: boolean;
   /** @default VALUE_STATE_LABELS.unavailable */
   fallback?: string;
+  /**
+   * Abbreviate with one decimal for headline tiles, e.g. "€1.2M", "$3.4K", "512"; the currency's
+   * own symbol is used, and an unknown currency renders the bare abbreviation ("1.2M").
+   */
+  compact?: boolean;
 }
 
 /**
@@ -511,8 +526,17 @@ export interface CurrencyAmountFormatOptions extends Omit<MoneyFormatOptions, "c
  * "Not available", never 0. Prefer this over `formatPrefixedCurrency`, which always prints "$".
  */
 export function formatCurrencyAmount(value: MoneyValue, currency: string | null | undefined, options: CurrencyAmountFormatOptions = {}): string {
-  const { showCode = false, fallback = VALUE_STATE_LABELS.unavailable, ...moneyOptions } = options;
+  const { showCode = false, fallback = VALUE_STATE_LABELS.unavailable, compact = false, ...moneyOptions } = options;
   const code = currency?.trim().toUpperCase() || null;
+  if (compact) {
+    const numeric = typeof value === "number" ? value : parseExactDecimal(value) ? Number(value) : null;
+    if (!isRenderable(numeric)) return fallback;
+    const prefix = moneyOptions.signed && numeric > 0 ? "+" : "";
+    const amount = code && !showCode
+      ? formatCurrency(numeric, { currency: code, notation: "compact", maximumFractionDigits: 1 })
+      : formatNumber(numeric, { notation: "compact", maximumFractionDigits: 1 });
+    return `${prefix}${amount}${code && showCode ? ` ${code}` : ""}`;
+  }
   if (code && showCode) {
     const decimals = moneyOptions.decimals ?? (moneyOptions.context === "summary" ? 0 : screenCurrencyLayout(code).minorUnits);
     const amount = formatMoney(value, { ...moneyOptions, decimals, currency: null, fallback: "" });

@@ -14,7 +14,7 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
-import { formatCount, formatCurrencyAmount, formatSignedCurrency, sharedCurrency } from "@/lib/format";
+import { formatCount, formatCurrencyAmount, sharedCurrency } from "@/lib/format";
 import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -1193,9 +1193,9 @@ export function buildPortfolioRunDrillInSummary(
       {
         id: "attribution",
         label: "Attribution",
-        value: attribution ? formatSignedCurrency(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 }) : "—",
+        value: attribution ? formatCurrencyAmount(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl, null, { signed: true, context: "summary" }) : "—",
         detail: attribution
-          ? `Realized ${formatSignedCurrency(attribution.totalRealizedPnl, { maximumFractionDigits: 0 })}; unrealized ${formatSignedCurrency(attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 })}; ${formatCountLabel(attribution.bySymbol.length, "symbol")}.`
+          ? `Realized ${formatCurrencyAmount(attribution.totalRealizedPnl, null, { signed: true, context: "summary" })}; unrealized ${formatCurrencyAmount(attribution.totalUnrealizedPnl, null, { signed: true, context: "summary" })}; ${formatCountLabel(attribution.bySymbol.length, "symbol")}.`
           : "Run attribution has not been loaded.",
         tone: attribution ? numericPnlTone(attribution.totalRealizedPnl + attribution.totalUnrealizedPnl) : "warning"
       },
@@ -1211,7 +1211,7 @@ export function buildPortfolioRunDrillInSummary(
       {
         id: "cash-flow",
         label: "Cash-flow",
-        value: cashFlow ? formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }) : "—",
+        value: cashFlow ? formatCurrencyAmount(cashFlow.netCashFlow, null, { signed: true, context: "summary" }) : "—",
         detail: cashFlow
           ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatCurrencyAmount(cashFlow.totalInflows, null, { context: "summary" })}; outflows ${formatCurrencyAmount(cashFlow.totalOutflows, null, { context: "summary" })}.`
           : "Cash-flow projection has not been loaded.",
@@ -1249,18 +1249,18 @@ function buildPortfolioRunBridgeRows(
     rows.push({
       id: "realized-pnl",
       label: "Realized bridge",
-      value: formatSignedCurrency(attribution.totalRealizedPnl, { maximumFractionDigits: 0 }),
+      value: formatCurrencyAmount(attribution.totalRealizedPnl, null, { signed: true, context: "summary" }),
       detail: topSymbol
-        ? `${topSymbol.symbol} contributes ${formatSignedCurrency(topSymbol.realizedPnl, { maximumFractionDigits: 0 })} realized P&L across ${formatCountLabel(topSymbol.tradeCount, "trade")}.`
+        ? `${topSymbol.symbol} contributes ${formatCurrencyAmount(topSymbol.realizedPnl, null, { signed: true, context: "summary" })} realized P&L across ${formatCountLabel(topSymbol.tradeCount, "trade")}.`
         : "No per-symbol realized attribution rows were returned.",
       tone: numericPnlTone(attribution.totalRealizedPnl)
     });
     rows.push({
       id: "unrealized-pnl",
       label: "Unrealized bridge",
-      value: formatSignedCurrency(attribution.totalUnrealizedPnl, { maximumFractionDigits: 0 }),
+      value: formatCurrencyAmount(attribution.totalUnrealizedPnl, null, { signed: true, context: "summary" }),
       detail: topSymbol
-        ? `${topSymbol.symbol} carries ${formatSignedCurrency(topSymbol.unrealizedPnl, { maximumFractionDigits: 0 })} unrealized P&L into the selected portfolio view.`
+        ? `${topSymbol.symbol} carries ${formatCurrencyAmount(topSymbol.unrealizedPnl, null, { signed: true, context: "summary" })} unrealized P&L into the selected portfolio view.`
         : "No per-symbol unrealized attribution rows were returned.",
       tone: numericPnlTone(attribution.totalUnrealizedPnl)
     });
@@ -1277,7 +1277,7 @@ function buildPortfolioRunBridgeRows(
     rows.push({
       id: "cash-flow-bridge",
       label: "Cash-flow bridge",
-      value: formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }),
+      value: formatCurrencyAmount(cashFlow.netCashFlow, null, { signed: true, context: "summary" }),
       detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatCurrencyAmount(cashFlow.totalInflows, null, { context: "summary" })} to outflows ${formatCurrencyAmount(cashFlow.totalOutflows, null, { context: "summary" })}.`,
       tone: numericPnlTone(cashFlow.netCashFlow)
     });

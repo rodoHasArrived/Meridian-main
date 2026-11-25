@@ -1406,7 +1406,7 @@ describe("accounting-screen view model", () => {
     expect(result.current.transactionLabView.statusText).toContain("Expected accounting projection");
     expect(result.current.transactionLabView.statusText).toContain("no journal has been posted");
     expect(result.current.transactionLabView.journalLineCountLabel).toBe("2 lines");
-    expect(result.current.transactionLabView.ledgerImpactLabel).toBe("$0");
+    expect(result.current.transactionLabView.ledgerImpactLabel).toBe("$0.00");
     expect(result.current.transactionLabView.reconciliationLabel).toBe("ProjectedForReconciliation");
     expect(result.current.transactionLabView.evidenceLabel).toBe("2 evidence items");
     expect(result.current.transactionLabView.impactRows).toEqual([

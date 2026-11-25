@@ -1446,8 +1446,10 @@ not been recorded.
     unknown currency is never `$` or `USD`. `formatCurrencyAmount(value, currency)` takes the
     currency as a required argument (`null` renders a bare amount; `showCode` gives
     `1,250.00 EUR`); `formatUnknownCurrencyAmount` gives `1,250 (currency unavailable)`.
-    `formatPrefixedCurrency`, which always prints `$`, is deprecated and has no screen callers;
-    its `prefixedCurrency` ratchet baseline is empty, so a new caller fails the ratchet test.
+    `formatPrefixedCurrency`, `formatSignedCurrency` and `formatCompactCurrency`, which always print
+    `$`, are deprecated and have no screen callers; use `formatCurrencyAmount` with `signed` or
+    `compact`. The `prefixedCurrency` ratchet counts all three and its baseline is empty, so a new
+    caller fails the ratchet test.
     `sharedCurrency(codes)` labels a total only when every line agrees on one currency. Two
     baselined ratchets count the remaining legacy uses and may only shrink:
     `assumedMoneyDefaults` (`balance ?? 0`, `?? "USD"`) and `placeholderVocabulary` (ad hoc

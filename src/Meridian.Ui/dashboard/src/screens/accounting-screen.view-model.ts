@@ -16,7 +16,7 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
-import { formatCount as formatCountValue, formatCurrency, formatCurrencyAmount, formatSignedCurrency, formatUnknownCurrencyAmount } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrency, formatCurrencyAmount, formatUnknownCurrencyAmount } from "@/lib/format";
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -3226,7 +3226,7 @@ export function useAccountingReconciliationViewModel(
       const impactRows = transactionLabPreview?.trialBalanceImpact.map((row, index) => ({
         id: `${row.accountName}-${index}`,
         label: row.accountName,
-        value: formatSignedCurrency(row.balanceDelta, { minimumFractionDigits: 2, zeroLabel: "$0" }),
+        value: formatCurrencyAmount(row.balanceDelta, transactionLabPreview.currency, { signed: true }),
         tone: row.balanceDelta > 0 ? "success" as const : row.balanceDelta < 0 ? "danger" as const : "default" as const
       })) ?? [];
 
@@ -3241,7 +3241,7 @@ export function useAccountingReconciliationViewModel(
           ? formatCount(transactionLabPreview.journalPreview.lines.length, "line")
           : "Pending projection",
         ledgerImpactLabel: hasPreview && transactionLabPreview
-          ? formatSignedCurrency(transactionLabPreview.ledgerImpact.netBalanceDelta, { minimumFractionDigits: 2, zeroLabel: "$0" })
+          ? formatCurrencyAmount(transactionLabPreview.ledgerImpact.netBalanceDelta, transactionLabPreview.currency, { signed: true })
           : "Pending projection",
         reconciliationLabel: hasPreview && transactionLabPreview
           ? transactionLabPreview.reconciliationExpectation.expectedState

@@ -1,5 +1,5 @@
 import type { FamilyOwnershipGraph, FamilyAssetSummary, PrivateAssetSummary, CapitalCommitment, CapitalActivity } from "@/types/family-office.types";
-import { formatCompactCurrency as formatCurrency, formatNumber, formatPercent as formatPercentValue, pluralizeCount } from "@/lib/format";
+import { formatCurrencyAmount, formatNumber, formatPercent as formatPercentValue, pluralizeCount } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
@@ -393,7 +393,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "total-family-net-worth",
       label: "Total family net worth",
-      value: formatCurrency(totalNetWorth),
+      value: formatCurrencyAmount(totalNetWorth, entityStructure.baseCurrency, { compact: true }),
       detail: `Consolidated ${entityStructure.displayName} NAV after liabilities and unfunded commitments as of ${entityStructure.asOfDate}.`,
       tone: "success",
       emptyState: "No household NAV feed has been connected."
@@ -417,7 +417,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "cash-and-liabilities",
       label: "Cash and liabilities",
-      value: `${formatCurrency(totalCash)} / ${formatCurrency(totalLiabilities)}`,
+      value: `${formatCurrencyAmount(totalCash, entityStructure.baseCurrency, { compact: true })} / ${formatCurrencyAmount(totalLiabilities, entityStructure.baseCurrency, { compact: true })}`,
       detail: "Available cash and short-term liabilities across custody, treasury, and operating accounts.",
       tone: totalLiabilities > 0 ? "warning" : "success",
       emptyState: "Cash and liability ledgers have not been reconciled."
@@ -425,7 +425,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "private-assets",
       label: "Private assets",
-      value: formatCurrency(privateAssetValue),
+      value: formatCurrencyAmount(privateAssetValue, entityStructure.baseCurrency, { compact: true }),
       detail: `${formatCountLabel(entityStructure.privateAssets.length, "private asset")} tied to the entity structure and valuation evidence status.`,
       tone: staleWarningCount > 0 ? "warning" : "success",
       emptyState: "No private asset register is available."
@@ -433,7 +433,7 @@ function buildFamilyOfficePanels(entityStructure: FamilyOfficeEntityStructure): 
     {
       id: "unfunded-commitments",
       label: "Unfunded commitments",
-      value: formatCurrency(unfundedCommitments),
+      value: formatCurrencyAmount(unfundedCommitments, entityStructure.baseCurrency, { compact: true }),
       detail: `${formatCountLabel(entityStructure.commitments.length, "capital commitment")} across private funds and direct investment side letters.`,
       tone: unfundedCommitments > 0 ? "danger" : "success",
       emptyState: "Commitment schedule is unavailable."
@@ -473,12 +473,12 @@ function buildOwnershipNodes(entityStructure: FamilyOfficeEntityStructure): Arra
   })) : entityStructure.entities.map((entity) => ({
     id: entity.entityId, label: entity.displayName,
     type: entity.parentEntityId === null ? "family" as const : "entity" as const,
-    value: formatCurrency(entity.netWorth), percentage: "Unmapped",
+    value: formatCurrencyAmount(entity.netWorth, entityStructure.baseCurrency, { compact: true }), percentage: "Unmapped",
     detail: entity.detail, parentId: entity.parentEntityId, tone: entityTone(entity)
   }));
   const privateNodes = entityStructure.privateAssets.map((asset) => ({
     id: asset.assetId, label: asset.displayName, type: "asset" as const,
-    value: asset.valuationStatus === "missing-evidence" ? "Value needs evidence" : formatCurrency(asset.value),
+    value: asset.valuationStatus === "missing-evidence" ? "Value needs evidence" : formatCurrencyAmount(asset.value, entityStructure.baseCurrency, { compact: true }),
     percentage: "Association only", detail: `${asset.assetType} associated with ${entityDisplayName(entityStructure, asset.entityId)}. This association does not establish legal title.`,
     parentId: asset.entityId, tone: asset.valuationStatus === "current" ? "default" as const : "warning" as const
   }));

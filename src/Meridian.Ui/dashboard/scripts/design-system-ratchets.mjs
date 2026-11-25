@@ -27,8 +27,9 @@
 // in by rerunning with --write). Usage:
 //   - rawSelects: a hand-styled native `<select>` instead of `Select` from
 //     `@/components/ui/select`, which owns the border, chevron, focus ring and error state.
-//   - prefixedCurrency: `formatPrefixedCurrency`, which always prints "$" whatever the figure's
-//     currency. Use `formatCurrencyAmount(value, currency)`, whose currency argument is required.
+//   - prefixedCurrency: `formatPrefixedCurrency`, `formatSignedCurrency` or `formatCompactCurrency`,
+//     which always print "$" whatever the figure's currency. Use `formatCurrencyAmount(value,
+//     currency)` (with `signed` or `compact` as needed), whose currency argument is required.
 //   - assumedMoneyDefaults: a money field defaulted to a number (`balance ?? 0`, `nav || 0`) or a
 //     currency defaulted to USD (`?? "USD"`). Missing is not zero and is not dollars: keep the
 //     value null and render "Not available", or refuse to build the request.
@@ -51,7 +52,7 @@ const DIRECT_INTL = /Intl\.(?:NumberFormat|DateTimeFormat)\b|\.toLocaleString\(|
 const TO_FIXED = /\.toFixed\(/g;
 // A function or const declaration whose name marks it as a money or P&L formatter.
 const LOCAL_MONEY_FORMATTER = /\b(?:function|const)\s+(?:format|fmt)(?:Money|Currency|Pnl|PnL|Usd|Dollars?|Notional|Signed|Compact)\w*/g;
-const PREFIXED_CURRENCY = /\bformatPrefixedCurrency\b/g;
+const PREFIXED_CURRENCY = /\b(?:formatPrefixedCurrency|formatSignedCurrency|formatCompactCurrency)\b/g;
 // A money-named field or variable defaulted to a numeric literal, or any value defaulted to "USD".
 const ZERO_MONEY_DEFAULT = /\b\w*(?:balance|amount|nav|capital|contributions|distributions|gainloss|pnl|equity|variance|notional)\w*\s*(?:\?\?|\|\|)\s*-?\d+(?:\.\d+)?(?![\w.])/gi;
 const USD_DEFAULT = /(?:\?\?|\|\|)\s*["'`]USD["'`]/g;
@@ -171,7 +172,7 @@ export const RATCHETS = {
     }
   },
   prefixedCurrency: {
-    description: "formatPrefixedCurrency in screens/, which always prints \"$\" (use formatCurrencyAmount(value, currency) from @/lib/format)",
+    description: "formatPrefixedCurrency, formatSignedCurrency or formatCompactCurrency in screens/, which always print \"$\" (use formatCurrencyAmount(value, currency) from @/lib/format)",
     count(source) {
       return [...source.matchAll(PREFIXED_CURRENCY)].length;
     }
