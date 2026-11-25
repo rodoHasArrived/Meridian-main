@@ -124,7 +124,10 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
   const cashFlow = useAccountingCashFlowViewModel(data?.cashFlow ?? null, pathname, workstream);
   const reporting = useAccountingReportingViewModel(data?.reporting ?? null);
   const configuration = useAccountingConfigurationViewModel(undefined, sectionVisibility.showConfiguration);
-  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, session?.displayName.trim() ? JSON.stringify([session.displayName, session.role, session.environment]) : null);
+  // Discards in-flight journal and asset-accounting work when the operator changes; keyed by the
+  // signed-in username, not the session's shared desk-label displayName.
+  const journalSessionIdentity = session && operatorIdentity ? JSON.stringify([operatorIdentity, session.role, session.environment]) : null;
+  const journalEntries = useManualJournalEntryWorkbenchViewModel(workstream === "journal-entries", undefined, search, journalSessionIdentity);
   const capitalAccountWorkbench = useCapitalAccountWorkbenchViewModel(workstream === "capital-accounts", search);
   const securityMaster = useSecurityMasterViewModel(workstream === "security-master");
   const selectSecurityById = securityMaster.selectSecurity;
@@ -862,7 +865,7 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
       ) : null}
 
       {sectionVisibility.showJournalEntries ? (
-        <ManualJournalEntryWorkbenchPanel key={JSON.stringify([session?.displayName, session?.role, session?.environment])} view={journalEntries} search={search} />
+        <ManualJournalEntryWorkbenchPanel key={journalSessionIdentity ?? "no-operator"} view={journalEntries} search={search} />
       ) : null}
 
       {sectionVisibility.showCapitalAccounts ? <>

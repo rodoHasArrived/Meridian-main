@@ -11,6 +11,7 @@ import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import * as markFreshnessApi from "@/lib/api/mark-freshness.api";
 import * as recurringJournalsApi from "@/lib/api/recurring-journals.api";
 import * as accrualSchedulesApi from "@/lib/api/accrual-schedules.api";
+import * as assetAccountingWorkflowApi from "@/lib/api/asset-accounting-workflow.api";
 import { AccountingScreen } from "@/screens/accounting-screen";
 import { bondLadderRowId } from "@/components/meridian/bond-reference-ladder-panel";
 import { resetSinceLastVisitCache } from "@/lib/since-last-visit";
@@ -70,6 +71,11 @@ async function findAlertContaining(text: string): Promise<HTMLElement> {
 // so screens without a signed-in operator keep their existing behaviour.
 const signedInUsername = vi.hoisted(() => ({ value: null as string | null }));
 vi.mock("@/lib/api/auth.api", () => ({ getSignedInUsername: vi.fn(async () => signedInUsername.value) }));
+
+vi.mock("@/lib/api/asset-accounting-workflow.api", async () => {
+  const actual = await vi.importActual<typeof import("@/lib/api/asset-accounting-workflow.api")>("@/lib/api/asset-accounting-workflow.api");
+  return { ...actual, getAssetAccountingDraftCapabilities: vi.fn(actual.getAssetAccountingDraftCapabilities) };
+});
 
 vi.mock("@/lib/api/reconciliation-readiness.api", async () => {
   const actual = await vi.importActual<typeof import("@/lib/api/reconciliation-readiness.api")>("@/lib/api/reconciliation-readiness.api");
@@ -3746,6 +3752,35 @@ describe("AccountingScreen", () => {
     expect(screen.getByRole("region", { name: "Journal source lines" })).toHaveAttribute("tabindex", "0");
     expect(screen.getByRole("region", { name: "Journal balance impact" })).toHaveAttribute("tabindex", "0");
     expect((await axe(container)).violations).toEqual([]);
+  });
+
+  it("keys retained asset-accounting commands to the signed-in username, not the session desk label", async () => {
+    signedInUsername.value = "a.chen";
+    try {
+      window.sessionStorage.clear();
+      const session: SessionInfo = { displayName: "Meridian Operator", role: "Fund operations", environment: "paper", activeWorkspace: "accounting", commandCount: 3 };
+      const assetDraft = { ...manualJournalDraft, validationIssues: [], assetAccountingDraft: { spine: { eventId: "asset-event" }, candidate: {} } };
+      vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce({ ...manualJournalWorkbench, drafts: [assetDraft] });
+      // The server reports an unresolved post; the workflow retains it under its operator-scoped key.
+      vi.mocked(assetAccountingWorkflowApi.getAssetAccountingDraftCapabilities).mockResolvedValue({
+        protocolVersion: 1, authenticatedActor: "a.chen", journalEntryId: assetDraft.journalEntryId, fundProfileId: assetDraft.fundProfileId,
+        ledgerBookId: assetDraft.ledgerBookId!, periodId: assetDraft.periodId!, draftVersion: assetDraft.version, candidateFingerprint: "a".repeat(64),
+        canApprove: false, canPost: true, approveBlockedReason: null, postBlockedReason: null, approval: null, approvalDecision: null, hasPendingPost: true,
+        pendingPostCommand: { journalEntryId: assetDraft.journalEntryId, ledgerBookId: assetDraft.ledgerBookId, fundProfileId: assetDraft.fundProfileId,
+          version: assetDraft.version, action: "Post", actor: "a.chen", notes: "Retained post", correlationId: "11111111-1111-1111-1111-111111111111", evidenceLinks: [] },
+        postedJournal: null
+      });
+      renderWithRouter(<AccountingScreen data={data} session={session} />, { initialEntries: ["/accounting/journal-entries?fundProfileId=fund-alpha&ledgerBookId=book-alpha"] });
+      await waitForAsyncEffects();
+      const identity = JSON.stringify(["a.chen", "Fund operations", "paper"]);
+      await waitFor(() => expect(Object.keys(window.sessionStorage)).toContain(
+        `meridian.asset-accounting.command.v1:${JSON.stringify([identity, assetDraft.fundProfileId, assetDraft.ledgerBookId, assetDraft.periodId, assetDraft.journalEntryId])}`));
+      expect(Object.keys(window.sessionStorage).join()).not.toContain("Meridian Operator");
+    } finally {
+      signedInUsername.value = null;
+      vi.mocked(assetAccountingWorkflowApi.getAssetAccountingDraftCapabilities).mockReset();
+      window.sessionStorage.clear();
+    }
   });
 
   it("renders the manual journal entry workbench with GL and Security Master line fields", async () => {
