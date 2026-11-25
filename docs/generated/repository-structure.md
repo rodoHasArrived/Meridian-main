@@ -8851,6 +8851,7 @@ Meridian-main
 │   │   │   ├── CatalogSyncSink.cs
 │   │   │   ├── CompositeSink.cs
 │   │   │   ├── JsonlStorageSink.cs
+│   │   │   ├── ParquetStorageSink.Compaction.cs
 │   │   │   └── ParquetStorageSink.cs
 │   │   ├── Store
 │   │   │   ├── CompositeMarketDataStore.cs

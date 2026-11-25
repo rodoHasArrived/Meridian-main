@@ -22,20 +22,23 @@ namespace Meridian.Storage.Sinks;
 /// Apache Parquet storage sink for high-performance columnar storage.
 /// Provides 10-20x better compression than JSONL and optimized for analytics.
 ///
-/// Deliberately KEEPS copy-on-write row-group appends (unlike the JSONL sink's persistent
-/// append streams): Parquet's footer-at-end format means a persistently open writer leaves an
-/// unreadable, footerless file after a crash, violating the published-artifact readability
-/// invariant that copy-plus-rename guarantees; part-file compaction would change the
-/// one-file-per-day contract query/export paths consume. Row-group flushes are batched and
-/// lower-cadence than the JSONL hot path, so the O(day-file) copy is the accepted cost.
-/// Revisit only with a measured need.
+/// Every write is still copy-on-write (temp file plus atomic rename), never a persistently open
+/// writer: Parquet's footer-at-end format means an open writer leaves an unreadable, footerless
+/// file after a crash. To keep that copy small, flushes append to an hourly part file
+/// (<c>{day file}.h{HH}.{instance}-{seq}.parquet-part</c>) instead of the day file; the pipeline
+/// flushes every few seconds, so appending to the day file copied the whole day's file on each
+/// flush and left thousands of tiny row groups. When the hour closes (or the sink is disposed)
+/// each part is merged into the one-file-per-day <c>*.parquet</c> file as a single row group.
+/// Part files use a non-<c>.parquet</c> extension, so query, export, retention and tier services
+/// see only day files; a day file therefore trails the newest rows by up to about an hour, while
+/// JSONL stays the real-time copy. See <c>ParquetStorageSink.Compaction.cs</c>.
 ///
 /// Based on: https://github.com/aloneguid/parquet-dotnet (MIT)
 /// Reference: docs/open-source-references.md #20
 /// </summary>
 [StorageSink("parquet", "Apache Parquet Storage",
     Description = "Writes market events to columnar Parquet files for high-performance analytics.")]
-public sealed class ParquetStorageSink : IStorageSink
+public sealed partial class ParquetStorageSink : IStorageSink
 {
     private readonly ILogger _log = LoggingSetup.ForContext<ParquetStorageSink>();
     private readonly StorageOptions _options;
@@ -46,6 +49,7 @@ public sealed class ParquetStorageSink : IStorageSink
     private readonly Task _flushLoopTask;
     private readonly CancellationTokenSource _disposalCts = new();
     private readonly SemaphoreSlim _flushGate = new(1, 1);
+    private readonly TimeProvider _clock;
     private int _disposed;
 
     private static readonly IReadOnlyList<OrderBookLevel> EmptyBookLevels = Array.Empty<OrderBookLevel>();
@@ -115,7 +119,8 @@ public sealed class ParquetStorageSink : IStorageSink
         StorageOptions options,
         ParquetStorageOptions? parquetOptions,
         Func<string, Func<Stream, Task>, CancellationToken, Task> writeAtomicallyAsync,
-        IStoragePolicy? policy = null)
+        IStoragePolicy? policy = null,
+        TimeProvider? timeProvider = null)
     {
         _options = options ?? throw new ArgumentNullException(nameof(options));
         _parquetOptions = parquetOptions ?? ParquetStorageOptions.Default;
@@ -124,6 +129,7 @@ public sealed class ParquetStorageSink : IStorageSink
         // from the same options keeps existing single-argument construction (and tests) working.
         _policy = policy ?? new JsonlStoragePolicy(_options);
         _writeAtomicallyAsync = writeAtomicallyAsync ?? throw new ArgumentNullException(nameof(writeAtomicallyAsync));
+        _clock = timeProvider ?? TimeProvider.System;
 
         _flushLoopTask = RunPeriodicFlushLoopAsync(_disposalCts.Token);
 
@@ -203,6 +209,9 @@ public sealed class ParquetStorageSink : IStorageSink
                     await FlushBufferCoreAsync(kvp.Key, kvp.Value, ct).ConfigureAwait(false);
                 }
             }
+
+            // Every buffered row is now durable in a part file; merge parts whose hour has closed.
+            await CompactPartsAsync(includeOpenParts: false, ct).ConfigureAwait(false);
         }
         finally
         {
@@ -234,7 +243,9 @@ public sealed class ParquetStorageSink : IStorageSink
 
         try
         {
-            var path = GetFilePath(events[0]);
+            // Rows land in the current hour's part file for this day file; compaction merges the
+            // part into the day file once the hour closes.
+            var path = GetPartPath(GetFilePath(events[0]));
             Directory.CreateDirectory(Path.GetDirectoryName(path)!);
 
             var eventType = events[0].Type;
@@ -259,7 +270,7 @@ public sealed class ParquetStorageSink : IStorageSink
                     break;
             }
 
-            _log.Debug("Flushed {Count} events to Parquet file: {Path}", events.Count, path);
+            _log.Debug("Flushed {Count} events to Parquet part file: {Path}", events.Count, path);
             if (buffer.TryRetireWhenEmpty())
                 _buffers.TryRemove(new KeyValuePair<string, MarketEventBuffer>(bufferKey, buffer));
         }
@@ -555,11 +566,11 @@ public sealed class ParquetStorageSink : IStorageSink
     }
 
     /// <summary>
-    /// Appends one row group to the deterministic per-day file. Same-day flushes share a file
-    /// path, so the existing file's bytes are copied into the atomic temp file and the new row
-    /// group is appended — replacing the file outright would erase every earlier flush of the
-    /// day. An existing file that is unreadable or has an incompatible schema is quarantined
-    /// (never overwritten) and a fresh file is written in its place.
+    /// Appends one row group to the current hour's part file. Flushes in the same hour share the
+    /// part path, so the existing part's bytes are copied into the atomic temp file and the new
+    /// row group is appended — replacing the file outright would erase the hour's earlier flushes.
+    /// An existing file that is unreadable or has an incompatible schema is quarantined (never
+    /// overwritten) and a fresh file is written in its place.
     /// </summary>
     private async Task WriteRowGroupAtomicallyAsync(
         string path,
@@ -707,6 +718,9 @@ public sealed class ParquetStorageSink : IStorageSink
                         await FlushBufferCoreAsync(kvp.Key, kvp.Value, CancellationToken.None).ConfigureAwait(false);
                     }
                 }
+
+                // Shutdown leaves only day files: merge the still-open hour's parts too.
+                await CompactPartsAsync(includeOpenParts: true, CancellationToken.None).ConfigureAwait(false);
             }
             finally
             {

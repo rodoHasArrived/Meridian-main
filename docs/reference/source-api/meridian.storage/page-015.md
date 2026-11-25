@@ -735,7 +735,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageOptions</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:732](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L732).
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:746](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L746).
 
 Configuration options for Parquet storage.
 
@@ -747,33 +747,41 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:737](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L737) | Number of events to buffer before writing to disk. |
-| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:742](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L742) | Maximum time between flushes. |
-| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:747](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L747) | Compression method for Parquet files. |
-| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:749](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L749) |  |
-| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:751](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L751) |  |
-| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:757](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L757) |  |
+| <code>public int BufferSize { get; init; } = 10000;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:751](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L751) | Number of events to buffer before writing to disk. |
+| <code>public TimeSpan FlushInterval { get; init; } = TimeSpan.FromSeconds(30);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:756](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L756) | Maximum time between flushes. |
+| <code>public CompressionMethod CompressionMethod { get; init; } = CompressionMethod.Snappy;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:761](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L761) | Compression method for Parquet files. |
+| <code>public static ParquetStorageOptions Default =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:763](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L763) |  |
+| <code>public static ParquetStorageOptions HighCompression =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:765](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L765) |  |
+| <code>public static ParquetStorageOptions LowLatency =&gt; …;</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:771](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L771) |  |
 
 ## ParquetStorageSink
 
 Qualified name: <code>Meridian.Storage.Sinks.ParquetStorageSink</code>. Kind: `class`.
 
-Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:38](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L38).
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.Compaction.cs:32](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.Compaction.cs#L32).
 
-Apache Parquet storage sink for high-performance columnar storage. Provides 10-20x better compression than JSONL and optimized for analytics. Deliberately KEEPS copy-on-write row-group appends (unlike the JSONL sink&#x27;s persistent append streams): Parquet&#x27;s footer-at-end format means a persistently open writer leaves an unreadable, footerless file after a crash, violating the published-artifact readability invariant that copy-plus-rename guarantees; part-file compaction would change the one-file-per-day contract query/export paths consume. Row-group flushes are batched and lower-cadence than the JSONL hot path, so the O(day-file) copy is the accepted cost. Revisit only with a measured need. Based on: https://github.com/aloneguid/parquet-dotnet (MIT) Reference: docs/open-source-references.md #20
+Hourly part files and their compaction into the one-file-per-day Parquet file.
 
 ```csharp
-public sealed class ParquetStorageSink : IStorageSink
+public sealed partial class ParquetStorageSink
+```
+
+Source: [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:41](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L41).
+
+Apache Parquet storage sink for high-performance columnar storage. Provides 10-20x better compression than JSONL and optimized for analytics. Every write is still copy-on-write (temp file plus atomic rename), never a persistently open writer: Parquet&#x27;s footer-at-end format means an open writer leaves an unreadable, footerless file after a crash. To keep that copy small, flushes append to an hourly part file ({day file}.h{HH}.{instance}-{seq}.parquet-part) instead of the day file; the pipeline flushes every few seconds, so appending to the day file copied the whole day&#x27;s file on each flush and left thousands of tiny row groups. When the hour closes (or the sink is disposed) each part is merged into the one-file-per-day *.parquet file as a single row group. Part files use a non-.parquet extension, so query, export, retention and tier services see only day files; a day file therefore trails the newest rows by up to about an hour, while JSONL stays the real-time copy. See ParquetStorageSink.Compaction.cs. Based on: https://github.com/aloneguid/parquet-dotnet (MIT) Reference: docs/open-source-references.md #20
+
+```csharp
+public sealed partial class ParquetStorageSink : IStorageSink
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:106](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L106) |  |
-| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:134](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L134) |  |
-| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:156](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L156) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:686](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L686) |  |
+| <code>public ParquetStorageSink(StorageOptions options, ParquetStorageOptions? parquetOptions = null, IStoragePolicy? policy = null) : this(options, parquetOptions, WriteAtomicallyAsync, policy);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:110](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L110) |  |
+| <code>public async ValueTask AppendAsync(MarketEvent evt, CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:140](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L140) |  |
+| <code>public async Task FlushAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:162](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L162) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Storage/Sinks/ParquetStorageSink.cs:697](../../../../src/Meridian.Storage/Sinks/ParquetStorageSink.cs#L697) |  |
 
 ## SinkHealth
 

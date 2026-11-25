@@ -254,8 +254,8 @@
       "id": "SRC-STORAGE",
       "path": "src/Meridian.Storage",
       "readme": "src/Meridian.Storage/README.md",
-      "readme_hash": "0c9ecb99c77c02889f9b2664b79aad2178eea052e2db6ad85902ce59f4a531ec",
-      "source_hash": "fca5aa70409f203c8d136b1757caf6ea4419f3d8ed59686fc83a96855672683f"
+      "readme_hash": "f90817011ca6ab63e69609292105ab7ab51ae3f21cf69781f662d2571d4a49be",
+      "source_hash": "b3e872a34114142d7bb1e77fc5041af1c9c8bc2633faf28cdd885eca19df14b5"
     },
     {
       "id": "SRC-STORAGE-ACCOUNTING",

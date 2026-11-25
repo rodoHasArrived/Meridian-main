@@ -16,10 +16,13 @@ namespace Meridian.Tests.Storage;
 
 /// <summary>
 /// Tests for <see cref="ParquetStorageSink"/> covering the atomic temp-write-then-rename
-/// pattern, flush success, final flush on disposal, and dispose guard.
+/// pattern, hourly part files and their compaction into the day file, final flush on
+/// disposal, and dispose guard. Flushes write to the current hour's part file; the day file
+/// appears once the hour closes (<see cref="CloseHourAsync"/>) or the sink is disposed.
 /// </summary>
 public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 {
+    private readonly ManualClock _clock = new(new DateTimeOffset(2026, 1, 5, 10, 0, 0, TimeSpan.Zero));
     private ParquetStorageSink? _sink;
 
     [Fact]
@@ -44,6 +47,7 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         await _sink.FlushAsync();
 
         buffers.Count.Should().Be(0);
+        await CloseHourAsync();
         var firstDay = Directory.GetFiles(TestDataRoot, "*20240101.parquet", SearchOption.AllDirectories).Single();
         (await CountRowsAsync(firstDay)).Should().Be(2);
     }
@@ -58,6 +62,7 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         });
 
         await _sink.FlushAsync();
+        await CloseHourAsync();
 
         var file = Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories).Single();
         Path.GetFileName(file).Should().Contain("20240101");
@@ -73,6 +78,7 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         await _sink.AppendAsync(CreateTradeEvent(symbol));
 
         await _sink.FlushAsync();
+        await CloseHourAsync();
 
         var root = Path.GetFullPath(TestDataRoot);
         var parent = Path.GetDirectoryName(root.TrimEnd(Path.DirectorySeparatorChar))!;
@@ -103,6 +109,7 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 
         // Act
         await _sink.FlushAsync();
+        await CloseHourAsync();
 
         // Assert – at least one .parquet file was created under testRoot
         var parquetFiles = Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories);
@@ -136,6 +143,7 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         await _sink.AppendAsync(CreateL2SnapshotEvent("QQQ"));
 
         await _sink.FlushAsync();
+        await CloseHourAsync();
 
         var parquetFile = Directory.GetFiles(TestDataRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
             .Should().ContainSingle("an L2 snapshot flush should create a dedicated Parquet file")
@@ -186,13 +194,13 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         var failedFlush = () => _sink.FlushAsync();
         await failedFlush.Should().ThrowAsync<IOException>();
 
-        Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*.parquet*", SearchOption.AllDirectories)
             .Should().BeEmpty("a failed L2 flush must not commit a partial file");
 
         await _sink.FlushAsync();
 
         writeAttempts.Should().Be(2, "the retry should perform a second atomic-write attempt");
-        Directory.GetFiles(TestDataRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*l2snapshot*" + ParquetStorageSink.PartFileExtension, SearchOption.AllDirectories)
             .Should().ContainSingle("the buffered L2 snapshot should still be available for retry after a failed flush");
     }
 
@@ -216,13 +224,13 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         var cancelledFlush = () => _sink.FlushAsync();
         await cancelledFlush.Should().ThrowAsync<OperationCanceledException>();
 
-        Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*.parquet*", SearchOption.AllDirectories)
             .Should().BeEmpty("a cancelled L2 flush must not commit a file before retry");
 
         await _sink.FlushAsync();
 
         writeAttempts.Should().Be(2, "retry should still be possible after cancellation");
-        Directory.GetFiles(TestDataRoot, "*l2snapshot*.parquet", SearchOption.AllDirectories)
+        Directory.GetFiles(TestDataRoot, "*l2snapshot*" + ParquetStorageSink.PartFileExtension, SearchOption.AllDirectories)
             .Should().ContainSingle("cancelled L2 snapshots should remain buffered for a later retry");
     }
 
@@ -237,6 +245,7 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 
         await _sink.AppendAsync(CreateTradeEvent("SPY"));
         await _sink.FlushAsync();
+        await CloseHourAsync();
 
         var parquetFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories)
             .Should().ContainSingle("same-day flushes must share one deterministic day file")
@@ -244,6 +253,8 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 
         (await CountRowsAsync(parquetFile)).Should().Be(2,
             "the second same-day flush must not erase events written by the first");
+        (await CountRowGroupsAsync(parquetFile)).Should().Be(1,
+            "an hour's flushes are merged into one row group instead of one per flush");
     }
 
     [Fact]
@@ -252,12 +263,14 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
         _sink = CreateSink(bufferSize: 10000);
         await _sink.AppendAsync(CreateTradeEvent("SPY"));
         await _sink.FlushAsync();
+        await CloseHourAsync();
 
         var parquetFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories).Single();
         await File.WriteAllTextAsync(parquetFile, "not a parquet file");
 
         await _sink.AppendAsync(CreateTradeEvent("SPY"));
         await _sink.FlushAsync();
+        await CloseHourAsync();
 
         Directory.GetFiles(TestDataRoot, "*.corrupt-*", SearchOption.AllDirectories)
             .Should().ContainSingle("the unreadable day file must be preserved for recovery, never destroyed");
@@ -326,29 +339,156 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
             .Should().BeEmpty("cancellation should not strand temp files");
     }
 
+    [Fact]
+    public async Task FlushAsync_WithinAnHour_WritesOnlyAPartFile_NotTheDayFile()
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+
+        Directory.GetFiles(TestDataRoot, "*.parquet", SearchOption.AllDirectories)
+            .Should().BeEmpty("day files are only touched when an hour's part is merged");
+        var part = Directory.GetFiles(TestDataRoot, "*" + ParquetStorageSink.PartFileExtension, SearchOption.AllDirectories)
+            .Should().ContainSingle("both flushes in the hour append to one part file")
+            .Subject;
+        (await CountRowsAsync(part)).Should().Be(2);
+    }
+
+    [Fact]
+    public async Task HourClose_MergesPartIntoDayFile_DeletesPart_AndRecordsIt()
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+        var partName = Path.GetFileName(Directory.GetFiles(TestDataRoot, "*" + ParquetStorageSink.PartFileExtension, SearchOption.AllDirectories).Single());
+
+        await CloseHourAsync();
+
+        Directory.GetFiles(TestDataRoot, "*" + ParquetStorageSink.PartFileExtension, SearchOption.AllDirectories)
+            .Should().BeEmpty("a merged part is deleted");
+        var dayFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories).Single();
+        (await ReadCustomMetadataAsync(dayFile))[ParquetStorageSink.CompactedPartsMetadataKey]
+            .Should().Contain(partName);
+    }
+
+    [Fact]
+    public async Task SeparateHours_AppendOneRowGroupEach_AndKeepEarlierRows()
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+        await CloseHourAsync();
+
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+        await CloseHourAsync();
+
+        var dayFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories).Single();
+        (await CountRowsAsync(dayFile)).Should().Be(3);
+        (await CountRowGroupsAsync(dayFile)).Should().Be(2, "one row group per merged hour");
+        (await ReadCustomMetadataAsync(dayFile))[ParquetStorageSink.CompactedPartsMetadataKey]
+            .Split('|').Should().HaveCount(2, "the footer keeps every merged part name across appends");
+    }
+
+    [Fact]
+    public async Task PartAlreadyMergedBeforeACrash_IsDeletedWithoutMergingTwice()
+    {
+        _sink = CreateSink();
+        await _sink.AppendAsync(CreateTradeEvent("SPY"));
+        await _sink.FlushAsync();
+        var part = Directory.GetFiles(TestDataRoot, "*" + ParquetStorageSink.PartFileExtension, SearchOption.AllDirectories).Single();
+        var partBytes = await File.ReadAllBytesAsync(part);
+        await CloseHourAsync();
+        var dayFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories).Single();
+
+        // Simulate a crash after the day file was replaced but before the part was deleted, then
+        // a restart that adopts the leftover part.
+        await File.WriteAllBytesAsync(part, partBytes);
+        File.SetLastWriteTimeUtc(part, DateTime.UtcNow.AddHours(-3));
+        await _sink.DisposeAsync();
+        _sink = new ParquetStorageSink(
+            new StorageOptions { RootPath = TestDataRoot },
+            new ParquetStorageOptions { CompressionMethod = CompressionMethod.None, FlushInterval = TimeSpan.FromHours(1) },
+            InvokeWriteAtomicallyAsync,
+            policy: null,
+            timeProvider: _clock);
+        await _sink.FlushAsync();
+
+        File.Exists(part).Should().BeFalse();
+        (await CountRowsAsync(dayFile)).Should().Be(1, "the part's rows were already in the day file");
+    }
+
+    [Fact]
+    public async Task OrphanPartFromAStoppedInstance_IsAdoptedOnceOldEnough()
+    {
+        var crashed = CreateSink();
+        await crashed.AppendAsync(CreateTradeEvent("SPY"));
+        await crashed.FlushAsync();
+        var part = Directory.GetFiles(TestDataRoot, "*" + ParquetStorageSink.PartFileExtension, SearchOption.AllDirectories).Single();
+        // A process that died never disposes its sink; take the part over with a fresh instance.
+        _sink = CreateSink();
+
+        await _sink.FlushAsync();
+        File.Exists(part).Should().BeTrue("a part younger than the orphan age may still be live in another process");
+
+        File.SetLastWriteTimeUtc(part, DateTime.UtcNow.AddHours(-3));
+        await CloseHourAsync();
+
+        File.Exists(part).Should().BeFalse();
+        var dayFile = Directory.GetFiles(TestDataRoot, "*trade*.parquet", SearchOption.AllDirectories).Single();
+        (await CountRowsAsync(dayFile)).Should().Be(1);
+        GC.KeepAlive(crashed);
+    }
+
+    [Fact]
+    public void TryGetDayPath_RecoversTheDayFileFromAPartName()
+    {
+        var day = Path.Combine("root", "SPY", "SPY_trade_20260105.parquet");
+
+        ParquetStorageSink.TryGetDayPath(day + ".h10.abcd1234-7" + ParquetStorageSink.PartFileExtension).Should().Be(day);
+        ParquetStorageSink.TryGetDayPath(day).Should().BeNull();
+    }
+
     // ── Helpers ─────────────────────────────────────────────────────────────────
 
     private ParquetStorageSink CreateSink(
         int bufferSize = 10000,
         Func<string, Func<Stream, Task>, CancellationToken, Task>? writeAtomicallyAsync = null) =>
-        writeAtomicallyAsync is null
-            ? new ParquetStorageSink(
-                new StorageOptions { RootPath = TestDataRoot },
-                new ParquetStorageOptions
-                {
-                    BufferSize = bufferSize,
-                    CompressionMethod = CompressionMethod.None,
-                    FlushInterval = TimeSpan.FromHours(1) // disable periodic flush in tests
-                })
-            : new ParquetStorageSink(
-                new StorageOptions { RootPath = TestDataRoot },
-                new ParquetStorageOptions
-                {
-                    BufferSize = bufferSize,
-                    CompressionMethod = CompressionMethod.None,
-                    FlushInterval = TimeSpan.FromHours(1) // disable periodic flush in tests
-                },
-                writeAtomicallyAsync);
+        new(
+            new StorageOptions { RootPath = TestDataRoot },
+            new ParquetStorageOptions
+            {
+                BufferSize = bufferSize,
+                CompressionMethod = CompressionMethod.None,
+                FlushInterval = TimeSpan.FromHours(1) // disable periodic flush in tests
+            },
+            writeAtomicallyAsync ?? InvokeWriteAtomicallyAsync,
+            policy: null,
+            timeProvider: _clock);
+
+    /// <summary>Advances past the current hour and flushes, which merges closed parts into day files.</summary>
+    private async Task CloseHourAsync()
+    {
+        _clock.Advance(TimeSpan.FromHours(1));
+        await _sink!.FlushAsync();
+    }
+
+    private static async Task<int> CountRowGroupsAsync(string parquetPath)
+    {
+        await using var stream = File.OpenRead(parquetPath);
+        using var reader = await ParquetReader.CreateAsync(stream);
+        return reader.RowGroupCount;
+    }
+
+    private static async Task<IReadOnlyDictionary<string, string>> ReadCustomMetadataAsync(string parquetPath)
+    {
+        await using var stream = File.OpenRead(parquetPath);
+        using var reader = await ParquetReader.CreateAsync(stream);
+        return new Dictionary<string, string>(reader.CustomMetadata);
+    }
 
     private static MarketEvent CreateTradeEvent(string symbol) =>
         MarketEvent.Trade(
@@ -422,5 +562,15 @@ public sealed class ParquetStorageSinkTests : TempDirectoryAsyncTestBase
 
         method.Should().NotBeNull("the Wave 1 atomic-write proof uses the sink's internal temp-file helper directly");
         return (Task)method!.Invoke(null, [destination, writeAsync, cancellationToken])!;
+    }
+
+    /// <summary>Clock the tests move across hour boundaries; Storage.Tests has no fake time package.</summary>
+    private sealed class ManualClock(DateTimeOffset start) : TimeProvider
+    {
+        private DateTimeOffset _now = start;
+
+        public override DateTimeOffset GetUtcNow() => _now;
+
+        public void Advance(TimeSpan by) => _now += by;
     }
 }
