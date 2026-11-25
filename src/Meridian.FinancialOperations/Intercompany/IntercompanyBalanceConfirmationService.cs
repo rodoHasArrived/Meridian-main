@@ -9,12 +9,13 @@ namespace Meridian.FinancialOperations.Intercompany;
 /// <summary>
 /// Reciprocal intercompany balance confirmation. Each side's balance is summed from its own book's posted balance
 /// schedule for the approved accounting profile; nothing is entered by an operator. Each side is confirmed or
-/// disputed only by a caller whose scope holds that side's book. Advisory only: no result gates close.
+/// disputed only by a caller whose scope holds that side's book. Advisory unless the book adopts a reviewed
+/// confirmation close policy (ADR-032), which <see cref="IntercompanyConfirmationCloseGate"/> evaluates.
 /// </summary>
 public sealed class IntercompanyBalanceConfirmationService(IIntercompanyBalanceConfirmationStore store,
     IIntercompanyBalanceScheduleSource schedules, IntercompanyAccountingArrangementService profiles,
     IIntercompanyAccountingArrangementStore profileStore, ILedgerJournalStore journals, IFundProfileTenancyRegistry owners,
-    TimeProvider? clock = null)
+    TimeProvider? clock = null) : IIntercompanyBalanceConfirmationSummarySource
 {
     private readonly TimeProvider _clock = clock ?? TimeProvider.System;
 

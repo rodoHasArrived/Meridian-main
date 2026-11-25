@@ -80,6 +80,26 @@
   }
 }
 
+/* "More below" cue (UX Phase F): the inspector scrolls on its own at desktop widths, so when it
+   still has content beneath the fold it fades its bottom edge and offers a scroll button instead
+   of looking complete. */
+.workspace-workbench-shell-more-below {
+  position: sticky;
+  bottom: 0;
+  display: flex;
+  justify-content: center;
+  margin-top: -2.5rem;
+  padding-top: 2rem;
+  background: linear-gradient(to bottom, transparent, var(--theme-bg-canvas, var(--ws-page-bg, #F2F0EB)) 70%);
+  pointer-events: none;
+}
+
+.workspace-workbench-shell-more-below > * { pointer-events: auto; }
+
+@media (max-width: 1279px) {
+  .workspace-workbench-shell-more-below { display: none; }
+}
+
 /* Opt-in for dense workbenches; legacy inline layouts retain their behavior. */
 .workspace-workbench-inspect-toggle { display: none; }
 .workspace-workbench-shell-main > * { min-width: 0; }

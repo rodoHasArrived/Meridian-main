@@ -109,7 +109,7 @@ repository owner accepts it.
 | Piece | What exists | Verification |
 | --- | --- | --- |
 | Browser | "Accrue interest" on an approved `LoanInterest` profile in Accounting's accounting-profile panel (`accounting-screen.entity-interest-accrual.tsx`). The operator picks the loan principal profile of the same legal agreement and the window; the rate, principal and amount come from the server. Changing the selection withdraws the preview. | `accounting-screen.entity-interest-accrual.test.tsx` (Linux) |
-| Desktop | Interest accrual tab on the Fund Ledger page (`IntercompanyInterestAccrualControl.xaml` over `IntercompanyInterestAccrualWorkspace`), using the same `/api/ledger/intercompany/accruals/preview` and `/drafts` routes. The book and both profiles are chosen from lists over `/api/ledger/books` and the book-scoped profile read (2026-11-17); the counterpart queue picks its source and existing-counterpart books the same way. | `IntercompanyInterestAccrualWorkspaceTests`, `IntercompanyBookChoiceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.InterestAccrualControl_*` compiles on Linux and runs only on Windows |
+| Desktop | Interest accrual tab on the Fund Ledger page (`IntercompanyInterestAccrualControl.xaml` over `IntercompanyInterestAccrualWorkspace`), using the same `/api/ledger/intercompany/accruals/preview` and `/drafts` routes. The book and both profiles are chosen from lists over `/api/ledger/books` and the book-scoped profile read (2026-11-17); the counterpart queue picks its source and existing-counterpart books the same way. | `IntercompanyInterestAccrualWorkspaceTests`, `IntercompanyBookChoiceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.InterestAccrualControl_*` builds and runs only on Windows (it compiles on Linux only with `/p:EnableFullWpfBuild=true`) |
 | Post and deliver | `IntercompanyAccrualPostAndDeliverPostgresTests`: a posted drawdown, the accrual drafted from approved terms, ordinary review and posting in the lender's book, one counterpart draft delivered to the borrower, and the borrower's own review and posting. No second proposal is mirrored back and the same days cannot be accrued again. A second case dissolves the borrower in its lifecycle history before the accrual date; the production lifecycle control then refuses the borrower's counterpart and its book stays empty. | PostgreSQL |
 
 In the PostgreSQL run every store the accrual touches is durable (updated 2026-11-17):
@@ -119,9 +119,11 @@ In the PostgreSQL run every store the accrual touches is durable (updated 2026-1
   lifecycle history are in a fund-structure schema of the same database. The loan is created,
   submitted and approved by different people through `IntercompanyAgreementService`, and both
   profiles pin that exact approved revision.
-- Journal drafts are in `FileManualJournalEntryDraftStore`, the store the workstation host
-  registers. There is no PostgreSQL draft store. The run reopens the file to show the reviewed
-  source and delivered counterpart survive a restart.
+- Journal drafts are in `PostgresManualJournalEntryDraftStore` (ledger migration 077), the store
+  a host with a ledger database registers since 2026-11-18. The run reopens the draft table to show
+  the reviewed source and delivered counterpart, with their server-held proposal identity and
+  digest, survive a restart. Hosts without a ledger database, and the desktop app, keep
+  `FileManualJournalEntryDraftStore`.
 
 `IntercompanyLedgerPostingAuthority`, `PostgresIntercompanyAgreementPostingAuthority` and
 `LifecycleLedgerPostingAuthority` (over `PostgresFundStructureService` and the graph store's
@@ -137,7 +139,46 @@ counterparts by direct append and did not reach this. The workbench now treats t
 retained counterpart as a classification: it is kept as the posting's source event type and is not
 written as treasury fund-event metadata. The exemption needs the server-retained proposal identity
 and applies only when no fund event identity, capital account or investor is stated; the ledger
-guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory.
+guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memory, and
+`IntercompanyAccrualPostAndDeliverPostgresTests` covers it over PostgreSQL drafts.
+
+### PostgreSQL journal draft store (2026-11-18)
+
+Manual journal drafts now have a PostgreSQL store, like every other governed store in this area.
+
+| Part | Behaviour | Evidence |
+| --- | --- | --- |
+| Draft table | `V_ledger_077` keys each draft by fund, tenant, company and journal ID, compared case-insensitively, exactly as the file store does. Each row retains the complete draft, so server-held fields such as the intercompany proposal identity and source digest round-trip unchanged. Save and batch save are one transaction. | `ManualJournalEntryDraftStoreContract`, run against the file store and PostgreSQL |
+| Cross-host serialization | `PostgresManualJournalMutationRecoveryStore` holds one PostgreSQL session advisory lock per ledger schema for each whole journal command and retains command receipts in the same migration. The database refuses to rewrite or remove a completed receipt. | `PostgresManualJournalEntryDraftStoreTests`; `AccountingConfigurationServiceTests.PostgresDrafts_ConcurrentEditsFromTwoHosts_OneWinsAndTheOtherIsRefusedAsStale` |
+| Registration | `AddIntercompanyEntityServices` registers the PostgreSQL draft store when `MERIDIAN_LEDGER_CONNECTION_STRING` is configured; the workstation pairs it with the PostgreSQL receipt store. Otherwise the file stores remain. The desktop app is unchanged. | Composition code |
+
+Completed PostgreSQL receipts are retained in place; unlike the file store they are not archived
+or pruned. Optimistic draft version checks stay in the workbench service.
+
+### Counterpart journal picker and desktop journal link (2026-11-18)
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Shared read | `GET /api/ledger/intercompany/proposals/{id}/counterpart-candidates?targetBookId=` lists posted journals in an approved destination book that carry the source transaction's identity and pass the same check the link uses (`IntercompanyProposalDeliveryService.ListCounterpartCandidatesAsync`). It requires ledger-report view permission and access to both books. It is a convenience: the link still re-checks the chosen journal under the journal mutation lease. | `IntercompanyProposalResolutionTests.CounterpartCandidates_*` (Linux) |
+| Browser | The counterpart journal is chosen from that list once a counterpart book is selected; changing the book clears the choice. | `accounting-screen.entity-operations.test.tsx` (Linux) |
+| Desktop | The Counterpart proposals tab picks the journal from the same list. "Open journal" on a delivery record opens the Fund Ledger Journal tab for the book's fund profile, through a new optional `JournalEntryId` on `FundOperationsNavigationContext`, and selects the entry or says it is not in that fund's loaded view. | `IntercompanyCounterpartQueueWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.CounterpartProposalsControl_*` and `FundLedgerViewModelTests.LoadAsync_WithJournalDeepLink_*` build on Linux and run only on Windows |
+
+### Fixed management-fee extension (2026-11-17)
+
+`DEC-IC-FEE-001` and [ADR-029](../../adr/029-governed-intercompany-fixed-management-fees.md) add rule
+`intercompany-fee-v1`; roadmap row `W12-ICFEE-001` carries its status. Development verification only, over
+synthetic fixtures.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Terms | Fixed management fees declare `FixedFeeBasis` (per period, or per annum with a day count). Null-omitted, so earlier revisions keep their review hashes. | `IntercompanyFeeAccrualPreviewServiceTests` |
+| Calculation | Per-period fees prorate by covered days over period days; per-annum fees by the declared day count; cut at revision and period boundaries; rounded once. Percentage fees and an undeclared basis are refused. | `IntercompanyFeeAccrualPreviewServiceTests` (hand-derived amounts) |
+| Direction and draft | The declared service provider books receivable against revenue; the recipient expense against payable, under the existing `ManagementFee` profile. | `IntercompanyFeeAccrualDraftServiceTests`, `IntercompanyFeeAccrualSourceBuilderTests` |
+| Evidence and controls | Fee evidence shares the accrual-evidence fields under its own rule; the guard dispatches on it. The workbench refuses overlapping posted fees and re-resolves each slice's authority before review or posting. | `AccountingConfigurationServiceTests.IntercompanyFee`, `IntercompanyFeeAccrualDraftServiceTests` |
+| Counterpart | The existing mirror delivers the recipient's expense and payable after the source posts. | `IntercompanyFeeAccrualSourceBuilderTests` |
+| Surfaces | Browser "Accrue fee" and basis field; WPF Management fee tab and basis field, over `/api/ledger/intercompany/fees/preview` and `/drafts`. | `IntercompanyManagementFeeWorkspaceTests`, browser tests; WPF smoke test builds and runs only on Windows |
+
+Percentage fees, loan commitment or utilisation fees and scheduled runs remain out of scope.
 
 ### Floating-rate extension (2026-11-17)
 
@@ -151,7 +192,7 @@ guard is unchanged. `IntercompanyProposalDeliveryRetryTests` covers this in memo
 | Calculation | Each period uses exactly the approved fixing observed the lag before its start, plus the spread. A missing fixing refuses the window. All-fixed windows stay v1. | `IntercompanyFloatingAccrualPreviewTests` (hand-derived amounts) |
 | Evidence and staleness | Floating slices pin fixing identity, rate, spread, lag and value digest. The evidence guard refuses a rate that differs from its pin; the posting authority re-reads each pin before review or posting. | `IntercompanyAccrualDraftServiceTests.Floating` |
 | Routes | `/api/ledger/intercompany/rate-fixings` list, propose, decide. Manage-ledger permission and tenant scope for mutations; exact decimal strings. | `IntercompanyRateFixingEndpointTests` |
-| Surfaces | Browser Rate fixings tab and fixing column; WPF Rate fixings tab, fixing column and the lag field in both agreement editors. | `IntercompanyRateFixingWorkspaceTests`, browser tests; WPF smoke test compiles on Linux and runs only on Windows |
+| Surfaces | Browser Rate fixings tab and fixing column; WPF Rate fixings tab, fixing column and the lag field in both agreement editors. | `IntercompanyRateFixingWorkspaceTests`, browser tests; WPF smoke test builds and runs only on Windows |
 
 Fees, compounding, in-arrears or averaged rates, floors, caps and scheduled runs remain out of scope.
 
@@ -166,12 +207,54 @@ row `W12-ICCONFIRM-001` carries its status. Semantics are in the
 | Rules | `IntercompanyBalanceConfirmationRules`: proposal, confirm, dispute, resolve and advisory findings over a pinned balance digest. | `IntercompanyBalanceConfirmationRulesTests` |
 | Storage | `V_ledger_073__intercompany_balance_confirmations.sql` (append-only, one confirmation per tenant, company, profile and date) behind `PostgresIntercompanyBalanceConfirmationStore`; `FileIntercompanyBalanceConfirmationStore` for hosts without a ledger database. | `IntercompanyBalanceConfirmationStoreTests` (file and PostgreSQL) |
 | Service and routes | `IntercompanyBalanceConfirmationService` reads each side from the balance schedule and checks each side's book; `/api/ledger/intercompany/confirmations` (summary, propose, actions) sends exact decimal strings. | `IntercompanyBalanceConfirmationServiceTests`, `IntercompanyBalanceConfirmationEndpointTests` |
-| Close readiness | Findings join the existing intercompany close advisory as `intercompany.confirmation.*` warnings, after eligibility is decided. | `IntercompanyCloseAdvisoryAuthorizationTests` |
+| Close readiness | Findings join the existing intercompany close advisory as `intercompany.confirmation.*` warnings, after eligibility is decided. A book's approved confirmation close policy is the separate path that can block close (next section). | `IntercompanyCloseAdvisoryAuthorizationTests` |
 | Browser | "Balance confirmation" tab in Accounting's entity operations (`accounting-screen.entity-confirmations.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
 | Desktop | Balance confirmation tab on the Fund Ledger page (`IntercompanyBalanceConfirmationControl.xaml` over `IntercompanyBalanceConfirmationWorkspace`). The ledger book is a typed ID, as on the other desktop intercompany tabs; profiles are chosen from a list. | `IntercompanyBalanceConfirmationWorkspaceTests`, `WorkstationIntercompanyAgreementApiClientTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` runs only on Windows |
 
-Not in this slice: opt-in close blocking (needs its own decision and a reviewed policy revision),
-pairs spanning two companies of one tenant, and posting adjustments from a dispute.
+Not in this slice: pairs spanning two companies of one tenant, and posting adjustments from a dispute.
+Opt-in close blocking was added on 2026-11-18; see the next section.
+
+### Opt-in confirmation close policy (2026-11-18)
+
+ADR-032 and the proposed decision `DEC-IC-CONFIRM-002` (awaiting owner acceptance) let one ledger book
+adopt a reviewed confirmation close policy. Books without one keep advisory-only confirmation.
+
+| Piece | What exists | Verification |
+| --- | --- | --- |
+| Rules and storage | `IntercompanyConfirmationClosePolicyRules` (propose, approve by someone else, reject or disable with a reason; evaluation that fails closed on unreadable balances). `V_ledger_078__intercompany_confirmation_close_policies.sql` (append-only, update/delete/truncate refused) behind `PostgresIntercompanyConfirmationClosePolicyStore`; `FileIntercompanyConfirmationClosePolicyStore` otherwise. | `IntercompanyConfirmationClosePolicyRulesTests`, `IntercompanyConfirmationClosePolicyStoreContract` (file and PostgreSQL) |
+| Close readiness | `IntercompanyConfirmationCloseGate` adds the `intercompany-confirmation` contributor only for a book with an active policy: `Blocked` for a listed finding at the period end, `Ready` otherwise, `Unavailable` when the period or confirmation cannot be read. The advisory list is unchanged. | `IntercompanyConfirmationCloseGateTests`, `FinancialOperationsCommandCenterReadServiceTests.ConfirmationClosePolicy_*`, `IntercompanyCloseAdvisoryTests` (unchanged) |
+| Routes | `/api/ledger/intercompany/confirmation-close-policies`: list, propose and decide, scoped to a book the caller's tenant and company own. | `IntercompanyConfirmationClosePolicyEndpointTests` |
+| Browser | Close-policy panel on the balance-confirmation screen (`accounting-screen.entity-confirmation-close-policy.tsx`). | `accounting-screen.entity-confirmations.test.tsx` |
+| Desktop | Close-policy section on the Balance confirmation tab (`IntercompanyBalanceConfirmationWorkspace.ClosePolicy.cs`). | `IntercompanyBalanceConfirmationWorkspaceTests` (Linux); `IntercompanyNativeControlSmokeTests.BalanceConfirmationControl_*` builds on Linux and runs only on Windows |
+
+### Periodic compounding extension (2026-11-17)
+
+`DEC-IC-COMPOUND-001` and [ADR-030](../../adr/030-intercompany-interest-compounding.md) add rule
+`intercompany-accrual-v3`; roadmap row `W12-ICCOMPOUND-001` carries its status. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Base | Posted principal plus the posted accrued-interest balance of the loan-interest profile at each period start; settlements and reversals reduce it. | `IntercompanyCompoundingAccrualPreviewTests`, `IntercompanyCompoundingSourceTests` (real journals, reversal) |
+| Coverage | Posted, unreversed accruals must cover every earlier day; one request stays in one period; frequency must equal the schedule. | `IntercompanyCompoundingAccrualPreviewTests` |
+| Evidence | The balance, posted windows and first principal date are retained; the guard refuses v3 without them; the workbench re-reads them before review or posting. | `IntercompanyAccrualDraftServiceTests.Compounding` |
+| Surfaces | Browser and WPF slice tables show compounded interest. | browser accrual test, `IntercompanyCompoundingSliceRowTests` |
+
+Daily compounding and compounding that differs from the schedule frequency remain out of scope.
+
+### Opt-in accrual schedules (2026-11-17)
+
+`DEC-IC-SCHEDULE-001` and [ADR-031](../../adr/031-intercompany-accrual-schedules.md); roadmap row
+`W12-ICSCHEDULE-001`. Development verification only.
+
+| Piece | Decision and boundary | Verification |
+| --- | --- | --- |
+| Schedule | Book, loan-interest profile and principal profile; maker-checker; reject or disable with a reason; one open schedule per book and profile. | `IntercompanyAccrualScheduleRulesTests`, `IntercompanyAccrualScheduleServiceTests` |
+| Storage | Append-only versions in ledger migration `076` or an atomic file store. | `IntercompanyAccrualScheduleStoreTests` (file and PostgreSQL) |
+| Runs | Completed periods ending on or after approval; drafts through the operator path; existing drafts skipped; refusals reported; 24 periods per run. | `IntercompanyAccrualScheduleServiceTests` |
+| Runner | Every six hours after a one-minute start-up delay; disabled schedules ignored; one failure never stops the rest. | `IntercompanyAccrualScheduleServiceTests` |
+| Routes and surfaces | `/api/ledger/intercompany/accrual-schedules`, due preview and run now; browser and WPF tabs. | `IntercompanyAccrualScheduleEndpointTests`, workspace and browser tests |
+
+Management-fee schedules follow once governed fee drafting is composed on main.
 
 ## Verification record (2026-11-14)
 

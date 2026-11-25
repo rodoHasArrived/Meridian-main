@@ -35,6 +35,8 @@ public sealed record CorporateActionFetchResult(
 
     public string? Reason { get; init; }
 
+    public CorporateActionFetchCoverage? Coverage { get; init; }
+
     private int? _withheldObservationCount;
     public int WithheldObservationCount
     {

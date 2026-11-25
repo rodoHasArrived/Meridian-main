@@ -44,6 +44,20 @@ public partial class WorkspaceCommandBarControl : UserControl
             typeof(ICommand),
             typeof(WorkspaceCommandBarControl));
 
+    /// <summary>
+    /// When set, the More menu ends with "Reset layout", which runs this command. Workspace shells
+    /// bind it to their pane-layout reset so every shell offers the same recovery path.
+    /// </summary>
+    public static readonly DependencyProperty ResetLayoutCommandProperty =
+        DependencyProperty.Register(
+            nameof(ResetLayoutCommand),
+            typeof(ICommand),
+            typeof(WorkspaceCommandBarControl),
+            new PropertyMetadata(null, OnResetLayoutCommandChanged));
+
+    internal const string ResetLayoutMenuLabel = "Reset layout";
+    internal const string ResetLayoutAutomationId = "WorkspaceCommandResetLayout";
+
     public WorkspaceCommandBarControl()
     {
         InitializeComponent();
@@ -70,6 +84,12 @@ public partial class WorkspaceCommandBarControl : UserControl
         set => SetValue(CommandInvokedCommandProperty, value);
     }
 
+    public ICommand? ResetLayoutCommand
+    {
+        get => (ICommand?)GetValue(ResetLayoutCommandProperty);
+        set => SetValue(ResetLayoutCommandProperty, value);
+    }
+
     private void OnPrimaryCommandClick(object sender, RoutedEventArgs e)
     {
         if (sender is FrameworkElement { Tag: WorkspaceCommandItem command })
@@ -81,7 +101,8 @@ public partial class WorkspaceCommandBarControl : UserControl
 
     private void OnMoreButtonClick(object sender, RoutedEventArgs e)
     {
-        if (CommandGroup.SecondaryCommands.Count == 0)
+        var items = BuildOverflowMenuItems();
+        if (items.Count == 0)
         {
             return;
         }
@@ -91,6 +112,18 @@ public partial class WorkspaceCommandBarControl : UserControl
             PlacementTarget = MoreButton
         };
 
+        foreach (var item in items)
+        {
+            menu.Items.Add(item);
+        }
+
+        menu.IsOpen = true;
+    }
+
+    /// <summary>The More menu's entries: the secondary commands, then "Reset layout" when bound.</summary>
+    internal IReadOnlyList<Control> BuildOverflowMenuItems()
+    {
+        var items = new List<Control>();
         foreach (var command in CommandGroup.SecondaryCommands)
         {
             var menuItem = new MenuItem
@@ -114,10 +147,28 @@ public partial class WorkspaceCommandBarControl : UserControl
             AutomationProperties.SetName(menuItem, command.Label);
 
             menuItem.Click += OnSecondaryCommandClick;
-            menu.Items.Add(menuItem);
+            items.Add(menuItem);
         }
 
-        menu.IsOpen = true;
+        if (ResetLayoutCommand is { } resetLayout)
+        {
+            if (items.Count > 0)
+            {
+                items.Add(new Separator());
+            }
+
+            var resetItem = new MenuItem
+            {
+                Header = ResetLayoutMenuLabel,
+                Command = resetLayout,
+                ToolTip = "Restore this workspace's default panes. Other workspaces keep their layouts."
+            };
+            AutomationProperties.SetAutomationId(resetItem, ResetLayoutAutomationId);
+            AutomationProperties.SetName(resetItem, ResetLayoutMenuLabel);
+            items.Add(resetItem);
+        }
+
+        return items;
     }
 
     private void OnSecondaryCommandClick(object sender, RoutedEventArgs e)
@@ -143,6 +194,14 @@ public partial class WorkspaceCommandBarControl : UserControl
         return true;
     }
 
+    private static void OnResetLayoutCommandChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
+    {
+        if (d is WorkspaceCommandBarControl control)
+        {
+            control.UpdateMoreButtonVisibility();
+        }
+    }
+
     private static void OnCommandGroupChanged(DependencyObject d, DependencyPropertyChangedEventArgs e)
     {
         if (d is WorkspaceCommandBarControl control)
@@ -158,7 +217,7 @@ public partial class WorkspaceCommandBarControl : UserControl
             return;
         }
 
-        MoreButton.Visibility = CommandGroup.SecondaryCommands.Count > 0
+        MoreButton.Visibility = CommandGroup.SecondaryCommands.Count > 0 || ResetLayoutCommand is not null
             ? Visibility.Visible
             : Visibility.Collapsed;
     }

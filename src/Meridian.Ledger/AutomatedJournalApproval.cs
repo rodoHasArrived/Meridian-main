@@ -106,7 +106,10 @@ public sealed record AutomatedJournalApproval
                 line.debit,
                 line.credit,
                 Draft.Description,
-                line.dimensions))
+                line.dimensions)
+            {
+                Memo = Draft.LineMemos?.GetValueOrDefault(index)
+            })
             .ToArray();
 
         return new JournalEntry(JournalEntryId, Draft.Event.Timestamp, Draft.Description, entries, metadata);

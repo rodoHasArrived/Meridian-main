@@ -85,7 +85,7 @@ it("renders the existing proof component only after an exact canonical response"
   render(<Harness selected={{ ...record, proof: { explorer, recordId: detail.recordId } }} />);
   await userEvent.click(screen.getByRole("link", { name: "Inspect MSFT" }));
   expect(await screen.findByRole("region", { name: "MSFT proof detail" })).toBeInTheDocument();
-  expect(screen.getByText("Number Passport")).toBeInTheDocument();
+  expect(screen.getByText("Record passport")).toBeInTheDocument();
   expect(screen.getByText("Review required: no structured freshness marker")).toBeInTheDocument();
 });
 

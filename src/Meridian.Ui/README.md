@@ -6,10 +6,16 @@ module_id: SRC-UI
 path: src/Meridian.Ui
 status: active
 owner_lane: Workstation Shell and UX
-last_reviewed: 2026-11-17
+last_reviewed: 2026-11-23
 ---
 
 # src/Meridian.Ui
+
+Trading → Risk now includes retained cancel-all incident history for the selected execution
+account. The browser reopens complete per-order observations, shows uncertainty and broker coverage,
+and preserves exact quantity text. Its account-authorized shared endpoints and public audit
+projections are documented in the dashboard and UI Shared READMEs. Rebuild the served bundle after
+integrating these source changes.
 
 The workstation bundle under `wwwroot/workstation/` is an ignored build product. Build `dashboard/`
 before starting the host from a fresh source checkout, or restore the CI artifact for the same
@@ -18,9 +24,10 @@ before project evaluation; commit authored inputs and reviewed documentation, no
 mechanical trackers. See [generated output delivery](../../docs/engineering/generated-output-delivery.md).
 
 The Providers workstation includes guarded failover, historical provider limits and routing previews,
-symbol rollout, validation profiles and quota history. Data and Settings share pending activation
-status from the host; rebuild the dashboard to refresh these served controls. See the dashboard and
-shared-service READMEs for validation and runtime boundaries.
+symbol rollout, quota history, and a Data quality rules panel with retained profile changes. Data
+quality watch has a cross-provider tolerance editor. Data and Settings share pending activation
+status from the host. See the dashboard and shared-service READMEs for validation and runtime
+boundaries.
 
 The browser bond workstation extends the existing Data/Security Master and Portfolio cash screens. Shared endpoints retain accepted holdings, input revisions, comparisons, forecasts, collection watches, risk and governed income preparations. See [bond operations](../../docs/operators/bond-workflows.md) for source formats and activation boundaries.
 
@@ -31,6 +38,9 @@ revision/evidence inspection and governed proposal review over shared tenant-sco
 journal-line reference editing follows the server's rollout capability; the browser retains exact
 rate text and source amounts. Rebuild with the canonical dashboard command after changes. See
 [intercompany agreements](../../docs/domain/intercompany-agreements.md) for authority and configuration.
+
+The served accounting bundle adds "Accrue fee" on approved management-fee profiles over
+`/api/ledger/intercompany/fees/*`. See [governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
 
 The served Entity operations bundle adds a Rate fixings tab over
 `/api/ledger/intercompany/rate-fixings`. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
@@ -109,7 +119,16 @@ detail. Reconciliation commands and approvals remain owned by the existing share
 The host-served bundle carries the shell hierarchy pass: a one-row masthead with the environment
 in the trust pill, a provenance banner that becomes a stripe once seen, a two-row workspace header,
 route-first workspace screens with the sidebar as the only sub-navigation, and a pinned Today entry
-with Control Tower attention counts. No shared contract changed.
+with Control Tower attention counts. Options screening is a Data sidebar entry, not a Market Data
+desk tab, and the sidebar highlights only the destination whose `view` the page shows. Short labels
+use light caps in the body face and monospace stays on figures and IDs. The shared inbox filters by
+owner (Everyone, Mine, Unassigned) and adds acknowledge and snooze keys beside assign, and Today's
+provider items open that provider's retained verification history. Trial balance compares closing balances against the prior close through the
+posted-period comparison's ClosingBalances measure.
+Close Cockpit lays the close plan's tasks out by due day after period end, with owners, blockers and
+dependencies; it uses the existing close-plan contract unchanged. The open-breaks and timing-drift
+headline KPIs show sparklines rebuilt server-side from retained break and reconciliation times. Journal-entry detail shows the order, fill
+and run a posting came from, and Trading order evidence lists the order's ledger postings.
 
 The host-served bundle carries the design-system consolidation. It includes one status
 component; one formatting module (year-bearing UTC timestamps; accounting negatives in
@@ -215,10 +234,11 @@ No shared contract changed in that step.
 Dashboard source also carries the P4 entity, fund and period step (host bundle not yet rebuilt):
 - The scope bar reads `Scope  Entity … › Fund … › Account … › Period …`. An unset Entity, Fund
   or Account reads "All authorized"; an unset Period reads "All periods". Entity and fund are the
-  `entityId` and `fundId` URL parameters, carried on every route and in storage, recent scopes,
-  saved layouts, Copy link and the server-side default scope. Accounting applies `entityId`.
+  `entityId` and `fundId` URL parameters, carried in ordinary workspace links and in storage, recent scopes,
+  saved layouts, Copy link and the server-side default scope. Record links marked `recordScope=1`
+  use their explicit route scope without adding remembered dimensions. Accounting applies `entityId`.
   Portfolio > Brokerage sync (household accounts and positions), Accounting > Close calendar
-  (close workflows), Accounting > Operations continuity (workflow list) and Accounting > Statement
+  (close workflows), Accounting > Close (workflow list at `/accounting/close`) and Accounting > Statement
   import (saved fetch schedules) narrow their fund-account rows to the chosen fund or entity client-side, using
   the organization graph; there the bar shows Entity and Fund as applied. Elsewhere, and on those
   screens when the structure read is unavailable, a set fund shows as retained (muted) and nothing is hidden.
@@ -338,6 +358,13 @@ See `DIA-BROWSER-WORKSTATION` in `docs/source/data/diagram-index.yml`.
 <!-- source-todos:begin module=SRC-UI -->
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The served Accounting bundle picks the existing counterpart journal from
+`/api/ledger/intercompany/proposals/{id}/counterpart-candidates` and includes the confirmation close-policy panel
+over `/api/ledger/intercompany/confirmation-close-policies`. See
+[ADR-032](../../docs/adr/032-intercompany-confirmation-close-policy.md).
 
 ## Validation
 

@@ -46,6 +46,17 @@ function response(overrides: Partial<ProviderCapabilityMatrixResponse> = {}): Pr
 }
 
 describe("buildCapabilityMatrixModel", () => {
+  it("joins registered adapter declarations by normalized provider ID", () => {
+    const input = response();
+    const id = input.providers[0].providerId;
+    const model = buildCapabilityMatrixModel(input, new Map([[id.toLowerCase(), {
+      supportsMarketDepth: true, maxDepthLevels: 5, supportsHistoricalQuotes: false
+    }]]));
+    expect(model.rows[0].capabilities).toEqual({
+      supportsMarketDepth: true, maxDepthLevels: 5, supportsHistoricalQuotes: false
+    });
+  });
+
   it("marks supported cells with compact capability codes and unsupported cells with a dash", () => {
     const model = buildCapabilityMatrixModel(response());
 
@@ -101,7 +112,7 @@ describe("buildCapabilityFreshnessIndex", () => {
 
   it("joins by provider id regardless of case and reports the age", () => {
     expect(freshness("alpaca")).toEqual({ state: "current", label: "Current", ageText: "3h ago" });
-    expect(freshness("polygon")).toEqual({ state: "stale", label: "Stale", ageText: "4mo ago" });
+    expect(freshness("polygon")).toEqual({ state: "stale", label: "Stale", ageText: "since Jul 1, 2026" });
   });
 
   it("reads no evidence for an untimed or unknown provider", () => {
@@ -111,7 +122,8 @@ describe("buildCapabilityFreshnessIndex", () => {
 
   it("formats ages in hours, days, then months", () => {
     expect(formatEvidenceAge(30 * 60_000)).toBe("under 1h ago");
+    expect(formatEvidenceAge(47 * 3_600_000)).toBe("47h ago");
     expect(formatEvidenceAge(50 * 3_600_000)).toBe("2d ago");
-    expect(formatEvidenceAge(90 * 86_400_000)).toBe("3mo ago");
+    expect(formatEvidenceAge(90 * 86_400_000, Date.parse("2026-06-30T12:00:00Z"))).toBe("since Apr 1, 2026");
   });
 });

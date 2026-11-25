@@ -26,6 +26,31 @@ public sealed class WorkspaceShellHomeTemplateTests
     }
 
     [Theory]
+    [InlineData(@"src\Meridian.Wpf\Features\Trading\Shell\TradingWorkspaceShellPage.xaml")]
+    [InlineData(@"src\Meridian.Wpf\Features\Portfolio\Shell\PortfolioWorkspaceShellPage.xaml")]
+    [InlineData(@"src\Meridian.Wpf\Views\AccountingWorkspaceShellPage.xaml")]
+    [InlineData(@"src\Meridian.Wpf\Features\Reporting\Shell\ReportingWorkspaceShellPage.xaml")]
+    [InlineData(@"src\Meridian.Wpf\Features\Data\Shell\DataWorkspaceShellPage.xaml")]
+    [InlineData(@"src\Meridian.Wpf\Features\Settings\Shell\SettingsWorkspaceShellPage.xaml")]
+    public void WorkspaceShells_ShouldOfferResetLayoutFromTheCommandBar(string relativePath)
+    {
+        var xaml = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(relativePath));
+
+        xaml.Should().Contain(
+            "ResetLayoutCommand=\"{Binding ResetLayoutCommand, RelativeSource={RelativeSource AncestorType=Page}}\"");
+    }
+
+    [Fact]
+    public void StrategyShell_ResetShouldPersistTheDefaultLayout()
+    {
+        // Strategy keeps its own "Reset" action; it must save the defaults like the shared command does.
+        var source = File.ReadAllText(RunMatUiAutomationFacade.GetRepoFilePath(@"src\Meridian.Wpf\Views\StrategyWorkspaceShellPage.xaml.cs"));
+
+        source.Should().Contain("ResetDockLayoutAsync(StrategyDockManager)");
+        source.Should().NotContain("LoadDefaultDockLayoutAsync(StrategyDockManager)");
+    }
+
+    [Theory]
     [InlineData(@"src\Meridian.Wpf\Features\Portfolio\Shell\PortfolioWorkspaceShellPage.xaml")]
     [InlineData(@"src\Meridian.Wpf\Features\Reporting\Shell\ReportingWorkspaceShellPage.xaml")]
     public void CockpitWorkspaceHomes_ShouldExposeSummaryQueueAndDecisionCards(string relativePath)

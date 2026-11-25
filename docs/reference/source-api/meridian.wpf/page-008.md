@@ -6,6 +6,28 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ILifecycleControlClient
+
+Qualified name: <code>Meridian.Wpf.Services.ILifecycleControlClient</code>. Kind: `interface`.
+
+Source: [src/Meridian.Wpf/Services/LifecycleControlClient.cs:13](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L13).
+
+Defines startup and authenticated lifecycle queries and governed shutdown requests for the desktop workstation.
+
+```csharp
+public interface ILifecycleControlClient
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetStartupSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:15](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L15) |  |
+| <code>Task&lt;bool&gt; AuthenticateAsync(string username, string password, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:17](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L17) |  |
+| <code>Task&lt;RuntimeLifecycleSnapshotDto?&gt; GetSnapshotAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:22](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L22) |  |
+| <code>Task&lt;LifecycleShutdownReceiptDto?&gt; GetLatestReceiptAsync(CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:24](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L24) |  |
+| <code>Task&lt;LifecycleShutdownAcceptedDto?&gt; RequestShutdownAsync(LifecycleShutdownRequestDto request, CancellationToken cancellationToken = default);</code> | [src/Meridian.Wpf/Services/LifecycleControlClient.cs:26](../../../../src/Meridian.Wpf/Services/LifecycleControlClient.cs#L26) |  |
+
 ## InfoBarNotificationEventArgs
 
 Qualified name: <code>Meridian.Wpf.Services.InfoBarNotificationEventArgs</code>. Kind: `class`.
@@ -706,7 +728,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Wpf.Services.LedgerReportsApiClient</code>. Kind: `class`.
 
-Source: [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:60](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L60).
+Source: [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:67](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L67).
 
 Loads shared ledger books, periods, reports, journal entries, and amount-proof details for desktop accounting views.
 
@@ -718,15 +740,17 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public LedgerReportsApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:64](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L64) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerBookDto&gt;&gt;&gt; GetBooksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:69](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L69) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodDto&gt;&gt;&gt; GetPeriodsAsync(Guid? ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:72](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L72) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt;&gt; GetTrialBalanceAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:81](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L81) |  |
-| <code>public Task&lt;ApiResponse&lt;LedgerPeriodPnlSummaryDto&gt;&gt; GetPnlSummaryAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:88](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L88) |  |
-| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerJournalEntryDto&gt;&gt;&gt; GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:95](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L95) |  |
-| <code>public Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetAmountProofAsync(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:99](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L99) |  |
-| <code>public Task&lt;ApiResponse&lt;LedgerAccountRunningBalanceDto&gt;&gt; GetAccountRunningBalanceAsync(Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:104](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L104) |  |
-| <code>public Task&lt;ApiResponse&lt;JsonDocument&gt;&gt; GetRetainedManifestAsync(string route, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:131](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L131) |  |
+| <code>public LedgerReportsApiClient(ApiClientService apiClient);</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:71](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L71) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerBookDto&gt;&gt;&gt; GetBooksAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:76](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L76) |  |
+| <code>public Task&lt;ApiResponse&lt;BookFxSettlementSetDto&gt;&gt; GetBookFxSettlementSetAsync(Guid setId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:79](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L79) |  |
+| <code>public Task&lt;ApiResponse&lt;PrivateCapitalUnitRegisterPreviewDto&gt;&gt; PreviewUnitRegisterAsync(Guid bookId, PreviewPrivateCapitalUnitRegisterRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:83](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L83) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodDto&gt;&gt;&gt; GetPeriodsAsync(Guid? ledgerBookId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:88](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L88) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerPeriodTrialBalanceLineDto&gt;&gt;&gt; GetTrialBalanceAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:97](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L97) |  |
+| <code>public Task&lt;ApiResponse&lt;LedgerPeriodPnlSummaryDto&gt;&gt; GetPnlSummaryAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:104](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L104) |  |
+| <code>public Task&lt;ApiResponse&lt;List&lt;LedgerJournalEntryDto&gt;&gt;&gt; GetJournalEntriesAsync(Guid periodId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:111](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L111) |  |
+| <code>public Task&lt;ApiResponse&lt;EvidencePacketDto&gt;&gt; GetAmountProofAsync(string subjectId, Guid ledgerBookId, Guid periodId, string fundProfileId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:115](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L115) |  |
+| <code>public Task&lt;ApiResponse&lt;LedgerAccountRunningBalanceDto&gt;&gt; GetAccountRunningBalanceAsync(Guid periodId, string accountName, string? symbol, string? financialAccountId, LedgerDimensionSetDto? dimensions, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:120](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L120) |  |
+| <code>public Task&lt;ApiResponse&lt;JsonDocument&gt;&gt; GetRetainedManifestAsync(string route, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/Services/LedgerReportsApiClient.cs:147](../../../../src/Meridian.Wpf/Services/LedgerReportsApiClient.cs#L147) |  |
 
 ## LifecycleControlClient
 
@@ -1053,15 +1077,3 @@ Declared public members:
 | <code>public DateTime CreatedAt { get; set; } = DateTime.UtcNow;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:40](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L40) | Gets or sets when the operation was created. |
 | <code>public int RetryCount { get; set; }</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:45](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L45) | Gets or sets the number of retry attempts. |
 | <code>public int MaxRetries { get; set; } = 3;</code> | [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:50](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L50) | Gets or sets the maximum number of retries before discarding. |
-
-## PendingOperationQuarantineRecord
-
-Qualified name: <code>Meridian.Wpf.Services.PendingOperationQuarantineRecord</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/Services/PendingOperationsQueueService.cs:82](../../../../src/Meridian.Wpf/Services/PendingOperationsQueueService.cs#L82).
-
-Payload-free audit record for a pending operation that cannot safely be replayed. The original payload is intentionally omitted because retired reconciliation mutations may contain operator notes or other sensitive casework data.
-
-```csharp
-public sealed record PendingOperationQuarantineRecord(string OperationId, string OperationType, DateTime CreatedAt, int RetryCount, int MaxRetries, DateTimeOffset QuarantinedAtUtc, int SourceEnvelopeVersion, string ReasonCode, string Reason);
-```

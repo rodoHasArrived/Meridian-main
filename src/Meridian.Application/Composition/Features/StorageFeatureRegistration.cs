@@ -236,7 +236,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<SymbolRegistryService>(sp =>
         {
             var storageOptions = sp.GetRequiredService<StorageOptions>();
-            return new SymbolRegistryService(storageOptions.RootPath);
+            return ProcessSymbolRegistries.ForStorageRoot(storageOptions.RootPath);
         });
         services.TryAddSingleton<ISymbolRegistryService>(sp => sp.GetRequiredService<SymbolRegistryService>());
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, SymbolRegistryInitializationHostedService>());
@@ -244,6 +244,13 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         // Position snapshot store — files land under {StorageRoot}/portfolios/ so the
         // LifecyclePolicyEngine governs retention automatically (ADR-002 / ADR-007).
         services.AddSingleton<IPositionSnapshotStore, JsonlPositionSnapshotStore>();
+
+        // Posting-account registry shared by bound ledgers, and the append-only, hash-chained
+        // journal store that backtests stream their books into under {StorageRoot}/ledger/journals/.
+        services.TryAddSingleton<IChartOfAccounts>(StandardChartOfAccounts.Instance);
+        services.TryAddSingleton<ILedgerJournalLogFactory>(sp => new FileLedgerJournalLogFactory(
+            FileLedgerJournalLogFactory.DefaultRoot(sp.GetRequiredService<StorageOptions>().RootPath),
+            sp.GetRequiredService<IChartOfAccounts>()));
 
         if (configuration.IsConfigured(LedgerStartup.ConnectionStringVariable))
         {
@@ -507,6 +514,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
             services.AddSingleton<IDataVendorEntitlementService, DataVendorEntitlementService>();
             services.AddSingleton<ISecurityMasterDataQualityService, SecurityMasterDataQualityService>();
             services.AddSingleton<ISecurityMasterStructuredCreditReclassificationService, SecurityMasterStructuredCreditReclassificationService>();
+            services.AddSingleton<ISecurityMasterClassificationDriftReportService, SecurityMasterClassificationDriftReportService>();
             services.AddSingleton<ISecurityMasterProfilePromotionService, SecurityMasterProfilePromotionService>();
 
             // Coverage sweep: symbols active in platform surfaces but missing from the master
@@ -601,6 +609,7 @@ internal sealed class StorageFeatureRegistration : IServiceFeatureRegistration
         services.TryAddSingleton<IDataVendorEntitlementService, NullDataVendorEntitlementService>();
         services.TryAddSingleton<ISecurityMasterDataQualityService, NullSecurityMasterDataQualityService>();
         services.TryAddSingleton<ISecurityMasterStructuredCreditReclassificationService, NullSecurityMasterStructuredCreditReclassificationService>();
+        services.TryAddSingleton<ISecurityMasterClassificationDriftReportService, NullSecurityMasterClassificationDriftReportService>();
         services.TryAddSingleton<ISecurityMasterProfilePromotionService, NullSecurityMasterProfilePromotionService>();
         services.TryAddSingleton<IUflProjectionRebuilder, NullUflProjectionRebuilder>();
         services.TryAddSingleton<ISecurityMasterSnapshotRegenerationService, NullSecurityMasterSnapshotRegenerationService>();

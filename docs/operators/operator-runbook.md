@@ -197,7 +197,10 @@ rate limit exceeded.
 2. Verify API credentials have not expired — see
    [Provider Credentials and Access](./provider-credentials.md).
 3. Check rate limit counters; a breached limit looks identical to an outage from inside.
-4. Trigger a manual reconnect, or fail over to the backup provider.
+4. Trigger a manual reconnect, or fail over to the backup provider. To take a vendor out of
+   rotation without a restart, disable its data source in the workstation: a running collector
+   excludes it from failover and moves streaming to the next enabled backup (see
+   [Live provider and tolerance changes](#live-provider-and-tolerance-changes)).
 
 **Resolved when:** `mdc_circuit_breaker_state` returns to 0 and `mdc_symbols_circuit_open` reaches
 zero.
@@ -266,6 +269,10 @@ data from the provider.
    establish whether the fault is provider-specific. The symbol segment is required; the route
    does not exist without it.
 4. Trigger a gap-fill backfill if the cause was an outage.
+5. If the discrepancies are expected for the instrument (for example illiquid preferreds), widen
+   that asset class's band under Data → data-quality watch → **Cross-provider tolerances** rather
+   than the global tolerance. Loosening requires a recorded reason and is audited; use **Preview**
+   first to see how many of the last 30 days the draft would have flagged.
 
 ## Freshness SLA Violation
 
@@ -315,6 +322,28 @@ issues.
 1. `GET /api/sla/violations` for the affected symbol list.
 2. `GET /api/sla/metrics` for the trend — a slow decline and a step change have different causes.
 3. Evaluate provider health across all active providers, not just the primary.
+
+## Live provider and tolerance changes
+
+Every workstation save reports, per setting, what the running host did with it. The browser
+shows "Applied live", "Provider routing updated live" or "Pending host restart" with the reason
+for each deferred setting; `GET /api/config/changes` returns the same evidence in `lastApply`.
+
+| Change | Running collector | Notes |
+| --- | --- | --- |
+| Failover rule thresholds, latency limit, backup order among providers that already stream | Applied live | Takes effect on the next health evaluation; the active provider is kept. |
+| Health-check interval | Applied live | |
+| Disable or re-enable a source that already has a streaming client | Applied live | Disabling the active provider hands its subscriptions to the next enabled backup. If none can take over, the save says so and a restart is required. |
+| Source priority, name, description, tags, failover timeout, auto-recover | Saved, no runtime effect | The streaming runtime does not read these. |
+| Cross-provider tolerances (`DataQuality.CrossProvider`) | Applied live | Out-of-bounds values are refused at save time. |
+| Provider kind or ID, credentials, endpoints, new rules, removing the rule that drives streaming, `EnableFailover`, symbol mappings | Restart required | |
+
+Failover rules must name configured `DataSources.Sources` IDs; a rule that names an unknown ID is
+refused at save time. A save is confirmed live when the streaming collector runs in the same
+process as the UI server (desktop mode). A separate collector started with `--watch-config` also
+applies these changes when the file changes, but the UI cannot see that process and still reports
+"Pending host restart" for `DataSources` changes; check the collector log for
+`Provider configuration reconciled` instead.
 
 ## Incident Response
 

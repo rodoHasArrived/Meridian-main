@@ -22,8 +22,8 @@ namespace Meridian.Tests.Storage;
 /// proposal is delivered into the borrower's review queue, and the borrower posts its own side.
 /// Every store is durable: the ledger, proposal outbox, account bindings, chart and book ownership in the ledger
 /// schema; the native legal agreement registry, accounting profile history, legal-entity graph and entity
-/// lifecycle history in a fund-structure schema of the same PostgreSQL database; and journal drafts in the file
-/// store the workstation host registers. The intercompany, legal-agreement and entity-lifecycle posting
+/// lifecycle history in a fund-structure schema of the same PostgreSQL database; and journal drafts in the ledger
+/// schema's PostgreSQL draft store (migration 077) that a host with a ledger database registers. The intercompany, legal-agreement and entity-lifecycle posting
 /// authorities are the production classes. Only the agreement access scope, the evidence vault, the profile
 /// scope authority and the fund-account read service are synthetic.
 /// </summary>
@@ -311,7 +311,7 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         var configuration = new Mock<IAccountingConfigurationService>();
         configuration.Setup(service => service.GetWorkspaceAsync(LenderFund, LenderBook, It.IsAny<CancellationToken>(), Tenant, Company)).ReturnsAsync(lenderWorkspace);
         configuration.Setup(service => service.GetWorkspaceAsync(BorrowerFund, BorrowerBook, It.IsAny<CancellationToken>(), Tenant, Company)).ReturnsAsync(borrowerWorkspace);
-        var drafts = new FileManualJournalEntryDraftStore(draftPath);
+        var drafts = new PostgresManualJournalEntryDraftStore(database.Options);
         var target = new DurableLedgerPostingTarget(journals);
         var workbench = new ManualJournalEntryWorkbenchService(drafts, configuration.Object, new InMemoryAccountingActionAuditStore(),
             journalStore: journals, postingTarget: target, intercompanyPostingAuthority: intercompany);
@@ -362,14 +362,14 @@ public sealed class IntercompanyAccrualPostAndDeliverPostgresTests
         => new(fund, book, AccountingConfigurationStatusDto.Active, "accrual-fixture-v1", Reviewed, [], chart, [], [], [], [], TenantId: Tenant, CompanyId: Company);
 
     private sealed record Fixture(PostgresLedgerJournalStore Journals, PostgresIntercompanyProposalStore Proposals,
-        FileManualJournalEntryDraftStore Drafts, ManualJournalEntryWorkbenchService Workbench, IntercompanyProposalDeliveryService Delivery,
+        PostgresManualJournalEntryDraftStore Drafts, ManualJournalEntryWorkbenchService Workbench, IntercompanyProposalDeliveryService Delivery,
         IntercompanyAccrualDraftService Accrual, DurableLedgerPostingTarget Target, LedgerAccountingPeriod LenderMay, LedgerAccountingPeriod LenderJune,
         LedgerAccountingPeriod BorrowerJune, ResolvedIntercompanyAccountingArrangementDto Principal, IntercompanyAccountBindingDto LoanReceivable,
         IntercompanyAgreementRevisionDto LegalRevision, PostgresEntityLifecycleStore Lifecycle, FundStructureStoreOptions StructureOptions,
         string DraftPath) : IAsyncDisposable
     {
-        /// <summary>The same durable draft file opened by another process or after a restart.</summary>
-        public FileManualJournalEntryDraftStore ReopenDrafts() => new(DraftPath);
+        /// <summary>The same PostgreSQL draft table opened by another host or after a restart.</summary>
+        public PostgresManualJournalEntryDraftStore ReopenDrafts() => new(Drafts.Options);
 
         /// <summary>Appends the next complete lifecycle timeline: active since formation, dissolved from <paramref name="at"/>.</summary>
         public async Task DissolveAsync(Guid entity, DateTimeOffset at)

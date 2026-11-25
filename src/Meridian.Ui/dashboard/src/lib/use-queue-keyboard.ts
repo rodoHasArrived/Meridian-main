@@ -1,7 +1,7 @@
 import { useCallback, type KeyboardEvent } from "react";
 
 export interface QueueKeyboardAction {
-  key: "a" | "r" | "d";
+  key: "a" | "r" | "d" | "c" | "s";
   label: string;
   enabled: boolean;
   run: () => void;

@@ -19,6 +19,7 @@ import { formatProviderHealth, type ProviderHealthCount } from "@/lib/cross-scre
 import { SettingsChip, settingsBannerTone, setupStepToneClass } from "@/screens/settings-screen.section-primitives";
 import { toSeverity } from "@/design-system/status-styles";
 import { SettingsTimeZonePreference } from "@/screens/settings-screen.time-zone-preference";
+import { PreferenceSyncStatus } from "@/screens/settings-screen.preference-sync-status";
 
 interface SettingsAccessPostureSectionProps {
   vm: SettingsScreenViewModel;
@@ -176,8 +177,10 @@ export function SettingsAppearanceSection() {
           Appearance
         </CardTitle>
         <CardDescription className="mt-2">
-          Choose the theme, screen density, display time zone and page descriptions for this browser.
+          Choose the theme, screen density, display time zone and page descriptions. They follow you to other
+          browsers and the desktop app.
         </CardDescription>
+        <PreferenceSyncStatus />
       </CardHeader>
       <CardContent className="grid gap-4 md:grid-cols-2">
         <div className="grid gap-2">

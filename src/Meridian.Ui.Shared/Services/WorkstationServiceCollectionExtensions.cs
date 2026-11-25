@@ -16,6 +16,7 @@ using Meridian.Audit.Compliance;
 using Meridian.Backtesting;
 using Meridian.Backtesting.Engine;
 using Meridian.Backtesting.Sdk;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.AssetOperations;
 using Meridian.Contracts.Catalog;
 using Meridian.Contracts.Domain;
@@ -147,7 +148,17 @@ public static class WorkstationServiceCollectionExtensions
                 providerCatalog: sp.GetService<Meridian.Contracts.Api.IProviderCatalog>());
         });
 
+        if (services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Application.Scheduling.BackfillExecutionHistory)) &&
+            services.Any(descriptor => descriptor.ServiceType == typeof(Meridian.Application.Backfill.BackfillCoordinator)))
+        {
+            services.TryAddSingleton<Meridian.Application.Backfill.WorkstationBackfillQueue>();
+            services.AddHostedService(sp => sp.GetRequiredService<Meridian.Application.Backfill.WorkstationBackfillQueue>());
+        }
+
         services.AddHttpClient();
+        services.AddHttpClient(ProviderCredentialProbe.ClientName)
+            .RemoveAllLoggers()
+            .ConfigurePrimaryHttpMessageHandler(() => new SocketsHttpHandler { AllowAutoRedirect = false });
         services.AddHttpContextAccessor();
         services.AddMemoryCache();
 
@@ -261,6 +272,8 @@ public static class WorkstationServiceCollectionExtensions
             new StrategyRunStore(sp.GetRequiredService<IOperationalCaseHistoryStore>(),
                 sp.GetRequiredService<IStrategyRunLedgerArchive>()));
         services.TryAddSingleton<IStrategyRepository>(sp => sp.GetRequiredService<StrategyRunStore>());
+        services.TryAddSingleton(sp =>
+            new Meridian.Strategies.Artifacts.StrategyArtifactRegistry(ResolveConfigDataRoot(sp)));
         services.TryAddSingleton<IResearchRunRecorder, StrategyRunResearchRecorder>();
         services.TryAddSingleton<PromotionRecordStoreOptions>(sp =>
             new PromotionRecordStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "promotions")));
@@ -270,6 +283,25 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<ILogger<JsonlPromotionRecordStore>>()));
         // Read-only run/promotion authority for typed strategy-run orders in the OMS.
         services.TryAddSingleton<IStrategyRunAuthoritySource, StrategyRunAuthoritySource>();
+        services.TryAddSingleton(sp => new StrategyLiveAuthorizationService(
+            ResolveConfigDataRoot(sp), sp.GetRequiredService<IStrategyRepository>(),
+            sp.GetRequiredService<IPromotionRecordStore>(),
+            sp.GetRequiredService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>(),
+            sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>(),
+            sp.GetService<TimeProvider>() ?? TimeProvider.System,
+            async (account, ct) =>
+            {
+                var gateway = sp.GetService<Meridian.Execution.Sdk.IExecutionGateway>();
+                var links = sp.GetService<BrokeragePortfolioSyncService>();
+                if (gateway is not Meridian.Execution.Sdk.IBrokerageAccountIdentity identity || links is null)
+                    return false;
+                var link = await links.GetStatusAsync(account, ct).ConfigureAwait(false);
+                return link is { IsLinked: true, ExternalAccountId: { } externalId } &&
+                    string.Equals(gateway.GatewayId, link.ProviderId, StringComparison.OrdinalIgnoreCase) &&
+                    identity.IdentifiesConnectedAccount(externalId);
+            }));
+        services.TryAddSingleton<ILiveStrategyOrderAuthorization>(sp =>
+            sp.GetRequiredService<StrategyLiveAuthorizationService>());
         services.TryAddSingleton<StrategyDesignStoreOptions>(sp =>
             new StrategyDesignStoreOptions(Path.Combine(ResolveConfigDataRoot(sp), "strategies", "designer")));
         services.TryAddSingleton<IStrategyDesignRepository>(sp =>
@@ -277,10 +309,23 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetRequiredService<StrategyDesignStoreOptions>(),
                 sp.GetRequiredService<ILogger<JsonlStrategyDesignRepository>>()));
         services.TryAddSingleton<StrategyDesignService>();
+        services.TryAddSingleton<ScopedStrategyDesignStore>();
+        services.TryAddSingleton(sp => new DesignerBacktestService(
+            ResolveConfigDataRoot(sp),
+            sp.GetRequiredService<Func<BacktestRequest, BacktestEngine>>(),
+            sp.GetRequiredService<IStrategyRepository>(),
+            sp.GetRequiredService<IEvidenceArtifactStore>(),
+            sp.GetRequiredService<StrategyDesignService>(),
+            sp.GetService<Meridian.Contracts.Services.IOperationalTradingCalendar>() ??
+                new Meridian.Platform.Scheduling.TradingCalendar(),
+            sp.GetService<ISecurityIdentityQueryService>() ?? sp.GetService<ISecurityMasterQueryService>(),
+            sp.GetService<ISecurityCorporateActionsQueryService>() ?? sp.GetService<ISecurityMasterQueryService>(),
+            sp.GetRequiredService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>()));
         services.TryAddSingleton<StrategyEngineRegistry>();
         services.TryAddSingleton<StrategyEngineValidationService>();
         services.TryAddSingleton<ISecurityReferenceLookup, SecurityMasterSecurityReferenceLookup>();
         services.TryAddSingleton<PortfolioReadService>();
+        services.AddBookReceiptQueueServices(ResolveWorkstationDataDirectory);
         if (!services.Any(static descriptor =>
                 descriptor.ServiceType == typeof(IAssetOperationsProjectionStore)))
         {
@@ -337,6 +382,9 @@ public static class WorkstationServiceCollectionExtensions
             sp.GetRequiredService<ProviderCredentialOwnershipPolicy>(),
             sp.GetService<IProviderRuntimeCredentialApplier>(), sp.GetService<ProviderRuntimeCredentialApplicationTracker>()));
         services.TryAddSingleton<ProviderConnectionLifecycleService>();
+        services.TryAddSingleton<ProviderConnectionTemplateService>();
+        services.AddHttpClient(ProviderConnectionLifecycleService.TemplateProbeClientName)
+            .ConfigurePrimaryHttpMessageHandler(static () => new HttpClientHandler { AllowAutoRedirect = false });
         services.TryAddSingleton<ProviderReadinessService>();
         // These runtimes do not carry a trusted tenant/connection per import, statement or Plaid item.
         // Keep them legacy-only until that ownership is propagated through their full workflows.
@@ -368,6 +416,22 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton(sp => new AccountingSystemIntegrationStateStore(
             Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "external-gl")));
         services.TryAddSingleton<AccountingSystemIntegrationService>();
+        if (configuration.IsConfigured("MERIDIAN_LEDGER_CONNECTION_STRING"))
+        {
+            services.TryAddSingleton<IQuickBooksPostingConnectionResolver>(sp => sp.GetRequiredService<ProviderConnectionLifecycleService>());
+            services.AddHttpClient("external-gl-posting", client => client.Timeout = TimeSpan.FromSeconds(20))
+                .ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
+            services.TryAddSingleton<IExternalGlPostingProvider>(sp =>
+            {
+                var client = sp.GetRequiredService<IHttpClientFactory>().CreateClient("external-gl-posting");
+                return new QuickBooksOnlinePostingProvider(sp.GetRequiredService<IQuickBooksPostingConnectionResolver>(),
+                    new QuickBooksOnlineHttpClient(client), client);
+            });
+            services.TryAddSingleton<ExternalGlPostingService>();
+            services.TryAddSingleton<ExternalGlPostingDispatcher>();
+            services.TryAddSingleton<IExternalGlConfirmationGate>(sp => sp.GetRequiredService<PostgresLedgerJournalStore>());
+            services.AddHostedService<ExternalGlPostingHostedService>();
+        }
         services.TryAddSingleton<IOnboardingWorkspaceStore>(sp => new FileOnboardingWorkspaceStore(
             Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "onboarding-workspaces.json")));
         services.TryAddSingleton<OnboardingComparisonSource>();
@@ -487,6 +551,8 @@ public static class WorkstationServiceCollectionExtensions
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "execution", gatewayPath, "broker-orders.json"), gatewayId);
         });
         services.TryAddSingleton<ProviderLedgerReconciliationService>();
+        services.TryAddSingleton(sp => new PaperSessionDailyReconciliationStore(
+            Path.Combine(ResolveWorkstationDataDirectory(sp), "paper-reconciliation")));
         services.TryAddSingleton(sp =>
         {
             var daily = new ProviderLedgerDailyReconciliationOptions();
@@ -823,6 +889,8 @@ public static class WorkstationServiceCollectionExtensions
             // Retained comparisons require both the durable artifact store and governance graph.
             // Local hosts still start without Reporting authority; readiness-gated routes stay unavailable.
             services.TryAddSingleton<ReportingIncomeComparisonService>();
+            services.TryAddSingleton<IReportingReviewMaterialityPolicyProvider, ConfiguredReportingReviewMaterialityPolicyProvider>();
+            services.TryAddSingleton<ReportingRunReviewService>();
             services.TryAddSingleton<PostgresReportingReleaseConsistencyGate>(sp =>
                 new PostgresReportingReleaseConsistencyGate(
                     sp.GetRequiredService<ReportingArtifactStoreOptions>()));
@@ -1121,9 +1189,12 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IManualJournalEntryDraftStore>(sp =>
             new FileManualJournalEntryDraftStore(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json")));
+        // Command receipts and the mutation lease must live beside the drafts they serialize.
         services.TryAddSingleton<IManualJournalMutationRecoveryStore>(sp =>
-            new FileManualJournalMutationRecoveryStore(
-                Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
+            sp.GetRequiredService<IManualJournalEntryDraftStore>() is PostgresManualJournalEntryDraftStore postgresDrafts
+                ? new PostgresManualJournalMutationRecoveryStore(postgresDrafts.Options)
+                : new FileManualJournalMutationRecoveryStore(
+                    Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "manual-journal-drafts.json.mutations")));
         services.TryAddSingleton<FileDailyValuationPortfolioSource>(sp =>
             new FileDailyValuationPortfolioSource(
                 Path.Combine(ResolveWorkstationDataDirectory(sp), "accounting", "daily-valuation-schedules.json")));
@@ -1262,6 +1333,19 @@ public static class WorkstationServiceCollectionExtensions
         services.TryAddSingleton<IIntercompanyAccrualPreviewService>(sp =>
             sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
                 ? new Meridian.Application.FundStructure.IntercompanyAccrualPreviewService(calendars) : null!);
+        services.TryAddSingleton<IIntercompanyFeeAccrualPreviewService>(sp =>
+            sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } calendars
+                ? new Meridian.Application.FundStructure.IntercompanyFeeAccrualPreviewService(calendars) : null!);
+        services.TryAddSingleton<IntercompanyFeeAccrualDraftService>(sp =>
+            sp.GetService<IIntercompanyProposalStore>() is not null &&
+            sp.GetService<ILedgerJournalStore>() is { } journals &&
+            sp.GetService<IIntercompanyAccountBindingStore>() is { } bindings &&
+            sp.GetService<ManualJournalEntryWorkbenchService>() is { } workbench &&
+            sp.GetService<IIntercompanyFeeAccrualPreviewService>() is { } calculator
+                ? new IntercompanyFeeAccrualDraftService(sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    journals, bindings, sp.GetRequiredService<IAccountingConfigurationService>(),
+                    sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
+                    sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>()) : null!);
         // Accrual drafting needs the same durable authorities as counterpart delivery; without them it is unavailable.
         services.TryAddSingleton<IntercompanyAccrualDraftService>(sp =>
             sp.GetService<IIntercompanyProposalStore>() is not null &&
@@ -1274,6 +1358,15 @@ public static class WorkstationServiceCollectionExtensions
                     sp.GetRequiredService<IManualJournalEntryDraftStore>(), workbench, calculator,
                     sp.GetService<IConsolidationFxAuthority>(), sp.GetRequiredService<TimeProvider>(),
                     sp.GetService<Meridian.Application.FundStructure.IntercompanyRateFixingService>()) : null!);
+        // Opt-in accrual schedules draft through the same interest drafting service, so they exist only beside it.
+        services.TryAddSingleton<IntercompanyAccrualScheduleService>(sp =>
+            sp.GetService<IIntercompanyAccrualScheduleStore>() is { } schedules &&
+            sp.GetService<IntercompanyAccrualDraftService>() is { } drafter &&
+            sp.GetService<Meridian.Contracts.Calendars.IBusinessDayCalendarSource>() is { } scheduleCalendars &&
+            sp.GetService<ILedgerJournalStore>() is { } scheduleJournals
+                ? new IntercompanyAccrualScheduleService(schedules, drafter, sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
+                    scheduleCalendars, scheduleJournals, sp.GetRequiredService<IManualJournalEntryDraftStore>(), sp.GetRequiredService<TimeProvider>()) : null!);
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyAccrualScheduleRunner>());
         if (services.Any(item => item.ServiceType == typeof(IIntercompanyProposalStore)
             && item.ImplementationType == typeof(PostgresIntercompanyProposalStore)))
             services.TryAddEnumerable(ServiceDescriptor.Singleton<IHostedService, IntercompanyProposalHostedService>());
@@ -1336,7 +1429,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IFundProfileTenancyRegistry>(),
                 sp.GetService<IReconciliationBreakQueueRepository>(),
                 sp.GetService<IOperationsContinuityWorkflowService>(),
-                sp.GetService<IReportingReleaseConsistencyGate>()));
+                sp.GetService<IReportingReleaseConsistencyGate>(),
+                sp.GetService<IExternalGlConfirmationGate>()));
         services.TryAddSingleton<DailyValuationScheduledWorker>();
         services.TryAddEnumerable(
             ServiceDescriptor.Singleton<IHostedService, DailyValuationSchedulerHostedService>());
@@ -1368,6 +1462,16 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<Meridian.Application.SecurityMaster.ISecurityMasterAmortizationLedgerBridge>(),
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterCashFlowService>(),
                 sp.GetService<Meridian.Contracts.SecurityMaster.ISecurityMasterQueryService>())));
+        // Governed bond coupon income: prepares spine candidates for review; never approves or posts.
+        services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, BondCouponIncomeCalculation>(sp =>
+            new BondCouponIncomeCalculation(
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionService>(),
+                sp.GetService<Meridian.FinancialOperations.Ledger.IAssetAccountingEventSpineService>(),
+                sp.GetService<Meridian.Storage.FixedIncome.BondWorkspaceSnapshotStore>(),
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondCouponRecognitionStore>(),
+                sp.GetService<Meridian.Contracts.Accounting.Lots.IBondIncomeService>(),
+                sp.GetService<Meridian.FinancialOperations.Ledger.IBondIncomePreparationService>(),
+                sp.GetService<ILogger<BondCouponIncomeCalculation>>())));
         services.TryAddEnumerable(ServiceDescriptor.Singleton<IRecurringJournalCalculation, FxRevaluationCalculation>(sp =>
             new FxRevaluationCalculation(
                 sp.GetRequiredService<IRecurringJournalCalculationInputs>(),
@@ -1408,7 +1512,8 @@ public static class WorkstationServiceCollectionExtensions
                 sp.GetService<IAccountingCloseManagementService>(),
                 sp.GetService<ICloseReadinessSubjectSource>(),
                 sp.GetService<IIntercompanyCloseAdvisorySource>(),
-                () => sp.GetService<IBookOfRecordGuard>()));
+                () => sp.GetService<IBookOfRecordGuard>(),
+                sp.GetService<IIntercompanyConfirmationCloseGate>()));
         services.TryAddSingleton<SecurityMasterExceptionSlaConfig>();
         services.TryAddSingleton<IReconciliationSlaPolicyProvider>(sp =>
             new SecurityMasterReconciliationSlaPolicyProvider(
@@ -1593,7 +1698,8 @@ public static class WorkstationServiceCollectionExtensions
             options: sp.GetRequiredService<Microsoft.Extensions.Options.IOptionsMonitor<CoveredCallBacktestOptions>>(),
             resultCache: sp.GetRequiredService<Microsoft.Extensions.Caching.Memory.IMemoryCache>(),
             loggerFactory: sp.GetRequiredService<ILoggerFactory>(),
-            evidenceArtifactStore: sp.GetRequiredService<IEvidenceArtifactStore>()));
+            evidenceArtifactStore: sp.GetRequiredService<IEvidenceArtifactStore>(),
+            strategyArtifacts: sp.GetRequiredService<Meridian.Strategies.Artifacts.StrategyArtifactRegistry>()));
         services.TryAddSingleton<ICoveredCallBacktestService>(sp => sp.GetRequiredService<CoveredCallBacktestService>());
         services.AddHostedService(sp => sp.GetRequiredService<CoveredCallBacktestService>());
     }

@@ -47,6 +47,65 @@ Key operations:
 
 Validation is delegated to `LedgerInterop.ValidateJournalEntry` (F#) before posting.
 
+#### Bound ledgers (`LedgerPolicy`)
+
+`new Ledger(LedgerPolicy policy)` binds a ledger to a chart of accounts and a functional currency.
+A bound ledger turns three gaps the unbound ledger tolerates into `LedgerValidationException`s,
+raised before anything is mutated:
+
+| Gap | Bound ledger |
+|-----|--------------|
+| Account not in the chart | Rejected. `IChartOfAccounts.TryGetRegistered` matches the exact registered name, type and canonical symbol/financial-account scope; nothing is inferred from a name, prefix or number. |
+| Line without currency | `PostLines` overloads without currency stamp `LedgerPolicy.FunctionalAmount` (functional currency, FX 1). `Post` rejects a line with no currency. |
+| Line in another functional currency | Rejected. Foreign transaction currencies are fine when converted into the functional currency. |
+
+`LedgerPolicy.Trading(currency)` binds `StandardChartOfAccounts`. The backtest engine creates its
+run ledger this way. `new Ledger()` (unbound) is **transitional**: fund, partnership,
+consolidation, lending and workbench callers still post accounts outside the posting chart and
+move to bound ledgers area by area. `JournalEntry` itself does not enforce balance at construction,
+because reporting builds dimension-filtered journal slices that deliberately do not balance;
+balance is enforced when an entry is posted, and therefore before it is stored.
+
+Book-scoped chart nodes can carry a stable account code. Resolution validates the exact node,
+book, type, and financial scope and retains the chart revision on the posting line. New postings
+can carry a line memo separately from the journal description. The posted-journal views and
+audit exports expose those fields and transaction and functional currency evidence.
+
+#### Durable run journals (`Meridian.Storage.Ledger`)
+
+`FileLedgerJournalLog` is an append-only, hash-chained journal of posted entries.
+
+- **Storage.** Records live in a `WriteAheadLog` (fsync on every write, `CorruptionMode.Halt`).
+  Record 1 is a header (schema, scope id, functional currency, genesis hash).
+- **Chaining.** Each later record stores the entry's exact JSON and
+  `SHA-256(previousHash + sequence + entryJson)`.
+- **Truncation anchor.** `chain-head.json`, replaced with `AtomicFileWriter` after each append,
+  records the latest sequence and hash, so records cut off the end are detected.
+- **Verification on open.** Opening re-verifies the chain and re-posts every entry into a ledger
+  bound to the header's policy. Any break is an `InvalidDataException` naming the first bad
+  record; nothing is skipped.
+- **Identity.** Re-appending an identical entry is a no-op; the same id with different content is
+  rejected.
+
+`LedgerJournalStream.Attach(ledger, log)` streams a live ledger into a log through a bounded
+channel without making posting async. A write failure fails later posts and `CompleteAsync`, so a
+run never finishes as if its books were saved.
+
+When `ILedgerJournalLogFactory` is registered (storage composition registers
+`FileLedgerJournalLogFactory` under `{StorageRoot}/ledger/journals/{sha256(scope)}`), the backtest
+engine journals every run whose request sets `LedgerJournalScopeId`. The native Backtest Studio
+engine and the covered-call service set it to the run id. `GET
+/api/workstation/runs/{runId}/ledger/integrity` and the MCP tool `get_run_ledger_integrity`
+re-verify a run's journal read-only, alongside its writer.
+
+Hosted native paper sessions keep separate append-only journal batches for opening balances,
+fills, settlements, and assessed financing. Each batch binds the session, account, source and
+posting purpose. Replay verifies the immutable receipt before acknowledging the source. The daily
+paper comparison retains the cash and lot evidence at an exchange-session cutoff.
+
+The chain makes tampering evident; it does not stop someone who can rewrite both the log and its
+head. Completed runs are also archived write-once by `JsonlStrategyRunLedgerArchive`.
+
 ### `ProjectLedgerBook`
 
 Manages a keyed collection of `Ledger` instances within a single host process. Use it when multiple parallel runs or projects need isolated ledgers but a single lookup point.
@@ -330,6 +389,8 @@ emits balanced retained-earnings-to-investor-capital journal lines.
 | Corporate action (split/spinoff) | Adjusted position | Contra entry |
 
 All entries are balanced (`Σ debits = Σ credits`) and validated by the F# layer before posting.
+The run ledger is bound to `LedgerPolicy.Trading()`, so every account comes from
+`StandardChartOfAccounts` and every line carries USD functional-currency detail.
 
 ---
 

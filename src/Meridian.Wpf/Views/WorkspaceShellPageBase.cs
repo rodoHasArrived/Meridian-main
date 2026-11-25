@@ -24,6 +24,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page,
     private WorkspaceShellState? _lastState;
     private MeridianDockingManager? _refreshDockManager;
     private IRelayCommand? _refreshCommand;
+    private IAsyncRelayCommand? _resetLayoutCommand;
 
     protected WorkspaceShellPageBase(
         NavigationService navigationService,
@@ -50,6 +51,52 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page,
     /// reloaded separately through <see cref="PageRefreshResolver.RefreshAllInPlace"/>.
     /// </summary>
     protected virtual Task RefreshShellInPlaceAsync() => Task.CompletedTask;
+
+    /// <summary>
+    /// Bound to the workspace command bar's "Reset layout" entry. After confirmation it restores
+    /// this workspace's default panes and saves them for the current workspace and fund context,
+    /// so a broken arrangement does not come back on restart. Other workspaces are not touched.
+    /// </summary>
+    public ICommand ResetLayoutCommand => _resetLayoutCommand ??= new AsyncRelayCommand(ConfirmAndResetDockLayoutAsync);
+
+    private async Task ConfirmAndResetDockLayoutAsync()
+    {
+        if (_refreshDockManager is not { } dockManager)
+        {
+            return;
+        }
+
+        var workspaceName = ViewModel.WorkspaceDefinition.DisplayName;
+        var choice = MessageBox.Show(
+            $"Reset {workspaceName} panes to the default arrangement?\n\nYour other workspaces keep their layouts.",
+            "Reset layout",
+            MessageBoxButton.OKCancel,
+            MessageBoxImage.Question,
+            MessageBoxResult.Cancel);
+        if (choice != MessageBoxResult.OK)
+        {
+            return;
+        }
+
+        var saved = await ResetDockLayoutAsync(dockManager).ConfigureAwait(true);
+        Meridian.Wpf.Services.NotificationService.Instance.ShowNotification(
+            saved ? "Default layout restored" : "Default layout not saved",
+            saved
+                ? $"{workspaceName} panes are back to their default arrangement."
+                : $"{workspaceName} panes are back to default for now, but the layout couldn't be saved. It may revert on restart.",
+            saved ? NotificationType.Success : NotificationType.Warning);
+    }
+
+    /// <summary>
+    /// Restores the default panes and persists them for this workspace and layout scope.
+    /// Returns false when the replacement layout could not be saved.
+    /// </summary>
+    protected async Task<bool> ResetDockLayoutAsync(MeridianDockingManager dockManager)
+    {
+        ArgumentNullException.ThrowIfNull(dockManager);
+        await LoadDefaultDockLayoutAsync(dockManager).ConfigureAwait(true);
+        return await SaveDockLayoutAsync(dockManager).ConfigureAwait(true);
+    }
 
     private void RefreshWorkspaceInPlace()
     {
@@ -106,7 +153,7 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page,
         }
     }
 
-    protected async Task SaveDockLayoutAsync(MeridianDockingManager dockManager)
+    protected async Task<bool> SaveDockLayoutAsync(MeridianDockingManager dockManager)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
 
@@ -121,17 +168,20 @@ public abstract class WorkspaceShellPageBase<TStateProvider, TViewModel> : Page,
             await _workspaceService
                 .SaveWorkspaceLayoutStateForContextAsync(state.WorkspaceId, layout, state.LayoutScopeKey)
                 .ConfigureAwait(true);
+            return true;
         }
         catch (Exception ex)
         {
             WpfLoggingService.Instance.LogError("[{Page}] Failed to save dock layout: {Error}", ex,
                 ("Page", GetType().Name), ("Error", ex.Message));
+            return false;
         }
     }
 
     protected async Task LoadDefaultDockLayoutAsync(MeridianDockingManager dockManager)
     {
         ArgumentNullException.ThrowIfNull(dockManager);
+        _refreshDockManager = dockManager;
 
         var state = await _stateProvider.GetStateAsync().ConfigureAwait(true);
         _lastState = state;

@@ -15,6 +15,8 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 |---|---|
 | [Intercompany Contracts and Entity Controls](intercompany-entity-controls.md) | Adopted P1–P5 stages, evidence-preserving migration, authority and verification boundaries |
 | [Carta-Inspired Commitment-to-Cash](carta-inspired-capital-lifecycle.md) | Bounded W12-CAPITAL-001 delivery contract, operator sequence and later capability candidates |
+
+| [Browser Workstation UX Implementation (2026-11)](browser-workstation-ux-roadmap-2026-11.md) | Casework, financial-value provenance, Close/Today, dossiers, report review and import dispositions with scoped verification |
 | [Security Master Review Remediation](security-master-review-remediation-plan.md) | Draft slices consuming the consolidated October review; policy, unit and migration decisions remain explicit |
 | [Security Master Integrity and Traceability](security-master-integrity-implementation-plan.md) | Draft phases from the 2026-11-18 review: leg economics guards, identifier integrity, revision outbox and lineage, workbench parity, index fixings, valid-time terms |
 | [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | Closes WPF parity gaps with the browser workstation (`W8-WPF-PARITY-001`) |

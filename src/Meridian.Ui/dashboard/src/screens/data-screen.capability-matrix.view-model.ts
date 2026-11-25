@@ -1,5 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
-import { getProviderCapabilityMatrix } from "@/lib/api";
+import { getProviderCapabilityMatrix, getProviderDeclaredCapabilities } from "@/lib/api";
+import type { DeclaredProviderCapabilities } from "@/lib/api/provider-management.api";
+import { formatRelativeTime } from "@/lib/format";
 import { describeApiError } from "@/lib/api-errors";
 import type {
   ProviderCapabilityMatrixResponse,
@@ -23,6 +25,7 @@ export interface CapabilityMatrixRowModel {
   declaredCount: number;
   cells: CapabilityMatrixCellModel[];
   fixedIncomeTasks: ProviderFixedIncomeTaskCapability[];
+  capabilities?: DeclaredProviderCapabilities;
 }
 
 export interface CapabilityMatrixModel {
@@ -52,11 +55,13 @@ export const CAPABILITY_LEGEND: readonly CapabilityMark[] = [
  * provider with compact per-instrument capability marks, plus the discovery failures that
  * explain why a provider is missing or gray.
  */
-export function buildCapabilityMatrixModel(response: ProviderCapabilityMatrixResponse): CapabilityMatrixModel {
+export function buildCapabilityMatrixModel(response: ProviderCapabilityMatrixResponse,
+  declarations: ReadonlyMap<string, DeclaredProviderCapabilities> = new Map()): CapabilityMatrixModel {
   const rows = response.providers.map((provider) => ({
     providerId: provider.providerId,
     declaredCount: provider.declaredInstrumentTypes.length,
     fixedIncomeTasks: provider.fixedIncomeTasks ?? [],
+    capabilities: declarations.get(provider.providerId.toLowerCase()),
     cells: provider.cells.map((cell) => {
       const active = CAPABILITY_LEGEND.filter((mark) => cell[mark.flag]);
       return {
@@ -102,25 +107,34 @@ export interface CapabilityMatrixViewModel {
  * `/api/providers/capability-matrix`. Fetches on mount; consumers refresh on demand.
  */
 export function useCapabilityMatrixPanel(
-  fetchMatrix: CapabilityMatrixFetcher = getProviderCapabilityMatrix
+  enabled = true,
+  fetchMatrix: CapabilityMatrixFetcher = getProviderCapabilityMatrix,
+  fetchDeclarations = getProviderDeclaredCapabilities
 ): CapabilityMatrixViewModel {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [model, setModel] = useState<CapabilityMatrixModel | null>(null);
 
   const refresh = useCallback(async () => {
+    if (!enabled) return;
     setLoading(true);
     setError(null);
     try {
-      const response = await fetchMatrix();
-      setModel(buildCapabilityMatrixModel(response));
+      const [response, declarations] = await Promise.all([
+        fetchMatrix(),
+        Promise.resolve().then(() => fetchDeclarations()).catch(() => null)
+      ]);
+      const byProvider = new Map<string, DeclaredProviderCapabilities>(
+        declarations?.providers.map(row => [row.id.toLowerCase(), row.capabilities] as const)
+      );
+      setModel(buildCapabilityMatrixModel(response, byProvider));
     } catch (fetchError) {
       setError(describeApiError(fetchError, "Provider capability matrix is unavailable.").summary);
       setModel(null);
     } finally {
       setLoading(false);
     }
-  }, [fetchMatrix]);
+  }, [enabled, fetchMatrix, fetchDeclarations]);
 
   useEffect(() => {
     void refresh();
@@ -144,13 +158,10 @@ export interface CapabilityFreshnessSource {
   evidenceStale: boolean;
 }
 
-export function formatEvidenceAge(ageMs: number): string {
-  const hours = ageMs / 3_600_000;
-  if (hours < 1) return "under 1h ago";
-  if (hours < 48) return `${Math.floor(hours)}h ago`;
-  const days = hours / 24;
-  if (days < 60) return `${Math.floor(days)}d ago`;
-  return `${Math.floor(days / 30)}mo ago`;
+/** Evidence age through the shared age vocabulary: hours to 48h, days to 60d, then "since <date>". */
+export function formatEvidenceAge(ageMs: number, nowMs: number = Date.now()): string {
+  if (ageMs < 3_600_000) return "under 1h ago";
+  return formatRelativeTime(nowMs - ageMs, nowMs);
 }
 
 /**
@@ -167,7 +178,7 @@ export function buildCapabilityFreshnessIndex(
     const source = byId.get(providerId.trim().toLowerCase());
     const time = Date.parse(source?.latestEvidenceAt ?? "");
     if (!source || !Number.isFinite(time)) return { state: "no-evidence", label: "No evidence", ageText: null };
-    const ageText = formatEvidenceAge(Math.max(0, nowMs - time));
+    const ageText = formatEvidenceAge(Math.max(0, nowMs - time), nowMs);
     return source.evidenceStale ? { state: "stale", label: "Stale", ageText } : { state: "current", label: "Current", ageText };
   };
 }

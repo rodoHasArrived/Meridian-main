@@ -65,6 +65,30 @@ same cutoffs. Imported alias baselines also have a migration availability eligib
 earlier alias contents remain unknown. This identifier API retains no evaluation receipt and makes
 no claim about which transactions were visible at a historical cutoff.
 
+## Asset detail terms and market comparison
+
+Full term reads expose one canonical stream version, its economic window, a content fingerprint,
+matching source metadata and the exact original term JSON. The fingerprint identifies read inputs;
+it is not a retained transaction-visibility receipt or edit authority. Schema metadata does not
+replace unknown, nested or read-ahead properties. Explicit zero/false, missing, null, invalid and
+ambiguous values remain distinct. Undeclared rate/price/currency units are never inferred. Shared
+schema, envelope-version and dated-schedule rules still define compatibility.
+
+Market comparison reads bind an owned book, financial account, security, position, date and
+retained economic-state ID/version. The server resolves economic operands and registered models;
+a client cannot submit quantities or prices as authoritative values. Security terms are read from
+retained dated evidence and checked against their economic window. Golden-copy price receipts are
+replayed in their account scope; stale, missing or contradictory evidence blocks amounts.
+
+The supported unit/share holder adapter uses explicit currency-per-unit quotes without a contract
+multiplier. Original-face DCF uses the existing factor/cash-flow kernel once and reports dirty
+market value; it withholds comparison without a declared compatible carrying/accrual basis.
+Contract, notional, currency-amount, commitment, short and liability conventions require their
+proven dedicated adapters. No FX translation is inferred. The displayed unrealized comparison is
+market value minus retained carrying amount, not realized, total-return or tax-cost P/L, and
+retained position projections do not establish posted ledger balances. A `KnownAt` assertion is
+refused because this projection does not certify historical transaction visibility.
+
 ## Governed edit concurrency
 
 PostgreSQL-backed workbench edits use a durable per-security generation, separate from the canonical

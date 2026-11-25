@@ -1,4 +1,4 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import * as api from "@/lib/api";
 import * as ledgerReportsApi from "@/lib/ledger-reports-api";
 import { getLedgerJournalEntryTaxResults } from "@/lib/ledger-tax-results-api";
@@ -238,6 +238,43 @@ describe("JournalEntryDetailScreen", () => {
     // fall back to the run ledger.
     expect(api.getRunLedgerJournal).not.toHaveBeenCalled();
   });
+  it("shows the order, fill and run a posted entry was recorded from, linking only where a page exists", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(workbench);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValueOnce([
+      {
+        journalEntryId: "je-fill-1", timestamp: "2026-06-30T00:00:00Z", description: "Trade fill", totalDebits: 500, totalCredits: 500, isBalanced: true,
+        lines: [
+          { entryId: "e-1", journalEntryId: "je-fill-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Securities", accountType: "Asset", debit: 500, credit: 0, description: "Buy AAPL" },
+          { entryId: "e-2", journalEntryId: "je-fill-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Cash", accountType: "Asset", debit: 0, credit: 500, description: "Settle" }
+        ],
+        execution: { orderId: "PO-1", fillId: "6f8b2c1e-0000-4000-8000-000000000001", strategyRunId: "run-7" }
+      }
+    ] as never);
+
+    await renderScreen("/accounting/journal-entries/detail?journalEntryId=je-fill-1&periodId=period-7");
+
+    const lineage = await screen.findByRole("list", { name: "Execution lineage" });
+    expect(within(lineage).getByRole("link", { name: "PO-1" })).toHaveAttribute("href", "/trading/orders?orderId=PO-1");
+    expect(within(lineage).getByRole("link", { name: "run-7" })).toHaveAttribute("href", "/strategy/run-ledger?runId=run-7");
+    // The fill has no page of its own: shown, not linked.
+    expect(within(lineage).getByText("6f8b2c1e-0000-4000-8000-000000000001").closest("a")).toBeNull();
+    expect(within(lineage).getByText("je-fill-1")).toHaveAttribute("aria-current", "page");
+  });
+
+  it("shows no lineage for a posted entry not recorded from an execution", async () => {
+    vi.mocked(api.getManualJournalEntryWorkbench).mockResolvedValueOnce(workbench);
+    vi.mocked(ledgerReportsApi.getLedgerPeriodJournalEntries).mockResolvedValueOnce([
+      { journalEntryId: "je-close-1", timestamp: "2026-06-30T00:00:00Z", description: "Close", totalDebits: 1, totalCredits: 1, isBalanced: true,
+        lines: [{ entryId: "e-1", journalEntryId: "je-close-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Cash", accountType: "Asset", debit: 1, credit: 0, description: "x" },
+          { entryId: "e-2", journalEntryId: "je-close-1", timestamp: "2026-06-30T00:00:00Z", accountName: "Equity", accountType: "Equity", debit: 0, credit: 1, description: "y" }] }
+    ] as never);
+
+    await renderScreen("/accounting/journal-entries/detail?journalEntryId=je-close-1&periodId=period-7");
+
+    await screen.findByRole("table");
+    expect(screen.queryByRole("list", { name: "Execution lineage" })).not.toBeInTheDocument();
+  });
+
   it("renders a posted entry as governed evidence in its book currency", async () => {
     // A posted entry is "full" in the same sense a draft is, but it has no approval workflow,
     // no lifecycle and no attached evidence, and its amounts are in the book's own currency.

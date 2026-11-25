@@ -26,7 +26,7 @@ public static partial class ExecutionEndpoints
             var entries = await auditTrail
                 .GetRecentAsync(take ?? 100, context.RequestAborted)
                 .ConfigureAwait(false);
-            return Results.Json(entries, jsonOptions);
+            return Results.Json(entries.Select(ExecutionAuditPublicProjection.Project).ToArray(), jsonOptions);
         })
         .WithName("GetExecutionAudit").RequirePermission(UserPermission.ViewTrades)
         .Produces<IReadOnlyList<ExecutionAuditEntry>>(200);
@@ -78,7 +78,8 @@ public static partial class ExecutionEndpoints
                     Limit: limit ?? 100,
                     OrderId: orderId),
                 (workflow, token) => AuditTrailHttpAuthority.CanReadWorkflowAsync(context, workflow, token),
-                context.RequestAborted).ConfigureAwait(false);
+                context.RequestAborted,
+                account => FundAccountEndpoints.CanAccessFundAccountBrokerageSyncAsync(account, context)).ConfigureAwait(false);
 
             return Results.Json(result, jsonOptions);
         })

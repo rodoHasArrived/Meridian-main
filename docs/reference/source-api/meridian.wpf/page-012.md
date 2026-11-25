@@ -6,6 +6,229 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AuditLogViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.AuditLogViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:152](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L152).
+
+View model for audit trail log items.
+
+```csharp
+public sealed class AuditLogViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Timestamp { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:154](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L154) |  |
+| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:155](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L155) |  |
+| <code>public string Action { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:156](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L156) |  |
+| <code>public string Summary { get; set; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/ProviderPageModels.cs:157](../../../../src/Meridian.Wpf/ViewModels/ProviderPageModels.cs#L157) |  |
+
+## BackfillStatsPresentation
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BackfillStatsPresentation</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L26).
+
+```csharp
+public readonly record struct BackfillStatsPresentation(string TotalBarsText, string SymbolsProcessedText, string RunWindowText, string LastSuccessfulRunText);
+```
+
+## BackfillStatusSectionViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BackfillStatusSectionViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:97](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L97).
+
+Presents the most recent backfill API status and run outcome with visibility and styling state.
+
+```csharp
+public sealed class BackfillStatusSectionViewModel : BindableBase
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillResultDto? LastApiStatus { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:115](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L115) |  |
+| <code>public bool HasApiStatus { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:116](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L116) |  |
+| <code>public Visibility LastStatusVisibility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:117](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L117) |  |
+| <code>public Visibility EmptyStatusVisibility { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:118](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L118) |  |
+| <code>public string LastRunStatusText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:119](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L119) |  |
+| <code>public Brush LastRunStatusBrush { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:120](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L120) |  |
+| <code>public string LastRunProviderText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:121](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L121) |  |
+| <code>public string LastRunSymbolsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:122](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L122) |  |
+| <code>public string LastRunBarsWrittenText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:123](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L123) |  |
+| <code>public string LastRunStartedText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:124](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L124) |  |
+| <code>public string LastRunCompletedText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:125](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L125) |  |
+| <code>public string BackfillStatsTotalBarsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:126](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L126) |  |
+| <code>public string BackfillStatsSymbolsProcessedText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:127](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L127) |  |
+| <code>public string BackfillStatsRunWindowText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:128](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L128) |  |
+| <code>public string BackfillStatsLastSuccessfulRunText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:129](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L129) |  |
+
+## BackfillViewModel
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BackfillViewModel</code>. Kind: `class`.
+
+Source: [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L38).
+
+ViewModel for the Backfill page. All state, collections, timer management, and backfill orchestration live here; the code-behind is thinned to lifecycle wiring and form-input delegation. Provides contextual commands for the command palette when activated.
+
+```csharp
+public sealed partial class BackfillViewModel : BindableBase, IPageActivationLifetime, IDisposable, ICommandContextProvider, IPageActionBarProvider
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public ObservableCollection&lt;SymbolProgressInfo&gt; SymbolProgress =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:62](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L62) |  |
+| <code>public ObservableCollection&lt;ScheduledJobInfo&gt; ScheduledJobs =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:63](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L63) |  |
+| <code>public ObservableCollection&lt;ResumableJobInfo&gt; ResumableJobs =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:64](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L64) |  |
+| <code>public ObservableCollection&lt;GapAnalysisItem&gt; GapItems =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:65](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L65) |  |
+| <code>public ObservableCollection&lt;BackfillRemediationQueuePresentation&gt; RemediationQueue =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:66](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L66) |  |
+| <code>public WorkstationTableModel&lt;SymbolProgressInfo&gt; SymbolProgressTable =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:67](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L67) |  |
+| <code>public WorkstationTableModel&lt;GapAnalysisItem&gt; GapItemsTable =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:68](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L68) |  |
+| <code>public string BackfillStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:71](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L71) |  |
+| <code>public string OverallProgressText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:77](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L77) |  |
+| <code>public double OverallProgressPercent { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:83](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L83) |  |
+| <code>public string PauseButtonContent { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:89](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L89) |  |
+| <code>public bool IsBackfillActive { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:97](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L97) |  |
+| <code>public bool IsProgressVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:107](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L107) |  |
+| <code>public bool HasProviderProgress { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:113](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L113) |  |
+| <code>public bool HasRemediationQueue { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:119](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L119) |  |
+| <code>public string ProviderProgressObservedText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L125) |  |
+| <code>public string RemediationDefaultProviderText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:131](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L131) |  |
+| <code>public bool HasNoScheduledJobs { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L137) |  |
+| <code>public bool HasNoResumableJobs { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:143](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L143) |  |
+| <code>public string ProviderPrioritySummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:150](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L150) |  |
+| <code>public string GranularityHintText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L157) |  |
+| <code>public string GapAnalysisSummaryText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:163](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L163) |  |
+| <code>public string GapActionHintText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:169](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L169) |  |
+| <code>public bool IsGapAnalysisCardVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:175](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L175) |  |
+| <code>public bool IsGapListVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:181](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L181) |  |
+| <code>public bool IsGapActionPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:187](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L187) |  |
+| <code>public Meridian.Contracts.Api.BackfillResultDto? LastApiStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L193) |  |
+| <code>public bool HasApiStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L199) |  |
+| <code>public Visibility LastStatusVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:205](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L205) |  |
+| <code>public Visibility EmptyStatusVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:211](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L211) |  |
+| <code>public string LastRunStatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:217](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L217) |  |
+| <code>public Brush LastRunStatusBrush { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:223](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L223) |  |
+| <code>public string LastRunProviderText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L229) |  |
+| <code>public string LastRunSymbolsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L235) |  |
+| <code>public string LastRunBarsWrittenText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:241](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L241) |  |
+| <code>public string LastRunStartedText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L247) |  |
+| <code>public string LastRunCompletedText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:253](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L253) |  |
+| <code>public string BackfillStatsTotalBarsText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L259) |  |
+| <code>public string BackfillStatsSymbolsProcessedText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L265) |  |
+| <code>public string BackfillStatsRunWindowText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L271) |  |
+| <code>public string BackfillStatsLastSuccessfulRunText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L277) |  |
+| <code>public string StartReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:284](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L284) |  |
+| <code>public string StartReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:291](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L291) |  |
+| <code>public string StartReadinessScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:298](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L298) |  |
+| <code>public bool CanStartBackfill { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:305](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L305) |  |
+| <code>public string SymbolsValidationErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:312](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L312) |  |
+| <code>public bool IsSymbolsValidationErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L319) |  |
+| <code>public string FromDateValidationErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:326](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L326) |  |
+| <code>public bool IsFromDateValidationErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:333](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L333) |  |
+| <code>public string ToDateValidationErrorText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:340](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L340) |  |
+| <code>public bool IsToDateValidationErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:347](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L347) |  |
+| <code>public string PageTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:354](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L354) |  |
+| <code>public ObservableCollection&lt;ActionEntry&gt; Actions { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:355](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L355) |  |
+| <code>public string SymbolCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:361](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L361) |  |
+| <code>public string DateRangeHintText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:369](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L369) |  |
+| <code>public double SchedulePanelOpacity { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:377](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L377) |  |
+| <code>public void UpdateSymbolCount(int count) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:386](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L386) | Updates the symbol count label from the parsed symbols array. |
+| <code>public void UpdateDateRangeHint(int lookbackDays, int symbolCount, string granularityDisplay) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:390](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L390) | Updates the date-range hint text after a smart-range is applied. |
+| <code>public void SetScheduleEnabled(bool enabled) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:394](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L394) | Reflects the scheduled-backfill toggle state on the settings panel opacity. |
+| <code>public void UpdateScheduledJob(ScheduledJobInfo job, string name, string nextRun);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:403](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L403) | Updates an existing scheduled job in the collection. Code-behind must not directly index into ScheduledJobs. |
+| <code>public void HandleValidateData() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:417](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L417) |  |
+| <code>public void HandleRepairGaps() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:420](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L420) |  |
+| <code>public void HandleFillAllGaps() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:423](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L423) |  |
+| <code>public void HandleSaveSchedule() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:426](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L426) |  |
+| <code>public void HandleRunScheduledJob(ScheduledJobInfo job) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:429](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L429) |  |
+| <code>public void HandleUpdateToLatest() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:432](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L432) |  |
+| <code>public void HandleRefreshStatusNotification() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:438](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L438) |  |
+| <code>public void HandleNoGapsFound() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:441](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L441) |  |
+| <code>public void HandleAutoFillGapsNotification(string[] symbolsWithGaps) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:444](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L444) |  |
+| <code>public void HandleJobDeletedNotification(string jobName) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:450](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L450) |  |
+| <code>public BackfillViewModel(WpfServices.NotificationService notificationService, WpfServices.NavigationService navigationService, WpfServices.LoggingService loggingService, WpfServices.ConfigService configService, UiBackfillService backfillService, BackfillCheckpointService checkpointService, WpfServices.TaskbarProgressService taskbarProgressService, WpfServices.ToastNotificationService toastNotificationService, CommandPaletteService commandPaletteService);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:456](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L456) |  |
+| <code>public bool IsActive =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:484](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L484) |  |
+| <code>public CancellationToken ActivationToken =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:486](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L486) |  |
+| <code>public Task StartAsync(CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:488](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L488) |  |
+| <code>public async Task ActivateAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:490](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L490) |  |
+| <code>public void Stop() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:518](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L518) |  |
+| <code>public void CancelActivation();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:520](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L520) |  |
+| <code>public void Deactivate();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:526](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L526) |  |
+| <code>public async Task LoadScheduledJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:541](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L541) |  |
+| <code>public async Task LoadResumableJobsAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:574](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L574) |  |
+| <code>public async Task RefreshStatusFromApiAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:608](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L608) |  |
+| <code>public async Task RefreshProviderProgressAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:628](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L628) |  |
+| <code>public static BackfillStatsPresentation BuildBackfillStats(BackfillResultDto? status);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:753](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L753) |  |
+| <code>public bool ResumeFromRetainedCoverage { get; set; }</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:809](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L809) |  |
+| <code>public async Task StartBackfillAsync(string[] symbols, string provider, DateTime fromDate, DateTime toDate, string granularity, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:815](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L815) |  |
+| <code>public void PauseOrResumeBackfill();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:892](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L892) |  |
+| <code>public void CancelBackfill();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:912](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L912) |  |
+| <code>public async Task ResumeJobAsync(ResumableJobInfo job, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:924](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L924) |  |
+| <code>public void DismissJob(ResumableJobInfo job);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:969](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L969) |  |
+| <code>public void DeleteScheduledJob(ScheduledJobInfo job);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:979](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L979) |  |
+| <code>public async Task ScanGapsAsync(string[] symbols, DateTime fromDate, DateTime toDate, CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1108](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1108) |  |
+| <code>public string[] GetSymbolsWithGaps() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1190](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1190) |  |
+| <code>public void UpdateGranularityHint(string granularity);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1194](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1194) |  |
+| <code>public void UpdateProviderPrioritySummary(string primary, string secondary, string tertiary);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1208](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1208) |  |
+| <code>public void UpdateStartSetupState(string? symbolsText, DateTime? fromDate, DateTime? toDate, string? providerDisplay, string? provider, string? granularity);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1220](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1220) |  |
+| <code>public static (DateTime From, DateTime To) ComputeSmartRange(string granularity, int symbolCount);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1248](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1248) |  |
+| <code>public static string GetGranularityDisplay(string granularity) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1263](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1263) |  |
+| <code>public static BackfillStartSetupState BuildStartSetupState(string? symbolsText, DateTime? fromDate, DateTime? toDate, string? providerDisplay, string? provider, string? granularity);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1275](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1275) |  |
+| <code>public bool TryCreateStartRequest(string? symbolsText, DateTime? fromDate, DateTime? toDate, string? provider, string? granularity, out BackfillStartRequest request, out string? symbolValidationError, out string? fromDateValidationError, out string? toDateValidationError);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1341](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1341) |  |
+| <code>public async Task&lt;string&gt; GetSubscribedSymbolsTextAsync();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1414](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1414) |  |
+| <code>public string AppendSymbols(string? existingSymbolsText, params string[] symbolsToAppend);</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1430](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1430) |  |
+| <code>public (DateTime From, DateTime To, string SymbolsText) BuildLatestUpdatePreset(string? existingSymbolsText) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1442](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1442) |  |
+| <code>public void NavigateToOwnedCredentials() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1446](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1446) |  |
+| <code>public void NavigateToWizard() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1447](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1447) |  |
+| <code>public void NavigateToBrowser() =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1448](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1448) |  |
+| <code>public string ContextKey =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1452](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1452) |  |
+| <code>public IReadOnlyList&lt;CommandEntry&gt; GetContextualCommands();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1454](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1454) |  |
+| <code>public void OnActivated();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1518](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1518) |  |
+| <code>public void OnDeactivated();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1525](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1525) |  |
+| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1532](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1532) |  |
+
+Source: [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:132](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L132).
+
+```csharp
+public sealed partial class BackfillViewModel
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public BackfillWorkbenchSectionViewModel WorkbenchSection =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:137](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L137) |  |
+| <code>public BackfillStatusSectionViewModel StatusSection =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs:138](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.Sections.cs#L138) |  |
+
+## BackfillStartRequest
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BackfillViewModel.BackfillStartRequest</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1565](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1565).
+
+```csharp
+public readonly record struct BackfillStartRequest(string[] Symbols, string Provider, DateTime FromDate, DateTime ToDate, string Granularity);
+```
+
+## BackfillStartSetupState
+
+Qualified name: <code>Meridian.Wpf.ViewModels.BackfillViewModel.BackfillStartSetupState</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Wpf/ViewModels/BackfillViewModel.cs:1572](../../../../src/Meridian.Wpf/ViewModels/BackfillViewModel.cs#L1572).
+
+```csharp
+public readonly record struct BackfillStartSetupState(bool CanStart, string ReadinessTitle, string ReadinessDetail, string ScopeText, string SymbolCountText, string SymbolsValidationError, bool IsSymbolsValidationErrorVisible, string FromDateValidationError, bool IsFromDateValidationErrorVisible, string ToDateValidationError, bool IsToDateValidationErrorVisible);
+```
+
 ## BackfillWorkbenchSectionViewModel
 
 Qualified name: <code>Meridian.Wpf.ViewModels.BackfillWorkbenchSectionViewModel</code>. Kind: `class`.
@@ -1637,254 +1860,3 @@ Declared public members:
 | <code>public void GenerateSample();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L249) |  |
 | <code>public bool CanSavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:277](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L277) |  |
 | <code>public void SavePreset();</code> | [src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/DataSamplingViewModel.cs#L283) |  |
-
-## DataSheetRow
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DataSheetRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs:16](../../../../src/Meridian.Wpf/ViewModels/ScatterAnalysisViewModel.cs#L16).
-
-One row in the data-sheet tab.
-
-```csharp
-public sealed record DataSheetRow(string Date, string XValue, string YValue);
-```
-
-## DataSourcesViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DataSourcesViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L21).
-
-ViewModel for the Data Sources configuration page. Owns all state and commands so that the code-behind is thinned to lifecycle wiring and secret-input/ComboBox-tag helpers only.
-
-```csharp
-public sealed class DataSourcesViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataSourcesViewModel(WpfServices.ConfigService configService, WpfServices.FirstRunService firstRunService, ILogger&lt;DataSourcesViewModel&gt;? logger = null);</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L102) |  |
-| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; DataSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:128](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L128) |  |
-| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; RealTimeSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:129](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L129) |  |
-| <code>public ObservableCollection&lt;DataSourceConfigDto&gt; HistoricalSources { get; } = new ();</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:130](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L130) |  |
-| <code>public IAsyncRelayCommand LoadCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:134](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L134) |  |
-| <code>public IAsyncRelayCommand RetryConfigurationCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:135](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L135) |  |
-| <code>public IRelayCommand AddSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:136](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L136) |  |
-| <code>public IRelayCommand&lt;string&gt; EditSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L137) |  |
-| <code>public IAsyncRelayCommand&lt;string&gt; DeleteSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L138) |  |
-| <code>public IAsyncRelayCommand&lt;DataSourceConfigDto&gt; ToggleSourceEnabledCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:139](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L139) |  |
-| <code>public IAsyncRelayCommand SaveSourceCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:140](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L140) |  |
-| <code>public IRelayCommand CancelEditCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:141](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L141) |  |
-| <code>public bool FailoverEnabled { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:145](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L145) |  |
-| <code>public string FailoverTimeoutText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:155](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L155) |  |
-| <code>public string FailoverTimeoutError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:165](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L165) |  |
-| <code>public bool IsFailoverTimeoutErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L171) |  |
-| <code>public string SourceCountText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:179](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L179) |  |
-| <code>public bool IsNoSourcesVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:185](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L185) |  |
-| <code>public bool IsEditPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:193](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L193) |  |
-| <code>public string EditPanelTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:203](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L203) |  |
-| <code>public bool IsSaving { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:209](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L209) |  |
-| <code>public bool CanSaveSource { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:219](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L219) |  |
-| <code>public string SourceSetupReadinessTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:229](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L229) |  |
-| <code>public string SourceSetupReadinessDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:235](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L235) |  |
-| <code>public string SourceSetupScopeText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:241](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L241) |  |
-| <code>public string SourceNameText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:249](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L249) |  |
-| <code>public string SourceNameError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:259](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L259) |  |
-| <code>public bool IsSourceNameErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:265](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L265) |  |
-| <code>public string PriorityText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:271](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L271) |  |
-| <code>public string PriorityError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:281](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L281) |  |
-| <code>public bool IsPriorityErrorVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:287](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L287) |  |
-| <code>public string DescriptionText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:293](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L293) |  |
-| <code>public string SymbolsText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:299](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L299) |  |
-| <code>public string SelectedProvider { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:309](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L309) |  |
-| <code>public string SelectedType { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L325) |  |
-| <code>public string AlpacaFeed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:336](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L336) |  |
-| <code>public string AlpacaEnvironmentTag { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:347](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L347) |  |
-| <code>public string PolygonFeed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:353](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L353) |  |
-| <code>public bool IsIBPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:366](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L366) |  |
-| <code>public bool IsAlpacaPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:372](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L372) |  |
-| <code>public bool IsPolygonPanelVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:378](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L378) |  |
-| <code>public string IBHost { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:386](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L386) |  |
-| <code>public string IBPort { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:387](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L387) |  |
-| <code>public string IBClientId { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:388](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L388) |  |
-| <code>public bool IBPaperTrading { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:389](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L389) |  |
-| <code>public bool IBSubscribeDepth { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:390](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L390) |  |
-| <code>public bool IBTickByTick { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:391](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L391) |  |
-| <code>public bool AlpacaSandbox { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:395](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L395) |  |
-| <code>public bool AlpacaSubscribeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:404](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L404) |  |
-| <code>public bool PolygonDelayed { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:408](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L408) |  |
-| <code>public bool PolygonSubscribeTrades { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:409](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L409) |  |
-| <code>public bool PolygonSubscribeQuotes { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:410](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L410) |  |
-| <code>public bool PolygonSubscribeAggregates { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:411](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L411) |  |
-| <code>public DataSourceConfigDto? SelectedDefaultRealTimeSource { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:415](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L415) |  |
-| <code>public DataSourceConfigDto? SelectedDefaultHistoricalSource { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:425](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L425) |  |
-| <code>public string StatusMessage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:437](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L437) |  |
-| <code>public bool IsStatusError { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:438](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L438) |  |
-| <code>public bool IsStatusVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:439](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L439) |  |
-| <code>public bool IsConfigurationRecoveryVisible { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:440](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L440) |  |
-| <code>public string ConfigurationRecoveryTitle { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:445](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L445) |  |
-| <code>public string ConfigurationRecoveryDetail { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:450](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L450) |  |
-| <code>public async Task LoadAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs:463](../../../../src/Meridian.Wpf/ViewModels/DataSourcesViewModel.cs#L463) |  |
-
-## DataWorkspaceShellViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DataWorkspaceShellViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:605](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L605).
-
-Provides the data shell specialization of the shared workspace view-model base.
-
-```csharp
-public sealed class DataWorkspaceShellViewModel : WorkspaceShellViewModelBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DataWorkspaceShellViewModel() : base(ShellNavigationCatalog.GetWorkspaceShell(&quot;data&quot;) !);</code> | [src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs:607](../../../../src/Meridian.Wpf/ViewModels/WorkspaceShellViewModelBase.cs#L607) |  |
-
-## DiagnosticCheckResult
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DiagnosticCheckResult</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:18](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L18).
-
-Holds the result of a single diagnostic status check (pass / fail / warning).
-
-```csharp
-public sealed class DiagnosticCheckResult
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool? Success { get; init; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:21](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L21) | true = success, false = failure, null = warning / unknown. |
-| <code>public string Message { get; init; } = string.Empty;</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:24](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L24) | Human-readable status message. |
-| <code>public static DiagnosticCheckResult Ok(string message) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:26](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L26) |  |
-| <code>public static DiagnosticCheckResult Fail(string message) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:27](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L27) |  |
-| <code>public static DiagnosticCheckResult Warn(string message) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:28](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L28) |  |
-
-## DiagnosticsPageViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DiagnosticsPageViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L35).
-
-ViewModel for the Diagnostics page. Holds connectivity state, colocation profile status, and latency metrics.
-
-```csharp
-public sealed class DiagnosticsPageViewModel : BindableBase, IDisposable
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool IsOnline { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:75](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L75) | Gets or sets whether the system is online. |
-| <code>public string ConnectivityStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:84](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L84) | Gets or sets the connectivity status string (&quot;Online&quot; / &quot;Offline&quot; / &quot;Unknown&quot;). |
-| <code>public bool CoLocationActive { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:93](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L93) | Gets or sets whether the CoLocation profile is active. |
-| <code>public string P50Ms { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:102](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L102) | Gets or sets the p50 latency in ms. |
-| <code>public string P95Ms { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L111) | Gets or sets the p95 latency in ms. |
-| <code>public string P99Ms { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:120](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L120) | Gets or sets the p99 latency in ms. |
-| <code>public ICommand RefreshLatencyCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:127](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L127) | Gets the command to refresh latency metrics. |
-| <code>public ICommand RunQuickCheckCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:137](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L137) | Gets the command that runs the quick diagnostic check. |
-| <code>public ICommand RunFullDiagnosticsCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:147](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L147) | Gets the command that runs the full diagnostic report. |
-| <code>public ICommand OpenLogsFolderCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:157](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L157) | Gets the command that opens the logs folder in Explorer. |
-| <code>public string DiagnosticOutput { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:167](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L167) | Gets or sets the text displayed in the diagnostic output panel. |
-| <code>public string RuntimeVersion { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:176](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L176) | Gets the .NET runtime version string. |
-| <code>public string OsVersion { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:183](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L183) | Gets the OS version string. |
-| <code>public string WorkingDirectory { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:190](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L190) | Gets the current working directory. |
-| <code>public string ProcessId { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:197](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L197) | Gets the current process ID. |
-| <code>public string MemoryUsage { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:204](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L204) | Gets the managed heap memory usage. |
-| <code>public DiagnosticCheckResult ConfigStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:213](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L213) | Gets the configuration file check result. |
-| <code>public DiagnosticCheckResult StorageStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:220](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L220) | Gets the storage directory check result. |
-| <code>public DiagnosticCheckResult ApiStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:227](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L227) | Gets the API credentials check result. |
-| <code>public DiagnosticCheckResult ProviderStatus { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:234](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L234) | Gets the provider configuration check result. |
-| <code>public DiagnosticsPageViewModel(IConnectivityProbeService? connectivityProbe = null, ICoLocationProfileActivator? coLocationProfileActivator = null, ProviderLatencyService? latencyService = null);</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:240](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L240) |  |
-| <code>public void Dispose();</code> | [src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs:628](../../../../src/Meridian.Wpf/ViewModels/DiagnosticsPageViewModel.cs#L628) |  |
-
-## DirectLendingViewModel
-
-Qualified name: <code>Meridian.Wpf.ViewModels.DirectLendingViewModel</code>. Kind: `class`.
-
-Source: [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:19](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L19).
-
-ViewModel for the Direct Lending workstation page. Provides a loan portfolio browser with per-loan servicing details, accrual history, and a manual accrual trigger for operators. All HTTP communication goes through ApiClientService to keep the WPF layer decoupled from the backend service layer.
-
-```csharp
-public sealed class DirectLendingViewModel : BindableBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public ObservableCollection&lt;LoanSummaryDto&gt; Loans { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:32](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L32) |  |
-| <code>public ObservableCollection&lt;DailyAccrualEntryDto&gt; Accruals { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:33](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L33) |  |
-| <code>public ObservableCollection&lt;CashTransactionDto&gt; CashTransactions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:34](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L34) |  |
-| <code>public ObservableCollection&lt;DirectLendingOperationsCollateralCoverageDto&gt; CollateralCoverage { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:35](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L35) |  |
-| <code>public ObservableCollection&lt;DirectLendingOperationsStatusPostureDto&gt; StatusPostures { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:36](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L36) |  |
-| <code>public ObservableCollection&lt;DirectLendingOperationsReconciliationExceptionDto&gt; ReconciliationExceptions { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:37](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L37) |  |
-| <code>public ObservableCollection&lt;DirectLendingOperationsEvidenceItemDto&gt; EvidenceItems { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:38](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L38) |  |
-| <code>public ObservableCollection&lt;DirectLendingOperationsCloseBlockerDto&gt; CloseBlockers { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:39](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L39) |  |
-| <code>public ObservableCollection&lt;DirectLendingOperationsServicerStatementDto&gt; ServicerStatements { get; } = [];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:40](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L40) |  |
-| <code>public WorkstationTableModel&lt;LoanSummaryDto&gt; LoansTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:41](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L41) |  |
-| <code>public WorkstationTableModel&lt;DailyAccrualEntryDto&gt; AccrualsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:42](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L42) |  |
-| <code>public WorkstationTableModel&lt;CashTransactionDto&gt; CashTransactionsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:43](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L43) |  |
-| <code>public WorkstationTableModel&lt;DirectLendingOperationsCollateralCoverageDto&gt; CollateralCoverageTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:44](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L44) |  |
-| <code>public WorkstationTableModel&lt;DirectLendingOperationsStatusPostureDto&gt; StatusPostureTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:45](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L45) |  |
-| <code>public WorkstationTableModel&lt;DirectLendingOperationsReconciliationExceptionDto&gt; ExceptionsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:46](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L46) |  |
-| <code>public WorkstationTableModel&lt;DirectLendingOperationsEvidenceItemDto&gt; EvidenceTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:47](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L47) |  |
-| <code>public WorkstationTableModel&lt;DirectLendingOperationsCloseBlockerDto&gt; CloseBlockersTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:48](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L48) |  |
-| <code>public WorkstationTableModel&lt;DirectLendingOperationsServicerStatementDto&gt; ServicerStatementsTable { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:49](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L49) |  |
-| <code>public LoanSummaryDto? SelectedLoan { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:54](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L54) |  |
-| <code>public CashFlows.ContractualCashFlowScenarioViewModel? LoanScenarios { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:73](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L73) | Cash-flow scenario workbench for the selected facility (web-UI parity with the loan book). |
-| <code>public bool HasLoanScenarios =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:79](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L79) |  |
-| <code>public LoanContractDetailDto? SelectedContract { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:82](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L82) |  |
-| <code>public LoanServicingStateDto? SelectedServicing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:95](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L95) |  |
-| <code>public string StatusText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:111](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L111) |  |
-| <code>public string SearchText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:125](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L125) |  |
-| <code>public string SelectedStatusFilter { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:138](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L138) |  |
-| <code>public bool IsDetailLoading { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:151](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L151) |  |
-| <code>public Visibility AccrualResultVisibility { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:164](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L164) |  |
-| <code>public string AccrualResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:171](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L171) |  |
-| <code>public bool IsSubmittingUnappliedCash { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:186](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L186) |  |
-| <code>public string UnappliedCashAmountText { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:199](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L199) |  |
-| <code>public string UnappliedCashExternalRef { get; set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:212](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L212) |  |
-| <code>public string UnappliedCashResultText { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:225](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L225) |  |
-| <code>public Visibility UnappliedCashResultVisibility =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:237](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L237) |  |
-| <code>public string HeldUnappliedCashText =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:240](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L240) |  |
-| <code>public bool CanApplyUnappliedCash =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:244](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L244) |  |
-| <code>public bool CanRefundUnappliedCash =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:247](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L247) |  |
-| <code>public string ApplyUnappliedCashTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:250](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L250) |  |
-| <code>public string RefundUnappliedCashTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:254](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L254) |  |
-| <code>public bool HasSelectedLoan =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:260](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L260) |  |
-| <code>public bool HasLoans =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:262](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L262) |  |
-| <code>public bool IsLoanGridVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:264](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L264) |  |
-| <code>public bool IsLoanEmptyStateVisible =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:266](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L266) |  |
-| <code>public bool IsRefreshing { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:268](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L268) |  |
-| <code>public bool IsPostingAccrual { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:283](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L283) |  |
-| <code>public bool CanRefreshPortfolio =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:295](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L295) |  |
-| <code>public bool CanPostAccrual =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:297](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L297) |  |
-| <code>public string PostAccrualTooltip =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:299](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L299) |  |
-| <code>public string LoanActionStateTitle =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:301](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L301) |  |
-| <code>public string LoanActionStateDetail =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:303](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L303) |  |
-| <code>public InspectorPanelModel SelectedLoanInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:307](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L307) |  |
-| <code>public InspectorPanelModel LoanActionInspector { get; private set; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:313](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L313) |  |
-| <code>public IReadOnlyList&lt;string&gt; StatusFilters { get; } = [&quot;All&quot;, &quot;Draft&quot;, &quot;Approved&quot;, &quot;Active&quot;, &quot;Suspended&quot;, &quot;Matured&quot;, &quot;Closed&quot;, &quot;Defaulted&quot;];</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:319](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L319) |  |
-| <code>public IAsyncRelayCommand RefreshCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:324](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L324) |  |
-| <code>public IAsyncRelayCommand PostAccrualCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:325](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L325) |  |
-| <code>public IAsyncRelayCommand ApplyUnappliedCashCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:326](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L326) |  |
-| <code>public IAsyncRelayCommand RefundUnappliedCashCommand { get; }</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:327](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L327) |  |
-| <code>public async Task InitializeAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:465](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L465) |  |
-| <code>public async Task RefreshAsync(CancellationToken ct = default);</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:472](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L472) |  |
-| <code>public static string BuildPortfolioStatusText(LoanPortfolioSummaryDto? portfolio);</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:521](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L521) |  |
-| <code>public static string? ValidateUnappliedCashAction(LoanServicingStateDto? servicing, bool isDetailLoading, bool isSubmitting, string amountText, string? externalRef, bool isRefund, out decimal amount, CurrencyCode? currency = null);</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:798](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L798) | PRD-115: why Apply or Refund unapplied cash cannot run yet, or null when it can. Mirrors the server&#x27;s validation (positive, no more than held; a refund needs an external reference) so the buttons explain themselves instead of failing on submit. |
-| <code>public static string BuildUnappliedCashResultText(bool isRefund, decimal requested, LoanServicingStateDto? before, bool success, LoanServicingStateDto? after, string? errorMessage, CurrencyCode? currency = null);</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:850](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L850) |  |
-| <code>public static bool CanRefreshPortfolioForState(bool isRefreshing) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:976](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L976) |  |
-| <code>public static bool CanPostAccrualForState(LoanSummaryDto? selectedLoan, bool isDetailLoading, bool isPostingAccrual) =&gt; …;</code> | [src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs:978](../../../../src/Meridian.Wpf/ViewModels/DirectLendingViewModel.cs#L978) |  |

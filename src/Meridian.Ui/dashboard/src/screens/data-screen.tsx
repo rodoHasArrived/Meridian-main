@@ -14,7 +14,7 @@ import {
   TimerReset
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { KpiProvider } from "@/lib/kpi-context";
@@ -25,11 +25,9 @@ import {
   WorkspaceInspectorHost
 } from "@/components/meridian/workspace-primitives";
 import { Badge } from "@/components/ui/badge";
-import { StatusBadge } from "@/design-system/status";
 import { Button } from "@/components/ui/button";
-import { PanelReload } from "@/components/ui/panel-reload";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogCloseButton, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -39,6 +37,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TabPanel, Tabs } from "@/components/ui/tabs";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { cn } from "@/lib/utils";
+import { getOlderBackfillResults } from "@/lib/api";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import {
   buildDataAnalyticsDegradedViewModel,
@@ -51,31 +50,35 @@ import {
   type QualityDashboardFetcher
 } from "@/screens/data-screen.data-quality.view-model";
 import {
-  CAPABILITY_LEGEND,
   buildCapabilityFreshnessIndex,
-  useCapabilityMatrixPanel,
-  type CapabilityFreshnessModel,
-  type CapabilityMatrixViewModel,
-  type CapabilityMatrixRowModel
+  useCapabilityMatrixPanel
 } from "@/screens/data-screen.capability-matrix.view-model";
+import { CapabilityMatrixRegion } from "@/screens/data-screen.capability-matrix";
 import {
   useCorporateActionInboxPanel
 } from "@/screens/data-screen.corporate-action-inbox.view-model";
 import { CorporateActionInboxRegion } from "@/screens/data-screen.corporate-action-inbox";
-import { FixedIncomeCapabilityReadiness } from "@/screens/data-screen.fixed-income-capabilities";
 import { useCoverageGapsPanel } from "@/screens/data-screen.coverage-gaps.view-model";
 import { CoverageGapsRegion, DataQualityRegion } from "@/screens/data-screen.data-regions";
 import { DataOverviewHub, RouteFocusCard } from "@/screens/data-screen-navigation-panels";
 import { CanonicalSymbolRegistryRegion } from "@/screens/data-screen.canonical-symbols";
 import { ProviderAccountingRegion } from "@/screens/data-screen.provider-accounting";
 import { FailoverRegion } from "@/screens/data-screen.failover";
+import { AlpacaFeedRegion } from "@/screens/data-screen.alpaca-feed";
+import { canTestProviderDraft } from "@/screens/data-screen.draft-verification";
+import { supportsProviderDraft } from "@/lib/provider-credential-scope";
 import { BackfillProviderEditorRegion } from "@/screens/data-screen.backfill-provider-editor";
+import { BackfillBatchReceipts } from "@/screens/data-screen.backfill-batch-receipts";
+import { BackfillSchedulesRegion } from "@/screens/data-screen.backfill-schedules";
+import { ProviderActivationPanel } from "@/components/data/provider-activation-panel";
 import { DataRoutingPreviewPanel } from "@/screens/data-screen.routing-preview";
 import { ProviderValidationPanel } from "@/screens/data-screen.provider-validation";
 import { RateLimitHistoryPanel } from "@/screens/data-screen.rate-limit-history";
 import { SettingsChangeImpactBanner } from "@/screens/settings-change-impact";
 import { DATA_ROUTE_VIEW_COPY } from "@/screens/data-screen.route-state";
 import { DataBackfillWorkstream, DataExportWorkstream, DataQueryWorkstream } from "@/screens/data-screen.workstreams";
+import { BackfillSubmissionPanel, BackfillReceiptEvidence } from "@/screens/data-screen.backfill-quota";
+import { ProviderProvenancePanel } from "@/components/meridian/provider-provenance-panel";
 import { IngestionOperationsWorkstream, StorageAssuranceWorkstream } from "@/screens/data-operations-assurance-workstreams";
 import {
   selectProvidersInUse,
@@ -98,7 +101,9 @@ import type {
   ProviderSetupNextActionState
 } from "@/screens/data-screen.view-model";
 import type { DataUploadWorkbookReviewState } from "@/screens/data-screen.workbook-review";
+import { ProviderConnectionTemplatesDialog } from "@/components/data/provider-connection-templates-dialog";
 import type {
+  DataBackfillRecord,
   ProviderConnectionRow,
   ProviderReadinessSummary,
   ProviderRoutingBinding,
@@ -124,6 +129,7 @@ interface DataScreenProps {
   dataQualityActionApi?: Partial<CellActionApi>;
   onProviderSetupConfigured?: () => Promise<void> | void;
   onProviderRoutingRefresh?: () => Promise<void> | void;
+  onBackfillCompleted?: (workspace: "data") => Promise<void> | void;
 }
 
 const providerHealthColumns: TableWorkbenchColumn<DataOperationsProviderRow>[] = [
@@ -201,7 +207,7 @@ export function DataScreen(props: DataScreenProps) {
 }
 
 function DataScreenContent({
-  data,
+  data: currentData,
   session = null,
   providerConnections = null,
   providerReadiness = null,
@@ -212,11 +218,35 @@ function DataScreenContent({
   dataQualityFetcher,
   dataQualityActionApi,
   onProviderSetupConfigured,
-  onProviderRoutingRefresh
+  onProviderRoutingRefresh,
+  onBackfillCompleted
 }: DataScreenProps) {
   const sharedCounts = useSharedCrossScreenCounts();
   const { pathname, search } = useLocation();
   const navigate = useNavigate();
+  const [olderBackfills, setOlderBackfills] = useState<{
+    session: typeof session; rows: DataBackfillRecord[]; loading: boolean; end: boolean; error: boolean;
+  } | null>(null);
+  const older = olderBackfills?.session === session ? olderBackfills : null;
+  const data = useMemo(() => {
+    if (!currentData || !older?.rows.length) return currentData;
+    const recent = new Set(currentData.backfills.map((row) => row.jobId));
+    return { ...currentData, backfills: [...currentData.backfills, ...older.rows.filter((row) => !recent.has(row.jobId))] };
+  }, [currentData, older?.rows]);
+  const cursor = (older?.rows ?? currentData?.backfills ?? []).filter((row) => row.providerProvenance).at(-1)?.providerProvenance?.receiptId;
+  const canLoadOlder = Boolean(cursor && !older?.end && (older || (currentData?.backfills.length ?? 0) >= 50));
+
+  async function loadOlderBackfills() {
+    if (!cursor || older?.loading) return;
+    const rows = older?.rows ?? [];
+    setOlderBackfills({ session, rows, loading: true, end: false, error: false });
+    try {
+      const page = await getOlderBackfillResults(cursor);
+      setOlderBackfills({ session, rows: [...rows, ...page], loading: false, end: page.length < 50, error: false });
+    } catch {
+      setOlderBackfills({ session, rows, loading: false, end: false, error: true });
+    }
+  }
   const providerSetupLifecycle = useMemo(
     () => ({ onConfigured: onProviderSetupConfigured }),
     [onProviderSetupConfigured]
@@ -259,9 +289,14 @@ function DataScreenContent({
     if (!shared || !local || (shared.healthy === local.healthy && shared.total === local.total)) return null;
     return `Providers healthy counts every provider in use across the workstation (${formatProviderHealth(shared)}); the health cards below show ${formatProviderHealth(local)} loaded on this page.`;
   }, [sharedCounts, kpiProviders]);
+  const lastReceiptId = vm.result?.providerProvenance?.receiptId
+    ?? vm.queuedBackfills.find((row) => row.completedAt && row.quotaReceipt)?.executionId;
+  useEffect(() => {
+    if (lastReceiptId) void onBackfillCompleted?.("data");
+  }, [lastReceiptId, onBackfillCompleted]);
   const queryPanel = useDataQueryPanel();
   const qualityPanel = useDataQualityPanel(dataQualityFetcher);
-  const capabilityMatrixPanel = useCapabilityMatrixPanel();
+  const capabilityMatrixPanel = useCapabilityMatrixPanel(vm.workstream === "overview" && data !== null);
   const capabilityFreshness = useMemo(() => buildCapabilityFreshnessIndex(vm.providerSection.rows), [vm.providerSection.rows]);
   const corporateActionInboxPanel = useCorporateActionInboxPanel();
   const coverageGapsPanel = useCoverageGapsPanel();
@@ -291,6 +326,7 @@ function DataScreenContent({
 
   return (
     <div className="workspace-screen data-workspace-screen">
+      {showImportWorkstream ? <Link className="text-sm text-primary underline" to={{ pathname: "/data/import/start", search }}>Choose another import type</Link> : null}
       {/* Route heading first; workspace-wide metrics follow. The sidebar is the only
           sub-route navigation (no in-page tab strip). */}
       <section
@@ -491,6 +527,7 @@ function DataScreenContent({
                   detail={vm.providerSection.selectedDetail}
                   emptyState={vm.providerSection.detailEmptyState}
                   activeTab={vm.selectedProviderTab}
+                  session={session}
                   onTabSelect={vm.selectProviderTab}
                   onVerify={vm.verifySelectedProvider}
                 />
@@ -505,15 +542,26 @@ function DataScreenContent({
 
         {showProviderWorkstream ? (
           <>
+            <ProviderActivationPanel />
             <FailoverRegion />
+            <AlpacaFeedRegion />
             <BackfillProviderEditorRegion />
             <DataRoutingPreviewPanel />
-            <ProviderValidationPanel />
             <RateLimitHistoryPanel />
           </>
         ) : null}
 
-        {showBackfillWorkstream ? <DataBackfillWorkstream vm={vm} /> : null}
+        {showBackfillWorkstream ? <>
+          <DataBackfillWorkstream vm={vm} onBackfillCompleted={() => void onBackfillCompleted?.("data")}>
+            {canLoadOlder ? (
+              <Button variant="outline" size="sm" onClick={() => void loadOlderBackfills()} disabled={older?.loading}>
+                {older?.loading ? "Loading older results…" : "Load older backfill results"}
+              </Button>
+            ) : null}
+            {older?.error ? <p role="alert" className="text-sm text-danger">Could not load older backfill results.</p> : null}
+          </DataBackfillWorkstream>
+          <BackfillSchedulesRegion />
+        </> : null}
 
         {showOperationsWorkstream ? <IngestionOperationsWorkstream /> : null}
 
@@ -530,8 +578,9 @@ function DataScreenContent({
         ) : null}
       </section>
 
-      <ProviderSetupDialog vm={vm} />
-      <BackfillTriggerDialog vm={vm} />
+      {vm.providerSetupOpen ? <ProviderSetupEntry vm={vm}
+        connections={providerRoutingConnections ?? []} onSaved={onProviderSetupConfigured} /> : null}
+      <BackfillTriggerDialog vm={vm} onBackfillCompleted={() => void onBackfillCompleted?.("data")} />
     </div>
   );
 }
@@ -566,7 +615,7 @@ function ProviderSummaryCard({ card }: { card: DataOperationsProviderSummaryCard
 
   return (
     <div className={cn("min-w-[9rem] flex-1 rounded border px-2.5 py-2", toneClass)}>
-      <div className={cn("text-xs", supportingTextClass, usesTrackedCaps(card.label) && "font-mono uppercase tracking-[0.14em]")}>{card.label}</div>
+      <div className={cn("text-xs", supportingTextClass, usesTrackedCaps(card.label) && "type-label--caps")}>{card.label}</div>
       <div className="mt-1 break-words text-sm font-semibold leading-5 text-foreground">{card.value}</div>
       <p className={cn("mt-0.5 break-words text-xs leading-5", supportingTextClass)}>{card.detail}</p>
     </div>
@@ -962,12 +1011,14 @@ function ProviderDetailPanel({
   detail,
   emptyState,
   activeTab,
+  session,
   onTabSelect,
   onVerify
 }: {
   detail: DataOperationsProviderDetailState | null;
   emptyState: DataOperationsEmptyState | null;
   activeTab: DataOperationsProviderDetailState["activeTab"];
+  session: SessionInfo | null;
   onTabSelect: (tab: DataOperationsProviderDetailState["activeTab"]) => void;
   onVerify: () => void;
 }) {
@@ -1017,11 +1068,13 @@ function ProviderDetailPanel({
       >
         {detail.tabs.map((tab) => (
           <TabPanel key={tab.id}>
-            <ProviderDetailTabPanel
-              detail={detail}
-              activeTab={tab.id as DataOperationsProviderDetailState["activeTab"]}
-              onVerify={onVerify}
-            />
+            {tab.id === "quality-rules" ? (
+              activeTab === tab.id ? <ProviderValidationPanel
+                key={JSON.stringify([detail.qualityProfileProviderId, detail.providerId, session?.displayName, session?.role])}
+                providerId={detail.qualityProfileProviderId}
+                providerName={detail.title}
+              /> : null
+            ) : <ProviderDetailTabPanel detail={detail} activeTab={tab.id} onVerify={onVerify} />}
           </TabPanel>
         ))}
       </Tabs>
@@ -1165,7 +1218,18 @@ function dataStatusToneToBannerTone(tone: "default" | "warning" | "danger" | "su
   }
 }
 
+function ProviderSetupEntry({ vm, connections, onSaved }: {
+  vm: DataOperationsVm;
+  connections: readonly ProviderRoutingConnection[];
+  onSaved?: (() => Promise<void> | void) | undefined;
+}) {
+  const [manual, setManual] = useState(false);
+  return manual ? <ProviderSetupDialog vm={vm} /> : <ProviderConnectionTemplatesDialog
+    connections={connections} onClose={vm.closeProviderSetup} onManual={() => setManual(true)} onSaved={onSaved} />;
+}
+
 function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
+  const draftRejected = vm.providerDraftTest.result !== null && vm.providerDraftTest.result.status !== "Verified";
   return (
     <Dialog open={vm.providerSetupOpen} onOpenChange={(open) => { if (!open) vm.closeProviderSetup(); }}>
       <DialogContent aria-labelledby={vm.providerSetupDialogState.titleId} aria-describedby={vm.providerSetupDialogState.descriptionId}>
@@ -1388,6 +1452,21 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
                 </label>
               ))}
 
+              {supportsProviderDraft(vm.providerForm.kind) ? (
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button variant="outline" onClick={() => void vm.providerDraftTest.verify(vm.providerForm)}
+                    disabled={!canTestProviderDraft(vm.providerForm) || vm.providerPhase === "submitting"}
+                    busy={vm.providerDraftTest.busy} busyLabel="Testing draft">
+                    Test draft credentials
+                  </Button>
+                  {vm.providerDraftTest.result ? (
+                    <p className="text-sm text-muted-foreground" role="status">
+                      {vm.providerDraftTest.result.status === "Unavailable" ? "Verification unavailable" : vm.providerDraftTest.result.status}. {vm.providerDraftTest.result.message}
+                    </p>
+                  ) : null}
+                </div>
+              ) : null}
+
               <fieldset>
                 <legend className="mb-2 text-sm">Capabilities</legend>
                 <div className="grid gap-2 sm:grid-cols-2">
@@ -1460,13 +1539,13 @@ function ProviderSetupDialog({ vm }: { vm: DataOperationsVm }) {
               </Button>
               <Button
                 onClick={() => void vm.submitProviderSetup()}
-                disabled={vm.providerSetupDialogState.submitAction.disabled}
+                disabled={vm.providerSetupDialogState.submitAction.disabled || vm.providerDraftTest.busy}
                 disabledReason={vm.providerSetupDialogState.submitAction.disabledReason}
                 busy={vm.providerSetupDialogState.submitAction.busy}
                 busyLabel={vm.providerSetupDialogState.submitAction.busyLabel}
-                aria-label={vm.providerSetupDialogState.submitAction.ariaLabel}
+                aria-label={draftRejected ? "Save anyway" : vm.providerSetupDialogState.submitAction.ariaLabel}
               >
-                {vm.providerSetupDialogState.submitAction.label}
+                {draftRejected ? "Save anyway" : vm.providerSetupDialogState.submitAction.label}
               </Button>
             </div>
           </>
@@ -1732,13 +1811,18 @@ const providerSetupNextActionIcons: Record<ProviderSetupNextActionState["id"], L
   "plaid-transfers": RefreshCcw
 };
 
-function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
+function BackfillTriggerDialog({ vm, onBackfillCompleted }: { vm: DataOperationsVm; onBackfillCompleted: () => void }) {
+  const providerField = useRef<HTMLSelectElement>(null);
+  const quota = vm.preview?.quota;
+  const queuedAction = vm.scheduleForLater ? "Schedule backfill" : quota?.exceedsBudget ? "Queue with throttling" : "Queue backfill";
+  const latestSubmission = vm.queuedBackfills.find((row) => row.executionId === vm.submission?.executionId);
+  const submissionStatus = latestSubmission?.status ?? vm.submission?.status;
   return (
     <Dialog open={vm.dialogOpen} onOpenChange={(open) => { if (!open) vm.closeBackfillDialog(); }}>
       <DialogContent
         aria-labelledby={vm.dialogState.titleId}
         aria-describedby={vm.dialogState.descriptionId}
-        className="max-w-xl p-6"
+        className="max-w-2xl! p-6"
       >
         <div className="flex items-start justify-between gap-4">
           <DialogHeader className="mb-0">
@@ -1759,7 +1843,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         <dl className="mt-5 grid gap-2 rounded-lg border border-border/80 bg-secondary/20 p-3 sm:grid-cols-3">
           {vm.dialogState.summaryItems.map((item) => (
             <div key={item.id} className="min-w-0">
-              <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(item.label) && "font-mono uppercase tracking-[0.14em]")}>{item.label}</dt>
+              <dt className={cn("text-xs text-muted-foreground", usesTrackedCaps(item.label) && "type-label--caps")}>{item.label}</dt>
               <dd className={cn("mt-1 truncate font-mono text-xs", item.tone === "warning" ? "text-warning" : "text-foreground")}>
                 {item.value}
               </dd>
@@ -1771,6 +1855,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           <label htmlFor={vm.dialogState.providerField.id} className="grid gap-1 text-sm">
             {vm.dialogState.providerField.label}
             <Select
+              ref={providerField}
               id={vm.dialogState.providerField.id}
               className="min-h-11"
               value={vm.form.provider}
@@ -1809,7 +1894,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
                   onClick={() => vm.updateBackfillForm("provider", provider.value)}
                 >
                   <span className="font-semibold">{provider.label}</span>{" "}
-                  <span className={cn("ml-2 text-xs text-primary", usesTrackedCaps(provider.badge) && "font-mono uppercase tracking-[0.12em]")}>{provider.badge}</span>
+                  <span className={cn("ml-2 text-xs text-foreground", usesTrackedCaps(provider.badge) && "type-label--caps")}>{provider.badge}</span>
                 </Button>
               ))}
             </div>
@@ -1871,6 +1956,8 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
               />
             </label>
           </div>
+          <Checkbox label="Resume using retained coverage" checked={vm.form.resumeFromCheckpoint ?? false}
+            disabled={vm.busy} onCheckedChange={checked => vm.updateBackfillForm("resumeFromCheckpoint", checked)} />
         </div>
 
         <StatusBanner
@@ -1879,7 +1966,7 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           aria-live="polite"
           tone={dataStatusToneToBannerTone(vm.dialogState.formStatusTone)}
           title="Backfill request status"
-          detail={vm.dialogState.formStatusLabel}
+          detail={vm.submission ? `Backfill ${submissionStatus?.toLowerCase()}.` : quota && vm.phase === "running" ? "Submitting the previewed backfill." : vm.dialogState.formStatusLabel}
           className="mt-4"
         />
 
@@ -1901,8 +1988,14 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
         )}
         <span className="sr-only" aria-live="polite">{vm.statusAnnouncement}</span>
         {vm.previewResultCard && <BackfillResultCard state={vm.previewResultCard} />}
+        <BackfillSubmissionPanel vm={vm} providerField={providerField} />
         {vm.liveProgressState && <BackfillLiveProgress state={vm.liveProgressState} />}
         {vm.runResultCard && <BackfillResultCard state={vm.runResultCard} />}
+        {vm.result?.quotaReceipt && <div className="mt-3"><BackfillReceiptEvidence receipt={vm.result.quotaReceipt} /></div>}
+        {vm.runResultCard ? <ProviderProvenancePanel receipt={vm.result?.providerProvenance} onBackfillCompleted={onBackfillCompleted} /> : null}
+        {vm.result && (vm.result.batchReceipts?.length || vm.result.routingAttempts?.length) ? (
+          <BackfillBatchReceipts receipts={vm.result.batchReceipts ?? []} attempts={vm.result.routingAttempts ?? []} />
+        ) : null}
 
         <div className="mt-5 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
           <Button
@@ -1916,16 +2009,16 @@ function BackfillTriggerDialog({ vm }: { vm: DataOperationsVm }) {
           >
             {vm.dialogState.previewAction.label}
           </Button>
-          {vm.preview && (
+          {vm.preview && !vm.submission && (
             <Button
               onClick={() => void vm.runBackfill()}
               disabled={vm.dialogState.runAction.disabled}
               disabledReason={vm.dialogState.runAction.disabledReason}
               busy={vm.dialogState.runAction.busy}
-              busyLabel={vm.dialogState.runAction.busyLabel}
-              aria-label={vm.dialogState.runAction.ariaLabel}
+              busyLabel={quota ? "Submitting…" : vm.dialogState.runAction.busyLabel}
+              aria-label={quota ? queuedAction : vm.dialogState.runAction.ariaLabel}
             >
-              {vm.dialogState.runAction.label}
+              {quota ? queuedAction : vm.dialogState.runAction.label}
             </Button>
           )}
         </div>
@@ -2048,71 +2141,6 @@ function BackfillLiveProgress({ state }: { state: BackfillLiveProgressState }) {
         </p>
       ) : null}
       <p className="text-right text-xs text-muted-foreground">Observed {state.observedAt}</p>
-    </section>
-  );
-}
-
-const FRESHNESS_SEVERITY: Record<CapabilityFreshnessModel["state"], string> = { current: "ready", stale: "stale", "no-evidence": "unknown" };
-
-function CapabilityMatrixRegion({ panel, freshness }: { panel: CapabilityMatrixViewModel; freshness: (providerId: string) => CapabilityFreshnessModel }) {
-  return (
-    <section aria-labelledby="capability-matrix-title" className="workspace-region capability-matrix-region">
-      <Card>
-        <CardHeader className="flex flex-row flex-wrap items-start justify-between gap-3">
-          <div>
-            <CardTitle id="capability-matrix-title">Provider capability matrix</CardTitle>
-            <CardDescription>
-              Declared provider coverage per instrument type, with how fresh each provider's newest evidence is.
-              {panel.model ? ` ${panel.model.summary}` : null}
-            </CardDescription>
-          </div>
-          <PanelReload reload={panel.refresh} failed={Boolean(panel.error)} busy={panel.loading} what="provider capability matrix" />
-        </CardHeader>
-        <CardContent>
-          {panel.error ? (
-            <StatusBanner tone="danger" title="Capability matrix unavailable" detail={panel.error} />
-          ) : !panel.model ? (
-            <p className="text-sm text-muted-foreground" role="status">Loading capability matrix…</p>
-          ) : (
-            <div className="grid gap-4">
-              <FixedIncomeCapabilityReadiness rows={panel.model.rows} />
-              <div className="overflow-x-auto">
-                <TableWorkbench workbenchId="data-provider-capabilities" sourceKey={panel.model.rows.map((row) => row.providerId).join("|")}
-                  sourceDescription="Loaded declared provider capability matrix; discovery failures are listed below."
-                  completePopulation={panel.model.failures.length === 0}
-                  rows={panel.model.rows} getRowId={(row) => row.providerId} getSearchText={(row) => `${row.providerId} ${row.cells.map((cell) => cell.description).join(" ")}`}
-                  columns={[{ id: "provider", label: "Provider", rowHeader: true, render: (row) => <span className="font-mono font-semibold">{row.providerId}</span>, exportValue: (row) => row.providerId },
-                    { id: "freshness", label: "Freshness", render: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return (
-                      <span className="inline-flex flex-wrap items-center gap-1.5" data-freshness={fresh.state}>
-                        <StatusBadge status={FRESHNESS_SEVERITY[fresh.state]} label={fresh.label} />
-                        {fresh.ageText ? <span className="text-xs tabular-nums text-muted-foreground">{fresh.ageText}</span> : null}
-                      </span>); },
-                      exportValue: (row: CapabilityMatrixRowModel) => { const fresh = freshness(row.providerId); return fresh.ageText ? `${fresh.label} (${fresh.ageText})` : fresh.label; } },
-                    ...panel.model.columns.map((column) => ({ id: column, label: column,
-                      render: (row: CapabilityMatrixRowModel) => { const cell = row.cells.find((item) => item.instrumentType === column); return cell ? <span aria-label={cell.description} title={cell.description}>{cell.marks}</span> : "Unavailable"; },
-                      exportValue: (row: CapabilityMatrixRowModel) => row.cells.find((cell) => cell.instrumentType === column)?.description ?? "Unavailable" }))]}
-                  ariaLabel="Provider capability by instrument type" emptyText="No declared capabilities." maxVisibleRows={null} />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                {CAPABILITY_LEGEND.map((mark) => `${mark.code} = ${mark.label}`).join(" · ")}
-              </p>
-              {panel.model.failures.length > 0 && (
-                <div>
-                  <h3 className="text-sm font-semibold">Discovery failures</h3>
-                  <ul className="mt-2 grid gap-1.5">
-                    {panel.model.failures.map((failure, index) => (
-                      <li key={`${failure.stage}-${failure.subject}-${index}`} className="text-sm text-muted-foreground">
-                        <Badge variant="danger">{failure.stage}</Badge>{" "}
-                        <span className="font-mono">{failure.subject}</span> — {failure.errorType}: {failure.errorMessage}
-                      </li>
-                    ))}
-                  </ul>
-                </div>
-              )}
-            </div>
-          )}
-        </CardContent>
-      </Card>
     </section>
   );
 }

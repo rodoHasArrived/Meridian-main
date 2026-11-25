@@ -4,6 +4,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { useState } from "react";
 import { TABLE_SEARCH_MIN_ROWS, TableWorkbench, type TableWorkbenchColumn } from "@/components/meridian/table-workbench";
 import { getJson, postJson } from "@/lib/api";
+import { ApiError } from "@/lib/api-errors";
 import { downloadCsv } from "@/lib/csv";
 
 vi.mock("@/lib/api", () => ({ getJson: vi.fn(), postJson: vi.fn() }));
@@ -334,6 +335,61 @@ describe("TableWorkbench", () => {
     await user.click(screen.getByRole("button", { name: "Export CSV" }));
     const csv = vi.mocked(downloadCsv).mock.calls[0][1];
     expect(csv.indexOf("b,2,")).toBeLessThan(csv.indexOf("a,10,"));
+  });
+
+  function renderSavedViewTable() {
+    render(<TableWorkbench workbenchId="test" columns={columns} rows={[{ id: "a", amount: 1 }]} getRowId={row => row.id}
+      getSearchText={row => row.id} completePopulation sourceDescription="Complete snapshot" emptyText="No matches" ariaLabel="Records" />);
+  }
+
+  it("says which saved columns were skipped when restoring a view whose columns partly no longer exist", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockResolvedValue([{ viewId: "older", label: "Older view", searchText: "",
+      columnIds: ["amount", "retired-a", "retired-b"], density: "compact" }]);
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await screen.findByRole("option", { name: "Older view" });
+    await user.selectOptions(screen.getByLabelText("Saved views"), "older");
+    expect(within(screen.getByRole("table", { name: "Records" })).getAllByRole("columnheader").map(header => header.textContent)).toEqual(["Amount"]);
+    expect(screen.getByRole("status")).toHaveTextContent("Restored Older view. 2 saved columns no longer exist and were skipped.");
+  });
+
+  it("refuses to apply a view none of whose columns exist, and leaves the current view in place", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockResolvedValue([{ viewId: "gone", label: "Gone view", searchText: "zzz",
+      columnIds: ["retired"], density: "compact" }]);
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await screen.findByRole("option", { name: "Gone view" });
+    await user.selectOptions(screen.getByLabelText("Saved views"), "gone");
+    expect(screen.getByLabelText("Saved views")).toHaveValue("");
+    expect(within(screen.getByRole("table", { name: "Records" })).getAllByRole("columnheader").map(header => header.textContent)).toEqual(["Record", "Amount"]);
+    expect(screen.getByRole("status")).toHaveTextContent("Gone view couldn't be applied: its columns were removed");
+    expect(screen.queryByText(/Restored Gone view/)).not.toBeInTheDocument();
+  });
+
+  it("offers to replace a personal view of the same name and keeps one entry after saving", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockResolvedValue([{ viewId: "breaks", label: "Open breaks", searchText: "", columnIds: ["id"], density: "compact" }]);
+    vi.mocked(postJson).mockResolvedValue({ viewId: "breaks", label: "open breaks", searchText: "", columnIds: ["id", "amount"], density: "compact" });
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await screen.findByRole("option", { name: "Open breaks" });
+    await user.type(screen.getByLabelText("View name"), "open breaks");
+    await user.click(screen.getByRole("button", { name: "Replace “Open breaks”" }));
+    await waitFor(() => expect(screen.getByRole("status")).toHaveTextContent("Updated open breaks in your account."));
+    expect(within(screen.getByLabelText("Saved views")).getAllByRole("option").map(option => option.textContent)).toEqual(["Current view", "open breaks"]);
+  });
+
+  it("disables saved views with the reason when the host refuses them for this table", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getJson).mockRejectedValue(new ApiError({ path: "/api/workstation/tables/test/views", status: 403 }));
+    renderSavedViewTable();
+    await user.click(screen.getByLabelText("Records more table actions"));
+    await waitFor(() => expect(screen.getByRole("button", { name: "Save to my account" })).toBeDisabled());
+    expect(screen.getByLabelText("Saved views")).toBeDisabled();
+    expect(screen.getAllByText("Saved views aren't available for this table with your current permissions.").length).toBeGreaterThan(0);
+    expect(postJson).not.toHaveBeenCalled();
   });
 
   it("restores a legacy view then saves an explicit personal copy without claiming an owner", async () => {

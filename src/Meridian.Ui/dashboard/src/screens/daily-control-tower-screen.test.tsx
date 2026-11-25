@@ -1,5 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { screen, waitFor, within } from "@testing-library/react";
+import { useLocation } from "react-router-dom";
 import userEvent from "@testing-library/user-event";
 import { axe } from "jest-axe";
 import { buildAppShellViewState, type AppShellWorkspacePayload } from "@/app-shell.view-model";
@@ -203,8 +204,8 @@ describe("DailyControlTowerScreen", () => {
   it("offers Assigned to me on every source and says why workspace signals leave the list", async () => {
     await renderLoaded();
     const user = userEvent.setup();
-    const assigned = screen.getByRole("checkbox", { name: "Assigned to me" });
-    await user.click(assigned);
+    // "Assigned to me" is the Owner switch's own-items choice.
+    await user.selectOptions(screen.getByRole("combobox", { name: "Owner" }), "mine");
     const grid = screen.getByRole("treegrid", { name: "Today queue" });
     expect(grid.querySelectorAll('tbody tr[data-dense-row-id^="workspace:"]')).toHaveLength(0);
     expect(screen.getByText("Workspace signals have no owner, so Assigned to me hides them.")).toBeInTheDocument();
@@ -514,5 +515,29 @@ describe("DailyControlTowerScreen", () => {
     const { container } = renderScreen();
     const results = await axe(container);
     expect(results.violations).toEqual([]);
+  });
+});
+
+
+function TodayLocationProbe() {
+  const location = useLocation();
+  return <output data-testid="today-location">{location.search}{location.hash}</output>;
+}
+
+describe("Today source URL state", () => {
+  it("restores the unified Source filter and preserves operating scope and anchor when changing it", async () => {
+    const user = userEvent.setup();
+    vi.mocked(getOperatorTriageInbox).mockResolvedValue(inboxResponse);
+    const shell = buildAppShellViewState({ pathname: "/today", search: "?symbol=MSFT", loading: false, error: null, workspaceErrors: {}, payload });
+    renderWithRouter(<><DailyControlTowerScreen viewModel={shell.workflowContinuity} trustStrip={shell.trustStrip} attention={shell.attention} /><TodayLocationProbe /></>, { initialEntries: ["/today?symbol=MSFT&source=inbox#evidence"] });
+    const source = screen.getByRole("tablist", { name: "Queue source" });
+    expect(within(source).getByRole("tab", { name: /Shared inbox/ })).toHaveAttribute("aria-selected", "true");
+    expect(await screen.findByRole("row", { name: "Cash break triage" })).toBeInTheDocument();
+    expect(screen.queryByRole("row", { name: "Report pack approval waiting" })).not.toBeInTheDocument();
+    await user.click(within(source).getByRole("tab", { name: /Workspace signals/ }));
+    expect(screen.getByTestId("today-location")).toHaveTextContent("?symbol=MSFT&source=workspace#evidence");
+    expect(screen.queryByRole("row", { name: "Cash break triage" })).not.toBeInTheDocument();
+    await user.click(within(source).getByRole("tab", { name: /^All/ }));
+    expect(screen.getByTestId("today-location")).toHaveTextContent("?symbol=MSFT#evidence");
   });
 });

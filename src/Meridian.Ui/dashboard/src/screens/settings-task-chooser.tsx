@@ -7,10 +7,10 @@ const settingsTasks = [
   {
     id: "preferences",
     title: "Personalize my workstation",
-    description: "Choose theme and information density for this browser.",
+    description: "Choose theme and information density; they follow you across browsers and the desktop app.",
     href: WORKSTATION_ROUTE_CATALOG.settingsPreferences,
     actionLabel: "Open Preferences",
-    status: "Browser preferences"
+    status: "Operator preferences"
   },
   {
     id: "access",

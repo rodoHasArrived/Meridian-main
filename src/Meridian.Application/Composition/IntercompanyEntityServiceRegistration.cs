@@ -3,6 +3,7 @@ using Meridian.Contracts.FundStructure;
 using Meridian.Contracts.Ledger;
 using Meridian.Contracts.Services;
 using Meridian.Contracts.Tenancy;
+using Meridian.Contracts.Workstation;
 using Meridian.FinancialOperations.Consolidation;
 using Meridian.FinancialOperations.Intercompany;
 using Meridian.FinancialOperations.Ledger;
@@ -56,6 +57,11 @@ public static class IntercompanyEntityServiceRegistration
             services.TryAddSingleton<ILegacyIntercompanyAttributionStore, PostgresLegacyIntercompanyAttributionStore>();
             services.TryAddSingleton<IIntercompanyProposalStore, PostgresIntercompanyProposalStore>();
             services.TryAddSingleton<IIntercompanyBalanceConfirmationStore, PostgresIntercompanyBalanceConfirmationStore>();
+            services.TryAddSingleton<IIntercompanyAccrualScheduleStore, PostgresIntercompanyAccrualScheduleStore>();
+            // Manual journal drafts join the other governed ledger stores in PostgreSQL; hosts without a
+            // ledger database keep the file store registered by the workstation composition.
+            services.TryAddSingleton<IManualJournalEntryDraftStore, PostgresManualJournalEntryDraftStore>();
+            services.TryAddSingleton<IIntercompanyConfirmationClosePolicyStore, PostgresIntercompanyConfirmationClosePolicyStore>();
             services.TryAddSingleton<ILedgerBookControlStore>(sp => sp.GetService<ILedgerJournalStore>() as ILedgerBookControlStore ?? null!);
             services.TryAddSingleton<IControlledCloseAuthorizationStore>(sp => sp.GetService<ILedgerJournalStore>() as IControlledCloseAuthorizationStore ?? null!);
         }
@@ -63,6 +69,8 @@ public static class IntercompanyEntityServiceRegistration
         {
             services.TryAddSingleton<IConsolidationFxStore>(sp => new ConsolidationFxFileStore(
                 Path.Combine(Root(sp), "accounting", "consolidation-fx.json")));
+            services.TryAddSingleton<IIntercompanyAccrualScheduleStore>(sp => new FileIntercompanyAccrualScheduleStore(
+                Path.Combine(Root(sp), "accounting", "intercompany-accrual-schedules.json"), sp.GetRequiredService<IFundScopeTenantAccessor>()));
             services.TryAddSingleton<IIntercompanyAccountBindingStore>(sp =>
                 sp.GetService<ILedgerJournalStore>() is { } journals &&
                 sp.GetService<IAccountingConfigurationStore>() is { } chart &&
@@ -88,6 +96,9 @@ public static class IntercompanyEntityServiceRegistration
                         sp.GetRequiredService<IFundScopeTenantAccessor>(), journals, owners) : null!);
             services.TryAddSingleton<IIntercompanyBalanceConfirmationStore>(sp => new FileIntercompanyBalanceConfirmationStore(
                 Path.Combine(Root(sp), "accounting", "intercompany-balance-confirmations.json"),
+                sp.GetRequiredService<IFundScopeTenantAccessor>()));
+            services.TryAddSingleton<IIntercompanyConfirmationClosePolicyStore>(sp => new FileIntercompanyConfirmationClosePolicyStore(
+                Path.Combine(Root(sp), "accounting", "intercompany-confirmation-close-policies.json"),
                 sp.GetRequiredService<IFundScopeTenantAccessor>()));
             // A local host without a journal database cannot promise atomic source/outbox delivery.
             // No substitute proposal store is registered; its accounting routes return unavailable.
@@ -132,6 +143,15 @@ public static class IntercompanyEntityServiceRegistration
             sp.GetService<IFundProfileTenancyRegistry>() is { } owners
                 ? new IntercompanyBalanceConfirmationService(confirmations, schedules, sp.GetRequiredService<IntercompanyAccountingArrangementService>(),
                     sp.GetRequiredService<IIntercompanyAccountingArrangementStore>(), journals, owners, sp.GetRequiredService<TimeProvider>()) : null!);
+        // Opt-in confirmation close blocking (ADR-032). With the policy store present the gate is always composed, so an
+        // active policy fails closed when confirmation status cannot be read rather than silently dropping its control.
+        services.TryAddSingleton<IntercompanyConfirmationClosePolicyService>(sp =>
+            sp.GetService<IIntercompanyConfirmationClosePolicyStore>() is { } policyStore
+                ? new IntercompanyConfirmationClosePolicyService(policyStore, sp.GetService<TimeProvider>()) : null!);
+        services.TryAddSingleton<IIntercompanyConfirmationCloseGate>(sp =>
+            sp.GetService<IIntercompanyConfirmationClosePolicyStore>() is { } closePolicies
+                ? new IntercompanyConfirmationCloseGate(closePolicies, sp.GetService<IntercompanyBalanceConfirmationService>(),
+                    sp.GetService<ILedgerJournalStore>()) : null!);
         services.TryAddSingleton<IEntityLifecycleService, EntityLifecycleService>();
 
         if (hasLedgerDatabase)

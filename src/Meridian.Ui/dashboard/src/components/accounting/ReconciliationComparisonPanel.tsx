@@ -1,5 +1,4 @@
 import { useRef, useState, type Ref } from "react";
-import { AmountCell } from "./AmountCell";
 import { SeverityBadge } from "@/components/operations";
 import { cn } from "@/lib/utils";
 import { usesTrackedCaps } from "@/design-system/label-case";
@@ -17,15 +16,6 @@ const reconciliationComparisonToneClass: Record<ReconciliationLineItemViewModel[
 type ReconciliationComparisonSide = "statement" | "ledger";
 
 type ReconciliationComparisonSelection = { matchKey: string; side: ReconciliationComparisonSide } | null;
-
-function parseAmountLabel(value: string): number | string {
-  const trimmed = value.trim();
-  if (!trimmed) return value;
-  const negative = /^\(.+\)$/.test(trimmed) || trimmed.startsWith("-");
-  const numeric = Number(trimmed.replace(/[()$,\s]/g, "").replace(/^-/, ""));
-  if (!Number.isFinite(numeric)) return value;
-  return negative ? -numeric : numeric;
-}
 
 function ReconciliationComparisonPane({
   heading,
@@ -107,7 +97,8 @@ function ReconciliationComparisonPane({
                     <div className="reconcile-row-meta">{line.meta}</div>
                   </td>
                   <td className="num">
-                    <AmountCell value={parseAmountLabel(line.amountLabel)} currency="USD" parens zeroDash />
+                    <span className="tabular-nums">{line.amountLabel}</span>
+                    {line.amountReason ? <span className="block text-xs font-normal text-muted-foreground">{line.amountReason}</span> : null}
                   </td>
                 </tr>
               );
@@ -183,11 +174,19 @@ export function ReconciliationComparisonPanel({ view }: { view: ReconciliationCo
           <span>Ledger balance</span>
           <strong>{view.ledgerBalanceLabel}</strong>
         </div>
-        <div className={cn("accounting-reference-balance-badge", view.varianceTone === "success" ? "is-balanced" : "is-out")}>
+        <div className={cn(
+          "accounting-reference-balance-badge",
+          view.varianceTone === "success" && "is-balanced",
+          view.varianceTone === "warning" && "is-out"
+        )}>
           <span aria-hidden="true" />
           {view.varianceLabel}
         </div>
       </div>
+
+      {view.summaryUnavailableReason ? <p className="px-3 py-2 text-sm" role="status">{view.summaryUnavailableReason}</p> : null}
+      {view.tieOutUnavailableReason ? <p className="px-3 py-2 text-sm">Tie-out proof unavailable: {view.tieOutUnavailableReason}</p> : null}
+      {view.legacyPrecisionNotice ? <p className="px-3 py-2 text-xs text-muted-foreground">{view.legacyPrecisionNotice}</p> : null}
     </section>
   );
 }

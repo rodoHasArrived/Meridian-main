@@ -35,16 +35,25 @@ public sealed partial class OrderManagementSystem
 
     private async Task<KillSwitchSweepResult> CancelAllCoreAsync(OrderSubmissionAuthority? authority, CancellationToken ct)
     {
-        var sweep = await SweepOpenBookAsync(authority, ct).ConfigureAwait(false);
-        if (authority is not null)
+        ct.ThrowIfCancellationRequested();
+        using var incident = CreateCancelAllIncident(authority);
+        await incident.StartAsync().ConfigureAwait(false);
+        try
         {
-            await RecordKillSwitchSweepAsync(sweep, authority).ConfigureAwait(false);
+            var sweep = await SweepOpenBookAsync(authority, incident, CancellationToken.None).ConfigureAwait(false);
+            if (authority is not null)
+                await RecordKillSwitchSweepAsync(sweep, authority).ConfigureAwait(false);
+            return await incident.CompleteAsync(sweep).ConfigureAwait(false);
         }
-
-        return sweep;
+        catch (Exception exception) when (exception is not OutOfMemoryException)
+        {
+            await incident.InterruptAsync(exception).ConfigureAwait(false);
+            throw;
+        }
     }
 
-    private async Task<KillSwitchSweepResult> SweepOpenBookAsync(OrderSubmissionAuthority? authority, CancellationToken ct)
+    private async Task<KillSwitchSweepResult> SweepOpenBookAsync(OrderSubmissionAuthority? authority,
+        CancelAllIncidentRecorder incident, CancellationToken ct)
     {
         using var operation = _lifecycle.EnterOperation(allowCancellationAfterFailure: true);
 
@@ -72,16 +81,15 @@ public sealed partial class OrderManagementSystem
         // leave the sweep reporting an empty book while the escalation stayed releasable -- an
         // order able to route after the halt.
         var failures = new List<KillSwitchSweepFailure>(
-            await WithdrawAllParkedEscalationsAsync(sweepToken, authority).ConfigureAwait(false));
+            await WithdrawAllParkedEscalationsAsync(sweepToken, authority, incident).ConfigureAwait(false));
 
-        // Not GetOpenOrders(): that excludes PendingCancel, and an order whose earlier cancellation
-        // is still unconfirmed can absolutely still fill. Skipping it would let the kill switch
-        // report Completed over an order the broker has not agreed to cancel.
+        // Include pending cancellations and retained replacements even when their predecessor is
+        // terminal. A terminal predecessor does not prove that its possible successor is inactive.
         var sweepTargets = _orders.Values
-            .Where(static order => order.Status is OrderStatus.PendingNew
+            .Where(order => order.Status is OrderStatus.PendingNew
                 or OrderStatus.Accepted
                 or OrderStatus.PartiallyFilled
-                or OrderStatus.PendingCancel)
+                or OrderStatus.PendingCancel || GetPendingAmendmentForRecovery(order.OrderId) is not null)
             .ToList();
 
         // A submission the settle window did not resolve is working as far as this sweep can
@@ -106,6 +114,8 @@ public sealed partial class OrderManagementSystem
                 unsettledOrderId,
                 unsettledState?.Symbol,
                 "The submission was still awaiting the gateway's acknowledgement when the sweep began; verify it at the broker."));
+            await ObserveTrackedCancellationAsync(incident, unsettledOrderId, unsettledState, attempted: false,
+                uncertain: true, detail: failures[^1].Reason).ConfigureAwait(false);
         }
 
         var preSweepFailures = failures.Count;
@@ -119,6 +129,12 @@ public sealed partial class OrderManagementSystem
         // cancelled exactly once, through the tracked path that owns its state.
         var (brokerResidualOrders, brokerCancellationIds, brokerViewError) =
             await _brokerOrderSweep.SnapshotResidualOrdersAsync(sweepTargets, sweepToken).ConfigureAwait(false);
+
+        foreach (var target in sweepTargets)
+            await ObserveTrackedCancellationAsync(incident, target.OrderId, target, attempted: false,
+                brokerOrderId: brokerCancellationIds.GetValueOrDefault(target.OrderId)).ConfigureAwait(false);
+        foreach (var residual in brokerResidualOrders)
+            await ObserveBrokerCancellationAsync(incident, residual, attempted: false).ConfigureAwait(false);
 
         _logger.LogInformation(
             "Cancelling all {Count} working order(s), including any already pending cancellation",
@@ -162,23 +178,30 @@ public sealed partial class OrderManagementSystem
                 // has to say so per order. Letting it escape would abandon the remaining orders
                 // mid-sweep and report the whole kill switch as failed on one broker's fault.
                 KillSwitchSweepFailure? failure;
+                var uncertain = false;
                 var gatewayOrderId = brokerCancellationIds.TryGetValue(order.OrderId, out var brokerOrderId)
                     ? brokerOrderId
                     : null;
                 try
                 {
-                    var result = await CancelOrderCoreAsync(order.OrderId, token, gatewayOrderId, authority).ConfigureAwait(false);
-                    failure = result.Success
+                    var result = await CancelOrderCoreAsync(order.OrderId, token, gatewayOrderId, authority, incident.IncidentId).ConfigureAwait(false);
+                    var replacementUnconfirmed = GetPendingAmendmentForRecovery(order.OrderId) is not null;
+                    failure = result.Success && !replacementUnconfirmed
                         ? null
                         : new KillSwitchSweepFailure(
                             order.OrderId,
                             order.Symbol,
-                            result.ErrorMessage ?? "The gateway did not confirm the cancellation.");
+                            replacementUnconfirmed ? "The retained replacement remains unconfirmed; reconcile successor exposure."
+                                : result.ErrorMessage ?? "The gateway did not confirm the cancellation.");
                 }
                 catch (Exception exception)
                 {
                     failure = new KillSwitchSweepFailure(order.OrderId, order.Symbol, exception.Message);
+                    uncertain = true;
                 }
+
+                await ObserveTrackedCancellationAsync(incident, order.OrderId, order, attempted: true,
+                    gatewayOrderId, failure?.Reason, uncertain).ConfigureAwait(false);
 
                 lock (gate)
                 {
@@ -212,7 +235,10 @@ public sealed partial class OrderManagementSystem
                 parallelOptions,
                 async (order, token) =>
                 {
-                    var failure = await _brokerOrderSweep.CancelResidualOrderAsync(order, token, authority).ConfigureAwait(false);
+                    var cancellation = await _brokerOrderSweep.CancelResidualOrderWithEvidenceAsync(order, token, authority, incident.IncidentId).ConfigureAwait(false);
+                    var failure = cancellation.Failure;
+                    await ObserveBrokerCancellationAsync(incident, order, attempted: true, cancellation.Report,
+                        failure?.Reason, uncertain: cancellation.Report is null).ConfigureAwait(false);
 
                     lock (gate)
                     {
@@ -237,6 +263,7 @@ public sealed partial class OrderManagementSystem
         // the broker view explicitly unavailable.
         var (survivingBrokerOrders, convergenceError) =
             await _brokerOrderSweep.SnapshotWorkingOrdersAsync(sweepToken).ConfigureAwait(false);
+        var brokerObservedLocalOrders = new HashSet<string>(StringComparer.Ordinal);
         if (convergenceError is not null)
         {
             brokerViewError = convergenceError;
@@ -248,6 +275,20 @@ public sealed partial class OrderManagementSystem
             brokerViewError = null;
             foreach (var survivor in survivingBrokerOrders)
             {
+                var local = sweepTargets.FirstOrDefault(target =>
+                    string.Equals(target.OrderId, survivor.ClientOrderId, StringComparison.Ordinal)
+                    || brokerCancellationIds.TryGetValue(target.OrderId, out var knownBrokerId)
+                        && string.Equals(knownBrokerId, survivor.OrderId, StringComparison.Ordinal));
+                if (local is not null)
+                {
+                    brokerObservedLocalOrders.Add(local.OrderId);
+                    await ObserveTrackedCancellationAsync(incident, local.OrderId, local, attempted: true,
+                        survivor.OrderId, "Broker convergence still reports a working order.", brokerObservation: survivor).ConfigureAwait(false);
+                }
+                else
+                    await ObserveBrokerCancellationAsync(incident, brokerResidualOrders.FirstOrDefault(order => order.OrderId == survivor.OrderId) ?? survivor,
+                        attempted: brokerResidualOrders.Any(order => order.OrderId == survivor.OrderId),
+                        detail: "Broker convergence still reports a working order.", verified: survivor).ConfigureAwait(false);
                 var confirmedIndex = confirmedCancellations.FindIndex(confirmed =>
                     (confirmed.BrokerOrderId is { Length: > 0 } brokerOrderId
                      && string.Equals(brokerOrderId, survivor.OrderId, StringComparison.Ordinal))
@@ -280,6 +321,34 @@ public sealed partial class OrderManagementSystem
             }
         }
 
+        // Cumulative fills can arrive after the cancellation response while broker verification
+        // is in flight. Refresh those local observations before retaining completion. Preserve a
+        // divergent broker survivor and any earlier uncertainty; an empty listing cannot resolve
+        // a lost acknowledgement or a retained successor by itself.
+        foreach (var order in sweepTargets)
+        {
+            if (brokerObservedLocalOrders.Contains(order.OrderId)
+                || await incident.GetObservationAsync($"local:{order.OrderId}").ConfigureAwait(false) is not { } prior)
+                continue;
+            var refreshed = await ObserveTrackedCancellationAsync(incident, order.OrderId, order, prior.CancellationAttempted,
+                prior.BrokerOrderId, prior.Detail, uncertain: prior.RequiresReconciliation).ConfigureAwait(false);
+            // Unsettled submission outcomes belong to the dedicated handler below, which
+            // preserves their dispatch-specific evidence and failure explanation.
+            if (refreshed.Disposition != CancelAllOrderDisposition.ConfirmedCancelled
+                && !_dispatchRegistry.IsUnsettled(order.OrderId))
+            {
+                var confirmedIndex = confirmedCancellations.FindIndex(confirmed => confirmed.LocalOrderId == order.OrderId);
+                if (confirmedIndex >= 0)
+                {
+                    confirmedCancellations.RemoveAt(confirmedIndex);
+                    cancelled = Math.Max(0, cancelled - 1);
+                    if (!failures.Any(failure => failure.OrderId == order.OrderId))
+                        failures.Add(new KillSwitchSweepFailure(order.OrderId, order.Symbol,
+                            $"Final local observation is {refreshed.Disposition}; the cancellation is not confirmed."));
+                }
+            }
+        }
+
         // A submission whose gateway call had still not returned by the end of the sweep is
         // working as far as this sweep can tell, whatever its cancellation attempt reported: a
         // cancel acknowledged before the submit settles is not proof the submit cannot land
@@ -292,6 +361,10 @@ public sealed partial class OrderManagementSystem
             {
                 continue;
             }
+
+            _orders.TryGetValue(unsettledOrderId, out var observedUnsettled);
+            await ObserveTrackedCancellationAsync(incident, unsettledOrderId, observedUnsettled, attempted: false,
+                uncertain: true, detail: "Submission acknowledgement is still outstanding after the sweep.").ConfigureAwait(false);
 
             var confirmedIndex = confirmedCancellations.FindIndex(confirmed =>
                 string.Equals(confirmed.LocalOrderId, unsettledOrderId, StringComparison.Ordinal));
@@ -352,7 +425,7 @@ public sealed partial class OrderManagementSystem
 
         try
         {
-            await _auditTrail.RecordAsync(new ExecutionAuditEntry(
+            await _auditTrail.RecordCancelAllEvidenceAsync(new ExecutionAuditEntry(
                 AuditId: Guid.NewGuid().ToString("N"),
                 Category: "Order",
                 Action: "KillSwitchSweep",
@@ -370,7 +443,7 @@ public sealed partial class OrderManagementSystem
                         ["stillWorking"] = sweep.StillWorking.Count.ToString(System.Globalization.CultureInfo.InvariantCulture),
                         ["brokerViewUnavailable"] = sweep.BrokerViewUnavailable ? "true" : "false"
                     },
-                    authority)), CancellationToken.None).ConfigureAwait(false);
+                    authority))).ConfigureAwait(false);
         }
         catch (Exception exception)
         {
@@ -395,7 +468,8 @@ public sealed partial class OrderManagementSystem
     /// </summary>
     private async Task<IReadOnlyList<KillSwitchSweepFailure>> WithdrawAllParkedEscalationsAsync(
         CancellationToken ct,
-        OrderSubmissionAuthority? authority)
+        OrderSubmissionAuthority? authority,
+        CancelAllIncidentRecorder incident)
     {
         var parkedOrderIds = _approvalReservations.SnapshotOrderIds();
         if (parkedOrderIds.Length == 0)
@@ -410,10 +484,13 @@ public sealed partial class OrderManagementSystem
         List<KillSwitchSweepFailure>? failures = null;
         foreach (var parkedOrderId in parkedOrderIds)
         {
+            _orders.TryGetValue(parkedOrderId, out var parkedState);
+            await ObserveTrackedCancellationAsync(incident, parkedOrderId, parkedState, attempted: false,
+                detail: "Withdrawal of the parked escalation has not completed.").ConfigureAwait(false);
             OrderResult? withdrawn;
             try
             {
-                withdrawn = await TryCancelParkedOrderAsync(parkedOrderId, ct, authority).ConfigureAwait(false);
+                withdrawn = await TryCancelParkedOrderAsync(parkedOrderId, ct, authority, incident.IncidentId).ConfigureAwait(false);
             }
             catch (Exception exception)
             {
@@ -421,8 +498,14 @@ public sealed partial class OrderManagementSystem
                     parkedOrderId,
                     _orders.TryGetValue(parkedOrderId, out var faulted) ? faulted.Symbol : null,
                     $"The governed escalation could not be withdrawn: {exception.Message}"));
+                await ObserveTrackedCancellationAsync(incident, parkedOrderId, parkedState, attempted: true,
+                    uncertain: true, detail: failures[^1].Reason).ConfigureAwait(false);
                 continue;
             }
+
+            await ObserveTrackedCancellationAsync(incident, parkedOrderId, parkedState, attempted: true,
+                detail: withdrawn?.ErrorMessage, withdrawn: withdrawn?.Success == true,
+                uncertain: withdrawn?.Success != true).ConfigureAwait(false);
 
             if (withdrawn is null or { Success: false })
             {

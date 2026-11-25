@@ -1,14 +1,16 @@
+import { QUEUE_KEY_BINDINGS } from "@/lib/keymap";
 import { DueChip } from "@/components/meridian/due-chip";
 import { StatStrip } from "@/components/meridian/stat-strip";
 import { WORKSPACE_KPI_IDS } from "@/lib/kpi-registry";
 import { useState } from "react";
 import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import type {
   AppShellAttentionState,
   AppShellTrustStripState,
   AppShellWorkflowContinuityViewModel
 } from "@/app-shell.view-model";
+import { updateWorkstationSearch } from "@/lib/workstation-close-routing";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { DetailRail } from "@/components/meridian/detail-rail";
@@ -20,6 +22,7 @@ import {
   OperatorTriageInboxFilters, OperatorTriageNotices, restoreTriageFilters, TriageAge, TriageAssignCheckbox,
   triageSelection, TriageSeverityStatus, triageStateExportValue, triageStateLabel
 } from "@/components/meridian/operator-triage-queue";
+import { useScreenPaletteActions } from "@/components/meridian/command-palette.actions";
 import { useOperatorTriageInbox, type OperatorTriageInboxState } from "@/components/meridian/use-operator-triage-inbox";
 import { ATTENTION_COUNT_RULE, countAttention, needsAttention } from "@/lib/attention-items";
 import { useQueueKeyboard } from "@/lib/use-queue-keyboard";
@@ -86,11 +89,38 @@ function DailyControlTowerQueue({
   const fundAccountId = viewModel.operatingScope.fundAccountId;
   // The shared inbox's read, filters and in-flight / unconfirmed command live above the Source
   // filter (in the shell), so filtering inbox rows out of the grid never drops a pending command.
-  const [queueSource, setQueueSource] = useState<TodayQueueSource>("all");
+  const location = useLocation();
+  const navigate = useNavigate();
+  const sourceQuery = new URLSearchParams(location.search).get("source");
+  const queueSource: TodayQueueSource = sourceQuery === "workspace" || sourceQuery === "inbox" ? sourceQuery : "all";
+  const setQueueSource = (value: TodayQueueSource) => navigate({ search: updateWorkstationSearch(location.search, "source", value === "all" ? null : value), hash: location.hash });
   // Triage-in-place: the operator inspects any row without leaving Today. A workspace signal
   // shows its evidence; an inbox item shows its triage actions. Falls back to the leading
   // decision's row (or the first visible row) until one is chosen or when it leaves the grid.
   const [selection, setSelection] = useState<QueueSelection>(null);
+  const paletteUnavailable = !triage.actionsAvailable ? "Durable triage is unavailable." : null;
+  const paletteAcknowledgeable = triage.bulkEligibility("BulkAcknowledge").filter((entry) => entry.eligible).length;
+  const paletteSnoozable = triage.bulkEligibility("BulkSnooze").filter((entry) => entry.eligible).length;
+  useScreenPaletteActions("today", [
+    {
+      id: "today.bulk-acknowledge",
+      verbLabel: "Acknowledge selected inbox items",
+      description: "Opens the acknowledge confirmation for the checked Today items.",
+      keywords: ["today", "triage", "acknowledge"],
+      disabled: paletteUnavailable !== null || paletteAcknowledgeable === 0,
+      disabledReason: paletteUnavailable ?? (paletteAcknowledgeable === 0 ? "No selected item can be acknowledged." : null),
+      run: () => triage.openAction("BulkAcknowledge")
+    },
+    {
+      id: "today.bulk-snooze",
+      verbLabel: "Snooze selected inbox items",
+      description: "Opens the snooze confirmation for the checked Today items.",
+      keywords: ["today", "triage", "snooze"],
+      disabled: paletteUnavailable !== null || paletteSnoozable === 0,
+      disabledReason: paletteUnavailable ?? (paletteSnoozable === 0 ? "No selected item can be snoozed." : null),
+      run: () => triage.openAction("BulkSnooze")
+    }
+  ]);
 
   const search = triage.search.trim().toLowerCase();
   // Workspace signals have no owner, so "Assigned to me" leaves them out (and says so).
@@ -227,12 +257,12 @@ function DailyControlTowerQueue({
     selectedId: selectedRow?.key ?? null,
     getId: (row: TodayQueueRow) => row.key,
     onSelect: selectRow,
-    actions: [{
-      key: "a",
-      label: "Assign",
-      enabled: triage.capability(selectedInboxItem, "canAssign"),
-      run: () => triage.openAction("Assign", selectedInboxItem)
-    }]
+    // Inbox actions act on the selected shared-inbox item; each opens its reviewed dialog.
+    actions: [
+      { key: QUEUE_KEY_BINDINGS.assign.keys, label: "Assign", enabled: triage.capability(selectedInboxItem, "canAssign"), run: () => triage.openAction("Assign", selectedInboxItem) },
+      { key: QUEUE_KEY_BINDINGS.acknowledge.keys, label: "Acknowledge", enabled: triage.capability(selectedInboxItem, "canAcknowledge"), run: () => triage.openAction("Acknowledge", selectedInboxItem) },
+      { key: QUEUE_KEY_BINDINGS.snooze.keys, label: "Snooze", enabled: triage.capability(selectedInboxItem, "canSnooze"), run: () => triage.openAction("Snooze", selectedInboxItem) }
+    ]
   });
 
   const otherItemsText = otherItemCount > 0
@@ -240,10 +270,11 @@ function DailyControlTowerQueue({
     : "";
   const emptyText = queueSource === "inbox" && !triage.inbox
     ? triage.error ? "The shared inbox is unavailable." : "The shared inbox is loading."
-    : search || triage.mineOnly || triage.visibility !== "active"
+    : search || triage.owner !== "all" || triage.visibility !== "active"
       ? queueSource === "workspace" ? "No workspace signals match these filters."
         : queueSource === "inbox"
-          ? triage.mineOnly ? "No shared inbox items are assigned to you in these filters." : "No shared inbox items match these filters."
+          ? triage.owner === "mine" ? "No shared inbox items are assigned to you in these filters."
+            : triage.owner === "unassigned" ? "No unassigned shared inbox items match these filters." : "No shared inbox items match these filters."
           : "No queue items match these filters."
       : queueSource === "workspace" ? `${model.emptyQueueText}${otherItemsText}`
         : queueSource === "inbox" ? `No shared inbox items need attention.${otherItemsText}`
@@ -333,7 +364,7 @@ function DailyControlTowerQueue({
             sourceDescription={`Today queue: workspace signals from the workstation data and ${triage.inbox ? `the shared inbox as of ${triage.inbox.asOf}` : "no loaded shared inbox"}. Counts are ${ATTENTION_COUNT_RULE}.`}
             searchText={triage.search}
             onSearchTextChange={triage.setSearch}
-            filterState={{ source: queueSource, visibility: triage.visibility, mineOnly: String(triage.mineOnly) }}
+            filterState={{ source: queueSource, visibility: triage.visibility, owner: triage.owner }}
             onRestoreFilters={(filters) => {
               restoreTriageFilters(triage, filters);
               setQueueSource(filters.source === "workspace" || filters.source === "inbox" ? filters.source : "all");
@@ -422,4 +453,3 @@ function WorkspaceEvidenceRail({ row }: { row: Extract<TodayQueueRow, { source: 
 }
 
 const SEEDED_INBOX_REASON = /^Seeded read-only inbox\./i;
-

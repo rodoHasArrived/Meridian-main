@@ -106,6 +106,8 @@ public sealed partial class ManualJournalEntryWorkbenchService
             || draft.Status is not (ManualJournalEntryStatusDto.Draft or ManualJournalEntryStatusDto.NeedsFix
                 or ManualJournalEntryStatusDto.Submitted or ManualJournalEntryStatusDto.Approved or ManualJournalEntryStatusDto.Rejected))
             return;
+        if (await EnsureFeeWindowNotAlreadyPostedAsync(draft, bookId, original, ct).ConfigureAwait(false))
+            return;
         var dimensions = draft.Lines.Select(line => line.Dimensions).FirstOrDefault(item => item?.AccountingArrangementId is not null
             && IntercompanyAccrualEvidenceGuard.TryParseWindow(item.IntercompanyTransactionId, out _, out _));
         if (dimensions is null || !Guid.TryParse(dimensions.AccountingArrangementId, out var arrangementId)
@@ -127,6 +129,34 @@ public sealed partial class ManualJournalEntryWorkbenchService
                 LineDimensions: new() { AccountingArrangementId = evidence.Principal.PrincipalArrangementId.ToString("D") }), ct).ConfigureAwait(false);
             if (Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.VerifyPrincipal(evidence, principal) is { } stale)
                 throw new InvalidOperationException(stale);
+            // A compounding base was read from posted accrued interest; a reversal or payment since then changes it.
+            if (evidence.Compounding is not null && Meridian.FinancialOperations.Intercompany.IntercompanyAccrualSourceBuilder.VerifyCompounding(evidence,
+                    posted) is { } staleInterest)
+                throw new InvalidOperationException(staleInterest);
         }
+    }
+
+    /// <summary>
+    /// The fee counterpart of the accrual window check: true when the draft carries a fixed management-fee window,
+    /// after refusing a window an unreversed posted fee already covers and re-resolving the retained authority.
+    /// </summary>
+    private async Task<bool> EnsureFeeWindowNotAlreadyPostedAsync(ManualJournalEntryDraftDto draft, Guid bookId, bool original, CancellationToken ct)
+    {
+        var dimensions = draft.Lines.Select(line => line.Dimensions).FirstOrDefault(item => item?.AccountingArrangementId is not null
+            && IntercompanyFeeAccrualEvidenceGuard.TryParseWindow(item.IntercompanyTransactionId, out _, out _));
+        if (dimensions is null || !Guid.TryParse(dimensions.AccountingArrangementId, out var arrangementId)
+            || !IntercompanyFeeAccrualEvidenceGuard.TryParseWindow(dimensions.IntercompanyTransactionId, out var from, out var to))
+            return false;
+        var own = draft.JournalEntryId.ToString("D");
+        var posted = (await _journalStore!.QueryAsync(new(LedgerBookId: bookId,
+                LineDimensions: new() { AccountingArrangementId = dimensions.AccountingArrangementId }), ct).ConfigureAwait(false))
+            .Where(record => record.Entry.JournalEntryId != draft.JournalEntryId
+                && record.Entry.Metadata.Tags?.GetValueOrDefault("manualJournalEntryId") != own).ToArray();
+        if (Meridian.FinancialOperations.Intercompany.IntercompanyFeeAccrualSourceBuilder.FindPostedOverlap(posted, arrangementId, from, to) is { } overlap)
+            throw new InvalidOperationException($"Posted fee {overlap} already covers part of this window. Reverse it or discard this draft; the same days are never charged twice.");
+        if (original && IntercompanyFeeAccrualEvidenceGuard.IsFeeEvidence(draft.IntercompanyAccrualEvidenceJson)
+            && IntercompanyFeeAccrualEvidenceGuard.Deserialize(draft.IntercompanyAccrualEvidenceJson!) is { } evidence)
+            await _intercompanyPostingAuthority!.VerifyFeeAccrualAuthorityAsync(draft.TenantId ?? evidence.TenantId, evidence, ct).ConfigureAwait(false);
+        return true;
     }
 }

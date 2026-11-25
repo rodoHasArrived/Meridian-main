@@ -9,6 +9,9 @@ public enum IntercompanyRateBasisDto { Fixed, Floating }
 public enum IntercompanyCompoundingDto { Simple, Monthly, Quarterly, SemiAnnual, Annual, Daily }
 [JsonConverter(typeof(JsonStringEnumConverter<IntercompanyFrequencyDto>))]
 public enum IntercompanyFrequencyDto { Monthly, Quarterly, SemiAnnual, Annual, AtMaturity }
+/// <summary>What one declared fixed management fee covers: each schedule period, or one year measured by a declared day count.</summary>
+[JsonConverter(typeof(JsonStringEnumConverter<IntercompanyFixedFeeBasisDto>))]
+public enum IntercompanyFixedFeeBasisDto { PerPeriod, PerAnnum }
 [JsonConverter(typeof(JsonStringEnumConverter<IntercompanyDayCountDto>))]
 public enum IntercompanyDayCountDto
 {
@@ -35,6 +38,9 @@ public sealed record IntercompanyStructuredTermsDto(
     [property: JsonNumberHandling(JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.WriteAsString)] decimal? AnnualFeeRate = null,
     string? CalculationBaseReference = null, IReadOnlyList<IntercompanyAllocationDto>? Allocations = null,
     string? AllocationDriverReference = null, IntercompanyGuaranteeTermsDto? Guarantee = null, int SchemaVersion = 1,
+    // Fixed management fees only: whether FixedFeeAmount is per schedule period or per year (PerAnnum also declares
+    // DayCount). Null-omitted, so retained revisions keep their exact review hashes; without it no fee is calculated.
+    IntercompanyFixedFeeBasisDto? FixedFeeBasis = null,
     // Floating loans only: the index fixing is observed this many business days (schedule calendar) before each
     // schedule period's accrual start and holds for the whole period (set in advance). Null-omitted, so retained
     // revisions without it keep their exact review hashes; without it no fixing date is inferred.

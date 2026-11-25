@@ -49,6 +49,8 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public IEnumerable<object> DescribeProviders() => _core.DescribeProviders();
 
+    public IEnumerable<object> DescribeProviders(string? tenantId) => _core.DescribeProviders(tenantId);
+
     /// <summary>
     /// Tries to read the last backfill result.
     /// </summary>
@@ -70,7 +72,20 @@ public sealed class BackfillCoordinator : IDisposable
     public Task<BackfillResult> RunAsync(BackfillRequest request, CancellationToken ct = default)
         => _core.RunAsync(request, ct);
 
+    public Task<BackfillResult> RunAsync(BackfillRequest request, string? tenantId, CancellationToken ct)
+        => _core.RunAsync(request, tenantId, ct);
+
+    public Task<BackfillClonePlan?> GetClonePlanAsync(Guid receiptId, string? tenantId, CancellationToken ct)
+        => _core.GetClonePlanAsync(receiptId, tenantId, ct);
+
+    public Task<BackfillResult> RunCloneAsync(Guid receiptId, string confirmationCode, string? tenantId, CancellationToken ct)
+        => _core.RunCloneAsync(receiptId, confirmationCode, tenantId, ct);
+
     public void ValidateRequest(BackfillRequest request) => _core.ValidateRequest(request);
+
+    public void ValidateRequest(BackfillRequest request, string? tenantId) => _core.ValidateRequest(request, tenantId);
+
+    public Meridian.Storage.Backfill.BackfillStatusStore GetReceiptStore() => _core.GetReceiptStore();
 
     /// <summary>
     /// Gets health status of all providers.
@@ -87,7 +102,7 @@ public sealed class BackfillCoordinator : IDisposable
     /// <summary>
     /// Gets backfill progress snapshot from the core coordinator, if available.
     /// </summary>
-    public object? GetProgress() => _core.GetProgress();
+    public Meridian.Contracts.Backfill.BackfillRunProgressResponse? GetProgress() => _core.GetProgress();
 
     /// <summary>
     /// Previews a backfill operation without actually fetching data.
@@ -95,6 +110,9 @@ public sealed class BackfillCoordinator : IDisposable
     /// </summary>
     public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, CancellationToken ct = default)
         => _core.PreviewAsync(request, ct);
+
+    public Task<BackfillPreviewResult> PreviewAsync(BackfillRequest request, string? tenantId, CancellationToken ct)
+        => _core.PreviewAsync(request, tenantId, ct);
 
     public void Dispose()
     {

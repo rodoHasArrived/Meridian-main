@@ -112,33 +112,10 @@ describe("daily control tower model", () => {
     expect(model.leadingRow?.item.label).toBe("Brokerage sync failed");
     expect(model.ownerLabel).toBe(model.leadingRow?.item.workspaceLabel);
     expect(model.nextActionHref).toBe(model.leadingRow?.item.route);
-    expect(model.driverItems).toEqual(expect.arrayContaining([
-      expect.objectContaining({
-        id: "continuity",
-        label: "Continuity source",
-        value: "Daily Control Tower",
-        detail: expect.stringContaining("Source route: /."),
-        badgeVariant: "danger"
-      }),
-      expect.objectContaining({
-        id: "queue",
-        label: "Finance queue",
-        value: "1 blocked / 2 review",
-        badgeVariant: "danger"
-      }),
-      expect.objectContaining({
-        id: "trust",
-        label: "Trust status",
-        value: "3 need attention",
-        badgeVariant: "warning"
-      }),
-      expect.objectContaining({
-        id: "proof",
-        label: "Evidence events",
-        value: "3 retained",
-        badgeVariant: "success"
-      })
-    ]));
+    // Phase 1 (B7): the model carries only what Today renders.
+    expect(model).not.toHaveProperty("driverItems");
+    expect(model).not.toHaveProperty("linkedContextItems");
+    expect(model).not.toHaveProperty("evidenceTimelineItems");
     expect(model.queueRows.map((row) => row.item.label)).toEqual([
       "Report pack approval waiting",
       "Alpaca provider warning",

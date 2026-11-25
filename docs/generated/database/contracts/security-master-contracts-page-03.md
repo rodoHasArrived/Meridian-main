@@ -2,11 +2,15 @@
 
 # `security-master-contracts` data objects - page 3 of 8
 
-Objects 161-240 of 594. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 607. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_DayCountReferencePeriod["DayCountReferencePeriod"] {
+        +DateOnly End
+        +DateOnly Start
+    }
     class Meridian_Contracts_SecurityMaster_DeactivateSecurityRequest["DeactivateSecurityRequest"] {
         +DateTimeOffset EffectiveTo
         +long ExpectedVersion
@@ -265,6 +269,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCashFlowService["ISecurityMasterCashFlowService"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityMasterClassificationDriftReportService["ISecurityMasterClassificationDriftReportService"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterCorporateActionCommandService["ISecurityMasterCorporateActionCommandService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityMasterDataQualityService["ISecurityMasterDataQualityService"] {
@@ -415,34 +421,6 @@ classDiagram
         +decimal FinalPricePercent
         +decimal SettlementAmount
         +int SettlementScale
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralAgreementDto["OtcCollateralAgreementDto"] {
-        +Guid CollateralAgreementId
-        +string Currency
-        +DateOnly EffectiveDate
-        +IReadOnlyList~OtcEligibleCollateralDto~ EligibleCollateral
-        +decimal? IndependentAmount
-        +Guid MasterAgreementId
-        +decimal MinimumTransferAmount
-        +string? Notes
-        +decimal? RoundingAmount
-        +DateOnly? TerminationDate
-        +decimal ThresholdOurs
-        +decimal ThresholdTheirs
-    }
-    class Meridian_Contracts_SecurityMaster_OtcCollateralBalanceDto["OtcCollateralBalanceDto"] {
-        +Guid BalanceId
-        +Guid CollateralAgreementId
-        +string Currency
-        +OtcCollateralDirection Direction
-        +string EligibleCollateralDescription
-        +decimal HaircutPercent
-        +OtcCollateralKind Kind
-        +string? Notes
-        +decimal Quantity
-        +string? Reference
-        +Guid? SecurityId
-        +decimal UnitValue
     }
     Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal

@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Search } from "lucide-react";
 import { Link, useSearchParams } from "react-router-dom";
 import { AccountTree, type AccountNode } from "@/components/accounting/AccountTree";
@@ -6,6 +6,8 @@ import { AccountingTrialBalanceSelectedDetailPanel, trialBalanceColumns } from "
 import { TrialBalanceTable } from "@/components/accounting/TrialBalanceTable";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { OperationalTrustSummary } from "@/components/meridian/operational-trust-summary";
+import { RecordIdentitySpine, useRecordWorkspaceContext } from "@/components/meridian/record-identity-spine";
+import { ledgerAccountIdentity, LedgerFundIdentity } from "@/screens/ledger-record-identity";
 import { formatDateTimeLabel } from "@/screens/accounting-screen.formatting";
 import { usePostedLedgerRouteScope } from "@/screens/posted-ledger-route-scope";
 import { AccountingPeriodComparison } from "@/screens/accounting-period-comparison";
@@ -47,7 +49,11 @@ export function TrialBalanceScreen() {
   // meant this screen — the one an operator reaches for "Accounting → Trial Balance" —
   // showed numbers that were never the fund's.
   // This screen renders the posted journal, so it is the consumer that asks for it.
-  const [routeSearchParams] = useSearchParams();
+  const [routeSearchParams, setRouteSearchParams] = useSearchParams();
+  const requestedAccountRow = routeSearchParams.get("accountRow");
+  const requestedBasis = routeSearchParams.get("accountBasis");
+  const linkedBook = routeSearchParams.get("accountBook");
+  const linkedPeriod = routeSearchParams.get("accountPeriod");
   const postedLedger = useAccountingPostedLedgerViewModel(
     "ledger",
     undefined,
@@ -59,6 +65,51 @@ export function TrialBalanceScreen() {
   // The book and period this surface shows travel in the URL, through the one binding both
   // ledger tabs share.
   usePostedLedgerRouteScope(postedLedger);
+
+  const trialBalance = postedLedger.view.trialBalance;
+  const { selectBasis, selectTrialBalanceRow } = postedLedger;
+  const linkedBasis = trialBalance.basisOptions.find((option) => option.id === requestedBasis)?.id;
+  const accountScopeMatches = linkedBook === postedLedger.selectedBook?.ledgerBookId && linkedPeriod === postedLedger.selectedPeriod?.periodId;
+  const requestedRowExists = accountScopeMatches && trialBalance.rows.some((row) => row.rowId === requestedAccountRow);
+  useEffect(() => {
+    if (!requestedAccountRow || !accountScopeMatches) return;
+    if (linkedBasis && linkedBasis !== trialBalance.selectedBasis) {
+      selectBasis(linkedBasis);
+    } else if (requestedRowExists) {
+      selectTrialBalanceRow(requestedAccountRow);
+    }
+  }, [accountScopeMatches, linkedBasis, requestedAccountRow, requestedRowExists, selectBasis, selectTrialBalanceRow, trialBalance.selectedBasis]);
+
+  const clearLinkedAccount = () => {
+    if (!requestedAccountRow) return;
+    setRouteSearchParams((current) => {
+      const next = new URLSearchParams(current);
+      next.delete("accountRow");
+      next.delete("accountBasis");
+      next.delete("accountBook");
+      next.delete("accountPeriod");
+      return next;
+    }, { replace: true });
+  };
+  const selectAccountRow = (rowId: string | null) => {
+    clearLinkedAccount();
+    selectTrialBalanceRow(rowId);
+  };
+
+  const selectedRow = trialBalance.rows.find((row) => row.rowId === trialBalance.selectedRowId);
+  const selectedAccountDetail = !requestedAccountRow || (requestedRowExists && selectedRow?.rowId === requestedAccountRow && trialBalance.selectedBasis === linkedBasis)
+    ? trialBalance.selectedDetail : null;
+  const accountRecord = selectedRow && selectedAccountDetail && trialBalance.state === "ready" && postedLedger.selectedPeriod
+    ? ledgerAccountIdentity(selectedRow, { book: postedLedger.selectedBook, period: postedLedger.selectedPeriod })
+    : null;
+  const recordContext = useRecordWorkspaceContext(accountRecord, {
+    accountRow: selectedRow?.rowId,
+    accountBasis: trialBalance.selectedBasis,
+    accountBook: postedLedger.selectedBook?.ledgerBookId,
+    accountPeriod: selectedPeriodId,
+    ledgerBookId: postedLedger.selectedBook?.ledgerBookId,
+    periodId: selectedPeriodId
+  }, `#${trialBalance.detailPanelId}`);
 
   const journalEvidence: AccountingLedgerJournalEvidenceViewState = useMemo(
     () => buildAccountingLedgerJournalEvidenceViewState({
@@ -111,7 +162,7 @@ export function TrialBalanceScreen() {
         value: option.id,
         label: `${option.label} · ${option.baseCurrency}`
       }))}
-      onChange={postedLedger.selectBook}
+      onChange={(id) => { clearLinkedAccount(); postedLedger.selectBook(id); }}
       placeholder="Search ledger books…"
       emptyText="No ledger books available"
       disabled={postedLedger.view.bookOptions.length === 0}
@@ -128,7 +179,7 @@ export function TrialBalanceScreen() {
         value: option.id,
         label: `${option.label} · ${option.statusLabel}`
       }))}
-      onChange={postedLedger.selectPeriod}
+      onChange={(id) => { clearLinkedAccount(); postedLedger.selectPeriod(id); }}
       placeholder={postedLedger.view.periodSelector.loading ? "Loading periods…" : "Search periods…"}
       emptyText="No periods available for this book"
       disabled={periodOptions.length === 0}
@@ -236,19 +287,38 @@ export function TrialBalanceScreen() {
       actions={scopeSelectors}
       focus={focusSignals}
       context={
-        postedLedger.view.trialBalance.selectedDetail ? (
+        selectedAccountDetail ? (
           <AccountingTrialBalanceSelectedDetailPanel
             panelId={postedLedger.view.trialBalance.detailPanelId}
-            detail={postedLedger.view.trialBalance.selectedDetail}
+            detail={selectedAccountDetail}
+            identity={accountRecord ? <RecordIdentitySpine record={accountRecord} context={recordContext} /> : null}
           />
         ) : null
       }
-      contextOpen={Boolean(postedLedger.view.trialBalance.selectedDetail)}
+      contextOpen={Boolean(selectedAccountDetail)}
       contextLabel="Trial-balance detail"
       contextScrollLabel="Scroll account detail for ledger lines and supporting documents"
-      onContextClose={() => postedLedger.selectTrialBalanceRow(null)}
+      onContextClose={() => selectAccountRow(null)}
     >
+      {postedLedger.selectedBook ? (
+        <LedgerFundIdentity book={postedLedger.selectedBook} period={postedLedger.selectedPeriod} periodError={Boolean(postedLedger.view.periodSelector.errorText)} />
+      ) : null}
+      {requestedAccountRow && !selectedAccountDetail && !requestedRowExists && trialBalance.state === "ready" ? (
+        <StatusBanner tone="warning" title="Linked trial-balance account unavailable" detail="Select an account in the current book and period." />
+      ) : null}
       <AccountingPeriodComparison bookId={postedLedger.selectedBook?.ledgerBookId} periodId={selectedPeriodId} expectedBasis={postedLedger.view.trialBalance.selectedBasis} enabled={postedLedger.periodsSettled} periodOptions={periodOptions} />
+      {/* Cumulative closing balances against the prior close. This is not the same population as the
+          trial balance on this screen, which reports the selected period's posted activity; the movement
+          comparison ("Vs prior period") matches that. The server accumulates every posting in the
+          book's earlier periods for these figures. */}
+      <AccountingPeriodComparison
+        measure="ClosingBalances"
+        bookId={postedLedger.selectedBook?.ledgerBookId}
+        periodId={selectedPeriodId}
+        expectedBasis={postedLedger.view.trialBalance.selectedBasis}
+        enabled={postedLedger.periodsSettled}
+        periodOptions={periodOptions}
+      />
       <OperationalTrustSummary
         source={{ value: "Posted journal", tone: postedLedger.view.trialBalance.state === "error" ? "blocked" : "ready" }}
         scope={{ value: selectedPeriodLabel ?? "No period selected", detail: selectedBasisLabel, tone: selectedPeriodId ? "ready" : "unknown" }}
@@ -327,7 +397,7 @@ export function TrialBalanceScreen() {
                 variant={option.isSelected ? "default" : "outline"}
                 aria-pressed={option.isSelected}
                 aria-label={`${option.label} basis, ${option.rowCountLabel}. ${option.description}`}
-                onClick={() => postedLedger.selectBasis(option.id)}
+                onClick={() => { clearLinkedAccount(); selectBasis(option.id); }}
               >
                 <span>{option.label}</span>
                 <span className="ml-2 font-mono text-xs opacity-75">{option.rowCount}</span>
@@ -365,7 +435,7 @@ export function TrialBalanceScreen() {
                   getRowAriaExpanded={(line) => line.isExpanded}
                   getRowTypeaheadText={(line) => line.accountLabel}
                   selectedRowId={postedLedger.view.trialBalance.selectedRowId}
-                  onRowSelect={(line) => postedLedger.selectTrialBalanceRow(line.rowId)}
+                  onRowSelect={(line) => selectAccountRow(line.rowId)}
                   emptyText={postedLedger.view.trialBalance.emptyDetail}
                   ariaLabel={postedLedger.view.trialBalance.tableLabel}
                   virtualization={{ rowHeight: 36, viewportRowCount: 15 }}
@@ -378,7 +448,7 @@ export function TrialBalanceScreen() {
                   // Posted balances are in the book's own units. The table defaults to USD, so
                   // without this a EUR or GBP book's debits and credits were labelled as dollars.
                   currency={postedCurrency ?? ""}
-                  onRowSelect={(line) => postedLedger.selectTrialBalanceRow(line.rowId)}
+                  onRowSelect={(line) => selectAccountRow(line.rowId)}
                 />
               )
             ) : (
@@ -390,7 +460,7 @@ export function TrialBalanceScreen() {
                     (candidate) => trialBalanceAccountTreeCode(candidate) === node.code
                   );
                   if (row) {
-                    postedLedger.selectTrialBalanceRow(row.rowId);
+                    selectAccountRow(row.rowId);
                   }
                 }}
               />

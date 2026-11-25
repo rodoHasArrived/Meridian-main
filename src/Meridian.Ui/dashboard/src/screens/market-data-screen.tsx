@@ -8,8 +8,7 @@ import { OptionsScreen } from "@/screens/options-screen";
 const MARKET_DATA_TABS = [
   { id: "quotes", label: "Live quotes" },
   { id: "watchlist", label: "Watchlist" },
-  { id: "alerts", label: "Price alerts" },
-  { id: "options", label: "Options screening" }
+  { id: "alerts", label: "Price alerts" }
 ];
 
 type MarketDataView = "quotes" | "watchlist" | "alerts" | "options";
@@ -28,6 +27,12 @@ export function MarketDataScreen() {
   const [searchParams, setSearchParams] = useSearchParams();
   const view = resolveMarketDataView(searchParams.get("view"));
 
+  // Options screening has its own sidebar entry (Data > Options screening), so it is not also a
+  // tab here: one destination, one way to reach it. Its deep link keeps working.
+  if (view === "options") {
+    return <OptionsScreen />;
+  }
+
   return (
     <Tabs
       tabs={MARKET_DATA_TABS}
@@ -45,7 +50,6 @@ export function MarketDataScreen() {
       <TabPanel>{view === "quotes" ? <LiveQuotesScreen /> : null}</TabPanel>
       <TabPanel>{view === "watchlist" ? <WatchlistScreen /> : null}</TabPanel>
       <TabPanel>{view === "alerts" ? <PriceAlertsScreen /> : null}</TabPanel>
-      <TabPanel>{view === "options" ? <OptionsScreen /> : null}</TabPanel>
     </Tabs>
   );
 }

@@ -18,7 +18,9 @@ vi.mock("@/screens/options-screen", () => ({ OptionsScreen: () => <div>options-s
 describe("MarketDataScreen", () => {
   it("mounts the options screening view for its existing desk deep link", () => {
     renderWithRouter(<MarketDataScreen />, { initialEntries: ["/data/quotes?view=options&symbol=XYZ"] });
-    expect(screen.getByRole("tab", { name: "Options screening" })).toHaveAttribute("aria-selected", "true");
+    // The sidebar owns this destination, so the desk does not repeat it as a tab.
+    expect(screen.queryByRole("tab", { name: "Options screening" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("tablist")).not.toBeInTheDocument();
     expect(screen.getByText("options-screen-panel")).toBeInTheDocument();
     expect(screen.queryByText("live-quotes-panel")).not.toBeInTheDocument();
   });

@@ -11,6 +11,10 @@ last_reviewed: 2026-11-17
 
 # src/Meridian.Wpf
 
+Provider Accounting exposes host quota settings for Twelve Data and Alpha Vantage, adapter-managed
+FRED limits, and seven UTC days of retained throttling and rotation totals. Saved and running quotas
+appear together. A pending restart remains visible after a successful save.
+
 Protected production and packaged/customer configuration persistence uses the shared provider-secret
 scanner before writing either the primary file or last-known-good copy. Startup also refuses a
 secret-bearing or unparseable retained generation before creating backups, recovery receipts or
@@ -66,6 +70,12 @@ unavailable. Desktop file saves are explicitly unverified by a host-only receipt
 for verification/restart through this desktop session. The banner never restarts the host or enables
 execution. `ConfigurationChangeStatusViewModelTests` covers shared impact projection, local-save
 honesty, failures, cancellation and superseded responses. Native rendering still requires Windows.
+
+Data Sources and Backfill Provider Settings save through the host and show activation evidence
+for each running surface. The activation panel lists pending paths before a supervised restart
+and refreshes when a new host session reports readiness. Symbol Mapping edits and CSV exchange use
+the host's canonical registry. Failed saves keep the source or mapping draft available for retry.
+Manage provider credentials under Settings. Alpaca feed changes apply across the host after restart.
 
 Ordinary desktop configuration saves strictly
 re-read the current file under the shared write lease and run the shared whole-document guard
@@ -157,17 +167,27 @@ responses preserve local edits. The desktop surface does not maintain its own ag
 posting authority. Native WPF interaction validation requires Windows; Linux checks do not establish
 native acceptance. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+Fund Operations adds a Management fee tab (`Views/IntercompanyManagementFeeControl.xaml`) over the shared
+`IntercompanyManagementFeeWorkspace`; the agreement editor declares the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 Fund Operations adds a Rate fixings tab (`Views/IntercompanyRateFixingsControl.xaml`) over the shared
 `IntercompanyRateFixingWorkspace`; the agreement editor declares the fixing lag and the Interest
 accrual tab shows each slice's fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
+
+The Interest accrual tab shows a Compounded interest column for compounding loans. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 A Counterpart proposals tab (`Views/IntercompanyCounterpartProposalsControl.xaml`) binds the shared
 `IntercompanyCounterpartQueueWorkspace`: delivery records and aged booking breaks for a source
 book, retained source lines and provenance, delivery retry, explicit FX repricing with a
 before-and-after preview, and linking an existing counterpart journal. The source book and the
-existing counterpart book are chosen from lists rather than typed; the counterpart journal ID is
-still entered, as in the browser. The desktop holds no proposal state and never posts; the same
-Windows-only validation boundary applies.
+existing counterpart book are chosen from lists rather than typed. Since 2026-11-18 the counterpart
+journal is also chosen from a list, as in the browser: the shared
+`/api/ledger/intercompany/proposals/{id}/counterpart-candidates` read returns only posted journals that
+the server's link check would accept, and linking re-checks the choice. "Open journal" on a delivery
+record opens the Fund Ledger Journal tab for that book's fund profile with the entry selected. The
+desktop holds no proposal state and never posts; the same Windows-only validation boundary applies.
 
 Fund Operations adds a Balance confirmation tab
 (`Views/IntercompanyBalanceConfirmationControl.xaml`) over the shared
@@ -180,6 +200,13 @@ and evidence, then create the source-book draft for ordinary journal review. The
 profiles are chosen from lists. The desktop enters no rate, principal or amount and never posts;
 the same Windows-only validation boundary applies. The entity timeline on the consolidation page
 names a lifecycle state's successor entity, as the browser timeline does.
+
+An Accrual schedules tab (`Views/IntercompanyAccrualSchedulesControl.xaml`) binds the shared
+`IntercompanyAccrualScheduleWorkspace`: list a book's opt-in accrual schedules with their history,
+propose one for a LoanInterest profile and its same-agreement Loan principal profile, approve,
+reject or disable the exact version shown, preview due periods and run an active schedule now. A
+schedule only drafts for ordinary journal review; the desktop never posts, the proposer cannot
+approve, and the same Windows-only validation boundary applies.
 
 Security Master's Schedule Book evidence includes the shared typed declared call/put outcome,
 evaluation date, retained security version, window count, coded blockers and notice diagnostics.
@@ -305,15 +332,19 @@ command availability and retain the current editor values for an explicit retry.
 fields the operator filled in, because the vault treats a blank value as a deletion; rotating one secret
 keeps the other retained fields.
 
-The add-provider wizard requires explicit selection of an existing owned connection for managed
-credentials. It loads that connection's retained schema and uses its `connectionId` for status,
+The Add Provider wizard starts with the shared connection template catalog. An authorized operator can
+review reusable settings and the verification checklist, open the credential vault, test, and save a
+new connection. **Manage connection templates** saves an owned connection's portable settings and imports
+or exports versioned JSON. See [provider connection templates](../Meridian.Ui.Shared/README.md#provider-connection-templates).
+
+The existing connection path requires explicit selection of an owned connection for managed credentials.
+It loads that connection's retained schema and uses its `connectionId` for status,
 save, verification and confirmed removal. Ownership is rechecked before mutations; missing, changed,
 foreign or unavailable selections cannot fall back to provider-wide credentials. An empty owned
-connection list gives an onboarding/unavailable state without creating ownership. Connection changes
+connection list gives an onboarding/unavailable state. Connection changes
 clear secret editors, verification and save state, cancel old requests and ignore delayed responses.
 Only unchanged submitted secrets are cleared after a confirmed save, so newer edits survive and
-require another test. The credential editor does not create connections or activate subscriptions or
-runtime routing; those remain separate workflows. Credential-free providers show that no managed
+require another test. Subscriptions and runtime routing have separate activation workflows. Credential-free providers show that no managed
 credentials are required. The wizard and credential management use the service's vault field schema,
 not local catalog field names, and never read secrets back into editors or write environment variables.
 
@@ -642,6 +673,8 @@ fund-event, capital-account, investor, payment, and settlement references.
 Accounting composition supplies the complete Security Master store to the shared event spine
 for reviewed successor hash validation. Economic-date and retained-lot-label checks remain
 shared service rules, including when desktop composition runs independently.
+The module also registers the shared `IWorkstationFiscalYearCloseApiClient`; no WPF close-plan
+screen consumes it yet.
 Registration stays feature-owned in `Features/Accounting/AccountingFeatureModule.cs`; the
 desktop fallback stores configuration/audit state in `workstation/accounting/accounting-configuration.json`
 manual journal drafts in `workstation/accounting/manual-journal-drafts.json`, and retained migration
@@ -1349,6 +1382,13 @@ behavior into view models. Do not duplicate product logic that belongs in shared
 When telemetry, latency, order-flow, or preview data is unavailable, show an explicit unmeasured or
 unavailable state rather than seeded sample numbers or plausible-looking derived metrics.
 Use `Controls/EmptyStatePanel` for reusable missing-data states; it supports title, explanation, severity, and up to two actions for provider setup, import, selection, freshness, reconciliation, reporting, and fixture-data recovery paths.
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+The Balance confirmation tab includes the book's confirmation close policy (ADR-032) through
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy`: choose the findings that block close, propose with a reason,
+and approve, reject or disable. The close-readiness advisory text points to the separate `intercompany-confirmation`
+requirement when a policy applies.
 
 ## Related docs
 

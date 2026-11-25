@@ -69,6 +69,7 @@ flow. Its memo states the inputs the amount came from.
 | `fund-expense-accrual` | Nothing | `annualAmount`, `yearBasisDays`; input `expenseId` |
 | `fixed-asset-depreciation` | The fixed-asset register for the fund book | none |
 | `fixed-income-accrual` | Security Master cash-flow projection and the position's face-value lots at the effective date | inputs `securityId`, `ticker`, `bookPositionId`, optional `financialAccountId` |
+| `bond-coupon-income` | Governed bond coupon recognition (and, with `includeAmortization`, bond income preparation) for one tax lot through the accounting-event spine. It prepares a review candidate instead of a manual draft, carries no coupon cash allocations, and waits until the previous occurrence's coupon receipt is posted. Do not also schedule `fixed-income-accrual` for the same position. | inputs `accountId`, `taxLotRecordId`, optional `includeAmortization` |
 | `fx-revaluation` | Foreign-currency journal legs, prior posted revaluations and the dated FX rate for the effective date | `maxRateAgeDays` |
 
 Rules that keep an amount from being drafted twice:

@@ -2,11 +2,15 @@
 
 # `security-master-contracts` data objects - page 5 of 8
 
-Objects 321-400 of 594. References crossing pages remain available in the dependency manifest.
+Objects 321-400 of 607. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_ScheduleTermsWriteRules["ScheduleTermsWriteRules"] {
+    }
+    class Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode["ScheduleAnchorMode"] {
+    }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose["ScheduleCalendarPurpose"] {
     }
     class Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage["ScheduleCalendarUsage"] {
@@ -429,21 +433,6 @@ classDiagram
     class Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles["SecurityCashFlowTermRoles"] {
         +IReadOnlyDictionary~SecurityCashFlowTermRole__IReadOnlyList~string~~ SharedSpellings
     }
-    class Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding["SecurityClassCodecBinding"] {
-        +string AssetClass
-        +SecurityCodecInputs Inputs
-        +IReadOnlyList~SecurityTermBinding~ Members
-        +bool ReadsResolvedTerms
-        +bool VersionedSchedules
-        +bool WritesConventionsFlag
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityClosePriceApprovalDto["SecurityClosePriceApprovalDto"] {
-        +DateTimeOffset ApprovedAt
-        +string Rationale
-        +string Reviewer
-        +Guid SnapshotId
-        +string SnapshotSha256
-    }
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarUsage --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleCalendarPurpose
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnostic --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDiagnosticCode
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailure --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleFailureCode
@@ -454,6 +443,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleGenerationResult --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec
     Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriod --> Meridian_Contracts_SecurityMaster_Schedules_SchedulePeriodKind
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRollKind
+    Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleAnchorMode
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleDirection
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleRoll
     Meridian_Contracts_SecurityMaster_Schedules_ScheduleSpec --> Meridian_Contracts_SecurityMaster_Schedules_ScheduleStubPolicy
@@ -497,7 +487,6 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
     Meridian_Contracts_SecurityMaster_SecurityAssetTermFieldDefinitionDto --> Meridian_Contracts_SecurityMaster_SecurityAssetTermRole
     Meridian_Contracts_SecurityMaster_SecurityAssetTermUiHint --> Meridian_Contracts_SecurityMaster_SecurityAssetTermEditorKind
-    Meridian_Contracts_SecurityMaster_SecurityAssetTermsCodecBindings --> Meridian_Contracts_SecurityMaster_SecurityClassCodecBinding
     Meridian_Contracts_SecurityMaster_SecurityCashFlowCalculationReceipt --> Meridian_Contracts_SecurityMaster_SecurityCashFlowSourceDto
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermBinding --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole
     Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRoles --> Meridian_Contracts_SecurityMaster_SecurityCashFlowTermRole

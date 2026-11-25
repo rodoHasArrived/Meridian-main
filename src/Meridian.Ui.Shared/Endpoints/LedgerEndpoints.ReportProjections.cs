@@ -314,12 +314,14 @@ public static partial class LedgerEndpoints
     private static IReadOnlyList<LedgerJournalEntryDto> BuildJournalEntryDtos(
         IReadOnlyList<LedgerJournalEntryRecord> entries,
         Func<LedgerJournalEntryRecord, Guid?> resolveLedgerBookId,
-        LedgerDimensionReportFilter filter)
+        LedgerDimensionReportFilter filter,
+        LedgerAmountScopeDto? passportScope = null,
+        string? baseCurrency = null)
     {
         filter = CanonicalizeFilter(filter);
         return entries
             .OrderBy(static entry => entry.GlobalSequence)
-            .Select(entry => BuildJournalEntryDto(entry, resolveLedgerBookId(entry), filter))
+            .Select(entry => BuildJournalEntryDto(entry, resolveLedgerBookId(entry), filter, passportScope, baseCurrency))
             .Where(static entry => entry is not null)
             .Select(static entry => entry!)
             .ToArray();
@@ -328,15 +330,16 @@ public static partial class LedgerEndpoints
     private static LedgerJournalEntryDto? BuildJournalEntryDto(
         LedgerJournalEntryRecord record,
         Guid? ledgerBookId,
-        LedgerDimensionReportFilter filter)
+        LedgerDimensionReportFilter filter,
+        LedgerAmountScopeDto? passportScope,
+        string? baseCurrency)
     {
-        var entryDimensions = BuildDimensions(record.Entry.Metadata);
         var lines = record.Entry.Lines
-            .Select(line => BuildJournalEntryLineDto(
-                line,
-                BuildDimensions(line.Dimensions)
-                ?? BuildDimensions(record.Entry.Metadata, line.EntryId)
-                ?? entryDimensions))
+            .Select(line => BuildJournalEntryLineDto(line, ResolveLineDimensions(record, line)) with
+            {
+                AmountPassport = passportScope is not null && baseCurrency is not null
+                    ? AmountPassportFacts.PostedReference(record, line, passportScope, baseCurrency) : null
+            })
             .Where(line => MatchesDimensionFilter(line.Dimensions, filter))
             .ToArray();
         if (filter.HasCriteria && lines.Length == 0)
@@ -367,7 +370,28 @@ public static partial class LedgerEndpoints
             record.SourceEventId,
             record.SourceJournalEntryId,
             record.PostingKind,
-            record.AdjustmentApproval);
+            record.AdjustmentApproval,
+            BuildExecutionLineage(record.Entry.Metadata));
+    }
+
+    /// <summary>
+    /// The order, fill and run a posting recorded. The order id comes from the retained
+    /// <c>source.orderId</c> tag (the execution journal's own identifier, e.g. "PO-1") before the
+    /// metadata's GUID form, which exists only when that identifier parses as a GUID.
+    /// </summary>
+    internal static LedgerJournalExecutionLineageDto? BuildExecutionLineage(JournalEntryMetadata? metadata)
+    {
+        if (metadata is null)
+            return null;
+        var tags = metadata.Tags;
+        var orderId = tags is not null && tags.TryGetValue("source.orderId", out var taggedOrder) && !string.IsNullOrWhiteSpace(taggedOrder)
+            ? taggedOrder.Trim()
+            : metadata.OrderId?.ToString("D");
+        var runId = tags is not null && tags.TryGetValue(LedgerQuery.StrategyRunIdTag, out var taggedRun) && !string.IsNullOrWhiteSpace(taggedRun)
+            ? taggedRun.Trim()
+            : null;
+        return orderId is null && metadata.FillId is null ? null
+            : new LedgerJournalExecutionLineageDto(orderId, metadata.FillId, runId);
     }
 
     private static LedgerJournalEntryLineDto BuildJournalEntryLineDto(
@@ -384,7 +408,15 @@ public static partial class LedgerEndpoints
             line.Debit,
             line.Credit,
             line.Description,
-            dimensions);
+            dimensions)
+        {
+            Memo = line.Memo,
+            ChartAccount = line.ChartAccount is { } chart ? new(chart.NodeId, chart.Revision, chart.AccountCode) : null,
+            Currency = line.Currency is { } currency
+                ? new(currency.TransactionCurrency, currency.FunctionalCurrency, currency.TransactionDebit,
+                    currency.TransactionCredit, currency.FxRateToFunctional)
+                : null
+        };
 
     private static LedgerDimensionSetDto? BuildDimensions(JournalEntryMetadata metadata)
     {

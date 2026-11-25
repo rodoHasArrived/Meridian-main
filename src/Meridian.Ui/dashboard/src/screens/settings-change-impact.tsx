@@ -6,6 +6,10 @@ import { apiGetJson } from "@/lib/api/http-client";
 
 export type ConfigurationChangeImpact = "Live" | "ReconnectProvider" | "RestartHost";
 export interface ConfigurationFieldChange { path: string; impact: ConfigurationChangeImpact }
+export type ConfigurationApplyKind = "AppliedLive" | "ProviderReconfigured" | "NoRuntimeEffect" | "Deferred";
+/** What the running host did with one saved setting; detail never carries setting values. */
+export interface ConfigurationApplyEntry { path: string; kind: ConfigurationApplyKind; detail?: string | null }
+export interface ConfigurationApplySummary { entries: ConfigurationApplyEntry[]; appliedAtUtc: string; anyDeferred?: boolean }
 export interface ConfigurationChangeStatus {
   impact: ConfigurationChangeImpact;
   changes: ConfigurationFieldChange[];
@@ -14,6 +18,7 @@ export interface ConfigurationChangeStatus {
   requiresRestart: boolean;
   requiresReconnect: boolean;
   canReconnectInProcess?: boolean;
+  lastApply?: ConfigurationApplySummary | null;
 }
 
 const loadConfigurationChanges = (signal: AbortSignal) =>

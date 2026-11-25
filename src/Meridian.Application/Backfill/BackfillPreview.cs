@@ -1,4 +1,5 @@
 using Meridian.Contracts.Api;
+using Meridian.Contracts.Backfill;
 using Meridian.Infrastructure.Adapters.Core;
 
 namespace Meridian.Application.Backfill;
@@ -14,9 +15,13 @@ public sealed record BackfillPreviewResult(
     int TotalDays,
     int EstimatedTradingDays,
     SymbolPreview[] Symbols,
-    int EstimatedDurationSeconds,
-    string[] Notes
+    double? EstimatedDurationSeconds,
+    string[] Notes,
+    BackfillQuotaEstimate Quota,
+    BackfillProviderAlternative[] ApprovedAlternatives
 );
+
+public sealed record BackfillProviderAlternative(string Provider, string DisplayName);
 
 /// <summary>
 /// Preview information for a single symbol.
@@ -50,14 +55,14 @@ internal static class BackfillPreviewPlanner
 {
     public static BackfillPreviewResult BuildPreview(
         BackfillRequest request,
-        IHistoricalDataProvider? provider,
+        IHistoricalDataProvider provider,
         string dataRoot,
-        IProviderCatalog providerCatalog)
+        IProviderCatalog providerCatalog,
+        BackfillQuotaEstimate quota,
+        BackfillProviderAlternative[] alternatives)
     {
-        // Default ranges use the UTC date, matching how the backfill itself dates bars.
-        var utcToday = DateTime.UtcNow.Date;
-        var from = request.From ?? DateOnly.FromDateTime(utcToday.AddYears(-1));
-        var to = request.To ?? DateOnly.FromDateTime(utcToday);
+        var from = request.From!.Value;
+        var to = request.To!.Value;
         var totalDays = to.DayNumber - from.DayNumber + 1;
         var tradingDays = EstimateTradingDays(from, to);
         var estimatedBarsPerSymbol = EstimateBarsPerSymbol(request.Granularity, tradingDays);
@@ -78,15 +83,17 @@ internal static class BackfillPreviewPlanner
         }
 
         return new BackfillPreviewResult(
-            Provider: provider?.Name ?? request.Provider,
-            ProviderDisplayName: provider?.DisplayName ?? request.Provider,
+            Provider: provider.Name,
+            ProviderDisplayName: provider.DisplayName,
             From: from,
             To: to,
             TotalDays: totalDays,
             EstimatedTradingDays: tradingDays,
             Symbols: symbolPreviews.ToArray(),
-            EstimatedDurationSeconds: EstimateBackfillDuration(request.Symbols.Count, tradingDays, request.Granularity, provider),
-            Notes: GetProviderNotes(provider, providerCatalog)
+            EstimatedDurationSeconds: quota.EstimatedDurationSeconds,
+            Notes: GetProviderNotes(provider, providerCatalog),
+            Quota: quota,
+            ApprovedAlternatives: alternatives
         );
     }
 
@@ -300,39 +307,12 @@ internal static class BackfillPreviewPlanner
         return tradingDays * barsPerTradingDay;
     }
 
-    private static int EstimateBackfillDuration(
-        int symbolCount,
-        int tradingDays,
-        DataGranularity granularity,
-        IHistoricalDataProvider? provider)
-    {
-        var requestsPerSymbol = granularity switch
-        {
-            DataGranularity.Minute1 => Math.Max(1, (int)Math.Ceiling(tradingDays / 8d)),
-            DataGranularity.Minute5 or DataGranularity.Minute15 or DataGranularity.Minute30 => Math.Max(1, (int)Math.Ceiling(tradingDays / 60d)),
-            DataGranularity.Hour1 or DataGranularity.Hour4 => Math.Max(1, (int)Math.Ceiling(tradingDays / 730d)),
-            _ => 1
-        };
-
-        var estimatedRequests = Math.Max(1, symbolCount * requestsPerSymbol);
-        var requestsPerSecond = provider?.RateLimitDelay > TimeSpan.Zero
-            ? 1d / provider.RateLimitDelay.TotalSeconds
-            : 0.5d;
-
-        return (int)Math.Ceiling(estimatedRequests / Math.Max(requestsPerSecond, 0.1d)) + symbolCount;
-    }
-
     /// <summary>
     /// Gets provider notes from the centralized ProviderCatalog.
     /// Eliminates per-provider conditionals in favor of standardized catalog lookup.
     /// </summary>
-    private static string[] GetProviderNotes(IHistoricalDataProvider? provider, IProviderCatalog providerCatalog)
+    private static string[] GetProviderNotes(IHistoricalDataProvider provider, IProviderCatalog providerCatalog)
     {
-        if (provider is null)
-        {
-            return new[] { "Provider not found. Backfill may fail." };
-        }
-
         var catalogNotes = providerCatalog.Get(provider.Name)?.Notes ?? [];
         if (catalogNotes.Length > 0)
         {
@@ -345,14 +325,6 @@ internal static class BackfillPreviewPlanner
         if (!string.IsNullOrEmpty(provider.Description))
         {
             notes.Add(provider.Description);
-        }
-
-        if (provider.MaxRequestsPerWindow < int.MaxValue)
-        {
-            var window = provider.RateLimitWindow.TotalMinutes >= 1
-                ? $"{provider.RateLimitWindow.TotalMinutes:F0} minute(s)"
-                : $"{provider.RateLimitWindow.TotalSeconds:F0} second(s)";
-            notes.Add($"Rate limit: {provider.MaxRequestsPerWindow} requests/{window}.");
         }
 
         if (provider is IHistoricalAggregateBarProvider aggregateProvider)

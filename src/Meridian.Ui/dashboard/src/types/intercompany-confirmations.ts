@@ -24,3 +24,13 @@ export interface IntercompanyConfirmationFinding { code: string; message: string
 export interface IntercompanyConfirmationSummary {
   ledgerBookId: string; asOf: string; confirmations: IntercompanyBalanceConfirmation[]; findings: IntercompanyConfirmationFinding[];
 }
+
+export type IntercompanyConfirmationClosePolicyStatus = "Proposed" | "Active" | "Rejected" | "Disabled";
+export type IntercompanyConfirmationClosePolicyAction = "Propose" | "Approve" | "Reject" | "Disable";
+
+/** A reviewed, opt-in close policy (ADR-032): while active, the listed confirmation findings block close for the book. */
+export interface IntercompanyConfirmationClosePolicy {
+  policyId: string; tenantId: string; companyId?: string | null; ledgerBookId: string; blockingCodes: string[];
+  version: number; status: IntercompanyConfirmationClosePolicyStatus; activeFrom?: string | null;
+  events: { eventId: string; requestId: string; action: IntercompanyConfirmationClosePolicyAction; actor: string; recordedAt: string; reason?: string | null }[];
+}

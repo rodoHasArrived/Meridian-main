@@ -1,5 +1,5 @@
 import type { ReactNode } from "react";
-import { XCircle } from "lucide-react";
+import { AlertTriangle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { CardContent } from "@/components/ui/card";
 import { FieldSupportText, joinDescribedByIds } from "@/components/ui/field-support";
@@ -18,9 +18,13 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
   return (
     <CardContent id={orderTicket.formId} className="border-b border-border/60 pb-6">
       <form onSubmit={(event) => { event.preventDefault(); void orderTicket.submitOrder(); }} className="space-y-4" aria-describedby={orderTicket.requirementId}>
-        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+        {orderTicket.ticketAccountId && (
+          <p className="text-xs text-muted-foreground">Paper account <span className="font-mono">{orderTicket.ticketAccountId}</span></p>
+        )}
+        <fieldset disabled={orderTicket.phase === "reconciliation" || orderTicket.phase === "submitting"}
+          className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.symbol.label}</label>
+            <label htmlFor={orderTicket.controls.symbol.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.symbol.label) && "type-label--caps")}>{orderTicket.controls.symbol.label}</label>
             <Input
               id={orderTicket.controls.symbol.id}
               type="text"
@@ -36,7 +40,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
             />
           </div>
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.side.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.side.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.side.label}</label>
+            <label htmlFor={orderTicket.controls.side.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.side.label) && "type-label--caps")}>{orderTicket.controls.side.label}</label>
             <Select
               id={orderTicket.controls.side.id}
               value={orderTicket.controls.side.value}
@@ -51,7 +55,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
             </Select>
           </div>
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.type.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.type.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.type.label}</label>
+            <label htmlFor={orderTicket.controls.type.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.type.label) && "type-label--caps")}>{orderTicket.controls.type.label}</label>
             <Select
               id={orderTicket.controls.type.id}
               value={orderTicket.controls.type.value}
@@ -66,7 +70,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
             </Select>
           </div>
           <div className="space-y-1">
-            <label htmlFor={orderTicket.controls.quantity.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.quantity.label) && "uppercase tracking-[0.14em]")}>{orderTicket.controls.quantity.label}</label>
+            <label htmlFor={orderTicket.controls.quantity.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.quantity.label) && "type-label--caps")}>{orderTicket.controls.quantity.label}</label>
             <Input
               id={orderTicket.controls.quantity.id}
               type="number"
@@ -83,7 +87,7 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
           </div>
           {orderTicket.controls.limitPrice && (
             <div className="space-y-1">
-              <label htmlFor={orderTicket.controls.limitPrice.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.limitPrice.label) && "uppercase tracking-[0.14em]")}>
+              <label htmlFor={orderTicket.controls.limitPrice.id} className={cn("text-xs font-medium text-muted-foreground", usesTrackedCaps(orderTicket.controls.limitPrice.label) && "type-label--caps")}>
                 {orderTicket.controls.limitPrice.label}
               </label>
               <Input
@@ -101,20 +105,20 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
               />
             </div>
           )}
-        </div>
+        </fieldset>
 
         <p id={orderTicket.requirementId} className="text-xs text-muted-foreground">
           {orderTicket.requirementText}
         </p>
         <span className="sr-only" aria-live="polite">{orderTicket.statusAnnouncement}</span>
 
-        {preview}
+        {orderTicket.phase !== "reconciliation" && preview}
 
         <Checkbox
           id={orderTicket.acknowledgement.id}
           className="flex items-start gap-3 rounded-md border border-border/70 bg-secondary/20 px-3 py-2 text-sm"
           checked={orderTicket.acknowledgement.checked}
-          disabled={orderTicket.acknowledgement.disabled}
+          disabled={orderTicket.acknowledgement.disabled || orderTicket.phase === "reconciliation"}
           onChange={(event) => orderTicket.setAcknowledged(event.target.checked)}
           aria-describedby={joinDescribedByIds(
             `${orderTicket.acknowledgement.id}-description`,
@@ -142,8 +146,11 @@ export function TradingOrderTicketForm({ orderTicket, preview }: {
         )}
 
         {orderTicket.errorText && (
-          <div role="alert" className="rounded-lg border border-danger/30 bg-danger/10 px-4 py-3 text-sm text-danger flex items-center gap-2">
-            <XCircle className="h-4 w-4 shrink-0" />
+          <div role="alert" className={cn("flex items-center gap-2 rounded-lg border px-4 py-3 text-sm",
+            orderTicket.phase === "reconciliation" ? "border-warning/30 bg-warning/10 text-warning"
+              : "border-danger/30 bg-danger/10 text-danger")}>
+            {orderTicket.phase === "reconciliation" ? <AlertTriangle className="h-4 w-4 shrink-0" />
+              : <XCircle className="h-4 w-4 shrink-0" />}
             {orderTicket.errorText}
           </div>
         )}

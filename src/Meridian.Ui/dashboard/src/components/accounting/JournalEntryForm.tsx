@@ -6,6 +6,7 @@
 import { useId, useState } from "react";
 import { AmountCell } from "./AmountCell";
 import { toNumber } from "./money";
+import { DatePicker } from "@/components/ui/date-picker";
 
 export interface JournalLine {
   account?: string;
@@ -154,7 +155,7 @@ export function JournalEntryForm({
           <label className="jnl__lbl" htmlFor={dateId}>
             Date
           </label>
-          <input id={dateId} className="jnl__inp" type="date" value={header.date} onChange={(e) => setH("date", e.target.value)} />
+          <DatePicker id={dateId} className="jnl__date" value={header.date || null} onChange={(value) => setH("date", value)} />
         </div>
         <div className="jnl__field">
           <label className="jnl__lbl" htmlFor={refId}>

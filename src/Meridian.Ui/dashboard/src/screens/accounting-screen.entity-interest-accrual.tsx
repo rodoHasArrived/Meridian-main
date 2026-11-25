@@ -79,7 +79,7 @@ export function IntercompanyInterestAccrual({ scope, arrangement, arrangements }
 
   return <section className="space-y-3 rounded border border-border p-3" aria-label="Loan interest accrual">
     <h5 className="text-sm font-semibold">Accrue interest</h5>
-    <p className="text-xs text-muted-foreground">Fixed-rate simple interest is calculated by the server from the approved legal terms, this profile's approved revisions and the posted loan principal in {scope.book.displayName}. No rate, principal or amount is entered here. A floating loan uses only the approved index fixing for each period (see Rate fixings); a missing fixing is never inferred and nothing is fetched from a market feed. Fees and compounding are not calculated.</p>
+    <p className="text-xs text-muted-foreground">Interest is calculated by the server from the approved legal terms, this profile's approved revisions and the posted loan principal in {scope.book.displayName}. No rate, principal or amount is entered here. A floating loan uses only the approved index fixing for each period (see Rate fixings); a missing fixing is never inferred and nothing is fetched from a market feed. A fixed-rate loan that compounds at each schedule period adds the accrued interest already posted at the period start, once every earlier day is accrued and posted; a floating rate is never compounded. Fees are not calculated here.</p>
     {!mapsBook ? <p role="note" className="text-xs text-warning">This profile does not map {scope.book.displayName}. Open the lender's or borrower's own book to accrue its side.</p> : null}
     {principalProfiles.length === 0 ? <p role="note" className="text-xs text-warning">No loan principal profile of the same legal agreement is retained in this perimeter. Principal is read only from posted journals of a reviewed Loan profile.</p> : null}
     <form className="space-y-3" onSubmit={(event) => void runPreview(event)}><fieldset className="space-y-3" disabled={previewing || mutation.busy}>
@@ -106,6 +106,7 @@ export function IntercompanyInterestAccrual({ scope, arrangement, arrangements }
         columns={[
           { id: "window", label: "Days", rowHeader: true, render: (slice) => `${slice.from} up to ${slice.to}` },
           { id: "principal", label: "Posted principal", numeric: true, render: (slice) => slice.principal },
+          { id: "compounded", label: "Compounded interest", numeric: true, render: (slice) => slice.compoundedInterest ?? "Simple" },
           { id: "rate", label: "Annual rate", numeric: true, render: (slice) => slice.annualRate },
           { id: "fixing", label: "Fixing", render: (slice) => slice.fixing ? <><span>{fixingText(slice.fixing)}</span><p className="mt-1 text-xs">{slice.fixing.fixingLagBusinessDays} business-day lag</p></> : "Fixed" },
           { id: "basis", label: "Day count", render: (slice) => `${slice.dayCount} · ${slice.yearFraction}` },

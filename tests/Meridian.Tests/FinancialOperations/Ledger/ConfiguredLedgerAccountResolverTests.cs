@@ -13,7 +13,9 @@ public sealed class ConfiguredLedgerAccountResolverTests
     [InlineData("archived")]
     [InlineData("wrong-type")]
     [InlineData("wrong-account")]
+    [InlineData("wrong-fund")]
     [InlineData("wrong-revision")]
+    [InlineData("draft")]
     public async Task Resolve_refuses_ambiguous_or_unauthorized_mapping_instead_of_guessing(string failure)
     {
         var bookId = Guid.NewGuid();
@@ -27,7 +29,8 @@ public sealed class ConfiguredLedgerAccountResolverTests
             "wrong-account" => new[] { node with { FinancialAccountId = "other" } },
             _ => new[] { node }
         };
-        var workspace = new AccountingConfigurationWorkspaceDto("fund", bookId, AccountingConfigurationStatusDto.Active,
+        var status = failure == "draft" ? AccountingConfigurationStatusDto.Draft : AccountingConfigurationStatusDto.Active;
+        var workspace = new AccountingConfigurationWorkspaceDto(failure == "wrong-fund" ? "other" : "fund", bookId, status,
             failure == "wrong-revision" ? "changed" : "v1", DateTimeOffset.UtcNow, [], chart, [], [], [], [], TenantId: "tenant");
         var config = Substitute.For<IAccountingConfigurationService>();
         config.GetWorkspaceAsync("fund", bookId, Arg.Any<CancellationToken>(), "tenant", null).Returns(workspace);
@@ -35,6 +38,27 @@ public sealed class ConfiguredLedgerAccountResolverTests
         var resolve = () => resolver.ResolveAsync(new("tenant", null, "fund", bookId, "Assets:Cash", "Asset", "v1",
             FinancialAccountId: "account"));
         await resolve.Should().ThrowAsync<InvalidOperationException>();
+    }
+
+    [Fact]
+    public async Task Resolve_accepts_an_explicit_code_and_refuses_a_code_path_collision()
+    {
+        var bookId = Guid.NewGuid();
+        var cash = new ChartOfAccountsNodeDto("cash", "Assets:Cash", "Cash", "Asset") { AccountCode = "1000" };
+        var workspace = new AccountingConfigurationWorkspaceDto("fund", bookId, AccountingConfigurationStatusDto.Active,
+            "v1", DateTimeOffset.UnixEpoch, [], [cash], [], [], [], [], TenantId: "tenant");
+        var config = Substitute.For<IAccountingConfigurationService>();
+        config.GetWorkspaceAsync("fund", bookId, Arg.Any<CancellationToken>(), "tenant", null).Returns(workspace);
+        var resolver = new ConfiguredLedgerAccountResolver(config);
+        var request = new ConfiguredLedgerAccountRequestDto("tenant", null, "fund", bookId, "1000", "Asset", "v1");
+
+        (await resolver.ResolveAsync(request)).Should().Be(cash);
+
+        config.GetWorkspaceAsync("fund", bookId, Arg.Any<CancellationToken>(), "tenant", null).Returns(workspace with
+        {
+            ChartOfAccounts = [cash, new("another", "1000", "Other account", "Asset")]
+        });
+        await FluentActions.Awaiting(() => resolver.ResolveAsync(request)).Should().ThrowAsync<InvalidOperationException>();
     }
 
     [Fact]

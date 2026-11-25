@@ -12,6 +12,8 @@ import { getDisplayTimeZone, reloadDisplayTimeZone } from "@/lib/display-time-zo
 import { OPERATOR_TRIAGE_ENDPOINT, type OperatorTriageInbox } from "@/lib/operator-inbox-triage";
 import { OPERATING_CONTEXT_STORAGE_KEY } from "@/lib/operating-scope/persistence";
 import { WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { appendRecordWorkspaceContext, buildRecordWorkspaceContext } from "@/lib/record-workspace-context";
+import { readStoredOperatingScope, writeStoredOperatingScope } from "@/lib/operating-scope/persistence";
 import { renderWithRouter } from "@/test/render";
 import { useLocation, useNavigate } from "react-router-dom";
 import type { FirstRunStatus } from "@/features/first-run/types";
@@ -330,6 +332,7 @@ describe("App", () => {
   beforeEach(() => {
     document.title = "Meridian";
     window.localStorage.clear();
+    window.sessionStorage.clear();
     mockedUseWorkstationData.mockClear();
     vi.mocked(apiGetJson).mockReset();
     vi.mocked(apiGetJson).mockImplementation((path) => {
@@ -390,6 +393,42 @@ describe("App", () => {
     await waitFor(() => expect(screen.getByRole("region", { name: "View controls" })).toBeVisible());
     expect(views.closest("details")).toHaveAttribute("open");
     expect(views).toHaveFocus();
+  });
+
+  it("shows the originating record in related work and keeps a quote symbol local to the destination", async () => {
+    const user = userEvent.setup();
+    mockWorkstationData({
+      loading: false,
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "data", commandCount: 7 }
+    });
+    writeStoredOperatingScope({ symbol: "MSFT", fundAccountId: "current-account" });
+    const context = buildRecordWorkspaceContext({
+      kind: "instrument", id: "security-a", name: "Example Equity", assetClass: "Equity", status: "Active",
+      asOf: "2026-10-28", trust: "Identity on file", scope: { securityId: "security-a", symbol: "DEMO" }
+    }, {
+      pathname: "/portfolio/asset-detail", search: "?securityId=security-a&provider=Alpaca", hash: ""
+    }, {})!;
+    const route = appendRecordWorkspaceContext("/data/quotes?symbol=DEMO", context)!;
+    renderWithRouter(<App />, { initialEntries: [route] });
+
+    const origin = within(await screen.findByRole("region", { name: "Originating record" }));
+    expect(origin.getByText("Instrument from Portfolio")).toBeVisible();
+    expect(origin.getByText("Example Equity")).toBeVisible();
+    origin.getAllByText("security-a").forEach((element) => expect(element).not.toBeVisible());
+    const technicalIdentity = origin.getByText("Technical identity");
+    await user.click(technicalIdentity);
+    expect(within(technicalIdentity.closest("details")!).getByText("security-a")).toBeVisible();
+    expect(origin.getByText("Identity on file")).toBeVisible();
+    expect(origin.getByText("2026-10-28")).toBeVisible();
+    expect(origin.getByRole("link", { name: "Return to Portfolio" })).toHaveAttribute("href", context.origin);
+    expect(screen.getByRole("region", { name: "Operating scope bar" })).not.toHaveTextContent("current-account");
+    await user.click(origin.getByText("Origin scope"));
+    expect(origin.getByText("current-account")).toBeVisible();
+    expect(readStoredOperatingScope().symbol).toBe("MSFT");
+
+    await user.click(origin.getByRole("link", { name: "Dismiss originating record" }));
+    expect(screen.queryByRole("region", { name: "Originating record" })).not.toBeInTheDocument();
+    expect(readStoredOperatingScope().symbol).toBe("MSFT");
   });
 
   it("keeps the workstation closed while activation status is loading", () => {
@@ -533,6 +572,21 @@ describe("App", () => {
     window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
   });
 
+  it("keeps the operator's default scope out of a record search link", async () => {
+    window.localStorage.removeItem(OPERATING_CONTEXT_STORAGE_KEY);
+    vi.mocked(getOperatorScopePreference).mockResolvedValue({
+      defaultScope: { symbol: "MSFT" },
+      updatedAt: "2026-11-06T09:00:00Z"
+    });
+
+    await act(async () => {
+      renderWithRouter(<App />, { initialEntries: ["/portfolio?recordScope=1"] });
+    });
+
+    expect(getOperatorScopePreference).toHaveBeenCalled();
+    expect(readStoredOperatingScope()).toEqual({});
+  });
+
   it("loads the signed-in operator's host preferences and applies them to this browser", async () => {
     window.localStorage.removeItem("meridian.workstation.display-time-zone.v1");
     reloadDisplayTimeZone();
@@ -665,7 +719,7 @@ describe("App", () => {
     expect(screen.getByRole("main", { name: "Reporting workbench" })).toHaveAttribute("aria-busy", "true");
   });
 
-  it("renders the daily control tower on the root route", async () => {
+  it.each(["/", "/today"])("renders the shared Today queue at %s", async (route) => {
     const user = userEvent.setup();
     mockDailyControlTowerData();
     // Load the shared operator inbox too, so both sources render in Today's one queue grid.
@@ -674,7 +728,7 @@ describe("App", () => {
       ? Promise.resolve(loadedOperatorInbox) as ReturnType<typeof apiGetJson>
       : defaultApiGetJson(path, ...rest));
 
-    const { container } = renderWithRouter(<App />, { initialEntries: ["/"] });
+    const { container } = renderWithRouter(<App />, { initialEntries: [route] });
 
     expect(await screen.findByRole(
       "heading",
@@ -1120,6 +1174,37 @@ describe("App", () => {
     expect(screen.queryByRole("combobox", { name: "Fund account" })).not.toBeInTheDocument();
   });
 
+  it("carries the tab's fund scope into a route opened without it, and keeps tabs independent (Phase 1)", async () => {
+    mockWorkstationData({
+      session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "portfolio", commandCount: 7 },
+      overview,
+      loading: false
+    });
+    function LocationProbe() {
+      const location = useLocation();
+      return <output aria-label="Current route">{location.pathname}{location.search}</output>;
+    }
+    // Another tab last used fund-b; this tab chose fund-a.
+    window.localStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify({ fundId: "fund-b" }));
+    window.sessionStorage.setItem(OPERATING_CONTEXT_STORAGE_KEY, JSON.stringify({ entityId: "entity-1", fundId: "fund-a" }));
+    const view = renderWithRouter(<><App /><LocationProbe /></>, { initialEntries: ["/portfolio?view=household"] });
+    await waitFor(() => {
+      const params = new URLSearchParams((screen.getByLabelText("Current route").textContent ?? "").split("?")[1]);
+      expect(params.get("fundId")).toBe("fund-a");
+      expect(params.get("entityId")).toBe("entity-1");
+      expect(params.get("view")).toBe("household");
+    });
+    view.unmount();
+
+    // A new tab starts from the last scope used in any tab.
+    window.sessionStorage.clear();
+    renderWithRouter(<><App /><LocationProbe /></>, { initialEntries: ["/portfolio"] });
+    await waitFor(() => {
+      const params = new URLSearchParams((screen.getByLabelText("Current route").textContent ?? "").split("?")[1]);
+      expect(params.get("fundId")).toBe("fund-b");
+    });
+  });
+
   it("prints the scope on a figures strip inside the shell without per-screen wiring (P4)", async () => {
     mockWorkstationData({
       session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "data", commandCount: 7 },
@@ -1243,7 +1328,7 @@ describe("App", () => {
     expect(screen.getByRole("navigation", { name: /\d+ workstation commands/ })).toBeInTheDocument();
     expect(screen.getAllByRole("link", {
       name: "Settings: Brokerage sync failed. Account sync failed after the last provider heartbeat. Fix provider setup."
-    }).some((link) => link.getAttribute("href") === "/settings#alpaca-provider-setup")).toBe(true);
+    }).map((link) => link.getAttribute("href"))).toContain("/settings?fundAccountId=fund-1&recordScope=1#alpaca-provider-setup");
     expect(screen.getByRole("link", {
       name: "Data: Alpaca provider warning. Review paper provider posture. Open provider trust."
     })).toHaveAttribute("href", "/data/providers?symbol=MSFT");

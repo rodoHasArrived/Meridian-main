@@ -406,6 +406,78 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         (await expected.GetByIdAsync(reclassified.BreakId))!.Lineage!.LineageId.Should().Be(published.Lineage!.LineageId);
     }
 
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Published_group_requires_a_confirmed_assignment_before_clearing_prior_subjects(bool ambiguous)
+    {
+        var firstRow = new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, ambiguous ? "CUSIP1" : "UNMATCHED", 1m, 0m, 2m,
+            "trade", PeriodEnd, "source-row-1")
+        { ExternalTransactionId = "first", Currency = "USD" };
+        var secondRow = firstRow with { SourceRowNumber = 2, Symbol = "CUSIP1", ExternalTransactionId = "second" };
+        var harness = CreateHarness([Book(LedgerBookId)],
+            [Period(AccountingPeriodId, LedgerBookId, LedgerPeriodStatusDto.Open)], canonicalRow: firstRow, extraRow: secondRow,
+            configureArtifact: (canonical, artifact) =>
+            {
+                var book = new InternalLedgerTransaction("ledger", null, ExternalAccountId, "CUSIP1", "USD",
+                    PeriodEnd, PeriodEnd, "trade", 1m, 2m, "journal:ledger");
+                InternalLedgerTransaction[] ledger = ambiguous ? [book] :
+                    [book with { Quantity = 0.4m, NetAmount = 0.8m },
+                     book with { TransactionId = "ledger-two", EvidenceReference = "journal:two", Quantity = 0.6m, NetAmount = 1.2m }];
+                var result = StatementRunMatcher.Match(canonical.Import, canonical.Rows, new([], [], ledger),
+                    StatementToleranceProfile.Default, IdentityReconciliationFxRateProvider.Instance, "USD", ObservedAt);
+                var retainedBreak = result.Breaks.Should().ContainSingle().Subject;
+                retainedBreak.MatchEvidence.SourceAllocations.Should().HaveCount(ambiguous ? 2 : 1);
+                return artifact with
+                {
+                    SourceComparisonPopulationKinds = ["transaction"],
+                    Breaks = [artifact.Breaks[0] with { BreakCode = retainedBreak.Record.BreakCode }],
+                    MatchCount = result.MatchCount,
+                    MatchGroups = result.MatchGroups,
+                    MatchGroupAllocations = result.GroupAllocations,
+                    CaseMatchEvidence = new Dictionary<string, RetainedStatementMatchEvidence> { [SourceBreakId] = retainedBreak.MatchEvidence },
+                    ExecutedTolerancePolicy = new(StatementToleranceProfile.DefaultProfileId, 1, PeriodEnd, artifact.SourceComparisonPolicyFingerprint!)
+                };
+            });
+        var access = new ReconciliationBreakQueueScope(TenantId, CompanyId);
+        var accounting = harness.Canonical.Import.AccountingScope!;
+        var priorBreaks = new List<ReconciliationBreakObservation>();
+        foreach (var row in new[] { firstRow, secondRow })
+        {
+            var item = ReconciliationBreakQueueProjection.ProjectStatement(StatementBreak() with
+            {
+                BreakId = $"previous-{row.SourceRowNumber}",
+                StatementReference = $"previous:{row.SourceRowNumber}",
+                InternalReference = "previous"
+            }, accounting, FundAccountId.ToString("D"), access);
+            await harness.Queue.CreateIfMissingAsync(access, item);
+            priorBreaks.Add(new(item.BreakId, StatementReconciliationIntakeAuthority.SourceSubject(row)!));
+        }
+        var comparisonSource = StatementReconciliationIntakeAuthority.ComparisonSourceIdentity(harness.Canonical.Import, harness.Artifact, SourceInstitution);
+        await harness.Queue.ObserveCompletedRunAsync(new("previous", new(TenantId, CompanyId, FundProfileId.ToString("D"),
+            FundAccountId.ToString("D"), LedgerBookId, AccountingPeriodId.ToString("D"), comparisonSource, ExternalAccountId)
+        { LineageSourceIdentity = SourceInstitution }, ObservedAt.AddMinutes(-1), true, true, priorBreaks));
+
+        var published = await harness.Workflow.StartAsync(Command());
+        published.Workflow.Status.Should().Be(StatementReconciliationReportWorkflowStatusDto.AwaitingReconciliation);
+        var current = (await harness.Queue.GetAllAsync()).Should().ContainSingle(item => item.SourceImportId == StatementRunId).Subject;
+        current.StatementEvidence!.Match.SourceAllocations.Should().HaveCount(ambiguous ? 2 : 1);
+        var secondPrior = (await harness.Queue.GetByIdAsync(priorBreaks[1].BreakId))!;
+        if (ambiguous)
+        {
+            current.Lineage.Should().BeNull();
+            secondPrior.Lineage!.ClearedAt.Should().BeNull();
+            secondPrior.Lineage.LastObservedRunId.Should().Be("previous");
+        }
+        else
+        {
+            current.Lineage!.LastObservedRunId.Should().Be(StatementRunId);
+            secondPrior.Lineage!.Regrouping!.Kind.Should().Be(ReconciliationSourceRegroupingKind.Split);
+            secondPrior.Lineage.Regrouping.Group.Evidence.Match.LedgerAllocations.Should().HaveCount(2);
+            secondPrior.Status.Should().Be(ReconciliationBreakQueueStatus.Open);
+        }
+    }
+
     [Fact]
     public async Task Corrupt_completed_artifact_cannot_establish_source_lineage()
     {
@@ -425,7 +497,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         StatementRunRecoveryStatus recoveryStatus = StatementRunRecoveryStatus.Completed,
         bool corruptCompletion = false,
         Func<StatementRunRecoveryStatus>? currentRecoveryStatus = null,
-        CanonicalStatementRow? canonicalRow = null)
+        CanonicalStatementRow? canonicalRow = null,
+        CanonicalStatementRow? extraRow = null,
+        Func<BrokerStatementImportResult, StatementRunMatchArtifact, StatementRunMatchArtifact>? configureArtifact = null)
     {
         var dataRoot = Path.Combine(_root, Guid.NewGuid().ToString("N"));
         var accounts = new Mock<IAccountQueryService>(MockBehavior.Strict);
@@ -457,12 +531,14 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
 
         var importResult = ImportResult();
         var statementRun = StatementRun();
+        if (extraRow is not null)
+            statementRun = statementRun with { Import = statementRun.Import with { NormalizedRowCount = 2, RawRowCount = 2 } };
         var statementRuns = new Mock<IStatementRunWorkflowService>(MockBehavior.Strict);
         statementRuns
             .Setup(service => service.GetAsync(
                 StatementRunId,
                 It.IsAny<CancellationToken>()))
-            .ReturnsAsync(statementRun);
+            .ReturnsAsync(() => statementRun);
         var reconciliation = new Mock<IReconciliationApiService>(MockBehavior.Strict);
         reconciliation
             .Setup(service => service.ListOpenStatementBreaksAsync(
@@ -480,9 +556,11 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         var queue = new FileReconciliationBreakQueueRepository(
             Path.Combine(dataRoot, "reconciliation-casework"),
             NullLogger<FileReconciliationBreakQueueRepository>.Instance);
-        var canonicalResult = new BrokerStatementImportResult(statementRun.Import with { ExecutedMappingFingerprint = new string('b', 64) },
-            [canonicalRow ?? new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId, "", 0m, 0m, 125000m,
-                "cash", PeriodEnd, "retained-source-row")]);
+        var rows = new List<CanonicalStatementRow> { canonicalRow ?? new CanonicalStatementRow(StatementRunId, 1, ExternalAccountId,
+            "", 0m, 0m, 125000m, "cash", PeriodEnd, "retained-source-row") };
+        if (extraRow is not null)
+            rows.Add(extraRow);
+        var canonicalResult = new BrokerStatementImportResult(statementRun.Import with { ExecutedMappingFingerprint = new string('b', 64) }, rows);
         var canonical = new Mock<ICanonicalStatementStore>(MockBehavior.Strict);
         canonical.Setup(store => store.GetImportAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(canonicalResult);
         var matchResult = new StatementRunMatchArtifact(StatementRunId, StatementRunId, statementRun.Breaks, statementRun.Cases, 0)
@@ -492,6 +570,16 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
             SourceComparisonMappingFingerprint = canonicalResult.Import.ExecutedMappingFingerprint,
             SourceComparisonPopulationKinds = ["cash"]
         };
+        if (configureArtifact is not null)
+        {
+            matchResult = configureArtifact(canonicalResult, matchResult);
+            statementRun = statementRun with
+            {
+                ExecutedTolerancePolicy = matchResult.ExecutedTolerancePolicy,
+                CaseMatchEvidence = matchResult.CaseMatchEvidence,
+                MatchArtifactSha256 = StatementDurabilityHashing.Hash(matchResult)
+            };
+        }
         var matches = new Mock<IStatementRunMatchArtifactStore>(MockBehavior.Strict);
         matches.Setup(store => store.GetAsync(StatementRunId, It.IsAny<CancellationToken>())).ReturnsAsync(matchResult);
         var recovery = new Mock<IStatementRunRecoveryRepository>(MockBehavior.Strict);
@@ -532,7 +620,9 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
             tenancy,
             ledgerBooks)
         {
-            Authority = authority
+            Authority = authority,
+            Canonical = canonicalResult,
+            Artifact = matchResult
         };
     }
 
@@ -719,6 +809,8 @@ public sealed class StatementReconciliationIntakeAuthorityTests : IDisposable
         Mock<ILedgerBookService> LedgerBooks)
     {
         public IStatementReconciliationIntakeAuthority Authority { get; init; } = null!;
+        public BrokerStatementImportResult Canonical { get; init; } = null!;
+        public StatementRunMatchArtifact Artifact { get; init; } = null!;
     }
 
     private sealed class RecordingStatementImportService(StatementImportCommitResultDto result)

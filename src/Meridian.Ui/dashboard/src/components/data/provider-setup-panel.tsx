@@ -3,7 +3,6 @@ import {
   FlaskConical,
   Pencil,
   Plus,
-  RotateCcw,
   Trash2,
   XCircle,
 } from "lucide-react";
@@ -15,6 +14,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { StatusBanner } from "@/components/ui/status-banner";
 import { Toggle } from "@/components/ui/checkbox";
 import { ProviderCapabilityBadges } from "@/components/data/provider-capability-badges";
+import { ProviderActivationPanel } from "@/components/data/provider-activation-panel";
 import { AddProviderDrawer } from "@/components/data/add-provider-drawer";
 import { EditProviderDrawer } from "@/components/data/edit-provider-drawer";
 import { EmptyState as ConcreteEmptyState, SkeletonTable } from "@/components/data/concrete";
@@ -212,7 +212,7 @@ function ProviderSetupPanelBody({
     removeModule,
     toggleEnabled,
     testModule,
-    triggerRestart,
+    restartObserved,
   } = setup;
 
   const ledger = useOptimisticLedger();
@@ -224,22 +224,12 @@ function ProviderSetupPanelBody({
     // The module went away while its drawer was open; do not reopen it if the id comes back.
     setEditTargetId(null);
   }
-  const [restartBusy, setRestartBusy] = useState(false);
   const [testingId, setTestingId] = useState<string | null>(null);
   // Sets, not one id each: two providers can be mid-write at once, and the first to finish must
   // not make the other look settled.
   const [togglingIds, setTogglingIds] = useState<ReadonlySet<string>>(new Set());
   const [removingIds, setRemovingIds] = useState<ReadonlySet<string>>(new Set());
   const [testResults, setTestResults] = useState<Record<string, boolean | null>>({});
-
-  const handleRestart = async () => {
-    setRestartBusy(true);
-    try {
-      await triggerRestart();
-    } finally {
-      setRestartBusy(false);
-    }
-  };
 
   // The priority write path reads `moduleWrites` between renders, so a write is recorded before
   // its request starts. It is cleared here, in the commit that also carries the outcome (the new
@@ -320,16 +310,7 @@ function ProviderSetupPanelBody({
           detail="Provider configuration has changed. Restart the provider host to apply changes."
         >
           <div className="mt-2">
-            <Button
-              size="sm"
-              variant="outline"
-              busy={restartBusy}
-              busyLabel="Restarting…"
-              onClick={() => void handleRestart()}
-            >
-              <RotateCcw className="mr-1.5 h-3.5 w-3.5" aria-hidden="true" />
-              Restart provider host
-            </Button>
+            <ProviderActivationPanel showRows={false} refreshKey={JSON.stringify(modules)} onRestartObserved={restartObserved} />
           </div>
         </StatusBanner>
       )}

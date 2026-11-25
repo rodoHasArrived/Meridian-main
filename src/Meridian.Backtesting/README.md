@@ -92,9 +92,11 @@ responsibilities, without reconstructing carrying value from rounded quotes or r
 
 The native engine resolves lot denomination from each available Security Master definition
 before replay. Fund definitions retain `Units` and equities retain `Shares`, both with multiplier
-1. Definitions requiring face, notional, commitment, currency, or contract pricing are refused
-until a compatible pricing model exists; replay cannot silently apply equity calculations to
-them. Legacy runs without a resolved security definition explicitly retain the symbol-only
+1. Bond definitions carry `FaceValue` lots with multiplier 1: quantity is face and prices stay a
+percentage of par, so cash, market value and P&L divide by 100 once (100,000 face at 101.25 moves
+$101,250). Backtests do not model accrued interest. Definitions requiring notional, commitment,
+currency, or contract pricing, or a face multiplier other than 1, are refused until a compatible
+pricing model exists; replay cannot silently apply equity calculations to them. Legacy runs without a resolved security definition explicitly retain the symbol-only
 equity assumption. Lot snapshots require explicit units and positive multipliers.
 
 Long sales and short covers use Ledger's `LotBasisRelief` allocator over the shared decimal
@@ -158,6 +160,11 @@ their source IDs in the snapshot and execute only once; conflicting same-date/ty
 same-day transformations are refused under the existing source policy. The snapshot provides repeatable
 source evidence, not transaction-time proof of the announcements known historically. No live or durable accounting
 book is posted by this simulation mode.
+
+Native replay counts the historical and aggregate bars it consumes by effective symbol and stamped
+source after filtering inputs and deduplicating verified rows. The input coverage retains counts and
+verified batch revisions. The resolved realism descriptor includes a stable digest of the source
+counts when bars were replayed.
 
 Portfolio asset events fan out to every brokerage account holding the source symbol. Whole-unit
 transformations apportion successor shares through exact FIFO entitlements. Fractional entitlements

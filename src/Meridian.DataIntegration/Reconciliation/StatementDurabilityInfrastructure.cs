@@ -5,6 +5,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.Json.Serialization.Metadata;
 using Meridian.Contracts.Integrity;
+using Meridian.Contracts.Reconciliation;
 using Meridian.Contracts.Text;
 using Meridian.Domain.Reconciliation;
 using Meridian.Core.IO;
@@ -46,6 +47,15 @@ public sealed record StatementRunMatchArtifact(
     /// <summary>Population kinds actually compared; a narrower feed cannot clear a broader feed's breaks.</summary>
     [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
     public IReadOnlyList<string>? SourceComparisonPopulationKinds { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public ExecutedStatementTolerancePolicy? ExecutedTolerancePolicy { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, RetainedStatementMatchEvidence>? CaseMatchEvidence { get; init; }
+
+    [JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)]
+    public IReadOnlyDictionary<string, RetainedStatementMatchEvidence>? MatchGroupAllocations { get; init; }
 }
 
 /// <summary>

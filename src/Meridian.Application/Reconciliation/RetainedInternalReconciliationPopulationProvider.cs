@@ -296,7 +296,12 @@ public sealed class RetainedInternalReconciliationPopulationProvider(
                 asOfDate,
                 position.Quantity,
                 MarketValue: null,
-                $"internal:position:{snapshot.RunId}:{position.Symbol}"));
+                $"internal:position:{snapshot.RunId}:{position.Symbol}")
+            {
+                // Bond holdings carry the book's accrued interest so a custodian statement that
+                // states accrued interest reconciles against it instead of raising "unavailable".
+                AccruedInterest = position.AccruedInterest
+            });
         }
 
         return positions;

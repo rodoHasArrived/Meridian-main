@@ -43,6 +43,10 @@ must retain the requested organization/entity/as-of or consolidation scope. Its 
 drafts through existing workbench and lifecycle routes; the authenticated host resolves actor and
 tenant authority. Refused, stale and unavailable responses never produce local success.
 
+`Services/Accounting/WorkstationFiscalYearCloseApiClient` reads the governed fiscal-year close plan
+for one book and year. It refuses a plan for another book or year, and a "ready" plan without a
+hash or with blockers; workstations present the server's sections and never recompute balances.
+
 The shared entity/consolidation API client supplies authorized organization/entity/book/period
 choices, entity timeline and consolidation preview/draft operations to WPF. Requests preserve host
 scope and server-calculated capabilities; no workstation client derives financial truth locally.
@@ -54,6 +58,10 @@ input, server capabilities, exact approved versions, evidence and review history
 agreement authority in the desktop client. Source-line responses verify agreement/book/date identity
 and retain exact amount strings. See [intercompany agreements](../../docs/domain/intercompany-agreements.md).
 
+`IntercompanyManagementFeeWorkspace` is the desktop state for fixed management fees over the client's fee
+preview and draft calls; the agreement workspace carries the fixed-fee basis. See
+[governed fixed management fees](../../docs/domain/intercompany-agreements.md#governed-fixed-management-fees).
+
 `IntercompanyRateFixingWorkspace` is the desktop state for reviewed fixings over the client's
 list, propose and decide calls; the agreement workspace carries the fixing lag and accrual slices
 name their pinned fixing. See [floating rates and reviewed fixings](../../docs/domain/intercompany-agreements.md#floating-rates-and-reviewed-fixings).
@@ -61,6 +69,9 @@ name their pinned fixing. See [floating rates and reviewed fixings](../../docs/d
 `IntercompanyBalanceConfirmationWorkspace` is the desktop state for reciprocal balance confirmation
 over the client's exact-decimal confirmation reads and actions; a refused action keeps its request
 identity only for an identical retry. See [reciprocal balance confirmation](../../docs/domain/intercompany-agreements-and-entity-lifecycle.md#reciprocal-balance-confirmation).
+
+The interest accrual workspace shows each slice's compounded interest for rule v3 previews. See
+[periodic compounding](../../docs/domain/intercompany-agreements.md#periodic-compounding).
 
 `IntercompanyCounterpartQueueWorkspace` is the desktop state for counterpart delivery records and
 booking breaks over the same `/api/ledger/intercompany/proposals` and `/breaks` routes as the
@@ -81,6 +92,16 @@ book or computation is refused. It never approves or posts. The book is chosen f
 `/api/ledger/intercompany-accounting-arrangements` read, and the principal choices are the Loan
 profiles of the same legal agreement. The lists only fill the selection; the server still
 authorizes every identifier, and a profile read for a book no longer chosen is ignored.
+
+`IntercompanyAccrualScheduleWorkspace` is the desktop state for opt-in, reviewed accrual schedules
+over `/api/ledger/intercompany/accrual-schedules*`, the routes the browser uses. Choosing a book
+lists its schedules and, for ledger managers, the LoanInterest profiles and same-agreement Loan
+principal profiles to propose one with a reason. A selected schedule is approved, rejected or
+disabled (reject and disable need a reason) against its exact version; due periods are previewed
+as of today's UTC date and an active schedule can be run now. Schedules only draft for ordinary
+review; nothing posts, and the server refuses approval by the proposer. A request identity is
+reused only for an identical retry, read-only operators get no mutation commands, and responses
+for another book, schedule, date or request are refused.
 
 `WorkstationOnboardingApiClient` and `OnboardingShadowWorkspace` bring shadow-mode onboarding
 (W11-SHADOW-001) to the desktop over the browser's onboarding routes. The panel covers:
@@ -127,6 +148,12 @@ omits (QuickBooks, Plaid, IB Flex). Verification treats a successful `NotRequire
 Removal accepts `Missing`, or `NotRequired` with an explicit `NotRequired` credential source;
 a missing or default source cannot confirm a `NotRequired` result.
 `providerWideOnly: true` reads provider-wide records only, without the tenant's connection credentials.
+`OAuthRefreshService` refreshes tokens through the host's `ICredentialService`; the shared
+`CredentialService` is a no-op test and fallback base that never yields a token. Provider ids come
+from the host's `OAuthTokenResourcePrefix` (WPF: `Meridian.OAuth.<provider>`), and `.refresh`
+companion entries are skipped. The WPF host starts the service after desktop activation and disposes
+it on exit. `TimeSeriesAlignmentService` reports an HTTP 501 as `IsServiceUnavailable` so callers can
+present alignment as unavailable rather than as a failed run.
 Provider IDs use the shared ProviderSdk identity map for request paths, mutation acknowledgements,
 status joins and catalog deduplication. Aliases resolve to one canonical status row and retain the
 service field schema; ambiguous duplicate service rows remain unavailable. Status projections retain
@@ -315,6 +342,15 @@ See `DIA-BROWSER-WORKSTATION` and `DIA-PAPER-SESSION-REPLAY` in
 <!-- source-todos:begin module=SRC-UI-SERVICES -->
 - No registry-backed TODOs are open for this module.
 <!-- source-todos:end -->
+
+### Intercompany journal drafts, counterpart picking and confirmation close policy
+
+`IntercompanyCounterpartQueueWorkspace` loads `TargetJournalChoices` from the counterpart-candidate read when the
+target book changes and exposes `OpenTargetJournalCommand` through a host-supplied `JournalOpener`.
+`IntercompanyBalanceConfirmationWorkspace.ClosePolicy` shows the book's confirmation close policy and proposes,
+approves, rejects or disables it over `/api/ledger/intercompany/confirmation-close-policies`; an unreadable policy is
+reported, never shown as none. The matching `WorkstationIntercompanyAgreementApiClient` partials check that each
+response belongs to the requested proposal, book and request.
 
 ## Validation
 

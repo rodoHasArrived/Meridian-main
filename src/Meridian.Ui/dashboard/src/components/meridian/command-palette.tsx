@@ -82,7 +82,8 @@ export function CommandPalette({
   const initialCommandRef = useRef<HTMLAnchorElement | null>(null);
   const restoreFocusRef = useRef<HTMLElement | null>(null);
   const toast = useToast();
-  const entitySearch = useCommandPaletteEntitySearch({ open, query, services: entitySearchServices });
+  const scopeKey = JSON.stringify([search, operatingScope, operatingContextSymbol]);
+  const entitySearch = useCommandPaletteEntitySearch({ open, query, scopeKey, services: entitySearchServices });
 
   useEffect(() => {
     if (!open) {
@@ -258,7 +259,7 @@ export function CommandPalette({
             <span className="command-palette-chip">{viewModel.backendStatusLabel}</span>
           ) : null}
           {viewModel.entitySearchStatusLabel ? (
-            <span className="command-palette-chip">{viewModel.entitySearchStatusLabel}</span>
+            <span className="command-palette-chip" aria-live="polite">{viewModel.entitySearchStatusLabel}</span>
           ) : null}
         </div>
         <label htmlFor="command-palette-search" className="sr-only">
@@ -330,7 +331,7 @@ export function CommandPalette({
             >
               <div className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
                 <div className="min-w-0">
-                  <div className={cn("inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 text-xs text-muted-foreground", usesTrackedCaps(viewModel.emptyState.statusLabel) && "font-mono uppercase tracking-[0.12em]")}>
+                  <div className={cn("inline-flex rounded-sm border border-border/70 bg-background/70 px-2 py-1 text-xs text-muted-foreground", usesTrackedCaps(viewModel.emptyState.statusLabel) && "type-label--caps")}>
                     {viewModel.emptyState.statusLabel}
                   </div>
                   <div
@@ -450,10 +451,13 @@ export function CommandPalette({
                     <span className="command-palette-command-content">
                       <span className="command-palette-command-copy">
                         <span className="block font-semibold leading-snug">{item.commandLabel}</span>
+                        {item.recordId && item.recordId !== item.label ? (
+                          <span className="mt-0.5 block font-mono text-xs text-muted-foreground">{item.recordId}</span>
+                        ) : null}
                         <span className="mt-0.5 block text-xs text-muted-foreground">{item.description}</span>
                       </span>
                       <span className="command-palette-command-meta">
-                        <span className="command-palette-route" aria-label={`Route ${item.routeLabel}`} title={item.routeLabel}>
+                        <span className="command-palette-route" aria-label={item.recordId ? undefined : `Route ${item.routeLabel}`} title={item.recordId ? undefined : item.routeLabel}>
                           {item.routeLabel}
                         </span>
                         {(item.active || item.statusVisible) && (

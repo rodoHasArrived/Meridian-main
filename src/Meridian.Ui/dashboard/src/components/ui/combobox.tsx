@@ -164,7 +164,7 @@ export function Combobox({
   return (
     <div ref={rootRef} className={cn("relative w-full", className)}>
       {label ? (
-        <label id={labelId} htmlFor={inputId} className={cn("mb-1.5 block text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "font-mono uppercase tracking-[0.14em]")}>
+        <label id={labelId} htmlFor={inputId} className={cn("mb-1.5 block text-xs font-semibold text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>
           {label}
         </label>
       ) : null}

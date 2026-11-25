@@ -6,6 +6,8 @@ import os from "node:os";
 import path from "node:path";
 import { test } from "node:test";
 import {
+  screenshotRouteMatches,
+  findMissingCaptureRoutePaths,
   CAPTURE_CONTENT_ISSUE_KINDS,
   captureRouteWithRetries,
   checkHoldingsTotals,
@@ -458,7 +460,7 @@ test("a cleanup failure after capture success fails the run after retaining its 
   assert.equal(JSON.parse(await fs.readFile(file, "utf8")).status, "failed");
 });
 
-async function captureWithStub(outputDir, { bytes = 100, strictError = false, closeError = false } = {}) {
+async function captureWithStub(outputDir, { bytes = 100, strictError = false, closeError = false, actualUrl = "http://localhost/workstation/accounting", captureOverrides = {} } = {}) {
   let closed = false;
   const page = new EventEmitter();
   Object.assign(page, {
@@ -469,7 +471,7 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
     async waitForFunction() {},
     async evaluate() { return 100; },
     locator() { return { async evaluateAll() { return []; } }; },
-    url() { return "http://localhost/workstation/accounting"; },
+    url() { return actualUrl; },
     async screenshot({ path: file }) {
       const image = Buffer.alloc(bytes);
       await fs.writeFile(file, image);
@@ -489,7 +491,7 @@ async function captureWithStub(outputDir, { bytes = 100, strictError = false, cl
   });
   const promise = captureRouteWithRetries(
     browser,
-    { id: "W-test", name: "accounting", path: "/accounting" },
+    { id: "W-test", name: "accounting", path: "/accounting", ...captureOverrides },
     createResolver,
     outputDir,
     "http://localhost/workstation",
@@ -843,6 +845,21 @@ test("a clipped status badge is reported once per badge text", () => {
   assert.deepEqual(findCaptureContentIssues("Reconciliation", { truncatedBadges: [] }), []);
 });
 
+test("a detail panel that clips content without a cue is reported once per panel", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("Portfolio", { clippedDetailPanels: ["Holding detail", "Holding detail"] }),
+    [{ kind: "detail-rail-clipped", excerpt: "Holding detail" }]
+  );
+  assert.deepEqual(findCaptureContentIssues("Portfolio", { clippedDetailPanels: [] }), []);
+});
+
+test("overlapping chart labels are reported", () => {
+  assert.deepEqual(
+    findCaptureContentIssues("NAV", { overlappingChartLabels: ['"Sep \'26" overlaps "Oct \'26"'] }),
+    [{ kind: "chart-label-overlap", excerpt: '"Sep \'26" overlaps "Oct \'26"' }]
+  );
+});
+
 test("a Latency term followed by a clock time or Never is reported", () => {
   assert.deepEqual(
     findCaptureContentIssues("Plaid\nLatency\nNever\nAlpaca paper\nLatency\nJul 13, 06:55 PM UTC\nYahoo Finance\nLatency\nnever"),
@@ -1103,4 +1120,53 @@ test("a chart without a table alternative is reported", () => {
     { kind: "chart-without-table", excerpt: "Provider evidence age" },
     { kind: "chart-without-table", excerpt: "(unlabelled chart)" }
   ]);
+});
+
+test("route coverage requires a concrete identity at exact parameter boundaries", () => {
+  const pattern = "/records/instrument/:id";
+  assert.equal(screenshotRouteMatches(pattern, "/records/instrument/sec-dev-001?tab=positions"), true);
+  assert.equal(screenshotRouteMatches(pattern, "/records/instrument/a0000000-0000-0000-0000-000000000001"), true);
+  for (const invalid of ["/records/instrument/:id", "/records/instrument/%3Aid", "/records/instrument/", "/records/instrument", "/records/instrument/sec-1/extra", "/records/instrument/sec-1/", "/records/other/sec-1", "/records/instrument/sec%2Fother", "/records/instrument/sec%5Cother", "/records/instrument/sec%252fother", "/records/instrument/%GG"]) {
+    assert.equal(screenshotRouteMatches(pattern, invalid), false, invalid);
+  }
+  assert.equal(screenshotRouteMatches(pattern + "#evidence", "/records/instrument/sec-dev-001#evidence"), true);
+  assert.equal(screenshotRouteMatches(pattern + "#evidence", "/records/instrument/sec-dev-001"), false);
+  assert.equal(screenshotRouteMatches("/accounting/close", "/accounting/close?closeTab=evidence"), true);
+  assert.equal(screenshotRouteMatches("/accounting/close", "/accounting/closed"), false);
+});
+
+test("global coverage accepts a concrete dossier capture and rejects a literal pattern capture", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const catalog = path.join(directory, "workspace.ts");
+  const app = path.join(directory, "app.tsx");
+  await fs.writeFile(catalog, 'export const WORKSTATION_ROUTE_CATALOG = {\n  dossier: "/records/instrument/:id"\n} as const;');
+  await fs.writeFile(app, '<Route path="/records/instrument/:id" />');
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/" }, { path: "/records/instrument/sec-dev-001" }], catalog, app), []);
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/" }, { path: "/records/instrument/:id" }], catalog, app), ["/records/instrument/:id"]);
+  assert.deepEqual(await findMissingCaptureRoutePaths([{ path: "/records/instrument/sec-dev-001" }], catalog, app), ["/"]);
+});
+
+
+for (const [name, actualUrl, expectedError] of [
+  ["query", "http://localhost/workstation/accounting/close?workflowId=another#retained", /lost its retained redirect query/],
+  ["anchor", "http://localhost/workstation/accounting/close?workflowId=workflow-1#another", /lost its retained redirect anchor/]
+]) {
+  test(`redirect capture rejects loss of its declared ${name}`, async (t) => {
+    const directory = await temporaryDirectory(t);
+    const run = await captureWithStub(directory, { actualUrl, captureOverrides: {
+      path: "/accounting/operations-continuity?workflowId=workflow-1#retained",
+      expectedRedirectPath: "/accounting/close?workflowId=workflow-1#retained"
+    } });
+    await assert.rejects(run.promise, expectedError);
+    await assert.rejects(fs.access(path.join(directory, "accounting.png")), { code: "ENOENT" });
+  });
+}
+
+test("redirect capture accepts the exact declared retained query and anchor", async (t) => {
+  const directory = await temporaryDirectory(t);
+  const run = await captureWithStub(directory, {
+    actualUrl: "http://localhost/workstation/accounting/close?workflowId=workflow-1#retained",
+    captureOverrides: { path: "/accounting/operations-continuity?workflowId=workflow-1#retained", expectedRedirectPath: "/accounting/close?workflowId=workflow-1#retained" }
+  });
+  assert.equal((await run.promise).status, "passed");
 });

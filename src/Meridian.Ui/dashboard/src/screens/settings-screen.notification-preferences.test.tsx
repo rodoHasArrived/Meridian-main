@@ -66,7 +66,7 @@ describe("SettingsNotificationsSection", () => {
     setNotificationPreferences({ ...DEFAULT_NOTIFICATION_PREFERENCES, quietHoursEnabled: true }, false);
     const { unmount } = renderCard(() => new Date("2026-07-05T23:00:00Z"));
     fireEvent.click(screen.getByRole("button", { name: "Send test notification" }));
-    expect(screen.getByRole("status")).toHaveTextContent("Quiet hours are on until 07:00 (UTC), so the test was held.");
+    expect(screen.getByRole("status", { name: "Test notification result" })).toHaveTextContent("Quiet hours are on until 07:00 (UTC), so the test was held.");
     unmount();
 
     renderCard(() => new Date("2026-07-05T12:00:00Z"));

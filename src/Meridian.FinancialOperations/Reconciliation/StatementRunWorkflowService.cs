@@ -234,12 +234,17 @@ public sealed class StatementRunWorkflowService(
                 var comparableArtifact = isLegacyArtifact
                     ? expectedArtifact with { MatchGroups = null }
                     : expectedArtifact;
-                if (retainedArtifact.SourceComparisonMappingFingerprint is null)
+                if (retainedArtifact.ExecutedTolerancePolicy is null)
                     comparableArtifact = comparableArtifact with
                     {
-                        SourceComparisonMappingFingerprint = null,
-                        SourceComparisonPolicyFingerprint = StatementRunComparisonEvidence.LegacyPolicyFingerprint(toleranceProfile)
+                        ExecutedTolerancePolicy = null,
+                        CaseMatchEvidence = null,
+                        MatchGroupAllocations = null,
+                        SourceComparisonPolicyFingerprint = StatementRunComparisonEvidence.PolicyFingerprint(
+                            toleranceProfile, retainedArtifact.SourceComparisonMappingFingerprint, legacy: true)
                     };
+                if (retainedArtifact.SourceComparisonMappingFingerprint is null)
+                    comparableArtifact = comparableArtifact with { SourceComparisonMappingFingerprint = null };
                 if (retainedArtifact.SourceComparisonComplete is null
                     && retainedArtifact.SourceComparisonPolicyFingerprint is null
                     && retainedArtifact.SourceComparisonPopulationKinds is null)
@@ -383,7 +388,12 @@ public sealed class StatementRunWorkflowService(
         return new StatementRunWorkflowResult(
             imported.Import,
             projectionAuthority.CurrentBreaks,
-            projectionAuthority.CurrentCases);
+            projectionAuthority.CurrentCases)
+        {
+            ExecutedTolerancePolicy = matchArtifact.ExecutedTolerancePolicy,
+            MatchArtifactSha256 = checkpoint.MatchArtifact?.Sha256,
+            CaseMatchEvidence = matchArtifact.CaseMatchEvidence
+        };
     }
 
     private async Task<StatementRunMatchArtifact> BuildMatchArtifactAsync(
@@ -429,8 +439,12 @@ public sealed class StatementRunWorkflowService(
             cases,
             matchResult.MatchCount)
         {
-            MatchGroups = matchResult.MatchGroups
-        }, imported.Rows, populations, toleranceProfile, imported.Import.ExecutedMappingFingerprint);
+            MatchGroups = matchResult.MatchGroups,
+            CaseMatchEvidence = linkedBreaks.ToDictionary(static item => item.Record.BreakId, static item => item.MatchEvidence,
+                StringComparer.Ordinal),
+            MatchGroupAllocations = matchResult.GroupAllocations
+        }, imported.Rows, populations, toleranceProfile, imported.Import.ExecutedMappingFingerprint,
+            imported.Import.StatementPeriodEnd == default ? imported.Import.StatementDate : imported.Import.StatementPeriodEnd);
     }
 
     private async Task<StatementRunMatchArtifact> LoadVerifiedMatchArtifactAsync(
@@ -852,13 +866,30 @@ public sealed class StatementRunWorkflowService(
 
         var breaks = await ListOpenBreaksAsync(cancellationToken).ConfigureAwait(false);
         var cases = await ListCasesAsync(cancellationToken).ConfigureAwait(false);
+        var checkpoint = await _recoveryRepository.GetAsync(import.ImportId, cancellationToken).ConfigureAwait(false);
+        StatementRunMatchArtifact? verifiedMatch = null;
+        if (checkpoint is { Stage: StatementRunRecoveryStage.Completed, Status: StatementRunRecoveryStatus.Completed })
+        {
+            if (checkpoint.SchemaVersion != StatementRunRecoveryCheckpoint.CurrentSchemaVersion
+                || checkpoint.RunId != import.ImportId || checkpoint.ImportId != import.ImportId)
+                throw new InvalidDataException($"Completed statement run '{import.ImportId}' has a mismatched recovery identity.");
+            var canonical = await importStore.GetImportAsync(import.ImportId, cancellationToken).ConfigureAwait(false)
+                ?? throw new InvalidDataException($"Completed statement run '{import.ImportId}' is missing its canonical import.");
+            VerifyStageArtifact(checkpoint.ImportArtifact, HashImportArtifact(canonical), canonical.Rows.Count, "import");
+            verifiedMatch = await LoadVerifiedMatchArtifactAsync(checkpoint, cancellationToken).ConfigureAwait(false);
+        }
         return new StatementRunWorkflowResult(
             import,
             breaks.Where(item =>
                     string.Equals(item.RunId, import.ImportId, StringComparison.OrdinalIgnoreCase) ||
                     string.Equals(item.ImportId, import.ImportId, StringComparison.OrdinalIgnoreCase))
                 .ToArray(),
-            cases.Where(item => string.Equals(item.ImportId, import.ImportId, StringComparison.OrdinalIgnoreCase)).ToArray());
+            cases.Where(item => string.Equals(item.ImportId, import.ImportId, StringComparison.OrdinalIgnoreCase)).ToArray())
+        {
+            ExecutedTolerancePolicy = verifiedMatch?.ExecutedTolerancePolicy,
+            MatchArtifactSha256 = verifiedMatch is null ? null : checkpoint?.MatchArtifact?.Sha256,
+            CaseMatchEvidence = verifiedMatch?.CaseMatchEvidence
+        };
     }
 
     public Task<IReadOnlyList<ReconciliationBreakRecord>> ListOpenBreaksAsync(CancellationToken cancellationToken = default)
@@ -1221,6 +1252,11 @@ public sealed class StatementRunWorkflowService(
             var evidenceReferences = isInternalOnly
                 ? new[] { evidenceLink, $"internal-record:{breakRecord.SourceReference}", $"internal-hash:{sourceRowHash}" }
                 : new[] { evidenceLink, $"statement-row:{breakRecord.SourceReference}", $"statement-hash:{sourceRowHash}" };
+            evidenceReferences = evidenceReferences
+                .Concat(engineResult.AllBrokerEvidenceReferences.Select(static reference => $"statement-row:{reference}"))
+                .Concat(engineResult.AllInternalEvidenceReferences.Select(static reference => $"internal-record:{reference}"))
+                .Distinct(StringComparer.Ordinal)
+                .ToArray();
             var explanation = BuildBreakExplanation(import, row, breakRecord, engineResult, evidenceReferences);
             var attachment = isInternalOnly
                 ? new ReconciliationCaseAttachment(

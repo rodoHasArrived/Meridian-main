@@ -32,9 +32,22 @@ from authority to approve or post journals.
 
 ## Important workflows
 
+`Ledger(LedgerPolicy)` binds a ledger to `IChartOfAccounts` and a functional currency: unknown
+accounts, lines without currency and lines in another functional currency are rejected before
+anything is posted. `PostLines` overloads without currency stamp the functional currency. The
+backtest run ledger is bound with `LedgerPolicy.Trading()`; `new Ledger()` stays as a transitional,
+unbound ledger for callers outside the posting chart. Durable, hash-chained run journals live in
+`Meridian.Storage.Ledger.FileLedgerJournalLog`; see
+[ledger architecture](../../docs/architecture/ledger-architecture.md#bound-ledgers-ledgerpolicy).
+
 `LedgerJournalReversal` preserves explicit transaction/functional currency and acquisition FX
 while swapping both functional and transaction debit/credit amounts. A correction never drops the
 currency evidence from its immutable source.
+
+The standard posting chart assigns explicit codes to registered roles. Configured book charts
+support a stable code per node within the tenant, company, and book. Active, pinned chart references
+and optional line memos follow journal lines through persistence, exports, and reversals. Legacy
+journal records retain their original serialization when these fields are absent.
 
 Explicitly classified investing activities recognize either an asset carrying leg or a
 liability carrying leg (short securities payable). A short cover with retained investing

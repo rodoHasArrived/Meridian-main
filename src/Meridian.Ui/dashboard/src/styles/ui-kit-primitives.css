@@ -74,6 +74,14 @@
   background: var(--ws-surface);
 }
 
+/* Scroll cue: while columns remain clipped on the right, fade the viewport's right edge. A mask
+   (not a background gradient) is used because opaque cell and selected-row backgrounds paint
+   over any gradient behind them. The fade stops short of transparent so clipped text stays legible. */
+.dense-data-table-wrap[data-overflow-end="true"] {
+  -webkit-mask-image: linear-gradient(to right, #000 calc(100% - 3rem), rgb(0 0 0 / 0.35));
+  mask-image: linear-gradient(to right, #000 calc(100% - 3rem), rgb(0 0 0 / 0.35));
+}
+
 /* Today's queue is the page's primary task: it grows with the page instead of scrolling inside
    its card, so more items are visible without a nested scrollbar. */
 .today-queue .dense-data-table-wrap {
@@ -127,6 +135,12 @@
   top: 0;
   z-index: 1;
   background: var(--ws-surface-subtle);
+}
+
+.dense-data-table-footer td {
+  border-top: 1px solid var(--ws-border-strong);
+  background: var(--ws-surface-subtle);
+  font-weight: 600;
 }
 
 .dense-data-table th {

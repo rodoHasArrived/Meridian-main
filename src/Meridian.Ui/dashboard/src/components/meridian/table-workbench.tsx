@@ -1,9 +1,11 @@
 import { useEffect, useId, useMemo, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
+import { Select } from "@/components/ui/select";
 import { buildShownExport, downloadShownXlsx, shownExportCsvRows, type ShownFooterCell } from "@/lib/table-export";
 import { Button } from "@/components/ui/button";
 import { DenseDataTable, nextDenseSort, sortRowsByValue, type DenseDataTableColumn, type DenseDataTableProps, type DenseDataTableSortState } from "@/components/meridian/ui-kit-primitives";
+import { isApiError } from "@/lib/api-errors";
 import { downloadCsv, type CsvCell } from "@/lib/csv";
-import { readStoredDensity } from "@/lib/density";
+import { readEffectiveDensity } from "@/lib/density";
 import { pluralizeCount } from "@/lib/format";
 import { loadTableViews, safeTableCsv, saveTableView, type TableView } from "@/lib/table-workbench";
 import { cn } from "@/lib/utils";
@@ -17,7 +19,7 @@ const DROP_ORDER = ["low", "medium"] as const;
 /** The table density that follows the operator's global density setting (Settings > Preferences). */
 function tableDensity(): "compact" | "comfortable" {
   const scope = typeof document === "undefined" ? null : document.body.getAttribute("data-theme-density");
-  return (scope ?? readStoredDensity()) === "spacious" ? "comfortable" : "compact";
+  return (scope ?? readEffectiveDensity()) === "spacious" ? "comfortable" : "compact";
 }
 
 function useGlobalTableDensity(): "compact" | "comfortable" {
@@ -139,6 +141,9 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   const [exporting, setExporting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [notice, setNotice] = useState("");
+  // Set when the host definitively refuses saved views for this table (403) or has none (501).
+  const [viewsRefused, setViewsRefused] = useState<string | null>(null);
+  const [viewsLoadFailed, setViewsLoadFailed] = useState(false);
   const frame = useRef<HTMLDivElement>(null);
   const [scrollEdges, setScrollEdges] = useState({ left: false, right: false });
   const session = useRef(0);
@@ -168,10 +173,16 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
     setSaving(false); setExporting(false); setError(null); setNotice("");
     setViews([]);
     setSelectedView("");
+    setViewsRefused(null); setViewsLoadFailed(false);
     loadTableViews(workbenchId, controller.signal).then(result => {
       if (current === session.current && !controller.signal.aborted) setViews(result);
-    }).catch(() => {
-      if (!controller.signal.aborted && current === session.current) setNotice("Saved views unavailable. You can continue reviewing this table.");
+    }).catch((cause: unknown) => {
+      if (controller.signal.aborted || current !== session.current) return;
+      setViewsLoadFailed(true);
+      const refused = isApiError(cause) && cause.status === 403 ? "Saved views aren't available for this table with your current permissions."
+        : isApiError(cause) && cause.status === 501 ? "Saved views aren't available for this table on this host." : null;
+      setViewsRefused(refused);
+      setNotice(refused ?? "Saved views unavailable. You can continue reviewing this table.");
     });
     return () => { controller.abort(); writeController.current?.abort(); ++session.current; };
   }, [workbenchId, sourceKey]);
@@ -244,18 +255,30 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
   }
   function restoreView(viewId: string) {
     const view = views.find(candidate => candidate.viewId === viewId);
-    setSelectedView(viewId);
-    if (!view) return;
+    if (!view) { setSelectedView(viewId); return; }
     const validIds = view.columnIds.filter(columnId => columns.some(column => column.id === columnId));
-    if (validIds.length) changeVisibleIds(validIds);
+    if (!validIds.length) {
+      // Applying search and sort over the current columns would misrepresent the saved view.
+      setSelectedView("");
+      setNotice(`${view.label} couldn't be applied: its columns were removed from this table. Save it again under the same name to update it.`);
+      return;
+    }
+    setSelectedView(viewId);
+    changeVisibleIds(validIds);
+    const skipped = view.columnIds.length - validIds.length;
     setSearch(view.searchText);
     if (ownsSort) setLocalSort(view.sortColumnId && columns.some(column => column.id === view.sortColumnId && column.sortValue)
       ? { columnId: view.sortColumnId, direction: view.sortDirection === "desc" ? "desc" : "asc" } : null);
     onRestoreFilters?.(view.filters ?? {});
     onRestoreView?.(view);
     setViewName(view.isReadOnly ? `${view.label} copy` : view.label);
-    setNotice(view.isReadOnly ? "Legacy tenant view. Save a copy to your account." : `Restored ${view.label}.`);
+    const skippedNote = skipped > 0
+      ? ` ${skipped === 1 ? "1 saved column no longer exists and was" : `${skipped} saved columns no longer exist and were`} skipped.` : "";
+    setNotice(view.isReadOnly ? `Legacy tenant view. Save a copy to your account.${skippedNote}` : `Restored ${view.label}.${skippedNote}`);
   }
+  // Saving under an existing personal name replaces that view on the host (same id), so say so up front.
+  const replaceTarget = viewName.trim()
+    ? views.find(view => !view.isReadOnly && view.label.trim().toLowerCase() === viewName.trim().toLowerCase()) : undefined;
   async function saveView() {
     if (!viewName.trim()) { setError("Enter a view name."); return; }
     const current = session.current;
@@ -265,7 +288,13 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
         columnIds: visibleColumns.map(column => column.id), density,
         sortColumnId: effectiveSort?.columnId, sortDirection: effectiveSort?.direction, filters: filterState }, writeController.current?.signal);
       if (current !== session.current) return;
-      setViews(existing => [...existing, saved]); setSelectedView(saved.viewId); setNotice(`Saved ${saved.label} to your account.`);
+      const replaced = views.some(view => view.viewId === saved.viewId);
+      const sameName = (view: TableView) => !view.isReadOnly && view.label.trim().toLowerCase() === saved.label.trim().toLowerCase();
+      // The host folds same-named personal views into one, so drop any local duplicates too.
+      setViews(existing => [...existing.filter(view => view.viewId !== saved.viewId && !sameName(view)), saved]
+        .sort((left, right) => left.label.localeCompare(right.label, undefined, { sensitivity: "base" })));
+      setSelectedView(saved.viewId);
+      setNotice(replaced ? `Updated ${saved.label} in your account.` : `Saved ${saved.label} to your account.`);
     } catch (cause) { if (current === session.current) setError(cause instanceof Error ? cause.message : "View could not be saved."); }
     finally { if (current === session.current) setSaving(false); }
   }
@@ -340,11 +369,14 @@ export function TableWorkbench<T>({ workbenchId, sourceKey = "", columns, rows, 
       title={shownUnavailable ?? "Visible columns in screen order as a spreadsheet, numbers kept as numbers, with totals."}>Export as shown · XLSX</Button>
   </>;
   const viewControls = <>
-    <label>Saved views<select value={selectedView} onChange={event => restoreView(event.target.value)}><option value="">Current view</option>{views.map(view => <option key={view.viewId} value={view.viewId}>{view.label}{view.isReadOnly ? " · Legacy tenant view" : ""}</option>)}</select></label>
-    <label>View name<input value={viewName} maxLength={100} onChange={event => setViewName(event.target.value)} /></label>
-    <Button size="sm" onClick={() => void saveView()} disabled={saving}>{saving ? "Saving…" : "Save to my account"}</Button>
+    <label>Saved views<Select value={selectedView} disabled={Boolean(viewsRefused)} title={viewsRefused ?? undefined} onChange={event => restoreView(event.target.value)}><option value="">Current view</option>{views.map(view => <option key={view.viewId} value={view.viewId}>{view.label}{view.isReadOnly ? " · Legacy tenant view" : ""}</option>)}</Select></label>
+    <label>View name<input value={viewName} maxLength={100} disabled={Boolean(viewsRefused)} onChange={event => setViewName(event.target.value)} /></label>
+    <Button size="sm" onClick={() => void saveView()} disabled={saving || Boolean(viewsRefused)} disabledReason={viewsRefused ?? undefined}
+      title={replaceTarget ? `A view named ${replaceTarget.label} exists. Saving replaces it with the current table.` : undefined}>
+      {saving ? "Saving…" : replaceTarget ? `Replace “${replaceTarget.label}”` : "Save to my account"}</Button>
+    {viewsRefused ? <p className="text-muted-foreground text-xs">{viewsRefused}</p> : null}
   </>;
-  const unavailableViews = compactToolbar && notice === "Saved views unavailable. You can continue reviewing this table.";
+  const unavailableViews = compactToolbar && viewsLoadFailed && (notice === viewsRefused || notice === "Saved views unavailable. You can continue reviewing this table.");
 
   return (
     <section className={cn("table-workbench", `table-workbench--${density}`, fittedColumns.some(column => column.wrap) && "table-workbench--wrapping")} aria-label={`${tableProps.ariaLabel} controls and results`}>

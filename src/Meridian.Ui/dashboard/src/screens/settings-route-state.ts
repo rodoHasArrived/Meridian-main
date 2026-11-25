@@ -54,7 +54,7 @@ export const SETTINGS_ROUTE_VIEW_COPY: Readonly<Record<SettingsRouteViewId, { ti
   },
   preferences: {
     title: "Workstation preferences",
-    description: "Set how the workstation looks in this browser."
+    description: "Set how the workstation looks. Your choices follow you to other browsers and the desktop app."
   },
   access: {
     title: "Access and authority",

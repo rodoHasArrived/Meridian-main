@@ -170,6 +170,51 @@ public static class IntercompanyOperationsEndpoints
           .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
           .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        // Fixed management fees (rule intercompany-fee-v1): the same preview-then-draft contract as interest.
+        app.MapPost("/api/ledger/intercompany/fees/preview", async (IntercompanyFeeAccrualRequestDto request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IntercompanyFeeAccrualDraftService>();
+            if (service is null)
+                return FeeUnavailable();
+            if (!await BookAllowedAsync(context, request.SourceBookId).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            try
+            {
+                return Results.Json(await service.PreviewAsync(tenant.TenantId!, tenant.CompanyId, actor, request,
+                    context.RequestAborted).ConfigureAwait(false), options);
+            }
+            catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+            catch (Npgsql.NpgsqlException) { return FeeUnavailable(); }
+        }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope()
+          .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
+          .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
+        app.MapPost("/api/ledger/intercompany/fees/drafts", async (CreateIntercompanyFeeAccrualDraftRequest request, HttpContext context) =>
+        {
+            var service = context.RequestServices.GetService<IntercompanyFeeAccrualDraftService>();
+            if (service is null)
+                return FeeUnavailable();
+            if (request.Accrual is null || !await BookAllowedAsync(context, request.Accrual.SourceBookId).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+                return Results.Unauthorized();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            try
+            {
+                return Results.Json(await service.CreateDraftAsync(tenant.TenantId!, tenant.CompanyId, actor, request,
+                    context.RequestAborted).ConfigureAwait(false), options);
+            }
+            catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+            catch (Exception error) when (error is InvalidOperationException or ArgumentException)
+            { return Results.Conflict(new { error = error.Message }); }
+            catch (Npgsql.NpgsqlException) { return FeeUnavailable(); }
+        }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope().RequireFundScopedWriteTenant()
+          .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
+          .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
+
         app.MapGet("/api/ledger/intercompany/breaks", async (Guid sourceBookId, DateOnly? asOf, HttpContext context) =>
         {
             if (!await BookAllowedAsync(context, sourceBookId).ConfigureAwait(false))
@@ -206,6 +251,31 @@ public static class IntercompanyOperationsEndpoints
           .RequireAnyPermission(UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance)
           .RequireRateLimiting(UiEndpoints.MutationRateLimitPolicy);
 
+        // Posted journals in an approved destination book that would pass the link check. Read-only; the link
+        // POST re-checks the chosen journal under the journal mutation lease.
+        app.MapGet("/api/ledger/intercompany/proposals/{proposalId:guid}/counterpart-candidates", async (Guid proposalId,
+            Guid targetBookId, HttpContext context) =>
+        {
+            var delivery = context.RequestServices.GetService<IntercompanyProposalDeliveryService>();
+            var store = context.RequestServices.GetService<IIntercompanyProposalStore>();
+            if (delivery is null || store is null)
+                return Unavailable();
+            var tenant = HttpContextWorkstationTenantContextAccessor.Resolve(context);
+            var proposal = await store.GetAsync(tenant.TenantId!, proposalId, context.RequestAborted).ConfigureAwait(false);
+            if (proposal is null || !await BookAllowedAsync(context, proposal.Source.SourceBookId).ConfigureAwait(false)
+                || !await BookAllowedAsync(context, targetBookId).ConfigureAwait(false))
+                return EndpointHelpers.Forbidden();
+            try
+            {
+                var candidates = await delivery.ListCounterpartCandidatesAsync(tenant.TenantId!, proposalId, targetBookId,
+                    context.RequestAborted).ConfigureAwait(false);
+                return Results.Json(candidates.ToArray(), options);
+            }
+            catch (UnauthorizedAccessException) { return EndpointHelpers.Forbidden(); }
+            catch (InvalidOperationException error) { return Results.Conflict(new { error = error.Message }); }
+        }).RequireAuthenticatedSession().RequireWorkstationTenantCompanyScope()
+          .RequireAnyPermission(UserPermission.ViewLedgerReports, UserPermission.ManageLedgerReports, UserPermission.AdminMaintenance);
+
         app.MapPost("/api/ledger/intercompany/proposals/{proposalId:guid}/link", async (Guid proposalId,
             LinkIntercompanyCounterpartRequest request, HttpContext context) =>
         {
@@ -233,10 +303,11 @@ public static class IntercompanyOperationsEndpoints
     }
 
     private static IResult AccrualUnavailable() => Results.Problem("Governed intercompany accrual authority is unavailable.", statusCode: 503);
+    private static IResult FeeUnavailable() => Results.Problem("Governed intercompany fee accrual authority is unavailable.", statusCode: 503);
 
     private static IResult Unavailable() => Results.Problem("Durable intercompany proposal delivery is unavailable.", statusCode: 503);
 
-    private static async Task<bool> BookAllowedAsync(HttpContext context, Guid bookId)
+    internal static async Task<bool> BookAllowedAsync(HttpContext context, Guid bookId)
     {
         var journals = context.RequestServices.GetService<ILedgerJournalStore>();
         var registry = context.RequestServices.GetService<IFundProfileTenancyRegistry>();

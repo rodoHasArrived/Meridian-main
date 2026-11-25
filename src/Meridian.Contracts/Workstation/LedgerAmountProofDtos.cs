@@ -37,6 +37,7 @@ public sealed record LedgerAmountProofDto(
     IReadOnlyList<LedgerAmountProofEvidenceDto> Evidence,
     IReadOnlyList<string> Warnings)
 {
+    public string AmountExact => Amount.ToString(System.Globalization.CultureInfo.InvariantCulture);
     /// <summary>
     /// Accounting decisions retained with contributing journals, independent of source readiness.
     /// An absent legacy value establishes no approval or coverage classification.
@@ -47,6 +48,14 @@ public sealed record LedgerAmountProofDto(
     /// <summary>False for any preparer-attested or unclassified upstream dependency; null makes no claim.</summary>
     [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
     public bool? OrdinaryRecordedApprovalSatisfied { get; init; }
+
+    // The existing evidence graph consumes the same verified sources. The passport endpoint
+    // explicitly authorizes and binds this projection before serializing it.
+    [System.Text.Json.Serialization.JsonIgnore]
+    public AmountPassportDto? AmountPassport { get; init; }
+
+    [System.Text.Json.Serialization.JsonIgnore]
+    public bool RetainedSupportStale { get; init; }
 }
 
 /// <summary>

@@ -16,6 +16,7 @@ export const LEGACY_WORKSPACE_ALIASES: Record<LegacyWorkspaceKey, WorkspaceKey> 
 };
 
 export const WORKSTATION_ROUTE_CATALOG = {
+  today: "/today",
   trading: "/trading",
   tradingOrders: "/trading/orders",
   tradingPositions: "/trading/positions",
@@ -30,6 +31,9 @@ export const WORKSTATION_ROUTE_CATALOG = {
   portfolioLoanBook: "/portfolio/loan-book",
   portfolioNav: "/portfolio/nav",
   accounting: "/accounting",
+  accountingClose: "/accounting/close",
+  instrumentDossier: "/records/instrument/:id",
+  dataImportStart: "/data/import/start",
   accountingConfigure: "/accounting/configure",
   accountingOperationsContinuity: "/accounting/operations-continuity",
   accountingEntitySetup: "/accounting/entity-setup",
@@ -367,6 +371,7 @@ export function normalizeLocalWorkstationRoute(route: string | null | undefined)
   const { pathname, search, hash } = splitRouteParts(localRoute);
   const canonicalRoute = legacyWorkspaceRedirect(pathname, search, hash) ?? `${pathname}${search}${hash}`;
   const routeWorkspace = firstPathSegment(canonicalRoute);
+  if (pathname === "/today" || /^\/records\/instrument\/[^/]+$/.test(pathname)) return canonicalRoute;
   if (!routeWorkspace || !isWorkspaceKey(routeWorkspace)) {
     return null;
   }
@@ -431,7 +436,22 @@ export const WORKSTATION_ROUTE_SEGMENT_LABELS: Readonly<Record<string, string>> 
   watchlist: "Watchlist"
 };
 
-export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary): string {
+/**
+ * Views of one route that the sidebar lists as their own destination. The page heading names the
+ * view the operator opened, not the route that hosts it.
+ */
+const WORKSTATION_ROUTE_VIEW_LABELS: Readonly<Record<string, Readonly<Record<string, string>>>> = {
+  "/data/quotes": { options: "Options screening" }
+};
+
+export function resolveWorkstationRouteBreadcrumbLabel(pathname: string, workspace: WorkspaceSummary, search = ""): string {
+  if (pathname.startsWith("/records/instrument/")) return "Instrument dossier";
+  if (pathname === "/today") return "Today";
+  const view = new URLSearchParams(search).get("view");
+  const viewLabel = view ? WORKSTATION_ROUTE_VIEW_LABELS[pathname.replace(/\/+$/, "")]?.[view] : undefined;
+  if (viewLabel) {
+    return viewLabel;
+  }
   const segments = pathname.split("/").filter(Boolean);
   const routeSegments = segments[0] === workspace.key ? segments.slice(1) : segments.slice(2);
   if (routeSegments.length === 0) {
@@ -457,6 +477,8 @@ export function normalizeWorkspacePath(pathname: string): WorkspaceKey {
   if (firstSegment === "data" && segments[1] === "security-master") {
     return "accounting";
   }
+
+  if (firstSegment === "records" && segments[1] === "instrument") return "portfolio";
 
   if (isWorkspaceKey(firstSegment)) {
     return firstSegment;

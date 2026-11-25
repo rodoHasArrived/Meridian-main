@@ -94,7 +94,7 @@ function StatementEvidenceSummary({ preview }: { preview: StatementImportPreview
 }
 
 function EvidenceMetric({ label, value }: { label: string; value: string }) {
-  return <div><p className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "uppercase tracking-[0.12em]")}>{label}</p><p className="mt-1 font-mono">{value}</p></div>;
+  return <div><p className={cn("text-xs text-muted-foreground", usesTrackedCaps(label) && "type-label--caps")}>{label}</p><p className="mt-1 font-mono">{value}</p></div>;
 }
 
 function formatAmount(value: number | null, currency: string) {

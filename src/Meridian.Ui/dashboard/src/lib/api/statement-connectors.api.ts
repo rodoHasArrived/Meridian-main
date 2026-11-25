@@ -1,6 +1,7 @@
 // Statement connector library endpoints. Re-exported through @/lib/api.
-import type { MarginControlCenter, MarginCertificationRequest, MarginCertificationResult, ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, ReconciliationBulkCaseworkResult, ReconciliationCalibrationSummary, StatementConnectorDescriptor, StatementFetchPreviewRequest, StatementFetchSchedule, StatementFetchScheduleUpsertRequest, StatementImportCommitResult, StatementImportPreview, StatementImportPreviewRequest, StatementImportSourceKind, StatementMappingProfile, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult, ResolveReconciliationBreakRequest, ReviewReconciliationBreakRequest } from "@/types";
-import { RECONCILIATION_API_ENDPOINTS, reconciliationBreakAssignEndpoint, reconciliationBreakAuditEndpoint, reconciliationBreakBulkDryRunEndpoint, reconciliationBreakBulkExecuteEndpoint, reconciliationBreakBulkStatusEndpoint, reconciliationBreakCommentEndpoint, reconciliationBreakCommentsEndpoint, reconciliationBreakEndpoint, reconciliationBreakQueueEndpoint, reconciliationBreakReopenEndpoint, reconciliationBreakResolutionEndpoint, reconciliationBreakResolveEndpoint, reconciliationBreakReviewEndpoint, reconciliationBreakSupersedeEndpoint, reconciliationBreakRootCauseEndpoint, reconciliationBreakSignOffEndpoint, reconciliationBreakTransitionEndpoint, reconciliationBreakWaiveEndpoint, reconciliationStatementFetchScheduleEndpoint, reconciliationStatementFetchScheduleRunEndpoint, reconciliationStatementMappingProfileEndpoint, STATEMENT_CONNECTOR_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import type { ReconciliationBreakQueueAuditEvent, MarginControlCenter, MarginCertificationRequest, MarginCertificationResult, ReconciliationBreakQueueItem, ReconciliationBulkCaseworkRequest, ReconciliationBulkCaseworkResult, ReconciliationCalibrationSummary, StatementConnectorDescriptor, StatementFetchPreviewRequest, StatementFetchSchedule, StatementFetchScheduleUpsertRequest, StatementImportCommitResult, StatementImportPreview, StatementImportPreviewRequest, StatementImportSourceKind, StatementImportRowDisposition, StatementMappingProfile, ReconciliationCaseworkCommand, ReconciliationCaseworkOperationResult, ResolveReconciliationBreakRequest, ReviewReconciliationBreakRequest } from "@/types";
+import { RECONCILIATION_API_ENDPOINTS, reconciliationBreakAssignEndpoint, reconciliationBreakAuditEndpoint, reconciliationBreakBulkDryRunEndpoint, reconciliationBreakBulkExecuteEndpoint, reconciliationBreakBulkResultEndpoint, reconciliationBreakBulkStatusEndpoint, reconciliationBreakCommentEndpoint, reconciliationBreakCommentsEndpoint, reconciliationBreakEndpoint, reconciliationBreakQueueEndpoint, reconciliationBreakReopenEndpoint, reconciliationBreakResolutionEndpoint, reconciliationBreakResolveEndpoint, reconciliationBreakReviewEndpoint, reconciliationBreakSupersedeEndpoint, reconciliationBreakRootCauseEndpoint, reconciliationBreakSignOffEndpoint, reconciliationBreakTransitionEndpoint, reconciliationBreakWaiveEndpoint, reconciliationStatementFetchScheduleEndpoint, reconciliationStatementFetchScheduleRunEndpoint, reconciliationStatementMappingProfileEndpoint, STATEMENT_CONNECTOR_API_ENDPOINTS } from "@/lib/workstation-endpoints";
+import { isApiError } from "@/lib/api-errors";
 import { deleteJson, getJson, postFormData, postJson, putJson, type ApiRequestOptions } from "@/lib/api/http-client";
 
 // --- Statement connector library ---
@@ -40,6 +41,7 @@ export function previewStatementImport(request: StatementImportPreviewRequest, o
   formData.append("fundAccountId", request.fundAccountId);
   formData.append("periodStart", request.periodStart);
   formData.append("periodEnd", request.periodEnd);
+  appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
   return postFormData<StatementImportPreview>(STATEMENT_CONNECTOR_API_ENDPOINTS.importPreview, formData, options);
 }
 
@@ -55,6 +57,8 @@ export function commitStatementImport(
     periodStart: string;
     periodEnd: string;
     toleranceProfileId?: string | null;
+    reviewId?: string | null;
+    rowDispositions?: StatementImportRowDisposition[];
   },
   options: ApiRequestOptions = {}
 ) {
@@ -69,6 +73,8 @@ export function commitStatementImport(
   formData.append("periodStart", request.periodStart);
   formData.append("periodEnd", request.periodEnd);
   appendOptionalStatementFormField(formData, "toleranceProfileId", request.toleranceProfileId);
+  appendOptionalStatementFormField(formData, "reviewId", request.reviewId);
+  if (request.rowDispositions?.length) formData.append("rowDispositions", JSON.stringify(request.rowDispositions));
   return postFormData<StatementImportCommitResult>(STATEMENT_CONNECTOR_API_ENDPOINTS.importCommit, formData, options);
 }
 
@@ -106,11 +112,22 @@ function appendOptionalStatementFormField(formData: FormData, name: string, valu
   }
 }
 
-export function getReconciliationBreakQueue(status?: string, fundAccountId?: string) { return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId })); }
+export function getReconciliationBreakQueue(status?: string, fundAccountId?: string, options: ApiRequestOptions = {}) {
+  return getJson<ReconciliationBreakQueueItem[]>(reconciliationBreakQueueEndpoint({ status, fundAccountId }), options);
+}
 
 export function getReconciliationBreakDetail(breakId: string) { return getJson<ReconciliationBreakQueueItem>(reconciliationBreakEndpoint(breakId)); }
 
-export function getReconciliationBreakAudit(breakId: string) { return getJson<unknown>(reconciliationBreakAuditEndpoint(breakId)); }
+/** Audit history for one break. The endpoint answers 404 when nothing is retained yet; that is an empty history. */
+export async function getReconciliationBreakAudit(breakId: string): Promise<ReconciliationBreakQueueAuditEvent[]> {
+  try {
+    const events = await getJson<ReconciliationBreakQueueAuditEvent[]>(reconciliationBreakAuditEndpoint(breakId), { allowDevelopmentFallback: false });
+    return Array.isArray(events) ? events : [];
+  } catch (failure) {
+    if (isApiError(failure) && failure.status === 404) return [];
+    throw failure;
+  }
+}
 
 export function reviewReconciliationBreak(request: ReviewReconciliationBreakRequest) {
   return postJson<ReconciliationCaseworkOperationResult>(
@@ -183,6 +200,15 @@ export function executeReconciliationBreakBulkAction(request: ReconciliationBulk
 
 export function getReconciliationBreakBulkActionStatus(bulkActionId: string) {
   return getJson<unknown>(reconciliationBreakBulkStatusEndpoint(bulkActionId));
+}
+
+export async function getReconciliationBreakBulkActionResult(bulkActionId: string): Promise<ReconciliationBulkCaseworkResult | null> {
+  try {
+    return await getJson<ReconciliationBulkCaseworkResult>(reconciliationBreakBulkResultEndpoint(bulkActionId), { allowDevelopmentFallback: false });
+  } catch (failure) {
+    if (isApiError(failure) && failure.status === 404) return null;
+    throw failure;
+  }
 }
 
 export function getReconciliationCalibrationSummary() {
