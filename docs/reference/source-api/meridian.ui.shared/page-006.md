@@ -6,6 +6,30 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## QuantTemplateDto
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplateDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:412](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L412).
+
+A pre-built starter snippet for the lab.
+
+```csharp
+public sealed record QuantTemplateDto(string Id, string Title, string Description, string Source);
+```
+
+## QuantTemplatesResponse
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTemplatesResponse</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs:415](../../../../src/Meridian.Ui.Shared/Endpoints/QuantLabEndpoints.cs#L415).
+
+Response returned by /api/quant/templates.
+
+```csharp
+public sealed record QuantTemplatesResponse(IReadOnlyList<QuantTemplateDto> Templates);
+```
+
 ## QuantTradeDto
 
 Qualified name: <code>Meridian.Ui.Shared.Endpoints.QuantTradeDto</code>. Kind: `record`.
@@ -16,6 +40,18 @@ JSON-friendly script-emitted trade row.
 
 ```csharp
 public sealed record QuantTradeDto(string Timestamp, string Symbol, string Side, decimal Quantity, decimal Price, decimal Commission);
+```
+
+## RecordFactorObservationRequest
+
+Qualified name: <code>Meridian.Ui.Shared.Endpoints.RecordFactorObservationRequest</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:17](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L17).
+
+An observed pool factor for an effective date.
+
+```csharp
+public sealed record RecordFactorObservationRequest(DateOnly EffectiveDate, decimal Factor, string Source, string? EvidenceRef);
 ```
 
 ## RegisterFixedAssetRequest
@@ -354,6 +390,12 @@ public static partial class SecurityMasterEndpoints
 ```
 
 Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs:18](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.EntityMaster.cs#L18).
+
+```csharp
+public static partial class SecurityMasterEndpoints
+```
+
+Source: [src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs:22](../../../../src/Meridian.Ui.Shared/Endpoints/SecurityMasterEndpoints.ExceptionCases.cs#L22).
 
 ```csharp
 public static partial class SecurityMasterEndpoints
@@ -1198,58 +1240,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public WorkstationFundScopeTenantAccessor(IHttpContextAccessor httpContextAccessor);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:110](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L110) |  |
 | <code>public string? ResolveCallerTenant();</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:116](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L116) |  |
-
-## WorkstationTenantCompanyScopeEndpointFilters
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantCompanyScopeEndpointFilters</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:178](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L178).
-
-Unconditional isolation gate for workstation routes whose durable identity is tenant plus company. Unlike the broader rollout-controlled fund-write gate, this filter never permits or merely logs an incomplete scope.
-
-```csharp
-public static class WorkstationTenantCompanyScopeEndpointFilters
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RouteHandlerBuilder RequireWorkstationTenantCompanyScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:183](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L183) |  |
-
-## WorkstationTenantContext
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:14](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L14).
-
-Request-scoped operator and tenant context resolved from authenticated workstation middleware.
-
-```csharp
-public sealed record WorkstationTenantContext(string? TenantId, string? CompanyId, string? Actor, string? RoleProfileName, UserPermission Permissions)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public bool HasTenantScope =&gt; …;</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:21](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L21) |  |
-
-## WorkstationTenantScopeEndpointFilters
-
-Qualified name: <code>Meridian.Ui.Shared.Endpoints.WorkstationTenantScopeEndpointFilters</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:142](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L142).
-
-Adds tenant-scope metadata and request filters to route groups and individual endpoints.
-
-```csharp
-public static class WorkstationTenantScopeEndpointFilters
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static RouteGroupBuilder RequireWorkstationTenantScope(this RouteGroupBuilder group);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:146](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L146) |  |
-| <code>public static RouteHandlerBuilder RequireWorkstationTenantScope(this RouteHandlerBuilder builder);</code> | [src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs:153](../../../../src/Meridian.Ui.Shared/Endpoints/WorkstationTenantContext.cs#L153) |  |

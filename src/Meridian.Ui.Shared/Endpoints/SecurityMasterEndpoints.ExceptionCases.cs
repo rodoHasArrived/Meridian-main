@@ -45,7 +45,7 @@ public static partial class SecurityMasterEndpoints
             var result = await sync.SyncAsync(ct).ConfigureAwait(false);
             return Results.Json(new SecurityMasterExceptionSyncResultDto(result.Opened, result.Refreshed, result.Closed), jsonOptions);
         })
-        .WithName("SyncSecurityMasterExceptionCases")
+        .WithName("SyncSecurityMasterExceptionCases").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces<SecurityMasterExceptionSyncResultDto>(StatusCodes.Status200OK);
 
         group.MapPost(UiApiRoutes.SecurityMasterExceptionCaseAssign, async (
@@ -61,7 +61,7 @@ public static partial class SecurityMasterEndpoints
                 ? Results.NoContent()
                 : Results.Conflict(new { error = $"Case '{caseId:D}' is not open." });
         })
-        .WithName("AssignSecurityMasterExceptionCase")
+        .WithName("AssignSecurityMasterExceptionCase").RequirePermission(UserPermission.ModifySecurityMaster)
         .Produces(StatusCodes.Status204NoContent)
         .Produces(StatusCodes.Status409Conflict);
 
@@ -103,6 +103,6 @@ public static partial class SecurityMasterEndpoints
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status400BadRequest);
             }
         })
-        .WithName("RecordSecurityFactorObservation");
+        .WithName("RecordSecurityFactorObservation").RequirePermission(UserPermission.ModifySecurityMaster);
     }
 }

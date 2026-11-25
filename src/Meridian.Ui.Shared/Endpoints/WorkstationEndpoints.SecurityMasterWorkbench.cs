@@ -277,7 +277,7 @@ public static partial class WorkstationEndpoints
                     .ToArray(),
                 jsonOptions);
         })
-        .WithName("SecurityMasterWorkbenchPendingRevisions")
+        .WithName("SecurityMasterWorkbenchPendingRevisions").RequireAnyPermission(UserPermission.ViewSecurityMaster, UserPermission.ModifySecurityMaster)
         .Produces<IReadOnlyList<SecurityMasterPendingRevisionDto>>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status403Forbidden);
 

@@ -5464,6 +5464,7 @@ Meridian-main
 │   │   │   └── ScheduledBackfillService.cs
 │   │   ├── SecurityMaster
 │   │   │   ├── CashFlow
+│   │   │   │   ├── CashFlowEngineShadowComparison.cs
 │   │   │   │   ├── ContractualCashFlowPreviewService.cs
 │   │   │   │   ├── FileBondExerciseNoticeStore.cs
 │   │   │   │   ├── FileBondObservedFixingStore.cs
@@ -5554,6 +5555,7 @@ Meridian-main
 │   │   │   ├── SecurityEconomicDefinitionAdapter.RateHomes.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.ReferenceHomes.cs
 │   │   │   ├── SecurityEconomicDefinitionAdapter.ScheduleHomes.cs
+│   │   │   ├── SecurityFactorObservationService.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridge.cs
 │   │   │   ├── SecurityMasterAmortizationLedgerBridge.RetainedAccrual.cs
 │   │   │   ├── SecurityMasterCanonicalSymbolSeedService.cs
@@ -5574,6 +5576,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterCsvParser.cs
 │   │   │   ├── SecurityMasterDataQualityService.cs
 │   │   │   ├── SecurityMasterDraftProposalService.cs
+│   │   │   ├── SecurityMasterExceptionCaseSync.cs
 │   │   │   ├── SecurityMasterGovernanceRequirements.cs
 │   │   │   ├── SecurityMasterHistoricalSymbolTimelineResolver.cs
 │   │   │   ├── SecurityMasterImportPlanner.cs
@@ -8739,7 +8742,9 @@ Meridian-main
 │   │   │   │   ├── 070_security_master_held_amendments.sql
 │   │   │   │   ├── 071_corporate_actions_append_only_guard.sql
 │   │   │   │   ├── 072_security_master_change_outbox.sql
-│   │   │   │   └── 073_security_master_redirects.sql
+│   │   │   │   ├── 073_security_master_redirects.sql
+│   │   │   │   ├── 074_security_master_exception_cases.sql
+│   │   │   │   └── 075_security_factor_observations.sql
 │   │   │   ├── CorporateActionCashDividendPostingLease.cs
 │   │   │   ├── CorporateActionInboxExportSource.cs
 │   │   │   ├── FileBondMarketDataStore.cs
@@ -8826,11 +8831,13 @@ Meridian-main
 │   │   │   ├── RegistryProjectionReadService.cs
 │   │   │   ├── RegistryReferenceProjectionStore.cs
 │   │   │   ├── SecurityAliasSnapshot.cs
+│   │   │   ├── SecurityFactorObservations.cs
 │   │   │   ├── SecurityGovernanceEventLog.cs
 │   │   │   ├── SecurityGovernancePayloads.cs
 │   │   │   ├── SecurityMasterCanonicalWriteScope.cs
 │   │   │   ├── SecurityMasterChangeOutbox.cs
 │   │   │   ├── SecurityMasterDbMapper.cs
+│   │   │   ├── SecurityMasterExceptionCases.cs
 │   │   │   ├── SecurityMasterMigrationRunner.cs
 │   │   │   ├── SecurityMasterProjectionCache.cs
 │   │   │   ├── SecurityMasterRedirects.cs
@@ -11368,6 +11375,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterEndpoints.cs
 │   │   │   ├── SecurityMasterEndpoints.Curves.cs
 │   │   │   ├── SecurityMasterEndpoints.EntityMaster.cs
+│   │   │   ├── SecurityMasterEndpoints.ExceptionCases.cs
 │   │   │   ├── SecurityMasterEndpoints.HeldAmendments.cs
 │   │   │   ├── SecurityMasterEndpoints.Merge.cs
 │   │   │   ├── SecurityMasterEndpoints.ObservedFixings.cs
@@ -14632,6 +14640,7 @@ Meridian-main
 │   │   │   ├── BondSecurityTermsDigestPostgresTests.cs
 │   │   │   ├── BondWorkflowCanonicalModuleTests.cs
 │   │   │   ├── CanonicalRegistryCoverageSourceTests.cs
+│   │   │   ├── CashFlowEngineShadowComparerTests.cs
 │   │   │   ├── ClassificationLabelReaderTests.cs
 │   │   │   ├── ContractualCashFlowCompanionPostgresTests.cs
 │   │   │   ├── CorporateActionAccountingMigrationTests.cs
@@ -14775,6 +14784,7 @@ Meridian-main
 │   │   │   ├── SecurityEnrichmentTests.cs
 │   │   │   ├── SecurityEquityCapitalContractionTests.cs
 │   │   │   ├── SecurityExactRateScalarContractionReplayTests.cs
+│   │   │   ├── SecurityFactorObservationPostgresTests.cs
 │   │   │   ├── SecurityFlatCodecGenerationTests.cs
 │   │   │   ├── SecurityFlatCodecGenerator.cs
 │   │   │   ├── SecurityGovernancePayloadContractTests.cs
@@ -14810,6 +14820,7 @@ Meridian-main
 │   │   │   ├── SecurityMasterDataQualityServiceCoverageTests.cs
 │   │   │   ├── SecurityMasterDataQualityServiceTests.cs
 │   │   │   ├── SecurityMasterDraftProposalServiceTests.cs
+│   │   │   ├── SecurityMasterExceptionCasePostgresTests.cs
 │   │   │   ├── SecurityMasterGovernanceEventsPostgresTests.cs
 │   │   │   ├── SecurityMasterGovernanceRequirementsTests.cs
 │   │   │   ├── SecurityMasterGovernanceTestSupport.cs

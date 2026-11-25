@@ -177,6 +177,9 @@ public sealed partial class SecurityMasterGovernedConcurrencyPostgresTests(Secur
         mock.Setup(s => s.CreateDraftAsync(It.IsAny<Guid>(), It.IsAny<string>(), It.IsAny<string>(),
             It.IsAny<DateTimeOffset>(), It.IsAny<string>(), It.IsAny<string?>(),
             It.IsAny<SecurityMasterRevisionFieldValue?>(), It.IsAny<CancellationToken>())).Returns(create);
+        // The per-field staging guard (review P5/D1) reads open revisions before staging.
+        mock.Setup(s => s.ListBySecurityAsync(It.IsAny<Guid>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(Array.Empty<SecurityMasterRevisionRecord>());
         return mock.Object;
     }
 
