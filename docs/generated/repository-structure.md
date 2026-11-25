@@ -2864,7 +2864,6 @@ Meridian-main
 │   │   ├── pilot-readiness-dashboard.md
 │   │   ├── provider-validation-matrix.md
 │   │   ├── README.md
-│   │   ├── ROADMAP.md
 │   │   ├── ROADMAP_SUMMARY.md
 │   │   ├── rules-report.md
 │   │   ├── run-contract.schema.json
