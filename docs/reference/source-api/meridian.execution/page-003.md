@@ -141,7 +141,7 @@ Declared public members:
 | <code>public Task&lt;ExecutionReport&gt; ModifyOrderAsync(string orderId, OrderModification modification, CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:345](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L345) |  |
 | <code>public async IAsyncEnumerable&lt;ExecutionReport&gt; StreamExecutionReportsAsync([EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:423](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L423) |  |
 | <code>public void EvaluateSymbol(string symbol);</code> | [src/Meridian.Execution/PaperTradingGateway.cs:436](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L436) |  |
-| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:705](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L705) |  |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Execution/PaperTradingGateway.cs:707](../../../../src/Meridian.Execution/PaperTradingGateway.cs#L707) |  |
 
 ## SecurityMasterGate
 
@@ -171,8 +171,14 @@ Source: [src/Meridian.Execution/ISecurityMasterGate.cs:8](../../../../src/Meridi
 Result from a Security Master gate check for an order symbol.
 
 ```csharp
-public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null);
+public sealed record SecurityMasterGateResult(bool IsApproved, string? Reason = null)
 ```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Execution/ISecurityMasterGate.cs:14](../../../../src/Meridian.Execution/ISecurityMasterGate.cs#L14) | Canonical Security Master identity of the approved symbol, when the gate resolved one. Carry it on the order (OrderRequest.SecurityId) so fills post to SecurityId-keyed ledger accounts. |
 
 ## PaperFinancingApiJsonContext
 
@@ -198,7 +204,7 @@ public sealed record PaperFinancingRequest(DateOnly AccrualDate, decimal Amount,
 
 Qualified name: <code>Meridian.Execution.Services.AccountDefinition</code>. Kind: `record`.
 
-Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1407](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1407).
+Source: [src/Meridian.Execution/Services/PaperTradingPortfolio.cs:1411](../../../../src/Meridian.Execution/Services/PaperTradingPortfolio.cs#L1411).
 
 Defines one account within a multi-account paper trading session.
 
@@ -835,7 +841,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Execution.Services.IPaperSessionStore</code>. Kind: `interface`.
 
-Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:349](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L349).
+Source: [src/Meridian.Execution/Services/IPaperSessionStore.cs:353](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L353).
 
 Storage abstraction for paper trading session persistence. Implementations may store session data in-memory, on the local file system, or in any other durable backend.
 
@@ -847,21 +853,21 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>bool SupportsJournalBatches =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:352](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L352) | Whether newly created sessions can use append-only effect journals. |
-| <code>Task&lt;PaperSessionJournalReceipt&gt; AppendJournalBatchAsync(PaperSessionJournalBatch batch, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:355](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L355) | Appends one immutable batch or recovers an identical receipt. |
-| <code>Task&lt;IReadOnlyList&lt;PaperSessionJournalReceipt&gt;&gt; LoadJournalBatchesAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:360](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L360) | Loads all verified journal receipts for a session. |
-| <code>Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:368](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L368) | Appends a single fill event to the session&#x27;s immutable fill log. |
-| <code>Task&lt;PaperSessionFillAppendResult&gt; TryAppendFillAsync(string sessionId, PaperSessionFillRecord record, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:376](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L376) | Durably and atomically claims record before the caller applies it to portfolio state. Implementations must serialize concurrent claims for one FillId and must not complete until the claim is crash-durable. The default fails closed so a legacy store cannot silently substitute a read-then-append sequence. |
-| <code>Task MarkFillAppliedAsync(string sessionId, Guid fillId, string canonicalHash, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:388](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L388) | Durably and idempotently marks a claimed fill as applied. Implementations must reject an unknown FillId or a canonical-hash mismatch and must not complete until the acknowledgement is crash-durable. The default fails closed instead of silently acknowledging nothing. |
-| <code>Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:397](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L397) | Appends an order-state snapshot to the session&#x27;s order history log. |
-| <code>Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList&lt;PersistedJournalEntryDto&gt; entries, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:403](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L403) | Writes the complete ledger journal for sessionId to a JSONL sidecar file (ledger.jsonl). Replaces any previously-written ledger for the same session. |
-| <code>Task&lt;IReadOnlyList&lt;PersistedSessionRecord&gt;&gt; LoadAllSessionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:409](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L409) | Returns metadata records for every persisted session. |
-| <code>Task&lt;IReadOnlyList&lt;ExecutionReport&gt;&gt; LoadFillsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:412](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L412) | Returns all recorded fill events for sessionId, in order. |
-| <code>async Task&lt;IReadOnlyList&lt;PaperSessionFillRecord&gt;&gt; LoadFillRecordsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:420](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L420) | Returns versioned fill records including durable apply state. The default adapter treats legacy raw fills as already acknowledged while deriving their account-independent canonical identity from the retained report content. New writes still require explicit atomic claim and acknowledgement implementations above. |
-| <code>Task&lt;IReadOnlyList&lt;OrderState&gt;&gt; LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:434](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L434) | Returns the order-state history for sessionId, in order. |
-| <code>Task&lt;PaperSessionSettlementAppendStatus&gt; TryAppendSettlementAsync(string sessionId, PaperSessionSettlementRecord record, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:442](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L442) | Durably appends a daily variation-margin settlement unless its key (account, symbol, trading date) is already recorded. Implementations must serialize concurrent appends and must not complete until the record is crash-durable. The default fails closed, so a store that cannot persist settlements never lets one reach the portfolio. |
-| <code>Task&lt;IReadOnlyList&lt;PaperSessionSettlementRecord&gt;&gt; LoadSettlementsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:453](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L453) | Returns the recorded variation-margin settlements for sessionId, in append order. The default returns none, which is exact for stores that cannot append them. |
-| <code>Task&lt;IReadOnlyList&lt;PersistedJournalEntryDto&gt;&gt; LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:462](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L462) | Returns the persisted ledger journal entries for sessionId. Returns an empty list when no ledger has been saved for this session. |
+| <code>bool SupportsJournalBatches =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:356](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L356) | Whether newly created sessions can use append-only effect journals. |
+| <code>Task&lt;PaperSessionJournalReceipt&gt; AppendJournalBatchAsync(PaperSessionJournalBatch batch, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:359](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L359) | Appends one immutable batch or recovers an identical receipt. |
+| <code>Task&lt;IReadOnlyList&lt;PaperSessionJournalReceipt&gt;&gt; LoadJournalBatchesAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:364](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L364) | Loads all verified journal receipts for a session. |
+| <code>Task AppendFillAsync(string sessionId, ExecutionReport fill, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:372](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L372) | Appends a single fill event to the session&#x27;s immutable fill log. |
+| <code>Task&lt;PaperSessionFillAppendResult&gt; TryAppendFillAsync(string sessionId, PaperSessionFillRecord record, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:380](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L380) | Durably and atomically claims record before the caller applies it to portfolio state. Implementations must serialize concurrent claims for one FillId and must not complete until the claim is crash-durable. The default fails closed so a legacy store cannot silently substitute a read-then-append sequence. |
+| <code>Task MarkFillAppliedAsync(string sessionId, Guid fillId, string canonicalHash, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:392](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L392) | Durably and idempotently marks a claimed fill as applied. Implementations must reject an unknown FillId or a canonical-hash mismatch and must not complete until the acknowledgement is crash-durable. The default fails closed instead of silently acknowledging nothing. |
+| <code>Task AppendOrderUpdateAsync(string sessionId, OrderState order, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:401](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L401) | Appends an order-state snapshot to the session&#x27;s order history log. |
+| <code>Task SaveLedgerJournalAsync(string sessionId, IReadOnlyList&lt;PersistedJournalEntryDto&gt; entries, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:407](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L407) | Writes the complete ledger journal for sessionId to a JSONL sidecar file (ledger.jsonl). Replaces any previously-written ledger for the same session. |
+| <code>Task&lt;IReadOnlyList&lt;PersistedSessionRecord&gt;&gt; LoadAllSessionsAsync(CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:413](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L413) | Returns metadata records for every persisted session. |
+| <code>Task&lt;IReadOnlyList&lt;ExecutionReport&gt;&gt; LoadFillsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:416](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L416) | Returns all recorded fill events for sessionId, in order. |
+| <code>async Task&lt;IReadOnlyList&lt;PaperSessionFillRecord&gt;&gt; LoadFillRecordsAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:424](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L424) | Returns versioned fill records including durable apply state. The default adapter treats legacy raw fills as already acknowledged while deriving their account-independent canonical identity from the retained report content. New writes still require explicit atomic claim and acknowledgement implementations above. |
+| <code>Task&lt;IReadOnlyList&lt;OrderState&gt;&gt; LoadOrderHistoryAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:438](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L438) | Returns the order-state history for sessionId, in order. |
+| <code>Task&lt;PaperSessionSettlementAppendStatus&gt; TryAppendSettlementAsync(string sessionId, PaperSessionSettlementRecord record, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:446](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L446) | Durably appends a daily variation-margin settlement unless its key (account, symbol, trading date) is already recorded. Implementations must serialize concurrent appends and must not complete until the record is crash-durable. The default fails closed, so a store that cannot persist settlements never lets one reach the portfolio. |
+| <code>Task&lt;IReadOnlyList&lt;PaperSessionSettlementRecord&gt;&gt; LoadSettlementsAsync(string sessionId, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:457](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L457) | Returns the recorded variation-margin settlements for sessionId, in append order. The default returns none, which is exact for stores that cannot append them. |
+| <code>Task&lt;IReadOnlyList&lt;PersistedJournalEntryDto&gt;&gt; LoadLedgerJournalAsync(string sessionId, CancellationToken ct = default);</code> | [src/Meridian.Execution/Services/IPaperSessionStore.cs:466](../../../../src/Meridian.Execution/Services/IPaperSessionStore.cs#L466) | Returns the persisted ledger journal entries for sessionId. Returns an empty list when no ledger has been saved for this session. |
 
 ## JournalAttribution
 

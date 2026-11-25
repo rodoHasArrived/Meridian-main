@@ -851,6 +851,7 @@ Declared public members:
 | --- | --- | --- |
 | <code>public SecurityResolver(ISecurityMasterStore store);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:15](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L15) |  |
 | <code>public async Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:20](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L20) |  |
+| <code>public async Task&lt;CanonicalSecurityResolution&gt; ResolveCanonicalAsync(ResolveCanonicalSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Application/SecurityMaster/SecurityResolver.cs:34](../../../../src/Meridian.Application/SecurityMaster/SecurityResolver.cs#L34) |  |
 
 ## StaleFieldProposalException
 

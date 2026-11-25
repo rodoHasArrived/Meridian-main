@@ -161,8 +161,9 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Execution/Allocation/AllocationResult.cs:43](../../../../src/Meridian.Execution/Allocation/AllocationResult.cs#L43) | Validates that all slice quantities sum to the block total. Rounding residuals of up to ±1 share are acceptable. |
-| <code>public decimal TotalGrossValue =&gt; …;</code> | [src/Meridian.Execution/Allocation/AllocationResult.cs:47](../../../../src/Meridian.Execution/Allocation/AllocationResult.cs#L47) | Total gross value of the block trade. |
+| <code>public Guid? SecurityId { get; init; }</code> | [src/Meridian.Execution/Allocation/AllocationResult.cs:44](../../../../src/Meridian.Execution/Allocation/AllocationResult.cs#L44) | Security Master identity of the block instrument, carried from order admission. Required to post the allocation: per-security ledger accounts are keyed by SecurityId (Security Master review F2), with Symbol kept for display. |
+| <code>public bool IsBalanced =&gt; …;</code> | [src/Meridian.Execution/Allocation/AllocationResult.cs:50](../../../../src/Meridian.Execution/Allocation/AllocationResult.cs#L50) | Validates that all slice quantities sum to the block total. Rounding residuals of up to ±1 share are acceptable. |
+| <code>public decimal TotalGrossValue =&gt; …;</code> | [src/Meridian.Execution/Allocation/AllocationResult.cs:54](../../../../src/Meridian.Execution/Allocation/AllocationResult.cs#L54) | Total gross value of the block trade. |
 
 ## AllocationRule
 

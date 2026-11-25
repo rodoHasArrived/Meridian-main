@@ -6,6 +6,64 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## InstrumentTypeDescriptorLabelException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelException</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:532](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L532).
+
+A reviewed descriptor label whose relationship to the domain label is recorded explicitly.
+
+```csharp
+public sealed record InstrumentTypeDescriptorLabelException(InstrumentType InstrumentType, InstrumentTypeDescriptorLabelField Field, string Label, string Reason);
+```
+
+## InstrumentTypeDescriptorLabelField
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.InstrumentTypeDescriptorLabelField</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:525](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L525).
+
+Which descriptor classification label an exception or mapping entry describes.
+
+```csharp
+public enum InstrumentTypeDescriptorLabelField
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>AssetFamily</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:527](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L527) |  |
+| <code>SubType</code> | [src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs:528](../../../../src/Meridian.Contracts/SecurityMaster/InstrumentTypeDescriptorCatalog.cs#L528) |  |
+
+## IOtcCollateralStore
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcCollateralStore</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:151](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L151).
+
+Persistence for exposure snapshots, collateral balances and margin calls.
+
+```csharp
+public interface IOtcCollateralStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;OtcExposureSnapshotDto&gt; AppendExposureSnapshotAsync(OtcExposureSnapshotDto snapshot, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:154](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L154) | Appends the snapshot as the next version for its netting set and date, assigning the version and the digest. |
+| <code>Task&lt;OtcExposureSnapshotDto?&gt; GetExposureSnapshotAsync(Guid snapshotId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:155](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L155) |  |
+| <code>Task&lt;IReadOnlyList&lt;OtcExposureSnapshotDto&gt;&gt; ListExposureSnapshotsAsync(Guid nettingSetId, DateOnly? asOfDate = null, bool latestVersionOnly = true, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:156](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L156) |  |
+| <code>Task&lt;OtcCollateralBalanceDto&gt; UpsertCollateralBalanceAsync(UpsertOtcCollateralBalanceRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:158](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L158) |  |
+| <code>Task&lt;IReadOnlyList&lt;OtcCollateralBalanceDto&gt;&gt; ListCollateralBalancesAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:159](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L159) |  |
+| <code>Task&lt;IReadOnlyList&lt;Guid&gt;&gt; ListNettingSetsUnderCollateralAgreementAsync(Guid collateralAgreementId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:165](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L165) | The netting sets that reference a collateral agreement, in id order. More than one means the agreement&#x27;s balances would be credited to each, which a computation refuses to do. |
+| <code>Task&lt;OtcMarginCallDto&gt; IssueMarginCallAsync(IssueOtcMarginCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:175](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L175) | Issues the call for one movement of a snapshot. Besides OtcMarginCallRules.Issue, the store refuses a snapshot that is not the netting set&#x27;s latest valuation (a later version for its date, or a snapshot for a later date no later than the current one) and one whose terms, recorded inputs or market data no longer match what it holds (OtcMarginCallRules.RequireUnchangedInputs), and keeps the terms, contracts and balances from changing until the call is recorded. |
+| <code>Task&lt;OtcMarginCallDto&gt; TransitionMarginCallAsync(TransitionOtcMarginCallRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:176](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L176) |  |
+| <code>Task&lt;OtcMarginCallDto?&gt; GetMarginCallAsync(Guid callId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:177](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L177) |  |
+| <code>Task&lt;IReadOnlyList&lt;OtcMarginCallDto&gt;&gt; ListMarginCallsAsync(Guid nettingSetId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:178](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L178) |  |
+
 ## IOtcContractStore
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.IOtcContractStore</code>. Kind: `interface`.
@@ -473,6 +531,7 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;Guid?&gt; ResolveAsync(ResolveSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:8](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L8) |  |
+| <code>async Task&lt;CanonicalSecurityResolution&gt; ResolveCanonicalAsync(ResolveCanonicalSecurityRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs:20](../../../../src/Meridian.Contracts/SecurityMaster/ISecurityResolver.cs#L20) | Resolves an identifier across all providers to exactly one Security Master identity, returning a typed CanonicalSecurityResolutionStatus.Ambiguous or CanonicalSecurityResolutionStatus.NotFound result instead of picking a candidate. |
 
 ## ISecurityTradingParametersQueryService
 
@@ -876,46 +935,3 @@ Declared public members:
 | <code>public static OtcEligibleCollateralDto? FindEligible(OtcCollateralAgreementDto agreement, string? description);</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:238](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L238) | The agreement&#x27;s eligible-collateral line with this description regardless of case, or null when there is none. |
 | <code>public static decimal ValuedAmount(decimal quantity, decimal unitValue) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:248](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L248) | The valued amount of a balance: quantity times unit value, computed, never supplied. |
 | <code>public static string RequireActor(string? value) =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs:251](../../../../src/Meridian.Contracts/SecurityMaster/OtcCollateral.cs#L251) | Collateral and margin writes are operator actions, so the actor is required rather than defaulted. |
-
-## OtcCompressionData
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcCompressionData</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs:32](../../../../src/Meridian.Contracts/SecurityMaster/OtcContractLifecycle.cs#L32).
-
-One contract&#x27;s externally agreed compression result; zero remaining notional closes it. No other contract is modified.
-
-```csharp
-public sealed record OtcCompressionData([property : JsonRequired] string CompressionReference, [property : JsonRequired] decimal RemainingNotional) : OtcContractLifecycleData;
-```
-
-## OtcContractDirection
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractDirection</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L28).
-
-Which side of the contract the fund took: it bought (received, paid fixed, bought protection) or sold.
-
-```csharp
-public enum OtcContractDirection
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Buy</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:30](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L30) |  |
-| <code>Sell</code> | [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:31](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L31) |  |
-
-## OtcContractDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.OtcContractDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/OtcContracts.cs:119](../../../../src/Meridian.Contracts/SecurityMaster/OtcContracts.cs#L119).
-
-A bilateral contract: the trade the fund did against a counterparty on an instrument whose economic terms the Security Master holds. The instrument says what the contract is (a 5y payer swap on SOFR); the contract says who it is with, how much, which way, under which netting set, and where it is in its life. Many contracts can share one instrument.
-
-```csharp
-public sealed record OtcContractDto([property : JsonRequired] Guid ContractId, [property : JsonRequired] Guid SecurityId, [property : JsonRequired] Guid NettingSetId, string? ExternalTradeId, [property : JsonRequired] OtcContractDirection Direction, [property : JsonRequired] decimal Notional, [property : JsonRequired] string NotionalCurrency, [property : JsonRequired] DateOnly TradeDate, [property : JsonRequired] DateOnly EffectiveDate, DateOnly? TerminationDate, [property : JsonRequired] OtcContractStatus Status, string? ConfirmationReference, string? Notes, [property : JsonRequired] long Version, [property : JsonRequired] string UpdatedBy, [property : JsonRequired] DateTimeOffset UpdatedAt);
-```

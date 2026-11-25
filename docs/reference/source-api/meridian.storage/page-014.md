@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## LifecycleExecutionResult
+
+Qualified name: <code>Meridian.Storage.Services.LifecycleExecutionResult</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:471](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L471).
+
+```csharp
+public sealed record LifecycleExecutionResult(DateTime ExecutedAtUtc, int ActionsExecuted, int ActionsFailed, long BytesMigrated, long BytesDeleted, bool DryRun, IReadOnlyList<string> Errors);
+```
+
+## LifecyclePolicyEngine
+
+Qualified name: <code>Meridian.Storage.Services.LifecyclePolicyEngine</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:13](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L13).
+
+Engine that enforces tier-based lifecycle policies on stored data. Evaluates files against their configured StoragePolicyConfig and orchestrates tier migrations, compression upgrades, and retention enforcement.
+
+```csharp
+public sealed class LifecyclePolicyEngine : ILifecyclePolicyEngine
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public LifecyclePolicyEngine(StorageOptions options, ITierMigrationService tierMigration, IFileMaintenanceService maintenanceService, ILogger&lt;LifecyclePolicyEngine&gt; logger);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:23](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L23) |  |
+| <code>public Task&lt;LifecycleEvaluationResult&gt; EvaluateAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:36](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L36) |  |
+| <code>public async Task&lt;LifecycleExecutionResult&gt; ExecuteAsync(IReadOnlyList&lt;LifecycleAction&gt; actions, bool dryRun = false, CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:129](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L129) |  |
+| <code>public StoragePolicyConfig ResolvePolicy(string filePath);</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:270](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L270) |  |
+| <code>public IReadOnlyDictionary&lt;StorageTier, LifecycleTierInfo&gt; GetTierStatistics();</code> | [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:295](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L295) |  |
+
+## LifecycleState
+
+Qualified name: <code>Meridian.Storage.Services.LifecycleState</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/LifecyclePolicyEngine.cs:480](../../../../src/Meridian.Storage/Services/LifecyclePolicyEngine.cs#L480).
+
+```csharp
+public sealed record LifecycleState(StorageTier CurrentTier, TimeSpan FileAge, DataClassification Classification);
+```
+
 ## LifecycleTierInfo
 
 Qualified name: <code>Meridian.Storage.Services.LifecycleTierInfo</code>. Kind: `record`.
@@ -701,55 +743,3 @@ Retention compliance report.
 ```csharp
 public sealed record RetentionComplianceReport(DateTimeOffset GeneratedAt, string RootPath, int? RetentionPolicyDays, bool IsCompliant, long TotalFiles, long TotalSizeBytes, IReadOnlyList<RetentionEntry> Entries, IReadOnlyList<RetentionViolation> Violations, string Summary);
 ```
-
-## RetentionComplianceReporter
-
-Qualified name: <code>Meridian.Storage.Services.RetentionComplianceReporter</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:10](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L10).
-
-Generates retention compliance reports by scanning stored data against configured retention policies. Outputs machine-readable and human-readable reports suitable for regulatory audits.
-
-```csharp
-public sealed class RetentionComplianceReporter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public RetentionComplianceReporter(StorageOptions options, ILogger&lt;RetentionComplianceReporter&gt; logger);</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:17](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L17) |  |
-| <code>public Task&lt;RetentionComplianceReport&gt; GenerateReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:28](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L28) | Generates a retention compliance report. |
-
-## RetentionEntry
-
-Qualified name: <code>Meridian.Storage.Services.RetentionEntry</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:198](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L198).
-
-A single file&#x27;s retention status.
-
-```csharp
-public sealed record RetentionEntry(string FilePath, string Symbol, string Tier, long SizeBytes, DateTime LastModifiedUtc, int AgeDays, RetentionStatus Status);
-```
-
-## RetentionStatus
-
-Qualified name: <code>Meridian.Storage.Services.RetentionStatus</code>. Kind: `enum`.
-
-Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:221](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L221).
-
-Retention status for a file.
-
-```csharp
-public enum RetentionStatus : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>Compliant</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:223](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L223) |  |
-| <code>ExceedsPolicy</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:224](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L224) |  |
-| <code>Archived</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:225](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L225) |  |
-| <code>PendingDeletion</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:226](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L226) |  |

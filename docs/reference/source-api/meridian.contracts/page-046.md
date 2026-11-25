@@ -350,6 +350,64 @@ Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCashDividendAttest
 public sealed record AttestCorporateActionCashDividendRequestDto(Guid CaseId, long ExpectedVersion, string IdempotencyKey, string TenantId, string CompanyId, Guid ProjectionId, long ExpectedDeclarationRevision, string ExpectedEligibilityHash, string Reason, string EvidenceReference, string EvidenceHash, string Confirmation, string Actor, CorporateActionCaseScopeDto? ScopeAssertion = null, string? CorrelationId = null, CorporateActionCashDividendDecisionAuthorityDto? Authority = null);
 ```
 
+## CanonicalSecurityResolution
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CanonicalSecurityResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:28](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L28).
+
+Typed result of ISecurityResolver.ResolveCanonicalAsync.
+
+```csharp
+public sealed record CanonicalSecurityResolution(CanonicalSecurityResolutionStatus Status, Guid? SecurityId, IReadOnlyList<Guid> Candidates, SecurityIdentifierKind IdentifierKind, string IdentifierValue, DateTimeOffset AsOfUtc)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:37](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L37) | true when exactly one security was resolved. |
+| <code>public static CanonicalSecurityResolution FromCandidates(ResolveCanonicalSecurityRequest request, DateTimeOffset asOfUtc, IEnumerable&lt;Guid&gt; candidates);</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:40](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L40) | Builds a result from the distinct candidates that claim the identifier. |
+
+## CanonicalSecurityResolutionException
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionException</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:65](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L65).
+
+Thrown when a workflow requires one canonical security but resolution was not unique.
+
+```csharp
+public sealed class CanonicalSecurityResolutionException : InvalidOperationException
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public CanonicalSecurityResolutionException(CanonicalSecurityResolution resolution) : base(BuildMessage(resolution));</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:67](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L67) |  |
+| <code>public CanonicalSecurityResolution Resolution { get; }</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:74](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L74) | The typed resolution that blocked the workflow. |
+
+## CanonicalSecurityResolutionStatus
+
+Qualified name: <code>Meridian.Contracts.SecurityMaster.CanonicalSecurityResolutionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:15](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L15).
+
+Outcome of a canonical (provider-less) identifier resolution.
+
+```csharp
+public enum CanonicalSecurityResolutionStatus
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Resolved</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:18](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L18) | Exactly one security claims the identifier at the requested instant. |
+| <code>Ambiguous</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:21](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L21) | More than one security claims the identifier; the caller must not pick one. |
+| <code>NotFound</code> | [src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs:24](../../../../src/Meridian.Contracts/SecurityMaster/CanonicalSecurityResolution.cs#L24) | No security claims the identifier at the requested instant. |
+
 ## CashDistributionCorporateActionTerms
 
 Qualified name: <code>Meridian.Contracts.SecurityMaster.CashDistributionCorporateActionTerms</code>. Kind: `record`.
@@ -630,33 +688,3 @@ Enum declarations:
 | <code>PriceScaling</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:583](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L583) |  |
 | <code>CashDistribution</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:584](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L584) |  |
 | <code>PositionTransformation</code> | [src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs:585](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionTypeDescriptorCatalog.cs#L585) |  |
-
-## CorporateActionCalendarCaseReferenceDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarCaseReferenceDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:53](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L53).
-
-```csharp
-public sealed record CorporateActionCalendarCaseReferenceDto(Guid CaseId, long Version, string State, CorporateActionCaseScopeDto Scope);
-```
-
-## CorporateActionCalendarEventDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarEventDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:56](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L56).
-
-```csharp
-public sealed record CorporateActionCalendarEventDto(string EventId, Guid SecurityId, string Ticker, string ActionType, Guid ProposalId, string DateKind, DateOnly Date, DateTimeOffset? At, IReadOnlyList<CorporateActionCalendarCaseReferenceDto> Cases, CorporateActionProviderEventIdentityDto Source, string ProposalState, CorporateActionDeadlineHistoryDto? Deadline = null, CorporateActionElectionCutoffDto? SourceCutoff = null);
-```
-
-## CorporateActionCalendarPageDto
-
-Qualified name: <code>Meridian.Contracts.SecurityMaster.CorporateActionCalendarPageDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs:71](../../../../src/Meridian.Contracts/SecurityMaster/CorporateActionCalendarContracts.cs#L71).
-
-```csharp
-public sealed record CorporateActionCalendarPageDto(DateOnly From, DateOnly To, DateTimeOffset GeneratedAtUtc, string Revision, IReadOnlyList<CorporateActionCalendarEventDto> Items, string? NextCursor, int TotalCount, string Coverage);
-```

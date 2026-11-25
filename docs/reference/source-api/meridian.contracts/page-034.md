@@ -86,7 +86,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleDryRunMatchDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:938](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L938).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:946](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L946).
 
 ```csharp
 public sealed record AccountingRuleDryRunMatchDto(string RuleId, string DisplayName, string RuleVersion, int Priority, bool IsMatched, IReadOnlyList<string> Explanations, IReadOnlyList<AccountingConfigurationValidationIssueDto> ValidationIssues);
@@ -189,7 +189,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleTestCaseDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1160](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1160).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1168](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1168).
 
 ```csharp
 public sealed record AccountingRuleTestCaseDto(string TestCaseId, string DisplayName, RuleDryRunRequestDto Request, string? ExpectedRuleId = null, string? ExpectedRuleVersion = null, bool ExpectBalancedPosting = true, IReadOnlyList<string>? ExpectedIssueCodes = null, IReadOnlyList<GeneratedPostingLineDto>? ExpectedGeneratedPostingLines = null, IReadOnlyList<string>? EvidenceLinks = null)
@@ -199,15 +199,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; ExpectedIssueCodes { get; init; } = ExpectedIssueCodes??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1171](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1171) |  |
-| <code>public IReadOnlyList&lt;GeneratedPostingLineDto&gt; ExpectedGeneratedPostingLines { get; init; } = ExpectedGeneratedPostingLines??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1174](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1174) |  |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1177](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1177) |  |
+| <code>public IReadOnlyList&lt;string&gt; ExpectedIssueCodes { get; init; } = ExpectedIssueCodes??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1179](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1179) |  |
+| <code>public IReadOnlyList&lt;GeneratedPostingLineDto&gt; ExpectedGeneratedPostingLines { get; init; } = ExpectedGeneratedPostingLines??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1182](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1182) |  |
+| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1185](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1185) |  |
 
 ## AccountingRuleTestCaseResultDto
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleTestCaseResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1181](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1181).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1189](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1189).
 
 ```csharp
 public sealed record AccountingRuleTestCaseResultDto(string TestCaseId, string DisplayName, bool Passed, RuleDryRunResultDto DryRunResult, IReadOnlyList<AccountingConfigurationValidationIssueDto> AssertionIssues);
@@ -217,7 +217,7 @@ public sealed record AccountingRuleTestCaseResultDto(string TestCaseId, string D
 
 Qualified name: <code>Meridian.Contracts.Ledger.AccountingRuleTestSuiteResultDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1188](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1188).
+Source: [src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs:1196](../../../../src/Meridian.Contracts/Ledger/AccountingConfigurationDtos.cs#L1196).
 
 ```csharp
 public sealed record AccountingRuleTestSuiteResultDto(string FundProfileId, Guid? LedgerBookId, DateTimeOffset ExecutedAtUtc, string Actor, int TotalCount, int PassedCount, int FailedCount, IReadOnlyList<AccountingRuleTestCaseResultDto> Results);

@@ -6,6 +6,48 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## CollateralCallDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CollateralCallDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs:27](../../../../src/Meridian.Contracts/Workstation/CollateralExposureDtos.cs#L27).
+
+```csharp
+public sealed record CollateralCallDto(string CallId, string Counterparty, decimal RequiredAmount, decimal PostedAmount, DateTimeOffset DueByUtc, string Status, string Reason);
+```
+
+## CompleteActivationOutcomeRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CompleteActivationOutcomeRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L93).
+
+```csharp
+public sealed record CompleteActivationOutcomeRequestDto(string Key);
+```
+
+## CompleteFirstRunRequestDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CompleteFirstRunRequestDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/FirstRunDtos.cs:87](../../../../src/Meridian.Contracts/Workstation/FirstRunDtos.cs#L87).
+
+```csharp
+public sealed record CompleteFirstRunRequestDto(string Goal, string StarterKitId, string DataChoice, bool UseSampleData);
+```
+
+## CorporateActionDescriptorDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.CorporateActionDescriptorDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/SecurityMasterTrustWorkbenchDtos.cs#L96).
+
+Canonical-taxonomy projection of one effective corporate action for workbench surfaces: the chain tip&#x27;s catalog identity (canonical name, ISO 15022 CAEV alignment, display name), its lifecycle state resolved at the snapshot&#x27;s as-of time, and the amendment timeline (original announcement first, tip last). CorpActId joins the descriptor back to the raw row in SecurityMasterTrustSnapshotDto.CorporateActions.
+
+```csharp
+public sealed record CorporateActionDescriptorDto(Guid CorpActId, string CanonicalName, string? CaevCode, string DisplayName, string LifecycleState, bool IsCancelled, IReadOnlyList<CorporateActionTimelineEntryDto> Timeline);
+```
+
 ## CorporateActionTimelineEntryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CorporateActionTimelineEntryDto</code>. Kind: `record`.
@@ -661,62 +703,4 @@ Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:630](../../.
 
 ```csharp
 public sealed record EvidenceEndpointErrorDto(string Code, string Message, string? SubjectKind = null, string? SubjectId = null, string? FileName = null, string? VaultId = null);
-```
-
-## EvidenceExtractionStatusDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceExtractionStatusDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:93](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L93).
-
-```csharp
-public enum EvidenceExtractionStatusDto
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>NotExtracted = 0</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:95](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L95) |  |
-| <code>Extracted = 1</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:96](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L96) |  |
-| <code>NeedsReview = 2</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:97](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L97) |  |
-| <code>Accepted = 3</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:98](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L98) |  |
-| <code>Rejected = 4</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:99](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L99) |  |
-| <code>Pending = 5</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:100](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L100) |  |
-
-## EvidenceFreshnessDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceFreshnessDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:25](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L25).
-
-```csharp
-public sealed record EvidenceFreshnessDto(DateTimeOffset? AsOf, bool IsStale, string? Reason);
-```
-
-## EvidenceGraphDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceGraphDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:676](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L676).
-
-```csharp
-public sealed record EvidenceGraphDto(EvidenceSubjectDto Subject, DateTimeOffset GeneratedAt, IReadOnlyList<EvidenceNodeDto> Nodes, IReadOnlyList<EvidenceEdgeDto> Edges, IReadOnlyList<string> Warnings)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public EvidenceProofChainDto ProofChain { get; init; } = EvidenceProofChainDto.Empty;</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:683](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L683) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] public PreparerAttestationEvidenceProjectionDto? PreparerAttestations { get; init; }</code> | [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:685](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L685) |  |
-
-## EvidenceLifecycleMetadataDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.EvidenceLifecycleMetadataDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs:600](../../../../src/Meridian.Contracts/Workstation/EvidenceWorkflowDtos.cs#L600).
-
-```csharp
-public sealed record EvidenceLifecycleMetadataDto(DateTimeOffset? RetainUntil, bool LegalHold, DateTimeOffset? ExpiresAt, IReadOnlyList<string> AccessPolicyTags);
 ```

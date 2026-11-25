@@ -411,7 +411,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static AutomatedJournalDraft Build(PortfolioImportRun run);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:10](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L10) |  |
+| <code>public static AutomatedJournalDraft Build(PortfolioImportRun run, IReadOnlyDictionary&lt;string, Guid&gt; securityIds);</code> | [src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs:16](../../../../src/Meridian.Application/Subscriptions/Services/PortfolioOpeningBalanceProjector.cs#L16) |  |
 
 ## ProviderStatus
 

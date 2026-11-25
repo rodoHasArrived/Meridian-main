@@ -403,7 +403,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.ILedgerBookService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:571](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L571).
+Source: [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:580](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L580).
 
 Creates and queries ledger books and manages their accounting periods and rollout assessments.
 
@@ -415,16 +415,16 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;LedgerBookDto&gt; CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:573](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L573) |  |
-| <code>Task&lt;LedgerBookDto?&gt; GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:575](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L575) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerBookDto&gt;&gt; ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:577](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L577) |  |
-| <code>Task&lt;LedgerBookRolloutAssessmentDto&gt; AssessRolloutAsync(LedgerBookRolloutAssessmentRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:579](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L579) |  |
-| <code>Task&lt;LedgerPeriodDto&gt; CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:585](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L585) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:587](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L587) |  |
-| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:589](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L589) |  |
-| <code>Task&lt;LedgerPeriodSummaryDto?&gt; GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:591](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L591) |  |
-| <code>Task&lt;LedgerPeriodCloseResultDto&gt; ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:593](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L593) |  |
-| <code>Task&lt;LedgerPeriodReopenResultDto&gt; ReopenPeriodAsync(Guid periodId, ReopenLedgerPeriodRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:598](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L598) |  |
+| <code>Task&lt;LedgerBookDto&gt; CreateBookAsync(CreateLedgerBookRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:582](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L582) |  |
+| <code>Task&lt;LedgerBookDto?&gt; GetBookAsync(Guid ledgerBookId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:584](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L584) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerBookDto&gt;&gt; ListBooksAsync(LedgerBookQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:586](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L586) |  |
+| <code>Task&lt;LedgerBookRolloutAssessmentDto&gt; AssessRolloutAsync(LedgerBookRolloutAssessmentRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:588](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L588) |  |
+| <code>Task&lt;LedgerPeriodDto&gt; CreatePeriodAsync(CreateLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:594](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L594) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListPeriodsAsync(LedgerPeriodQuery query, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:596](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L596) |  |
+| <code>Task&lt;IReadOnlyList&lt;LedgerPeriodDto&gt;&gt; ListOpenPeriodsAsync(Guid? ledgerBookId = null, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:598](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L598) |  |
+| <code>Task&lt;LedgerPeriodSummaryDto?&gt; GetPeriodSummaryAsync(Guid periodId, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:600](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L600) |  |
+| <code>Task&lt;LedgerPeriodCloseResultDto&gt; ClosePeriodAsync(Guid periodId, CloseLedgerPeriodRequest request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:602](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L602) |  |
+| <code>Task&lt;LedgerPeriodReopenResultDto&gt; ReopenPeriodAsync(Guid periodId, ReopenLedgerPeriodRequest request, CancellationToken ct = default) =&gt; …;</code> | [src/Meridian.Contracts/Ledger/LedgerBookDtos.cs:607](../../../../src/Meridian.Contracts/Ledger/LedgerBookDtos.cs#L607) |  |
 
 ## ILedgerEventAuditVerifier
 

@@ -483,8 +483,9 @@ Declared public members:
 | --- | --- | --- |
 | <code>LedgerAccount GetDefinition(LedgerAccountRole role);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:7](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L7) | Returns registered name and type metadata without authorizing a scoped posting. |
 | <code>LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId = null, string? symbol = null);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:9](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L9) |  |
-| <code>bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:19](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L19) | Returns true when account is exactly an account this chart can resolve: a registered name and type, with symbol and financial-account scope that satisfy the role&#x27;s registration. Implementations must not infer a role from a name prefix or number. |
-| <code>LedgerAccountChartReference? GetPostingReference(LedgerAccount account) =&gt; …;</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:22](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L22) | Returns the registered posting identity, if the chart exposes stable account codes. |
+| <code>LedgerAccount Resolve(LedgerAccountRole role, string? financialAccountId, LedgerSecurityKey security);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:19](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L19) | Resolves a per-security role (Securities, Short Securities Payable, Dividend Receivable, Accrued Interest Receivable). The account is keyed by LedgerSecurityKey.SecurityId when resolved; the ticker is retained for display only. |
+| <code>bool TryGetRegistered(LedgerAccount account, out LedgerAccountRole role);</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:29](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L29) | Returns true when account is exactly an account this chart can resolve: a registered name and type, with symbol and financial-account scope that satisfy the role&#x27;s registration. Implementations must not infer a role from a name prefix or number. |
+| <code>LedgerAccountChartReference? GetPostingReference(LedgerAccount account) =&gt; …;</code> | [src/Meridian.Ledger/IChartOfAccounts.cs:32](../../../../src/Meridian.Ledger/IChartOfAccounts.cs#L32) | Returns the registered posting identity, if the chart exposes stable account codes. |
 
 ## IDepreciationScheduleCalculator
 
@@ -930,21 +931,22 @@ Declared public members:
 
 Qualified name: <code>Meridian.Ledger.LedgerAccount</code>. Kind: `record`.
 
-Source: [src/Meridian.Ledger/LedgerAccount.cs:16](../../../../src/Meridian.Ledger/LedgerAccount.cs#L16).
+Source: [src/Meridian.Ledger/LedgerAccount.cs:30](../../../../src/Meridian.Ledger/LedgerAccount.cs#L30).
 
-Named ledger account in the chart of accounts. For per-symbol securities accounts, Symbol identifies the underlying instrument. For multi-bank / multi-broker ledgers, FinancialAccountId scopes the account to a specific user-owned account.
+Named ledger account in the chart of accounts. For per-security accounts (see LedgerSecurityKey), SecurityId is the account key and Symbol carries the ticker as a display attribute. Legacy ticker-keyed accounts (journals written before the 2026-11-25 SecurityId keying decision, or holdings the Security Master cannot resolve) have no SecurityId and are keyed by Symbol. For multi-bank / multi-broker ledgers, FinancialAccountId scopes the account to a specific user-owned account.
 
 ```csharp
-public sealed record LedgerAccount(string Name, LedgerAccountType AccountType, string? Symbol = null, string? FinancialAccountId = null)
+public sealed record LedgerAccount(string Name, LedgerAccountType AccountType, string? Symbol = null, string? FinancialAccountId = null, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? SecurityId = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public bool Equals(LedgerAccount? other) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:23](../../../../src/Meridian.Ledger/LedgerAccount.cs#L23) |  |
-| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:31](../../../../src/Meridian.Ledger/LedgerAccount.cs#L31) |  |
-| <code>public override string ToString();</code> | [src/Meridian.Ledger/LedgerAccount.cs:39](../../../../src/Meridian.Ledger/LedgerAccount.cs#L39) |  |
+| <code>[JsonIgnore] public bool IsSecurityKeyed =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:41](../../../../src/Meridian.Ledger/LedgerAccount.cs#L41) | true when the account is keyed by a Security Master identity. |
+| <code>public bool Equals(LedgerAccount? other) =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:44](../../../../src/Meridian.Ledger/LedgerAccount.cs#L44) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ledger/LedgerAccount.cs:53](../../../../src/Meridian.Ledger/LedgerAccount.cs#L53) |  |
+| <code>public override string ToString();</code> | [src/Meridian.Ledger/LedgerAccount.cs:61](../../../../src/Meridian.Ledger/LedgerAccount.cs#L61) |  |
 
 ## LedgerAccountChartReference
 

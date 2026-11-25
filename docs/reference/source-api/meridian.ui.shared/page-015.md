@@ -575,14 +575,14 @@ Source: [src/Meridian.Ui.Shared/Services/PortfolioOpeningBalanceQueue.cs:15](../
 Reserves one opening per account/book, then queues its draft through the shared workbench.
 
 ```csharp
-public sealed class PortfolioOpeningBalanceQueue(AutomatedJournalDraftIntakeService intake, ConfigStore configuration, ILedgerJournalStore store, ISecurityMasterQueryService? securities = null, IFundAccountService? accounts = null) : IPortfolioOpeningBalanceQueue
+public sealed class PortfolioOpeningBalanceQueue(AutomatedJournalDraftIntakeService intake, ConfigStore configuration, ILedgerJournalStore store, ISecurityMasterQueryService? securities = null, IFundAccountService? accounts = null, ISecurityResolver? resolver = null) : IPortfolioOpeningBalanceQueue
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public async Task&lt;Guid&gt; QueueAsync(PortfolioImportRun run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioOpeningBalanceQueue.cs:22](../../../../src/Meridian.Ui.Shared/Services/PortfolioOpeningBalanceQueue.cs#L22) |  |
+| <code>public async Task&lt;Guid&gt; QueueAsync(PortfolioImportRun run, CancellationToken ct = default);</code> | [src/Meridian.Ui.Shared/Services/PortfolioOpeningBalanceQueue.cs:53](../../../../src/Meridian.Ui.Shared/Services/PortfolioOpeningBalanceQueue.cs#L53) |  |
 
 ## PositionSnapshotAutomatedJournalDividendPositionResolver
 

@@ -93,6 +93,104 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static IReadOnlyList&lt;LedgerReportPackArtifact&gt; Build(LedgerFinancialReportPack reportPack, LedgerReportScheduledExport scheduledExport, ILedgerReportBinaryRenderer? binaryRenderer = null);</code> | [src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs:14](../../../../src/Meridian.Ledger/LedgerScheduledReportExportPackageBuilder.cs#L14) |  |
 
+## LedgerSecurityKey
+
+Qualified name: <code>Meridian.Ledger.LedgerSecurityKey</code>. Kind: `record struct`.
+
+Source: [src/Meridian.Ledger/LedgerSecurityKey.cs:15](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L15).
+
+The instrument key for a per-security ledger account (Securities, Short Securities Payable, Dividend Receivable, Accrued Interest Receivable).
+
+```csharp
+public readonly record struct LedgerSecurityKey
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public Guid? SecurityId { get; }</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:24](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L24) | The Security Master identity, or null for a legacy ticker key. |
+| <code>public string? Symbol { get; }</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:27](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L27) | The normalized ticker: display-only for resolved keys, the key itself for legacy keys. |
+| <code>public bool IsResolved =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:30](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L30) | true when the key is a Security Master identity. |
+| <code>public static LedgerSecurityKey Resolved(Guid securityId, string? displaySymbol = null);</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:33](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L33) | Keys an account by securityId, retaining displaySymbol for display. |
+| <code>public static LedgerSecurityKey Unresolved(string symbol) =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:45](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L45) | Legacy ticker key for a holding the Security Master cannot resolve (typed NotFound). Do not use for an ambiguous ticker: that must fail closed. |
+| <code>public static LedgerSecurityKey From(Guid? securityId, string symbol) =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:48](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L48) | Resolved when securityId is present, otherwise the legacy ticker key. |
+| <code>public static LedgerSecurityKey FromAccount(LedgerAccount account);</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:52](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L52) | Reads the key from a per-security account. |
+| <code>public bool Equals(LedgerSecurityKey other) =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:63](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L63) |  |
+| <code>public override int GetHashCode() =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:67](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L67) |  |
+| <code>public override string ToString() =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKey.cs:71](../../../../src/Meridian.Ledger/LedgerSecurityKey.cs#L71) |  |
+
+## LedgerSecurityKeyMappingReport
+
+Qualified name: <code>Meridian.Ledger.LedgerSecurityKeyMappingReport</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:23](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L23).
+
+Old ticker keys mapped to SecurityId keys for one ledger, as of one instant.
+
+```csharp
+public sealed record LedgerSecurityKeyMappingReport(DateTimeOffset AsOfUtc, IReadOnlyList<LedgerSecurityKeyMappingRow> Rows)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public IReadOnlyList&lt;LedgerSecurityKeyMappingRow&gt; ReclassCandidates =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:28](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L28) | Rows whose ticker resolved and whose balance should be reclassed. |
+| <code>public IReadOnlyList&lt;LedgerSecurityKeyMappingRow&gt; Unmapped =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:32](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L32) | Rows that cannot be mapped automatically (ambiguous or unregistered tickers). |
+
+## LedgerSecurityKeyMappingRow
+
+Qualified name: <code>Meridian.Ledger.LedgerSecurityKeyMappingRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:12](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L12).
+
+One legacy ticker-keyed per-security account and its Security Master mapping.
+
+```csharp
+public sealed record LedgerSecurityKeyMappingRow(LedgerAccount LegacyAccount, decimal Balance, CanonicalSecurityResolution Resolution, LedgerAccount? TargetAccount)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool RequiresReclass =&gt; …;</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:19](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L19) | true when the row has a target and a balance that must move. |
+
+## LedgerSecurityKeyMigration
+
+Qualified name: <code>Meridian.Ledger.LedgerSecurityKeyMigration</code>. Kind: `class`.
+
+Source: [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:52](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L52).
+
+Migration support for the 2026-11-25 decision to key per-security ledger accounts by SecurityId (Security Master architecture review F2). Existing journals keep their ticker keys; this type reports how those keys map to SecurityIds and proposes a governed reclass when balances must move.
+
+```csharp
+public static class LedgerSecurityKeyMigration
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static IReadOnlyList&lt;LedgerAccount&gt; FindLegacyAccounts(IEnumerable&lt;LedgerAccount&gt; accounts);</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:55](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L55) | Returns the distinct legacy ticker-keyed per-security accounts in accounts. |
+| <code>public static Task&lt;LedgerSecurityKeyMappingReport&gt; BuildReportAsync(Ledger ledger, ISecurityResolver resolver, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:72](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L72) | Builds the old-ticker-key to SecurityId mapping report for ledger, resolving each ticker once through the canonical (provider-less) resolver. |
+| <code>public static async Task&lt;LedgerSecurityKeyMappingReport&gt; BuildReportAsync(IReadOnlyDictionary&lt;LedgerAccount, decimal&gt; balances, ISecurityResolver resolver, DateTimeOffset asOfUtc, CancellationToken ct = default);</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:84](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L84) |  |
+| <code>public static LedgerSecurityKeyReclassProposal? ProposeReclass(LedgerSecurityKeyMappingReport report);</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:120](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L120) | Proposes a balanced reclass that zeroes each resolved legacy account and books its balance on the SecurityId-keyed account. Returns null when no balance must move. Ambiguous and unregistered tickers are excluded and stay listed in LedgerSecurityKeyMappingReport.Unmapped. |
+| <code>public static bool IsRetainedEquivalent(LedgerAccount expected, LedgerAccount retained);</code> | [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:156](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L156) | Returns true when a deterministically rebuilt line account matches a retained one. Retained journals keep their keys: a journal retained before SecurityId keying carries the ticker-keyed form of the same account, which is accepted as equivalent so replays verify instead of failing. Any other difference is a mismatch. |
+
+## LedgerSecurityKeyReclassProposal
+
+Qualified name: <code>Meridian.Ledger.LedgerSecurityKeyReclassProposal</code>. Kind: `record`.
+
+Source: [src/Meridian.Ledger/LedgerSecurityKeyMigration.cs:41](../../../../src/Meridian.Ledger/LedgerSecurityKeyMigration.cs#L41).
+
+A proposed reclass journal moving legacy ticker-keyed balances onto SecurityId-keyed accounts. It is a proposal only: submit it through the governed adjustment posting path, which requires approval before anything is posted. Retained journals are never rewritten.
+
+```csharp
+public sealed record LedgerSecurityKeyReclassProposal(DateTimeOffset AsOfUtc, string Description, IReadOnlyList<(LedgerAccount Account, decimal Debit, decimal Credit)> Lines, IReadOnlyList<LedgerSecurityKeyMappingRow> Sources);
+```
+
 ## LedgerSnapshot
 
 Qualified name: <code>Meridian.Ledger.LedgerSnapshot</code>. Kind: `record`.
@@ -850,85 +948,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public decimal NetAssetVariance =&gt; …;</code> | [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:67](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L67) | Reconciliation gap between ending partners&#x27; capital and the fund&#x27;s net asset value. |
-
-## PartnersCapitalStatementLayoutBuilder
-
-Qualified name: <code>Meridian.Ledger.PartnersCapitalStatementLayoutBuilder</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:74](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L74).
-
-Builds a PartnersCapitalStatementLayout from ledger-backed statements. The layout is a deterministic function of its inputs so it renders to byte-stable governed artifacts.
-
-```csharp
-public static class PartnersCapitalStatementLayoutBuilder
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PartnersCapitalStatementLayout Build(LedgerFinancialReportPack pack);</code> | [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:84](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L84) | Projects the partners&#x27; capital statement inside pack, anchored to the same pack&#x27;s ledger-backed net assets (ending equity = total assets − total liabilities), which is the unitized NAV base the statement reconciles to. |
-| <code>public static PartnersCapitalStatementLayout Build(LedgerPartnersCapitalStatement statement, string fundId, string periodId, string baseCurrency, decimal netAssetValue);</code> | [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:104](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L104) | Projects statement into the bespoke layout, expressing each partner&#x27;s ownership share and anchoring the whole statement to netAssetValue (the fund&#x27;s ledger-backed net asset value / NAV base). |
-
-## PartnersCapitalStatementLine
-
-Qualified name: <code>Meridian.Ledger.PartnersCapitalStatementLine</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PartnersCapitalStatementLayout.cs:33](../../../../src/Meridian.Ledger/PartnersCapitalStatementLayout.cs#L33).
-
-One bespoke-layout line of the statement of changes in partners&#x27; capital: a partner-oriented roll-forward carrying the income/expense/fee breakout plus the partner&#x27;s ownership share of ending capital. Money fields stay typed (not pre-formatted) so a renderer can emit computable numeric cells rather than a text dump.
-
-```csharp
-public sealed record PartnersCapitalStatementLine(string PartnerLabel, PartnersCapitalPartnerRole Role, decimal BeginningCapital, decimal Contributions, decimal Distributions, decimal IncomeGainAllocations, decimal ExpenseAllocations, decimal FeeAllocations, decimal AllocatedResult, decimal OtherMovements, decimal EndingCapital, decimal OwnershipPercent);
-```
-
-## PartnershipInvestor
-
-Qualified name: <code>Meridian.Ledger.PartnershipInvestor</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PartnershipInvestor.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestor.cs#L6).
-
-Investor or feeder/SPV participant in a partnership allocation run.
-
-```csharp
-public sealed record PartnershipInvestor
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public PartnershipInvestor(string investorId, string displayName, decimal allocationPercent);</code> | [src/Meridian.Ledger/PartnershipInvestor.cs:8](../../../../src/Meridian.Ledger/PartnershipInvestor.cs#L8) |  |
-| <code>public string InvestorId { get; }</code> | [src/Meridian.Ledger/PartnershipInvestor.cs:22](../../../../src/Meridian.Ledger/PartnershipInvestor.cs#L22) |  |
-| <code>public string DisplayName { get; }</code> | [src/Meridian.Ledger/PartnershipInvestor.cs:24](../../../../src/Meridian.Ledger/PartnershipInvestor.cs#L24) |  |
-| <code>public decimal AllocationPercent { get; }</code> | [src/Meridian.Ledger/PartnershipInvestor.cs:26](../../../../src/Meridian.Ledger/PartnershipInvestor.cs#L26) |  |
-
-## PartnershipInvestorAccountingProjector
-
-Qualified name: <code>Meridian.Ledger.PartnershipInvestorAccountingProjector</code>. Kind: `class`.
-
-Source: [src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs:9](../../../../src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs#L9).
-
-Projects management fees, performance fees, high-water marks, and investor capital allocations.
-
-```csharp
-public static class PartnershipInvestorAccountingProjector
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static PartnershipInvestorAllocationProjection Project(PartnershipInvestorAllocationInput input);</code> | [src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs:13](../../../../src/Meridian.Ledger/PartnershipInvestorAccountingProjector.cs#L13) |  |
-
-## PartnershipInvestorAllocation
-
-Qualified name: <code>Meridian.Ledger.PartnershipInvestorAllocation</code>. Kind: `record`.
-
-Source: [src/Meridian.Ledger/PartnershipInvestorAllocation.cs:6](../../../../src/Meridian.Ledger/PartnershipInvestorAllocation.cs#L6).
-
-Investor-level profit/loss allocation resulting from a partnership accounting projection.
-
-```csharp
-public sealed record PartnershipInvestorAllocation(PartnershipInvestor Investor, decimal AllocatedProfitOrLoss, LedgerAccount CapitalAccount);
-```

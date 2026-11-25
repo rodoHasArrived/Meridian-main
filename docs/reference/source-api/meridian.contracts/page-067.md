@@ -6,6 +6,60 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## OnboardingShadowStates
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingShadowStates</code>. Kind: `class`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:10](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L10).
+
+Shadow-mode onboarding (W11-SHADOW-001). A shadow book runs in parallel with the incumbent administrator or GL; it is reconciled every period and cannot publish, release, or close as the book of record until an operator promotes it with a parallel-run certificate attached.
+
+```csharp
+public static class OnboardingShadowStates
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string Shadow = &quot;Shadow&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:12](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L12) |  |
+| <code>public const string Promoted = &quot;Promoted&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:13](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L13) |  |
+| <code>public const string Withdrawn = &quot;Withdrawn&quot;;</code> | [src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs:14](../../../../src/Meridian.Contracts/Workstation/OnboardingShadowDtos.cs#L14) |  |
+
+## OnboardingSourceCaptureDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingSourceCaptureDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:58](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L58).
+
+Trusted read-only adapter result; this model is never an HTTP write payload.
+
+```csharp
+public sealed record OnboardingSourceCaptureDto(IReadOnlyList<OnboardingSourceSnapshotDto> Snapshots, IReadOnlyList<OnboardingObservationDto> Observations, IReadOnlyList<OnboardingMissingSourceDto> MissingSources, CloseReadinessProjectionDto? CloseReadiness);
+```
+
+## OnboardingSourceSelectionDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingSourceSelectionDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:31](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L31).
+
+```csharp
+public sealed record OnboardingSourceSelectionDto(string ProviderId, string ImportId, DateOnly AsOfDate, string MappingProfileId, string MappingVersion);
+```
+
+## OnboardingSourceSnapshotDto
+
+Qualified name: <code>Meridian.Contracts.Workstation.OnboardingSourceSnapshotDto</code>. Kind: `record`.
+
+Source: [src/Meridian.Contracts/Workstation/OnboardingDtos.cs:43](../../../../src/Meridian.Contracts/Workstation/OnboardingDtos.cs#L43).
+
+Content is copied into the run. A hash alone is not a reproducible source snapshot.
+
+```csharp
+public sealed record OnboardingSourceSnapshotDto(string SnapshotId, string SourceKind, string SourceId, string Version, string ContentHash, DateTimeOffset CapturedAtUtc, DateOnly AsOfDate, string MappingVersion, string PayloadJson, IReadOnlyList<string> EvidenceIds);
+```
+
 ## OnboardingWorkspaceDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.OnboardingWorkspaceDto</code>. Kind: `record`.
@@ -538,62 +592,4 @@ Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1386](..
 
 ```csharp
 public sealed record OperationsEvidenceLinkDto(string EvidenceId, string Label, string? Route, string? Source, DateTimeOffset? CapturedAtUtc);
-```
-
-## OperationsEvidencePackageSummaryDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsEvidencePackageSummaryDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1124](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1124).
-
-```csharp
-public sealed record OperationsEvidencePackageSummaryDto(string PackageId, string Label, EvidenceStatusDto Status, bool IsReady, string Summary, string? RouteHint, int CompleteCategoryCount, int RequiredCategoryCount, int EvidenceLinkCount, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string>? RequiredActions = null, bool RequiredForClose = true)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; RequiredActions { get; init; } = RequiredActions??[];</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1138](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1138) |  |
-
-## OperationsGateDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsGateDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:1213](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L1213).
-
-```csharp
-public sealed record OperationsGateDto(OperationsGateKeyDto GateKey, string DisplayName, OperationsGateStatusDto Status, bool IsRequired, string Description, IReadOnlyList<OperationsWorkflowBlockerDto> Blockers, IReadOnlyList<OperationsNextActionDto> NextActions, DateTimeOffset? CompletedAtUtc, string? CompletedBy);
-```
-
-## OperationsGateKeyDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsGateKeyDto</code>. Kind: `enum`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:42](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L42).
-
-Stable gate keys in the operations continuity workflow.
-
-```csharp
-public enum OperationsGateKeyDto : byte
-```
-
-Enum declarations:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>BrokerIngest = 0</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:44](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L44) |  |
-| <code>SecurityMaster = 1</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:45](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L45) |  |
-| <code>LedgerPosting = 2</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:46](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L46) |  |
-| <code>Reconciliation = 3</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:47](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L47) |  |
-| <code>Approval = 4</code> | [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:48](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L48) |  |
-
-## OperationsGatePostureRequestDto
-
-Qualified name: <code>Meridian.Contracts.Workstation.OperationsGatePostureRequestDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs:507](../../../../src/Meridian.Contracts/Workstation/OperationsContinuityDtos.cs#L507).
-
-```csharp
-public sealed record OperationsGatePostureRequestDto(long ExpectedVersion, string Actor, string? Rationale = null, string? CorrelationId = null, bool? ProviderAccountLinked = null, bool? ProviderSyncStale = null, int? SecurityCoverageIssueCount = null, int? SecurityAccountingIssueCount = null, bool? LedgerPreviewAvailable = null, bool? LedgerDraftBalanced = null, bool? LedgerPostingValidated = null, int? OpenCriticalBreakCount = null, int? OpenNonCriticalBreakCount = null, bool? ReportPackReady = null, string? ReportPackId = null, IReadOnlyList<OperationsEvidenceLinkDto>? EvidenceLinks = null, IReadOnlyList<string>? ProviderRequiredCapabilityGaps = null, IReadOnlyList<string>? ProviderDegradedCapabilityGaps = null);
 ```

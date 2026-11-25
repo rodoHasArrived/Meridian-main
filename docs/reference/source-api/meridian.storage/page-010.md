@@ -6,6 +6,38 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## DepositProjectionRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DepositProjectionRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs:15](../../../../src/Meridian.Storage/SecurityMaster/IDepositReferenceProjectionStore.cs#L15).
+
+```csharp
+public sealed record DepositProjectionRow(Guid SecurityId, string DisplayName, string Currency, string DepositType, string InstitutionName, DateOnly? Maturity, decimal? InterestRate, string? DayCount, bool IsCallable, string PrimaryIdentifierValue, long Version);
+```
+
+## DirectLoanCovenantRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanCovenantRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:51](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L51).
+
+One projected covenant. Threshold carries the value exactly as contracted (&quot;4.5x&quot;, &quot;2.00x fixed charge&quot;) — a string, because the canonical covenant term is one; coercing it to a number would drop every ratio covenant.
+
+```csharp
+public sealed record DirectLoanCovenantRow(Guid SecurityId, int Ordinal, string CovenantType, string Threshold, string? Notes);
+```
+
+## DirectLoanPrincipalPaymentRow
+
+Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanPrincipalPaymentRow</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs:58](../../../../src/Meridian.Storage/SecurityMaster/IDirectLoanReferenceProjectionStore.cs#L58).
+
+```csharp
+public sealed record DirectLoanPrincipalPaymentRow(Guid SecurityId, int Ordinal, DateOnly PaymentDate, decimal Amount);
+```
+
 ## DirectLoanProjectionRow
 
 Qualified name: <code>Meridian.Storage.SecurityMaster.DirectLoanProjectionRow</code>. Kind: `record`.
@@ -751,13 +783,14 @@ Declared public members:
 | <code>Task&lt;SecurityDetailDto?&gt; GetDetailAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:48](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L48) |  |
 | <code>Task&lt;SecurityProjectionRecord?&gt; GetProjectionAsync(Guid securityId, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:49](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L49) |  |
 | <code>Task&lt;SecurityProjectionRecord?&gt; GetByIdentifierAsync(SecurityIdentifierKind kind, string value, string? provider, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:50](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L50) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; FindIdentifierCandidatesAsync(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, IReadOnlyCollection&lt;Guid&gt; excludedSecurityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:56](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L56) | Returns projections outside excludedSecurityIds that claim at least one normalized kind/value pair in identifiers. The caller applies validity- window overlap because each returned projection carries the complete identifier history. |
-| <code>Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:65](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L65) | Returns an offset page in deterministic order, using the unique security ID to break equal relevance and display-name ties. Repeated pages over unchanged projections must neither omit nor repeat a security. Separate requests do not share a database snapshot. |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:66](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L66) |  |
-| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:67](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L67) |  |
-| <code>Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:76](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L76) | The ADR-024 decision-5 retirement-gate count: stored securities rows, active and inactive, whose asset-specific terms declare no string termsFormat tag. A single aggregate — never a projection load — with the same semantics as SecurityTermsEnvelope.GetDeclaredFormat: a non-object payload or a missing or non-string tag counts as untagged. |
-| <code>Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:77](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L77) |  |
-| <code>Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:78](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L78) |  |
+| <code>async Task&lt;IReadOnlyList&lt;Guid&gt;&gt; FindSecurityIdsByIdentifierAsync(SecurityIdentifierKind kind, string value, DateTimeOffset asOfUtc, bool includeInactive, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:58](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L58) | Returns every distinct security that claims value at asOfUtc through an identifier, an enabled alias or a primary identifier, across all providers. Used for canonical resolution, which must report ambiguity rather than pick one. The default implementation can only return the provider-less first match. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; FindIdentifierCandidatesAsync(IReadOnlyList&lt;SecurityIdentifierDto&gt; identifiers, IReadOnlyCollection&lt;Guid&gt; excludedSecurityIds, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:73](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L73) | Returns projections outside excludedSecurityIds that claim at least one normalized kind/value pair in identifiers. The caller applies validity- window overlap because each returned projection carries the complete identifier history. |
+| <code>Task&lt;IReadOnlyList&lt;SecuritySummaryDto&gt;&gt; SearchAsync(SecuritySearchRequest request, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:82](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L82) | Returns an offset page in deterministic order, using the unique security ID to break equal relevance and display-name ties. Repeated pages over unchanged projections must neither omit nor repeat a security. Separate requests do not share a database snapshot. |
+| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadAllAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:83](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L83) |  |
+| <code>Task&lt;IReadOnlyList&lt;SecurityProjectionRecord&gt;&gt; LoadActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:84](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L84) |  |
+| <code>Task&lt;int&gt; CountUntaggedAssetSpecificTermsAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:93](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L93) | The ADR-024 decision-5 retirement-gate count: stored securities rows, active and inactive, whose asset-specific terms declare no string termsFormat tag. A single aggregate — never a projection load — with the same semantics as SecurityTermsEnvelope.GetDeclaredFormat: a non-object payload or a missing or non-string tag counts as untagged. |
+| <code>Task&lt;long?&gt; GetCheckpointAsync(string projectionName, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:94](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L94) |  |
+| <code>Task SaveCheckpointAsync(string projectionName, long lastGlobalSequence, CancellationToken ct = default);</code> | [src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs:95](../../../../src/Meridian.Storage/SecurityMaster/ISecurityMasterStore.cs#L95) |  |
 
 ## ISecurityMasterTermsCapabilityStore
 
@@ -929,38 +962,4 @@ OperatorOverrides / Patched: staged overlay values awaiting review.
 
 ```csharp
 public sealed record OperatorOverridesPatchedPayload(IReadOnlyList<string> SetKeys, IReadOnlyList<string> RemovedKeys, IReadOnlyDictionary<string, string> PreviousValues, IReadOnlyDictionary<string, string> Values, string? ReasonCode, string ApprovalStatus, long? ExpectedCanonicalVersion) : ISecurityGovernancePayload;
-```
-
-## OptionContractProjectionRow
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OptionContractProjectionRow</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs:17](../../../../src/Meridian.Storage/SecurityMaster/IOptionReferenceProjectionStore.cs#L17).
-
-```csharp
-public sealed record OptionContractProjectionRow(string ContractSymbol, Guid? SecurityId, string OptionChainId, string UnderlyingSymbol, Guid? UnderlyingSecurityId, string PutCall, decimal Strike, DateOnly ExpiryDate, decimal Multiplier, bool IsAdjusted, DateOnly? LastTradingDate, string LifecycleStat, DateTimeOffset LastUpdatedUtc, long Version);
-```
-
-## OtcCollateralBalanceChangedPayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalanceChangedPayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:167](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L167).
-
-OtcCollateral / CollateralBalanceRecorded or CollateralBalanceAmended.
-
-```csharp
-public sealed record OtcCollateralBalanceChangedPayload(Guid MasterAgreementId, OtcCollateralBalancePayload Balance, OtcCollateralBalancePayload? Previous, IReadOnlyList<string> Changes) : ISecurityGovernancePayload;
-```
-
-## OtcCollateralBalancePayload
-
-Qualified name: <code>Meridian.Storage.SecurityMaster.OtcCollateralBalancePayload</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs:147](../../../../src/Meridian.Storage/SecurityMaster/SecurityGovernancePayloads.cs#L147).
-
-A collateral balance as the OtcCollateral stream records it.
-
-```csharp
-public sealed record OtcCollateralBalancePayload(Guid BalanceId, Guid CollateralAgreementId, string Direction, string Kind, string EligibleCollateralDescription, Guid? SecurityId, string Currency, decimal Quantity, decimal UnitValue, decimal ValuedAmount, decimal HaircutPercent, DateOnly ValuedAsOf, string? Reference, string? Notes, long Version, string UpdatedBy, DateTimeOffset UpdatedAt);
 ```

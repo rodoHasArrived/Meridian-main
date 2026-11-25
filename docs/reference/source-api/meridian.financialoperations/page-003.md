@@ -819,6 +819,90 @@ Declared public members:
 | --- | --- | --- |
 | <code>Task&lt;BondIncomePreviewDto&gt; PrepareAsync(BondIncomePreparationRequestDto request, string tenantId, string companyId, string actor, DateTimeOffset preparedAtUtc, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/BondIncomePreparationService.cs#L14) |  |
 
+## LedgerSecurityKeyRekeyApproval
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyApproval</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:66](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L66).
+
+The approval and Security Master lineage a reviewer attaches to a re-key proposal. Nothing is ever auto-approved: Approval must be the approved adjustment the governed review issued.
+
+```csharp
+public sealed record LedgerSecurityKeyRekeyApproval(LedgerAdjustmentApprovalMetadataDto Approval, string SecurityMasterProvenance, string SecurityMasterLineage, RetainedEvidenceIdentityDto MappingEvidence, AccountingPostingCommandDto? PostingCommand = null);
+```
+
+## LedgerSecurityKeyRekeyBackfillRequirement
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyBackfillRequirement</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:40](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L40).
+
+A legacy account whose open lots predate canonical lot identity: they carry no Security Master or book-position identity (the two are recorded together), so nothing proves they belong to the resolved security. Attribute each listed lot through the governed open-lot backfill (retained acquisition evidence, independent review, human-operator apply), then plan again; the account then re-keys like any other, across however many book positions the backfill assigns.
+
+```csharp
+public sealed record LedgerSecurityKeyRekeyBackfillRequirement(LedgerSecurityKeyMappingRow Mapping, IReadOnlyList<Guid> TaxLotRecordIds, string Reason);
+```
+
+## LedgerSecurityKeyRekeyBlocked
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyBlocked</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:31](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L31).
+
+A legacy account the re-key cannot move automatically, with the reason.
+
+```csharp
+public sealed record LedgerSecurityKeyRekeyBlocked(LedgerSecurityKeyMappingRow Mapping, string Reason);
+```
+
+## LedgerSecurityKeyRekeyPlan
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyPlan</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:50](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L50).
+
+The re-key plan for one ledger book. BalanceOnly rows carry no tax lots (for example a dividend receivable) and move with an ordinary governed reclass from LedgerSecurityKeyMigration.ProposeReclass.
+
+```csharp
+public sealed record LedgerSecurityKeyRekeyPlan(LedgerSecurityKeyMappingReport Report, IReadOnlyList<LedgerSecurityKeyRekeyProposal> Proposals, IReadOnlyList<LedgerSecurityKeyMappingRow> BalanceOnly, IReadOnlyList<LedgerSecurityKeyRekeyBlocked> Blocked, IReadOnlyList<LedgerSecurityKeyRekeyBackfillRequirement> AwaitingBackfill);
+```
+
+## LedgerSecurityKeyRekeyProposal
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyProposal</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:17](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L17).
+
+One reviewable re-key of a legacy ticker-keyed per-security account (Security Master review F2): the balance reclass and every open tax lot of the account, moved together onto the SecurityId-keyed account by one atomic batch once approved.
+
+```csharp
+public sealed record LedgerSecurityKeyRekeyProposal(Guid LedgerBookId, Guid PeriodId, long ExpectedPeriodVersion, DateTimeOffset EffectiveAt, IReadOnlyList<Guid> BookPositionIds, LedgerSecurityKeyMappingRow Mapping, LedgerAccountRekeyInstruction Instruction, Guid MutationBatchId, Guid JournalEntryId, Guid SourceEventId, string IdempotencyKey);
+```
+
+## LedgerSecurityKeyRekeyService
+
+Qualified name: <code>Meridian.FinancialOperations.Ledger.LedgerSecurityKeyRekeyService</code>. Kind: `class`.
+
+Source: [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:79](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L79).
+
+Plans and executes the Security Master review F2 re-key of legacy ticker-keyed per-security accounts: the mapping report comes from the canonical (provider-less) resolver; each lot-carrying legacy account becomes one AtomicTaxLotMutationKind.AccountRekey proposal that a reviewer approves before ExecuteAsync posts it atomically.
+
+```csharp
+public sealed class LedgerSecurityKeyRekeyService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ActivityType = &quot;security-key-rekey&quot;;</code> | [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:82](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L82) | Journal activity type of a re-key reclass. |
+| <code>public LedgerSecurityKeyRekeyService(ILedgerJournalStore store, IAtomicTaxLotJournalStore atomicStore, ISecurityResolver resolver);</code> | [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:88](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L88) |  |
+| <code>public async Task&lt;LedgerSecurityKeyRekeyPlan&gt; PlanAsync(Guid ledgerBookId, Guid periodId, DateTimeOffset effectiveAt, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:96](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L96) | Builds the mapping report and one re-key proposal per lot-carrying legacy account. |
+| <code>public static LedgerSecurityKeyRekeyBackfillRequirement? FindLotsAwaitingBackfill(LedgerSecurityKeyMappingRow row, IReadOnlyList&lt;LedgerTaxLotRecord&gt; openLots);</code> | [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:161](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L161) | Returns the backfill requirement for a resolved legacy account whose open lots lack canonical Security Master and book-position identity, or null when every open lot has it. |
+| <code>public static LedgerSecurityKeyRekeyProposal? TryPropose(Guid ledgerBookId, LedgerAccountingPeriod period, DateTimeOffset effectiveAt, LedgerSecurityKeyMappingRow row, IReadOnlyList&lt;LedgerTaxLotRecord&gt; openLots, out string? reason, IReadOnlySet&lt;string&gt;? occupiedTargetLabels = null);</code> | [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:185](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L185) | Builds the per-account proposal for one mapping row, or null with the reason the store would refuse it. |
+| <code>public static AtomicTaxLotJournalCommand BuildCommand(LedgerSecurityKeyRekeyProposal proposal, LedgerSecurityKeyRekeyApproval approval, LedgerBookRecord book);</code> | [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:281](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L281) | Builds the approved atomic command for a proposal (pure; no store access). |
+| <code>public async Task&lt;AtomicTaxLotJournalResult&gt; ExecuteAsync(LedgerSecurityKeyRekeyProposal proposal, LedgerSecurityKeyRekeyApproval approval, CancellationToken ct = default);</code> | [src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs:366](../../../../src/Meridian.FinancialOperations/Ledger/LedgerSecurityKeyRekeyService.cs#L366) | Posts an approved proposal: the reclass journal and the lot re-key commit atomically. |
+
 ## ShortCarryPostingGuard
 
 Qualified name: <code>Meridian.FinancialOperations.Ledger.ShortCarryPostingGuard</code>. Kind: `class`.
@@ -876,89 +960,3 @@ Declared public members:
 | --- | --- | --- |
 | <code>public static void RequireLots(ShortCoverTerms terms, IReadOnlyList&lt;OpenLotDto&gt; lots, decimal relievedQuantity, decimal relievedFunctionalBasis);</code> | [src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs#L14) |  |
 | <code>public static void RequireJournal(ShortCoverTerms terms, LedgerAccount carryingAccount, JournalEntry entry);</code> | [src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs:38](../../../../src/Meridian.FinancialOperations/Ledger/ShortCoverPostingGuard.cs#L38) |  |
-
-## LedgerTextJournalDocument
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextJournalDocument</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalDocument.cs:5](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalDocument.cs#L5).
-
-```csharp
-public sealed record LedgerTextJournalDocument(MeridianLedger Ledger, IReadOnlyList<LedgerTextTransaction> Transactions);
-```
-
-## LedgerTextJournalException
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextJournalException</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalException.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalException.cs#L8).
-
-Reports invalid ledger text journal input or processing failures.
-
-```csharp
-public sealed class LedgerTextJournalException : MeridianException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerTextJournalException(int lineNumber, string message) : base($&quot;Ledger journal line {lineNumber}: {message}&quot;);</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalException.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalException.cs#L10) |  |
-
-## LedgerTextJournalParser
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextJournalParser</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalParser.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalParser.cs#L10).
-
-Parses ledger text journal lines into a structured journal document.
-
-```csharp
-public static class LedgerTextJournalParser
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerTextJournalDocument Parse(IReadOnlyList&lt;string&gt; lines);</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalParser.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalParser.cs#L14) |  |
-
-## LedgerTextJournalReportService
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextJournalReportService</code>. Kind: `class`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs:6](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs#L6).
-
-Parses ledger text journals and renders reports with supplied report options.
-
-```csharp
-public sealed class LedgerTextJournalReportService
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerTextJournalDocument Parse(IReadOnlyList&lt;string&gt; lines) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs:8](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs#L8) |  |
-| <code>public string RenderReport(IReadOnlyList&lt;string&gt; lines, LedgerTextReportOptions options) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs:11](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs#L11) |  |
-| <code>public string RenderReport(LedgerTextJournalDocument document, LedgerTextReportOptions options) =&gt; …;</code> | [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs:14](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextJournalReportService.cs#L14) |  |
-
-## LedgerTextPosting
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextPosting</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs:10](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextTransaction.cs#L10).
-
-```csharp
-public sealed record LedgerTextPosting(int LineNumber, LedgerAccount Account, decimal Amount, bool WasInferred);
-```
-
-## LedgerTextReportOptions
-
-Qualified name: <code>Meridian.FinancialOperations.LedgerTextJournal.LedgerTextReportOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportOptions.cs:3](../../../../src/Meridian.FinancialOperations/Ledger/TextJournal/LedgerTextReportOptions.cs#L3).
-
-```csharp
-public sealed record LedgerTextReportOptions(string Report, string? AccountFilter);
-```

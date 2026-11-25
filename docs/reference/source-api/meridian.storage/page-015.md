@@ -6,6 +6,58 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## RetentionComplianceReporter
+
+Qualified name: <code>Meridian.Storage.Services.RetentionComplianceReporter</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:10](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L10).
+
+Generates retention compliance reports by scanning stored data against configured retention policies. Outputs machine-readable and human-readable reports suitable for regulatory audits.
+
+```csharp
+public sealed class RetentionComplianceReporter
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public RetentionComplianceReporter(StorageOptions options, ILogger&lt;RetentionComplianceReporter&gt; logger);</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:17](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L17) |  |
+| <code>public Task&lt;RetentionComplianceReport&gt; GenerateReportAsync(CancellationToken ct = default);</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:28](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L28) | Generates a retention compliance report. |
+
+## RetentionEntry
+
+Qualified name: <code>Meridian.Storage.Services.RetentionEntry</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:198](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L198).
+
+A single file&#x27;s retention status.
+
+```csharp
+public sealed record RetentionEntry(string FilePath, string Symbol, string Tier, long SizeBytes, DateTime LastModifiedUtc, int AgeDays, RetentionStatus Status);
+```
+
+## RetentionStatus
+
+Qualified name: <code>Meridian.Storage.Services.RetentionStatus</code>. Kind: `enum`.
+
+Source: [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:221](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L221).
+
+Retention status for a file.
+
+```csharp
+public enum RetentionStatus : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Compliant</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:223](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L223) |  |
+| <code>ExceedsPolicy</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:224](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L224) |  |
+| <code>Archived</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:225](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L225) |  |
+| <code>PendingDeletion</code> | [src/Meridian.Storage/Services/RetentionComplianceReporter.cs:226](../../../../src/Meridian.Storage/Services/RetentionComplianceReporter.cs#L226) |  |
+
 ## RetentionViolation
 
 Qualified name: <code>Meridian.Storage.Services.RetentionViolation</code>. Kind: `record`.
@@ -901,59 +953,3 @@ Enum declarations:
 | <code>Cold</code> | [src/Meridian.Storage/StorageOptions.cs:249](../../../../src/Meridian.Storage/StorageOptions.cs#L249) | Cold tier - weekly/monthly access, HDD/NAS. |
 | <code>Archive</code> | [src/Meridian.Storage/StorageOptions.cs:251](../../../../src/Meridian.Storage/StorageOptions.cs#L251) | Archive tier - rare bulk access, object storage. |
 | <code>Glacier</code> | [src/Meridian.Storage/StorageOptions.cs:253](../../../../src/Meridian.Storage/StorageOptions.cs#L253) | Glacier tier - emergency only, tape/deep archive. |
-
-## CompositeMarketDataStore
-
-Qualified name: <code>Meridian.Storage.Store.CompositeMarketDataStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:23](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L23).
-
-IMarketDataStore that aggregates results from multiple underlying stores and merges them in ascending MarketEvent.Timestamp order.
-
-```csharp
-public sealed class CompositeMarketDataStore : IMarketDataStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public CompositeMarketDataStore(IEnumerable&lt;IMarketDataStore&gt; stores);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:34](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L34) | Initialises a composite store that fans out queries to stores and merges results by timestamp. |
-| <code>public CompositeMarketDataStore(IMarketDataStore first, IMarketDataStore second) : this(new[] { first, second });</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:43](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L43) | Convenience constructor for two stores (e.g. JSONL + Parquet). |
-| <code>public async IAsyncEnumerable&lt;MarketEvent&gt; QueryAsync(MarketDataQuery query, [EnumeratorCancellation] CancellationToken ct = default);</code> | [src/Meridian.Storage/Store/CompositeMarketDataStore.cs:47](../../../../src/Meridian.Storage/Store/CompositeMarketDataStore.cs#L47) |  |
-
-## IBDataResultStoreOptions
-
-Qualified name: <code>Meridian.Storage.Store.IBDataResultStoreOptions</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:7](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L7).
-
-```csharp
-public sealed record IBDataResultStoreOptions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public required string DataRoot { get; init; }</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:9](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L9) |  |
-
-## JsonFileIBDataResultStore
-
-Qualified name: <code>Meridian.Storage.Store.JsonFileIBDataResultStore</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:16](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L16).
-
-Crash-safe IB result store. Each upsert replaces one complete atomic snapshot, so an interrupted write leaves either the previous valid result set or the new valid result set available at restart.
-
-```csharp
-public sealed class JsonFileIBDataResultStore : IIBDataResultStore
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public JsonFileIBDataResultStore(IBDataResultStoreOptions options);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:22](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L22) |  |
-| <code>public async ValueTask UpsertAsync(IBDataResult result, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:29](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L29) |  |
-| <code>public async ValueTask&lt;IReadOnlyList&lt;IBDataResult&gt;&gt; QueryAsync(IBDataResultQuery query, CancellationToken cancellationToken = default);</code> | [src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs:57](../../../../src/Meridian.Storage/Store/JsonFileIBDataResultStore.cs#L57) |  |

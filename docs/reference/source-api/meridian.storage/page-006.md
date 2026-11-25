@@ -435,6 +435,59 @@ Declared public members:
 | --- | --- | --- |
 | <code>public string? MutationActor { get; init; }</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:378](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L378) | Actual command actor for this mutation; absent legacy attribution remains explicit. |
 
+## LedgerAccountRekeyInstruction
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountRekeyInstruction</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:513](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L513).
+
+The reviewed re-key of a legacy ticker-keyed per-security account onto its SecurityId-keyed account (Security Master review F2). LegacyBalance is the legacy account&#x27;s whole balance at review, which the reclass journal moves and the listed lots&#x27; open basis must equal.
+
+```csharp
+public sealed record LedgerAccountRekeyInstruction(LedgerAccount LegacyAccount, LedgerAccount TargetAccount, decimal LegacyBalance, IReadOnlyList<LedgerAccountRekeyLot> Lots);
+```
+
+## LedgerAccountRekeyLot
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountRekeyLot</code>. Kind: `record`.
+
+Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:496](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L496).
+
+One open lot moved by an AtomicTaxLotMutationKind.AccountRekey batch, with its reviewed state.
+
+```csharp
+public sealed record LedgerAccountRekeyLot(Guid TaxLotRecordId, string LotId, long ExpectedVersion, decimal ExpectedOpenQuantity, decimal ExpectedCostBasis, Guid BookPositionId, [property : System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)] string? TargetLotId = null);
+```
+
+## LedgerAccountRekeyRules
+
+Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountRekeyRules</code>. Kind: `class`.
+
+Source: [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:13](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L13).
+
+Pure (pre-lock) rules for an AtomicTaxLotMutationKind.AccountRekey batch: the governed reclass that moves a legacy ticker-keyed per-security account&#x27;s balance and every one of its open tax lots onto the SecurityId-keyed account (Security Master review F2). The store checks the locked lots, the complete open-lot population and the legacy balance under lock.
+
+```csharp
+public static class LedgerAccountRekeyRules
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string JournalTag = &quot;ledger.securityKeyRekey&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:16](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L16) | Journal metadata tag carrying the reviewed legacy account, for reconciliation readers. |
+| <code>public const string RelabelMarker = &quot;~rekey&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:19](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L19) | Suffix marking a lot label changed by a re-key because the original was taken on the target key. |
+| <code>public const int MaxRelabelAttempts = 8;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:22](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L22) | Most relabel attempts a planner tries before reporting the account as blocked. |
+| <code>public static string RelabelCandidate(string lotId, int attempt);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:28](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L28) | The deterministic relabel for lotId: {lotId}~rekey on the first attempt, then {lotId}~rekey2, {lotId}~rekey3 and so on. |
+| <code>public static string FinalLotId(LedgerAccountRekeyLot lot);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:36](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L36) | The label lot carries after the re-key. |
+| <code>public const string EvidenceSubjectType = &quot;LedgerSecurityKeyMapping&quot;;</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:46](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L46) | Retained-evidence subject type for the mapping-report row that authorizes a re-key. |
+| <code>public static void Validate(AtomicTaxLotJournalCommand command);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:49](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L49) | Validates the instruction, governance and exact two-line reclass journal of command. |
+| <code>public static void ValidateInstruction(LedgerAccountRekeyInstruction instruction, OpenLotDirection direction);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:78](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L78) | The legacy/target identity, direction and lot-population rules. |
+| <code>public static void ValidateGovernance(LedgerJournalEntryWrite journal);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:115](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L115) | Requires an approved Adjustment posting with complete approval metadata. A re-key is never auto-approved: the approval must be supplied by the governed review that accepted the mapping. |
+| <code>public static IReadOnlyList&lt;(Guid BookPositionId, decimal Amount)&gt; PositionAmounts(LedgerAccountRekeyInstruction instruction);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:133](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L133) | The open basis each book position moves: the reclass journal carries one debit and one credit per position with non-zero basis, so position-level ledger views stay whole after the re-key. |
+| <code>public static void ValidateJournalShape(JournalEntry entry, LedgerAccountRekeyInstruction instruction);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:149](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L149) | The journal is exactly the balanced reclass of the legacy balance onto the target: for every book position, one debit and one credit of that position&#x27;s lot basis, dimensioned by the target SecurityId and the position. A single-position account is one debit and one credit. |
+| <code>public static decimal OpenBasis(LedgerTaxLotRecord lot);</code> | [src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs:177](../../../../src/Meridian.Storage/Ledger/LedgerAccountRekeyRules.cs#L177) | The open functional basis a lot carries, as the re-key moves it. |
+
 ## LedgerAccountTaxLotPolicyRecord
 
 Qualified name: <code>Meridian.Storage.Ledger.LedgerAccountTaxLotPolicyRecord</code>. Kind: `record`.
@@ -842,57 +895,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public static void Validate(LedgerJournalEntryWrite entry, LedgerAccountingPeriod period) =&gt; …;</code> | [src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs:12](../../../../src/Meridian.Storage/Ledger/LedgerPeriodPostingGuard.cs#L12) |  |
-
-## LedgerPeriodTransitionException
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPeriodTransitionException</code>. Kind: `class`.
-
-Source: [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:51](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L51).
-
-Signals an invalid transition between accounting period states.
-
-```csharp
-public sealed class LedgerPeriodTransitionException : LedgerBookServiceException
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public LedgerPeriodTransitionException(string message) : base(message);</code> | [src/Meridian.Storage/Ledger/LedgerBookServiceException.cs:53](../../../../src/Meridian.Storage/Ledger/LedgerBookServiceException.cs#L53) |  |
-
-## LedgerPostingAuthorityContext
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingAuthorityContext</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:26](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L26).
-
-```csharp
-public sealed record LedgerPostingAuthorityContext(LedgerJournalEntryWrite Write, LedgerBookRecord Book, LedgerBookControlProfileDto Controls, string? TenantId)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IList&lt;LedgerControlDecisionDto&gt; Decisions { get; } = new List&lt;LedgerControlDecisionDto&gt;();</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:32](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L32) |  |
-| <code>public LegalEntityReadAuthorityProof? StructureAuthorityProof { get; private set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:33](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L33) |  |
-| <code>public bool IsReviewOnly { get; internal set; }</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:34](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L34) |  |
-| <code>public IReadOnlyList&lt;IntercompanyAgreementRevisionDto&gt; VerifiedCanonicalAgreementRevisions { get; internal set; } = [];</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:35](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L35) |  |
-| <code>public void RetainStructureAuthority(IAsyncDisposable lease);</code> | [src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs:36](../../../../src/Meridian.Storage/Ledger/ILedgerPostingAuthority.cs#L36) |  |
-
-## LedgerPostingIdentity
-
-Qualified name: <code>Meridian.Storage.Ledger.LedgerPostingIdentity</code>. Kind: `record`.
-
-Source: [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:226](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L226).
-
-```csharp
-public sealed record LedgerPostingIdentity(Guid JournalEntryId, Guid AggregateId, Guid? CommandId, Guid? SourceEventId, string? IdempotencyKey)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static LedgerPostingIdentity FromWrite(LedgerJournalEntryWrite write);</code> | [src/Meridian.Storage/Ledger/ILedgerJournalStore.cs:233](../../../../src/Meridian.Storage/Ledger/ILedgerJournalStore.cs#L233) |  |
