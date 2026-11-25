@@ -20,7 +20,7 @@ rerun it from the repository root. Paths in the command column are relative to t
 
 | Reports | Owning command or source |
 | --- | --- |
-| [Roadmap summary](ROADMAP_SUMMARY.md) | `python build/scripts/docs/render-roadmap-docs.py --summary`; compatibility copy of the [canonical summary](../roadmap/generated/ROADMAP_SUMMARY.md). |
+| [Roadmap summary](../roadmap/generated/ROADMAP_SUMMARY.md) | `python build/scripts/docs/render-roadmap-docs.py --summary`; rendered under `docs/roadmap/generated/`. |
 | [Program state](program-state-summary.md) and [JSON](program-state-summary.json) | `python scripts/generate_program_state_summary.py`; same roadmap/program registries. |
 | [TODO scan](TODO.md) | `python build/scripts/docs/scan-todos.py --output docs/status/TODO.md --json-output docs/status/todo-scan-results.json`; scan JSON is ignored local output. |
 | [Changelog](CHANGELOG.md) | `python build/scripts/docs/generate-changelog.py --output docs/status/CHANGELOG.md --recent 50`; Git history, not a release certification. |
@@ -77,7 +77,6 @@ Retain these paths while generators, validators, checklists, or guidance consume
 
 | Compatibility path | Current source |
 | --- | --- |
-| [ROADMAP.md](ROADMAP.md) | [Roadmap registry](../roadmap/README.md) |
 | [FEATURE_INVENTORY.md](FEATURE_INVENTORY.md) | [Product](../product/README.md) and [roadmap register](../roadmap/generated/roadmap-register.md) |
 | [provider-validation-matrix.md](provider-validation-matrix.md) | [Canonical provider validation matrix](../reference/provider-validation-matrix.md) |
 | [contract-compatibility-matrix.md](contract-compatibility-matrix.md) | [Canonical contract compatibility matrix](../reference/contract-compatibility-matrix.md) |
