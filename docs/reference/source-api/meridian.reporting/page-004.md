@@ -238,7 +238,7 @@ public sealed record ReportingReviewMetricThreshold(string GridId, string Column
 
 Qualified name: <code>Meridian.Reporting.ReportingRunAuditEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:224](../../../../src/Meridian.Reporting/ReportingContracts.cs#L224).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:215](../../../../src/Meridian.Reporting/ReportingContracts.cs#L215).
 
 ```csharp
 public sealed record ReportingRunAuditEntry(string RunId, DateTimeOffset TimestampUtc, string Action, string Actor, string Notes);
@@ -248,7 +248,7 @@ public sealed record ReportingRunAuditEntry(string RunId, DateTimeOffset Timesta
 
 Qualified name: <code>Meridian.Reporting.ReportingRunConcurrencyException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:629](../../../../src/Meridian.Reporting/ReportingContracts.cs#L629).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:620](../../../../src/Meridian.Reporting/ReportingContracts.cs#L620).
 
 Reports a reporting run revision conflict with the expected and actual revisions.
 
@@ -260,18 +260,18 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:645](../../../../src/Meridian.Reporting/ReportingContracts.cs#L645) |  |
-| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:647](../../../../src/Meridian.Reporting/ReportingContracts.cs#L647) |  |
-| <code>public string? ExpectedRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:649](../../../../src/Meridian.Reporting/ReportingContracts.cs#L649) |  |
-| <code>public string? ActualRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:651](../../../../src/Meridian.Reporting/ReportingContracts.cs#L651) |  |
-| <code>public static ReportingRunConcurrencyException ForConflict(string? tenantId, string runId, string? expectedRevision, string actualRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:653](../../../../src/Meridian.Reporting/ReportingContracts.cs#L653) |  |
-| <code>public static ReportingRunConcurrencyException ForMissing(string? tenantId, string runId, string expectedRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:665](../../../../src/Meridian.Reporting/ReportingContracts.cs#L665) |  |
+| <code>public string? TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:636](../../../../src/Meridian.Reporting/ReportingContracts.cs#L636) |  |
+| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:638](../../../../src/Meridian.Reporting/ReportingContracts.cs#L638) |  |
+| <code>public string? ExpectedRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:640](../../../../src/Meridian.Reporting/ReportingContracts.cs#L640) |  |
+| <code>public string? ActualRevision { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:642](../../../../src/Meridian.Reporting/ReportingContracts.cs#L642) |  |
+| <code>public static ReportingRunConcurrencyException ForConflict(string? tenantId, string runId, string? expectedRevision, string actualRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:644](../../../../src/Meridian.Reporting/ReportingContracts.cs#L644) |  |
+| <code>public static ReportingRunConcurrencyException ForMissing(string? tenantId, string runId, string expectedRevision) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:656](../../../../src/Meridian.Reporting/ReportingContracts.cs#L656) |  |
 
 ## ReportingRunCreateClaimException
 
 Qualified name: <code>Meridian.Reporting.ReportingRunCreateClaimException</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:252](../../../../src/Meridian.Reporting/ReportingContracts.cs#L252).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:243](../../../../src/Meridian.Reporting/ReportingContracts.cs#L243).
 
 Indicates that a reporting run creation claim could not be used for the specified tenant and run.
 
@@ -283,15 +283,15 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public ReportingRunCreateClaimException(string tenantId, string runId, string message) : base(message);</code> | [src/Meridian.Reporting/ReportingContracts.cs:254](../../../../src/Meridian.Reporting/ReportingContracts.cs#L254) |  |
-| <code>public string TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:264](../../../../src/Meridian.Reporting/ReportingContracts.cs#L264) |  |
-| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:266](../../../../src/Meridian.Reporting/ReportingContracts.cs#L266) |  |
+| <code>public ReportingRunCreateClaimException(string tenantId, string runId, string message) : base(message);</code> | [src/Meridian.Reporting/ReportingContracts.cs:245](../../../../src/Meridian.Reporting/ReportingContracts.cs#L245) |  |
+| <code>public string TenantId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:255](../../../../src/Meridian.Reporting/ReportingContracts.cs#L255) |  |
+| <code>public string RunId { get; }</code> | [src/Meridian.Reporting/ReportingContracts.cs:257](../../../../src/Meridian.Reporting/ReportingContracts.cs#L257) |  |
 
 ## ReportingRunCreateClaimResult
 
 Qualified name: <code>Meridian.Reporting.ReportingRunCreateClaimResult</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:246](../../../../src/Meridian.Reporting/ReportingContracts.cs#L246).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:237](../../../../src/Meridian.Reporting/ReportingContracts.cs#L237).
 
 ```csharp
 public sealed record ReportingRunCreateClaimResult(ReportingRunCreateClaimStatus Status, DateTimeOffset? LeaseExpiresAtUtc = null, long LeaseVersion = 0);
@@ -301,7 +301,7 @@ public sealed record ReportingRunCreateClaimResult(ReportingRunCreateClaimStatus
 
 Qualified name: <code>Meridian.Reporting.ReportingRunCreateClaimStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:238](../../../../src/Meridian.Reporting/ReportingContracts.cs#L238).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:229](../../../../src/Meridian.Reporting/ReportingContracts.cs#L229).
 
 ```csharp
 public enum ReportingRunCreateClaimStatus
@@ -311,10 +311,10 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Acquired</code> | [src/Meridian.Reporting/ReportingContracts.cs:240](../../../../src/Meridian.Reporting/ReportingContracts.cs#L240) |  |
-| <code>AlreadyExists</code> | [src/Meridian.Reporting/ReportingContracts.cs:241](../../../../src/Meridian.Reporting/ReportingContracts.cs#L241) |  |
-| <code>LeasedByAnotherOwner</code> | [src/Meridian.Reporting/ReportingContracts.cs:242](../../../../src/Meridian.Reporting/ReportingContracts.cs#L242) |  |
-| <code>Unsupported</code> | [src/Meridian.Reporting/ReportingContracts.cs:243](../../../../src/Meridian.Reporting/ReportingContracts.cs#L243) |  |
+| <code>Acquired</code> | [src/Meridian.Reporting/ReportingContracts.cs:231](../../../../src/Meridian.Reporting/ReportingContracts.cs#L231) |  |
+| <code>AlreadyExists</code> | [src/Meridian.Reporting/ReportingContracts.cs:232](../../../../src/Meridian.Reporting/ReportingContracts.cs#L232) |  |
+| <code>LeasedByAnotherOwner</code> | [src/Meridian.Reporting/ReportingContracts.cs:233](../../../../src/Meridian.Reporting/ReportingContracts.cs#L233) |  |
+| <code>Unsupported</code> | [src/Meridian.Reporting/ReportingContracts.cs:234](../../../../src/Meridian.Reporting/ReportingContracts.cs#L234) |  |
 
 ## ReportingRunCreationRequest
 
@@ -390,7 +390,7 @@ public sealed partial class ReportingRunReviewJsonContext : JsonSerializerContex
 
 Qualified name: <code>Meridian.Reporting.ReportingRunSnapshot</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:231](../../../../src/Meridian.Reporting/ReportingContracts.cs#L231).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:222](../../../../src/Meridian.Reporting/ReportingContracts.cs#L222).
 
 ```csharp
 public sealed record ReportingRunSnapshot(ReportingOutputManifest Manifest, IReadOnlyList<ReportingRunAuditEntry> AuditTrail, DateTimeOffset UpdatedAtUtc, string? CertifiedDatasetHashSha256 = null, string? ManifestHashSha256 = null);
@@ -420,7 +420,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Reporting.ReportingRunStoreRevision</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:538](../../../../src/Meridian.Reporting/ReportingContracts.cs#L538).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:529](../../../../src/Meridian.Reporting/ReportingContracts.cs#L529).
 
 Computes deterministic reporting run revisions from manifest and audit-trail content.
 
@@ -432,8 +432,8 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public static string Compute(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail);</code> | [src/Meridian.Reporting/ReportingContracts.cs:543](../../../../src/Meridian.Reporting/ReportingContracts.cs#L543) |  |
-| <code>public static bool Matches(string left, string right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:571](../../../../src/Meridian.Reporting/ReportingContracts.cs#L571) |  |
+| <code>public static string Compute(ReportingOutputManifest manifest, IReadOnlyList&lt;ReportingRunAuditEntry&gt; auditTrail);</code> | [src/Meridian.Reporting/ReportingContracts.cs:534](../../../../src/Meridian.Reporting/ReportingContracts.cs#L534) |  |
+| <code>public static bool Matches(string left, string right) =&gt; …;</code> | [src/Meridian.Reporting/ReportingContracts.cs:562](../../../../src/Meridian.Reporting/ReportingContracts.cs#L562) |  |
 
 ## ReportingRunTrigger
 
@@ -476,16 +476,6 @@ Declared public members:
 | <code>public static ReportingScheduleConcurrencyException ForConflict(ReportingScheduleRecordDto current, DateTimeOffset? expectedUpdatedAtUtc) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOperationalStoreContracts.cs:273](../../../../src/Meridian.Reporting/ReportingOperationalStoreContracts.cs#L273) |  |
 | <code>public static ReportingScheduleConcurrencyException ForMissing(ReportingScheduleRecordDto candidate, DateTimeOffset expectedUpdatedAtUtc) =&gt; …;</code> | [src/Meridian.Reporting/ReportingOperationalStoreContracts.cs:284](../../../../src/Meridian.Reporting/ReportingOperationalStoreContracts.cs#L284) |  |
 
-## ReportingScheduleContract
-
-Qualified name: <code>Meridian.Reporting.ReportingScheduleContract</code>. Kind: `record`.
-
-Source: [src/Meridian.Reporting/ReportingContracts.cs:215](../../../../src/Meridian.Reporting/ReportingContracts.cs#L215).
-
-```csharp
-public sealed record ReportingScheduleContract(string ScheduleId, string TemplateId, string CronExpression, DateOnly NextAsOfDate, DateTimeOffset DueAtUtc, int MaxRetries, string RequestedBy);
-```
-
 ## ReportingScheduleExecutionLease
 
 Qualified name: <code>Meridian.Reporting.ReportingScheduleExecutionLease</code>. Kind: `record`.
@@ -520,7 +510,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Reporting.ReportingSchedulePeriodOccurrence</code>. Kind: `record struct`.
 
-Source: [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:7](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L7).
+Source: [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:8](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L8).
 
 The next occurrence of a period-close reporting schedule.
 
@@ -532,9 +522,9 @@ public readonly record struct ReportingSchedulePeriodOccurrence(string PeriodId,
 
 Qualified name: <code>Meridian.Reporting.ReportingSchedulePeriodPlanner</code>. Kind: `class`.
 
-Source: [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:17](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L17).
+Source: [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:19](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L19).
 
-Advances period-close reporting schedules (&quot;as of period end, due N days later&quot;) using the ledger&#x27;s period boundaries, so the governed reporting scheduler and ledger report exports share one definition of a monthly, quarterly, or annual period.
+Advances period-close reporting schedules (&quot;as of period end, due N days later&quot;) using the ledger&#x27;s period boundaries, so the governed reporting scheduler and ledger report exports share one definition of a monthly, quarterly, or annual period. Weekly (ISO week ending Sunday) and daily periods are calendar-only: the ledger has no weekly or daily accounting periods.
 
 ```csharp
 public static class ReportingSchedulePeriodPlanner
@@ -544,10 +534,13 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public const int MaximumDueDaysAfterPeriodEnd = 366;</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:20](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L20) | Largest supported gap between a period end and its due date. |
-| <code>public static bool IsValid(ReportingSchedulePeriodCadenceDto cadence) =&gt; …;</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:22](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L22) |  |
-| <code>public static ReportingSchedulePeriodOccurrence Next(ReportingSchedulePeriodCadenceDto cadence, DateOnly currentPeriodEnd, DateTimeOffset currentDueAtUtc, TimeZoneInfo timeZone, TimeOnly? intendedLocalTime = null);</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:35](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L35) | Returns the occurrence that follows the period ending on currentPeriodEnd. The due time keeps the wall-clock time of currentDueAtUtc in timeZone, so a schedule due at 08:00 local stays at 08:00 local across daylight-saving changes. Pass intendedLocalTime when the configured time of day is known: the previous due instant may itself have been moved past a spring-forward gap, and reusing it would shift every later run. |
-| <code>public static DateTimeOffset DueAtUtc(DateOnly periodEnd, int dueDaysAfterPeriodEnd, TimeZoneInfo timeZone, TimeOnly localTimeOfDay);</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:65](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L65) | The due instant for a period ending on periodEnd: that many days later at localTimeOfDay in timeZone. Used directly when the period end comes from the ledger&#x27;s durable accounting periods rather than the calendar. |
+| <code>public const int MaximumDueDaysAfterPeriodEnd = 366;</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:22](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L22) | Largest supported gap between a period end and its due date, for any frequency. |
+| <code>public static int MaximumDueDaysFor(ReportingSchedulePeriodFrequencyDto frequency) =&gt; …;</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:28](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L28) | Largest due-day gap for one frequency. Weekly and daily gaps stay inside one period so a run is due before the next period closes. |
+| <code>public static bool IsCalendarOnly(ReportingSchedulePeriodFrequencyDto frequency) =&gt; …;</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:37](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L37) | True for frequencies whose period ends come from the calendar, never the ledger. |
+| <code>public static bool IsValid(ReportingSchedulePeriodCadenceDto cadence) =&gt; …;</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:40](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L40) |  |
+| <code>public static ReportingSchedulePeriodOccurrence Next(ReportingSchedulePeriodCadenceDto cadence, DateOnly currentPeriodEnd, DateTimeOffset currentDueAtUtc, TimeZoneInfo timeZone, TimeOnly? intendedLocalTime = null);</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:54](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L54) | Returns the occurrence that follows the period ending on currentPeriodEnd. The due time keeps the wall-clock time of currentDueAtUtc in timeZone, so a schedule due at 08:00 local stays at 08:00 local across daylight-saving changes. Pass intendedLocalTime when the configured time of day is known: the previous due instant may itself have been moved past a spring-forward gap, and reusing it would shift every later run. |
+| <code>public static DateTimeOffset DueAtUtc(DateOnly periodEnd, int dueDaysAfterPeriodEnd, TimeZoneInfo timeZone, TimeOnly localTimeOfDay);</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:82](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L82) | The due instant for a period ending on periodEnd: that many days later at localTimeOfDay in timeZone. Used directly when the period end comes from the ledger&#x27;s durable accounting periods rather than the calendar. |
+| <code>public static string WeekPeriodId(DateOnly date);</code> | [src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs:131](../../../../src/Meridian.Reporting/ReportingSchedulePeriodPlanner.cs#L131) | ISO 8601 week identifier (for example 2026-W53) of the week containing date. |
 
 ## ReportingSectionManifest
 
@@ -738,3 +731,21 @@ Request payload for ReportGenerationService.GenerateAsync.
 ```csharp
 public sealed record ReportRequest(string FundId, DateTimeOffset AsOf, FundLedgerBook FundLedger, ReportKind ReportKind = ReportKind.TrialBalance, ReportingSnapshotSourceContext? SnapshotSource = null);
 ```
+
+## ReportSnapshotDiffEngine
+
+Qualified name: <code>Meridian.Reporting.ReportSnapshotDiffEngine</code>. Kind: `class`.
+
+Source: [src/Meridian.Reporting/ReportSnapshotDiffEngine.cs:11](../../../../src/Meridian.Reporting/ReportSnapshotDiffEngine.cs#L11).
+
+Produces a deterministic period-over-period comparison between two rendered report-writer grids. Rows are matched by ReportWriterGridRowDto.RowKey; numeric cells carry a signed delta and direction so the UI can present &quot;prior / current / Δ&quot; columns without re-querying the source data.
+
+```csharp
+public static class ReportSnapshotDiffEngine
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public static ReportWriterGridDiffDto Diff(ReportWriterGridRenderDto prior, ReportWriterGridRenderDto current);</code> | [src/Meridian.Reporting/ReportSnapshotDiffEngine.cs:13](../../../../src/Meridian.Reporting/ReportSnapshotDiffEngine.cs#L13) |  |

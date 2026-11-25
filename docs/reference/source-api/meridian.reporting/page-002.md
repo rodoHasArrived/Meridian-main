@@ -97,7 +97,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Reporting.ReportingApprovalDecision</code>. Kind: `record`.
 
-Source: [src/Meridian.Reporting/ReportingContracts.cs:677](../../../../src/Meridian.Reporting/ReportingContracts.cs#L677).
+Source: [src/Meridian.Reporting/ReportingContracts.cs:668](../../../../src/Meridian.Reporting/ReportingContracts.cs#L668).
 
 ```csharp
 public sealed record ReportingApprovalDecision(ReportingApprovalAction Action, string Actor, string Role, string Notes, DateTimeOffset DecidedAtUtc);

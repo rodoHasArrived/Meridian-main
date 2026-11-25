@@ -106,24 +106,24 @@ public static class ReportingSchedulePeriodPlanner
         switch (frequency)
         {
             case ReportingSchedulePeriodFrequencyDto.Daily:
-            {
-                var day = currentPeriodEnd.AddDays(1);
-                return (day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), day);
-            }
+                {
+                    var day = currentPeriodEnd.AddDays(1);
+                    return (day.ToString("yyyy-MM-dd", CultureInfo.InvariantCulture), day);
+                }
             case ReportingSchedulePeriodFrequencyDto.Weekly:
-            {
-                // The next Sunday strictly after the current period end closes the ISO week.
-                var daysToSunday = ((int)DayOfWeek.Sunday - (int)currentPeriodEnd.DayOfWeek + 7) % 7;
-                var weekEnd = currentPeriodEnd.AddDays(daysToSunday == 0 ? 7 : daysToSunday);
-                return (WeekPeriodId(weekEnd), weekEnd);
-            }
+                {
+                    // The next Sunday strictly after the current period end closes the ISO week.
+                    var daysToSunday = ((int)DayOfWeek.Sunday - (int)currentPeriodEnd.DayOfWeek + 7) % 7;
+                    var weekEnd = currentPeriodEnd.AddDays(daysToSunday == 0 ? 7 : daysToSunday);
+                    return (WeekPeriodId(weekEnd), weekEnd);
+                }
             default:
-            {
-                var period = LedgerReportSchedulePlanner.PeriodStartingOn(
-                    ToLedgerFrequency(frequency),
-                    currentPeriodEnd.AddDays(1));
-                return (period.PeriodId, period.PeriodEnd);
-            }
+                {
+                    var period = LedgerReportSchedulePlanner.PeriodStartingOn(
+                        ToLedgerFrequency(frequency),
+                        currentPeriodEnd.AddDays(1));
+                    return (period.PeriodId, period.PeriodEnd);
+                }
         }
     }
 

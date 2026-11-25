@@ -44,7 +44,7 @@ python3 build/scripts/docs/render-public-type-reference.py --check
 | `Meridian.ProviderSdk` | 180 | [1](meridian.providersdk/page-001.md) · [2](meridian.providersdk/page-002.md) · [3](meridian.providersdk/page-003.md) · [4](meridian.providersdk/page-004.md) |
 | `Meridian.QuantScript` | 43 | [1](meridian.quantscript/page-001.md) |
 | `Meridian.ReferenceData` | 10 | [1](meridian.referencedata/page-001.md) |
-| `Meridian.Reporting` | 209 | [1](meridian.reporting/page-001.md) · [2](meridian.reporting/page-002.md) · [3](meridian.reporting/page-003.md) · [4](meridian.reporting/page-004.md) · [5](meridian.reporting/page-005.md) |
+| `Meridian.Reporting` | 208 | [1](meridian.reporting/page-001.md) · [2](meridian.reporting/page-002.md) · [3](meridian.reporting/page-003.md) · [4](meridian.reporting/page-004.md) · [5](meridian.reporting/page-005.md) |
 | `Meridian.Reporting.ReadModels` | 8 | [1](meridian.reporting.readmodels/page-001.md) |
 | `Meridian.Risk` | 26 | [1](meridian.risk/page-001.md) |
 | `Meridian.Storage` | 770 | [1](meridian.storage/page-001.md) · [2](meridian.storage/page-002.md) · [3](meridian.storage/page-003.md) · [4](meridian.storage/page-004.md) · [5](meridian.storage/page-005.md) · [6](meridian.storage/page-006.md) · [7](meridian.storage/page-007.md) · [8](meridian.storage/page-008.md) · [9](meridian.storage/page-009.md) · [10](meridian.storage/page-010.md) · [11](meridian.storage/page-011.md) · [12](meridian.storage/page-012.md) · [13](meridian.storage/page-013.md) · [14](meridian.storage/page-014.md) · [15](meridian.storage/page-015.md) · [16](meridian.storage/page-016.md) |
@@ -55,4 +55,4 @@ python3 build/scripts/docs/render-public-type-reference.py --check
 | `Meridian.Workflow` | 11 | [1](meridian.workflow/page-001.md) |
 | `Meridian.Wpf` | 1088 | [1](meridian.wpf/page-001.md) · [2](meridian.wpf/page-002.md) · [3](meridian.wpf/page-003.md) · [4](meridian.wpf/page-004.md) · [5](meridian.wpf/page-005.md) · [6](meridian.wpf/page-006.md) · [7](meridian.wpf/page-007.md) · [8](meridian.wpf/page-008.md) · [9](meridian.wpf/page-009.md) · [10](meridian.wpf/page-010.md) · [11](meridian.wpf/page-011.md) · [12](meridian.wpf/page-012.md) · [13](meridian.wpf/page-013.md) · [14](meridian.wpf/page-014.md) · [15](meridian.wpf/page-015.md) · [16](meridian.wpf/page-016.md) · [17](meridian.wpf/page-017.md) · [18](meridian.wpf/page-018.md) · [19](meridian.wpf/page-019.md) · [20](meridian.wpf/page-020.md) · [21](meridian.wpf/page-021.md) · [22](meridian.wpf/page-022.md) |
 
-Total: **11633** distinct module/qualified-name/arity entries from **12307** source declarations.
+Total: **11632** distinct module/qualified-name/arity entries from **12306** source declarations.
