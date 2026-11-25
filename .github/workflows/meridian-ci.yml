@@ -48,6 +48,9 @@ jobs:
           # Inspect the complete diff locally, including deletions and both sides
           # of renames. No PR-files API limit can silently omit changed code.
           fetch-depth: 0
+          # The detector compares path names only, so history needs commits and trees but
+          # no file contents beyond this revision. The .NET and integration lanes wait here.
+          filter: blob:none
 
       - name: Detect .NET changes
         id: detect
@@ -579,8 +582,13 @@ jobs:
 
           echo "All required Meridian CI lanes passed."
 
+  # Shares the .NET lane's change classification: a pull request that changes only
+  # recognized documentation cannot alter these tests, so it does not spend their runner.
+  # Main, merge queues, manual runs and release callers always classify as requiring them.
   service-backed-integrations:
     name: service-backed-integrations
+    needs: changes
+    if: needs.changes.outputs.dotnet == 'true'
     uses: ./.github/workflows/service-backed-integrations.yml
     with:
       artifact-name: meridian-ci-integrations
@@ -588,7 +596,7 @@ jobs:
   integration-gate:
     name: integration-gate
     runs-on: ubuntu-latest
-    needs: service-backed-integrations
+    needs: [changes, service-backed-integrations]
     if: always()
     timeout-minutes: 5
     outputs:
@@ -598,6 +606,8 @@ jobs:
     steps:
       - name: Evaluate service-backed integration evidence
         env:
+          CHANGES_RESULT: ${{ needs.changes.result }}
+          DOTNET_REQUIRED: ${{ needs.changes.outputs.dotnet }}
           INTEGRATION_RESULT: ${{ needs.service-backed-integrations.result }}
         run: |
           set -euo pipefail
@@ -606,6 +616,11 @@ jobs:
             echo ""
             echo "Service-backed integrations: ${INTEGRATION_RESULT}"
           } >> "$GITHUB_STEP_SUMMARY"
+          if [[ "$INTEGRATION_RESULT" == "skipped" && "$CHANGES_RESULT" == "success" &&
+                "$DOTNET_REQUIRED" == "false" ]]; then
+            echo "Docs-only PR: service-backed integrations intentionally skipped." | tee -a "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
           if [[ "$INTEGRATION_RESULT" != "success" ]]; then
             echo "Service-backed integrations did not pass. Inspect the integration job and evidence."
             exit 1

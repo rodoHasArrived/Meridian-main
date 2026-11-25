@@ -55,14 +55,18 @@ Meridian CI retains exactly its four canonical `scripts/ci.sh` lanes and the exi
 `quality-gate` aggregation. Its additional `service-backed-integrations` job calls the same
 `service-backed-integrations.yml` implementation used by Production Certification. The
 always-reported `integration-gate` companion requires success and fails for failed, cancelled
-or skipped integration execution. It runs without path filters on pull requests (including
-forks), merge groups, main pushes and manual/reusable calls.
+or skipped integration execution, with one exception: a pull request that the `changes` job
+successfully classifies as documentation-only skips the integration job, as it already skips
+`verify-dotnet`, and the gate accepts exactly that skip. It uses no path filters; main pushes,
+merge groups and manual/reusable calls always classify as requiring the tests.
 
 The shared implementation uses the certification `postgres:17` service, health checks and
 eight domain connection strings. The database and credentials are disposable within each
 job; no production secrets or privileged PR event are used. Checkout uses the event SHA with
 credentials persistence disabled and `contents: read`. Meridian, Direct Lending and Demo project
-restores and test runs are attempted independently, so one failure cannot hide another result. TRX validation
+restores and test runs are attempted independently, so one failure cannot hide another result. The
+Meridian suite is built once and run as two concurrent processes (see the November 25 record
+below). TRX validation
 runs after failures and rejects missing required suite prefixes, failed/skipped/unknown
 outcomes and every file with zero discovered tests. Coverage and schema evidence retain the
 existing certification artifact contract (90 days); CI companion evidence is retained 14 days.
@@ -476,10 +480,32 @@ lanes instead of two, plus `build-workstation` and two short verdict jobs. If qu
 dominates again, set a lane's `shard` matrix, its `K/N` suffix, its outputs and
 `--expected-shards` back to one together; the workflow contract tests keep them consistent.
 Rollback is reverting this change. The expected gate time is an estimate from one run until
-post-merge runs are measured, and `service-backed-integrations` (19 minutes: a five-minute
-build and one serial 11.5-minute `Meridian.Tests` step that also produces the certification
-receipt, coverage and single-database schema evidence) is unchanged and now the longest job
-in the workflow.
+post-merge runs are measured.
+
+**Integration lane.** `service-backed-integrations` took 19 minutes in the same run: a
+five-minute build and one 11.5-minute `Meridian.Tests` step. Its TRX showed 1,290
+test-seconds, of which one class, `Meridian.Tests.Storage.AtomicTaxLotJournalStoreTests`
+(196 tests), took 445; xUnit runs a class serially, so that class alone was two thirds of
+the step's wall time. Two changes follow.
+
+- The suite now runs as two complementary processes declared once in
+  `integration_evidence.MERIDIAN_PROCESSES`: that class against a second database,
+  `meridian_tax_lot`, and every other test against `meridian`. The project is built once;
+  `run-meridian-integrations.py` gives the second process a copy of the built output, because
+  the coverage collector instruments assemblies in place, plus a private temporary directory
+  and rewritten connection strings. The receipt requires TRX and coverage from both
+  processes, rejects a test that ran in the wrong process, and requires schema evidence for
+  both databases. Expected test time is about 7.5 minutes (estimate; the class remains the
+  floor), for a job of about 15.
+- Documentation-only pull requests skip the job through the existing change classification.
+
+The schema evidence deserves a separate note. In the measured run the retained
+`database-table-inventory.csv` and `migration-ledger-inventory.csv` held only their header
+rows and `database-schema.sql` contained no `CREATE TABLE`: the tests create and remove
+their own schemas, so the dump records an empty database. Splitting the suite across two
+databases therefore changes the file set, not what the evidence proves. Whether
+certification should instead dump a freshly migrated database is an open owner decision
+that this change does not make.
 
 ### Benchmark promotion criteria
 

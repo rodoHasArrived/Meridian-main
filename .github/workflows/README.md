@@ -24,7 +24,13 @@ Its workflow changes require **human governance review**. Sustained-load soak re
 
 Meridian CI also calls `service-backed-integrations.yml` on pull requests (including forks),
 merge groups, main pushes and manual/reusable runs. Its always-reported `integration-gate`
-companion requires a successful PostgreSQL run; the four canonical `scripts/ci.sh` lanes and
+companion requires a successful PostgreSQL run. The one exception shares the .NET lane's change
+classification: a pull request that changes only recognized documentation skips the
+integration job, and the gate passes only for that explicit, successfully classified skip.
+The Meridian suite runs as the two complementary processes declared in
+`integration_evidence.MERIDIAN_PROCESSES` (the serial `AtomicTaxLotJournalStoreTests` class
+against its own `meridian_tax_lot` database, every other test against `meridian`), started by
+`run-meridian-integrations.py` from one build with isolated outputs. The four canonical `scripts/ci.sh` lanes and
 their `quality-gate` remain unchanged. Production Certification calls the same implementation.
 Within the release coordinator it consumes CI's immutable integration artifact and revalidates
 the exact commit/run/attempt, producer workflow, suite results, coverage and file digests.
@@ -208,7 +214,7 @@ hosted job and shard timings separately from runner queue delays before claiming
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
 | Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (two runner shards each, behind the `verify-dotnet` and `verify-browser` verdicts), docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
-| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, validates every TRX and all three required prefixes, and retains coverage plus schema evidence. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
+| Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, runs the Meridian suite as two declared processes with separate databases, validates every TRX, all three required suite prefixes and both process prefixes, and retains coverage plus schema evidence for each database. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | Security alerts and retained SARIF evidence |
 | Targeted Test | `targeted-test.yml` | Manual only | Runs a whitelisted hosted validation mode when local machine capacity, locks, or long-running suites make local validation impractical. Modes include filtered .NET, browser workstation, docs/source, WPF dev loop, WPF route, and desktop smoke. | Targeted TRX, browser bundle, docs/source, WPF validation, or desktop smoke artifacts |

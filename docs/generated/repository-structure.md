@@ -1188,6 +1188,7 @@ Meridian-main
 │       │   ├── requirements.txt
 │       │   ├── resolve-consumer-predecessor.py
 │       │   ├── run-dotnet-ci-tests.py
+│       │   ├── run-meridian-integrations.py
 │       │   ├── run-script-tests.py
 │       │   ├── run-windows-ci-tests.py
 │       │   ├── scan-commit-secrets.py
