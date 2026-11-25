@@ -6,6 +6,98 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ProviderInfo
+
+Qualified name: <code>Meridian.Ui.Services.Services.ProviderInfo</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:77](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L77).
+
+Provider information for display.
+
+```csharp
+public sealed class ProviderInfo
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string ProviderId { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:79](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L79) |  |
+| <code>public string DisplayName { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:80](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L80) |  |
+| <code>public string Description { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:81](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L81) |  |
+| <code>public string ProviderType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:82](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L82) |  |
+| <code>public bool RequiresCredentials { get; set; }</code> | [src/Meridian.Ui.Services/Services/StatusServiceBase.cs:83](../../../../src/Meridian.Ui.Services/Services/StatusServiceBase.cs#L83) |  |
+
+## ProviderTier
+
+Qualified name: <code>Meridian.Ui.Services.Services.ProviderTier</code>. Kind: `enum`.
+
+Source: [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:768](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L768).
+
+Provider tier classification.
+
+```csharp
+public enum ProviderTier : byte
+```
+
+Enum declarations:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Free</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:770](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L770) |  |
+| <code>FreeWithAccount</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:771](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L771) |  |
+| <code>LimitedFree</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:772](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L772) |  |
+| <code>Premium</code> | [src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs:773](../../../../src/Meridian.Ui.Services/Services/SettingsConfigurationService.cs#L773) |  |
+
+## QualityAlert
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityAlert</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:107](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L107).
+
+Tracks a symbol quality alert, its severity, and acknowledgement details.
+
+```csharp
+public sealed class QualityAlert
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L109) |  |
+| <code>public string AlertType { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:110](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L110) |  |
+| <code>public string Severity { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:111](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L111) |  |
+| <code>public string Symbol { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:112](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L112) |  |
+| <code>public string Message { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:113](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L113) |  |
+| <code>public string Details { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:114](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L114) |  |
+| <code>public DateTime CreatedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:115](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L115) |  |
+| <code>public bool IsAcknowledged { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:116](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L116) |  |
+| <code>public DateTime? AcknowledgedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:117](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L117) |  |
+| <code>public string? AcknowledgedBy { get; set; }</code> | [src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs:118](../../../../src/Meridian.Ui.Services/Services/DataQualityServiceBase.cs#L118) |  |
+
+## QualityArchiveStore
+
+Qualified name: <code>Meridian.Ui.Services.Services.QualityArchiveStore</code>. Kind: `class`.
+
+Source: [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:40](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L40).
+
+JSON file-backed archive store using %LOCALAPPDATA%\Meridian\quality-archive.json. Stores data as Dictionary&lt;symbol -&gt; Dictionary&lt;date string -&gt; score&gt;&gt;. Thread-safe using concurrent dictionary wrapper.
+
+```csharp
+public sealed class QualityArchiveStore : IQualityArchiveStore
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public QualityArchiveStore(ILogger&lt;QualityArchiveStore&gt; logger);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:54](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L54) |  |
+| <code>public Task RecordAsync(string symbol, DateOnly date, double completenessScore, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:80](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L80) | Records a daily quality score, updating in-memory cache and persisting to disk. |
+| <code>public Task&lt;IReadOnlyList&lt;DailyQualityRecord&gt;&gt; GetHistoryAsync(string symbol, DateOnly from, DateOnly to, CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:103](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L103) | Retrieves historical records for a symbol within a date range. |
+| <code>public Task&lt;IReadOnlyList&lt;string&gt;&gt; GetSymbolsAsync(CancellationToken ct);</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:129](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L129) | Gets all tracked symbols. |
+| <code>public async ValueTask DisposeAsync();</code> | [src/Meridian.Ui.Services/Services/QualityArchiveStore.cs:204](../../../../src/Meridian.Ui.Services/Services/QualityArchiveStore.cs#L204) |  |
+
 ## QualityCheckResult
 
 Qualified name: <code>Meridian.Ui.Services.Services.QualityCheckResult</code>. Kind: `class`.
@@ -1050,117 +1142,3 @@ Declared public members:
 | <code>public async Task&lt;MigrationPlanApiResult?&gt; GetMigrationPlanAsync(string targetTier = &quot;cold&quot;, int ageDaysThreshold = 90, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1256](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1256) | Gets a migration plan from the core API for files to move between tiers. |
 | <code>public async Task&lt;DefragmentationApiResult?&gt; RunDefragmentationAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1284](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1284) | Runs defragmentation via the core API. |
 | <code>public async Task&lt;StorageCatalogApiResult?&gt; GetStorageCatalogAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1302](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1302) | Gets the storage catalog from the core API for comprehensive file analysis. |
-
-## StorageOptimizationReport
-
-Qualified name: <code>Meridian.Ui.Services.StorageOptimizationReport</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1344](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1344).
-
-Storage optimization report.
-
-```csharp
-public sealed class StorageOptimizationReport
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public DateTime AnalyzedAt { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1346](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1346) |  |
-| <code>public TimeSpan AnalysisDuration { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1347](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1347) |  |
-| <code>public string DataRoot { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1348](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1348) |  |
-| <code>public bool WasCancelled { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1349](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1349) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1352](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1352) |  |
-| <code>public long TotalBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1353](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1353) |  |
-| <code>public List&lt;AnalyzedFile&gt; AnalyzedFiles { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1354](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1354) |  |
-| <code>public List&lt;OptimizationRecommendation&gt; Recommendations { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1357](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1357) |  |
-| <code>public int DuplicateFilesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1360](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1360) |  |
-| <code>public long DuplicateBytesTotal { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1361](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1361) |  |
-| <code>public int UncompressedFilesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1364](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1364) |  |
-| <code>public long CompressionSavingsEstimate { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1365](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1365) |  |
-| <code>public int SmallFilesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1368](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1368) |  |
-| <code>public int TieringCandidatesCount { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1371](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1371) |  |
-| <code>public long TieringCandidatesBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1372](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1372) |  |
-| <code>public long TotalPotentialSavings { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1375](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1375) |  |
-| <code>public long ProjectedUsageAfterOptimization { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1376](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1376) |  |
-| <code>public TimeSpan EstimatedOptimizationTime { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1377](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1377) |  |
-| <code>public List&lt;string&gt; Errors { get; set; } = new ();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1380](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1380) |  |
-| <code>public string GetSummary();</code> | [src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs:1385](../../../../src/Meridian.Ui.Services/Services/StorageOptimizationAdvisorService.cs#L1385) | Gets a formatted report summary. |
-
-## StorageRetentionPolicy
-
-Qualified name: <code>Meridian.Ui.Services.StorageRetentionPolicy</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:269](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L269).
-
-A storage retention policy definition for administrative operations. Note: Renamed from RetentionPolicy to avoid conflict with Meridian.Ui.Services.RetentionPolicy in RetentionAssuranceModels.cs which handles data retention periods.
-
-```csharp
-public sealed class StorageRetentionPolicy
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public string Id { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:271](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L271) |  |
-| <code>public string Name { get; set; } = string.Empty;</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:272](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L272) |  |
-| <code>public int RetentionDays { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:273](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L273) |  |
-| <code>public string? SymbolPattern { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:274](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L274) |  |
-| <code>public List&lt;string&gt;? EventTypes { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:275](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L275) |  |
-| <code>public bool Enabled { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:276](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L276) |  |
-| <code>public bool IsDefault { get; set; }</code> | [src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs:277](../../../../src/Meridian.Ui.Services/Services/AdminMaintenanceModels.cs#L277) |  |
-
-## StorageServiceBase
-
-Qualified name: <code>Meridian.Ui.Services.StorageServiceBase</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:15](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L15).
-
-Base class for storage services providing platform-agnostic API delegation methods. Accepts ApiClientService via constructor for testability and to avoid coupling to a static singleton. WPF StorageService inherits from this class and adds platform-specific functionality (e.g., Brush-based styling).
-
-```csharp
-public class StorageServiceBase
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public async Task&lt;StorageStatsSummary?&gt; GetStorageStatsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:30](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L30) | Gets storage statistics summary. |
-| <code>public async Task&lt;List&lt;StorageCategory&gt;?&gt; GetStorageBreakdownAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:38](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L38) | Gets detailed storage usage by category. |
-| <code>public async Task&lt;SymbolStorageInfo?&gt; GetSymbolInfoAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:46](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L46) | Gets symbol-specific information. |
-| <code>public async Task&lt;SymbolStorageStats?&gt; GetSymbolStorageStatsAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:55](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L55) | Gets storage statistics for a specific symbol. |
-| <code>public async Task&lt;string?&gt; GetSymbolFolderPathAsync(string symbol, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:64](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L64) | Gets the folder path for a symbol&#x27;s data. |
-| <code>public async Task&lt;StorageHealthReport?&gt; GetStorageHealthAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:74](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L74) | Gets storage health report. |
-| <code>public async Task&lt;List&lt;CleanupCandidate&gt;?&gt; GetCleanupCandidatesAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:82](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L82) | Gets files that need cleanup based on retention policies. |
-| <code>public async Task&lt;CleanupResult?&gt; RunCleanupAsync(bool dryRun = true, CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:90](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L90) | Runs storage cleanup. |
-| <code>public async Task&lt;ArchiveStats?&gt; GetArchiveStatsAsync(CancellationToken ct = default);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:101](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L101) | Gets archive statistics. |
-| <code>public static string FormatBytes(long bytes) =&gt; …;</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:109](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L109) | Formats a byte count into a human-readable string (e.g., &quot;1.5 GB&quot;). |
-| <code>public static string GetFileIcon(string dataType);</code> | [src/Meridian.Ui.Services/Services/StorageServiceBase.cs:114](../../../../src/Meridian.Ui.Services/Services/StorageServiceBase.cs#L114) | Gets the icon glyph for a data type. |
-
-## StorageStatsSummary
-
-Qualified name: <code>Meridian.Ui.Services.StorageStatsSummary</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Services/Services/StorageModels.cs:12](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L12).
-
-Summarizes storage capacity, utilization, files, symbols, and retained date coverage.
-
-```csharp
-public sealed class StorageStatsSummary
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public long TotalSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:14](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L14) |  |
-| <code>public long UsedSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:15](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L15) |  |
-| <code>public long FreeSizeBytes { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:16](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L16) |  |
-| <code>public double UsedPercentage { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:17](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L17) |  |
-| <code>public int TotalFiles { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:18](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L18) |  |
-| <code>public int TotalSymbols { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:19](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L19) |  |
-| <code>public DateTime OldestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:20](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L20) |  |
-| <code>public DateTime NewestData { get; set; }</code> | [src/Meridian.Ui.Services/Services/StorageModels.cs:21](../../../../src/Meridian.Ui.Services/Services/StorageModels.cs#L21) |  |

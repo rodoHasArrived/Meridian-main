@@ -6,6 +6,29 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## StatementParseIssue
+
+Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementParseIssue</code>. Kind: `record`.
+
+Source: [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:48](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L48).
+
+A parse/mapping diagnostic. Severity is &quot;Error&quot;, &quot;Warning&quot;, or &quot;Info&quot;; only Error severities block a commit.
+
+```csharp
+public sealed record StatementParseIssue(string Code, string Severity, int? RowNumber, string? Field, string Message)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public const string ErrorSeverity = &quot;Error&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:55](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L55) |  |
+| <code>public const string WarningSeverity = &quot;Warning&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:56](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L56) |  |
+| <code>public const string InfoSeverity = &quot;Info&quot;;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:57](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L57) |  |
+| <code>public static StatementParseIssue Error(string code, string message, int? rowNumber = null, string? field = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:59](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L59) |  |
+| <code>public static StatementParseIssue Warning(string code, string message, int? rowNumber = null, string? field = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:62](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L62) |  |
+| <code>public static StatementParseIssue Info(string code, string message, int? rowNumber = null, string? field = null) =&gt; …;</code> | [src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs:65](../../../../src/Meridian.FinancialOperations/Reconciliation/Connectors/StatementConnectorContracts.cs#L65) |  |
+
 ## StatementParseResult
 
 Qualified name: <code>Meridian.FinancialOperations.Reconciliation.Connectors.StatementParseResult</code>. Kind: `record`.
@@ -855,22 +878,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>Task&lt;IReadOnlyList&lt;DataSourceSnapshot&gt;&gt; CaptureAsync(IReadOnlyList&lt;IReconciliationSourceAdapter&gt; adapters, ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:20](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L20) |  |
-
-## IReconciliationSourceAdapter
-
-Qualified name: <code>Meridian.FinancialOperations.Reconciliation.IReconciliationSourceAdapter</code>. Kind: `interface`.
-
-Source: [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:8](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L8).
-
-Captures a reconciliation source snapshot for a supplied ingestion request.
-
-```csharp
-public interface IReconciliationSourceAdapter
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>ReconciliationSourceType SourceType { get; }</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:10](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L10) |  |
-| <code>Task&lt;DataSourceSnapshot&gt; CaptureSnapshotAsync(ReconciliationIngestionRequest request, CancellationToken ct);</code> | [src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs:12](../../../../src/Meridian.FinancialOperations/Reconciliation/ReconciliationIngestionContracts.cs#L12) |  |

@@ -470,6 +470,24 @@ Declared public members:
 | <code>Task&lt;IReadOnlyList&lt;IntercompanyAccrualScheduleDto&gt;&gt; ListActiveAsync(CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:58](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L58) | Every tenant&#x27;s active schedules, for the background runner only. |
 | <code>Task&lt;IntercompanyAccrualScheduleDto&gt; AppendAsync(IntercompanyAccrualScheduleDto next, long expectedVersion, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:59](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L59) |  |
 
+## IIntercompanyAgreementWorkQueueService
+
+Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyAgreementWorkQueueService</code>. Kind: `interface`.
+
+Source: [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:73](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L73).
+
+```csharp
+public interface IIntercompanyAgreementWorkQueueService
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>Task&lt;IntercompanyAgreementWorkQueueDto&gt; GetAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto scope, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:75](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L75) |  |
+| <code>Task&lt;IntercompanyAgreementWorkItemDto&gt; ObserveAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto scope, IntercompanyAgreementWorkQueueObserveRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:77](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L77) |  |
+| <code>Task&lt;IntercompanyAgreementWorkItemDto&gt; UpdateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto scope, IntercompanyAgreementWorkQueueUpdateRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs:80](../../../../src/Meridian.Contracts/Ledger/IntercompanyAgreementWorkQueueDtos.cs#L80) |  |
+
 ## IIntercompanyBalanceConfirmationStore
 
 Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyBalanceConfirmationStore</code>. Kind: `interface`.
@@ -514,7 +532,7 @@ Declared public members:
 
 Qualified name: <code>Meridian.Contracts.Ledger.IIntercompanyObligationMonitorService</code>. Kind: `interface`.
 
-Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:30](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L30).
+Source: [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:35](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L35).
 
 ```csharp
 public interface IIntercompanyObligationMonitorService
@@ -524,7 +542,7 @@ Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Task&lt;IntercompanyObligationMonitorDto&gt; EvaluateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:32](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L32) |  |
+| <code>Task&lt;IntercompanyObligationMonitorDto&gt; EvaluateAsync(IntercompanyAgreementCallContext context, string? companyId, IntercompanyObligationMonitorRequestDto request, CancellationToken ct = default);</code> | [src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs:37](../../../../src/Meridian.Contracts/Ledger/IntercompanyObligationMonitorDtos.cs#L37) |  |
 
 ## ILedgerBookService
 
@@ -851,15 +869,3 @@ Enum declarations:
 | <code>Approve</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13) |  |
 | <code>Reject</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13) |  |
 | <code>Disable</code> | [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:13](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L13) |  |
-
-## IntercompanyAccrualScheduleDto
-
-Qualified name: <code>Meridian.Contracts.Ledger.IntercompanyAccrualScheduleDto</code>. Kind: `record`.
-
-Source: [src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs:24](../../../../src/Meridian.Contracts/Ledger/IntercompanyAccrualScheduleDtos.cs#L24).
-
-An opt-in, reviewed instruction to draft one book&#x27;s governed accruals for every completed schedule period that ends on or after its approval. It drafts only: every draft still enters ordinary review, and nothing posts. Retained as append-only versions; disabling stops future runs without touching drafts already created.
-
-```csharp
-public sealed record IntercompanyAccrualScheduleDto(Guid ScheduleId, string TenantId, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] string? CompanyId, Guid LedgerBookId, IntercompanyAccrualScheduleKindDto Kind, Guid ProfileArrangementId, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] Guid? PrincipalArrangementId, long Version, IntercompanyAccrualScheduleStatusDto Status, [property : JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingNull)] DateOnly? ActiveFrom, IReadOnlyList<IntercompanyAccrualScheduleEventDto> Events);
-```

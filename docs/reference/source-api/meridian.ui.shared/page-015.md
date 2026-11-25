@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## ManualJournalMutationRecoveryOptions
+
+Qualified name: <code>Meridian.Ui.Shared.Services.ManualJournalMutationRecoveryOptions</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:30](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L30).
+
+```csharp
+public sealed record ManualJournalMutationRecoveryOptions
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public TimeSpan MaxCompletedAge { get; init; } = TimeSpan.FromDays(30);</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:32](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L32) |  |
+| <code>public int MaxCompletedCount { get; init; } = 1000;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:33](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L33) |  |
+| <code>public long MaxCompletedBytes { get; init; } = 64 * 1024 * 1024;</code> | [src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs:34](../../../../src/Meridian.Ui.Shared/Services/ManualJournalMutationRecoveryStore.cs#L34) |  |
+
 ## MarginCertificationStore
 
 Qualified name: <code>Meridian.Ui.Shared.Services.MarginCertificationStore</code>. Kind: `class`.
@@ -885,21 +903,3 @@ Source: [src/Meridian.Ui.Shared/Services/CollateralExposureService.cs:25](../../
 ```csharp
 public sealed record ProductExposure(string ProductType, decimal NetExposure, decimal GrossExposure);
 ```
-
-## PromotionTrustEvidenceServiceCollectionExtensions
-
-Qualified name: <code>Meridian.Ui.Shared.Services.PromotionTrustEvidenceServiceCollectionExtensions</code>. Kind: `class`.
-
-Source: [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:10](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L10).
-
-Registers promotion trust evidence services in the dependency injection container.
-
-```csharp
-public static class PromotionTrustEvidenceServiceCollectionExtensions
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public static IServiceCollection AddPromotionTrustEvidenceServices(this IServiceCollection services);</code> | [src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs:13](../../../../src/Meridian.Ui.Shared/Services/PromotionTrustEvidenceServiceCollectionExtensions.cs#L13) | Registers the same source-backed promotion trust provider for browser and desktop hosts. |

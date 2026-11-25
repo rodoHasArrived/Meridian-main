@@ -6,6 +6,24 @@
 
 Each entry retains source-declared members and XML summaries. See the index for lexical scope limitations.
 
+## AutomatedJournalDividendPositionResolution
+
+Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDividendPositionResolution</code>. Kind: `record`.
+
+Source: [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:12](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L12).
+
+Authoritative position history resolved for one dividend cycle.
+
+```csharp
+public sealed record AutomatedJournalDividendPositionResolution(IReadOnlyList<DividendAccrualPosition> Positions, IReadOnlyList<OperationsEvidenceLinkDto> EvidenceLinks, IReadOnlyList<string> Blockers)
+```
+
+Declared public members:
+
+| Declaration | Source | Summary |
+| --- | --- | --- |
+| <code>public bool IsReady =&gt; …;</code> | [src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs:17](../../../../src/Meridian.Ui.Shared/Services/AutomatedJournalDividendPositionResolver.cs#L17) |  |
+
 ## AutomatedJournalDraftIntakeDisposition
 
 Qualified name: <code>Meridian.Ui.Shared.Services.AutomatedJournalDraftIntakeDisposition</code>. Kind: `enum`.
@@ -1010,21 +1028,3 @@ Declared public members:
 | Declaration | Source | Summary |
 | --- | --- | --- |
 | <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs:23](../../../../src/Meridian.Ui.Shared/Services/CapitalCallIssuanceIntake.cs#L23) |  |
-
-## CapitalCallDefaultTermsInput
-
-Qualified name: <code>Meridian.Ui.Shared.Services.CapitalCallDefaultTermsInput</code>. Kind: `record`.
-
-Source: [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:14](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L14).
-
-The default terms of one commitment on a capital call. The ledger holds the call and its receipts but not the due date, default rate, day-count convention or grace period, so the operator attests them here with retained evidence (the fund agreement or call notice).
-
-```csharp
-public sealed record CapitalCallDefaultTermsInput(string CommitmentId, string CapitalAccountId, string InvestorId, DateOnly DueDate, decimal DefaultInterestRateAnnual, DefaultInterestConvention Convention, int GraceDays, IReadOnlyList<string>? EvidenceLinks = null)
-```
-
-Declared public members:
-
-| Declaration | Source | Summary |
-| --- | --- | --- |
-| <code>public IReadOnlyList&lt;string&gt; EvidenceLinks { get; init; } = EvidenceLinks??[];</code> | [src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs:24](../../../../src/Meridian.Ui.Shared/Services/PrivateCapitalEventIntakes.cs#L24) |  |
