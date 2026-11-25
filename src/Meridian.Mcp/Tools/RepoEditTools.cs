@@ -116,7 +116,7 @@ public sealed class RepoEditTools(RepoPathService repo, ILogger<RepoEditTools> l
     {
         logger.LogInformation("Running AI edit tool in {Mode} mode.", mode);
 
-        var psi = new ProcessStartInfo("python")
+        var psi = new ProcessStartInfo(PythonLauncher.Executable)
         {
             WorkingDirectory = repo.Root,
             RedirectStandardOutput = true,

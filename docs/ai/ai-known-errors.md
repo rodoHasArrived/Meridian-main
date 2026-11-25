@@ -176,7 +176,8 @@ label alone will update this file.
   - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net10.0-windows` (on Windows)
   - `dotnet build src/Meridian.Wpf/Meridian.Wpf.csproj -c Release -p:TargetFramework=net10.0-windows` (on Windows)
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/21851485930/job/63058846153
-- **Status**: fixed (commit cec548e)
+- **Status**: fixed
+- **Fixed in**: commit cec548e
 
 ### AI-20260212-codecov-directory-mismatch
 - **Area**: CI/GitHub Actions/codecov
@@ -193,7 +194,8 @@ label alone will update this file.
   - `grep -A3 "codecov-action" .github/workflows/pr-checks.yml | grep -E "(directory|files)"`
   - `dotnet test Meridian.sln --collect:"XPlat Code Coverage" --results-directory ./test-results && ls -la ./test-results/**/coverage.cobertura.xml`
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/21938525658/job/63358083776#step:5:1
-- **Status**: fixed (commit ad97ee2)
+- **Status**: fixed
+- **Fixed in**: commit ad97ee2
 
 ### AI-20260212-conditional-job-dependency
 - **Area**: workflows/GitHub Actions
@@ -210,7 +212,8 @@ label alone will update this file.
   - `grep -A5 "needs:" .github/workflows/*.yml | grep -B5 "if:"`
   - `python3 -c "import yaml; yaml.safe_load(open('.github/workflows/desktop-builds.yml'))"`
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/21958711610/job/63429967664
-- **Status**: fixed (commit 4f6088f)
+- **Status**: fixed
+- **Fixed in**: commit 4f6088f
 
 ---
 
@@ -231,7 +234,8 @@ label alone will update this file.
   - `grep -r "using Meridian.Wpf.Services;" src/Meridian.Wpf/Views/`
   - `grep -r "using UiServices" src/Meridian.Wpf/Services/`
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/21959216554/job/63431802067
-- **Status**: fixed (commit 5ea62c8)
+- **Status**: fixed
+- **Fixed in**: commit 5ea62c8
 
 ### AI-20260213-nullable-value-property-misuse
 - **Area**: build/C#/nullable types
@@ -277,7 +281,8 @@ label alone will update this file.
   - https://github.com/rodoHasArrived/Meridian/actions/runs/21988186038/job/63527798918#step:5:1 (original)
   - https://github.com/rodoHasArrived/Meridian/actions/runs/21996212289/job/63556782046 (variant)
   - https://github.com/rodoHasArrived/Meridian/actions/runs/21998525615/job/63564824033#step:5:1 (regression)
-- **Status**: fixed structurally (commit 49b2916 - changed API to eliminate nullable generic out parameter)
+- **Status**: fixed
+- **Fixed in**: commit 49b2916 — changed API to eliminate nullable generic out parameter
 - **Note**: This issue regressed multiple times (1e2ea1d, 5756479, 1802ea9, bf67ed5, e920c34) when using workarounds. The structural fix eliminates the problem at the API design level.
 
 ---
@@ -296,8 +301,8 @@ label alone will update this file.
   - `CI=true python3 build/python/cli/buildctl.py build --configuration Release` (should pass preflight even without config file)
   - `python3 -c "import os; os.environ['CI']='true'; from pathlib import Path; import sys; sys.path.insert(0,'build/python'); from diagnostics.preflight import run_preflight; print(run_preflight(Path('.')))"` (should return (True, []))
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/22014850305/job/63614949528#step:5:1
-- **Status**: fixed (commit 55d2827)
-- **Fixed in**: build/python/diagnostics/preflight.py - Added CI detection to skip config check when CI=true or GITHUB_ACTIONS=true
+- **Status**: fixed
+- **Fixed in**: commit 55d2827; build/python/diagnostics/preflight.py - Added CI detection to skip config check when CI=true or GITHUB_ACTIONS=true
 
 ### AI-20260215-maintenance-endpoint-500-for-missing-schedule
 - **ID**: AI-20260215-maintenance-endpoint-500-for-missing-schedule
@@ -432,7 +437,7 @@ label alone will update this file.
   - `grep "Contracts.Domain.Events" src/Meridian.Backtesting/GlobalUsings.cs` (should return no results after fix)
 - **Source issue**: https://github.com/rodoHasArrived/Meridian/actions/runs/23176103636, #2005
 - **Status**: fixed
-- **Fixed in**: `src/Meridian.Backtesting/GlobalUsings.cs` — removed `global using Meridian.Contracts.Domain.Events;`; also added `[assembly: InternalsVisibleTo("Meridian.Backtesting.Tests")]` following the pattern in `Application/GlobalUsings.cs`
+- **Fixed in**: `src/Meridian.Backtesting/GlobalUsings.cs` — removed `global using Meridian.Contracts.Domain.Events;`; also added `[assembly: InternalsVisibleTo("Meridian.Backtesting.Tests")]` following the pattern in `src/Meridian.Application/GlobalUsings.cs`
 
 ### AI-20260318-cs0433-compile-include-contracts-ambiguity
 - **ID**: AI-20260318-cs0433-compile-include-contracts-ambiguity

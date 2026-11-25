@@ -37,6 +37,61 @@ public sealed class RepositoryToolTests : IDisposable
         tools.GetAdr("999").Should().Contain("not found");
     }
 
+    [Fact]
+    public void AdrTools_ListAndRead_IncludeArchivedRecordsAndPreferActiveOnes()
+    {
+        Write("docs/adr/017-monolith.md", "# Modular monolith\n\n**Status**: Accepted\nActive body.");
+        Write("archive/docs/adr/001-provider.md", "# Provider abstraction\n\n**Status**: Accepted\nArchived body.");
+        Write("archive/docs/adr/017-old-monolith.md", "# Superseded copy\nArchived duplicate.");
+        Write("archive/docs/adr/README.md", "# Historical index");
+        var tools = new AdrTools(_repo);
+
+        var list = tools.ListAdrs();
+        list.Should().Contain("| ADR-001 | Provider abstraction | 🗄️ Archived |")
+            .And.Contain("| ADR-017 | Modular monolith | ✅ Accepted |")
+            .And.NotContain("ADR-README");
+        tools.GetAdr("1").Should().Contain("Archived body.");
+        tools.GetAdr("017").Should().Contain("Active body.").And.NotContain("Archived duplicate.");
+    }
+
+    [Fact]
+    public void AdrResource_IndexAndRead_IncludeArchivedRecords()
+    {
+        Write("docs/adr/017-monolith.md", "# Modular monolith");
+        Write("archive/docs/adr/007-wal.md", "# Write-ahead log");
+        var resource = new AdrResources(_repo);
+
+        resource.GetAdrIndex().Should().Contain("| [ADR-007](mdc://adrs/007) | Write-ahead log | Archived |")
+            .And.Contain("| [ADR-017](mdc://adrs/017) | Modular monolith | Active |");
+        resource.GetAdr("7").Should().Be("# Write-ahead log");
+    }
+
+    [Fact]
+    public void AdrResource_IndexDescription_DoesNotHardcodeRecordCount()
+    {
+        var description = typeof(AdrResources).GetMethod(nameof(AdrResources.GetAdrIndex))!
+            .GetCustomAttributes(typeof(System.ComponentModel.DescriptionAttribute), inherit: false)
+            .Cast<System.ComponentModel.DescriptionAttribute>()
+            .Single().Description;
+
+        description.Should().NotMatchRegex(@"\d");
+    }
+
+    [Fact]
+    public void FileScanningTools_HonorCancellation()
+    {
+        Write("docs/adr/017-monolith.md", "# Modular monolith");
+        Write("src/Meridian.Infrastructure/Adapters/Demo/Demo.cs", "[DataSource(\"demo\")]");
+        using var cancelled = new CancellationTokenSource();
+        cancelled.Cancel();
+
+        var adrs = new AdrTools(_repo);
+        var providers = new ProviderTools(_repo);
+        ((Action)(() => adrs.ListAdrs(cancelled.Token))).Should().Throw<OperationCanceledException>();
+        ((Action)(() => adrs.GetAdr("017", cancelled.Token))).Should().Throw<OperationCanceledException>();
+        ((Action)(() => providers.ListProviders(cancelled.Token))).Should().Throw<OperationCanceledException>();
+    }
+
     [Theory]
     [InlineData("*")]
     [InlineData("../007")]
