@@ -113,7 +113,11 @@ public sealed class PortfolioReadService
         var netExposure = longMarketValue + shortMarketValue;
         var realizedPnl = positions.Sum(static position => position.RealizedPnl);
         var unrealizedPnl = positions.Sum(static position => position.UnrealizedPnl);
-        var financing = result!.Metrics.TotalMarginInterest - result.Metrics.TotalShortRebates;
+        // An unavailable financing coverage means TotalMarginInterest is a placeholder zero, not a
+        // measurement; report financing as unknown rather than as a measured $0.
+        decimal? financing = result!.EngineMetadata?.FinancingCoverageStatus == BacktestFinancingCoverageStatuses.Unavailable
+            ? null
+            : result.Metrics.TotalMarginInterest - result.Metrics.TotalShortRebates;
 
         return new PortfolioSummary(
             PortfolioId: entry.PortfolioId ?? entry.RunId,

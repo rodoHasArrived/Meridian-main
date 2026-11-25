@@ -463,7 +463,7 @@ public sealed record FundAccountSummary(Guid AccountId, AccountTypeDto AccountTy
 
 Qualified name: <code>Meridian.Contracts.Workstation.FundAuditEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:303](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L303).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:307](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L307).
 
 Lightweight audit row combining journal and reconciliation activity.
 

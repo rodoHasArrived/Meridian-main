@@ -42,9 +42,15 @@ Live/paper finalization records financing as `Unavailable` until an explicit com
 ties account charges to the run. The context's private ledger and an account's expense balance do
 not establish that allocation. `BacktestEngineMetadata.FinancingCoverageStatus` and nullable
 `RunAttributedMarginInterest` survive durable history and the execution, portfolio and comparison
-read models; `Available` with `0` differs from `Unavailable` with `null`. Existing decimal
-`TotalMarginInterest` remains a compatibility placeholder when coverage is unavailable, and gross
-P&L financing decomposition is provisional. Continuity and comparison reads expose a financing
+read models; `Available` with `0` differs from `Unavailable` with `null`. The stored
+`BacktestMetrics.TotalMarginInterest` decimal remains a compatibility placeholder when coverage is
+unavailable, and gross P&L financing decomposition is provisional, but the read models no longer
+pass that placeholder on: the run summaries' `TotalMarginInterest`, `PortfolioSummary.Financing`,
+and the fund and accounting financing totals built from them are `null` when coverage is
+unavailable (a total is `null` if any contributing run is), and the WPF and browser workstations
+show "Unavailable" rather than $0. Paper runs are not measured from their session's financing
+charges: the run's equity comes from the shared paper portfolio, which those charges do not touch,
+so adding them to gross P&L would overstate it. Continuity and comparison reads expose a financing
 review warning/incomplete cash-flow coverage. No shared account charge is assigned to every run.
 Legacy and backtest results with no coverage declaration retain an unassessed null status.
 

@@ -255,7 +255,7 @@ public sealed record BankStatementImportResultDto(string UploadId, Guid BatchId,
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:285](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L285).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:289](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L289).
 
 Honest summary of the simulation assumptions behind a backtest result — fill timing, limit/stop realism, universe provenance, corporate-action handling, and forced delisting liquidations. Rendered as a bias-disclosure panel wherever backtest numbers are shown.
 
@@ -267,7 +267,7 @@ public sealed record BiasDisclosureDto(string FillTiming, string FillConservatis
 
 Qualified name: <code>Meridian.Contracts.Workstation.BiasDisclosureItemDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:274](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L274).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:278](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L278).
 
 One disclosed simulation assumption or detected data-quality issue for a backtest run. Severity is info, caution, or warning.
 
@@ -516,14 +516,14 @@ Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:142](../../../
 Shared cash and financing rollup for Accounting and Trading capital-control surfaces.
 
 ```csharp
-public sealed record CashFinancingSummary(string Currency, decimal TotalCash, decimal PendingSettlement, decimal FinancingCost, decimal MarginBalance, decimal RealizedPnl, decimal UnrealizedPnl, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, IReadOnlyList<string> Highlights, int CashFlowEntryCount = 0, decimal ProjectedInflows = 0m, decimal ProjectedOutflows = 0m, decimal NetProjectedCashFlow = 0m, int ProjectionBucketDays = 0, IReadOnlyList<CashLadderBucketDto>? CashFlowBuckets = null, IReadOnlyList<CashFlowEntryDto>? CashFlowEntries = null);
+public sealed record CashFinancingSummary(string Currency, decimal TotalCash, decimal PendingSettlement, decimal? FinancingCost, decimal MarginBalance, decimal RealizedPnl, decimal UnrealizedPnl, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, IReadOnlyList<string> Highlights, int CashFlowEntryCount = 0, decimal ProjectedInflows = 0m, decimal ProjectedOutflows = 0m, decimal NetProjectedCashFlow = 0m, int ProjectionBucketDays = 0, IReadOnlyList<CashLadderBucketDto>? CashFlowBuckets = null, IReadOnlyList<CashFlowEntryDto>? CashFlowEntries = null);
 ```
 
 ## CashFlowEntryDto
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashFlowEntryDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:994](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L994).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1006](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1006).
 
 A single historical cash-flow entry from a strategy run.
 
@@ -555,7 +555,7 @@ public sealed record CashForecastResult(DateOnly AsOfDate, IReadOnlyList<CashFlo
 
 Qualified name: <code>Meridian.Contracts.Workstation.CashLadderBucketDto</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1004](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1004).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1016](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1016).
 
 A single time-bucket within a projected cash ladder.
 
@@ -606,7 +606,7 @@ public sealed record ChangeSinglePrincipalDeclarationRequestDto(Guid CommandId, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.ClosedLotSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1186](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1186).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:1198](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L1198).
 
 Workstation-facing summary of a closed lot for a strategy run.
 

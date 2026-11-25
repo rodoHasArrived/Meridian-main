@@ -4420,3 +4420,7 @@ evidence prevents duplicates across retries and restart.
 Conflicting evidence under one ID or corrupted accepted records fails closed. Incomplete provider
 retrievals retain evidence without advancing the resume watermark. A caller can supply `Since` to
 rescan for arrivals earlier than the retained watermark; no API page-token durability is assumed.
+
+Fund cash-and-financing summaries and the accounting cash-flow endpoints report financing as
+`null` ("unavailable") when any contributing run's financing coverage is unavailable, instead of
+summing placeholder zeros into a total that reads as complete.

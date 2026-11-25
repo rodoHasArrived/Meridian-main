@@ -738,7 +738,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ReconciliationSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:189](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L189).
+Source: [src/Meridian.Contracts/Workstation/FundOperationsDtos.cs:193](../../../../src/Meridian.Contracts/Workstation/FundOperationsDtos.cs#L193).
 
 Summary of recent reconciliation posture for a fund.
 

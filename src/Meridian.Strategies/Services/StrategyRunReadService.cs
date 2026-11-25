@@ -860,7 +860,7 @@ public sealed partial class StrategyRunReadService
                 LosingTrades: metrics?.LosingTrades ?? 0,
                 FillCount: run.RetainedFillCount,
                 TotalCommissions: metrics?.TotalCommissions ?? 0m,
-                TotalMarginInterest: metrics?.TotalMarginInterest ?? 0m,
+                TotalMarginInterest: ReportedMarginInterest(run),
                 TotalShortRebates: metrics?.TotalShortRebates ?? 0m,
                 Xirr: metrics?.Xirr,
                 EquityCurve: BuildEquityCurve(run),
@@ -896,6 +896,15 @@ public sealed partial class StrategyRunReadService
 
         return ordered.ToArray();
     }
+
+    /// <summary>
+    /// The run's margin interest for read models: <see langword="null"/> when its financing coverage
+    /// is unavailable, because the stored metric is then a placeholder zero rather than a measurement.
+    /// </summary>
+    private static decimal? ReportedMarginInterest(StrategyRunEntry run)
+        => run.Metrics?.EngineMetadata?.FinancingCoverageStatus == BacktestFinancingCoverageStatuses.Unavailable
+            ? null
+            : run.Metrics?.Metrics?.TotalMarginInterest ?? 0m;
 
     private static ComparisonContinuitySignals BuildComparisonContinuity(StrategyRunEntry run)
     {
@@ -1124,7 +1133,7 @@ public sealed partial class StrategyRunReadService
             WinningTrades: metrics?.WinningTrades ?? 0,
             LosingTrades: metrics?.LosingTrades ?? 0,
             TotalCommissions: metrics?.TotalCommissions ?? 0m,
-            TotalMarginInterest: metrics?.TotalMarginInterest ?? 0m,
+            TotalMarginInterest: ReportedMarginInterest(run),
             TotalShortRebates: metrics?.TotalShortRebates ?? 0m,
             HasPortfolio: !string.IsNullOrWhiteSpace(run.PortfolioId),
             HasLedger: !string.IsNullOrWhiteSpace(run.LedgerReference),

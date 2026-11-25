@@ -1447,3 +1447,7 @@ the same shared running-balance route the browser workstation uses. A response f
 that is no longer selected is discarded, and reloading the trial balance clears the selection.
 The request carries the selected row's symbol, financial account and dimension set, so the postings
 and ending balance are those of that row only.
+
+Fund Ledger, the trading workspace capital panel and the accounting workspace queue show financing
+as "Unavailable" when the shared summary reports it as `null` (any contributing run's financing
+coverage is unavailable), rather than a measured-looking $0.

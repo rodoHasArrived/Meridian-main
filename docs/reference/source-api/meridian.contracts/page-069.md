@@ -276,7 +276,7 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.ParameterDiff</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:901](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L901).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:913](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L913).
 
 A single parameter change between two runs.
 
@@ -584,7 +584,7 @@ public sealed record PortfolioLedgerWorkflowStatusSnapshotDto(PortfolioLedgerWor
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioPositionSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:602](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L602).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:610](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L610).
 
 Shared position row for workstation portfolio views.
 
