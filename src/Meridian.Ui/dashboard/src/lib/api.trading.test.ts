@@ -890,14 +890,12 @@ describe("trading endpoint wiring", () => {
       scopes: [],
       capabilities: ["Positions"],
       openApiDocumentJson: "{}",
-      importedBy: "ops",
       importedAt: "2026-06-16T12:00:00Z",
       changeReason: "Import provider template"
     } as Parameters<typeof importProviderIntegrationOpenApi>[0];
     const setupRequest = {
       manifest: { manifestId: "custodian / v1" },
       connection: { connectionId: "connection / 1" },
-      savedBy: "ops",
       savedAt: "2026-06-16T12:01:00Z",
       changeReason: "Save draft"
     } as Parameters<typeof saveProviderIntegrationSetup>[0];
@@ -908,7 +906,6 @@ describe("trading endpoint wiring", () => {
       capability: "Positions",
       fileName: "positions.csv",
       csvContent: "symbol,quantity\nAAPL,1",
-      requestedBy: "ops",
       requestedAt: "2026-06-16T12:02:00Z"
     } as Parameters<typeof runManualCsvProviderIntegrationDryRun>[0];
     const restDryRun = {
@@ -919,14 +916,12 @@ describe("trading endpoint wiring", () => {
       endpointKey: "positions",
       pathParameters: {},
       queryParameters: {},
-      requestedBy: "ops",
       requestedAt: "2026-06-16T12:03:00Z",
       maxPages: 1
     } as Parameters<typeof runRestProviderIntegrationDryRun>[0];
     const activationRequest = {
       manifestId: "custodian / v1",
       connectionId: "connection / 1",
-      approvedBy: "ops",
       approvedAt: "2026-06-16T12:04:00Z",
       approvalEvidenceId: "approval / 1",
       changeReason: "Approved dry run"
@@ -934,7 +929,6 @@ describe("trading endpoint wiring", () => {
     const runDueRequest = {
       connectionId: "connection / 1",
       requestedAt: "2026-06-16T12:05:00Z",
-      requestedBy: "ops",
       maxPages: 2,
       pathParametersByCapability: {},
       queryParametersByCapability: {}
@@ -946,13 +940,11 @@ describe("trading endpoint wiring", () => {
       endpointKey: "positions",
       syncRunId: "sync / 2",
       rawPayloadId: "payload / 1",
-      checkedBy: "ops",
       checkedAt: "2026-06-16T12:06:00Z"
     } as Parameters<typeof checkProviderIntegrationSchemaDrift>[0];
     const handoffRequest = {
       connectionId: "connection / 1",
       stagingRecordIds: ["staging / 1"],
-      requestedBy: "ops",
       requestedAt: "2026-06-16T12:07:00Z",
       approvalEvidenceId: "approval / 2",
       note: "Promote ready rows",
@@ -963,7 +955,6 @@ describe("trading endpoint wiring", () => {
       syncRunId: "sync / 2",
       quarantineRecordId: "quarantine / 1",
       action: "ReviewOnly",
-      reviewedBy: "ops",
       reviewedAt: "2026-06-16T12:08:00Z",
       note: "Reviewed"
     } as Parameters<typeof resolveProviderIntegrationQuarantineRecord>[0];
@@ -974,7 +965,6 @@ describe("trading endpoint wiring", () => {
       connectionId: "connection / 1",
       capability: "Positions",
       quarantineRecordIds: ["quarantine / 1"],
-      requestedBy: "ops",
       requestedAt: "2026-06-16T12:09:00Z"
     } as Parameters<typeof replayProviderIntegrationQuarantineRecords>[0];
 

@@ -77,6 +77,7 @@ import type {
   ProviderIntegrationTemplateCatalogEntry
 } from "@/types";
 import { toSeverity } from "@/design-system/status-styles";
+import { useSignedInUsername } from "@/hooks/use-signed-in-username";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -225,7 +226,6 @@ export function FilterSelect({
 export function ProviderIntegrationRuntimePanel({
   row,
   state,
-  operatorName,
   openApiImportState,
   onOpenApiImportStateChange,
   onImportOpenApi,
@@ -237,7 +237,6 @@ export function ProviderIntegrationRuntimePanel({
 }: {
   row: SettingsProviderConnectionRow;
   state: ProviderRuntimeEvidenceState;
-  operatorName: string;
   openApiImportState: ProviderOpenApiImportState;
   onOpenApiImportStateChange: (updater: (state: ProviderOpenApiImportState) => ProviderOpenApiImportState) => void;
   onImportOpenApi: () => void;
@@ -370,7 +369,6 @@ export function ProviderIntegrationRuntimePanel({
       <ProviderIntegrationWorkbenchPanel
         row={row}
         runtimeState={state}
-        operatorName={operatorName}
       />
       <BondImportValuePreview stagedRecords={state.staging?.records ?? []} quarantinedRecords={state.quarantine?.records ?? []} />
       <dl className="mt-3 grid gap-2 sm:grid-cols-2">
@@ -604,13 +602,12 @@ export function ProviderIntegrationRuntimePanel({
 
 export function ProviderIntegrationWorkbenchPanel({
   row,
-  runtimeState,
-  operatorName
+  runtimeState
 }: {
   row: SettingsProviderConnectionRow;
   runtimeState: ProviderRuntimeEvidenceState;
-  operatorName: string;
 }) {
+  const signedInUsername = useSignedInUsername();
   const [state, setState] = useState<ProviderIntegrationWorkbenchState>(() => createProviderIntegrationWorkbenchState(row));
   const [activationConfirmationOpen, setActivationConfirmationOpen] = useState(false);
 
@@ -670,7 +667,7 @@ export function ProviderIntegrationWorkbenchPanel({
     setState((current) => ({ ...current, busyAction: "template", message: `Loading template ${selectedManifestId}.`, details: [], tone: "default" }));
     try {
       const manifest = await getProviderIntegrationTemplate(selectedManifestId);
-      const connection = createProviderIntegrationConnectionDraft(row, manifest, operatorName);
+      const connection = createProviderIntegrationConnectionDraft(row, manifest);
       setState((current) => providerIntegrationWorkbenchWithDraft(row, current, manifest, connection, {
         message: `Template ${manifest.manifestId} loaded into draft setup editor.`,
         details: providerIntegrationWorkbenchDraftDetails(manifest),
@@ -716,7 +713,6 @@ export function ProviderIntegrationWorkbenchPanel({
       const result = await saveProviderIntegrationSetup({
         manifest: manifestDraft.value,
         connection: connectionDraft.value,
-        savedBy: operatorName,
         savedAt,
         expectedManifestReference: state.manifestReference?.manifestId === manifestDraft.value.manifestId
           ? state.manifestReference
@@ -794,7 +790,6 @@ export function ProviderIntegrationWorkbenchPanel({
         capability: state.capability,
         fileName: state.csvFileName.trim() || `${row.providerId}-sample.csv`,
         csvContent: state.csvContent,
-        requestedBy: operatorName,
         requestedAt: requestedAt.toISOString()
       });
       setState((current) => ({
@@ -839,7 +834,6 @@ export function ProviderIntegrationWorkbenchPanel({
         endpointKey: state.endpointKey.trim(),
         pathParameters: pathParameters.value,
         queryParameters: queryParameters.value,
-        requestedBy: operatorName,
         requestedAt: requestedAt.toISOString(),
         maxPages: 2
       });
@@ -873,7 +867,6 @@ export function ProviderIntegrationWorkbenchPanel({
         endpointKey: state.endpointKey.trim(),
         syncRunId: latestRawPayload.syncRunId,
         rawPayloadId: latestRawPayload.rawPayloadId,
-        checkedBy: operatorName,
         checkedAt: checkedAt.toISOString()
       });
       setState((current) => ({
@@ -902,7 +895,6 @@ export function ProviderIntegrationWorkbenchPanel({
       const result = await activateProviderIntegration({
         manifestId,
         connectionId,
-        approvedBy: operatorName,
         approvedAt: approvedAt.toISOString(),
         expectedManifestReference: state.manifestReference?.manifestId === manifestId
           ? state.manifestReference
@@ -916,7 +908,8 @@ export function ProviderIntegrationWorkbenchPanel({
             ...current.manifest,
             manifestVersion: result.manifestReference?.manifestVersion ?? current.manifest.manifestVersion,
             state: result.manifestState,
-            approvedBy: operatorName,
+            // Display echo only: the server records the session actor as the approver.
+            approvedBy: signedInUsername ?? current.manifest.approvedBy,
             approvedAt: approvedAt.toISOString(),
             changeReason: "Activated from the Settings Provider Connection Center guided workbench."
           }
@@ -1352,8 +1345,7 @@ export function providerIntegrationDefaultSelectedManifestId(
 
 export function createProviderIntegrationConnectionDraft(
   row: SettingsProviderConnectionRow,
-  manifest: ProviderIntegrationManifest,
-  operatorName: string
+  manifest: ProviderIntegrationManifest
 ): ProviderIntegrationConnection {
   const now = new Date().toISOString();
   const enabledCapabilities = manifest.capabilities
@@ -1368,7 +1360,8 @@ export function createProviderIntegrationConnectionDraft(
     state: manifest.state === "Active" ? "PendingApproval" : manifest.state,
     credentialSecretRef: row.credentialStatus === "not-required" ? "" : providerIntegrationCredentialReference(row),
     enabledCapabilities: enabledCapabilities.length > 0 ? enabledCapabilities : [providerIntegrationDefaultCapability(row)],
-    ownerUserId: operatorName,
+    // The setup-save route assigns the owner from the authenticated session.
+    ownerUserId: "",
     createdAt: manifest.createdAt || now,
     updatedAt: now,
     approvalEvidenceId: null

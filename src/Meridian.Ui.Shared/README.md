@@ -2237,7 +2237,11 @@ authenticated workstation tenant before reading or writing stored manifests, con
 retained run evidence. Import, dry-run, and run-due commands require provider/configuration permissions
 because they create manifests or retain raw payload, staging, quarantine, and sync-run evidence.
 The activation command persists active manifest and connection state only after Application
-readiness passes with retained approval evidence. Richer setup-editing screens still need to bind
+readiness passes with retained approval evidence. Setup save, OpenAPI import, both dry runs,
+activation, run-due sync, schema-drift check, reconciliation handoff and quarantine resolve/replay
+record the authenticated session actor as `savedBy`/connection owner, `importedBy`, `requestedBy`,
+`approvedBy`, `checkedBy` or `reviewedBy`, overwriting any body value, and return 401 when no actor
+resolves. Richer setup-editing screens still need to bind
 draft editing, endpoint tests, mapping preview, and corrective mapping/data-rule actions through the
 shared workstation API.
 `BankFeedTransportService` reuses that same import boundary for scheduled local-file and SFTP
@@ -3868,7 +3872,9 @@ endpoint/read-model adapter; do not reintroduce session, profile, role-profile, 
 persistence state here. Scoped access grant and revoke endpoints preserve explicit action-origin
 metadata and return bad-request responses for assistant or automation-origin authority changes
 before the Identity service writes a new assignment, revokes an assignment, or advances an
-assignment version.
+assignment version. Role-profile, account and scoped-access writes record the session actor; a
+permission snapshot without a resolvable actor is refused with 401 rather than recorded under the
+body's `RequestedBy`.
 
 Secure Reporting distribution is server-owned under
 `/api/fund-structure/reporting/distribution`. The capability catalog separates configured transport

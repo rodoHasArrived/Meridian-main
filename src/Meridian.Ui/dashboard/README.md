@@ -3775,8 +3775,10 @@ Operator identity in the browser is the signed-in username from `GET /api/auth/m
 the host fills with a desk label shared by every operator on the desk. The username keys
 per-operator recovery state: reconciliation decision and batch recovery, retained asset-accounting
 commands, the journal workbench session identity and the keys that remount per-operator panels.
-Request bodies carry no actor; the review, resolve and Plaid routes take it from the authenticated
-session.
+Request bodies carry no actor; the reconciliation review/resolve, Plaid, Settings governance
+(ledger mapping, role profiles, scoped access, approval policy, close calendar, asset profiles,
+Security Master create) and provider-integration routes take it from the authenticated session.
+`settings-screen.test.tsx` fails any Settings call that puts an actor field in its request.
 
 `accounting-screen.reconciliation-workbench.tsx` owns the work surface.
 `accounting-screen.reconciliation-resolve-dialog.ts` owns rationale and confirmation state;

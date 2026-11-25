@@ -234,7 +234,7 @@ public static class AuthEndpoints
                     IUserAccountStore accountStore,
                     CancellationToken ct) =>
                 {
-                    var auth = ResolveManageUsersActor(context, sessionService, requestedBy: "account-admin");
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return ToAuthorizationFailure(auth.StatusCode.Value);
@@ -264,7 +264,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = "Route username must match the request body." });
                     }
 
-                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return ToAuthorizationFailure(auth.StatusCode.Value);
@@ -302,7 +302,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = "Route username must match the request body." });
                     }
 
-                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return ToAuthorizationFailure(auth.StatusCode.Value);
@@ -362,7 +362,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = "Route username must match the request body." });
                     }
 
-                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return ToAuthorizationFailure(auth.StatusCode.Value);
@@ -416,7 +416,7 @@ public static class AuthEndpoints
                     UserSessionRevokeRequestDto request,
                     CancellationToken ct) =>
                 {
-                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return ToAuthorizationFailure(auth.StatusCode.Value);
@@ -447,7 +447,7 @@ public static class AuthEndpoints
                     int? limit,
                     CancellationToken ct) =>
                 {
-                    var auth = ResolveManageUsersActor(context, sessionService, requestedBy: "account-admin");
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return ToAuthorizationFailure(auth.StatusCode.Value);
@@ -483,7 +483,7 @@ public static class AuthEndpoints
                         currentPermissions = contextPermissions;
                         actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
                             ? resolvedActor
-                            : request.RequestedBy;
+                            : null;
                     }
                     else
                     {
@@ -495,10 +495,16 @@ public static class AuthEndpoints
                         return EndpointHelpers.Forbidden();
                     }
 
+                    // The actor is audit evidence: never fall back to the body's RequestedBy.
+                    if (string.IsNullOrWhiteSpace(actor))
+                    {
+                        return Results.Unauthorized();
+                    }
+
                     try
                     {
                         var result = await roleProfileStore
-                            .UpsertAsync(request, actor ?? request.RequestedBy, ct)
+                            .UpsertAsync(request, actor, ct)
                             .ConfigureAwait(false);
                         return Results.Ok(result);
                     }
@@ -564,7 +570,7 @@ public static class AuthEndpoints
                     UserAccessAssignmentCreateRequestDto request,
                     CancellationToken ct) =>
                 {
-                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return auth.StatusCode.Value switch
@@ -610,7 +616,7 @@ public static class AuthEndpoints
                         return Results.BadRequest(new { error = "Route assignment id must match the request body." });
                     }
 
-                    var auth = ResolveManageUsersActor(context, sessionService, request.RequestedBy);
+                    var auth = ResolveManageUsersActor(context, sessionService);
                     if (auth.StatusCode is not null)
                     {
                         return auth.StatusCode.Value switch
@@ -757,7 +763,7 @@ public static class AuthEndpoints
         {
             var http = invocation.HttpContext;
             var sessionService = http.RequestServices.GetRequiredService<LoginSessionService>();
-            var actor = ResolveManageUsersActor(http, sessionService, requestedBy: "account-admin");
+            var actor = ResolveManageUsersActor(http, sessionService);
             return actor.StatusCode is { } statusCode
                 ? ToAuthorizationFailure(statusCode)
                 : await next(invocation);
@@ -768,15 +774,14 @@ public static class AuthEndpoints
 
     private static ManageUsersActor ResolveManageUsersActor(
         HttpContext context,
-        LoginSessionService sessionService,
-        string requestedBy)
+        LoginSessionService sessionService)
     {
         // The filter is named for a session and must mean it: an API key or the optional-mode
         // anonymous actor carries a role snapshot with no operator behind it, so it can satisfy the
         // ManageUsers check below without anyone having signed in.
         if (EndpointAuthorization.IsNonSessionPrincipal(context))
         {
-            return new ManageUsersActor(requestedBy, StatusCodes.Status403Forbidden);
+            return new ManageUsersActor(string.Empty, StatusCodes.Status403Forbidden);
         }
 
         var currentProfile = ResolveCurrentProfile(context, sessionService);
@@ -791,7 +796,7 @@ public static class AuthEndpoints
             currentPermissions = contextPermissions;
             actor = EndpointAuthorization.TryResolveActor(context, out var resolvedActor)
                 ? resolvedActor
-                : requestedBy;
+                : null;
         }
         else
         {
@@ -800,10 +805,13 @@ public static class AuthEndpoints
 
         if ((currentPermissions & UserPermission.ManageUsers) != UserPermission.ManageUsers)
         {
-            return new ManageUsersActor(actor ?? requestedBy, StatusCodes.Status403Forbidden);
+            return new ManageUsersActor(actor ?? string.Empty, StatusCodes.Status403Forbidden);
         }
 
-        return new ManageUsersActor(actor ?? requestedBy, null);
+        // The actor is audit evidence: never fall back to a client-supplied RequestedBy.
+        return string.IsNullOrWhiteSpace(actor)
+            ? new ManageUsersActor(string.Empty, StatusCodes.Status401Unauthorized)
+            : new ManageUsersActor(actor, null);
     }
 
     private static IResult ToAuthorizationFailure(int statusCode)

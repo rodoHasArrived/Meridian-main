@@ -110,6 +110,8 @@ public sealed partial class WorkstationEndpointsTests
             result.Should().NotBeNull();
             result!.Imported.Should().BeTrue();
             result.Manifest.IntegrationType.Should().Be(IntegrationTypeDto.OpenApiRest);
+            // The request names another importer; the manifest records the session actor.
+            result.Manifest.CreatedBy.Should().Be("ops-user");
             result.Manifest.Endpoints.Should().Contain(endpoint =>
                 endpoint.Capability == ProviderCapabilityKindDto.Positions &&
                 endpoint.Response.RecordsPath == "$.positions");
@@ -197,6 +199,8 @@ public sealed partial class WorkstationEndpointsTests
             (await tenantStore.GetConnectionAsync(request.Connection.ConnectionId))!.UpdatedAt.Should()
                 .Be(DateTimeOffset.Parse("2026-06-16T15:00:00Z"));
             (await store.GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
+            // The request names another owner; the connection records the session actor.
+            (await tenantStore.GetConnectionAsync(request.Connection.ConnectionId))!.OwnerUserId.Should().Be("ops-user");
             var originalManifest = (await tenantStore.GetManifestAsync(request.Manifest.ManifestId))!;
             var editRequest = request with
             {
@@ -280,7 +284,8 @@ public sealed partial class WorkstationEndpointsTests
             problem.RootElement.GetProperty("title").GetString().Should()
                 .Be("Provider integration setup draft failed validation.");
             var errors = problem.RootElement.GetProperty("errors");
-            errors.TryGetProperty("savedBy", out _).Should().BeTrue();
+            // SavedBy comes from the authenticated session, so a blank body value is not an error.
+            errors.TryGetProperty("savedBy", out _).Should().BeFalse();
             errors.TryGetProperty("connection.credentialSecretRef", out _).Should().BeTrue();
             (await DefaultProviderIntegrationTenantStore(store).GetManifestAsync(request.Manifest.ManifestId)).Should().BeNull();
         }
@@ -918,6 +923,8 @@ public sealed partial class WorkstationEndpointsTests
             handoff.Records.Should().ContainSingle(record =>
                 record.StagingRecordId == "staging-ready" &&
                 record.PromotionTarget == "reconciliation-staging");
+            // The request names another requester; the handoff records the session actor.
+            handoff.Records.Should().OnlyContain(record => record.RequestedBy == "ops-user");
             history.Should().NotBeNull();
             history!.TotalRecords.Should().Be(1);
             history.HandoffCount.Should().Be(1);
@@ -1026,6 +1033,8 @@ public sealed partial class WorkstationEndpointsTests
             result.Decision.Action.Should().Be(ProviderIntegrationQuarantineResolutionActionDto.ReplayAfterMappingChange);
             decisions.Should().ContainSingle()
                 .Which.QuarantineRecordId.Should().Be(request.QuarantineRecordId);
+            // The request names another reviewer; the decision records the session actor.
+            decisions.Single().ReviewedBy.Should().Be("ops-user");
         }
         finally
         {
@@ -1471,6 +1480,8 @@ public sealed partial class WorkstationEndpointsTests
             result.ManifestState.Should().Be(ProviderIntegrationActivationStateDto.Active);
             result.ConnectionState.Should().Be(ProviderIntegrationActivationStateDto.Active);
             (await tenantStore.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.Active);
+            // The request names another approver; the active manifest records the session actor.
+            (await tenantStore.GetManifestAsync(manifest.ManifestId))!.ApprovedBy.Should().Be("ops-user");
             (await tenantStore.GetConnectionAsync(connection.ConnectionId))!.ApprovalEvidenceId.Should().Be("approval-evidence-endpoint-1");
             var activeManifest = (await tenantStore.GetManifestAsync(manifest.ManifestId))!;
             activeManifest.ManifestVersion.Should().Be(manifest.ManifestVersion + 1);
@@ -1553,6 +1564,45 @@ public sealed partial class WorkstationEndpointsTests
 
             response.StatusCode.Should().Be(HttpStatusCode.Forbidden);
             (await tenantStore.GetManifestAsync(manifest.ManifestId))!.State.Should().Be(ProviderIntegrationActivationStateDto.DryRunPassed);
+        }
+        finally
+        {
+            DeleteProviderIntegrationTestRoot(testRoot);
+        }
+    }
+
+    [Theory]
+    [InlineData("/api/workstation/provider-integrations/import/openapi")]
+    [InlineData("/api/workstation/provider-integrations/setup")]
+    [InlineData("/api/workstation/provider-integrations/dry-runs/manual-csv")]
+    [InlineData("/api/workstation/provider-integrations/dry-runs/rest")]
+    [InlineData("/api/workstation/provider-integrations/activate")]
+    [InlineData("/api/workstation/provider-integrations/connections/connection-alpha/sync/run-due")]
+    [InlineData("/api/workstation/provider-integrations/schema-drift/check")]
+    [InlineData("/api/workstation/provider-integrations/reconciliation/handoff")]
+    [InlineData("/api/workstation/provider-integrations/quarantine/resolve")]
+    [InlineData("/api/workstation/provider-integrations/quarantine/replay")]
+    public async Task MapWorkstationEndpoints_ProviderIntegrationActorRoutes_RejectBodyActorWithoutSessionActor(string route)
+    {
+        // These routes record an importer, saver, owner, requester, checker, reviewer or approver.
+        // With permissions but no authenticated actor, a body-supplied actor must not be accepted.
+        var testRoot = CreateProviderIntegrationTestRoot();
+        try
+        {
+            var store = new FileProviderIntegrationManifestStore(testRoot);
+            await using var app = await CreateAppAsync(
+                services => RegisterProviderIntegrationEndpointServices(services, store),
+                currentUserPermissions: UserPermission.ManageProviders,
+                currentUserName: string.Empty);
+
+            var response = await app.GetTestClient().PostAsync(
+                route,
+                new StringContent(
+                    """{"connectionId":"connection-alpha","requestedBy":"Meridian Operator","importedBy":"Meridian Operator","savedBy":"Meridian Operator","checkedBy":"Meridian Operator","reviewedBy":"Meridian Operator","approvedBy":"Meridian Operator"}""",
+                    System.Text.Encoding.UTF8,
+                    "application/json"));
+
+            response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         }
         finally
         {

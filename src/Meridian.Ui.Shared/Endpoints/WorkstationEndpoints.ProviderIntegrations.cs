@@ -93,6 +93,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationOpenApiImportService>();
             if (service is null)
             {
@@ -109,7 +115,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .ImportAsync(tenantId, request, context.RequestAborted)
+                    .ImportAsync(tenantId, request with { ImportedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -127,6 +133,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("ImportWorkstationProviderIntegrationOpenApi")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationOpenApiImportResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -145,6 +152,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationSetupService>();
             if (service is null)
             {
@@ -161,7 +174,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .SaveDraftAsync(tenantId, request, context.RequestAborted)
+                    .SaveDraftAsync(tenantId, request with { SavedBy = actor, Connection = request.Connection is null ? null! : request.Connection with { OwnerUserId = actor } }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -198,6 +211,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("SaveWorkstationProviderIntegrationSetup")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationSetupSaveResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -268,6 +282,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationDryRunService>();
             if (service is null)
             {
@@ -284,7 +304,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .RunManualCsvDryRunAsync(tenantId, request, context.RequestAborted)
+                    .RunManualCsvDryRunAsync(tenantId, request with { RequestedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -302,6 +322,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("RunWorkstationProviderIntegrationManualCsvDryRun")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationDryRunResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -321,6 +342,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationRestDryRunService>();
             if (service is null)
             {
@@ -337,7 +364,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .RunRestDryRunAsync(tenantId, request, context.RequestAborted)
+                    .RunRestDryRunAsync(tenantId, request with { RequestedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -355,6 +382,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("RunWorkstationProviderIntegrationRestDryRun")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationDryRunResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -374,6 +402,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The approver is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationActivationService>();
             if (service is null)
             {
@@ -390,7 +424,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .ActivateAsync(tenantId, request, context.RequestAborted)
+                    .ActivateAsync(tenantId, request with { ApprovedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -408,6 +442,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("ActivateWorkstationProviderIntegration")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationActivationResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -598,6 +633,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             if (!StringComparer.Ordinal.Equals(connectionId, request.ConnectionId))
             {
                 return Results.BadRequest(new { error = "The route connection id must match the request connection id." });
@@ -619,7 +660,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .RunDueAsync(tenantId, request, context.RequestAborted)
+                    .RunDueAsync(tenantId, request with { RequestedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -637,6 +678,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("RunDueWorkstationProviderIntegrationSync")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationRunDueSyncResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -656,6 +698,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationSchemaDriftService>();
             if (service is null)
             {
@@ -672,7 +720,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .CheckAsync(tenantId, request, context.RequestAborted)
+                    .CheckAsync(tenantId, request with { CheckedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -694,6 +742,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("CheckWorkstationProviderIntegrationSchemaDrift")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationSchemaDriftCheckResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -962,6 +1011,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationReconciliationHandoffService>();
             if (service is null)
             {
@@ -978,7 +1033,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .HandoffAsync(tenantId, request, context.RequestAborted)
+                    .HandoffAsync(tenantId, request with { RequestedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -996,6 +1051,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("CreateWorkstationProviderIntegrationReconciliationHandoff")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationReconciliationHandoffResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1070,6 +1126,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationQuarantineReviewService>();
             if (service is null)
             {
@@ -1086,7 +1148,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .ResolveAsync(tenantId, request, context.RequestAborted)
+                    .ResolveAsync(tenantId, request with { ReviewedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1104,6 +1166,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("ResolveWorkstationProviderIntegrationQuarantineRecord")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationQuarantineResolutionResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
@@ -1123,6 +1186,12 @@ public static partial class WorkstationEndpoints
                 return EndpointHelpers.Forbidden();
             }
 
+            // The actor is audit evidence: take it from the authenticated session, never the body.
+            if (!EndpointAuthorization.TryResolveActor(context, out var actor))
+            {
+                return Results.Unauthorized();
+            }
+
             var service = context.RequestServices.GetService<ProviderIntegrationQuarantineReplayService>();
             if (service is null)
             {
@@ -1139,7 +1208,7 @@ public static partial class WorkstationEndpoints
                 }
 
                 var result = await service
-                    .ReplayAsync(tenantId, request, context.RequestAborted)
+                    .ReplayAsync(tenantId, request with { RequestedBy = actor }, context.RequestAborted)
                     .ConfigureAwait(false);
                 return Results.Json(result, jsonOptions);
             }
@@ -1157,6 +1226,7 @@ public static partial class WorkstationEndpoints
             }
         })
         .WithName("ReplayWorkstationProviderIntegrationQuarantineRecords")
+        .Produces(StatusCodes.Status401Unauthorized)
         .Produces<ProviderIntegrationQuarantineReplayResultDto>(StatusCodes.Status200OK)
         .Produces(StatusCodes.Status400BadRequest)
         .Produces(StatusCodes.Status403Forbidden)
