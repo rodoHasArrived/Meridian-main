@@ -116,6 +116,11 @@ including values below 1, and a fill whose multiplier differs from the open posi
 `TradeExecutedEvent` carries the booked `ContractMultiplier`, so its `GrossValue` and the multiplied
 realized P&L reach the ledger handoff in the same money terms; events serialized before the member
 existed read as 1.
+Each paper position carries the realised P&L booked against its own symbol, so the aggregated
+`PaperTradingPortfolio.Positions` view sums to the account total instead of repeating it per symbol;
+a symbol held in several accounts reports a quantity-weighted cost basis. Per-position realised P&L
+starts at zero after canonical recovery and leaves with a removed flat entry; the account total stays
+authoritative.
 When the gateway supplies no lot multiplier, the OMS stamps its resolved multiplier onto the fill
 report before booking, so session projection and restart replay apply the same multiplier as the live
 book.

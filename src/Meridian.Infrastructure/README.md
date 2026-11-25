@@ -683,6 +683,9 @@ ETL SFTP publishing is an Infrastructure adapter implementation of the Contracts
 only owns transport connection, pinned host-key verification, directory creation, and upload
 mechanics. SFTP source and destination definitions must provide a SHA-256 host-key fingerprint so
 imports and exports fail closed before trusting a remote server identity.
+Uploads go to a temporary remote name and are renamed into place; single-file and directory
+publishes both honour `OverwriteIfExists`, and an upload or rename that fails removes its temporary
+file on a best-effort basis.
 SFTP imports **and exports** resolve credentials through the same `ISftpCredentialResolver`:
 `ResolveAsync` has source and destination overloads that share one secret model, so an `env:`
 reference resolves identically on both sides. Before this the publisher passed

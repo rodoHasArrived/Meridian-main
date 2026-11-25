@@ -516,6 +516,7 @@ their recovery copies are retained in execution history. `FileMaintenanceService
 owns this operation and the backup helper shared with repair.
 
 Tier migration decodes compressed input with the production JSONL replay decoder before applying an explicitly requested output codec. An unspecified codec preserves source bytes; `None` emits uncompressed bytes with the compression suffix removed. Gzip rollover therefore produces one gzip layer. Deleting a source always requires equal logical-payload checksums through that decoder, including when optional copy verification is disabled; regression coverage also replays migrated events through `JsonlReplayer`.
+Migration writes JSONL only and compresses with Gzip only; parquet or Zstd tier targets are refused. The built-in `Archival` profile therefore tiers hot (JSONL) → warm, cold and archive (JSONL + Gzip).
 
 `PostgresSecurityMasterPricingStore.ClosePrices` extends retained pricing receipts with immutable
 account/book/date price snapshots and separate independent-review records (Security Master
