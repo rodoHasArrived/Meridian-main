@@ -5325,6 +5325,7 @@ Meridian-main
 │   │   │   ├── MeridianDeploymentPosture.cs
 │   │   │   ├── MoneyMarketStartup.cs
 │   │   │   ├── PersistenceConfigurationStatus.cs
+│   │   │   ├── PipelineWorkload.cs
 │   │   │   ├── PortfolioRecordsServiceRegistration.cs
 │   │   │   ├── ProductionRegistrationGuardService.cs
 │   │   │   ├── ProductionServiceRegistrationPolicy.cs
@@ -13300,7 +13301,8 @@ Meridian-main
 │   │   │   │   ├── SimulationCommandsTests.cs
 │   │   │   │   ├── StatementImportCommandsTests.cs
 │   │   │   │   ├── SymbolCommandsTests.cs
-│   │   │   │   └── ValidateConfigCommandTests.cs
+│   │   │   │   ├── ValidateConfigCommandTests.cs
+│   │   │   │   └── WalRepairCommandTests.cs
 │   │   │   ├── Composition
 │   │   │   │   ├── Startup
 │   │   │   │   │   ├── ModeRunners
@@ -14968,6 +14970,7 @@ Meridian-main
 │   │   │   ├── ArchiveCompressionCrashTests.cs
 │   │   │   ├── ArchiveMaintenanceScheduleManagerDurabilityTests.cs
 │   │   │   ├── AssetAccountingPostingEvidenceValidatorTests.cs
+│   │   │   ├── AtomicFileWriterDirectorySyncTests.cs
 │   │   │   ├── AtomicFileWriterLogPrivacyTests.cs
 │   │   │   ├── AtomicFileWriterTests.cs
 │   │   │   ├── AtomicSnapshotTestWriter.cs
@@ -15184,8 +15187,10 @@ Meridian-main
 │   │   │   ├── WriteAheadLogChecksumTests.cs
 │   │   │   ├── WriteAheadLogChecksumVersionTests.cs
 │   │   │   ├── WriteAheadLogCorruptionModeTests.cs
+│   │   │   ├── WriteAheadLogDirectorySyncTests.cs
 │   │   │   ├── WriteAheadLogFlushFaultTests.cs
 │   │   │   ├── WriteAheadLogFuzzTests.cs
+│   │   │   ├── WriteAheadLogOwnershipTests.cs
 │   │   │   ├── WriteAheadLogProcessTests.cs
 │   │   │   ├── WriteAheadLogTests.cs
 │   │   │   └── XlsxWorkbookWriterTests.cs
