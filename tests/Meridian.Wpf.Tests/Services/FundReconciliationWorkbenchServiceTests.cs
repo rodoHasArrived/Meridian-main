@@ -621,13 +621,13 @@ public sealed class FundReconciliationWorkbenchServiceTests
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 10, 0, 0, TimeSpan.Zero), "Buy AAPL",
         [
-            (LedgerAccounts.Securities("AAPL"), 400m, 0m),
+            (LedgerAccounts.Securities(LedgerSecurityKey.Unresolved("AAPL")), 400m, 0m),
             (LedgerAccounts.Cash, 0m, 400m)
         ]);
         PostBalancedEntry(ledger, new DateTimeOffset(2026, 3, 21, 16, 20, 0, 0, TimeSpan.Zero), "Open TSLA short",
         [
             (LedgerAccounts.Cash, 150m, 0m),
-            (LedgerAccounts.ShortSecuritiesPayable("TSLA"), 0m, 150m)
+            (LedgerAccounts.ShortSecuritiesPayable(LedgerSecurityKey.Unresolved("TSLA")), 0m, 150m)
         ]);
         return ledger;
     }
