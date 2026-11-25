@@ -295,6 +295,7 @@ provider-credentials.json
 
 # CI-produced generation: regenerate with buildctl.py regen --fix; never hand-commit.
 /database/manifest/contracts.json
+/docs/generated/repository-structure.md
 /docs/roadmap/generated/MANIFEST.json
 /docs/source/generated/MANIFEST.json
 /docs/status/TODO.md
