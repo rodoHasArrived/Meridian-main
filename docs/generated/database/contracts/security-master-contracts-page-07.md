@@ -2,11 +2,15 @@
 
 # `security-master-contracts` data objects - page 7 of 8
 
-Objects 481-560 of 613. References crossing pages remain available in the dependency manifest.
+Objects 481-560 of 618. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityMasterConflictRouting["SecurityMasterConflictRouting"] {
+        +IReadOnlySet~string~ ProviderEvidenceSegments
+        +IReadOnlySet~string~ TermContainers
+    }
     class Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendRequestDto["SecurityMasterCorporateActionAppendRequestDto"] {
         +string Actor
         +CorporateActionDto CorporateAction
@@ -378,6 +382,16 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_SecurityTermsUpgradeKind["SecurityTermsUpgradeKind"] {
     }
+    class Meridian_Contracts_SecurityMaster_SecurityTermsValidTime["SecurityTermsValidTime"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityTermsValidTimeSegment["SecurityTermsValidTimeSegment"] {
+        +SecurityEconomicDefinitionRecord Definition
+        +DateTimeOffset RecordedAt
+        +Guid SecurityId
+        +long StreamVersion
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+    }
     class Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto["SecurityUnderlyingGraphDto"] {
         +DateTimeOffset AsOfUtc
         +IReadOnlyList~SecurityUnderlyingLinkDto~ Dependents
@@ -386,24 +400,6 @@ classDiagram
         +IReadOnlyList~SecurityUnderlyingLinkDto~ Underlyings
     }
     class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDeriver["SecurityUnderlyingLinkDeriver"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto["SecurityUnderlyingLinkDto"] {
-        +DateTimeOffset CreatedAt
-        +string CreatedBy
-        +Guid LinkId
-        +string? Notes
-        +string? Reference
-        +SecurityUnderlyingRole Role
-        +Guid SecurityId
-        +SecurityUnderlyingLinkSource Source
-        +Guid? UnderlyingSecurityId
-        +DateTimeOffset ValidFrom
-        +DateTimeOffset? ValidTo
-        +decimal? Weight
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource["SecurityUnderlyingLinkSource"] {
-    }
-    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
     }
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAuditDto
     Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionAppendResultDto --> Meridian_Contracts_SecurityMaster_SecurityMasterCorporateActionRestatementDto
@@ -435,7 +431,4 @@ classDiagram
     Meridian_Contracts_SecurityMaster_SecurityTermBinding --> Meridian_Contracts_SecurityMaster_SecurityTermRead
     Meridian_Contracts_SecurityMaster_SecurityTermsProjectionReadDto --> Meridian_Contracts_SecurityMaster_SecurityTermsProjectionChildRowsDto
     Meridian_Contracts_SecurityMaster_SecurityTermsProjectionReadDto --> Meridian_Contracts_SecurityMaster_SecurityTermsProjectionSatelliteRowDto
-    Meridian_Contracts_SecurityMaster_SecurityUnderlyingGraphDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto
-    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource
-    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole
 ```

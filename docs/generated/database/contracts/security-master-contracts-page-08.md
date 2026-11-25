@@ -2,11 +2,36 @@
 
 # `security-master-contracts` data objects - page 8 of 8
 
-Objects 561-613 of 613. References crossing pages remain available in the dependency manifest.
+Objects 561-618 of 618. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
     %% security-master-contracts: module mapping, not DTO/table equivalence
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto["SecurityUnderlyingLinkDto"] {
+        +DateTimeOffset CreatedAt
+        +string CreatedBy
+        +Guid LinkId
+        +string? Notes
+        +string? Reference
+        +SecurityUnderlyingRole Role
+        +Guid SecurityId
+        +SecurityUnderlyingLinkSource Source
+        +Guid? UnderlyingSecurityId
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+        +decimal? Weight
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource["SecurityUnderlyingLinkSource"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole["SecurityUnderlyingRole"] {
+    }
+    class Meridian_Contracts_SecurityMaster_SecurityValidTimeAssertion["SecurityValidTimeAssertion"] {
+        +DateTimeOffset RecordedAt
+        +long StreamVersion
+        +long? SupersededByStreamVersion
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+    }
     class Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto["SecurityValidationGateResultDto"] {
         +bool IsBlocked
         +bool IsResolved
@@ -220,6 +245,11 @@ classDiagram
         +string? InflationIndex
         +decimal? InflationIndexRatio
     }
+    class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsPeriod["StructuredCashFlowTermsPeriod"] {
+        +long StreamVersion
+        +DateTimeOffset ValidFrom
+        +DateTimeOffset? ValidTo
+    }
     class Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsResolver["StructuredCashFlowTermsResolver"] {
     }
     class Meridian_Contracts_SecurityMaster_StructuredCreditReclassificationBlockerDto["StructuredCreditReclassificationBlockerDto"] {
@@ -416,6 +446,8 @@ classDiagram
         +DateTimeOffset ValidFrom
         +DateTimeOffset? ValidTo
     }
+    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkSource
+    Meridian_Contracts_SecurityMaster_SecurityUnderlyingLinkDto --> Meridian_Contracts_SecurityMaster_SecurityUnderlyingRole
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationReportDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationSnapshotDto
     Meridian_Contracts_SecurityMaster_SecurityValidationGateResultDto --> Meridian_Contracts_SecurityMaster_SecurityValidationWorkflowDto
@@ -440,6 +472,7 @@ classDiagram
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowSourceKind
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowStaleness
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTerms
+    Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredCashFlowTermsPeriod
     Meridian_Contracts_SecurityMaster_StructuredCashFlowProjectionDto --> Meridian_Contracts_SecurityMaster_StructuredFactorScheduleEntry
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEntry --> Meridian_Contracts_SecurityMaster_StructuredCashFlowInterestSegment
     Meridian_Contracts_SecurityMaster_StructuredCashFlowScheduleEvidence --> Meridian_Contracts_SecurityMaster_StructuredCashFlowCalendarEvidence

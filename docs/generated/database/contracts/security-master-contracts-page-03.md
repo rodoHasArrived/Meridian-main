@@ -2,7 +2,7 @@
 
 # `security-master-contracts` data objects - page 3 of 8
 
-Objects 161-240 of 613. References crossing pages remain available in the dependency manifest.
+Objects 161-240 of 618. References crossing pages remain available in the dependency manifest.
 
 ```mermaid
 classDiagram
@@ -149,6 +149,7 @@ classDiagram
         +IReadOnlyList~string~ Errors
         +int FactsStored
         +int FilersProcessed
+        +int IssuersLinked
         +int SecuritiesAmended
         +int SecuritiesCreated
         +int SecuritiesSkipped
@@ -293,6 +294,8 @@ classDiagram
     }
     class Meridian_Contracts_SecurityMaster_ISecurityResolver["ISecurityResolver"] {
     }
+    class Meridian_Contracts_SecurityMaster_ISecurityTermsValidTimeReader["ISecurityTermsValidTimeReader"] {
+    }
     class Meridian_Contracts_SecurityMaster_ISecurityTradingParametersQueryService["ISecurityTradingParametersQueryService"] {
     }
     class Meridian_Contracts_SecurityMaster_ISecurityUnderlyingGraphStore["ISecurityUnderlyingGraphStore"] {
@@ -412,15 +415,6 @@ classDiagram
         +string? ReasonCode
         +IReadOnlyList~string~? RemoveKeys
         +IReadOnlyDictionary~string__string~? SetValues
-    }
-    class Meridian_Contracts_SecurityMaster_OtcAuctionSettlementData["OtcAuctionSettlementData"] {
-        +DateOnly AuctionDate
-        +string AuctionReference
-        +Guid CreditEventId
-        +string Currency
-        +decimal FinalPricePercent
-        +decimal SettlementAmount
-        +int SettlementScale
     }
     Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusalCode
     Meridian_Contracts_SecurityMaster_DeclaredScheduleResolution --> Meridian_Contracts_SecurityMaster_DeclaredScheduleRefusal

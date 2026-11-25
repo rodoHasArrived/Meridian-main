@@ -6112,6 +6112,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.IssuerConcentrationDto"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.EntityMaster.IssuerConcentrationReport"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.EntityMaster.LegalEntityDto"
     },
     {
@@ -14878,6 +14890,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityTermsValidTimeReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService"
     },
     {
@@ -16894,6 +16912,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsValidTime"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsValidTimeSegment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
     },
     {
@@ -16919,6 +16949,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValidTimeAssertion"
     },
     {
       "kind": "contract-set-member",
@@ -17111,6 +17147,12 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:all-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsPeriod"
     },
     {
       "kind": "contract-set-member",
@@ -32680,6 +32722,12 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityTermsValidTimeReader"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService"
     },
     {
@@ -34696,6 +34744,18 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsValidTime"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsValidTimeSegment"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto"
     },
     {
@@ -34721,6 +34781,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityValidTimeAssertion"
     },
     {
       "kind": "contract-set-member",
@@ -34913,6 +34979,12 @@
       "label": "",
       "source": "contract-set:security-master-contracts",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms"
+    },
+    {
+      "kind": "contract-set-member",
+      "label": "",
+      "source": "contract-set:security-master-contracts",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsPeriod"
     },
     {
       "kind": "contract-set-member",
@@ -40811,6 +40883,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Domain.ProviderSymbol",
       "target": "contract:Meridian.Contracts.Domain.SymbolId"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.EntityMaster.IssuerConcentrationReport",
+      "target": "contract:Meridian.Contracts.EntityMaster.IssuerConcentrationDto"
     },
     {
       "kind": "contract-reference",
@@ -51855,6 +51933,12 @@
     {
       "kind": "contract-reference",
       "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsValidTimeSegment",
+      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityEconomicDefinitionRecord"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingLinkDto"
     },
@@ -52085,6 +52169,12 @@
       "label": "",
       "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
       "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms"
+    },
+    {
+      "kind": "contract-reference",
+      "label": "",
+      "source": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowProjectionDto",
+      "target": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsPeriod"
     },
     {
       "kind": "contract-reference",
@@ -72469,7 +72559,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "026f448d852444bb7fd116c6779038974e4b793f51c16d3a455291b14c81e3d6",
+  "fingerprint": "e5d784abdcfcead8b29f515e68017cfac24cf2035a698c5a0e6450318a95be89",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -78629,6 +78719,18 @@
       "id": "contract:Meridian.Contracts.EntityMaster.IEntityMasterStore",
       "kind": "contract-type",
       "label": "Meridian.Contracts.EntityMaster.IEntityMasterStore"
+    },
+    {
+      "classification": "dto",
+      "id": "contract:Meridian.Contracts.EntityMaster.IssuerConcentrationDto",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.IssuerConcentrationDto"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.EntityMaster.IssuerConcentrationReport",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.EntityMaster.IssuerConcentrationReport"
     },
     {
       "classification": "dto",
@@ -87398,6 +87500,12 @@
     },
     {
       "classification": "service_contract",
+      "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityTermsValidTimeReader",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.ISecurityTermsValidTimeReader"
+    },
+    {
+      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.ISecurityTradingParametersQueryService"
@@ -89413,6 +89521,18 @@
       "label": "Meridian.Contracts.SecurityMaster.SecurityTermsUpgradeKind"
     },
     {
+      "classification": "class",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsValidTime",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsValidTime"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityTermsValidTimeSegment",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityTermsValidTimeSegment"
+    },
+    {
       "classification": "dto",
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingGraphDto",
       "kind": "contract-type",
@@ -89441,6 +89561,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.SecurityUnderlyingRole"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.SecurityValidTimeAssertion",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.SecurityValidTimeAssertion"
     },
     {
       "classification": "dto",
@@ -89633,6 +89759,12 @@
       "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms",
       "kind": "contract-type",
       "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowTerms"
+    },
+    {
+      "classification": "record",
+      "id": "contract:Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsPeriod",
+      "kind": "contract-type",
+      "label": "Meridian.Contracts.SecurityMaster.StructuredCashFlowTermsPeriod"
     },
     {
       "classification": "class",
@@ -106613,11 +106745,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4419,
-    "contract_set_memberships": 5840,
-    "edges": 12038,
+    "contract_references": 4422,
+    "contract_set_memberships": 5852,
+    "edges": 12053,
     "foreign_keys": 224,
     "logical_references": 6,
-    "nodes": 5941
+    "nodes": 5948
   }
 }
