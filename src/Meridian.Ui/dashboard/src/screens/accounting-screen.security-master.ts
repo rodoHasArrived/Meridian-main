@@ -12,7 +12,7 @@ import {
   type ReferenceDataWorkbenchCoverage
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
-import { formatCount as formatCountValue } from "@/lib/format";
+import { formatCount as formatCountValue, VALUE_STATE_LABELS } from "@/lib/format";
 import { useOnGlobalRefresh } from "@/lib/global-refresh";
 import { type ReferenceDataWorkbenchEndpointSeed } from "@/lib/workstation-endpoints";
 import type {
@@ -1411,7 +1411,7 @@ export function buildSecurityIdentityDrillInState(
     summaryFields: [
       { label: "Security ID", value: identity.securityId },
       { label: "Version", value: `v${identity.version}` },
-      { label: "Asset class", value: identity.assetClass || "—" },
+      { label: "Asset class", value: identity.assetClass || VALUE_STATE_LABELS.unavailable },
       { label: "Effective", value: effectiveRange }
     ],
     identifiersTitle: "Identifiers",

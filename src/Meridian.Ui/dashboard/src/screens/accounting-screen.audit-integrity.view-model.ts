@@ -10,7 +10,7 @@
  */
 
 import type { AccountingAuditIntegrityReportDto, AuditChainIntegrityResultDto } from "@/types";
-import { formatCount } from "@/lib/format";
+import { formatCount, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type AuditIntegrityTone = "success" | "danger" | "warning" | "default";
 
@@ -115,7 +115,7 @@ function buildRow(result: AuditChainIntegrityResultDto): AuditChainRow {
 
 function describeCoverage(result: AuditChainIntegrityResultDto): string {
   if (result.status === "not-configured" || result.status === "unavailable") {
-    return result.detail ?? "—";
+    return result.detail ?? VALUE_STATE_LABELS.unavailable;
   }
 
   const links = `${formatCount(result.linksChecked)} chained ${result.linksChecked === 1 ? "entry" : "entries"} checked`;

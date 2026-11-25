@@ -32,6 +32,7 @@ import {
 } from "@/screens/cash-ladder-screen.view-model";
 import type { PortfolioCashLadder } from "@/types/portfolio-cash-ladder.types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const SOURCE_PALETTE = [
   "var(--chart-series-1, #29323A)",
   "var(--chart-series-2, #5D7286)",
@@ -135,7 +136,7 @@ function drillColumns(onInspect: (row: CashLadderDrillRow) => void): DenseDataTa
           {row.scenarioAdjustment}
         </span>
       ) : (
-        <span className="text-xs text-muted-foreground">—</span>
+        <span className="text-xs text-muted-foreground">{VALUE_STATE_LABELS.unavailable}</span>
       )
   }
   ];

@@ -16,6 +16,7 @@ import type {
   AccountCashReconciliationRun, OversightContext, OversightScope
 } from "@/types/account-oversight";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface Props {
   scope: OversightScope;
   context: OversightContext;
@@ -238,7 +239,7 @@ function CashCaseDetail({ item, runs, runErrors, busy, canWrite, conflict, onAss
   return <section className="space-y-4 rounded-[2px] border border-border p-4" aria-label={`Cash case ${item.caseId}`}>
     <dl className="grid grid-cols-1 gap-3 text-sm md:grid-cols-3">
       <Fact label="Stable case identity" value={item.caseId} /><Fact label="Source pair" value={`${item.leftSourceId} / ${item.rightSourceId}`} /><Fact label="Current source state" value={item.state} />
-      <Fact label="First observed (UTC)" value={item.firstObservedAtUtc} /><Fact label="Last observed (UTC)" value={item.lastObservedAtUtc} /><Fact label="Retained resolution" value={item.resolvedAtUtc ? `${item.resolvedAtUtc} · run ${item.resolutionRunId ?? "Unavailable"}` : "Unresolved"} />
+      <Fact label="First observed (UTC)" value={item.firstObservedAtUtc} /><Fact label="Last observed (UTC)" value={item.lastObservedAtUtc} /><Fact label="Retained resolution" value={item.resolvedAtUtc ? `${item.resolvedAtUtc} · run ${item.resolutionRunId ?? VALUE_STATE_LABELS.unavailable}` : "Unresolved"} />
     </dl>
     <form onSubmit={submit} aria-label="Assign cash case owner" className="space-y-3">
       <FormGrid columns={2}>

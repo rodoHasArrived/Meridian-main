@@ -83,7 +83,7 @@ describe("maintenance execution rows", () => {
       statusLabel: "Failed",
       statusTone: "danger",
       errorMessage: "Checksum mismatch in shard 12",
-      durationLabel: "—"
+      durationLabel: "Not available"
     });
   });
 });
@@ -97,7 +97,7 @@ describe("formatDuration", () => {
 
   it("passes an unrecognized value through rather than inventing a duration", () => {
     expect(formatDuration("not-a-timespan")).toBe("not-a-timespan");
-    expect(formatDuration(null)).toBe("—");
+    expect(formatDuration(null)).toBe("Not available");
   });
 });
 
@@ -154,7 +154,7 @@ describe("buildMaintenanceMetrics", () => {
   it("shows an unloaded read as unknown rather than as zero activity", () => {
     const metrics = buildMaintenanceMetrics(null, null, null);
 
-    expect(metrics.every((metric) => metric.value === "—")).toBe(true);
+    expect(metrics.every((metric) => metric.value === "Not available")).toBe(true);
     expect(metrics.find((metric) => metric.id === "service")?.detail).toBe("Service status has not loaded.");
   });
 

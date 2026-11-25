@@ -1,6 +1,6 @@
 import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
-import { formatFixed, formatMoney, formatNumber, formatPercent, formatPnl, formatCurrencyAmount } from "@/lib/format";
+import { formatFixed, formatMoney, formatNumber, formatPercent, formatPnl, formatCurrencyAmount, VALUE_STATE_LABELS } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -1591,10 +1591,10 @@ export function buildPayoffChartViewModel(legs: StrategyLeg[], spotPrice: number
       spotLineX: null,
       spotPrice,
       axisLabels: {
-        minPrice: "—",
-        maxPrice: "—",
-        minPnl: "—",
-        maxPnl: "—"
+        minPrice: VALUE_STATE_LABELS.unavailable,
+        maxPrice: VALUE_STATE_LABELS.unavailable,
+        minPnl: VALUE_STATE_LABELS.unavailable,
+        maxPnl: VALUE_STATE_LABELS.unavailable
       },
       breakEvenPrices: [],
       maxProfit: 0,
@@ -1728,9 +1728,9 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
 export function buildDesignerSummaryMetrics(payoff: PayoffChartViewModel, participation: ParticipationViewModel): DesignerSummaryMetric[] {
   if (payoff.isEmpty) {
     return [
-      { id: "max-profit", label: "Max profit", value: "—", detail: "Add legs to compute", tone: "default" },
-      { id: "max-loss", label: "Max loss", value: "—", detail: "Add legs to compute", tone: "default" },
-      { id: "net-debit", label: "Net debit", value: "—", detail: "Add legs to compute", tone: "default" },
+      { id: "max-profit", label: "Max profit", value: VALUE_STATE_LABELS.unavailable, detail: "Add legs to compute", tone: "default" },
+      { id: "max-loss", label: "Max loss", value: VALUE_STATE_LABELS.unavailable, detail: "Add legs to compute", tone: "default" },
+      { id: "net-debit", label: "Net debit", value: VALUE_STATE_LABELS.unavailable, detail: "Add legs to compute", tone: "default" },
       { id: "net-direction", label: "Net direction", value: "Flat", detail: "No exposure", tone: "default" }
     ];
   }
@@ -2286,7 +2286,7 @@ function buildKindParameterFields(cell: StrategyBuilderCell): StrategyLegDetailF
       { id: "asset-class", label: "Asset class", value: p.assetClass, tone: "default" },
       { id: "include-rules", label: "Include rules", value: p.includeRules, tone: "default" },
       { id: "exclude-rules", label: "Exclude rules", value: p.excludeRules ?? "(none)", tone: p.excludeRules ? "default" : "muted" },
-      { id: "size-constraints", label: "Size constraints", value: `min ${p.minSize ?? "—"} / max ${p.maxSize ?? "—"}`, tone: "default" }
+      { id: "size-constraints", label: "Size constraints", value: `min ${p.minSize ?? VALUE_STATE_LABELS.unavailable} / max ${p.maxSize ?? VALUE_STATE_LABELS.unavailable}`, tone: "default" }
     ];
   }
   if (cell.kind === "trade") {
@@ -2297,7 +2297,7 @@ function buildKindParameterFields(cell: StrategyBuilderCell): StrategyLegDetailF
       { id: "direction", label: "Direction", value: p.direction, tone: p.direction === "Buy" || p.direction === "BuyToCover" ? "success" : "warning" },
       { id: "sizing-method", label: "Sizing method", value: p.sizingMethod, tone: "default" },
       { id: "price-constraint", label: "Price constraint", value: p.priceConstraint ?? "Market", tone: p.priceConstraint ? "default" : "muted" },
-      { id: "sizing-value", label: "Sizing value", value: p.sizingValue ?? "—", tone: "default" }
+      { id: "sizing-value", label: "Sizing value", value: p.sizingValue ?? VALUE_STATE_LABELS.unavailable, tone: "default" }
     ];
   }
   return [];
@@ -2372,7 +2372,7 @@ function formatPrice(value: number): string {
 }
 
 function formatQuantity(value: number): string {
-  if (!Number.isFinite(value)) return "—";
+  if (!Number.isFinite(value)) return VALUE_STATE_LABELS.unavailable;
   return formatNumber(value, { maximumFractionDigits: 4 });
 }
 

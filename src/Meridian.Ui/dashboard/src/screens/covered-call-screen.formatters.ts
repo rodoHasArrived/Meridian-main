@@ -1,9 +1,4 @@
-import {
-  formatCount as formatCountShared,
-  formatDecimal as formatDecimalShared,
-  formatRatioAsPercent as formatRatioAsPercentShared,
-  formatTimestamp
-} from "@/lib/format";
+import { formatCount as formatCountShared, formatDecimal as formatDecimalShared, formatRatioAsPercent as formatRatioAsPercentShared, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 
 export function formatPrice(value: number): string {
   return formatDecimalShared(value, 2);
@@ -23,7 +18,7 @@ export function formatRatioAsPercent(value: number): string {
 }
 
 export function formatCount(value: number): string {
-  if (!Number.isFinite(value)) return "—";
+  if (!Number.isFinite(value)) return VALUE_STATE_LABELS.unavailable;
   return formatCountShared(Math.trunc(value));
 }
 
@@ -42,7 +37,7 @@ export function formatExitReason(value: string): string {
 export function formatCoveredCallDateTime(value: string): string {
   const date = new Date(value);
   if (Number.isNaN(date.getTime())) {
-    return "Unavailable";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   return formatTimestamp(date);

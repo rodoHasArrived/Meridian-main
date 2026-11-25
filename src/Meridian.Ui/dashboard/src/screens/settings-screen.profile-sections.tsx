@@ -21,6 +21,7 @@ import { toSeverity } from "@/design-system/status-styles";
 import { SettingsTimeZonePreference } from "@/screens/settings-screen.time-zone-preference";
 import { PreferenceSyncStatus } from "@/screens/settings-screen.preference-sync-status";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface SettingsAccessPostureSectionProps {
   vm: SettingsScreenViewModel;
   overview: SystemOverviewResponse | null;
@@ -133,16 +134,16 @@ export function SettingsAccessPostureSection({ vm, overview, providerHealth }: S
             </div>
             <SeverityBadge
               status={toSeverity(vm.systemTone)}
-              label={overview?.systemStatus ?? "Unavailable"}
+              label={overview?.systemStatus ?? VALUE_STATE_LABELS.unavailable}
             />
           </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
-            <SettingsChip label="Providers healthy" value={providerHealth ? formatProviderHealth(providerHealth) : "—"} />
-            <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : "—"} />
+            <SettingsChip label="Providers healthy" value={providerHealth ? formatProviderHealth(providerHealth) : VALUE_STATE_LABELS.unavailable} />
+            <SettingsChip label="Runs" value={overview ? String(overview.activeRuns) : VALUE_STATE_LABELS.unavailable} />
             <SettingsChip label="Positions" kpi={openPositionsKpi} />
-            <SettingsChip label="Storage" value={overview?.storageHealth ?? "—"} />
+            <SettingsChip label="Storage" value={overview?.storageHealth ?? VALUE_STATE_LABELS.unavailable} />
           </div>
           {vm.hasOverview ? (
             <dl className="grid gap-2">

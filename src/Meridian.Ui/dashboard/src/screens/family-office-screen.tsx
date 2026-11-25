@@ -25,7 +25,7 @@ import {
   type FamilyOfficePanelViewModel,
 } from "@/screens/family-office-screen.view-model";
 import { eyebrowClassName } from "@/design-system/label-case";
-import { pluralizeCount } from "@/lib/format";
+import { pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import { utcToday } from "@/lib/local-date";
 import { statusMetricTone, toSeverity } from "@/design-system/status-styles";
 
@@ -48,7 +48,7 @@ function loadStateSourceLabel(loadState: FamilyOfficeLoadState): string {
     case "loading":
       return "Loading";
     case "error":
-      return "Unavailable";
+      return VALUE_STATE_LABELS.unavailable;
     default:
       return "Not connected";
   }
@@ -213,7 +213,7 @@ export function FamilyOfficeScreen({ entityStructure }: { entityStructure?: Fami
           tone: resolvedStructure?.entities.length ? "ready" : "blocked"
         }}
         freshness={{
-          value: resolvedStructure?.asOfDate ?? "Unavailable",
+          value: resolvedStructure?.asOfDate ?? VALUE_STATE_LABELS.unavailable,
           detail: "Latest consolidated family-office evidence",
           tone: resolvedStructure?.asOfDate ? "ready" : "unknown"
         }}

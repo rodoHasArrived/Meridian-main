@@ -1453,8 +1453,14 @@ not been recorded.
     `sharedCurrency(codes)` labels a total only when every line agrees on one currency. The
     `assumedMoneyDefaults` ratchet (`balance ?? 0`, `?? "USD"`) also has an empty baseline: a
     missing currency is required from the operator or refused, never defaulted. The
-    `placeholderVocabulary` ratchet still counts ad hoc `"—"`, `"Unavailable"`, `"Not supplied"`,
-    `"Not recorded"` and `"Not retained"` literals and may only shrink. The
+    `placeholderVocabulary` ratchet's baseline is also empty: screens render a missing value as
+    `VALUE_STATE_LABELS.unavailable` ("Not available"), and the shared formatters' default fallback
+    is the same text. Ad hoc `"—"`, `"Unavailable"`, `"Not supplied"`, `"Not recorded"` and
+    `"Not retained"` literals and JSX text fail the ratchet. Compare a rendered label with
+    `isUnavailableLabel(label)`, never a literal. Comparisons and `case` labels are not counted
+    (they match server statuses), and a server status value assigned in a screen carries a
+    `placeholder-vocabulary-ignore` comment. The accounting `zeroDash` option still prints `—` for
+    an exact zero; that is a confirmed zero, not a missing value. The
     `accounting.non-usd` scenario rebooks the accounting payload in EUR for screenshots.
     `FinancialValue` renders each state with its own look and accessible text and exposes it as
     `data-value-state`: a value, a confirmed zero, a dashed "Not available" chip (missing or

@@ -1,4 +1,4 @@
-import { formatMoney, formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatTimestamp } from "@/lib/format";
+import { formatMoney, formatNumber as formatNumberAmount, formatRatioAsPercent as formatRatioAsPercentAmount, pluralizeCount, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import type { BrokerageHouseholdPosition, TradingWorkspaceResponse } from "@/types";
 import type {
   PortfolioBrokerageAccountOption,
@@ -86,12 +86,12 @@ export function formatNumber(value: number): string {
 export function formatBrokeragePositionAmounts(position: BrokerageHouseholdPosition) {
   function money(field: string, value: number, decimals: number, signed = false) {
     const proof = position.amountPassports?.[field];
-    return proof?.origin === "unavailable" ? "—" : formatMoney(proof?.exactValue ?? value, {
+    return proof?.origin === "unavailable" ? VALUE_STATE_LABELS.unavailable : formatMoney(proof?.exactValue ?? value, {
       currency: position.currency?.trim() || null, decimals, signed
     });
   }
   return {
-    quantity: position.amountPassports?.quantity?.origin === "unavailable" ? "—" : formatNumber(position.quantity),
+    quantity: position.amountPassports?.quantity?.origin === "unavailable" ? VALUE_STATE_LABELS.unavailable : formatNumber(position.quantity),
     averagePrice: money("average-price", position.averageEntryPrice, 2),
     markPrice: money("mark", position.marketPrice, 2),
     marketValue: money("market-value", position.marketValue, 0),
@@ -106,7 +106,7 @@ export function formatCountLabel(count: number, noun: string): string {
 export function formatDateTime(value: string): string {
   const date = new Date(value);
   return Number.isNaN(date.getTime())
-    ? "—"
+    ? VALUE_STATE_LABELS.unavailable
     : formatTimestamp(date);
 }
 

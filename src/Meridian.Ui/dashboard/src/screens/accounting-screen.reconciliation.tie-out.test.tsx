@@ -174,7 +174,7 @@ describe("Accounting reconciliation tie-out proof", () => {
     renderMount({ ...reconciliation, totalMeridianDebits: Number.NaN });
 
     const comparison = screen.getByRole("region", { name: comparisonName });
-    expect(comparison).toHaveTextContent("Unavailable");
+    expect(comparison).toHaveTextContent("Not available");
     expect(comparison).toHaveTextContent("Can't assess");
     expect(comparison).toHaveTextContent("Comparison unavailable:");
     expect(comparison).not.toHaveTextContent("Balanced");

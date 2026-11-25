@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { TechnicalDetails } from "@/components/ui/technical-details";
-import { formatMoney } from "@/lib/format";
+import { formatMoney, VALUE_STATE_LABELS } from "@/lib/format";
 import type { ManualJournalEntryDraft } from "@/types";
 import type { IntercompanyProposal } from "@/types/entity-operations";
 import { EntityOperationTable, MutationFeedback, OperationError, OperationField, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
@@ -37,11 +37,11 @@ export function CounterpartRepricing({ proposal, canManage, onApplied }: {
     {preview.data && current && proposed ? <div className="space-y-3"><p className="text-sm">Target draft {current.version} · {current.status} · original journal date {current.accountingDate}</p>
       <EntityOperationTable label="Counterpart repricing before and after" rows={rows} getRowId={(row) => row.id} emptyText="No retained counterpart lines."
         columns={[
-          { id: "account", label: "Account", rowHeader: true, render: (row) => row.after?.accountPath ?? row.before?.accountPath ?? "Unavailable" },
+          { id: "account", label: "Account", rowHeader: true, render: (row) => row.after?.accountPath ?? row.before?.accountPath ?? VALUE_STATE_LABELS.unavailable },
           { id: "side", label: "Side", render: (row) => row.before?.side === row.after?.side ? row.before?.side : `${row.before?.side ?? "Missing"} → ${row.after?.side ?? "Missing"}` },
-          { id: "before", label: "Current functional amount", numeric: true, render: (row) => row.before ? formatMoney(row.before.amount, { context: "accounting", currency: row.before.currency }) : "Not retained" },
-          { id: "after", label: "Proposed functional amount", numeric: true, render: (row) => row.after ? formatMoney(row.after.amount, { context: "accounting", currency: row.after.currency }) : "Not retained" },
-          { id: "original", label: "Original transaction evidence", render: (row) => row.after?.transactionCurrency ? `${String(row.after.transactionCurrency.amount)} ${row.after.transactionCurrency.currency} · rate ${String(row.after.transactionCurrency.fxRateToFunctional)}` : "Not retained" }
+          { id: "before", label: "Current functional amount", numeric: true, render: (row) => row.before ? formatMoney(row.before.amount, { context: "accounting", currency: row.before.currency }) : VALUE_STATE_LABELS.unavailable },
+          { id: "after", label: "Proposed functional amount", numeric: true, render: (row) => row.after ? formatMoney(row.after.amount, { context: "accounting", currency: row.after.currency }) : VALUE_STATE_LABELS.unavailable },
+          { id: "original", label: "Original transaction evidence", render: (row) => row.after?.transactionCurrency ? `${String(row.after.transactionCurrency.amount)} ${row.after.transactionCurrency.currency} · rate ${String(row.after.transactionCurrency.fxRateToFunctional)}` : VALUE_STATE_LABELS.unavailable }
         ]} />
       <TechnicalDetails label="Counterpart repricing source and FX authority"><dl className="space-y-2 break-all text-xs"><div><dt>Retained source digest</dt><dd className="font-mono">{proposal.sourceDigest}</dd></div><div><dt>Preview fingerprint</dt><dd className="font-mono">{preview.data.fingerprint}</dd></div>
         {proposed.intercompanyFx ? <><div><dt>Approved rate-set revision</dt><dd>{proposed.intercompanyFx.rateSetId} · {proposed.intercompanyFx.rateSetRevision}</dd></div><div><dt>Policy revision</dt><dd>{proposed.intercompanyFx.policyId} · {proposed.intercompanyFx.policyRevision}</dd></div><div><dt>Configuration hash</dt><dd className="font-mono">{proposed.intercompanyFx.configurationHash}</dd></div></> : null}</dl></TechnicalDetails>

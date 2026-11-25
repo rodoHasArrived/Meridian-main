@@ -14,7 +14,7 @@ import {
 } from "@/screens/data-screen.cell-actions";
 import type { CoverageGapsViewModel } from "@/screens/data-screen.coverage-gaps.view-model";
 import type { DataQualityPanelViewModel } from "@/screens/data-screen.data-quality.view-model";
-import { formatCount, formatNumber, formatTimestamp } from "@/lib/format";
+import { formatCount, formatNumber, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import { usesTrackedCaps } from "@/design-system/label-case";
 import { statusBadgeVariant, statusPanelClass, statusTextClass } from "@/design-system/status-styles";
 
@@ -239,7 +239,7 @@ export function DataQualityRegion({
                                       <span className="text-muted-foreground">({component.availability})</span>
                                       <span className="block text-xs text-muted-foreground">{component.detail}</span>
                                     </span>
-                                    <span className="font-mono">{component.score === null ? "—" : formatNumber(component.score, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
+                                    <span className="font-mono">{component.score === null ? VALUE_STATE_LABELS.unavailable : formatNumber(component.score, { minimumFractionDigits: 1, maximumFractionDigits: 1 })}</span>
                                   </li>
                                 ))}
                               </ul>

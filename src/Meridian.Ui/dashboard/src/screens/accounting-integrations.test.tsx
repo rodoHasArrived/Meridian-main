@@ -62,7 +62,7 @@ describe("accounting integration panels", () => {
     const retained = await screen.findByLabelText("Retained three-way comparison");
     expect(api.runThreeWayReconciliation).toHaveBeenCalledWith(accountId, bookId, periodId, expect.any(String));
     expect(retained).toHaveTextContent("Ledger: 1000.00");
-    expect(retained).toHaveTextContent("Broker: Unavailable");
+    expect(retained).toHaveTextContent("Broker: Not available");
     expect(retained).toHaveTextContent("Broker cash is unavailable");
     expect(retained).toHaveTextContent("1 minute");
     expect(within(retained).getByRole("link", { name: "Open break synthetic-break" })).toHaveAttribute("href", expect.stringContaining("reconciliationBreak=synthetic-break"));

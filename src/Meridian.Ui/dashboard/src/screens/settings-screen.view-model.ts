@@ -1,7 +1,7 @@
 import { formatProviderHealth, selectSharedProviderHealth } from "@/lib/cross-screen-counts";
 import type { WorkstationCrossScreenCounts } from "@/types/cross-screen-counts";
 import { useEffect, useRef, useState, type FormEvent } from "react";
-import { pluralizeCount, withIndefiniteArticle } from "@/lib/format";
+import { pluralizeCount, withIndefiniteArticle, VALUE_STATE_LABELS } from "@/lib/format";
 import { resolveKpi } from "@/lib/kpi-registry";
 import {
   connectAlpacaConnection,
@@ -2016,13 +2016,13 @@ function buildProfileAuthenticationPanel(
       {
         id: "operator",
         label: "Operator",
-        value: session?.displayName ?? "Unavailable",
+        value: session?.displayName ?? VALUE_STATE_LABELS.unavailable,
         tone: session ? "default" : "danger"
       },
       {
         id: "role",
         label: "Role",
-        value: session?.role ?? "Unavailable",
+        value: session?.role ?? VALUE_STATE_LABELS.unavailable,
         tone: session ? "default" : "danger"
       },
       {
@@ -2040,7 +2040,7 @@ function buildProfileAuthenticationPanel(
       {
         id: "commands",
         label: "Command trail",
-        value: session ? String(session.commandCount) : "Unavailable",
+        value: session ? String(session.commandCount) : VALUE_STATE_LABELS.unavailable,
         tone: session ? "muted" : "danger"
       },
       {
@@ -2185,7 +2185,7 @@ function buildProviderConnectionCenter(
     : `${formatCount(routingConnectionRows.length, "routing connection")} · ${formatCount(bindingRows.length, "binding")} · ${formatCount(trustRows.length, "trust snapshot")}`;
 
   const statusLabel = rows.length === 0
-    ? "Unavailable"
+    ? VALUE_STATE_LABELS.unavailable
     : refreshing
       ? "Refreshing"
     : readinessBlockedCount > 0
@@ -2843,7 +2843,7 @@ export function buildSettingsScreenViewModel(
         { label: "Status", value: overview.systemStatus, tone: systemTone(overview.systemStatus) },
         {
           label: "Providers healthy",
-          value: providerHealth ? formatProviderHealth(providerHealth) : "—",
+          value: providerHealth ? formatProviderHealth(providerHealth) : VALUE_STATE_LABELS.unavailable,
           tone: !providerHealth ? "muted" : providerHealth.total > 0 && providerHealth.healthy === providerHealth.total ? "success" : "warning"
         },
         { label: "Active runs", value: resolveKpi("system.active-runs", { overview }).value, tone: "default" },
@@ -2966,10 +2966,10 @@ function buildSettingsHeaderChips(
   systemFreshness: SettingsFreshnessViewModel
 ): SettingsHeaderChip[] {
   return [
-    { label: "Environment", value: session ? session.environment.toUpperCase() : "—" },
-    { label: "Workspace", value: session?.activeWorkspace ?? "—" },
+    { label: "Environment", value: session ? session.environment.toUpperCase() : VALUE_STATE_LABELS.unavailable },
+    { label: "Workspace", value: session?.activeWorkspace ?? VALUE_STATE_LABELS.unavailable },
     { label: "Diagnostics", value: diagnosticStatusLabel },
-    { label: "Heartbeat", value: overview ? systemFreshness.label : "—" }
+    { label: "Heartbeat", value: overview ? systemFreshness.label : VALUE_STATE_LABELS.unavailable }
   ];
 }
 
@@ -3077,7 +3077,7 @@ function buildBackendCapabilityGroup(
       ...definition,
       endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
       loadedCountLabel: "0 loaded",
-      statusLabel: "Unavailable",
+      statusLabel: VALUE_STATE_LABELS.unavailable,
       statusDetail: formatSettingsVisibleWorkspaceError(error),
       statusVariant: "danger",
       endpoints
@@ -3100,7 +3100,7 @@ function buildBackendCapabilityGroup(
     ...definition,
     endpointCountLabel: `${endpointCount} service${endpointCount === 1 ? "" : "s"}`,
     loadedCountLabel: "0 loaded",
-    statusLabel: "Unavailable",
+    statusLabel: VALUE_STATE_LABELS.unavailable,
     statusDetail: formatSettingsVisibleWorkspaceError(payload.error ?? definition.unavailableDetail),
     statusVariant: "danger",
     endpoints
@@ -3187,7 +3187,7 @@ function buildDiagnosticLink(
 
   return {
     ...endpoint,
-    statusLabel: "Unavailable",
+    statusLabel: VALUE_STATE_LABELS.unavailable,
     statusDetail: formatSettingsVisibleWorkspaceError(payload.error ?? endpoint.unavailableDetail),
     tone: "danger",
     badgeVariant: "danger",

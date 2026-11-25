@@ -3,7 +3,7 @@ import { Link, useLocation } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { normalizeLocalWorkstationRoute } from "@/lib/workspace";
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 import { executionEventLabel, formatEnumLabel } from "@/lib/display-labels";
 import { TechnicalDetails } from "@/components/ui/technical-details";
 import { TimeText } from "@/components/ui/time-text";
@@ -170,7 +170,7 @@ function ExecutionJourneyContent({ recent }: { recent: AuditTrailExplorerResult 
       <details><summary className="cursor-pointer">Event table</summary><DenseDataTable rows={rows} getRowId={(entry) => entry.auditId}
         maxVisibleRows={null} ariaLabel="Journey event table" emptyText="No attributable event evidence is available."
         columns={[
-          { id: "timestamp", label: "Source timestamp", className: "whitespace-nowrap tabular-nums", render: (entry) => <TimeText value={entry.occurredAt} precision="second" fallback="Unavailable" /> },
+          { id: "timestamp", label: "Source timestamp", className: "whitespace-nowrap tabular-nums", render: (entry) => <TimeText value={entry.occurredAt} precision="second" fallback={VALUE_STATE_LABELS.unavailable} /> },
           { id: "stage", label: "Stage", render: (entry) => journeyStage(entry) },
           { id: "action", label: "Action", render: (entry) => executionEventLabel(entry.action) },
           { id: "outcome", label: "Outcome", render: (entry) => executionEventLabel(entry.outcome) },

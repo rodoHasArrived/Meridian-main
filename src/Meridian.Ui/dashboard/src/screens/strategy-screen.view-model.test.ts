@@ -448,7 +448,7 @@ describe("strategy-screen view model", () => {
     expect(comparisonTable.rows[0].totalReturnTone).toBe("success");
     expect(comparisonTable.rows[0].maxDrawdownText).toBe("-1.80%");
     expect(comparisonTable.rows[0].maxDrawdownTone).toBe("danger");
-    expect(comparisonTable.rows[0].equityText).toBe("Equity Unavailable");
+    expect(comparisonTable.rows[0].equityText).toBe("Equity Not available");
     expect(comparisonTable.rows[0].promotionStateText).toBe("Candidate for paper");
     expect(comparisonTable.rows[0].evidenceText).toBe("Ledger missing; Audit missing");
     expect(comparisonTable.rows[0].artifactCompletenessText).toBe("Ready 3/5 (portfolio, cash-flow, fills); missing ledger, audit");
@@ -457,8 +457,8 @@ describe("strategy-screen view model", () => {
     expect(comparisonTable.rows[0].detailPanelId).toBe("strategy-run-comparison-selected-detail");
     expect(comparisonTable.rows[0].rowSelectAriaLabel).toBe("Inspect Mean Reversion FX comparison evidence");
     expect(comparisonTable.rows[0].ariaLabel).toContain("Mean Reversion FX: Running; net P&L +$3,200");
-    expect(comparisonTable.rows[0].sharpeRatioText).toBe("Unavailable");
-    expect(comparisonTable.rows[0].fillCountText).toBe("Unavailable");
+    expect(comparisonTable.rows[0].sharpeRatioText).toBe("Not available");
+    expect(comparisonTable.rows[0].fillCountText).toBe("Not available");
     expect(buildComparisonTable([]).emptyText).toBe("No comparison rows returned for the selected pair.");
 
     const comparisonDetailState = buildStrategyRunLibraryState({
@@ -790,16 +790,16 @@ describe("strategy-screen view model", () => {
     });
 
     const moments = Object.fromEntries(plotTool.statistics.moments.map((row) => [row.id, row.value]));
-    expect(moments["net-pnl"]).toBe("Unavailable");
-    expect(moments.return).toBe("Unavailable");
-    expect(moments.sharpe).toBe("Unavailable");
-    expect(moments.drawdown).toBe("Unavailable");
+    expect(moments["net-pnl"]).toBe("Not available");
+    expect(moments.return).toBe("Not available");
+    expect(moments.sharpe).toBe("Not available");
+    expect(moments.drawdown).toBe("Not available");
     expect(plotTool.statistics.moments.map((row) => row.value).join(" ")).not.toContain("3,200");
 
     const sharpeTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "sharpe");
     const drawdownTile = plotTool.statistics.summaryTiles.find((tile) => tile.id === "drawdown");
-    expect(sharpeTile).toMatchObject({ value: "Unavailable", tone: "default" });
-    expect(drawdownTile).toMatchObject({ value: "Unavailable", tone: "default" });
+    expect(sharpeTile).toMatchObject({ value: "Not available", tone: "default" });
+    expect(drawdownTile).toMatchObject({ value: "Not available", tone: "default" });
   });
 
   it("builds PlotTool table states with explicit empty copy", () => {

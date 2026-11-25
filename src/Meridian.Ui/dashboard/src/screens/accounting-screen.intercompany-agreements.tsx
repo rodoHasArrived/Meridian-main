@@ -17,6 +17,7 @@ import type { AgreementMutation } from "@/lib/api/intercompany-agreements.api";
 import { ApiError } from "@/lib/api-errors";
 import type { AgreementCommand, AgreementDetail, AgreementDraft, AgreementList, AgreementQuery, AgreementRevision, AgreementSchedulePreview } from "@/types/intercompany-agreements";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const today = () => new Date().toISOString().slice(0, 10);
 const errorText = (reason: unknown) => reason instanceof Error ? reason.message : "The agreement request failed.";
 const text = (value?: string | number | null) => value == null || value === "" ? "Not provided" : String(value);
@@ -186,7 +187,7 @@ export function IntercompanyAgreementsPanel({ initialEntityId = "", initialAgree
           <TechnicalDetails label="Compare proposed and applicable terms"><FormGrid columns={2}><div><h5 className="font-semibold">Applicable version {detail.applicableRevision?.agreementVersion ?? "none"}</h5>{detail.applicableRevision ? <TermsSummary draft={detail.applicableRevision.terms} /> : null}</div><div><h5 className="font-semibold">Proposed revision</h5><TermsSummary draft={proposal.draft} /></div></FormGrid></TechnicalDetails>
           {!editor ? <>
             <FormRow label="Review decision rationale" labelFor={`${id}-rationale`}><Input id={`${id}-rationale`} value={rationale} disabled={busy} onChange={event => setRationale(event.target.value)} /></FormRow>
-            {proposal.state === "Submitted" && detail.capabilities.canAttestExternalReview ? <><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={externalMode} disabled={busy} onChange={event => setExternalMode(event.target.checked)} />Attest external legal review as the operator</label>{externalMode ? <ExternalLegalReviewFields value={externalReview} onChange={setExternalReview} subjectHash={proposal.submittedHash ?? "Unavailable"} busy={busy} /> : null}</> : null}
+            {proposal.state === "Submitted" && detail.capabilities.canAttestExternalReview ? <><label className="flex items-center gap-2 text-sm"><input type="checkbox" checked={externalMode} disabled={busy} onChange={event => setExternalMode(event.target.checked)} />Attest external legal review as the operator</label>{externalMode ? <ExternalLegalReviewFields value={externalReview} onChange={setExternalReview} subjectHash={proposal.submittedHash ?? VALUE_STATE_LABELS.unavailable} busy={busy} /> : null}</> : null}
             <div className="flex flex-wrap gap-2">
               <Button type="button" variant="outline" disabled={busy} onClick={() => void previewDates(undefined, proposal.proposalId)}>Preview proposed contractual dates</Button>
               <Button variant="outline" disabled={busy || !detail.capabilities.canEdit} onClick={() => setEditor({ agreementId: detail.agreementId, proposalId: proposal.proposalId, mutation: "save", fixedIdentity: detail.latestApprovedVersion != null, initial: proposal.draft })}>Edit agreement draft</Button>

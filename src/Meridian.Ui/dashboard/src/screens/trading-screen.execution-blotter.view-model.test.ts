@@ -119,7 +119,7 @@ describe("buildExecutionBlotterMetrics", () => {
 
   it("shows an unloaded read as unknown rather than as zero", () => {
     const metrics = buildExecutionBlotterMetrics(null, null);
-    expect(metrics.every((metric) => metric.value === "—")).toBe(true);
+    expect(metrics.every((metric) => metric.value === "Not available")).toBe(true);
   });
 });
 

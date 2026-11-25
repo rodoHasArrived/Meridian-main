@@ -2002,7 +2002,7 @@ describe("accounting-screen view model", () => {
     });
     expect(state.selectedDetail?.fields).toEqual(expect.arrayContaining([
       { label: "Amount or ratio", value: "4:1 split", tone: "default" },
-      { label: "Pay date", value: "—", tone: "warning" }
+      { label: "Pay date", value: "Not available", tone: "warning" }
     ]));
   });
 
@@ -2979,13 +2979,13 @@ describe("accounting-screen view model", () => {
     });
     expect(state?.aliases[0]).toMatchObject({
       rowId: "alias-alias-1",
-      providerLabel: "—",
+      providerLabel: "Not available",
       enabledLabel: "Enabled",
       enabledBadgeVariant: "success",
       validRangeLabel: "Jan 1, 2025 – active",
       createdLabel: "Jan 1, 2025",
       reasonText: "Market data source mapping",
-      ariaLabel: "ProviderSymbol AAPL.OQ, Enabled, scope Collector, provider —, valid Jan 1, 2025 – active"
+      ariaLabel: "ProviderSymbol AAPL.OQ, Enabled, scope Collector, provider Not available, valid Jan 1, 2025 – active"
     });
   });
 

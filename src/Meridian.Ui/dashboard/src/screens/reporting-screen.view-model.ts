@@ -35,7 +35,7 @@ import {
   presentReportingAsOfDate
 } from "@/screens/reporting-screen.schedule-view-model";
 import type { ExportAnalysisResult, GovernanceReportingProfile, GovernanceReportingSummary, ReportWriterAggregateFunction, ReportWriterFilterOperator, ReportingRunStatusProjection, ReportingStarterKit, ReportingStarterSeedSchedule, ReportingTemplateGridMetadata, ReportingTemplateMetadata, ReportingWorkflowChangedLine, ReportingWorkflowEvidenceLink, ReportingWorkflowLineProvenance, ReportingWorkflowRecord } from "@/types";
-import { formatCount, formatNumber } from "@/lib/format";
+import { formatCount, formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type ReportingProfileBadgeTone = "primary" | "success" | "warning" | "muted";
 export type ReportingBadgeVariant = "default" | "success" | "warning" | "outline";
@@ -938,7 +938,7 @@ export function useReportingScreenViewModel(
       statusDetail: "Reporting data is unavailable. Check the Reporting workspace API connection.",
       statusBadgeLabel: "Waiting",
       statusBadgeVariant: "outline",
-      nextAction: "—",
+      nextAction: VALUE_STATE_LABELS.unavailable,
       selectedProfile: null,
       packTargets: [],
       hasPackTargets: false,
@@ -2238,7 +2238,7 @@ function buildReportingAccessAudit(reporting: GovernanceReportingSummary | null)
   if (!audit) {
     return {
       isAvailable: false,
-      evaluationScope: "Unavailable",
+      evaluationScope: VALUE_STATE_LABELS.unavailable,
       summary: "Reporting access audit evidence is not available for this report view.",
       principalScopes: ["scope:unavailable"],
       scopeLabel: "scope:unavailable",
@@ -2706,12 +2706,12 @@ function buildExportResultFields(requestedProfileId: string, result: ExportAnaly
   const symbolsLabel = result.symbols?.length ? result.symbols.join(", ") : "All configured symbols";
 
   return [
-    buildReportingDetailField("Job ID", result.jobId ?? "Unavailable", result.jobId ? "default" : "muted"),
+    buildReportingDetailField("Job ID", result.jobId ?? VALUE_STATE_LABELS.unavailable, result.jobId ? "default" : "muted"),
     buildReportingDetailField("Status", result.status, result.success ? "success" : "warning"),
     buildReportingDetailField("Requested", requestedProfileId, "default"),
     buildReportingDetailField("Profile", result.profileId, "default"),
     buildReportingDetailField("Symbols", symbolsLabel, result.symbols?.length ? "default" : "muted"),
-    buildReportingDetailField("Output", result.outputDirectory ?? "Unavailable", result.outputDirectory ? "default" : "muted"),
+    buildReportingDetailField("Output", result.outputDirectory ?? VALUE_STATE_LABELS.unavailable, result.outputDirectory ? "default" : "muted"),
     buildReportingDetailField("Files", String(result.filesGenerated), result.filesGenerated > 0 ? "success" : "warning"),
     buildReportingDetailField("Records", formatCount(result.totalRecords), result.totalRecords > 0 ? "default" : "muted"),
     buildReportingDetailField("Bytes", byteLabel, result.totalBytes > 0 ? "default" : "muted"),

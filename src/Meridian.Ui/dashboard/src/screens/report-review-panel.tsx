@@ -10,6 +10,7 @@ import { getReportRunReview, type ReportRunReview, type ReportReviewChange, type
 import { parseExactDecimal } from "@/lib/exact-financial-value";
 import { workstationRouteWithQuery } from "@/lib/workspace";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export function ReportReviewPanel({ runId, version, onReview }: {
   runId: string; version?: number; onReview?: (review: ReportRunReview | null) => void;
 }) {
@@ -39,7 +40,7 @@ export function ReportReviewPanel({ runId, version, onReview }: {
             <p>Current retained version {review.version}</p>
             {review.baselineRunId ? <p><Link className="underline" to={workstationRouteWithQuery("reportingRunDetail", { runId: review.baselineRunId })}>Open prior approved run</Link> · version {review.baselineVersion}</p>
               : <p>No prior approved comparable run.</p>}
-            <p className="md:col-span-2">Period {review.periodId} · Presentation currency {review.currency ?? "Not recorded"} · Accounting basis {review.accountingBasis ?? "Not recorded"}</p>
+            <p className="md:col-span-2">Period {review.periodId} · Presentation currency {review.currency ?? VALUE_STATE_LABELS.unavailable} · Accounting basis {review.accountingBasis ?? VALUE_STATE_LABELS.unavailable}</p>
             <TechnicalDetails label="Comparison identifiers" className="md:col-span-2">
               <dl className="space-y-2 text-sm">
                 <div><dt className="font-semibold">Current run ID</dt><dd className="break-all font-mono">{review.runId}</dd></div>
@@ -77,7 +78,7 @@ export function ReportReviewPanel({ runId, version, onReview }: {
                       render: (line: ReportReviewLine) => isMeasuredLine(line)
                         ? <ReviewAmount label={`${["Prior", "Current", "Variance"][index]} ${line.gridId} / ${line.rowKey} / ${line.column}`} value={line[field]} currency={review.currency}
                             basis={index === 2 ? "Current retained value minus prior retained value." : "Exact value retained on the selected report revision."} />
-                        : line[field] ?? "Not recorded"
+                        : line[field] ?? VALUE_STATE_LABELS.unavailable
                     })),
                     { id: "percent", label: "Variance %", numeric: true, render: (line) => line.percent === null ? "Not applicable" : `${line.percent}%` },
                     ...(review.materialityPolicy ? [{ id: "materiality", label: "Materiality", render: (line: ReportReviewLine) => line.materialityOutcome === "MaterialException" ? "Material exception" : line.materialityOutcome === "WithinTolerance" ? "Within tolerance" : "Not assessed" }] : []),
@@ -110,7 +111,7 @@ function Changes({ title, changes, comparable }: { title: string; changes: Repor
 }
 
 function ReviewAmount({ label, value, currency, basis }: { label: string; value: string | null; currency: string | null; basis: string }) {
-  const displayValue = value ?? "Not recorded";
+  const displayValue = value ?? VALUE_STATE_LABELS.unavailable;
   return <AmountPassportTrigger compact ariaLabel={`Inspect ${label}: ${displayValue}${currency ? ` ${currency}` : ""}`}
     selection={{ label, displayValue, currency, unit: currency ?? "Unit unavailable", origin: "unavailable", basis,
       category: "Retained report comparison", zero: parseExactDecimal(value)?.coefficient === 0n,

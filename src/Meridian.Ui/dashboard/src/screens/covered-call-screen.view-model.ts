@@ -15,7 +15,7 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 import { shortCallBreakEven } from "@/lib/covered-call/payoff";
-import { formatCurrencyAmount } from "@/lib/format";
+import { formatCurrencyAmount, VALUE_STATE_LABELS } from "@/lib/format";
 import {
   formatCount,
   formatDecimal,
@@ -1221,7 +1221,7 @@ function buildCoveredCallTradeTimelineDetail(
       { label: "Total net P&L", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },
-      { label: "Entry IV", value: trade.entryImpliedVolatility === null ? "—" : formatRatioAsPercent(trade.entryImpliedVolatility) },
+      { label: "Entry IV", value: trade.entryImpliedVolatility === null ? VALUE_STATE_LABELS.unavailable : formatRatioAsPercent(trade.entryImpliedVolatility) },
       { label: "Assignment", value: trade.wasAssigned ? "Assigned" : "Not assigned" }
     ],
     ariaLabel: `Selected covered-call trade ${index + 1}: ${underlyingSymbol} ${strikeLabel} call`
@@ -1320,7 +1320,7 @@ function buildChainPreviewRow(
 ): CoveredCallChainPreviewRowViewModel {
   const strikeLabel = formatPrice(row.strike);
   const bidLabel = formatPrice(row.bid);
-  const deltaLabel = row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2);
+  const deltaLabel = row.deltaAvailable === false ? VALUE_STATE_LABELS.unavailable : formatDecimal(row.delta, 2);
   const statusLabel = row.meetsAllFilters ? "Pass" : row.rejectReason ?? "Reject";
   const statusBadgeVariant: CoveredCallBadgeVariant = row.meetsAllFilters ? "success" : "outline";
   const rowBase = `${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`;
@@ -1333,7 +1333,7 @@ function buildChainPreviewRow(
     daysToExpirationLabel: formatCount(row.daysToExpiration),
     bidLabel,
     deltaLabel,
-    openInterestLabel: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest),
+    openInterestLabel: row.openInterestAvailable === false ? VALUE_STATE_LABELS.unavailable : formatCount(row.openInterest),
     statusLabel,
     statusBadgeVariant,
     statusAriaLabel: row.meetsAllFilters
@@ -1370,13 +1370,13 @@ function buildChainPreviewDetail(
       { label: "Expiration", value: row.expiration },
       { label: "DTE", value: formatCount(row.daysToExpiration) },
       { label: "Bid / Ask", value: `${formatPrice(row.bid)} / ${formatPrice(row.ask)}` },
-      { label: "Delta", value: row.deltaAvailable === false ? "Unavailable" : formatDecimal(row.delta, 2) },
-      { label: "Implied volatility", value: row.impliedVolatility === null ? "—" : formatRatioAsPercent(row.impliedVolatility) },
-      { label: "Open interest", value: row.openInterestAvailable === false ? "Unavailable" : formatCount(row.openInterest) },
-      { label: "Volume", value: row.volumeAvailable === false ? "Unavailable" : formatCount(row.volume) },
-      { label: "Spread / midpoint", value: row.spreadFraction == null ? "Unavailable" : formatRatioAsPercent(row.spreadFraction) },
+      { label: "Delta", value: row.deltaAvailable === false ? VALUE_STATE_LABELS.unavailable : formatDecimal(row.delta, 2) },
+      { label: "Implied volatility", value: row.impliedVolatility === null ? VALUE_STATE_LABELS.unavailable : formatRatioAsPercent(row.impliedVolatility) },
+      { label: "Open interest", value: row.openInterestAvailable === false ? VALUE_STATE_LABELS.unavailable : formatCount(row.openInterest) },
+      { label: "Volume", value: row.volumeAvailable === false ? VALUE_STATE_LABELS.unavailable : formatCount(row.volume) },
+      { label: "Spread / midpoint", value: row.spreadFraction == null ? VALUE_STATE_LABELS.unavailable : formatRatioAsPercent(row.spreadFraction) },
       { label: "Quoted bid premium / unit", value: formatPrice(row.bid) },
-      { label: "Contract multiplier", value: row.multiplier == null ? "Unavailable" : formatCount(row.multiplier) }
+      { label: "Contract multiplier", value: row.multiplier == null ? VALUE_STATE_LABELS.unavailable : formatCount(row.multiplier) }
     ],
     ariaLabel: `Selected covered-call candidate: ${preview.underlyingSymbol} ${strikeLabel} call expiring ${row.expiration}`
   };
@@ -1393,8 +1393,8 @@ export function buildCoveredCallHistoryRows(history: CoveredCallRunSummary[]): C
     const startedAtLabel = formatCoveredCallDateTime(row.startedAt);
     const rangeLabel = `${row.from} to ${row.to}`;
     const statusBadgeVariant = statusBadgeVariantForHistory(row.status);
-    const cagrLabel = row.cagr === null ? "—" : formatRatioAsPercent(row.cagr);
-    const sharpeRatioLabel = row.sharpeRatio === null ? "—" : formatDecimal(row.sharpeRatio, 2);
+    const cagrLabel = row.cagr === null ? VALUE_STATE_LABELS.unavailable : formatRatioAsPercent(row.cagr);
+    const sharpeRatioLabel = row.sharpeRatio === null ? VALUE_STATE_LABELS.unavailable : formatDecimal(row.sharpeRatio, 2);
     const labelText = row.label?.trim() || "Unlabeled";
 
     return {

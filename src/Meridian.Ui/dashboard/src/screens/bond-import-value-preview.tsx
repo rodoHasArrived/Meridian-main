@@ -1,6 +1,7 @@
 import { bondDecimalText } from "@/lib/bond-decimal-format";
 import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian/ui-kit-primitives";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 type MappedRow = { mappedRecord?: unknown; stagingRecordId?: string; quarantineRecordId?: string };
 type ValueEvidence = Record<string, string | null>;
 type ValuePreviewRow = { evidence: ValueEvidence; key: string; label: string };
@@ -30,8 +31,8 @@ const columns: DenseDataTableColumn<ValuePreviewRow>[] = [
         <dl className="mt-2 grid grid-cols-2 gap-x-3 gap-y-1 text-xs">
           <dt>Original face</dt><dd className="font-mono">{bondDecimalText(evidence.originalFace)}</dd>
           <dt>Current factor</dt><dd className="font-mono">{bondDecimalText(evidence.currentFactor)}</dd>
-          <dt>Provider quotation</dt><dd className="font-mono">{bondDecimalText(evidence.quotation)} · {evidence.quotationConvention ?? "Unavailable"}</dd>
-          <dt>Quotation basis</dt><dd>{evidence.priceBasis ?? "Unavailable"}</dd>
+          <dt>Provider quotation</dt><dd className="font-mono">{bondDecimalText(evidence.quotation)} · {evidence.quotationConvention ?? VALUE_STATE_LABELS.unavailable}</dd>
+          <dt>Quotation basis</dt><dd>{evidence.priceBasis ?? VALUE_STATE_LABELS.unavailable}</dd>
           <dt>Accrued interest (total)</dt><dd className="font-mono">{bondDecimalText(evidence.accruedInterest)}</dd>
           <dt>Clean consideration</dt><dd className="font-mono">{bondDecimalText(evidence.cleanConsideration)}</dd>
           <dt>Dirty consideration</dt><dd className="font-mono">{bondDecimalText(evidence.dirtyConsideration)}</dd>

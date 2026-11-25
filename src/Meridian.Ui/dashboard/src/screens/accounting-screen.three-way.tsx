@@ -9,11 +9,12 @@ import type { AccountingIntegrationScope, ThreeWayReconciliation } from "@/types
 import { IntegrationScopePicker, integrationError, scopeIdentity } from "./accounting-integration.scope";
 import { ThreeWayAdjustmentProposalPanel } from "./accounting-screen.three-way-adjustment";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const comparisonColumns: DenseDataTableColumn<ThreeWayReconciliation["checks"][number]>[] = [
   { id: "measure", label: "Measure", rowHeader: true, render: check => check.measure },
   { id: "instrument", label: "Instrument", render: check => check.symbol ?? "Cash" },
-  { id: "left", label: "Left source / amount", render: check => <span className="font-mono">{check.leftSource}: {check.leftAmount ?? "Unavailable"}</span> },
-  { id: "right", label: "Right source / amount", render: check => <span className="font-mono">{check.rightSource}: {check.rightAmount ?? "Unavailable"}</span> },
+  { id: "left", label: "Left source / amount", render: check => <span className="font-mono">{check.leftSource}: {check.leftAmount ?? VALUE_STATE_LABELS.unavailable}</span> },
+  { id: "right", label: "Right source / amount", render: check => <span className="font-mono">{check.rightSource}: {check.rightAmount ?? VALUE_STATE_LABELS.unavailable}</span> },
   { id: "tolerance", label: "Tolerance", numeric: true, render: check => <span className="font-mono">{check.tolerance}</span> },
   { id: "status", label: "Status / explanation", render: check => <>{check.status} · {check.explanation}</> }
 ];
@@ -67,15 +68,15 @@ function ThreeWayCommands({ scope }: { scope: AccountingIntegrationScope }) {
       <div className="grid gap-3 lg:grid-cols-3">
         {result.sources.map(source => <div key={source.source} className="min-w-0 rounded border border-border p-3 text-xs">
           <p className="font-semibold">{source.source} <span className="font-normal text-muted-foreground">· {provenanceLabel(source.dataProvenanceToken)}</span></p>
-          <dl className="mt-2 space-y-1"><div><dt>Cash ({result.scope.currency})</dt><dd className="font-mono">{source.cash ?? "Unavailable"}</dd></div>
+          <dl className="mt-2 space-y-1"><div><dt>Cash ({result.scope.currency})</dt><dd className="font-mono">{source.cash ?? VALUE_STATE_LABELS.unavailable}</dd></div>
             <div><dt>Source time</dt><dd>{source.asOfUtc}</dd></div>
             <div><dt>Age at cutoff</dt><dd>{sourceAge(source.asOfUtc, result.cutoffUtc)}</dd></div>
-            <div><dt>Cost basis convention</dt><dd>{source.costBasisConvention || "Unavailable"}</dd></div></dl>
+            <div><dt>Cost basis convention</dt><dd>{source.costBasisConvention || VALUE_STATE_LABELS.unavailable}</dd></div></dl>
           <p className="mt-2 font-medium">{source.coverageFailures.length ? "Coverage blocked" : "Source coverage retained"}</p>
           {source.coverageFailures.length ? <ul className="mt-1 list-disc pl-4 text-warning">{source.coverageFailures.map((failure, index) => <li key={index}>{failure}</li>)}</ul> : null}
           <details className="mt-2"><summary className="cursor-pointer">Source evidence and positions</summary>
             <p className="mt-2 break-all font-mono">{source.evidenceReference}</p>
-            {source.positions.map(position => <p key={position.securityId} className="mt-1 font-mono">{position.symbol}: quantity {position.quantity}; basis {position.costBasis ?? "Unavailable"}</p>)}
+            {source.positions.map(position => <p key={position.securityId} className="mt-1 font-mono">{position.symbol}: quantity {position.quantity}; basis {position.costBasis ?? VALUE_STATE_LABELS.unavailable}</p>)}
           </details>
         </div>)}
       </div>

@@ -11,6 +11,6 @@ describe("formatAccountingDate", () => {
 
   it("keeps a real time as a timestamp and says when nothing is recorded", () => {
     expect(formatAccountingDate("2026-06-30T17:00:00Z")).toMatch(/17:00/);
-    expect(formatAccountingDate(null)).toBe("Not recorded");
+    expect(formatAccountingDate(null)).toBe("Not available");
   });
 });

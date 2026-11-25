@@ -116,6 +116,7 @@ import { applyCrossScreenCounts, countProviderHealth, formatProviderHealth, sele
 import { useSharedCrossScreenCounts } from "@/lib/cross-screen-counts-context";
 import { statusPanelClass, statusTextClass } from "@/design-system/status-styles";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface DataScreenProps {
   data: DataWorkspaceResponse | null;
   session?: SessionInfo | null;
@@ -860,7 +861,7 @@ function DataUploadIntakePanel({
               <TableWorkbench<{ id: string; values: { value: string }[] }> workbenchId="data-upload-preview" exportLabel="Export preview CSV" completePopulation sourceKey={`${state.selectedTemplateId}:${state.retainedPath ?? "preview"}`}
                 sourceDescription="All filtered preview records in this response only; this is not the full uploaded file."
                 columns={state.previewHeaders.map((header, index) => ({ id: `${index}:${header}`, label: header,
-                  render: (row) => row.values[index]?.value || "—", exportValue: (row) => row.values[index]?.value ?? "" }))}
+                  render: (row) => row.values[index]?.value || VALUE_STATE_LABELS.unavailable, exportValue: (row) => row.values[index]?.value ?? "" }))}
                 rows={state.previewRows} getRowId={(row) => row.id} getSearchText={(row) => row.values.map((cell) => cell.value).join(" ")}
                 ariaLabel="Upload preview rows" emptyText="No preview rows." maxVisibleRows={null} />
             </div>
@@ -969,7 +970,7 @@ function DataUploadIntakePanel({
                         <TableWorkbench<{ id: string; values: { value: string }[] }> workbenchId="data-workbook-preview" exportLabel="Export preview CSV" completePopulation sourceKey={sheet.id}
                           sourceDescription="All filtered records in this sheet preview response only; this is not the full uploaded workbook."
                           columns={sheet.previewHeaders.map((header, index) => ({ id: `${index}:${header}`, label: header,
-                            render: (row) => row.values[index]?.value || "—", exportValue: (row) => row.values[index]?.value ?? "" }))}
+                            render: (row) => row.values[index]?.value || VALUE_STATE_LABELS.unavailable, exportValue: (row) => row.values[index]?.value ?? "" }))}
                           rows={sheet.previewRows} getRowId={(row) => row.id} getSearchText={(row) => row.values.map((cell) => cell.value).join(" ")}
                           ariaLabel={`${sheet.sheetName} preview rows`} emptyText="No sheet preview rows." maxVisibleRows={null} />
                       </div>

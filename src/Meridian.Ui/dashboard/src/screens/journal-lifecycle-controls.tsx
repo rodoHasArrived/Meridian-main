@@ -5,6 +5,7 @@ import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import type { ManualJournalEntryWorkbenchViewModel } from "./accounting-screen.view-model";
 import type { JournalEntryLifecycleAction } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const consequential = new Set<JournalEntryLifecycleAction>(["Approve", "Post", "Reverse", "Rebook", "LockAfterClose"]);
 const reasonRequired = new Set<JournalEntryLifecycleAction>(["Reverse", "LockAfterClose"]);
 
@@ -43,7 +44,7 @@ export function JournalLifecycleControls({ view }: { view: ManualJournalEntryWor
           { id: "before", label: "Submitted snapshot", render: (change) => <span className="block whitespace-pre-wrap break-words">{change.before}</span> },
           { id: "after", label: "Latest retained", render: (change) => <span className="block whitespace-pre-wrap break-words">{change.after}</span> }
         ]} /></div> : null}
-      <p className="mt-2 text-sm font-medium">Retained decision notes</p><p className="whitespace-pre-wrap break-words text-sm">{view.lifecycleConflict.notes || "Not recorded"}</p>
+      <p className="mt-2 text-sm font-medium">Retained decision notes</p><p className="whitespace-pre-wrap break-words text-sm">{view.lifecycleConflict.notes || VALUE_STATE_LABELS.unavailable}</p>
       {view.lifecycleConflict.reviewedLatest ? <p role="status" className="mt-2 text-sm">Latest journal loaded. Validate again and make a fresh decision; the submitted snapshot and exact notes remain in this comparison.</p> : null}
       <div className="mt-3 flex flex-wrap gap-2"><Button size="sm" disabled={!view.lifecycleConflict.latest || view.lifecycleConflict.loading || view.lifecycleConflict.reviewedLatest}
         onClick={() => { close(); view.reviewLatestLifecycleDraft?.(); }}>Review latest</Button>
@@ -68,10 +69,10 @@ export function JournalLifecycleControls({ view }: { view: ManualJournalEntryWor
         </DialogHeader>
         <dl className="grid grid-cols-2 gap-2 text-sm">
           <dt>Journal</dt><dd className="break-all font-mono">{view.draft.journalEntryId} · v{view.draft.version}</dd>
-          <dt>Entity</dt><dd>{view.draft.entityId || "Not recorded"}</dd>
-          <dt>Book</dt><dd>{view.draft.ledgerBookId || "Not recorded"}</dd>
-          <dt>Period</dt><dd>{view.draft.periodId || "Not recorded"}</dd>
-          <dt>Currency</dt><dd>{view.draft.currency || "Not recorded"}</dd>
+          <dt>Entity</dt><dd>{view.draft.entityId || VALUE_STATE_LABELS.unavailable}</dd>
+          <dt>Book</dt><dd>{view.draft.ledgerBookId || VALUE_STATE_LABELS.unavailable}</dd>
+          <dt>Period</dt><dd>{view.draft.periodId || VALUE_STATE_LABELS.unavailable}</dd>
+          <dt>Currency</dt><dd>{view.draft.currency || VALUE_STATE_LABELS.unavailable}</dd>
         </dl>
         <p className="mt-3 text-sm">{review?.action === "Reverse" || review?.action === "Rebook"
           ? "This creates a separate correction draft. It does not change the original posted lines. The figures below describe the original journal; the correction must be reviewed before posting."

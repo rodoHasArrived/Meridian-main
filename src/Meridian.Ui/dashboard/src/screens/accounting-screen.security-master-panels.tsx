@@ -20,6 +20,7 @@ import type {
   TradingParametersViewState
 } from "@/screens/accounting-screen.view-model";
 
+import { isUnavailableLabel } from "@/lib/format";
 const corporateActionColumns: DenseDataTableColumn<CorporateActionRowViewModel>[] = [
   {
     id: "eventType",
@@ -430,7 +431,7 @@ export function SecurityOpenLotReadModelPanel({
             </CardTitle>
             <CardDescription className="mt-2">
               {view.description}
-              {view.asOfLabel !== "—" ? <> As of {view.asOfLabel}.</> : null}
+              {!isUnavailableLabel(view.asOfLabel) ? <> As of {view.asOfLabel}.</> : null}
             </CardDescription>
           </div>
           <div className="min-w-0 lg:max-w-[28rem]">
@@ -678,7 +679,7 @@ export function TradingParametersPanel({ view }: { view: TradingParametersViewSt
         <CardDescription>
           Lot size, tick size, margin, and circuit-breaker constraints
           {view.securityId ? <> for <span className="font-mono">{view.securityId}</span></> : null}
-          {view.asOfLabel !== "—" ? <> as of {view.asOfLabel}</> : null}.
+          {!isUnavailableLabel(view.asOfLabel) ? <> as of {view.asOfLabel}</> : null}.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">

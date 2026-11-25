@@ -86,7 +86,7 @@ describe("shared case inspector", () => {
     const comparison = within(screen.getByRole("region", { name: "Comparison" }));
     for (const label of ["Expected", "Actual", "Residual"]) {
       const fact = comparison.getByText(label, { selector: "dt" }).parentElement!;
-      expect(fact).toHaveTextContent("Unavailable");
+      expect(fact).toHaveTextContent("Not available");
     }
     expect(comparison.getAllByText("The source amount exceeds the precision of this response. An exact amount is unavailable.").length).toBeGreaterThanOrEqual(2);
     expect(comparison.queryByText("9,007,199,254,740,992.00 USD")).not.toBeInTheDocument();
@@ -146,7 +146,7 @@ describe("shared case inspector", () => {
     const table = within(comparison.getByRole("table", { name: "Retained residual components" }));
     const [money, quantity] = table.getAllByRole("row").slice(1);
     expect(within(money).getByRole("rowheader")).toHaveTextContent("ValueEUR");
-    expect(within(money).getAllByText("Unavailable")).toHaveLength(2);
+    expect(within(money).getAllByText("Not available")).toHaveLength(2);
     expect(within(quantity).getByRole("rowheader")).toHaveTextContent("Quantityunits");
     expect(within(quantity).getByText("+2")).toBeVisible();
     expect(comparison.queryByRole("heading", { name: "Disagreement" })).not.toBeInTheDocument();
@@ -376,7 +376,7 @@ describe("shared case inspector", () => {
 
   it("reports only actual changes, preserving zero and absent values", () => {
     expect(caseChanges(record, { ...record, variance: 0, measures: [{ ...record.measures![0], variance: 0 }], assignedTo: null })).toEqual([
-      { label: "Owner", before: "ops", after: "Not recorded" }, { label: "Variance", before: "500", after: "0" }
+      { label: "Owner", before: "ops", after: "Not available" }, { label: "Variance", before: "500", after: "0" }
     ]);
   });
 });

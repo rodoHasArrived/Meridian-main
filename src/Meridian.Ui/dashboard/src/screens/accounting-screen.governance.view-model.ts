@@ -92,7 +92,7 @@ import type {
   RuleDryRunResult,
   GeneratedPostingLine,
 } from "@/types";
-import { formatCount as formatCountValue, formatCurrencyAmount, sharedCurrency } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrencyAmount, sharedCurrency, VALUE_STATE_LABELS } from "@/lib/format";
 
 const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
 interface AccountingTenantAdministrationProfileDraft {
@@ -2362,7 +2362,7 @@ export function useAccountingConfigurationViewModel(
         : productionReadinessLoading
           ? "Assessing"
           : !productionReadiness || productionReadinessError
-            ? "Unavailable"
+            ? VALUE_STATE_LABELS.unavailable
             : formatProductionReadinessStatus(productionReadiness.status);
     const activationReadinessDetail = currentVersionIsActive
       ? pendingDraftEditorCount > 0
@@ -3152,7 +3152,7 @@ function buildAccountingProductionReadinessViewModel(
   if (!readiness) {
     return {
       title: "Accounting production readiness",
-      statusLabel: loading ? "Assessing" : "Unavailable",
+      statusLabel: loading ? "Assessing" : VALUE_STATE_LABELS.unavailable,
       scoreLabel: loading ? "..." : "No score",
       generatedAtLabel: loading ? "Refreshing assessment" : "No readiness assessment loaded.",
       scopeLabel: workspace?.ledgerBookId

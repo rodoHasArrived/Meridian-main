@@ -23,7 +23,7 @@ import {
   type StatementRunValidation,
   type StatementValidationIssue
 } from "@/types/statement-run-detail.types";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type StatementRunDetailTone = "default" | "success" | "warning" | "danger";
 
@@ -92,7 +92,7 @@ export function buildStatementRunValidationViewModel(
       rows: [],
       blocked: false,
       blockedNotice: null,
-      countLabel: "—",
+      countLabel: VALUE_STATE_LABELS.unavailable,
       emptyState: "Validation has not loaded for this run."
     };
   }
@@ -140,7 +140,7 @@ export function buildStatementRunBreaksViewModel(
     return {
       loaded: false,
       rows: [],
-      countLabel: "—",
+      countLabel: VALUE_STATE_LABELS.unavailable,
       breachedCount: 0,
       emptyState: "Breaks have not loaded for this run."
     };

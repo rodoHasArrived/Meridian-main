@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { BackfillAttribution } from "@/screens/data-screen.backfill-attribution";
 import { loadEffectiveBackfillOrder, type EffectiveBackfillProvider } from "@/screens/data-screen.backfill-routing";
 import { apiGetJson, apiPostJson, apiPutJson } from "@/lib/api";
-import { formatDateTime } from "@/lib/format";
+import { formatDateTime, VALUE_STATE_LABELS } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -104,7 +104,7 @@ function PreferredProviders({ providers, order, onChange }: {
         return <li key={id}>
           <div className="flex flex-wrap items-center gap-2 text-sm">
             <span className="min-w-24 font-medium">{label}</span>
-            {!provider ? <span className="text-xs text-muted-foreground">Unavailable</span> : null}
+            {!provider ? <span className="text-xs text-muted-foreground">{VALUE_STATE_LABELS.unavailable}</span> : null}
             <Button type="button" size="sm" variant="ghost" disabled={index === 0} aria-label={`Move ${label} earlier`}
               onClick={() => move(index, index - 1)}>Earlier</Button>
             <Button type="button" size="sm" variant="ghost" disabled={index === order.length - 1} aria-label={`Move ${label} later`}

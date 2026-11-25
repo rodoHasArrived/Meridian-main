@@ -16,6 +16,7 @@ import type {
 } from "./accounting-screen.view-model";
 import { usesTrackedCaps } from "@/design-system/label-case";
 
+import { isUnavailableLabel } from "@/lib/format";
 const reconciliationQueueToneClass: Record<ReconciliationQueueRunTone, string> = {
   muted: "text-muted-foreground",
   warning: "text-warning",
@@ -60,7 +61,7 @@ export function TradingParametersPanel({ view }: { view: TradingParametersViewSt
         <CardDescription>
           Lot size, tick size, margin, and circuit-breaker constraints
           {view.securityId ? <> for <span className="font-mono">{view.securityId}</span></> : null}
-          {view.asOfLabel !== "—" ? <> as of {view.asOfLabel}</> : null}.
+          {!isUnavailableLabel(view.asOfLabel) ? <> as of {view.asOfLabel}</> : null}.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-2">

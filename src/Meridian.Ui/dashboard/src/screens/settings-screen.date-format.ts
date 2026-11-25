@@ -1,8 +1,8 @@
-import { formatTimestamp } from "@/lib/format";
+import { formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 
 export function formatSettingsMinute(
   value: string | Date | null | undefined,
-  unavailableLabel = "Unavailable"
+  unavailableLabel: string = VALUE_STATE_LABELS.unavailable
 ): string {
   if (!value) {
     return unavailableLabel;

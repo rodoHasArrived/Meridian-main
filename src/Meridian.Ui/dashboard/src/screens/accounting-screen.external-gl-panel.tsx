@@ -1,6 +1,6 @@
 // External GL / accounting-system reconciliation panel, extracted from accounting-screen.tsx.
 import { BookCheck, RefreshCcw } from "lucide-react";
-import { formatCurrency as formatCurrencyAmount, formatUnknownCurrencyAmount, formatUtcDate, formatTimestamp } from "@/lib/format";
+import { formatCurrency as formatCurrencyAmount, formatUnknownCurrencyAmount, formatUtcDate, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 import { DesignSystemStatus } from "@/design-system/status";
 import { Badge } from "@/components/ui/badge";
@@ -324,7 +324,7 @@ export function AccountingSystemReconciliationPanel({
                     { id: "ledger", label: "Ledger", render: (row) => <><div>{row.accountName}</div><div className="text-xs text-muted-foreground">Meridian ledger · {row.accountCode}</div></>, exportValue: (row) => row.accountCode },
                     { id: "ledger-debit", label: "Ledger debit", align: "right", render: (row) => formatGlAmount(row.meridianDebit, row.currency), exportValue: (row) => row.meridianDebit },
                     { id: "ledger-credit", label: "Ledger credit", align: "right", render: (row) => formatGlAmount(row.meridianCredit, row.currency), exportValue: (row) => row.meridianCredit },
-                    { id: "currency", label: "Currency", render: (row) => row.currency || "Unavailable", exportValue: (row) => row.currency },
+                    { id: "currency", label: "Currency", render: (row) => row.currency || VALUE_STATE_LABELS.unavailable, exportValue: (row) => row.currency },
                     { id: "status", label: "Status", render: (row) => <DesignSystemStatus status={row.status === "MissingMeridian" ? "blocked" : row.status}>{presentExternalGlState(row.status)}</DesignSystemStatus>, exportValue: (row) => row.status }
                   ]}
                 />
@@ -541,11 +541,11 @@ function ExternalGlExportPackageTechnicalDetails({
         </div>
         <div>
           <dt className="font-semibold text-foreground">Mapping profile</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.mappingProfileId ?? "Not retained"}</dd>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.mappingProfileId ?? VALUE_STATE_LABELS.unavailable}</dd>
         </div>
         <div>
           <dt className="font-semibold text-foreground">Reconciliation</dt>
-          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.reconciliationId ?? "Not retained"}</dd>
+          <dd className="mt-1 break-all font-mono text-muted-foreground">{exportPackage.reconciliationId ?? VALUE_STATE_LABELS.unavailable}</dd>
         </div>
         {exportManifest ? (
           <>

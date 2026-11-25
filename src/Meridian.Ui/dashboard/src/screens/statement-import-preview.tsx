@@ -1,4 +1,4 @@
-import { formatNumber } from "@/lib/format";
+import { formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -111,7 +111,7 @@ function StatementColumnMappingTable({ preview }: { preview: StatementImportPrev
       <DenseDataTable
           columns={[
             { id: "column-1", label: "Source column", className: "px-2 py-1.5 font-mono", render: (mapping) => <>{mapping.sourceColumn}</> },
-            { id: "column-2", label: "Canonical field", className: "px-2 py-1.5 font-mono", render: (mapping) => <>{mapping.canonicalField ?? "—"}</> },
+            { id: "column-2", label: "Canonical field", className: "px-2 py-1.5 font-mono", render: (mapping) => <>{mapping.canonicalField ?? VALUE_STATE_LABELS.unavailable}</> },
             { id: "column-3", label: "Confidence", className: "px-2 py-1.5", render: (mapping) => <>
                 <Badge
                   variant={statementColumnConfidenceBadgeVariant(mapping.confidence)}

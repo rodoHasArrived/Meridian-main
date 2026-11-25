@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { getProviderCapabilityMatrix, getProviderDeclaredCapabilities } from "@/lib/api";
 import type { DeclaredProviderCapabilities } from "@/lib/api/provider-management.api";
-import { formatRelativeTime } from "@/lib/format";
+import { formatRelativeTime, VALUE_STATE_LABELS } from "@/lib/format";
 import { describeApiError } from "@/lib/api-errors";
 import type {
   ProviderCapabilityMatrixResponse,
@@ -14,7 +14,7 @@ export type CapabilityMatrixFetcher = typeof getProviderCapabilityMatrix;
 export interface CapabilityMatrixCellModel {
   instrumentType: string;
   supported: boolean;
-  /** Compact capability marks for the cell, e.g. "S·B·C"; "—" when unsupported. */
+  /** Compact capability marks for the cell, e.g. "S·B·C"; VALUE_STATE_LABELS.unavailable when unsupported. */
   marks: string;
   /** Full-text description for tooltips and screen readers. */
   description: string;
@@ -67,7 +67,7 @@ export function buildCapabilityMatrixModel(response: ProviderCapabilityMatrixRes
       return {
         instrumentType: cell.instrumentType,
         supported: cell.supported,
-        marks: cell.supported && active.length > 0 ? active.map((mark) => mark.code).join("·") : "—",
+        marks: cell.supported && active.length > 0 ? active.map((mark) => mark.code).join("·") : VALUE_STATE_LABELS.unavailable,
         description: cell.supported
           ? active.length > 0
             ? `${provider.providerId} supports ${cell.instrumentType}: ${active.map((mark) => mark.label).join(", ")}`

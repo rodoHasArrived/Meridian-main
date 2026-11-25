@@ -1653,7 +1653,7 @@ describe("finance standard pages", () => {
   ])("does not treat an absent approval feed as zero (%j)", async ({ closePlans }) => {
     await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
 
-    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsNot supplied");
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsNot available");
     expect(screen.getByText("No approval feed supplied")).toBeInTheDocument();
     expect(screen.getByText("Approval queue not supplied")).toBeInTheDocument();
     expect(screen.queryByRole("list", { name: "Pending approvals" })).not.toBeInTheDocument();
@@ -1662,7 +1662,7 @@ describe("finance standard pages", () => {
   it("distinguishes a malformed close-plan feed from an absent or empty approval queue", async () => {
     await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans: "unavailable" } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
 
-    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsUnavailable");
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsNot available");
     expect(screen.getByText("Accounting workspace (unavailable)")).toBeInTheDocument();
     expect(screen.getByText("Approval queue incomplete")).toBeInTheDocument();
     expect(screen.getByText(/close-plan approval feed is malformed/)).toBeInTheDocument();
@@ -1717,7 +1717,7 @@ describe("finance standard pages", () => {
   it("does not report zero when every supplied close plan is missing its approval feed", async () => {
     await renderPage(<ApprovalInboxScreen data={{ ...data, closePlans: [{ periodId: "2026-06" }] } as AccountingWorkspaceResponse} />, "/accounting/approvals/inbox");
 
-    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsNot supplied");
+    expect(screen.getByText("Pending approvals", { selector: "div" }).parentElement).toHaveTextContent("Pending approvalsNot available");
     expect(screen.getByText("Approval queue incomplete")).toBeInTheDocument();
     expect(screen.queryByText("No pending approvals in the supplied accounting scope")).not.toBeInTheDocument();
   });

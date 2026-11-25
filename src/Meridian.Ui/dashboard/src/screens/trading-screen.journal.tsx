@@ -1,14 +1,14 @@
 import { OrderLedgerPostings } from "@/components/meridian/order-ledger-postings";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { getJournal, getJournalOrder, getJournalSummary, type JournalOrder, type JournalSummary } from "@/lib/api/execution-workflows.api";
-import { formatCurrency, formatTimestamp } from "@/lib/format";
+import { formatCurrency, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 import { Button } from "@/components/ui/button";
 import { PanelReload } from "@/components/ui/panel-reload";
 import { Input } from "@/components/ui/input";
 import { Select } from "@/components/ui/select";
 import { TableWorkbench } from "@/components/meridian/table-workbench";
 
-const money = (value: number | null | undefined) => value == null ? "Unavailable" : formatCurrency(value);
+const money = (value: number | null | undefined) => value == null ? VALUE_STATE_LABELS.unavailable : formatCurrency(value);
 type OrderSelection = { orderId: string; attemptId?: string; fromLink?: boolean };
 const matchesSelection = (order: JournalOrder, selected: OrderSelection) =>
   order.orderId === selected.orderId && (selected.attemptId === undefined || order.attemptId === selected.attemptId);
@@ -86,7 +86,7 @@ export function ExecutionJournalPanel({ accountId }: { accountId?: string | null
           { id: "side", label: "Side", render: (order) => order.side, exportValue: (order) => order.side },
           { id: "status", label: "Status", render: (order) => order.status, exportValue: (order) => order.status },
           { id: "quantity", label: "Filled / requested", numeric: true, render: (order) => `${order.filledQuantity} / ${order.quantity}`, exportValue: (order) => `${order.filledQuantity} / ${order.quantity}` },
-          { id: "strategy", label: "Strategy / tag", render: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? "—"}`, exportValue: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? "—"}` },
+          { id: "strategy", label: "Strategy / tag", render: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? VALUE_STATE_LABELS.unavailable}`, exportValue: (order) => `${order.strategyId ?? "Unattributed"} / ${order.tag ?? VALUE_STATE_LABELS.unavailable}` },
           { id: "updated", label: "Updated", render: (order) => formatTimestamp(new Date(order.updatedAt)), exportValue: (order) => order.updatedAt }
         ]}
       />

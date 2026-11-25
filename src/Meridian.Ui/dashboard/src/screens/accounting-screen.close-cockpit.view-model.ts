@@ -97,7 +97,7 @@ import type {
   UpsertClosePeriodPlanConfigurationRequest,
   AccountingCertificationState,
 } from "@/types";
-import { formatCount as formatCountValue, formatCountOfTotal, formatCurrencyWithCode } from "@/lib/format";
+import { formatCount as formatCountValue, formatCountOfTotal, formatCurrencyWithCode, VALUE_STATE_LABELS } from "@/lib/format";
 import { buildAccountingReportPackageRequest, collectAccountingCloseEvidenceLinks } from "./accounting-screen.close-cockpit.report-package-request";
 export { buildAccountingReportPackageRequest, type AccountingReportPackageRequestResult } from "./accounting-screen.close-cockpit.report-package-request";
 
@@ -363,7 +363,7 @@ export function useAccountingCloseReportPackageViewModel(
     if (closePlan.closingEntriesGate?.state !== "Required") {
       const stateLabel = closePlan.closingEntriesGate
         ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
-        : "Not supplied";
+        : VALUE_STATE_LABELS.unavailable;
       setQueueClosingEntriesStatusText(`Closing entries can only be queued from Required state; current state is ${stateLabel}.`);
       setQueueClosingEntriesStatusTone("danger");
       return;
@@ -424,7 +424,7 @@ export function useAccountingCloseReportPackageViewModel(
     if (!isClosePostingGateReadyForHardLock(closePlan.closingEntriesGate ?? null)) {
       const stateLabel = closePlan.closingEntriesGate
         ? formatClosePostingGateState(closePlan.closingEntriesGate.state).label
-        : "Not supplied";
+        : VALUE_STATE_LABELS.unavailable;
       setLockClosePeriodStatusText(`Closing entries are not ready for period lock; current state is ${stateLabel}.`);
       setLockClosePeriodStatusTone("danger");
       return;
@@ -2154,6 +2154,7 @@ function formatClosePostingGateState(state: ClosePostingGateState): { label: str
       return { label: "Blocked", tone: "danger" };
     case "Unavailable":
     default:
+      // placeholder-vocabulary-ignore: the display name of the server gate state "Unavailable".
       return { label: "Unavailable", tone: "danger" };
   }
 }

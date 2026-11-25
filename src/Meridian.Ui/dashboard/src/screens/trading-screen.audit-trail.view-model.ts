@@ -1,5 +1,5 @@
 import { executionEventLabel, formatEnumLabel } from "@/lib/display-labels";
-import { formatTimestamp } from "@/lib/format";
+import { formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 /**
  * Presentation logic for the execution audit trail panel.
  *
@@ -47,7 +47,7 @@ export function buildAuditTrailPanelViewModel(
   if (!result) {
     return {
       rows: [],
-      countLabel: "—",
+      countLabel: VALUE_STATE_LABELS.unavailable,
       truncated: false,
       truncationNotice: null,
       asOfLabel: "Not loaded",
@@ -82,7 +82,7 @@ export function buildAuditTrailRow(entry: AuditTrailTimelineEntry): AuditTrailRo
     outcome: executionEventLabel(entry.outcome),
     outcomeTone,
     actor: entry.actor ?? "System",
-    context: context || entry.message || "—",
+    context: context || entry.message || VALUE_STATE_LABELS.unavailable,
     ledgerLabel: auditLedgerLabel(entry),
     ledgerTone: auditLedgerTone(entry),
     evidenceRoute: entry.evidenceRoute ?? null,

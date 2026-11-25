@@ -22,7 +22,8 @@ import { formatExactMagnitude, parseExactDecimal, type MoneyValue } from "@/lib/
 export type { MoneyValue } from "@/lib/exact-decimal";
 
 const FORMAT_LOCALE = "en-US";
-const DEFAULT_FALLBACK = "—";
+/** Rendered for a missing value: the same "Not available" as `VALUE_STATE_LABELS.unavailable`, never "—". */
+const DEFAULT_FALLBACK = "Not available";
 
 export type NullableNumber = number | null | undefined;
 
@@ -296,6 +297,10 @@ export interface CurrencyWithCodeFormatOptions {
  */
 export function formatCurrencyWithCode(value: number, currency: string | null | undefined, options: CurrencyWithCodeFormatOptions = {}): string {
   const { signed = false } = options;
+  if (!Number.isFinite(value)) {
+    // A missing amount reads "Not available", not "Not available EUR".
+    return DEFAULT_FALLBACK;
+  }
   const code = currency?.trim().toUpperCase() ?? "";
   const normalizedValue = value === 0 ? 0 : value;
   const prefix = signed && value > 0 && Number.isFinite(value) ? "+" : "";
@@ -489,12 +494,24 @@ export function formatMoney(value: MoneyValue, options: MoneyFormatOptions = {})
  */
 export const VALUE_STATE_LABELS = {
   /** Not loaded, not supplied, or not retained by the source. */
-  unavailable: "Not available",
+  unavailable: DEFAULT_FALLBACK,
   /** The figure has no meaning for this row (e.g. a basis the account is not on). */
   notApplicable: "n/a",
   /** The viewer is not permitted to read the figure. */
   restricted: "No access"
 } as const;
+
+/** Every spelling a missing value has had: the current "Not available" and the legacy "—" / "Unavailable". */
+const UNAVAILABLE_LABEL_SPELLINGS = new Set<string>([DEFAULT_FALLBACK, "—", "Unavailable"]);
+
+/**
+ * True when a display label says the value is missing (or the label is empty). Compare rendered labels
+ * with this rather than with a literal, so a check keeps working whichever spelling a producer uses.
+ */
+export function isUnavailableLabel(label: string | null | undefined): boolean {
+  const text = label?.trim();
+  return !text || UNAVAILABLE_LABEL_SPELLINGS.has(text);
+}
 
 export type FinancialValueState = "value" | "zero" | "unavailable" | "not-applicable" | "restricted";
 

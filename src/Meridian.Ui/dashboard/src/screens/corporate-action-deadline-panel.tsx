@@ -9,6 +9,7 @@ import type { CorporateActionCaseDeadlines, CorporateActionDeadlineHistory, Corp
 import { DenseDataTable } from "@/components/meridian/ui-kit-primitives";
 import { isApiError } from "@/lib/api-errors";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export const DEADLINE_CSV_HEADER = "seriesId,kind,sourceParty,date,at,timeZoneId,financialAccountId,custodyAccountId,evidenceReference,evidenceHash,rationale,supersedesEvidenceId,withdrawn,sourceText";
 type Command = { kind: "manual"; request: RecordCorporateActionDeadlineRequest } | { kind: "csv"; request: CorporateActionDeadlineImportRequest };
 const message = (error: unknown) => error instanceof Error ? error.message : "The deadline operation could not be completed.";
@@ -124,7 +125,7 @@ function DeadlineCaseEditor({ caseId, onChanged }: { caseId: string; onChanged: 
         <p className="font-medium">{CORPORATE_ACTION_DATE_KINDS[history.deadline.kind]?.label ?? history.deadline.kind} · {history.deadline.sourceParty} · {history.deadline.withdrawn ? "Withdrawn" : history.deadline.date ?? history.deadline.at} {history.deadline.timeZoneId}</p>
         <p>{history.isCurrent ? "Current series entry" : "Superseded evidence"} · Operator-recorded · {history.recordedBy} · {history.recordedAtUtc}</p>
         <p className="break-all font-mono">Evidence {history.evidenceId} · series {history.deadline.seriesId} · {history.evidenceReference} · claimed SHA-256 {history.evidenceHash ?? "unreported"}</p>
-        <p className="whitespace-pre-wrap">Original source text: {history.deadline.sourceText ?? "Not retained"}</p><p>{history.rationale}</p>
+        <p className="whitespace-pre-wrap">Original source text: {history.deadline.sourceText ?? VALUE_STATE_LABELS.unavailable}</p><p>{history.rationale}</p>
         <p>Financial account {history.deadline.financialAccountId ?? "unscoped"} · custody account {history.deadline.custodyAccountId ?? "unscoped"}</p>
         {history.isCurrent && !history.deadline.withdrawn ? <div className="mt-1 flex gap-2"><Button size="sm" variant="outline" disabled={!canDraft} onClick={() => seedHistory(history, false)}>Prepare correction</Button><Button size="sm" variant="outline" disabled={!canDraft} onClick={() => seedHistory(history, true)}>Prepare withdrawal</Button></div> : null}
       </li>)}</ul>}</details>

@@ -39,7 +39,7 @@ import {
   readPendingPaperIntent,
   unresolvedPaperIntentMessage
 } from "./trading-screen.pending-paper-intent";
-import { formatCurrency, formatDecimal, formatMoney as formatMoneyValue, formatPercent, formatQuantity as formatQuantityValue, pluralizeCount } from "@/lib/format";
+import { formatCurrency, formatDecimal, formatMoney as formatMoneyValue, formatPercent, formatQuantity as formatQuantityValue, pluralizeCount, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 import { buildExecutionAuditRow, type ExecutionAuditRow, type ExecutionEvidenceTone } from "./trading-screen.execution-audit-rows";
 import { normalizeFundAccountGuid } from "@/lib/fund-account-scope";
 import { readCancelAllPreview, type CancelAllPreview } from "./trading-screen.cancel-preview";
@@ -2017,7 +2017,7 @@ function buildPaperSessionReplayPanel(verification: PaperSessionReplayVerificati
       { label: "Compared fills", value: String(verification.comparedFillCount) },
       { label: "Compared orders", value: String(verification.comparedOrderCount) },
       { label: "Compared ledger entries", value: String(verification.comparedLedgerEntryCount) },
-      { label: "Verification audit", value: verification.verificationAuditId ?? "Unavailable" },
+      { label: "Verification audit", value: verification.verificationAuditId ?? VALUE_STATE_LABELS.unavailable },
       { label: "Last persisted fill", value: verification.lastPersistedFillAt ?? "N/A" },
       { label: "Last persisted order update", value: verification.lastPersistedOrderUpdateAt ?? "N/A" }
     ],
@@ -3633,11 +3633,11 @@ export function buildOrderPreview({ form, positions, risk }: BuildOrderPreviewOp
     : [];
 
   const riskNote = buildOrderPreviewRiskNote(risk);
-  const referencePriceLabel = referencePrice === null ? "—" : formatPrice(referencePrice);
-  const notionalLabel = notional === null ? "—" : formatMoneyValue(notional, { context: "trading", decimals: 2 });
+  const referencePriceLabel = referencePrice === null ? VALUE_STATE_LABELS.unavailable : formatPrice(referencePrice);
+  const notionalLabel = notional === null ? VALUE_STATE_LABELS.unavailable : formatMoneyValue(notional, { context: "trading", decimals: 2 });
   const resultingPositionLabel = available
     ? describeResultingPosition(resultingSignedQuantity, symbol)
-    : "—";
+    : VALUE_STATE_LABELS.unavailable;
   const summaryLine = available
     ? buildOrderPreviewSummary({ symbol, side: form.side, type: form.type, quantity, referencePrice, priceSource })
     : "Order preview will appear once a symbol and quantity are entered.";
@@ -3913,7 +3913,7 @@ function parseLooseNumber(value: string | null | undefined): number | null {
     return null;
   }
   const stripped = String(value).replace(/[\s,$%]/g, "");
-  if (!stripped || stripped === "—" || stripped === "-") {
+  if (isUnavailableLabel(stripped) || stripped === "-") {
     return null;
   }
   const parsed = Number(stripped);

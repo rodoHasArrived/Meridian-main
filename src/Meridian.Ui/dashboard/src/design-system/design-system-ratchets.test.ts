@@ -23,6 +23,20 @@ function baselineFixture(value: unknown = counts()) {
 }
 
 describe("design-system ratchets", () => {
+  it("counts placeholder literals but not server-status comparisons, case labels or marked enum values", () => {
+    const count = RATCHETS.placeholderVocabulary.count;
+    expect(count('const label = value ?? "—";')).toBe(1);
+    expect(count('return { amount: "Unavailable", unit: null };')).toBe(1);
+    expect(count('detail: owner || "Not recorded"')).toBe(1);
+    expect(count('if (status === "Unavailable") return;')).toBe(0);
+    expect(count('switch (state) { case "Unavailable": break; }')).toBe(0);
+    expect(count('status: "Unavailable", // placeholder-vocabulary-ignore: server enum')).toBe(0);
+    expect(count('// placeholder-vocabulary-ignore: server enum\nstatus: "Unavailable",')).toBe(0);
+    expect(count('const label = value ?? VALUE_STATE_LABELS.unavailable;')).toBe(0);
+    expect(count('<span className="text-xs">—</span>')).toBe(1);
+    expect(count('<span>{VALUE_STATE_LABELS.unavailable}</span>')).toBe(0);
+  });
+
   it("counts hand-styled native selects", () => {
     expect(RATCHETS.rawSelects.count("<Select id=\"a\"><option /></Select>")).toBe(0);
     expect(RATCHETS.rawSelects.count("<select\n  id=\"a\">")).toBe(1);

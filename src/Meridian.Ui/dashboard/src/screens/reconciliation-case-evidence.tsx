@@ -16,6 +16,7 @@ import { isStatementHandoffMarker } from "./reconciliation-casework-command";
 import { originalComparisonScope, sourceObservationAge, sourceRunChangeLabel } from "./reconciliation-source-observation";
 import "@/styles/reconciliation-workbench.css";
 import { caseMeasureAmount, caseResidual, formatReconciliationValue, reconciliationUnitLabel, reconciliationValueUnavailableReason, retainedMeasureResidual as retainedResidual } from "./reconciliation-case-values";
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export { caseQueueResidual } from "./reconciliation-case-values";
 
 const MEASURE_LABELS: Record<ReconciliationBreakMeasure["kind"], string> = {
@@ -25,7 +26,7 @@ const MEASURE_LABELS: Record<ReconciliationBreakMeasure["kind"], string> = {
 };
 
 function displayAmount(value: string | number | null, signed = false, unit?: string): string {
-  if (!parseExactDecimal(value)) return "Unavailable";
+  if (!parseExactDecimal(value)) return VALUE_STATE_LABELS.unavailable;
   return formatReconciliationValue(value, unit, signed);
 }
 
@@ -34,7 +35,7 @@ function measureUnit(unit: string, kind?: ReconciliationBreakMeasure["kind"]): s
 }
 
 function CaseFact({ label, children }: { label: string; children?: ReactNode }) {
-  return <div><dt>{label}</dt><dd>{children ?? "Unavailable"}</dd></div>;
+  return <div><dt>{label}</dt><dd>{children ?? VALUE_STATE_LABELS.unavailable}</dd></div>;
 }
 
 export function ReconciliationMatchCandidate({ item }: { item: ReconciliationBreakQueueItem }) {
@@ -60,7 +61,7 @@ function ResidualAmount({ label, unit, value, asOf, basis, kind }: {
   label: string; unit: string; value: string | number | null; asOf?: string | null; basis?: string; kind?: ReconciliationBreakMeasure["kind"];
 }) {
   const amount = parseExactDecimal(value);
-  if (!amount || reconciliationValueUnavailableReason(value)) return "Unavailable";
+  if (!amount || reconciliationValueUnavailableReason(value)) return VALUE_STATE_LABELS.unavailable;
   const displayValue = displayAmount(value, true, unit);
   const declared = unit?.trim();
   return <AmountPassportTrigger compact selection={{

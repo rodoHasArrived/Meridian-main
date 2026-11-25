@@ -731,7 +731,7 @@ describe("buildChainPreviewPanelViewModel", () => {
       statusLabel: "Open interest below minimum",
       ariaLabel: "Selected covered-call candidate: SPY 510.00 call expiring 2024-02-16"
     });
-    expect(panel.selectedDetail?.fields).toContainEqual({ label: "Implied volatility", value: "—" });
+    expect(panel.selectedDetail?.fields).toContainEqual({ label: "Implied volatility", value: "Not available" });
   });
 
   it("keeps loading, empty, and error copy in the view model", () => {

@@ -733,7 +733,7 @@ describe("buildPortfolioScreenViewModel", () => {
     expect(summary.statusTone).toBe("warning");
     expect(summary.cards[0]).toMatchObject({
       id: "selected-rank",
-      value: "—",
+      value: "Not available",
       tone: "warning"
     });
   });
@@ -943,7 +943,7 @@ describe("buildPortfolioScreenViewModel", () => {
     ]);
     const detail = Object.fromEntries(vm.selectedPosition!.fields.map((field) => [field.label, field.value]));
     expect(detail).toMatchObject({ Currency: "USD", "Market value": "$7,159.20 (Stale · no price date)", Weight: "19.0%", Exposure: "$7,159" });
-    expect(vm.positionRows.flatMap((row) => [row.marketValue, row.weight])).not.toContain("Unavailable");
+    expect(vm.positionRows.flatMap((row) => [row.marketValue, row.weight])).not.toContain("Not available");
   });
 
   it.each(["/portfolio", "/portfolio/brokerage-sync"])("keeps repeated totals on %s consistent for shorts and mixed currencies", (pathname) => {
@@ -996,21 +996,21 @@ describe("buildPortfolioScreenViewModel", () => {
       {
         id: "portfolio-total-exposure",
         label: "Total exposure",
-        value: "—",
+        value: "Not available",
         delta: "No holdings",
         tone: "default"
       },
       {
         id: "portfolio-unrealized-pnl",
         label: "Unrealized P&L",
-        value: "—",
+        value: "Not available",
         delta: "No holdings",
         tone: "default"
       },
       {
         id: "portfolio-cash",
         label: "Cash",
-        value: "—",
+        value: "Not available",
         delta: "Awaiting portfolio cash feed",
         tone: "warning"
       },
@@ -1037,8 +1037,8 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ portfolio: portfolioFromTrading(trading, strategy), trading, strategy, accounting });
 
     expect(vm.headerChips).toEqual([
-      { label: "Alpaca paper equity", value: "—" },
-      { label: "Alpaca paper cash", value: "—" },
+      { label: "Alpaca paper equity", value: "Not available" },
+      { label: "Alpaca paper cash", value: "Not available" },
       { label: "Open positions", value: "1" },
       { label: "Exposure", value: "$18,900" },
       { label: "Unrealized P&L", value: "+$90" },
@@ -1194,8 +1194,8 @@ describe("buildPortfolioScreenViewModel", () => {
     const vm = buildPortfolioScreenViewModel({ trading: null, strategy, accounting });
 
     expect(vm.headerChips).toEqual([
-      { label: "Alpaca paper equity", value: "—" },
-      { label: "Alpaca paper cash", value: "—" },
+      { label: "Alpaca paper equity", value: "Not available" },
+      { label: "Alpaca paper cash", value: "Not available" },
       { label: "Open positions", value: "Unavailable" },
       { label: "Exposure", value: "Unavailable" },
       { label: "Unrealized P&L", value: "Unavailable" },

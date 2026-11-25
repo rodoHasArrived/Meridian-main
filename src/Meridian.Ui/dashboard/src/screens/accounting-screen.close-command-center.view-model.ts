@@ -28,6 +28,7 @@ import type {
   OperationsWorkflowBlocker,
 } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface CloseCommandCenterRawBlocker {
   code: string;
   category: string;
@@ -223,8 +224,8 @@ export function buildCloseCommandCenterViewState({
     periodLabel: workflow?.periodId ?? "Current period",
     fundAccountLabel: workflow?.fundAccountId || multiAssetCoverage?.fundAccountId ? "Selected fund account" : "All accounts",
     technicalDetails: [
-      { label: "Fund account ID", value: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? "Not recorded" },
-      { label: "Workflow ID", value: workflow?.workflowId ?? "Not recorded" }
+      { label: "Fund account ID", value: workflow?.fundAccountId ?? multiAssetCoverage?.fundAccountId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Workflow ID", value: workflow?.workflowId ?? VALUE_STATE_LABELS.unavailable }
     ],
     summary: "Shared close readiness is unavailable. Select the full close scope and refresh before sign-off.",
     updatedLabel,
@@ -489,8 +490,8 @@ function buildSharedFinancialOperationsCommandCenterViewState(
     periodLabel: commandCenter.periodId ?? "Current period",
     fundAccountLabel: commandCenter.fundAccountId ? "Selected fund account" : commandCenter.fundProfileId ? "Selected fund" : "All accounts",
     technicalDetails: [
-      { label: "Fund account ID", value: commandCenter.fundAccountId ?? "Not recorded" },
-      { label: "Fund profile ID", value: commandCenter.fundProfileId ?? "Not recorded" },
+      { label: "Fund account ID", value: commandCenter.fundAccountId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Fund profile ID", value: commandCenter.fundProfileId ?? VALUE_STATE_LABELS.unavailable },
       { label: "Source summary", value: closeSupportDecision?.summary ?? commandCenter.summary }
     ],
     summary: errorText ? `${closeSupportDecision?.summary ?? commandCenter.summary} ${errorText}` : closeSupportDecision?.summary ?? commandCenter.summary,

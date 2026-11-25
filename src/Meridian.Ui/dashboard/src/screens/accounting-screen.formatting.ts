@@ -1,4 +1,4 @@
-import { formatNumber, pluralizeCount, formatTimestamp, formatUtcDate } from "@/lib/format";
+import { formatNumber, pluralizeCount, formatTimestamp, formatUtcDate, VALUE_STATE_LABELS } from "@/lib/format";
 
 export function formatCount(count: number, singular: string): string {
   return pluralizeCount(count, singular);
@@ -23,7 +23,7 @@ export function formatBytes(value: number): string {
 
 export function formatDateTimeLabel(value: string | null | undefined): string {
   if (!value) {
-    return "Not recorded";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   const date = new Date(value);
@@ -44,7 +44,7 @@ const MIDNIGHT_UTC = /^\d{4}-\d{2}-\d{2}T00:00(?::00(?:\.0+)?)?(?:Z|\+00:00)$/;
  */
 export function formatAccountingDate(value: string | null | undefined): string {
   if (!value) {
-    return "Not recorded";
+    return VALUE_STATE_LABELS.unavailable;
   }
   const trimmed = value.trim();
   if (DATE_ONLY.test(trimmed) || MIDNIGHT_UTC.test(trimmed)) {

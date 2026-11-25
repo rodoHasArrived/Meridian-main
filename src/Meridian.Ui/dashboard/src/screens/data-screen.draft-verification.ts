@@ -33,6 +33,7 @@ export function useProviderSetupDraftVerification() {
       if (active.current === controller) setResult(response);
     } catch {
       if (active.current === controller) {
+        // placeholder-vocabulary-ignore: "Unavailable" is the server verification status enum.
         setResult({ providerId: form.kind, status: "Unavailable",
           message: "The host could not verify this draft. For an owned account, use the credential editor in Settings." });
       }

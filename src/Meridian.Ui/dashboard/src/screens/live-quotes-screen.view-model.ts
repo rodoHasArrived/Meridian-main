@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useRef, useState, type FormEvent } from "react";
-import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatRelativeTime, formatTimestamp, pluralizeCount } from "@/lib/format";
+import { formatCount as formatCountValue, formatDecimal, formatFixed, formatNumber, formatRelativeTime, formatTimestamp, pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import type { ChartEvidence } from "@/components/charts/chart-evidence";
 import { useQuotesStream } from "@/hooks/use-quotes-stream";
 import { useRequestLifecycle, type RequestLifecycleStatus } from "@/hooks/use-request-lifecycle";
@@ -25,7 +25,7 @@ export const LIVE_QUOTES_POLL_INTERVAL_MS = 2000;
 export const LIVE_QUOTES_FRESHNESS_BUDGET_MS = 2 * LIVE_QUOTES_POLL_INTERVAL_MS;
 export const LIVE_QUOTES_TRADE_HISTORY_LIMIT = 200;
 export const LIVE_QUOTES_TRADE_TABLE_LIMIT = 25;
-export const LIVE_QUOTES_EMPTY_VALUE = "—";
+export const LIVE_QUOTES_EMPTY_VALUE = VALUE_STATE_LABELS.unavailable;
 export const LIVE_QUOTES_DEFAULT_SYMBOL_SET = ["AAPL", "MSFT", "SPY", "QQQ"];
 export const LIVE_QUOTES_PINNED_SET_STORAGE_KEY = "meridian.liveMarketData.pinnedSymbolSet.v1";
 export const LIVE_QUOTES_MAX_SYMBOL_SET_SIZE = 24;

@@ -1,5 +1,6 @@
 import type { StrategyRunRecord } from "@/types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export interface RunLeaderboardRow {
   id: string;
   strategyName: string;
@@ -33,8 +34,8 @@ export function buildRunLeaderboard(runs: readonly StrategyRunRecord[], limit = 
       id: run.id,
       strategyName: run.strategyName,
       sharpe: parseSharpe(run.sharpe),
-      sharpeText: run.sharpe?.trim() || "Unavailable",
-      pnlText: run.pnl?.trim() || "Unavailable",
+      sharpeText: run.sharpe?.trim() || VALUE_STATE_LABELS.unavailable,
+      pnlText: run.pnl?.trim() || VALUE_STATE_LABELS.unavailable,
       maxDrawdown: Number.isFinite(run.maxDrawdown) ? run.maxDrawdown ?? null : null,
       trendValues: values.length >= 2 ? values : null,
       href: `/strategy/promotions?runId=${encodeURIComponent(run.id)}`

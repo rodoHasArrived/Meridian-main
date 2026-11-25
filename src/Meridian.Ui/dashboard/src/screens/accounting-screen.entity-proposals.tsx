@@ -10,6 +10,7 @@ import type { EntityOperationScope, IntercompanyBreak, IntercompanyCounterpartCa
 import { EntityOperationTable, MutationFeedback, OperationError, OperationField, useEntityData, useEntityMutation } from "./accounting-screen.entity-operations.shared";
 import { CounterpartRepricing } from "./accounting-screen.entity-counterpart-repricing";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 function resolvedTarget(proposal: IntercompanyProposal) {
   return { bookId: proposal.resolvedTargetBookId ?? proposal.latestLink?.targetBookId ?? proposal.targetBookId,
     journalId: proposal.resolvedTargetJournalId ?? proposal.latestLink?.targetJournalId ?? proposal.targetJournalId };
@@ -62,8 +63,8 @@ export function EntityCounterpartProposals({ scope }: { scope: EntityOperationSc
         } },
         { id: "evidence", label: "Evidence", render: (proposal) => <TechnicalDetails label={`Provenance for ${proposal.source.transactionId}`}><dl className="space-y-2 break-all text-xs"><div><dt>Source journal</dt><dd>{proposal.source.sourceJournalId}</dd></div>
           <div><dt>Accounting arrangement</dt><dd>{proposal.source.accountingArrangementId}</dd></div><div><dt>Accounting mapping revision</dt><dd>{proposal.source.accountingArrangementRevisionId}</dd></div>
-          <div><dt>Canonical legal agreement</dt><dd>{proposal.source.intercompanyAgreementId || "Not retained"}</dd></div><div><dt>Approved legal agreement version</dt><dd>{proposal.source.intercompanyAgreementVersion && proposal.source.intercompanyAgreementVersion > 0 ? proposal.source.intercompanyAgreementVersion : "Not retained"}</dd></div>
-          <div><dt>Legal agreement payload hash</dt><dd>{proposal.source.intercompanyAgreementPayloadHash || "Not retained"}</dd></div><div><dt>Source digest</dt><dd>{proposal.sourceDigest}</dd></div>
+          <div><dt>Canonical legal agreement</dt><dd>{proposal.source.intercompanyAgreementId || VALUE_STATE_LABELS.unavailable}</dd></div><div><dt>Approved legal agreement version</dt><dd>{proposal.source.intercompanyAgreementVersion && proposal.source.intercompanyAgreementVersion > 0 ? proposal.source.intercompanyAgreementVersion : VALUE_STATE_LABELS.unavailable}</dd></div>
+          <div><dt>Legal agreement payload hash</dt><dd>{proposal.source.intercompanyAgreementPayloadHash || VALUE_STATE_LABELS.unavailable}</dd></div><div><dt>Source digest</dt><dd>{proposal.sourceDigest}</dd></div>
           <div><dt>Original delivered book</dt><dd>{proposal.targetBookId ?? "No original delivery receipt"}</dd></div><div><dt>Original delivered journal</dt><dd>{proposal.targetJournalId ?? "No original delivery receipt"}</dd></div>
           {proposal.latestLink ? <><div><dt>Resolved posted counterpart</dt><dd>{proposal.latestLink.targetBookId} · {proposal.latestLink.targetJournalId}</dd></div><div><dt>Resolution actor and time</dt><dd>{proposal.latestLink.actor} · {proposal.latestLink.recordedAt}</dd></div><div><dt>Resolution reason</dt><dd>{proposal.latestLink.reason}</dd></div>{proposal.latestLink.rejectedDraftId ? <div><dt>Rejected generated draft</dt><dd>{proposal.latestLink.rejectedDraftId} · version {proposal.latestLink.rejectedDraftVersion}</dd></div> : null}</> : null}
         </dl></TechnicalDetails> }

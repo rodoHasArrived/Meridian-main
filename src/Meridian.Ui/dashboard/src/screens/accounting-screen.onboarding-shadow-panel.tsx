@@ -14,6 +14,7 @@ import {
   type OnboardingOpeningSourceKind, type OnboardingParallelRunCertificate, type OnboardingPeriodSummary, type OnboardingWorkspace
 } from "@/types/accounting-onboarding";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const field = (data: FormData, name: string) => String(data.get(name) ?? "").trim();
 const list = (value: string) => value.split(/[,\n]/).map(item => item.trim()).filter(Boolean);
 const amount = (value: number | null | undefined) => value == null ? "Missing" : String(value);
@@ -39,9 +40,9 @@ interface ExplainableDifference {
 const OPENING_COLUMNS: DenseDataTableColumn<OnboardingOpeningBalanceLine>[] = [
   { id: "kind", label: "Kind", rowHeader: true, render: line => line.kind },
   { id: "account", label: "Account", className: "break-all", render: line => line.accountId },
-  { id: "instrument", label: "Instrument", render: line => line.instrumentId ?? "—" },
+  { id: "instrument", label: "Instrument", render: line => line.instrumentId ?? VALUE_STATE_LABELS.unavailable },
   { id: "currency", label: "Currency", render: line => line.currency },
-  { id: "source", label: "Source", render: line => line.sourceKind ? SOURCE_SHORT_LABELS[line.sourceKind as OnboardingOpeningSourceKind] ?? line.sourceKind : "—" },
+  { id: "source", label: "Source", render: line => line.sourceKind ? SOURCE_SHORT_LABELS[line.sourceKind as OnboardingOpeningSourceKind] ?? line.sourceKind : VALUE_STATE_LABELS.unavailable },
   { id: "meridian", label: "Meridian", numeric: true, render: line => amount(line.meridianAmount) },
   { id: "incumbent", label: "Incumbent", numeric: true, render: line => amount(line.incumbentAmount) },
   { id: "difference", label: "Difference", numeric: true, render: line => amount(line.difference) },

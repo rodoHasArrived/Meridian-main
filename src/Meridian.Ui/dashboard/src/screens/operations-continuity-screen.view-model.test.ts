@@ -2633,14 +2633,14 @@ describe("Operations Continuity view model", () => {
     });
 
     expect(vm.closeCalendar).toMatchObject({
-      statusLabel: "Unavailable",
+      statusLabel: "Not available",
       statusTone: "blocked",
       errorText: "Close calendar projection could not be loaded."
     });
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "close-calendar:error")).toMatchObject({
       kindLabel: "Close calendar",
       title: `2026-05 close: Close calendar unavailable`,
-      statusLabel: "Unavailable",
+      statusLabel: "Not available",
       statusTone: "blocked",
       ownerLabel: "Operations control",
       dueLabel: "Next due task unavailable",
@@ -2680,7 +2680,7 @@ describe("Operations Continuity view model", () => {
     expect(vm.financialOperationsQueue.items.find((item) => item.id === "private-capital-close-cockpit:error")).toMatchObject({
       kindLabel: "Private-capital close cockpit",
       title: `2026-05 close: Private-capital close cockpit unavailable`,
-      statusLabel: "Unavailable",
+      statusLabel: "Not available",
       statusTone: "blocked",
       ownerLabel: "Operations control",
       dueLabel: "Close cockpit unavailable",

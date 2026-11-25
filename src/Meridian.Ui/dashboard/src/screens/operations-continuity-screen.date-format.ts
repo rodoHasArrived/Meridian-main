@@ -1,9 +1,9 @@
-import { formatUtcDate, formatTimestamp } from "@/lib/format";
+import { formatUtcDate, formatTimestamp, VALUE_STATE_LABELS } from "@/lib/format";
 
 /** Operations Continuity's retained UTC timestamp and due-date display formats. */
 export function formatDate(value: string | null | undefined): string {
   if (!value) {
-    return "Not recorded";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   const date = new Date(value);

@@ -13,6 +13,7 @@ import type {
   SecurityOpenLotRowViewModel,
 } from "./accounting-screen.view-model";
 
+import { isUnavailableLabel } from "@/lib/format";
 const securityOpenLotColumns: DenseDataTableColumn<SecurityOpenLotRowViewModel>[] = [
   {
     id: "lot",
@@ -215,7 +216,7 @@ export function SecurityOpenLotReadModelPanel({
             </CardTitle>
             <CardDescription className="mt-2">
               {view.description}
-              {view.asOfLabel !== "—" ? <> As of {view.asOfLabel}.</> : null}
+              {!isUnavailableLabel(view.asOfLabel) ? <> As of {view.asOfLabel}.</> : null}
             </CardDescription>
           </div>
           <div className="min-w-0 lg:max-w-[28rem]">

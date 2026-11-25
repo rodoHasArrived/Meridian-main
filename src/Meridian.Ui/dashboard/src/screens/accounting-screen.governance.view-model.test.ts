@@ -2187,7 +2187,7 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
     expect(result.current.createLedgerBookStatusText).toBe("Created Alpha Fund primary book.");
     expect(result.current.setupReadinessRows[1]).toEqual(expect.objectContaining({
       id: "activation-readiness",
-      value: "Unavailable",
+      value: "Not available",
       tone: "danger",
       detail: "Production readiness could not be verified. Refresh the assessment before activation."
     }));

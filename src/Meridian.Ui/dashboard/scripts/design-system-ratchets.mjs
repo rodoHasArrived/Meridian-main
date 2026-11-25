@@ -35,6 +35,9 @@
 //     value null and render "Not available", or refuse to build the request.
 //   - placeholderVocabulary: ad hoc placeholder literals ("—", "Unavailable", "Not supplied",
 //     "Not recorded", "Not retained") instead of `VALUE_STATE_LABELS` from `@/lib/format`.
+//     Comparisons and `case` labels are not counted (they match server statuses); a server status
+//     enum value assigned in a screen carries a `placeholder-vocabulary-ignore` comment on its line
+//     or the line above. Compare rendered labels with `isUnavailableLabel`, not a literal.
 //
 //   node scripts/design-system-ratchets.mjs            # report
 //   node scripts/design-system-ratchets.mjs --write    # record reductions only; never allow growth
@@ -57,6 +60,8 @@ const PREFIXED_CURRENCY = /\b(?:formatPrefixedCurrency|formatSignedCurrency|form
 const ZERO_MONEY_DEFAULT = /\b\w*(?:balance|amount|nav|capital|contributions|distributions|gainloss|pnl|equity|variance|notional)\w*\s*(?:\?\?|\|\|)\s*-?\d+(?:\.\d+)?(?![\w.])/gi;
 const USD_DEFAULT = /(?:\?\?|\|\|)\s*["'`]USD["'`]/g;
 const PLACEHOLDER_WORDS = new Set(["—", "Unavailable", "Not supplied", "Not recorded", "Not retained"]);
+const PLACEHOLDER_IGNORE = /placeholder-vocabulary-ignore/;
+const JSX_PLACEHOLDER_TEXT = />\s*(?:—|Unavailable|Not supplied|Not recorded|Not retained)\s*</g;
 // A <table opening tag that is not styled as the table system's `dense-data-table`.
 const RAW_TABLE = /<table\b(?![^>]*\bclassName="[^"]*\bdense-data-table\b)/g;
 
@@ -191,11 +196,25 @@ export const RATCHETS = {
     count(source) {
       let total = 0;
       for (const match of source.matchAll(STRING_LITERAL)) {
-        if (PLACEHOLDER_WORDS.has(match[1] ?? match[2] ?? match[3] ?? "")) {
-          total += 1;
+        if (!PLACEHOLDER_WORDS.has(match[1] ?? match[2] ?? match[3] ?? "")) {
+          continue;
         }
+        const lineStart = source.lastIndexOf("\n", match.index - 1) + 1;
+        const lineEnd = source.indexOf("\n", match.index);
+        const line = source.slice(lineStart, lineEnd === -1 ? undefined : lineEnd);
+        const previousLine = source.slice(source.lastIndexOf("\n", lineStart - 2) + 1, Math.max(lineStart - 1, 0));
+        const before = source.slice(lineStart, match.index);
+        const after = source.slice(match.index + match[0].length, lineEnd === -1 ? undefined : lineEnd);
+        // A literal compared with a value (or a `case` label) matches a server status rather than
+        // rendering a placeholder; a server status assigned elsewhere carries an explicit marker.
+        if (/(===|!==|==|!=)\s*$|\bcase\s*$/.test(before) || /^\s*(===|!==|==|!=)/.test(after)
+          || PLACEHOLDER_IGNORE.test(line) || PLACEHOLDER_IGNORE.test(previousLine)) {
+          continue;
+        }
+        total += 1;
       }
-      return total;
+      // Placeholder words written as JSX text, e.g. `<span>—</span>`.
+      return total + [...source.matchAll(JSX_PLACEHOLDER_TEXT)].length;
     }
   }
 };

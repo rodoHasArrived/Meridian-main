@@ -9,7 +9,7 @@ import type {
   QualityDashboardResponse,
   QualityProviderFreshnessResponse
 } from "@/types";
-import { formatCount, formatDecimal } from "@/lib/format";
+import { formatCount, formatDecimal, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type QualityDashboardFetcher = typeof getQualityDashboard;
 
@@ -46,6 +46,7 @@ export interface DataQualityPanelModel {
   dashboardVersion: string | null;
   overallTone: QualityTone;
   overallLabel: string;
+  // placeholder-vocabulary-ignore: passes through the server composite status enum.
   overallStatus: "Green" | "Amber" | "Red" | "Unavailable";
   isPartial: boolean;
   scoreCards: DataQualityScoreCard[];
@@ -66,7 +67,7 @@ export function scoreTone(score: number): QualityTone {
 }
 
 function formatScore(score: number | null): string {
-  return score === null ? "Unavailable" : formatDecimal(score, 1);
+  return score === null ? VALUE_STATE_LABELS.unavailable : formatDecimal(score, 1);
 }
 
 function statusTone(status: QualityCompositeSymbolResponse["status"]): QualityTone {
@@ -139,8 +140,8 @@ export function buildDataQualityPanelModel(response: QualityDashboardResponse): 
     return {
       dashboardVersion: null,
       overallTone: "warning",
-      overallLabel: "Unavailable",
-      overallStatus: "Unavailable",
+      overallLabel: VALUE_STATE_LABELS.unavailable,
+      overallStatus: "Unavailable", // placeholder-vocabulary-ignore: server composite status enum.
       isPartial: true,
       scoreCards: [],
       symbols: [],
@@ -165,14 +166,14 @@ export function buildDataQualityPanelModel(response: QualityDashboardResponse): 
   return {
     dashboardVersion: composite.version,
     overallTone: statusTone(composite.status),
-    overallLabel: composite.status === "Unavailable" ? "Unavailable" : formatScore(composite.compositeScore),
+    overallLabel: composite.status === "Unavailable" ? VALUE_STATE_LABELS.unavailable : formatScore(composite.compositeScore),
     overallStatus: composite.status,
     isPartial: composite.isPartial,
     scoreCards: [
       {
         id: "Composite",
         label: "Composite quality",
-        value: composite.status === "Unavailable" ? "Unavailable" : formatScore(composite.compositeScore),
+        value: composite.status === "Unavailable" ? VALUE_STATE_LABELS.unavailable : formatScore(composite.compositeScore),
         tone: statusTone(composite.status),
         detail: composite.isPartial
           ? `${Math.round(composite.coverageWeight * 100)}% of required evidence is measured.`

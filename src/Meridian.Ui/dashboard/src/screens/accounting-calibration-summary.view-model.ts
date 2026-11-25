@@ -1,5 +1,5 @@
 import type { ApiErrorDisplay } from "@/lib/api-errors";
-import {formatCurrencyAmount, pluralizeCount} from "@/lib/format";
+import { formatCurrencyAmount, pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import type { ReconciliationCalibrationStatus, ReconciliationCalibrationSummary } from "@/types";
 
 export type CalibrationStatusTone = "success" | "warning" | "danger";
@@ -118,7 +118,7 @@ export function buildCalibrationSummaryViewState(
     statusTextClassName: calibrationStatusTextClass(statusTone),
     statusBannerClassName: calibrationStatusBannerClass(statusTone),
     summary: summary?.summary ?? "",
-    asOfLabel: summary?.asOf ? formatSecurityDate(summary.asOf) : "—",
+    asOfLabel: summary?.asOf ? formatSecurityDate(summary.asOf) : VALUE_STATE_LABELS.unavailable,
     totalBreakCount: summary?.totalBreakCount ?? 0,
     openBreakCount: summary?.openBreakCount ?? 0,
     criticalOpenBreakCount: summary?.criticalOpenBreakCount ?? 0,
@@ -346,7 +346,7 @@ function formatCount(count: number, singular: string): string {
 
 function formatSecurityDate(value: string | null | undefined): string {
   if (!value) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   const match = /^\d{4}-\d{2}-\d{2}/.exec(value);

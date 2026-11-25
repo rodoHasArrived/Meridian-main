@@ -17,6 +17,7 @@ import type { SettingsDiagnosticLink, SettingsRecentEventsSelectionViewModel, Se
 import { SettingsChip } from "@/screens/settings-screen.section-primitives";
 import { toSeverity } from "@/design-system/status-styles";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface SettingsDiagnosticsSectionProps {
   vm: SettingsScreenViewModel;
   overview: SystemOverviewResponse | null;
@@ -49,7 +50,7 @@ export function SettingsDiagnosticsSection({ vm, overview, recentEventsVm, showA
         <CardContent className="space-y-4">
           <div className="flex flex-wrap gap-2">
             <SettingsChip label="Count" value={vm.recentEventsSection.countLabel} />
-            <SettingsChip label="Heartbeat" value={overview ? vm.systemFreshness.label : "—"} />
+            <SettingsChip label="Heartbeat" value={overview ? vm.systemFreshness.label : VALUE_STATE_LABELS.unavailable} />
             <SettingsChip label="Stream" value={vm.recentEventsSection.state} />
           </div>
           {overview?.lastHeartbeatUtc ? (

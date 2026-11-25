@@ -12,7 +12,7 @@ import type {
   CorporateActionProcessingCaseDto,
   CorporateActionProposalEntry
 } from "@/types";
-import { formatTimestamp } from "@/lib/format";
+import { formatTimestamp, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 
 export type CorporateActionInboxFetcher = typeof getCorporateActionInbox;
 export type CorporateActionInboxAccepter = typeof acceptCorporateActionInboxProposal;
@@ -96,7 +96,7 @@ function formatValue(row: Pick<CorporateActionProposalEntry, "amount" | "currenc
   if (row.amount != null) {
     return `${row.amount} ${row.currency ?? ""}`.trim();
   }
-  return "—";
+  return VALUE_STATE_LABELS.unavailable;
 }
 
 function formatCountdown(daysUntilEx: number): string {
@@ -217,12 +217,12 @@ function deriveCaseFields(
 
   return {
     durableCase,
-    caseIdLabel: durableCase?.caseId ?? compactCase?.caseId ?? "Not supplied",
-    proposalIdLabel: proposalId ?? "Not supplied",
-    versionLabel: expectedVersion !== null ? `v${expectedVersion}` : "Not supplied",
-    statusLabel: durableCase?.status ?? compactCase?.state ?? proposal.proposalState ?? "Not supplied",
+    caseIdLabel: durableCase?.caseId ?? compactCase?.caseId ?? VALUE_STATE_LABELS.unavailable,
+    proposalIdLabel: proposalId ?? VALUE_STATE_LABELS.unavailable,
+    versionLabel: expectedVersion !== null ? `v${expectedVersion}` : VALUE_STATE_LABELS.unavailable,
+    statusLabel: durableCase?.status ?? compactCase?.state ?? proposal.proposalState ?? VALUE_STATE_LABELS.unavailable,
     assignmentLabel: durableCase?.assignedTo?.trim() || compactCase?.assignedTo?.trim() || "Unassigned",
-    conflictLabel: durableCase?.conflictState ?? (hasDissent ? "Source dissent" : "Not supplied"),
+    conflictLabel: durableCase?.conflictState ?? (hasDissent ? "Source dissent" : VALUE_STATE_LABELS.unavailable),
     permissionLabel,
     expectedVersion,
     acceptanceScope,
@@ -244,7 +244,7 @@ function buildProposalRow(
   const totalSources = proposal.agreeingSources.length + proposal.dissentingSources.length;
   const caseFields = deriveCaseFields(proposal, compactCase);
   return {
-    rowId: caseFields.proposalIdLabel !== "Not supplied"
+    rowId: !isUnavailableLabel(caseFields.proposalIdLabel)
       ? caseFields.proposalIdLabel
       : `${proposal.securityId}:${proposal.actionType}:${proposal.exDate}`,
     ...caseFields,
@@ -256,15 +256,15 @@ function buildProposalRow(
     daysUntilEx,
     countdownLabel: formatCountdown(daysUntilEx),
     valueLabel: formatValue(proposal),
-    sourceEventLabel: "Not supplied",
-    sourceObservedAtLabel: "Not supplied",
+    sourceEventLabel: VALUE_STATE_LABELS.unavailable,
+    sourceObservedAtLabel: VALUE_STATE_LABELS.unavailable,
     sourceEvidenceReference: null,
     consensusLabel: `${proposal.agreeingSources.length}/${totalSources} source${totalSources === 1 ? "" : "s"} agree`,
     winningSource: proposal.winningSource,
     agreeingSources: proposal.agreeingSources,
     dissentingSources: proposal.dissentingSources,
-    recordDateLabel: proposal.recordDate ?? "Not supplied",
-    payableDateLabel: proposal.payableDate ?? "Not supplied",
+    recordDateLabel: proposal.recordDate ?? VALUE_STATE_LABELS.unavailable,
+    payableDateLabel: proposal.payableDate ?? VALUE_STATE_LABELS.unavailable,
     tone: proposal.dissentingSources.length > 0 ? "warning" : "neutral",
     proposal
   };
@@ -280,7 +280,7 @@ function buildCaseOnlyRow(
   const action = snapshot?.proposedAction ?? null;
   const display = snapshot?.displayMetadata ?? null;
   const providerId = snapshot?.providerIdentity.providerId.trim() || null;
-  const winningSource = display?.winningSource.trim() || providerId || retainedSourceRow?.winningSource || "Not supplied";
+  const winningSource = display?.winningSource.trim() || providerId || retainedSourceRow?.winningSource || VALUE_STATE_LABELS.unavailable;
   const agreeingSources = display?.agreeingSources.length
     ? display.agreeingSources
     : providerId
@@ -288,7 +288,7 @@ function buildCaseOnlyRow(
       : retainedSourceRow?.agreeingSources ?? [];
   const dissentingSources = display?.dissentingSources ?? retainedSourceRow?.dissentingSources ?? [];
   const totalSources = agreeingSources.length + dissentingSources.length;
-  const exDateLabel = action?.exDate ?? retainedSourceRow?.exDateLabel ?? "Not supplied";
+  const exDateLabel = action?.exDate ?? retainedSourceRow?.exDateLabel ?? VALUE_STATE_LABELS.unavailable;
   const daysUntilEx = action
     ? Math.round((new Date(`${action.exDate}T00:00:00Z`).getTime() - todayUtc) / 86_400_000)
     : retainedSourceRow?.daysUntilEx ?? null;
@@ -299,7 +299,7 @@ function buildCaseOnlyRow(
         splitFromFactor: action.splitRatio == null ? null : 1,
         splitToFactor: action.splitRatio
       })
-    : retainedSourceRow?.valueLabel ?? "Not supplied";
+    : retainedSourceRow?.valueLabel ?? VALUE_STATE_LABELS.unavailable;
   const isWarning = processingCase.state === "Disputed"
     || processingCase.state === "Blocked"
     || dissentingSources.length > 0;
@@ -310,25 +310,25 @@ function buildCaseOnlyRow(
     versionLabel: `case v${processingCase.version}`,
     statusLabel: processingCase.state,
     assignmentLabel: processingCase.assignedTo?.trim() || "Unassigned",
-    conflictLabel: "Not supplied",
+    conflictLabel: VALUE_STATE_LABELS.unavailable,
     permissionLabel: "Case actions checked by server",
     expectedVersion: null,
     acceptanceScope: processingCase.scope,
     canAcceptCanonicalFact: false,
     acceptCanonicalFactDisabledReason: "The canonical source proposal has already been accepted into this durable case.",
     securityId: processingCase.securityId,
-    ticker: display?.ticker.trim() || retainedSourceRow?.ticker || (snapshot ? processingCase.securityId : "Not supplied"),
-    actionType: action?.eventType ?? retainedSourceRow?.actionType ?? "Not supplied",
+    ticker: display?.ticker.trim() || retainedSourceRow?.ticker || (snapshot ? processingCase.securityId : VALUE_STATE_LABELS.unavailable),
+    actionType: action?.eventType ?? retainedSourceRow?.actionType ?? VALUE_STATE_LABELS.unavailable,
     exDateLabel,
     daysUntilEx,
-    countdownLabel: daysUntilEx === null ? retainedSourceRow?.countdownLabel ?? "Not supplied" : formatCountdown(daysUntilEx),
+    countdownLabel: daysUntilEx === null ? retainedSourceRow?.countdownLabel ?? VALUE_STATE_LABELS.unavailable : formatCountdown(daysUntilEx),
     valueLabel,
     sourceEventLabel: snapshot
       ? `${snapshot.providerIdentity.sourceEventId} · ${snapshot.providerIdentity.sourceEventVersion}`
-      : retainedSourceRow?.sourceEventLabel ?? "Not supplied",
+      : retainedSourceRow?.sourceEventLabel ?? VALUE_STATE_LABELS.unavailable,
     sourceObservedAtLabel: snapshot?.providerIdentity.observedAtUtc
       ?? retainedSourceRow?.sourceObservedAtLabel
-      ?? "Not supplied",
+      ?? VALUE_STATE_LABELS.unavailable,
     sourceEvidenceReference: snapshot?.providerIdentity.evidenceReference
       ?? retainedSourceRow?.sourceEvidenceReference
       ?? null,
@@ -338,8 +338,8 @@ function buildCaseOnlyRow(
     winningSource,
     agreeingSources,
     dissentingSources,
-    recordDateLabel: action?.recordDate ?? retainedSourceRow?.recordDateLabel ?? "Not supplied",
-    payableDateLabel: action?.payDate ?? retainedSourceRow?.payableDateLabel ?? "Not supplied",
+    recordDateLabel: action?.recordDate ?? retainedSourceRow?.recordDateLabel ?? VALUE_STATE_LABELS.unavailable,
+    payableDateLabel: action?.payDate ?? retainedSourceRow?.payableDateLabel ?? VALUE_STATE_LABELS.unavailable,
     tone: isWarning ? "warning" : retainedSourceRow?.tone ?? "neutral",
     durableCase,
     compactCase: processingCase,
@@ -350,7 +350,7 @@ function buildCaseOnlyRow(
 
 /**
  * Pure projection of the corporate-action inbox snapshot into durable-case-oriented presentation
- * state. Missing case fields remain visibly "Not supplied"; the browser never invents case status,
+ * state. Missing case fields remain visibly VALUE_STATE_LABELS.unavailable; the browser never invents case status,
  * version, accounting results, or policy authorization.
  */
 export function buildCorporateActionInboxModel(
@@ -517,7 +517,7 @@ export function useCorporateActionInboxPanel(
   );
 
   const requestAcceptance = useCallback((row: CorporateActionInboxRowModel) => {
-    if (!row.canAcceptCanonicalFact || !row.acceptanceScope || row.expectedVersion === null || row.proposalIdLabel === "Not supplied") return;
+    if (!row.canAcceptCanonicalFact || !row.acceptanceScope || row.expectedVersion === null || isUnavailableLabel(row.proposalIdLabel)) return;
     setPendingAcceptance(row);
     setPendingAcceptanceRequest({
       proposalId: row.proposalIdLabel,

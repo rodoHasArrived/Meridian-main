@@ -98,7 +98,7 @@ describe("queue readiness summary", () => {
   it("reports nothing rather than zero before the read lands", () => {
     const summary = buildQueueReadinessSummary(null);
 
-    expect(summary.accountsLabel).toBe("—");
+    expect(summary.accountsLabel).toBe("Not available");
     expect(summary.blockedNotice).toBeNull();
   });
 

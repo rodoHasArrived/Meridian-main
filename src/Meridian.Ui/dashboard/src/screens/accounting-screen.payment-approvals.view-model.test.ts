@@ -116,7 +116,7 @@ describe("buildPaymentQueueSummary", () => {
     );
 
     expect(summary.pendingCount).toBe(0);
-    expect(summary.pendingValueLabel).toBe("—");
+    expect(summary.pendingValueLabel).toBe("Not available");
     expect(summary.evidenceCount).toBe(1);
   });
 });

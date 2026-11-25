@@ -430,7 +430,7 @@ describe("CorporateActionInboxRegion", () => {
     expect(within(payableDate).getByText("2026-08-01").tagName).toBe("TIME");
 
     const recordDate = summaryValue("Record date");
-    expect(recordDate).toHaveTextContent(/^Not supplied$/);
+    expect(recordDate).toHaveTextContent(/^Not available$/);
     expect(recordDate.querySelector("time")).toBeNull();
 
     const sourceFacts = within(workspace).getByRole("table", { name: "Corporate action source facts and provenance" });
@@ -440,7 +440,7 @@ describe("CorporateActionInboxRegion", () => {
     // The winning value is the cell after the field name, whether the field is a row header or a cell.
     const recordDateCells = within(recordDateFact).getAllByRole("cell");
     const recordDateValue = recordDateCells[recordDateCells.findIndex((cell) => cell.textContent === "Record date") + 1];
-    expect(recordDateValue).toHaveTextContent(/^Not supplied$/);
+    expect(recordDateValue).toHaveTextContent(/^Not available$/);
     expect(recordDateFact.querySelector("time")).toBeNull();
     expect(within(sourceFacts).getByText("0.25 USD").tagName).toBe("TD");
 
@@ -462,7 +462,7 @@ describe("CorporateActionInboxRegion", () => {
     const { container } = render(<Harness fetchInbox={fetchInbox} />);
 
     const row = await screen.findByRole("row", { name: /Inspect corporate action case/i });
-    const exDate = within(row).getAllByText("Not supplied").find((element) => element.classList.contains("block") && element.classList.contains("font-mono")) as HTMLElement;
+    const exDate = within(row).getAllByText("Not available").find((element) => element.classList.contains("block") && element.classList.contains("font-mono")) as HTMLElement;
     expect(exDate.tagName).toBe("SPAN");
     expect(exDate).toHaveClass("block", "font-mono", "text-foreground");
     expect(container.querySelector("time")).toBeNull();

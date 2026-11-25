@@ -740,7 +740,7 @@ describe("buildLiveQuotesMarketViewModel", () => {
     });
 
     expect(flatSessionStats).toMatchObject({
-      changeLabel: "0.00 (—)",
+      changeLabel: "0.00 (Not available)",
       changeTone: "default"
     });
     expect(flatSessionStats?.stats.find((stat) => stat.id === "volume")?.value).toBe("950");

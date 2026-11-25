@@ -12,6 +12,7 @@ import { approveClosePriceSet, createClosePriceSet, getClosePriceSet, listCloseP
 import { describeApiError, isApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import type { ClosePriceLine, ClosePriceSet, CreateClosePriceSetRequest, OversightContext, OversightScope, PriceUnit } from "@/types/account-oversight";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 interface Props {
   scope: OversightScope;
   context: OversightContext;
@@ -426,7 +427,7 @@ function RetainedClosePriceDetails({ set }: { set: ClosePriceSet }) {
         {line.override ? <p className="break-all text-xs">Override evidence: {line.override.evidenceReference}. Original selected source observations remain above.</p> : null}
         {line.selection?.comparisonPrices.map((comparison) => <p className="text-xs" key={comparison.sourceId}>Comparison {comparison.sourceId}: deviation {comparison.pctDiffFromGoldenCopy === null ? "unavailable" : `${comparison.pctDiffFromGoldenCopy}%`} from selected source.</p>)}
         {line.selection?.hierarchySnapshot ? <><p className="text-xs">Hierarchy as of {line.selection.hierarchySnapshot.asOf} · maintained by {line.selection.hierarchySnapshot.updatedBy}</p><ol className="list-decimal pl-5 text-xs">{line.selection.hierarchySnapshot.entries.map((entry) => <li key={`${entry.priority}:${entry.sourceId}`}>{entry.sourceDisplayName} ({entry.sourceId}) · priority {entry.priority} · maximum {entry.maxDaysStale} days stale</li>)}</ol></> : null}
-        <p className="break-all text-xs">Selection receipt: {line.selection?.selectionReceiptId ?? "Unavailable"}</p>
+        <p className="break-all text-xs">Selection receipt: {line.selection?.selectionReceiptId ?? VALUE_STATE_LABELS.unavailable}</p>
       </section>)}</div>
       <p className="mt-3 break-all text-xs">Snapshot identity: {snapshot.snapshotId} · Account: {snapshot.accountId} · Book: {snapshot.bookId}</p>
       {snapshot.creationCommandDigest ? <p className="mt-2 break-all text-xs">Creation command SHA-256: {snapshot.creationCommandDigest}</p> : null}

@@ -110,17 +110,17 @@ describe("parseThreshold", () => {
 
 describe("formatters", () => {
   it("formats null prices as em-dash", () => {
-    expect(formatPriceAlertPrice(null)).toBe("—");
-    expect(formatPriceAlertPrice(undefined)).toBe("—");
-    expect(formatPriceAlertPrice(Number.NaN)).toBe("—");
+    expect(formatPriceAlertPrice(null)).toBe("Not available");
+    expect(formatPriceAlertPrice(undefined)).toBe("Not available");
+    expect(formatPriceAlertPrice(Number.NaN)).toBe("Not available");
   });
   it("formats numeric prices with locale separators", () => {
     expect(formatPriceAlertPrice(1234.5)).toMatch(/1[,.]234/);
   });
   it("formats null timestamps as em-dash", () => {
-    expect(formatPriceAlertTimestamp(null)).toBe("—");
-    expect(formatPriceAlertTimestamp(undefined)).toBe("—");
-    expect(formatPriceAlertTimestamp("not-a-date")).toBe("—");
+    expect(formatPriceAlertTimestamp(null)).toBe("Not available");
+    expect(formatPriceAlertTimestamp(undefined)).toBe("Not available");
+    expect(formatPriceAlertTimestamp("not-a-date")).toBe("Not available");
   });
   it("formats timestamps with deterministic UTC labels", () => {
     expect(formatPriceAlertTimestamp("2026-05-12T14:02:37.000Z")).toBe("May 12, 2026, 14:02:37 UTC");

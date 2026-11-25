@@ -32,7 +32,7 @@ import {
 } from "@/lib/daily-control-tower";
 import { routeForTriageItem } from "@/lib/operator-inbox-triage";
 import { eyebrowClassName } from "@/design-system/label-case";
-import { pluralizeCount } from "@/lib/format";
+import { pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import { toSeverity } from "@/design-system/status-styles";
 import { SegmentedControl } from "@/components/ui/segmented-control";
 import { SinceLastVisitBadge } from "@/components/meridian/since-last-visit-badge";
@@ -211,7 +211,7 @@ function DailyControlTowerQueue({
       hideWhenEmpty: (row) => !row.observedAt,
       emptyNote: "Age: no item has an observed time",
       // A single missing age is a dash with its reason on hover, not "Age unavailable" per row.
-      render: (row) => row.observedAt ? <TriageAge value={row.observedAt} /> : <span title="No observed time is linked to this item" aria-label="No observed time">—</span>
+      render: (row) => row.observedAt ? <TriageAge value={row.observedAt} /> : <span title="No observed time is linked to this item" aria-label="No observed time">{VALUE_STATE_LABELS.unavailable}</span>
     },
     {
       id: "due",

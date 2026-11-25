@@ -96,10 +96,10 @@ function journalConflictChanges(before: ManualJournalEntryDraft, after: ManualJo
   ];
   const ids = new Set([...before.lines.map((line) => line.lineId), ...after.lines.map((line) => line.lineId)]);
   const describeLine = (line: ManualJournalEntryLine | undefined) => line
-    ? `${line.side} ${line.amount} ${line.currency} · ${line.accountPath || "Account not recorded"} · ${line.description ?? ""}` : "Not recorded";
+    ? `${line.side} ${line.amount} ${line.currency} · ${line.accountPath || "Account not recorded"} · ${line.description ?? ""}` : VALUE_STATE_LABELS.unavailable;
   for (const id of ids) fields.push([`Line ${id}`, describeLine(before.lines.find((line) => line.lineId === id)), describeLine(after.lines.find((line) => line.lineId === id))]);
   return fields.filter(([, previous, current]) => previous !== current)
-    .map(([label, previous, current]) => ({ label, before: previous == null ? "Not recorded" : String(previous), after: current == null ? "Not recorded" : String(current) }));
+    .map(([label, previous, current]) => ({ label, before: previous == null ? VALUE_STATE_LABELS.unavailable : String(previous), after: current == null ? VALUE_STATE_LABELS.unavailable : String(current) }));
 }
 
 export function useManualJournalEntryWorkbenchViewModel(

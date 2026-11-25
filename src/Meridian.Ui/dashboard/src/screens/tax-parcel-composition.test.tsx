@@ -59,5 +59,5 @@ it("discloses unavailable coordinates and still plots a reported zero without di
   render(<TaxParcelComposition parcels={rows} currency="EUR" state="Provisional" />);
   expect(screen.getByRole("status")).toHaveTextContent("1 parcels have unavailable plot coordinates");
   expect(screen.getByRole("button", { name: "zero" })).toBeInTheDocument();
-  expect(screen.getByText("Unavailable")).toBeInTheDocument();
+  expect(screen.getByText("Not available")).toBeInTheDocument();
 });

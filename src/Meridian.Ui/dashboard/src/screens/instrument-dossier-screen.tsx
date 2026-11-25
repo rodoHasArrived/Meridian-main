@@ -20,6 +20,7 @@ import type { AmountPassportReference } from "@/types/amount-passport";
 import { instrumentCases, instrumentPositions, isLedgerInstrumentId, readInstrumentDossierTab, sameInstrument, type InstrumentPositionRow } from "./instrument-dossier.view-model";
 import type { AccountingWorkspaceResponse, BrokerageHouseholdPortfolio, LedgerBook, LedgerPeriod, LedgerPostedJournalEntry, LedgerPostedJournalEntryLine, PortfolioWorkspaceResponse, SecurityMasterEntry, TradingWorkspaceResponse } from "@/types";
 
+import { isUnavailableLabel } from "@/lib/format";
 interface InstrumentDossierScreenProps {
   portfolio?: PortfolioWorkspaceResponse | null;
   trading?: TradingWorkspaceResponse | null;
@@ -103,7 +104,7 @@ export function InstrumentDossierScreen({ portfolio, trading, accounting, broker
 }
 
 function DossierValue({ value, currency, unit, amountPassport, conditionContextId }: { value: string | number | null; currency?: string; unit?: string; amountPassport?: AmountPassportReference; conditionContextId?: string }) {
-  if (typeof value === "string" && (value.trim() === "—" || value.trim() === "")) value = null;
+  if (typeof value === "string" && isUnavailableLabel(value)) value = null;
   // Legacy display strings such as "$1,000" have already been formatted upstream.
   if (typeof value === "string" && !/^[+-]?\d+(?:\.\d+)?(?:e[+-]?\d+)?$/i.test(value.trim())) return <span className="font-mono" aria-describedby={conditionContextId}>{value}<span className="block text-xs text-muted-foreground">Source-formatted value</span></span>;
   const condition = amountPassport?.freshness === "stale" ? "stale" : amountPassport?.freshness === "blocked" ? "review-required"

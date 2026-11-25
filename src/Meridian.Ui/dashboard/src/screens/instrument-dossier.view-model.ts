@@ -1,6 +1,7 @@
 import type { BrokerageHouseholdPortfolio, ReconciliationBreakQueueItem, TradingPosition } from "@/types";
 import type { AmountPassportReference } from "@/types/amount-passport";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 export const INSTRUMENT_DOSSIER_TABS = ["reference", "positions", "ledger", "cases"] as const;
 export type InstrumentDossierTab = typeof INSTRUMENT_DOSSIER_TABS[number];
 
@@ -53,7 +54,7 @@ export function instrumentPositions(
         pricePassport: row.amountPassports?.mark,
         valuePassport: row.amountPassports?.["market-value"],
         currency: row.currency ?? undefined,
-        markStatus: row.markFreshness?.status ?? "Unavailable",
+        markStatus: row.markFreshness?.status ?? VALUE_STATE_LABELS.unavailable,
         markReason: sourceMarkSummary(row.markFreshness)
       })),
       unlinkedCount: scoped.filter((row) => !row.security?.securityId).length
@@ -63,13 +64,13 @@ export function instrumentPositions(
   return {
     rows: scoped.filter((row) => sameInstrument(row.markFreshness?.securityId, instrumentId)).map((row, index) => ({
       id: row.positionKey ?? `${row.markFreshness?.financialAccountId}:${index}`,
-      account: row.markFreshness?.financialAccountId ?? "Not recorded",
+      account: row.markFreshness?.financialAccountId ?? VALUE_STATE_LABELS.unavailable,
       symbol: row.symbol,
       quantity: row.quantity,
       price: row.markPriceExact ?? row.markPrice,
       value: row.exposureExact ?? row.exposure,
       currency: row.currency ?? undefined,
-      markStatus: row.markFreshness?.status ?? "Unavailable",
+      markStatus: row.markFreshness?.status ?? VALUE_STATE_LABELS.unavailable,
       markReason: sourceMarkSummary(row.markFreshness)
     })),
     unlinkedCount: positions.filter((row) => !row.markFreshness?.securityId).length

@@ -11,7 +11,7 @@
  */
 
 import type { BankTransaction, PendingPayment } from "@/types/banking-payments.types";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 
 export type PaymentApprovalTone = "default" | "success" | "warning" | "danger";
 
@@ -81,8 +81,8 @@ export function buildPendingPaymentRow(payment: PendingPayment): PendingPaymentR
     currencyLabel: payment.currency ?? "Currency not retained",
     currencyMissing,
     effectiveDate: payment.effectiveDate,
-    externalRef: payment.externalRef ?? "—",
-    notes: payment.notes ?? "—",
+    externalRef: payment.externalRef ?? VALUE_STATE_LABELS.unavailable,
+    notes: payment.notes ?? VALUE_STATE_LABELS.unavailable,
     statusLabel: paymentStatusLabel(payment.status),
     statusTone: paymentStatusTone(payment.status),
     initiatedAt: payment.initiatedAt,
@@ -130,7 +130,7 @@ function summarizePendingValue(pending: readonly PendingPayment[]): string {
     .map(([currency, amount]) => `${formatAmount(amount)} ${currency}`);
 
   if (totals.length === 0) {
-    return withoutCurrency > 0 ? "Not totalable" : "—";
+    return withoutCurrency > 0 ? "Not totalable" : VALUE_STATE_LABELS.unavailable;
   }
 
   return withoutCurrency > 0 ? `${totals.join(" · ")} (+${withoutCurrency} uncosted)` : totals.join(" · ");

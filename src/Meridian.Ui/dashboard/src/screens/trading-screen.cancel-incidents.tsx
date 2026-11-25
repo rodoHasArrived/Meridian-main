@@ -11,6 +11,7 @@ import { TimeText } from "@/components/ui/time-text";
 import { getCancelAllIncident, getCancelAllIncidents } from "@/lib/api/cancel-incidents.api";
 import type { CancelAllIncident, CancelAllIncidentHistory, CancelAllOrderOutcome } from "@/types/cancel-incidents.types";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 const outcomeLabels: Record<string, string> = {
   ConfirmedCancelled: "Confirmed cancelled",
   FilledDuringCancel: "Filled during cancellation",
@@ -154,7 +155,7 @@ function IncidentDetail({ incidentId, fundAccountId }: { incidentId: string; fun
         ]} />
       <details className="text-sm"><summary className="cursor-pointer text-muted-foreground">Incident identifiers</summary>
         <dl className="mt-2 grid gap-1 break-all"><dt>Incident</dt><dd className="font-mono">{summary.incidentId}</dd><dt>Account</dt><dd className="font-mono">{fundAccountId}</dd>
-          <dt>Correlation</dt><dd>{incident.correlationId ?? "Not retained"}</dd><dt>Broker scope</dt><dd>{incident.brokerScopeIdentity ?? "Not retained"}</dd></dl>
+          <dt>Correlation</dt><dd>{incident.correlationId ?? VALUE_STATE_LABELS.unavailable}</dd><dt>Broker scope</dt><dd>{incident.brokerScopeIdentity ?? VALUE_STATE_LABELS.unavailable}</dd></dl>
       </details>
     </section>
   );

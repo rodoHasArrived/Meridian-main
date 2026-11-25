@@ -6,7 +6,7 @@ import { StatusBanner } from "@/components/ui/status-banner";
 import { TimeText } from "@/components/ui/time-text";
 import { isApiError } from "@/lib/api-errors";
 import { getJson, putJson } from "@/lib/api/http-client";
-import { formatNumber } from "@/lib/format";
+import { formatNumber, VALUE_STATE_LABELS } from "@/lib/format";
 
 export interface ProviderValidationProfile {
   staleToleranceDays: number;
@@ -203,7 +203,7 @@ export function ProviderValidationPanel({ providerId, providerName, fetchProfile
             <dd><dl className="grid grid-cols-3 gap-2 tabular-nums">
               <div><dt className="text-muted-foreground">Effective</dt><dd>{active
                 ? formatRule(rule.id, active[rule.id])
-                : snapshot.supportsStreamingRules ? "Unavailable" : "Not applicable"}</dd></div>
+                : snapshot.supportsStreamingRules ? VALUE_STATE_LABELS.unavailable : "Not applicable"}</dd></div>
               <div><dt className="text-muted-foreground">Deployment default</dt><dd>{formatRule(rule.id, snapshot.defaultProfile[rule.id])}</dd></div>
               {!historical && snapshot.supportsStreamingRules && (!active || active[rule.id] !== snapshot.profile[rule.id])
                 ? <div><dt className="text-muted-foreground">Saved</dt><dd>{formatRule(rule.id, snapshot.profile[rule.id])}</dd></div> : null}

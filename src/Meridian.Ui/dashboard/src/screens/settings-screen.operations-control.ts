@@ -16,7 +16,7 @@ import type {
   SecurityAssetProfileDefinition,
   SessionInfo
 } from "@/types";
-import { pluralizeCount } from "@/lib/format";
+import { pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 
 export interface SettingsOperationsControlMetric {
   label: string;
@@ -87,7 +87,7 @@ export function buildAssetProfileGovernancePanel(
       summary: loading
         ? "Asset profiles are loading from Security Master."
         : "Asset profile catalog has not loaded.",
-      statusLabel: loading ? "Checking" : "Unavailable",
+      statusLabel: loading ? "Checking" : VALUE_STATE_LABELS.unavailable,
       statusVariant: loading ? "warning" : "outline",
       approvedCountLabel: "0",
       projectedFieldCountLabel: "0",
@@ -280,7 +280,7 @@ function buildRolePermissionControlCard(
     metrics: [
       { label: "Roles", value: String(catalog.roles.length), tone: "default" },
       { label: "Permissions", value: String(catalog.permissions.length), tone: "default" },
-      { label: "Current grants", value: activeRole ? String(permissionCount) : "—", tone: activeRole ? "success" : "warning" },
+      { label: "Current grants", value: activeRole ? String(permissionCount) : VALUE_STATE_LABELS.unavailable, tone: activeRole ? "success" : "warning" },
       { label: "Built-in", value: String(catalog.roles.filter((role) => role.isBuiltIn).length), tone: "muted" }
     ],
     detail: activeRole
@@ -390,7 +390,7 @@ function buildUnavailableOperationsControlCard(
     id,
     title,
     description,
-    statusLabel: loading ? "Checking" : "Unavailable",
+    statusLabel: loading ? "Checking" : VALUE_STATE_LABELS.unavailable,
     statusVariant: "outline",
     endpointHref,
     routeHref,

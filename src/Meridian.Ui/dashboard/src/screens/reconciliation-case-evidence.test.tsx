@@ -121,7 +121,7 @@ describe("retained reconciliation case evidence", () => {
     const [value, quantity] = comparison.getAllByRole("row").slice(1);
     expect(within(value).getByRole("rowheader")).toHaveTextContent("EUR");
     expect(within(value).getByText("+0.00000001")).toBeInTheDocument();
-    expect(within(quantity).getAllByText("Unavailable")).toHaveLength(2);
+    expect(within(quantity).getAllByText("Not available")).toHaveLength(2);
     expect(screen.getByText("cash-tolerance · Version unavailable")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Review retained evidence" }).getAttribute("href")).toContain("subjectId=cash-break-20");
   });
@@ -131,10 +131,10 @@ describe("retained reconciliation case evidence", () => {
       expectedExact: "100", actualExact: "not recorded 500", varianceExact: "400" }] };
     render(<MemoryRouter><ReconciliationCaseEvidence item={malformed} /></MemoryRouter>);
     const table = within(screen.getByRole("table", { name: "Retained residual components" }));
-    expect(table.getAllByText("Unavailable")).toHaveLength(2);
+    expect(table.getAllByText("Not available")).toHaveLength(2);
     expect(table.queryByText("500.00")).not.toBeInTheDocument();
     expect(table.queryByRole("button", { name: /Inspect Value residual/ })).not.toBeInTheDocument();
-    expect(caseVarianceLabel(malformed)).toBe("Unavailable");
+    expect(caseVarianceLabel(malformed)).toBe("Not available");
   });
 
   it("keeps a malformed retained statement residual unavailable in the queue and evidence", () => {
@@ -142,9 +142,9 @@ describe("retained reconciliation case evidence", () => {
       residuals: [{ ...retainedMatch.match.residuals[0], residual: "not recorded 500" }] } } };
     render(<MemoryRouter><ReconciliationCaseEvidence item={malformed} /></MemoryRouter>);
     const table = within(screen.getByRole("table", { name: "Exact residual components" }));
-    expect(table.getByText("Unavailable")).toBeInTheDocument();
+    expect(table.getByText("Not available")).toBeInTheDocument();
     expect(table.queryByRole("button", { name: /Inspect Net amount residual/ })).not.toBeInTheDocument();
-    expect(caseVarianceLabel(malformed)).toBe("Unavailable");
+    expect(caseVarianceLabel(malformed)).toBe("Not available");
   });
 
   it("withholds unsafe legacy amounts without exact companions in retained evidence", () => {
@@ -152,7 +152,7 @@ describe("retained reconciliation case evidence", () => {
       actual: 9007199254740992, variance: 9007199254740992 }] };
     render(<MemoryRouter><ReconciliationCaseEvidence item={unsafe} /></MemoryRouter>);
     const table = within(screen.getByRole("table", { name: "Retained residual components" }));
-    expect(table.getAllByText("Unavailable")).toHaveLength(3);
+    expect(table.getAllByText("Not available")).toHaveLength(3);
     expect(table.queryByText(/9,007,199,254,740,992/)).not.toBeInTheDocument();
     expect(table.queryByRole("button", { name: /Inspect Value residual/ })).not.toBeInTheDocument();
   });

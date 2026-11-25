@@ -31,7 +31,7 @@ import type {
   SecurityMasterTrustSnapshot,
   TradingParameters
 } from "@/types";
-import { formatAmountWithCode, formatCount as formatCountValue, formatDecimal, formatNumber, formatPercent } from "@/lib/format";
+import { formatAmountWithCode, formatCount as formatCountValue, formatDecimal, formatNumber, formatPercent, VALUE_STATE_LABELS, isUnavailableLabel } from "@/lib/format";
 
 // Domain-specific projections and components shared by the screen composition.
 
@@ -588,16 +588,16 @@ export function buildSecurityScheduleDetailViewState(row: SecurityScheduleRowVie
       { label: "Schedule event ID", value: row.eventId },
       { label: "Event type", value: row.eventTypeLabel },
       { label: "Payment date", value: row.paymentDateLabel },
-      { label: "Accrual window", value: accrualWindow, tone: accrualWindow.includes("—") ? "warning" : "default" },
-      { label: "Coupon rate", value: row.couponRatePct !== null ? formatPercent(row.couponRatePct, { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : "—" },
+      { label: "Accrual window", value: accrualWindow, tone: accrualWindow.includes(VALUE_STATE_LABELS.unavailable) ? "warning" : "default" },
+      { label: "Coupon rate", value: row.couponRatePct !== null ? formatPercent(row.couponRatePct, { minimumFractionDigits: 3, maximumFractionDigits: 3 }) : VALUE_STATE_LABELS.unavailable },
       { label: "Interest", value: formatScheduleAmount(row.interestAmount, row.currency) },
       { label: "Principal", value: formatScheduleAmount(row.principalAmount, row.currency) },
       { label: "Expected", value: row.expectedAmountLabel },
       { label: "Actual", value: row.actualAmountLabel, tone: row.actualAmount === null ? "warning" : "default" },
       { label: "Variance", value: row.varianceLabel, tone: varianceTone },
       { label: "Factor", value: row.factorLabel },
-      { label: "Audit reference", value: row.auditReference ?? "—", tone: row.auditReference ? "default" : "warning" },
-      { label: "Note", value: row.note ?? "—" }
+      { label: "Audit reference", value: row.auditReference ?? VALUE_STATE_LABELS.unavailable, tone: row.auditReference ? "default" : "warning" },
+      { label: "Note", value: row.note ?? VALUE_STATE_LABELS.unavailable }
     ]
   };
 }
@@ -624,7 +624,7 @@ export function buildCorporateActionRows(
       rowId: action.corpActId,
       eventTypeLabel,
       exDateLabel,
-      payDateLabel: action.payDate ? formatSecurityDate(action.payDate) : "—",
+      payDateLabel: action.payDate ? formatSecurityDate(action.payDate) : VALUE_STATE_LABELS.unavailable,
       amountLabel,
       ariaLabel: `${eventTypeLabel} for ${action.securityId}, ex-date ${exDateLabel}, ${amountLabel}`,
       selectAriaLabel: `Inspect corporate action ${eventTypeLabel} for ${action.securityId}`,
@@ -693,16 +693,16 @@ export function buildCorporateActionDetailViewState(
       { label: "Corporate action ID", value: row.corpActId },
       { label: "Event type", value: row.eventTypeLabel },
       { label: "Ex-date", value: row.exDateLabel },
-      { label: "Record date", value: row.recordDate ? formatSecurityDate(row.recordDate) : "—", tone: row.recordDate ? "default" : "warning" },
+      { label: "Record date", value: row.recordDate ? formatSecurityDate(row.recordDate) : VALUE_STATE_LABELS.unavailable, tone: row.recordDate ? "default" : "warning" },
       { label: "Pay date", value: row.payDateLabel, tone: row.payDate ? "default" : "warning" },
-      { label: "Lifecycle", value: row.lifecycleState ?? "—", tone: row.lifecycleState ? "default" : "warning" },
-      { label: "Supersedes", value: row.supersedesCorpActId ?? "—" },
-      { label: "Amount or ratio", value: row.amountLabel, tone: row.amountLabel === "—" ? "warning" : "default" },
-      { label: "Currency", value: row.currency ?? "—", tone: row.currency ? "default" : "warning" },
-      { label: "Redemption price (% par)", value: row.redemptionPricePercentOfPar?.toString() ?? "—" },
-      { label: "New security", value: row.newSecurityId ?? "—" },
-      { label: "Acquirer security", value: row.acquirerSecurityId ?? "—" },
-      { label: "Payload schema", value: row.payloadSchemaVersion?.toString() ?? "—", tone: row.payloadSchemaVersion === undefined || row.payloadSchemaVersion === null ? "warning" : "default" },
+      { label: "Lifecycle", value: row.lifecycleState ?? VALUE_STATE_LABELS.unavailable, tone: row.lifecycleState ? "default" : "warning" },
+      { label: "Supersedes", value: row.supersedesCorpActId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Amount or ratio", value: row.amountLabel, tone: isUnavailableLabel(row.amountLabel) ? "warning" : "default" },
+      { label: "Currency", value: row.currency ?? VALUE_STATE_LABELS.unavailable, tone: row.currency ? "default" : "warning" },
+      { label: "Redemption price (% par)", value: row.redemptionPricePercentOfPar?.toString() ?? VALUE_STATE_LABELS.unavailable },
+      { label: "New security", value: row.newSecurityId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Acquirer security", value: row.acquirerSecurityId ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Payload schema", value: row.payloadSchemaVersion?.toString() ?? VALUE_STATE_LABELS.unavailable, tone: row.payloadSchemaVersion === undefined || row.payloadSchemaVersion === null ? "warning" : "default" },
       { label: "Typed payload", value: formatCorporateActionPayload(row.payload), tone: row.payload ? "default" : "warning" }
     ]
   };
@@ -724,14 +724,14 @@ export function buildSecurityOpenLotRows(
     const scopeLabel = formatOpenLotScope(lot);
     const directionLabel = lot.isShort ? "Short" : "Long";
     const quantityLabel = formatQuantity(lot.currentQuantity);
-    const faceLabel = lot.currentFace !== null ? formatQuantity(lot.currentFace) : "—";
+    const faceLabel = lot.currentFace !== null ? formatQuantity(lot.currentFace) : VALUE_STATE_LABELS.unavailable;
     const factorAdjustedLabel = lot.factorAdjustedQuantity !== null
       ? formatQuantity(lot.factorAdjustedQuantity)
       : lot.factorAdjustedFace !== null
         ? formatQuantity(lot.factorAdjustedFace)
-        : "—";
+        : VALUE_STATE_LABELS.unavailable;
     const costBasisLabel = formatScheduleAmount(lot.costBasis, lot.currency);
-    const unrealizedPnlLabel = lot.unrealizedPnl !== null ? formatAmountWithCode(lot.unrealizedPnl, lot.currency, { signed: true, minimumFractionDigits: 0, maximumFractionDigits: 2 }) : "—";
+    const unrealizedPnlLabel = lot.unrealizedPnl !== null ? formatAmountWithCode(lot.unrealizedPnl, lot.currency, { signed: true, minimumFractionDigits: 0, maximumFractionDigits: 2 }) : VALUE_STATE_LABELS.unavailable;
     const statusTone = openLotStatusTone(lot.lotStatus);
 
     return {
@@ -787,7 +787,7 @@ export function buildSecurityOpenLotReadModelViewState({
     title: "Open lot summary",
     description: `Open lots for ${displaySecurityId} stay tied to run, account, cost, quantity, and factor-adjusted exposure evidence.`,
     summary: readModel?.summary ?? "Open lot summary is unavailable for the selected security.",
-    asOfLabel: readModel?.asOfUtc ? formatDateTimeLabel(readModel.asOfUtc) : "—",
+    asOfLabel: readModel?.asOfUtc ? formatDateTimeLabel(readModel.asOfUtc) : VALUE_STATE_LABELS.unavailable,
     tableLabel: `Open lot summary for ${displaySecurityId}`,
     tableCaption: `Open lots for ${displaySecurityId}; select a row to inspect source, account, and exposure detail.`,
     detailPanelId: "security-open-lot-detail-panel",
@@ -827,7 +827,7 @@ export function buildSecurityOpenLotDetailViewState(
   const quantityModel = readModel?.quantityModel || "Unspecified quantity model";
   const factor = readModel?.currentFactor !== null && readModel?.currentFactor !== undefined
     ? formatDecimal(readModel.currentFactor, 6)
-    : "—";
+    : VALUE_STATE_LABELS.unavailable;
 
   return {
     id: row.detailPanelId,
@@ -841,22 +841,22 @@ export function buildSecurityOpenLotDetailViewState(
     fields: [
       { label: "Run", value: row.runId },
       { label: "Portfolio", value: row.portfolioId },
-      { label: "Account", value: row.accountScopeDisplayName ?? row.accountScopeId ?? "—", tone: row.accountScopeId ? "default" : "warning" },
-      { label: "Vehicle", value: row.vehicleScopeDisplayName ?? row.vehicleScopeId ?? "—" },
+      { label: "Account", value: row.accountScopeDisplayName ?? row.accountScopeId ?? VALUE_STATE_LABELS.unavailable, tone: row.accountScopeId ? "default" : "warning" },
+      { label: "Vehicle", value: row.vehicleScopeDisplayName ?? row.vehicleScopeId ?? VALUE_STATE_LABELS.unavailable },
       { label: "Trade date", value: row.tradeDateLabel },
       { label: "Settle date", value: row.settleDateLabel, tone: row.settleDate ? "default" : "warning" },
       { label: "Direction", value: row.directionLabel },
       { label: "Original quantity", value: formatQuantity(row.originalQuantity) },
       { label: "Current quantity", value: row.quantityLabel },
       { label: "Current face", value: row.faceLabel },
-      { label: "Factor-adjusted exposure", value: row.factorAdjustedLabel, tone: row.factorAdjustedLabel === "—" ? "warning" : "success" },
+      { label: "Factor-adjusted exposure", value: row.factorAdjustedLabel, tone: isUnavailableLabel(row.factorAdjustedLabel) ? "warning" : "success" },
       { label: "Current factor", value: factor },
       { label: "Cost basis", value: row.costBasisLabel },
       { label: "Entry price", value: row.entryPriceLabel },
       { label: "Unrealized P&L", value: row.unrealizedPnlLabel, tone: row.unrealizedPnl === null ? "warning" : row.unrealizedPnl >= 0 ? "success" : "danger" },
       { label: "Source", value: formatScheduleEventSource(row.sourceSystem, row.sourceRecordId) },
-      { label: "Source reason", value: row.sourceReason ?? "—" },
-      { label: "Notes", value: row.notes ?? "—" }
+      { label: "Source reason", value: row.sourceReason ?? VALUE_STATE_LABELS.unavailable },
+      { label: "Notes", value: row.notes ?? VALUE_STATE_LABELS.unavailable }
     ]
   };
 }
@@ -1038,7 +1038,7 @@ export function buildInstrumentPassportViewState({
   const pricingStatus = passport?.pricing?.status?.trim() || "Unknown";
   const pricingSummary = passport?.pricing?.summary?.trim() || "Pricing and trading controls are unavailable.";
   const operatingModel = passport?.operatingModel ?? null;
-  const operatingModelStatus = operatingModel?.status?.trim() || "Unavailable";
+  const operatingModelStatus = operatingModel?.status?.trim() || VALUE_STATE_LABELS.unavailable;
   const operatingModelSummary = operatingModel?.summary?.trim() || "Security Master operating model is unavailable.";
   const operatingModelStageFields = (operatingModel?.stages ?? []).map((stage) => ({
     label: stage.title,
@@ -1048,7 +1048,7 @@ export function buildInstrumentPassportViewState({
   const mostSpecificEntitlements = operatingModel?.entitlementApplicability?.filter((row) => row.isApplicable && row.isMostSpecific) ?? [];
   const approvalPosture = operatingModel?.manualChangeApproval ?? null;
   const referenceDataWorkbench = passport?.referenceDataWorkbench ?? null;
-  const referenceDataWorkbenchStatus = referenceDataWorkbench?.status?.trim() || "Unavailable";
+  const referenceDataWorkbenchStatus = referenceDataWorkbench?.status?.trim() || VALUE_STATE_LABELS.unavailable;
   const referenceDataWorkbenchSummary = referenceDataWorkbench?.summary?.trim() || "Reference-data workbench is unavailable.";
   const referenceDataWorkbenchSections = (referenceDataWorkbench?.sections ?? []).map((section) => ({
     label: section.title,
@@ -1089,7 +1089,7 @@ export function buildInstrumentPassportViewState({
   const enabledHandoffs = referenceDataWorkbench?.operationsHandoffs?.filter((handoff) => handoff.isEnabled).length ?? 0;
   const totalHandoffs = referenceDataWorkbench?.operationsHandoffs?.length ?? 0;
   const operationsWorkbench = passport?.operationsWorkbench ?? null;
-  const operationsWorkbenchStatus = operationsWorkbench?.status?.trim() || "Unavailable";
+  const operationsWorkbenchStatus = operationsWorkbench?.status?.trim() || VALUE_STATE_LABELS.unavailable;
   const operationsReadiness = buildInstrumentPassportOperationsReadinessRows(passport);
   const operationsPanels = buildInstrumentPassportOperationsPanelRows(passport);
   const activeProviderCount = providerRows.filter((row) => row.isActive).length;
@@ -1301,18 +1301,18 @@ export function buildTradingParametersViewState(
   const errorText = normalizedError?.summary ?? null;
   const fields: TradingParametersField[] = params
     ? [
-        { label: "Lot size", value: params.lotSize !== null ? String(params.lotSize) : "—" },
-        { label: "Tick size", value: params.tickSize !== null ? String(params.tickSize) : "—" },
-        { label: "Contract multiplier", value: params.contractMultiplier !== null ? String(params.contractMultiplier) : "—" },
+        { label: "Lot size", value: params.lotSize !== null ? String(params.lotSize) : VALUE_STATE_LABELS.unavailable },
+        { label: "Tick size", value: params.tickSize !== null ? String(params.tickSize) : VALUE_STATE_LABELS.unavailable },
+        { label: "Contract multiplier", value: params.contractMultiplier !== null ? String(params.contractMultiplier) : VALUE_STATE_LABELS.unavailable },
         {
           label: "Margin requirement",
-          value: params.marginRequirementPct !== null ? `${params.marginRequirementPct}%` : "—",
+          value: params.marginRequirementPct !== null ? `${params.marginRequirementPct}%` : VALUE_STATE_LABELS.unavailable,
           tone: params.marginRequirementPct !== null && params.marginRequirementPct > 50 ? "warning" : "default"
         },
-        { label: "Trading hours (UTC)", value: params.tradingHoursUtc ?? "—" },
+        { label: "Trading hours (UTC)", value: params.tradingHoursUtc ?? VALUE_STATE_LABELS.unavailable },
         {
           label: "Circuit breaker",
-          value: params.circuitBreakerThresholdPct !== null ? `${params.circuitBreakerThresholdPct}%` : "—",
+          value: params.circuitBreakerThresholdPct !== null ? `${params.circuitBreakerThresholdPct}%` : VALUE_STATE_LABELS.unavailable,
           tone: params.circuitBreakerThresholdPct !== null ? "warning" : "default"
         }
       ]
@@ -1320,7 +1320,7 @@ export function buildTradingParametersViewState(
 
   return {
     securityId: params?.securityId ?? "",
-    asOfLabel: params?.asOf ? formatSecurityDate(params.asOf) : "—",
+    asOfLabel: params?.asOf ? formatSecurityDate(params.asOf) : VALUE_STATE_LABELS.unavailable,
     fields,
     errorText,
     errorDetails: normalizedError?.details ?? [],
@@ -1363,7 +1363,7 @@ export function formatScheduleEventSource(sourceSystem: string, sourceRecordId: 
 
 export function formatScheduleAmount(value: number | null, currency: string): string {
   if (value === null || !Number.isFinite(value)) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   const prefix = value >= 0 ? "" : "-";
@@ -1374,7 +1374,7 @@ export function formatScheduleAmount(value: number | null, currency: string): st
 
 export function formatQuantity(value: number | null): string {
   if (value === null || !Number.isFinite(value)) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   return formatNumber(value, { maximumFractionDigits: 4 });
@@ -1410,7 +1410,7 @@ export function openLotStatusTone(status: string): SecurityOpenLotRowViewModel["
 
 export function formatScheduleVariance(expected: number | null, actual: number | null, currency: string): string {
   if (expected === null || actual === null || !Number.isFinite(expected) || !Number.isFinite(actual)) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
   const variance = actual - expected;
@@ -1425,11 +1425,11 @@ export function formatScheduleVariance(expected: number | null, actual: number |
 
 export function formatScheduleFactor(start: number | null, end: number | null): string {
   if (start === null && end === null) {
-    return "—";
+    return VALUE_STATE_LABELS.unavailable;
   }
 
-  const startLabel = start === null ? "—" : formatDecimal(start, 6);
-  const endLabel = end === null ? "—" : formatDecimal(end, 6);
+  const startLabel = start === null ? VALUE_STATE_LABELS.unavailable : formatDecimal(start, 6);
+  const endLabel = end === null ? VALUE_STATE_LABELS.unavailable : formatDecimal(end, 6);
   return `${startLabel} → ${endLabel}`;
 }
 
@@ -1489,5 +1489,5 @@ export function formatCorpActAmount(action: CorporateAction): string {
     return `${action.rightsPerShare} rights/share${price}`;
   }
 
-  return "—";
+  return VALUE_STATE_LABELS.unavailable;
 }

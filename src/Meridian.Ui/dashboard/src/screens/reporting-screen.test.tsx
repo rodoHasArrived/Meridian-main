@@ -1874,8 +1874,8 @@ describe("ReportingScreen", () => {
     expect(dailySlice).toHaveTextContent("$50.00");
     expect(dailySlice).toHaveTextContent("1 source-backed run(s) in the daily window");
     // No prior published period: the comparison reads as a dash, not a prior of $0.
-    expect(dailySlice).toHaveTextContent("Prior—");
-    expect(dailySlice).toHaveTextContent("Change—");
+    expect(dailySlice).toHaveTextContent("PriorNot available");
+    expect(dailySlice).toHaveTextContent("ChangeNot available");
     expect(within(dailySlice).getByRole("link", { name: "Open Daily P&L P&L slice" })).toHaveAttribute(
       "href",
       "/api/workstation/reporting?pnlSlice=daily"
@@ -1884,7 +1884,7 @@ describe("ReportingScreen", () => {
     const yearlySlice = screen.getByRole("listitem", { name: "Yearly P&L Yearly P&L slice" });
     expect(yearlySlice).toHaveTextContent("2026-01-01 to 2026-04-11");
     expect(yearlySlice).toHaveTextContent("pnl-slice:20260411160000:yearly:sources-1:prior-0");
-    expect(yearlySlice).not.toHaveTextContent("Prior—");
+    expect(yearlySlice).not.toHaveTextContent("PriorNot available");
   });
 
   it("renders Top-N and contribution analytics rows from the shared reporting payload", () => {
@@ -3698,6 +3698,7 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule ledger book ID"), {
       target: { value: "11111111-1111-1111-1111-111111111111" }
     });
+    fireEvent.change(screen.getByLabelText("Reporting schedule presentation currency"), { target: { value: "USD" } });
     await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
@@ -4037,6 +4038,7 @@ describe("ReportingScreen", () => {
     fireEvent.change(screen.getByLabelText("Reporting schedule delivery note"), {
       target: { value: "Email link archive." }
     });
+    fireEvent.change(screen.getByLabelText("Reporting schedule presentation currency"), { target: { value: "USD" } });
     await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
@@ -4077,6 +4079,7 @@ describe("ReportingScreen", () => {
     renderWithRouter(<ReportingScreen data={accounting} />, { initialEntries: ["/reporting/scheduled"] });
 
     expect(screen.getByRole("button", { name: "Stage reporting schedule delivery target" })).toBeDisabled();
+    fireEvent.change(screen.getByLabelText("Reporting schedule presentation currency"), { target: { value: "USD" } });
     await user.click(screen.getByRole("button", { name: "Save reporting schedule" }));
 
     expect(fetchMock).not.toHaveBeenCalled();

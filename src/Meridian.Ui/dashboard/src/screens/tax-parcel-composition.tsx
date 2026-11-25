@@ -3,6 +3,7 @@ import { DenseDataTable, type DenseDataTableColumn } from "@/components/meridian
 import { formatTaxAmount, isTaxDecimalText } from "@/lib/ledger-tax-results-format";
 import type { LedgerDisposalTaxParcel, LedgerDisposalTaxResult } from "@/types/ledger-tax-results";
 
+import { VALUE_STATE_LABELS } from "@/lib/format";
 /** Exact decimal evidence is reduced to bounded ratios only for screen coordinates. */
 export function taxParcelCoordinates(parcels: LedgerDisposalTaxParcel[]) {
   const validAmounts = parcels.map((parcel) => isTaxDecimalText(parcel.economicGainOrLoss));
@@ -35,7 +36,7 @@ export function TaxParcelComposition({ parcels, currency, state, disposal }: { p
   const rows = parcels.map((item, index) => ({ ...item, selectionId: parcelKey(item, index) }));
   const columns: DenseDataTableColumn<(typeof rows)[number]>[] = [
     { id: "parcel", label: "Parcel", render: item => <button className="underline" aria-pressed={selected === item.selectionId} onClick={() => setSelected(item.selectionId)}>{item.lotId}</button> },
-    { id: "days", label: "Holding days", numeric: true, render: item => Number.isFinite(item.holdingPeriodDays) && item.holdingPeriodDays >= 0 ? item.holdingPeriodDays : "Unavailable" },
+    { id: "days", label: "Holding days", numeric: true, render: item => Number.isFinite(item.holdingPeriodDays) && item.holdingPeriodDays >= 0 ? item.holdingPeriodDays : VALUE_STATE_LABELS.unavailable },
     { id: "character", label: "Tax character", render: item => `${item.character === "LongTerm" ? "Long term" : "Short term"}${item.holdingPeriodCarried ? " · Carried" : ""}` },
     { id: "economic", label: "Economic gain / loss", numeric: true, render: item => formatTaxAmount(item.economicGainOrLoss, currency) }
   ];

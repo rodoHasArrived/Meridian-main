@@ -1,5 +1,5 @@
 import type { FamilyOwnershipGraph, FamilyAssetSummary, PrivateAssetSummary, CapitalCommitment, CapitalActivity } from "@/types/family-office.types";
-import { formatCurrencyAmount, formatNumber, formatPercent as formatPercentValue, pluralizeCount } from "@/lib/format";
+import { formatCurrencyAmount, formatNumber, formatPercent as formatPercentValue, pluralizeCount, VALUE_STATE_LABELS } from "@/lib/format";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 
 export type FamilyOfficeTone = "default" | "success" | "warning" | "danger";
@@ -355,7 +355,7 @@ function buildNotConnectedFamilyOfficeScreenViewModel(): FamilyOfficeScreenViewM
     emptyActionLabel: "Set up family entities",
     statusChips: [
       { label: "Source", value: "Not connected" },
-      { label: "As of", value: "Unavailable" }
+      { label: "As of", value: VALUE_STATE_LABELS.unavailable }
     ],
     panels: [],
     ownershipGraph: {
