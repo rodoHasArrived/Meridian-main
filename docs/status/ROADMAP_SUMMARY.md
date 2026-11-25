@@ -92,6 +92,6 @@ Snapshot date: 2026-11-25
 | W12-ICPAIR-001 | Durable reviewed counterpart proposals and aged intercompany breaks | accepted | green | high | Accounting and Ledger |
 | W12-ICSCHEDULE-001 | Opt-in, reviewed intercompany accrual schedules | ready_for_acceptance | green | medium | Accounting and Ledger |
 | W12-YEND-001 | Fiscal year-end close and opening-balance roll-forward | in_progress | green | medium | Accounting and Ledger |
-| W13-OMS-001 | Governed order management and broker execution workbench | in_progress | green | medium | Execution and Fund Accounts |
-| W13-STRAT-001 | Governed strategy formulation and execution lifecycle | in_progress | green | medium | Strategy Analytics |
+| W13-OMS-001 | Governed order management and broker execution workbench | planned | green | medium | Execution and Fund Accounts |
+| W13-STRAT-001 | Governed strategy formulation and execution lifecycle | planned | green | medium | Strategy Analytics |
 | W14-ATTEST-001 | Single-principal attestation for governed approvals in the single-operator envelope | in_progress | yellow | medium | Platform Security and Governance |

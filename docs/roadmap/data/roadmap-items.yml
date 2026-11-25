@@ -3092,11 +3092,11 @@ items:
       - Strategy
       - Trading
     owner_lane: Strategy Analytics
-    status: in_progress
+    status: planned
     health: green
     priority: medium
-    evidence_posture: in_progress
-    status_note: Bounded slices landed (strategy-artifact identity, governed versions, scoped Designer paper execution, Designer artifact binding). Unranked; supported envelope, recovery, end-to-end rehearsal and acceptance remain open. Grants no live activation authority.
+    evidence_posture: planned_evidence
+    status_note: Bounded slices landed (strategy-artifact identity, governed versions, scoped Designer paper execution, Designer artifact binding). Stays planned until the design-document adaptation is reviewed; envelope, recovery, rehearsal and acceptance remain open. No live authority.
     decision_ids:
     - DEC-TRADING-STRATEGY-DIRECTION-001
     pr_references:
@@ -3153,11 +3153,11 @@ items:
       - Trading
       - Portfolio
     owner_lane: Execution and Fund Accounts
-    status: in_progress
+    status: planned
     health: green
     priority: medium
-    evidence_posture: in_progress
-    status_note: Bounded slices landed (order command boundary Phases 0-5, governed live order authority, retained cancel-all evidence). Unranked; manual-intent contract, recovery, broker reconciliation, live-support evidence and acceptance remain open.
+    evidence_posture: planned_evidence
+    status_note: Bounded slices landed (order command boundary Phases 0-5, governed live order authority, retained cancel-all evidence). Stays planned until the design-document adaptation is reviewed; manual-intent contract, recovery, broker reconciliation and acceptance remain open.
     decision_ids:
     - DEC-TRADING-STRATEGY-DIRECTION-001
     pr_references:

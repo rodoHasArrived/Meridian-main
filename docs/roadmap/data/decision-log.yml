@@ -527,21 +527,22 @@ decisions:
       - W12-ICCONFIRM-001
       - W10-SEAM-001
   - id: DEC-W13-STATUS-001
-    title: "Proposed: record W13-STRAT-001, W13-OMS-001 and W10-CONSOL-001 as in progress"
+    title: "Proposed: record W10-CONSOL-001 as in progress and review the W13 design-document adaptation"
     status: proposed
     decided_on: 2026-11-25
     owner_lane: Core Team
     summary: >-
       Proposed by the 2026-11-25 registry verification and awaiting the repository owner's acceptance.
-      DEC-TRADING-STRATEGY-DIRECTION-001 kept W13-STRAT-001 and W13-OMS-001 planned, but bounded
-      implementation has since merged (PRs 3644, 3686, 3708 and 3731: order command boundary, scoped
-      Designer paper execution, governed strategy versions and live order authority, Designer artifact
-      binding and retained cancel-all evidence). W10-CONSOL-001 likewise links about fifteen source and
-      test entries while still marked planned. The registry now shows all three as in_progress so
-      planners can see the work in flight. The change adopts no delivery rank, implementation
+      W10-CONSOL-001 links about fifteen source and test entries while marked planned, so the registry
+      now shows it as in_progress. If the owner rejects this entry, return it to planned.
+      DEC-TRADING-STRATEGY-DIRECTION-001 kept W13-STRAT-001 and W13-OMS-001 planned, and
+      build/scripts/docs/validate-design-document-adaptation.py holds them at planned and
+      planned_evidence until the design-document adaptation is reviewed. Bounded implementation has
+      since merged (PRs 3644, 3686, 3708 and 3731), and both rows now record it in their notes, PR
+      references and evidence while staying planned. This entry asks the owner to review that
+      adaptation so the W13 rows can move to in_progress. It adopts no delivery rank, implementation
       completion, operator acceptance, live activation authority or release certification; every
-      reservation in DEC-TRADING-STRATEGY-DIRECTION-001 stays in force. If the owner rejects this
-      entry, return the three rows to planned.
+      reservation in DEC-TRADING-STRATEGY-DIRECTION-001 stays in force.
     related_roadmap_items:
       - W13-STRAT-001
       - W13-OMS-001
