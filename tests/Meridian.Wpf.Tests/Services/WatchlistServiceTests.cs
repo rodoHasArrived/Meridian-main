@@ -67,10 +67,10 @@ public sealed class WatchlistServiceTests
     public void WatchlistsChangedEventArgs_WithNullWatchlist_ShouldAllowNull()
     {
         // Act
-        var args = new WatchlistsChangedEventArgs(WatchlistChangeType.Synced, null);
+        var args = new WatchlistsChangedEventArgs(WatchlistChangeType.Reordered, null);
 
         // Assert
-        args.ChangeType.Should().Be(WatchlistChangeType.Synced);
+        args.ChangeType.Should().Be(WatchlistChangeType.Reordered);
         args.Watchlist.Should().BeNull();
     }
 
