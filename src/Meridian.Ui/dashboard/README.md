@@ -11,6 +11,20 @@ last_reviewed: 2026-11-23
 
 # src/Meridian.Ui/dashboard
 
+## Cancel-all incident history
+
+Trading → Risk includes account-scoped retained cancel-all history, with recent incident selection
+and an exact-ID lookup for older records. Each incident shows all attributed orders, observed fills,
+possible remaining quantities, cancellation outcomes, unconfirmed replacements and valuation
+coverage. Evidence completion does not imply a fully cancelled book. Broker coverage, interrupted
+retention, missing quantities, empty history and unavailable reads remain distinct.
+
+Financial quantities retain the server's exact decimal text; unknown exposure is never zero-filled.
+Scope and incident changes abort pending reads and discard late responses. Order observations keep
+their timestamps and do not claim current exposure. The panel uses the standard table workbench,
+including scoped export context and keyboard-operable observation disclosures. The authoritative
+incident API disables development fallback. Focused tests: `trading-screen.cancel-incidents.test.tsx`.
+
 ## Asset Detail
 
 Asset Detail separates reference data, holdings/local lots, event evidence, trading parameters,
