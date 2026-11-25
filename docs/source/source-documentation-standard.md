@@ -99,8 +99,10 @@ python3 build/scripts/docs/render-source-docs.py --stale-only --summary
 
 `docs/source/generated/stale-docs.json` is the machine-readable work queue. It records the module
 ID, path, README, hash-drift reason, and recommended action. Refresh selected
-`docs/source/generated/source-hash-manifest.json` entries with `--write-module` only after those
-stale module docs have been reviewed or updated.
+reviewed fingerprints with `--write-module` only after those stale module docs have been reviewed
+or updated. Each module's reviewed fingerprint lives in its own
+`docs/source/generated/source-hashes/<MODULE_ID>.json` file (the shared schema header is
+`_manifest.json`), so a narrow refresh changes only that module's file.
 
 ## Folder-tree README sync
 
