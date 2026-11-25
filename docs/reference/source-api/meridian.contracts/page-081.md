@@ -358,7 +358,7 @@ public sealed record WorkstationSecurityCoverageReferencePayload(string Source, 
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityCoverageStatus</code>. Kind: `enum`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:520](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L520).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:524](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L524).
 
 Security Master coverage state associated with a workstation security reference.
 
@@ -370,16 +370,16 @@ Enum declarations:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:522](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L522) |  |
-| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:523](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L523) |  |
-| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:524](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L524) |  |
-| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:525](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L525) |  |
+| <code>Resolved</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:526](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L526) |  |
+| <code>Partial</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:527](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L527) |  |
+| <code>Missing</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:528](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L528) |  |
+| <code>Unavailable</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:529](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L529) |  |
 
 ## WorkstationSecurityReference
 
 Qualified name: <code>Meridian.Contracts.Workstation.WorkstationSecurityReference</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:537](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L537).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:541](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L541).
 
 Lightweight Security Master reference used by workstation portfolio and ledger surfaces. SubType is the most specific classification available at query time (e.g. &quot;CommonShare&quot;, &quot;Bond&quot;, &quot;OptionContract&quot;). It is derived from the security&#x27;s asset class and is null when the asset class does not map to a unique sub-type. RiskCountry is extracted from the CommonTerms JSON blob when available. IssuerType is only populated by full workbench queries; the lightweight symbol-lookup path leaves it null to avoid an extra round-trip.
 

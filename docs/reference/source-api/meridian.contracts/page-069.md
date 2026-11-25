@@ -641,26 +641,26 @@ Enum declarations:
 
 Qualified name: <code>Meridian.Contracts.Workstation.PortfolioSummary</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:561](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L561).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:565](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L565).
 
 Shared portfolio rollup for workstation research and trading surfaces.
 
 ```csharp
-public sealed record PortfolioSummary(string PortfolioId, string RunId, DateTimeOffset AsOf, decimal Cash, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, decimal RealizedPnl, decimal UnrealizedPnl, decimal Commissions, decimal Financing, IReadOnlyList<PortfolioPositionSummary> Positions, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, string? SourceEventId = null, Guid? SourceJournalEntryId = null)
+public sealed record PortfolioSummary(string PortfolioId, string RunId, DateTimeOffset AsOf, decimal Cash, decimal LongMarketValue, decimal ShortMarketValue, decimal GrossExposure, decimal NetExposure, decimal TotalEquity, decimal RealizedPnl, decimal UnrealizedPnl, decimal Commissions, decimal? Financing, IReadOnlyList<PortfolioPositionSummary> Positions, int SecurityResolvedCount = 0, int SecurityMissingCount = 0, [property : JsonPropertyName("accountScopeId")] string? AccountScopeId = null, [property : JsonPropertyName("accountScopeDisplayName")] string? AccountScopeDisplayName = null, [property : JsonPropertyName("entityScopeId")] string? EntityScopeId = null, [property : JsonPropertyName("entityScopeDisplayName")] string? EntityScopeDisplayName = null, [property : JsonPropertyName("sleeveScopeId")] string? SleeveScopeId = null, [property : JsonPropertyName("sleeveScopeDisplayName")] string? SleeveScopeDisplayName = null, [property : JsonPropertyName("vehicleScopeId")] string? VehicleScopeId = null, [property : JsonPropertyName("vehicleScopeDisplayName")] string? VehicleScopeDisplayName = null, AccountingBasisKindDto AccountingBasis = AccountingBasisKindDto.Primary, string AccountingPolicyId = "legacy-v1", string AccountingPolicyVersion = "legacy-v1", string? RuleId = null, string? RuleVersion = null, string? SourceEventId = null, Guid? SourceJournalEntryId = null)
 ```
 
 Declared public members:
 
 | Declaration | Source | Summary |
 | --- | --- | --- |
-| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:594](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L594) |  |
-| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:596](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L596) |  |
+| <code>public string? FinancingCoverageStatus { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:602](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L602) |  |
+| <code>[JsonIgnore(Condition = JsonIgnoreCondition.Never)] public decimal? RunAttributedMarginInterest { get; init; }</code> | [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:604](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L604) |  |
 
 ## PositionDiffEntry
 
 Qualified name: <code>Meridian.Contracts.Workstation.PositionDiffEntry</code>. Kind: `record`.
 
-Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:892](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L892).
+Source: [src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs:904](../../../../src/Meridian.Contracts/Workstation/StrategyRunReadModels.cs#L904).
 
 A single position change between two runs.
 
