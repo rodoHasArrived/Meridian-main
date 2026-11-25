@@ -56,7 +56,7 @@ class RegenCommandTests(unittest.TestCase):
 @unittest.skipUnless(os.name == "posix" and shutil.which("git") and shutil.which("bash"), "Git/Bash hook integration")
 class MergeRegenerationTests(unittest.TestCase):
     def test_concurrent_review_snapshots_conflict_instead_of_text_merging(self):
-        for snapshot in ("docs/generated/workflow-command-reference.md", "docs/source/generated/source-hash-manifest.json"):
+        for snapshot in ("docs/generated/workflow-command-reference.md", "docs/source/generated/source-hashes/SRC-APP.json"):
             with self.subTest(snapshot=snapshot), tempfile.TemporaryDirectory(ignore_cleanup_errors=True) as temporary:
                 root = Path(temporary)
                 environment = dict(os.environ, GIT_CONFIG_GLOBAL=os.devnull, GIT_CONFIG_NOSYSTEM="1")

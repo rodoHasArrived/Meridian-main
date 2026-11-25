@@ -36,7 +36,7 @@ lanes, then run the full `bash scripts/ci.sh` gate before submitting the change.
 ## Post-Merge Smoke
 
 - Confirm required `Meridian CI` checks run for the applicable pull request, push, or merge-group event.
-- For WPF changes, inspect the `Windows Desktop Build` validation bundle; its smoke publish is a separate parallel job that runs only
+- For WPF changes, inspect the `Windows Desktop Build` validation bundle; its publish step runs only
   when the workflow's smoke-publish condition is met.
 - For publish changes, run the applicable `Publish Smoke` project/runtime and inspect its artifact
   and release-evidence manifest using the current [workflow guide](../../.github/workflows/README.md).
