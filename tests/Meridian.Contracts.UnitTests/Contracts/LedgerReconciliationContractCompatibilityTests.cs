@@ -1,4 +1,6 @@
+using System.Globalization;
 using System.Text.Json;
+using Meridian.Contracts.AccountingSystem;
 using Meridian.Contracts.Workstation;
 using Xunit;
 
@@ -7,6 +9,115 @@ namespace Meridian.Tests.Contracts;
 public sealed class LedgerReconciliationContractCompatibilityTests
 {
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web);
+
+    [Theory]
+    [InlineData("en-US")]
+    [InlineData("fr-FR")]
+    public void ExternalGlReconciliationRow_PreservesExactTextAlongsideLegacyNumbers(string cultureName)
+    {
+        var originalCulture = CultureInfo.CurrentCulture;
+        try
+        {
+            CultureInfo.CurrentCulture = CultureInfo.GetCultureInfo(cultureName);
+            var row = new AccountingSystemReconciliationRowDto(
+                "row-exact", "1000", "Cash", "KWD", AccountingSystemReconciliationStatusDto.Variance,
+                9007199254740993.125m, 0.0000000000000000000000000001m,
+                9007199254740993.126m, 0m, -0.001m, "Retained comparison");
+
+            using var document = JsonDocument.Parse(JsonSerializer.Serialize(row, JsonOptions));
+            var root = document.RootElement;
+            Assert.Equal("9007199254740993.125", root.GetProperty("externalDebitExact").GetString());
+            Assert.Equal("0.0000000000000000000000000001", root.GetProperty("externalCreditExact").GetString());
+            Assert.Equal("9007199254740993.126", root.GetProperty("meridianDebitExact").GetString());
+            Assert.Equal("0", root.GetProperty("meridianCreditExact").GetString());
+            Assert.Equal("-0.001", root.GetProperty("varianceExact").GetString());
+            Assert.Equal("KWD", root.GetProperty("currency").GetString());
+            Assert.Equal(JsonValueKind.Number, root.GetProperty("externalDebit").ValueKind);
+            Assert.Equal(row.ExternalDebit, root.GetProperty("externalDebit").GetDecimal());
+            Assert.Equal(row.ExternalCredit, root.GetProperty("externalCredit").GetDecimal());
+            Assert.Equal(row.MeridianDebit, root.GetProperty("meridianDebit").GetDecimal());
+            Assert.Equal(row.MeridianCredit, root.GetProperty("meridianCredit").GetDecimal());
+            Assert.Equal(row.Variance, root.GetProperty("variance").GetDecimal());
+        }
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+        }
+    }
+
+    [Fact]
+    public void ExternalGlReconciliationSummary_PreservesExactTotalsAlongsideLegacyNumbers()
+    {
+        var summary = new AccountingSystemReconciliationSummaryDto(
+            "reconciliation-exact", "import-exact", "provider-fixture", "fund-fixture",
+            new DateOnly(2026, 6, 1), new DateOnly(2026, 6, 30), DateTimeOffset.UnixEpoch,
+            0, 0, 9007199254740993.125m, 0.0000000000000000000000000001m,
+            12345678901234567890.12345678m, 0m, false, "Review required", [], []);
+
+        using var document = JsonDocument.Parse(JsonSerializer.Serialize(summary, JsonOptions));
+        var root = document.RootElement;
+        Assert.Equal("9007199254740993.125", root.GetProperty("totalExternalDebitsExact").GetString());
+        Assert.Equal("0.0000000000000000000000000001", root.GetProperty("totalExternalCreditsExact").GetString());
+        Assert.Equal("12345678901234567890.12345678", root.GetProperty("totalMeridianDebitsExact").GetString());
+        Assert.Equal("0", root.GetProperty("totalMeridianCreditsExact").GetString());
+        Assert.Equal(JsonValueKind.Number, root.GetProperty("totalExternalDebits").ValueKind);
+        Assert.Equal(summary.TotalExternalDebits, root.GetProperty("totalExternalDebits").GetDecimal());
+        Assert.Equal(summary.TotalExternalCredits, root.GetProperty("totalExternalCredits").GetDecimal());
+        Assert.Equal(summary.TotalMeridianDebits, root.GetProperty("totalMeridianDebits").GetDecimal());
+        Assert.Equal(summary.TotalMeridianCredits, root.GetProperty("totalMeridianCredits").GetDecimal());
+    }
+
+    [Theory]
+    [InlineData("EUR", "USD")]
+    [InlineData(null, null)]
+    [InlineData("EUR", null)]
+    [InlineData(null, "JPY")]
+    public void ExternalGlReconciliationRow_PreservesPerSideCurrencyIncludingExplicitNull(
+        string? externalCurrency, string? meridianCurrency)
+    {
+        var row = new AccountingSystemReconciliationRowDto(
+            "row-currency", "1000", "Cash", "USD", AccountingSystemReconciliationStatusDto.Variance,
+            100m, 0m, 100m, 0m, 0m, "Retained comparison")
+        {
+            ExternalCurrency = externalCurrency,
+            MeridianCurrency = meridianCurrency
+        };
+        var options = new JsonSerializerOptions(JsonOptions)
+        {
+            DefaultIgnoreCondition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull
+        };
+
+        var json = JsonSerializer.Serialize(row, options);
+        using var document = JsonDocument.Parse(json);
+        Assert.Equal(externalCurrency, document.RootElement.GetProperty("externalCurrency").GetString());
+        Assert.Equal(meridianCurrency, document.RootElement.GetProperty("meridianCurrency").GetString());
+        Assert.Equal("USD", document.RootElement.GetProperty("currency").GetString());
+        var roundTrip = JsonSerializer.Deserialize<AccountingSystemReconciliationRowDto>(json, options)!;
+        Assert.Equal(externalCurrency, roundTrip.ExternalCurrency);
+        Assert.Equal(meridianCurrency, roundTrip.MeridianCurrency);
+    }
+
+    [Fact]
+    public void ExternalGlReconciliationRow_LegacyJsonRemainsReadableAndExactCompanionsCannotOverrideAmounts()
+    {
+        const string legacyJson = """
+            {"rowId":"row-exact","accountCode":"1000","accountName":"Cash","currency":"EUR",
+             "status":"Variance","externalDebit":9007199254740993.125,"externalCredit":0,
+             "meridianDebit":9007199254740993.126,"meridianCredit":0,"variance":-0.001,
+             "detail":"Retained comparison"}
+            """;
+        var legacy = JsonSerializer.Deserialize<AccountingSystemReconciliationRowDto>(legacyJson, JsonOptions)!;
+        Assert.Equal("9007199254740993.125", legacy.ExternalDebitExact);
+        Assert.Equal("-0.001", legacy.VarianceExact);
+        Assert.Null(legacy.ExternalCurrency);
+        Assert.Null(legacy.MeridianCurrency);
+
+        var suppliedCompanions = legacyJson.Replace("\"detail\":", "\"externalDebitExact\":\"1\",\"varianceExact\":null,\"detail\":", StringComparison.Ordinal);
+        var roundTrip = JsonSerializer.Deserialize<AccountingSystemReconciliationRowDto>(suppliedCompanions, JsonOptions)!;
+        Assert.Equal(legacy.ExternalDebit, roundTrip.ExternalDebit);
+        Assert.Equal(legacy.ExternalDebitExact, roundTrip.ExternalDebitExact);
+        Assert.Equal(legacy.VarianceExact, roundTrip.VarianceExact);
+    }
 
     [Fact]
     public void FundLedgerSummary_WebAndRetainedConsumers_SerializeSameMembers()

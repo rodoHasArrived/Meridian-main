@@ -2312,6 +2312,8 @@ public sealed partial class AccountingSystemIntegrationService
 
         public string Currency { get; }
 
+        public string? SourceCurrency { get; init; }
+
         public decimal Debit { get; set; }
 
         public decimal Credit { get; set; }
