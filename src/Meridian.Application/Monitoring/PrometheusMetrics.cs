@@ -6,6 +6,7 @@ using Meridian.DataIntegration.Monitoring;
 using Meridian.DataIntegration.Monitoring.DataQuality;
 using Prometheus;
 using Meridian.Core.Monitoring;
+using Meridian.Contracts.Pipeline;
 
 namespace Meridian.Application.Monitoring;
 
@@ -447,6 +448,46 @@ public static class PrometheusMetrics
         "Total run continuity failures where canonical run identity disagrees across shared surfaces",
         new CounterConfiguration { LabelNames = new[] { "surface", "failure_kind" } });
 
+    // Pipeline backlog and consumer health (refreshed on the scrape from EventPipeline.GetStatistics,
+    // so nothing is added to the publish or consume hot path). The {pipeline} label separates the
+    // live collector pipeline from any other pipeline instance a host exports.
+    private static readonly string[] PipelineLabel = ["pipeline"];
+
+    private static readonly Gauge PipelineQueueDepth = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_queue_depth", "Events currently queued in the pipeline channel",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineQueueCapacity = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_queue_capacity", "Configured capacity of the pipeline channel",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineQueueUtilizationRatio = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_queue_utilization_ratio", "Pipeline channel fill level (0-1)",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelinePeakQueueDepth = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_peak_queue_depth", "Highest sampled pipeline channel depth since the pipeline started",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineSecondsSinceLastFlush = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_seconds_since_last_flush", "Seconds since the pipeline last flushed its storage sink",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineConsumersActive = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_consumers_active", "Pipeline consumer tasks currently running",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Gauge PipelineConsumersFaulted = Prometheus.Metrics.CreateGauge(
+        "mdc_pipeline_consumers_faulted", "Pipeline consumer tasks that have terminated with a fault",
+        new GaugeConfiguration { LabelNames = PipelineLabel });
+
+    private static readonly Counter PipelineConsumerFailures = Prometheus.Metrics.CreateCounter(
+        "mdc_pipeline_consumer_failures_total", "Pipeline consumer loop iterations that failed and were retried",
+        new CounterConfiguration { LabelNames = PipelineLabel });
+
+    /// <summary>The <c>pipeline</c> label value for the host's live market-data pipeline.</summary>
+    public const string LivePipelineLabel = "live";
+
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
     /// Should be called periodically (e.g., every 1-5 seconds) to keep metrics current.
@@ -570,6 +611,38 @@ public static class PrometheusMetrics
 
         // Update validation pipeline metrics
         UpdateValidationMetrics(ValidationMetrics.GetSnapshot());
+    }
+
+    /// <summary>
+    /// Updates the pipeline backlog and consumer-health series from a pipeline statistics snapshot.
+    /// </summary>
+    /// <remarks>
+    /// Called on the <c>/metrics</c> scrape with <c>EventPipeline.GetStatistics()</c>, so the values
+    /// are read when Prometheus asks rather than maintained on the hot path. The consumer-failure
+    /// total is mirrored through the same reset-tolerant path as the event totals, so a pipeline
+    /// that is rebuilt (and starts its own count at zero) never makes the exported counter go
+    /// backwards.
+    /// </remarks>
+    public static void UpdatePipelineMetrics(in PipelineStatistics statistics, string pipeline = LivePipelineLabel)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(pipeline);
+
+        PipelineQueueDepth.WithLabels(pipeline).Set(statistics.CurrentQueueSize);
+        PipelineQueueCapacity.WithLabels(pipeline).Set(statistics.QueueCapacity);
+        // PipelineStatistics.QueueUtilization is a percentage (0-100); the ratio form is the
+        // Prometheus convention and keeps alert thresholds unit-free.
+        PipelineQueueUtilizationRatio.WithLabels(pipeline).Set(
+            statistics.QueueCapacity > 0 ? statistics.QueueUtilization / 100d : 0d);
+        PipelinePeakQueueDepth.WithLabels(pipeline).Set(statistics.PeakQueueSize);
+        PipelineSecondsSinceLastFlush.WithLabels(pipeline).Set(Math.Max(0d, statistics.TimeSinceLastFlush.TotalSeconds));
+        PipelineConsumersActive.WithLabels(pipeline).Set(statistics.ActiveConsumers);
+        PipelineConsumersFaulted.WithLabels(pipeline).Set(statistics.FaultedConsumers);
+
+        lock (ResettableTotalLock)
+        {
+            PipelineConsumerFailures.WithLabels(pipeline).IncTo(
+                MirrorResettableTotal("consumer_failures:" + pipeline, statistics.ConsumerIterationFailures));
+        }
     }
 
     /// <summary>

@@ -162,6 +162,54 @@ very high inbound rate still loses a large number of events.
 2. Verify disk health on the data root.
 3. Pause non-critical subscriptions to shed load.
 
+## Pipeline Backlog
+
+Alert: `MeridianPipelineBacklogHigh` — severity warning, priority P2.
+
+The pipeline channel has been more than 70% full for two minutes
+(`mdc_pipeline_queue_utilization_ratio`, one series per `pipeline` label). Nothing has been
+dropped yet; [High drop rate](#high-drop-rate) and [Pipeline backpressure](#pipeline-backpressure)
+fire only once events are lost. Use this window to act before they do.
+
+**Probable causes:** storage sink slow or failing; a faulted consumer; a burst of market data; a
+channel capacity too small for the sustained inbound rate.
+
+**Immediate actions**
+
+1. Check `mdc_sink_write_failures_total` and disk latency on the data root. A sink that is failing
+   or slow is the most common cause; see [Sink write failures](#sink-write-failures).
+2. Check `mdc_pipeline_consumers_faulted`; a dead consumer stops draining the channel. See
+   [Pipeline consumer faulted](#pipeline-consumer-faulted).
+3. `GET /api/backpressure` for the live queue size and peak (`mdc_pipeline_peak_queue_depth`).
+4. If the sink is healthy and simply outpaced, shed non-critical subscriptions.
+
+**Resolved when:** `mdc_pipeline_queue_utilization_ratio` stays below 0.7 and
+`mdc_pipeline_queue_depth` trends down.
+
+## Pipeline Consumer Faulted
+
+Alert: `MeridianPipelineConsumerFaulted` — severity critical, priority P1.
+
+A pipeline consumer task has terminated with a fault (`mdc_pipeline_consumers_faulted > 0`) and is
+no longer draining the channel. With a single consumer, nothing further is persisted; backlog and
+then drops follow.
+
+**Probable causes:** an unhandled exception in the consume loop; a storage sink throwing on every
+write; a validator or dedup-ledger failure.
+
+**Immediate actions**
+
+1. Read the `Pipeline consumer iteration failed` lines in `<data-root>/_logs` (category
+   `Meridian.Application.Pipeline.EventPipeline`) leading up to the fault. The task's own
+   terminating exception is logged when the pipeline shuts down (`Consumer task failed during
+   disposal`).
+2. Check `mdc_sink_write_failures_total` and disk health; a sink failure is the usual trigger.
+3. Restart the host once the cause is addressed. WAL recovery replays events that were not
+   committed to the sink.
+
+**Resolved when:** after restart `mdc_pipeline_consumers_faulted` is 0 and
+`mdc_pipeline_queue_depth` drains.
+
 ## No Events
 
 Alert: `MeridianNoEventsPublished` — severity warning, priority P2, objective
@@ -249,6 +297,33 @@ to persist. Follow [Failover and Recovery](./failover-and-recovery.md) instead.
 recovery with zero corrupted records. The alert reads the counter total, not a rate, so it stays
 firing for the life of the process that found the damage — it will not go quiet on its own while
 the corruption is still unreconciled.
+
+## Sink Write Failures
+
+Alert: `MeridianSinkWriteFailing` — severity critical, priority P1.
+
+The storage sink has failed three or more write attempts in five minutes, sustained for five
+minutes (`mdc_sink_write_failures_total`, labelled by `sink`). Failed batches are restored and
+retried, so a single failure that the next flush clears does not fire this alert. Sustained
+failures mean the data root is not accepting writes: events are held in memory and the WAL only.
+
+This is distinct from [Storage write errors](#storage-write-errors), which reports WAL corruption
+found at recovery.
+
+**Probable causes:** disk full; filesystem permissions; I/O errors; storage path unmounted or
+misconfigured.
+
+**Immediate actions**
+
+1. **Check free space on the data root.**
+2. Read the `Failed to flush` lines in `<data-root>/_logs` (category
+   `Meridian.Storage.Sinks.JsonlStorageSink`) for the failing path and exception.
+3. Verify path ownership, permissions and mount state.
+4. Prefer fixing the cause before restarting: failed batches stay buffered and are retried in
+   place, and the next successful flush writes them.
+
+**Resolved when:** `mdc_sink_write_failures_total` stops increasing and
+`mdc_pipeline_seconds_since_last_flush` returns to the configured flush interval.
 
 ## Low Data Quality
 

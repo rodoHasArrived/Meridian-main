@@ -132,6 +132,51 @@ public sealed class AlertRunbookRegistry
 
         Register(new AlertRunbookEntry
         {
+            AlertName = "MeridianPipelineBacklogHigh",
+            Severity = "warning",
+            IncidentPriority = "P2",
+            Summary = "Pipeline channel filling before drops",
+            RunbookUrl = "docs/operators/operator-runbook.md#pipeline-backlog",
+            ProbableCauses = new[]
+            {
+                "Storage sink slow or failing",
+                "Consumer faulted",
+                "Burst of market data events",
+                "Channel capacity too small for the inbound rate"
+            },
+            ImmediateActions = new[]
+            {
+                "Check mdc_sink_write_failures_total and disk latency on the data root",
+                "Check mdc_pipeline_consumers_faulted",
+                "Read /api/backpressure",
+                "Shed non-critical subscriptions if the sink is healthy but outpaced"
+            }
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianPipelineConsumerFaulted",
+            Severity = "critical",
+            IncidentPriority = "P1",
+            Summary = "Pipeline consumer task faulted",
+            RunbookUrl = "docs/operators/operator-runbook.md#pipeline-consumer-faulted",
+            ProbableCauses = new[]
+            {
+                "Unhandled exception in the consume loop",
+                "Storage sink throwing on every write",
+                "Validator or dedup ledger failure"
+            },
+            ImmediateActions = new[]
+            {
+                "Read the 'Pipeline consumer iteration failed' lines in <data-root>/_logs",
+                "Check mdc_sink_write_failures_total and disk health",
+                "Restart the host once the cause is addressed; WAL recovery replays uncommitted events"
+            },
+            RollbackCriteria = "After restart mdc_pipeline_consumers_faulted is 0 and mdc_pipeline_queue_depth drains"
+        });
+
+        Register(new AlertRunbookEntry
+        {
             AlertName = "MeridianNoEventsPublished",
             Severity = "warning",
             IncidentPriority = "P2",
@@ -226,6 +271,30 @@ public sealed class AlertRunbookRegistry
                 "Review storage error logs for root cause"
             },
             RollbackCriteria = "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
+        });
+
+        Register(new AlertRunbookEntry
+        {
+            AlertName = "MeridianSinkWriteFailing",
+            Severity = "critical",
+            IncidentPriority = "P1",
+            Summary = "Storage sink writes failing",
+            RunbookUrl = "docs/operators/operator-runbook.md#sink-write-failures",
+            ProbableCauses = new[]
+            {
+                "Disk full",
+                "Filesystem permissions issue",
+                "I/O errors on disk",
+                "Storage path unmounted or misconfigured"
+            },
+            ImmediateActions = new[]
+            {
+                "Check free space on the data root",
+                "Read the 'Failed to flush' lines in <data-root>/_logs for the path and exception",
+                "Verify path ownership and mount state",
+                "Prefer fixing the cause before restarting; failed batches stay buffered and are retried in place"
+            },
+            RollbackCriteria = "mdc_sink_write_failures_total stops increasing and mdc_pipeline_seconds_since_last_flush returns to the flush interval"
         });
 
         Register(new AlertRunbookEntry

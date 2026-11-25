@@ -12,7 +12,8 @@
 #
 # Every `expr` below must reference a series the exporter actually emits
 # (src/Meridian.Application/Monitoring/PrometheusMetrics.cs and the storage
-# counters in src/Meridian.Storage/Archival/WriteAheadLog.cs), and every
+# counters in src/Meridian.Storage/Archival/WriteAheadLog.cs and
+# src/Meridian.Storage/Sinks/JsonlStorageSink.cs), and every
 # `runbook_url` must resolve to a heading in the active operator runbook.
 # `build/scripts/ci/validate-observability-contract.py` fails the build when
 # either stops being true: an alert on an unexported series is a permanently
@@ -84,6 +85,40 @@ groups:
           runbook_url: "docs/operators/operator-runbook.md#pipeline-backpressure"
           probable_causes: "Consumer slower than producer, storage write latency, burst of market data events"
           immediate_mitigation: "1. Check storage write latency metrics. 2. Verify disk health. 3. Consider pausing non-critical subscriptions."
+
+      # Channel filling before anything is dropped. MeridianPipelineBackpressure and
+      # MeridianHighDropRate only fire once events are already being lost; this fires on the
+      # backlog that precedes the loss, while there is still time to act. The ratio is read
+      # from EventPipeline.GetStatistics() on the scrape, one series per {pipeline}.
+      - alert: MeridianPipelineBacklogHigh
+        expr: max by (pipeline) (mdc_pipeline_queue_utilization_ratio) > 0.7
+        for: 2m
+        labels:
+          severity: warning
+          incident_priority: P2
+        annotations:
+          summary: "Pipeline {{ $labels.pipeline }} channel {{ $value | humanizePercentage }} full"
+          description: "The {{ $labels.pipeline }} pipeline channel has been more than 70% full for 2 minutes; drops follow if it reaches capacity."
+          runbook_url: "docs/operators/operator-runbook.md#pipeline-backlog"
+          probable_causes: "Storage sink slow or failing, consumer faulted, burst of market data events, channel capacity too small for the inbound rate"
+          immediate_mitigation: "1. Check mdc_sink_write_failures_total and disk latency on the data root. 2. Check mdc_pipeline_consumers_faulted. 3. Read /api/backpressure. 4. Shed non-critical subscriptions if the sink is healthy but outpaced."
+
+      # A consumer task has terminated with a fault, so the channel is no longer being drained
+      # by it. With a single consumer the pipeline stops persisting entirely; backlog and then
+      # drops follow. The gauge counts faulted tasks, so it stays raised until restart.
+      - alert: MeridianPipelineConsumerFaulted
+        expr: max by (pipeline) (mdc_pipeline_consumers_faulted) > 0
+        for: 1m
+        labels:
+          severity: critical
+          incident_priority: P1
+        annotations:
+          summary: "Pipeline {{ $labels.pipeline }} has {{ $value }} faulted consumer(s)"
+          description: "A consumer task of the {{ $labels.pipeline }} pipeline has terminated with a fault and is no longer draining the channel."
+          runbook_url: "docs/operators/operator-runbook.md#pipeline-consumer-faulted"
+          probable_causes: "Unhandled exception in the consume loop, storage sink throwing on every write, validator or dedup ledger failure"
+          immediate_mitigation: "1. Read the 'Pipeline consumer iteration failed' lines in <data-root>/_logs (EventPipeline category). 2. Check mdc_sink_write_failures_total and disk health. 3. Restart the host once the cause is addressed; WAL recovery replays uncommitted events."
+          rollback_criteria: "After restart mdc_pipeline_consumers_faulted is 0 and mdc_pipeline_queue_depth drains"
 
       # No events published during the alert window.
       # `increase(...[10m]) == 0` measures the ten minutes SLO-DC-002 declares. Pairing a 5m
@@ -186,6 +221,25 @@ groups:
           probable_causes: "Disk full, filesystem permissions, I/O errors, WAL corruption, storage path misconfigured"
           immediate_mitigation: "1. Check disk space immediately. 2. Verify storage path permissions. 3. Capture the corrupted records before any repair. 4. Review storage error logs for root cause."
           rollback_criteria: "The affected window is reconciled and a subsequent restart recovers with zero corrupted records"
+
+      # Writes to the storage sink are failing repeatedly. Failed batches are restored and
+      # retried, so a single failure followed by a successful retry is not an incident; three or
+      # more failures in five minutes, sustained for five minutes, means the data root is not
+      # accepting writes and events are accumulating in memory and the WAL only.
+      # Distinct from MeridianStorageWriteErrors, which reports WAL corruption found at recovery.
+      - alert: MeridianSinkWriteFailing
+        expr: sum by (sink) (increase(mdc_sink_write_failures_total[5m])) >= 3
+        for: 5m
+        labels:
+          severity: critical
+          incident_priority: P1
+        annotations:
+          summary: "Storage sink {{ $labels.sink }} writes failing"
+          description: "The {{ $labels.sink }} sink has failed {{ $value }} write attempts in the last 5 minutes; affected batches are buffered for retry but not yet on disk."
+          runbook_url: "docs/operators/operator-runbook.md#sink-write-failures"
+          probable_causes: "Disk full, filesystem permissions, I/O errors, storage path unmounted or misconfigured"
+          immediate_mitigation: "1. Check free space on the data root. 2. Read the 'Failed to flush' lines in <data-root>/_logs for the path and exception. 3. Verify path ownership and mount state. 4. Prefer fixing the cause before restarting; failed batches stay buffered and are retried in place."
+          rollback_criteria: "mdc_sink_write_failures_total stops increasing and mdc_pipeline_seconds_since_last_flush returns to the flush interval"
 
       # Validation pass rate below the SLO-DC-001 critical threshold (gauge, 0-100).
       - alert: MeridianLowDataQuality

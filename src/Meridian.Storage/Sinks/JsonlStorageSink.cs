@@ -102,6 +102,20 @@ public enum JsonlWriteMode : byte
     EnabledByDefault = true)]
 public sealed class JsonlStorageSink : IStorageSink
 {
+    // Failed writes to the JSONL files, whatever triggered them (size, periodic, explicit or
+    // disposal flush, or an unbatched append). The batch is restored and retried, so this counts
+    // attempts, not lost events; a sustained rise means the data root is not accepting writes.
+    // Cancellation during shutdown is not a write failure and is not counted.
+    private static readonly Prometheus.Counter SinkWriteFailuresTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_sink_write_failures_total",
+        "Storage sink write attempts that failed (the affected batch is retained for retry)",
+        new Prometheus.CounterConfiguration { LabelNames = ["sink"] });
+
+    private const string SinkLabel = "jsonl";
+
+    /// <summary>Current value of <c>mdc_sink_write_failures_total{sink="jsonl"}</c>.</summary>
+    internal static double WriteFailuresValue => SinkWriteFailuresTotal.WithLabels(SinkLabel).Value;
+
     private readonly StorageOptions _options;
     private readonly IStoragePolicy _policy;
     private readonly JsonlBatchOptions _batchOptions;
@@ -137,6 +151,7 @@ public sealed class JsonlStorageSink : IStorageSink
     private long _eventsBuffered;
     private long _eventsWritten;
     private long _batchesWritten;
+    private long _writeFailures;
 
     /// <summary>
     /// Total events currently buffered across all paths.
@@ -152,6 +167,12 @@ public sealed class JsonlStorageSink : IStorageSink
     /// Total batches written to disk.
     /// </summary>
     public long BatchesWritten => Interlocked.Read(ref _batchesWritten);
+
+    /// <summary>
+    /// Gets the number of write attempts by this sink that failed (excluding cancellation).
+    /// Each is also counted in <c>mdc_sink_write_failures_total{sink="jsonl"}</c>.
+    /// </summary>
+    public long WriteFailures => Interlocked.Read(ref _writeFailures);
 
     /// <summary>
     /// Gets whether sink-side batching is enabled.
@@ -302,10 +323,25 @@ public sealed class JsonlStorageSink : IStorageSink
         }
     }
 
+    private void RecordWriteFailure()
+    {
+        Interlocked.Increment(ref _writeFailures);
+        SinkWriteFailuresTotal.WithLabels(SinkLabel).Inc();
+    }
+
     private async ValueTask WriteEventImmediateAsync(string path, MarketEvent evt, CancellationToken ct)
     {
         var writer = _writers.GetOrAdd(path, _writerFactory).Value;
-        await writer.WriteEventAsync(evt, ct).ConfigureAwait(false);
+        try
+        {
+            await writer.WriteEventAsync(evt, ct).ConfigureAwait(false);
+        }
+        catch (Exception ex) when (ex is not OperationCanceledException)
+        {
+            RecordWriteFailure();
+            throw;
+        }
+
         Interlocked.Increment(ref _eventsWritten);
     }
 
@@ -332,6 +368,8 @@ public sealed class JsonlStorageSink : IStorageSink
             // DrainAll hands back the buffer's internal swap list; restore before the next
             // drain (serialised by _flushGate) so a failed write never discards the batch.
             buffer.RestoreToFront(events);
+            if (ex is not OperationCanceledException)
+                RecordWriteFailure();
             _logger.LogError(ex, "Failed to flush {Count} buffered events to {Path}; events were restored for retry", events.Count, path);
             throw;
         }

@@ -320,6 +320,7 @@ public sealed class StatusEndpointHandlers
     {
         // Pull current values into the registry before collecting it.
         PrometheusMetrics.UpdateFromSnapshot();
+        PrometheusMetrics.UpdatePipelineMetrics(_pipelineProvider());
 
         var legacy = GetPrometheusMetrics();
 
