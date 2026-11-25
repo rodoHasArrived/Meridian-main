@@ -834,20 +834,13 @@ public sealed partial class FileProviderCredentialStore : IScopedProviderCredent
         var created = !File.Exists(_pendingAuditPath);
         var content = string.Join("\n", entries.Select(static entry => entry.Serialize())) + "\n";
         await AtomicFileWriter.WriteAsync(_pendingAuditPath, content, ct).ConfigureAwait(false);
+        // Strict before the vault write, even for an existing journal, so a retry confirms an earlier
+        // attempt's entry (replay discards an unproven intent). Best effort afterwards: a journal
+        // failure after the vault write is a deferred audit, never a failed mutation.
         if (beforeVaultWrite)
-        {
-            // Strict: the vault mutation runs next and its audit must be owed durably first. This
-            // runs even when the journal already existed, so a retry after a throw confirms the
-            // entry an earlier attempt created. On a throw the vault is untouched; replay discards
-            // the unproven intent, and a retry journals a fresh operation id.
             await AtomicFileWriter.SyncDirectoryOrThrowAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
-        }
         else if (created)
-        {
-            // Best effort: after the vault write a journal failure is a deferred-audit outcome,
-            // never a failed mutation.
             await AtomicFileWriter.SyncDirectoryAsync(_directoryPath, CancellationToken.None).ConfigureAwait(false);
-        }
     }
 
     /// <summary>
