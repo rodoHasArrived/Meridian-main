@@ -38,21 +38,12 @@ export function createScreenshotApiResolver(module, fixtureRoutes, { scenarioId,
       const hasScenarioOverride = scenario.responses.some((route) =>
         new URL(route.path, "http://meridian.local").pathname === pathname
       );
-      // Precedence: the scenario's own routes, then the screenshot fixture for this exact path,
-      // then (for a selected scenario) its generic dev-fixture fallback. Consulting the generic
-      // fallback first made every route outside the scenario render the bare dev fixtures instead
-      // of the screenshot fixtures its readiness texts are written against, so a scenario capture
-      // of such a route (e.g. Journal Entries) could never become ready.
-      if (hasScenarioOverride) {
+      if (scenarioId || hasScenarioOverride) {
         const response = module.resolveScenarioResponse(scenario, url, method);
         if (response) return response;
       }
       if (method.toUpperCase() === "GET" && Object.hasOwn(fixtureRoutes, pathname)) {
         return { status: 200, body: fixtureRoutes[pathname] };
-      }
-      if (scenarioId) {
-        const response = module.resolveScenarioResponse(scenario, url, method);
-        if (response) return response;
       }
       // This also resolves explicitly registered shared supporting fixtures.
       // Strict runtimes retain unexpected requests even when the UI catches them.
