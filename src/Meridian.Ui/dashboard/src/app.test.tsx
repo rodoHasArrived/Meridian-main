@@ -38,6 +38,10 @@ vi.mock("@/lib/api", async () => {
   };
 });
 
+// Signed in by default; deliberately different from the session's "Ops Desk" desk label.
+const signedInUsername = vi.hoisted(() => ({ value: "ops.user" as string | null }));
+vi.mock("@/lib/api/auth.api", () => ({ getSignedInUsername: vi.fn(async () => signedInUsername.value) }));
+
 vi.mock("@/lib/api/operator-workstation.api", () => ({
   getCrossScreenCounts: vi.fn().mockResolvedValue(null),
   getOperatorScopePreference: vi.fn().mockResolvedValue({ defaultScope: null, updatedAt: null }),
@@ -613,6 +617,53 @@ describe("App", () => {
     reloadDisplayTimeZone();
     document.documentElement.removeAttribute("data-theme");
     document.body.removeAttribute("data-theme-density");
+  });
+
+  it("scopes preference sync to the signed-in username, not the session desk label", async () => {
+    signedInUsername.value = "a.chen";
+    try {
+      vi.mocked(getOperatorPreferences).mockResolvedValue({
+        preferences: { pageDescriptionsHidden: true },
+        updatedAt: "2026-11-17T09:00:00Z"
+      });
+      mockWorkstationData({
+        loading: false,
+        usingDevelopmentFixtures: false,
+        session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "trading", commandCount: 7 }
+      });
+
+      renderWithRouter(<App />, { initialEntries: ["/trading"] });
+
+      const usernameKey = `meridian.workstation.pageDescriptions.v1:${encodeURIComponent("paper:a.chen:Operator")}`;
+      await waitFor(() => expect(window.localStorage.getItem(usernameKey)).toBe("hidden"));
+      const descriptionKeys = Object.keys(window.localStorage).filter((key) => key.startsWith("meridian.workstation.pageDescriptions.v1:"));
+      expect(descriptionKeys.join()).not.toContain(encodeURIComponent("Ops Desk"));
+    } finally {
+      signedInUsername.value = "ops.user";
+      vi.mocked(getOperatorPreferences).mockReset().mockRejectedValue(new Error("offline"));
+      Object.keys(window.localStorage).filter((key) => key.startsWith("meridian.workstation.pageDescriptions.v1:"))
+        .forEach((key) => window.localStorage.removeItem(key));
+    }
+  });
+
+  it("does not sync preferences when no operator is signed in", async () => {
+    signedInUsername.value = null;
+    try {
+      vi.mocked(getOperatorPreferences).mockClear();
+      mockWorkstationData({
+        loading: false,
+        usingDevelopmentFixtures: false,
+        session: { displayName: "Ops Desk", role: "Operator", environment: "paper", activeWorkspace: "trading", commandCount: 7 }
+      });
+
+      renderWithRouter(<App />, { initialEntries: ["/trading"] });
+      await screen.findByRole("main");
+      await act(async () => { await Promise.resolve(); });
+
+      expect(getOperatorPreferences).not.toHaveBeenCalled();
+    } finally {
+      signedInUsername.value = "ops.user";
+    }
   });
 
   it("does not read host preferences for a fixture session", async () => {
