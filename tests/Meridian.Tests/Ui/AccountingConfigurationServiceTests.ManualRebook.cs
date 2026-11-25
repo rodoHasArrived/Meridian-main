@@ -1,5 +1,6 @@
 using FluentAssertions;
 using Meridian.Contracts.Ledger;
+using Meridian.Ui.Shared.Services;
 
 namespace Meridian.Tests.Ui;
 
