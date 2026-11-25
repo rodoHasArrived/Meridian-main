@@ -20,12 +20,16 @@ stage_gates:
     title: Promotion review
     purpose: Research-to-paper handoffs carry enough evidence for operator approval.
     owner_lane: Execution and Fund Accounts
-    exit_evidence: []
+    exit_evidence:
+      - src/Meridian.Strategies/Promotions/PromotionApprovalChecklist.cs
+      - tests/Meridian.Tests/Strategies/PromotionServiceTests.cs
   - id: ResearchContinuity
     title: Research continuity
     purpose: Strategy research outputs remain traceable through paper validation.
     owner_lane: Strategy Analytics
-    exit_evidence: []
+    exit_evidence:
+      - tests/Meridian.Tests/Strategies/StrategyRunReadServiceTests.cs
+      - tests/Meridian.Tests/Strategies/StrategyRunStoreTests.cs
   - id: PortfolioLedgerReview
     title: Portfolio ledger review
     purpose: Ledger and reconciliation records can support books and operator sign-off.
@@ -76,4 +80,6 @@ stage_gates:
     title: Live readiness
     purpose: Live operation remains gated by prior evidence-backed stages.
     owner_lane: Accounting and Ledger
-    exit_evidence: []
+    exit_evidence:
+      - src/Meridian.Execution/Services/ExecutionOperatorControlService.cs
+      - tests/Meridian.Tests/Strategies/PromotionServiceLiveGovernanceTests.cs

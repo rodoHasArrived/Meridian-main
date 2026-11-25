@@ -98,7 +98,12 @@ FRED's `GetRateObservationsAsync` series metadata and observation requests and
 attempt timeout starts after quota acquisition, so waiting for pacing or a cooldown does not
 consume the request's network timeout. Throttling
 responses publish a cooldown even when returned to the caller, and `Retry-After` delays subsequent
-attempts. Twelve Data history, symbol search and corporate actions share the `api-requests` budget
+attempts. Historical adapters record each HTTP 429 in the bounded quota history for their request.
+Pinned and composite routes retain the original observation when an adapter translates it to a
+typed failure. Composite routing also records the next provider as a distinct rotation. A host's
+data root retains daily throttle and rotation totals across restarts. Vendor body-level quota
+denials have no HTTP 429 status. This evidence is synthetic-verified and live-untested.
+Twelve Data history, symbol search and corporate actions share the `api-requests` budget
 for the same API credential; different credentials and vendor quota groups retain separate budgets.
 Provider disposal does not discard a shared budget. Credential values are hashed in registry keys.
 Twelve Data counts credits: history/search cost one per request, while each dividends and splits

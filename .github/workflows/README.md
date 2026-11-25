@@ -148,22 +148,24 @@ fatal even if those diagnostic builds pass, and no test shards start. The runner
 the solution enables every selected project in `Release` without remapping its configuration.
 Explicit `--project` overrides and other configurations keep the serial build path.
 
-Hosted `verify-dotnet` runs as two runner shards (`dotnet-shard (K/2)`), each a complete
-`bash scripts/ci.sh --lane verify-dotnet` restricted by `MERIDIAN_CI_DOTNET_SHARD=K/2` to a
+Hosted `verify-dotnet` runs as runner shards (`dotnet-shard (K/N)`), each a complete
+`bash scripts/ci.sh --lane verify-dotnet` restricted by `MERIDIAN_CI_DOTNET_SHARD=K/N` to a
 deterministic slice of the roster. `run-dotnet-ci-tests.py --shard K/N` derives the slices from
 the roster and its duration hints alone, so every shard computes the same disjoint partition and
 builds only the test projects its slice needs. Every shard restores; shard 1 also owns the
 formatting check, static ratchets and web-host build, which are whole-tree facts. The
 `verify-dotnet` job is the lane's single verdict: `merge-dotnet-shard-summaries.py` rejects the
-run unless both shards reported for one commit, together ran every default roster entry
+run unless every shard reported for one commit, together ran every default roster entry
 exactly once, and no entry failed. It publishes the combined summary and the shard evidence as
 `meridian-ci-dotnet-<run>-<attempt>`. A local or unsharded run still executes the whole lane.
-Two runners with two processes each already reach the floor set by the longest single test
-process; a third runner would repeat the build without shortening the lane.
+The shard count is currently one for both lanes, because hosted runners are the constraint:
+each extra shard repeats setup and, for .NET, the restore and build, which only costs queue
+time when no runner is free. Two .NET runners with two processes each reach the floor set by
+the longest single test process, so that is the most worth restoring.
 
-Hosted `verify-browser` follows the same shape with `browser-shard (K/2)` and
-`MERIDIAN_CI_BROWSER_SHARD=K/2`. Every shard installs from the lockfile, generates the UI
-contracts and runs every second test file (`run-vitest-stable.mjs --shard K/N`); shard 1 also
+Hosted `verify-browser` follows the same shape with `browser-shard (K/N)` and
+`MERIDIAN_CI_BROWSER_SHARD=K/N`. Every shard installs from the lockfile, generates the UI
+contracts and runs its share of the test files (`run-vitest-stable.mjs --shard K/N`); shard 1 also
 owns lint, the strict typecheck, the production bundle and its validation. The
 `verify-browser` job runs `merge-vitest-shards.mjs`, which rejects the run unless the shards
 together ran every dashboard test file in the checkout exactly once with no failure, and
@@ -213,7 +215,7 @@ hosted job and shard timings separately from runner queue delays before claiming
 
 | Workflow | File | Trigger | Purpose | Artifacts |
 | --- | --- | --- | --- | --- |
-| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (two runner shards each, behind the `verify-dotnet` and `verify-browser` verdicts), docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
+| Meridian CI | `meridian-ci.yml` | Pull requests to `main`, pushes to `main`, merge queue groups, manual | Runs `.NET` and browser workstation (as runner shards, currently one each, behind the `verify-dotnet` and `verify-browser` verdicts), docs/source/AI, and workflow-hygiene lanes in parallel, then reports the stable `quality-gate` aggregator. Calls shared PostgreSQL integrations and always reports their separate `integration-gate` companion. Required-check changes need administrator rollout and human review. | Lane summaries, build logs, TRX summaries, docs outputs, workflow-hygiene and PostgreSQL integration evidence |
 | Service-backed Integrations | `service-backed-integrations.yml` | Reusable calls from Meridian CI and Production Certification | Runs the Meridian, Direct Lending and Demo integration projects independently against disposable PostgreSQL, runs the Meridian suite as two declared processes with separate databases, validates every TRX, all three required suite prefixes and both process prefixes, and retains coverage plus schema evidence for each database. Fork PRs use the event commit and read-only permissions without production secrets. | TRX/Cobertura/skip evidence, PostgreSQL schema dump and table/migration-ledger inventories |
 | CI | `ci.yml` | Pull requests, pushes to `main`, merge groups, nightly, manual | Runs Secret Scan on PRs, main pushes and merge groups. Nightly/manual `main` runs retain full coverage and scenario evidence; canonical Meridian CI owns .NET/browser/docs checks. | Secret scan SARIF/evidence and nightly coverage artifacts |
 | CodeQL | `codeql.yml` | Pull requests, pushes to `main`, weekly schedule, manual, reusable release gate | Runs GitHub CodeQL static analysis for C# and JavaScript/TypeScript. C# uses an explicit .NET 10 restore/build (`build-mode: manual`); JavaScript/TypeScript uses `build-mode: none`. | Security alerts and retained SARIF evidence |
