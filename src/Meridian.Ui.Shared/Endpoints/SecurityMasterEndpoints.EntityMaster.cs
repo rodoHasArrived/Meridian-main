@@ -43,7 +43,7 @@ public static partial class SecurityMasterEndpoints
             {
                 return Results.Problem(ex.Message, statusCode: StatusCodes.Status409Conflict);
             }
-        }).WithName("CreateLegalEntity");
+        }).WithName("CreateEntityMasterLegalEntity");
 
         group.MapGet(UiApiRoutes.EntityMasterEntity, async (Guid entityId, DateOnly? asOf, [FromServices] IEntityMasterStore store, CancellationToken ct) =>
         {
