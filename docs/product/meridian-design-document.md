@@ -363,7 +363,7 @@ status and decision are in Section 5.3):
 | Asset accounting event spine with atomic lot posting (`AssetAccountingEventSpineService`, `src/Meridian.FinancialOperations/Ledger/`) | Activated | `W9-ASSET-010` |
 | Corporate action approval and posting lane (`CorporateActionOperationsService` in `src/Meridian.Application/SecurityMaster/CorporateActions/`, `CorporateActionAccountingProjectionService` in `src/Meridian.Instruments/AssetOperations/`, `PostgresCorporateActionOperationsStore` in `src/Meridian.Storage/SecurityMaster/`) | Activated and accepted 2026-10-19 (`DEC-W9-ACCEPTANCE-007`); proven end to end on PostgreSQL (post and replay included), with unsupported branches deliberately blocked and posting permission assigned only through governed custom roles | `W9-CORPACT-011` |
 | Operational Evidence Graph as a shared product surface | Not yet a product surface; explorer, proof-drawer, and manifest primitives exist, and the first shared proof drawer over posted ledger amounts is being built under `W10-PROV-001` | `W5X-OEG-001` |
-| Registry-driven Security Master asset classes (`SecurityAssetClassRegistry`, versioned terms and event payloads, typed day-count and settlement conventions, typed corporate-action economics, income and factor-history projections, append-only governance write log) | Supported foundation in source as of 2026-10-16, with no acceptance gate. It is the nearest in-source precursor to contract packs (Section 22.2) | `W11-PACK-002` (generated class plumbing, prototype only) and `W11-PACK-001` (runtime pack governance for profile-backed classes), split under `DEC-PACK-SPLIT-001` |
+| Registry-driven Security Master asset classes (`SecurityAssetClassRegistry`, versioned terms and event payloads, typed day-count and settlement conventions, typed corporate-action economics, income and factor-history projections, append-only governance write log) | Supported foundation in source as of 2026-10-16, with no acceptance gate. It is the nearest in-source precursor to contract packs (Section 22.2) | `W11-PACK-002` (generated class plumbing, `DEC-PACK-CODEGEN-001`) and `W11-PACK-001` (runtime pack governance for profile-backed classes), split under `DEC-PACK-SPLIT-001` |
 
 Governance (`W9-GOV-008`) and institutional intake (`W9-INGEST-009`) were accepted on 2026-10-18
 under `DEC-W9-ACCEPTANCE-006`, and the corporate-action approval and posting lane (`W9-CORPACT-011`)
@@ -781,7 +781,7 @@ does not adopt ranks, accept an entire row, or reprioritize the adopted work:
 | W11 · 4 | `W11-SHADOW-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Shadow-mode onboarding with opening-balance reconciliation (Section 22.3) |
 | W11 · 5 | `W11-PACK-001` | `planned` | `DEC-CHARTER-DIRECTION-001`, `DEC-PACK-SPLIT-001` | Runtime contract-pack governance for profile-backed (CustomAsset-style) classes (Section 22.2) |
 | W11 · 6 | `W11-EXEC-001` | `planned` | `DEC-CHARTER-DIRECTION-001` | Trading & Execution bounded-context ownership (Section 7.1) |
-| W11 · 7 | `W11-PACK-002` | `in_progress` (prototype only) | `DEC-PACK-SPLIT-001` | Generated Security Master class plumbing from one declaration (Section 22.2) |
+| W11 · 7 | `W11-PACK-002` | `ready_for_acceptance` | `DEC-PACK-SPLIT-001`, `DEC-PACK-CODEGEN-001` | Generated Security Master class plumbing from one declaration (Section 22.2) |
 | W12 · unranked | `W12-BOOK-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Accounting book, basis, and FX control workbench (Sections 6.2.1, 11.7) |
 | W12 · unranked | `W12-CAPITAL-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Governed investor capital and allocation lifecycle (Sections 6.2.2, 6.7) |
 | W12 · unranked | `W12-YEND-001` | `planned` | `DEC-FUND-OPERATIONS-DIRECTION-001` | Fiscal year-end close and opening-balance roll-forward (Sections 6.2.1, 11.7) |
@@ -2201,8 +2201,8 @@ wide capture and narrow automation.
 The path runs from the Security Master asset-class registry (Section 6.6). Under
 `DEC-PACK-SPLIT-001` (2026-11-25), runtime pack governance applies to profile-backed
 (CustomAsset-style) classes only. Compiled classes change through code review, and `W11-PACK-002`
-generates their plumbing from one declaration. That generator is a prototype until the owner
-decides whether `src/` switches to generated code. The table compares what the registry already has
+generates their mechanical plumbing from one declaration (`SecurityAssetClassDeclarations`,
+`DEC-PACK-CODEGEN-001`). The table compares what the registry already has
 with what a governed pack adds (`W11-PACK-001`):
 
 | Pack element | Registry today (supported foundation) | Governed pack adds |

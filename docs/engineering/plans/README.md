@@ -18,7 +18,7 @@ state. Plans are working inputs, not status sources; live roadmap status stays i
 
 | [Browser Workstation UX Implementation (2026-11)](browser-workstation-ux-roadmap-2026-11.md) | Casework, financial-value provenance, Close/Today, dossiers, report review and import dispositions with scoped verification |
 | [Security Master Review Remediation](security-master-review-remediation-plan.md) | Draft slices consuming the consolidated October review; policy, unit and migration decisions remain explicit |
-| [Security Master Class-Plumbing Codegen (Prototype)](security-master-class-plumbing-codegen.md) | `W11-PACK-002` prototype: generator and equivalence test for per-class plumbing; switching to generated code is undecided |
+| [Security Master Class-Plumbing Codegen](security-master-class-plumbing-codegen.md) | `W11-PACK-002`: per-class plumbing generated from one declaration, with a drift test |
 | [WPF / Web-UI Alignment Plan](wpf-web-ui-alignment-plan.md) | Closes WPF parity gaps with the browser workstation (`W8-WPF-PARITY-001`) |
 | [Desktop Workstation Screen Checklist Reference](desktop-workstation-screen-blueprint.md) | Preserves the twenty screen scopes and heading contract used by desktop checklist/workflow validation |
 | [God-File Burn-Down Plan](god-file-burn-down-plan.md) | Burn-down targets for oversized source files |

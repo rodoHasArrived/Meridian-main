@@ -76,7 +76,7 @@ Snapshot date: 2026-11-25
 | W11-SHADOW-001 | Shadow-mode onboarding with opening-balance reconciliation | in_progress | green | medium | Data Confidence and Validation |
 | W11-PACK-001 | Runtime contract-pack governance for profile-backed Security Master classes | planned | green | medium | Accounting and Ledger |
 | W11-EXEC-001 | Trading and Execution bounded-context ownership | planned | green | low | Execution and Fund Accounts |
-| W11-PACK-002 | Generated Security Master class plumbing from one declaration | in_progress | green | medium | Accounting and Ledger |
+| W11-PACK-002 | Generated Security Master class plumbing from one declaration | ready_for_acceptance | green | medium | Accounting and Ledger |
 | W12-BOOK-001 | Accounting book, basis, and FX control workbench | planned | green | medium | Accounting and Ledger |
 | W12-CAPITAL-001 | Governed investor capital and allocation lifecycle | in_progress | green | medium | Accounting and Ledger |
 | W12-CREDIT-001 | DirectLoan operations and evidence reconciliation | planned | green | medium | Accounting and Ledger |

@@ -358,6 +358,7 @@ internal static partial class SecurityMasterMapping
             EnsureLegacyRequiredReadOrder(assetClass, bound, boundTerms);
         var kind = assetClass switch
         {
+            // <generated:decode-dispatch> Do not edit: edit SecurityAssetClassDeclarations, then regenerate with MERIDIAN_ACCEPT_GENERATED_CODEC=1 and SecurityClassPlumbingGenerationTests.
             "Equity" => DecodeGeneratedEquity(bound, mode, assetClass, json),
             "Option" => DecodeGeneratedOption(bound, mode, assetClass, json),
             "Future" => DecodeGeneratedFuture(bound, mode, assetClass, json),
@@ -371,7 +372,6 @@ internal static partial class SecurityMasterMapping
             "Repo" => DecodeGeneratedRepo(bound, mode, assetClass, json),
             "CashSweep" => DecodeGeneratedCashSweep(bound, mode, assetClass, json),
             "OtherSecurity" => DecodeGeneratedOtherSecurity(bound, mode, assetClass, json),
-            "CustomAsset" => ToCustomAssetKind(bound, mode),
             "Swap" => DecodeGeneratedSwap(bound, mode, assetClass, json, versionedTerms),
             "DirectLoan" => DecodeGeneratedDirectLoan(bound, mode, assetClass, json, economicSchedules!),
             // Typed tranche terms are optional, but a WRITE must not read a malformed supplied value
@@ -393,6 +393,8 @@ internal static partial class SecurityMasterMapping
             "CapFloor" => DecodeGeneratedCapFloor(bound, mode, assetClass, json),
             "StructuredNote" => DecodeGeneratedStructuredNote(bound, mode, assetClass, json),
             "InvestmentFund" => DecodeGeneratedInvestmentFund(bound, mode, assetClass, json),
+            "CustomAsset" => ToCustomAssetKind(bound, mode),
+            // </generated:decode-dispatch>
             // Read tolerance must not become write tolerance. On a create, an unrecognized class
             // ("ExchangeTradedFund", which the pack registry only PLANS; a typo like "Equitiy")
             // would otherwise persist silently as OtherSecurity — and because OtherSecurity is a

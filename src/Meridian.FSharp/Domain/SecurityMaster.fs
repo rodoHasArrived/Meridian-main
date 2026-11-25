@@ -587,6 +587,7 @@ type StructuredNoteTerms = {
 
 [<RequireQualifiedAccess>]
 type SecurityKind =
+    // <generated:security-kind-cases> Do not edit: edit SecurityAssetClassDeclarations, then regenerate with MERIDIAN_ACCEPT_GENERATED_CODEC=1 and SecurityClassPlumbingGenerationTests.
     | Equity of EquityTerms
     | Option of OptionTerms
     | Future of FutureTerms
@@ -629,6 +630,7 @@ type SecurityKind =
     /// Governed profile-backed custom asset (private and other assets modeled via
     /// approved custom profiles). Terms are carried as an opaque, verbatim document.
     | CustomAsset of CustomAssetTerms
+    // </generated:security-kind-cases>
 
 /// Structural classification metadata for a single asset class.
 /// Data-dependent refinements (e.g. demand vs. time deposits, free-text OtherSecurity
@@ -654,14 +656,17 @@ type AssetClassDescriptor = {
 /// Every <see cref="SecurityKind"/> resolves to exactly one <see cref="AssetClassDescriptor"/>
 /// here, and all asset-class dispatch — the asset-class string, the derivative predicate, and
 /// the canonical <see cref="SecurityClassification"/> consumed by the economic-definition upgrade
-/// path — is derived from this table rather than being re-encoded at each call site. Adding a new
-/// asset class means adding one <c>key</c> arm and one <c>Descriptors</c> entry; every downstream
+/// path — is derived from this table rather than being re-encoded at each call site. The
+/// <c>key</c> arms and the <c>Descriptors</c> entries are generated from
+/// <c>SecurityAssetClassDeclarations</c> (W11-PACK-002), so adding an asset class means adding
+/// one declaration row and regenerating; every downstream
 /// projection then updates automatically.
 [<RequireQualifiedAccess>]
 module AssetClassRegistry =
     /// The one canonical metadata table, one entry per asset class. Order matches the
     /// <see cref="SecurityKind"/> declaration so the taxonomy reads top-to-bottom.
     let private descriptors : AssetClassDescriptor list =
+        // <generated:asset-class-descriptors> Do not edit: edit SecurityAssetClassDeclarations, then regenerate with MERIDIAN_ACCEPT_GENERATED_CODEC=1 and SecurityClassPlumbingGenerationTests.
         [ { AssetClassName = "Equity"; AssetClass = AssetClass.Equity; Family = Some AssetFamily.CommonEquity
             SubType = SecuritySubType.CommonShare; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "Option"; AssetClass = AssetClass.Derivative; Family = Some AssetFamily.ListedDerivative
@@ -726,6 +731,7 @@ module AssetClassRegistry =
             SubType = SecuritySubType.OtherSubType "InvestmentFund"; IssuerType = None; RiskCountry = None; IsDerivative = false }
           { AssetClassName = "CustomAsset"; AssetClass = AssetClass.Other; Family = Some (AssetFamily.OtherFamily "CustomAsset")
             SubType = SecuritySubType.OtherSubType "CustomAsset"; IssuerType = None; RiskCountry = None; IsDerivative = false } ]
+        // </generated:asset-class-descriptors>
 
     let private byName =
         descriptors |> List.map (fun descriptor -> descriptor.AssetClassName, descriptor) |> Map.ofList
@@ -735,6 +741,7 @@ module AssetClassRegistry =
     /// all descriptor metadata is then resolved from the table above.
     let private keyOf (kind: SecurityKind) : string =
         match kind with
+        // <generated:asset-class-keys> Do not edit: edit SecurityAssetClassDeclarations, then regenerate with MERIDIAN_ACCEPT_GENERATED_CODEC=1 and SecurityClassPlumbingGenerationTests.
         | SecurityKind.Equity _ -> "Equity"
         | SecurityKind.Option _ -> "Option"
         | SecurityKind.Future _ -> "Future"
@@ -767,6 +774,7 @@ module AssetClassRegistry =
         | SecurityKind.StructuredNote _ -> "StructuredNote"
         | SecurityKind.InvestmentFund _ -> "InvestmentFund"
         | SecurityKind.CustomAsset _ -> "CustomAsset"
+        // </generated:asset-class-keys>
 
     /// Every asset-class name known to the registry, in declaration order.
     let assetClasses : string list =

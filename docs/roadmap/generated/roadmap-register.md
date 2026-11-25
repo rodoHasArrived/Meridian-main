@@ -2559,34 +2559,34 @@ W11-EXEC-001: planned; health green; evidence planned_evidence. Record canonical
 | Field | Value |
 | --- | --- |
 | Wave | W11 |
-| Status | in_progress |
+| Status | ready_for_acceptance |
 | Health | green |
 | Priority | medium |
 | Owner lane | Accounting and Ledger |
-| Evidence posture | in_progress |
+| Evidence posture | complete |
 | Last reviewed | 2026-11-25 |
 
 ### Current Summary
 
-W11-PACK-002: in_progress; health green; evidence in_progress. Prototype only. A test-project generator emits seven per-class plumbing sites from one declaration plus the codec bindings and catalog, and an equivalence test holds them to the hand-written source. Switching src/ to generated code is not decided.
+W11-PACK-002: ready_for_acceptance; health green; evidence complete. Switched to generated code under DEC-PACK-CODEGEN-001. SecurityAssetClassDeclarations generates six marked regions in src; a unit test fails on drift. Per-class semantic sites stay hand-written and are listed in the plan. Owner acceptance pending.
 
 ### Status References
 
-- Decisions: DEC-PACK-SPLIT-001
+- Decisions: DEC-PACK-SPLIT-001, DEC-PACK-CODEGEN-001
 - PR references (not inferred acceptance): [#3760](https://github.com/rodoHasArrived/Meridian-main/pull/3760)
 - Evidence: [docs/engineering/plans/security-master-class-plumbing-codegen.md](../../engineering/plans/security-master-class-plumbing-codegen.md)
+- Evidence: [src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs](../../../src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs)
 - Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerationTests.cs)
 - Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingGenerator.cs)
-- Evidence: [tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingDeclaration.cs](../../../tests/Meridian.Tests/SecurityMaster/SecurityClassPlumbingDeclaration.cs)
 
 
 ### Exit Criteria
 
-- One declaration per class, built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# plumbing (ToSecurityKind decode dispatch, SecurityAssetClassNames constants, catalog row heads).
-- An equivalence test regenerates every covered site and fails when the hand-written source differs.
-- The repository owner records whether src/ switches to generated code. Until then the hand-written source is the source of truth, and this item generates nothing under src/.
-- If the owner chooses to switch, generated files follow the generated-output delivery rules, a drift check fails on stale output, the catalog-order question is decided, and each remaining per-class site is either generated or listed as a deliberate semantic edit.
-- Roadmap status stays in_progress until that decision is recorded and the chosen outcome is linked.
+- One declaration per class (SecurityAssetClassDeclarations), built on SecurityAssetTermsCodecBindings and SecurityAssetClassCatalog, generates the F# plumbing (SecurityKind union cases, AssetClassRegistry key arms and classification rows, flat-writer dispatch) and the C# plumbing (ToSecurityKind decode dispatch, SecurityAssetClassNames constants).
+- The generated code is committed source between generated-region markers. SecurityClassPlumbingGenerationTests regenerates every region and fails when the committed text differs; MERIDIAN_ACCEPT_GENERATED_CODEC=1 writes the regenerated regions, as for the flat codec.
+- The repository owner recorded the switch to generated code (DEC-PACK-CODEGEN-001). The declaration follows the F# union order; the catalog row order stays its hand-written presentation order and is checked as a set.
+- Each remaining per-class site is listed in the plan as a deliberate semantic edit, not generated.
+- Roadmap status stays ready_for_acceptance until the owner accepts the generated regions on main.
 
 ### Source Modules
 

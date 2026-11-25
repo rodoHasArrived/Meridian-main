@@ -567,3 +567,22 @@ decisions:
     related_roadmap_items:
       - W11-PACK-001
       - W11-PACK-002
+  - id: DEC-PACK-CODEGEN-001
+    title: Switch W11-PACK-002 class plumbing to generated code
+    status: accepted
+    decided_on: 2026-11-25
+    owner_lane: Accounting and Ledger
+    summary: >-
+      The repository owner directed on 2026-11-25 that W11-PACK-002 switch from the prototype to
+      generated code, superseding the prototype-only scope recorded in DEC-PACK-SPLIT-001. The class
+      declaration moves to src/Meridian.Contracts/SecurityMaster/SecurityAssetClassDeclarations.cs and
+      generates six marked regions in committed source - the SecurityKind cases, the AssetClassRegistry
+      key arms and classification rows, the flat-writer dispatch, the ToSecurityKind decode dispatch,
+      and the SecurityAssetClassNames constants. SecurityClassPlumbingGenerationTests fails when a
+      region drifts from the declaration, and MERIDIAN_ACCEPT_GENERATED_CODEC=1 rewrites them, as for
+      the flat codec. The declaration follows the F# union order, so the generated decode switch now
+      lists CustomAsset last (behaviour-neutral: the arms match distinct constants). The catalog's
+      public row order is unchanged and is not generated. Per-class semantic sites stay hand-written
+      and are listed in the plan. No acceptance or release is claimed.
+    related_roadmap_items:
+      - W11-PACK-002
