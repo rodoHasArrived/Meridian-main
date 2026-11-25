@@ -44,7 +44,7 @@ public sealed partial class BackfillCoordinator : IDisposable
     private readonly ProviderFactory? _factory;
     private readonly BackfillRoutingRuntime? _routingRuntime;
     private readonly IProviderCatalog _providerCatalog;
-    private readonly IEventMetrics _metrics;
+    private readonly IEventMetrics? _injectedPipelineMetrics;
     private readonly ILogger _log = LoggingSetup.ForContext<BackfillCoordinator>();
     private readonly SemaphoreSlim _gate = new(1, 1);
     private readonly BackfillProgressTracker _progressTracker = new();
@@ -65,7 +65,11 @@ public sealed partial class BackfillCoordinator : IDisposable
     /// <param name="store">Configuration store.</param>
     /// <param name="registry">Provider registry for unified provider discovery.</param>
     /// <param name="factory">Provider factory as fallback for creating providers if registry is empty.</param>
-    /// <param name="metrics">Event metrics for tracking backfill operations.</param>
+    /// <param name="metrics">
+    ///     Optional event metrics that receive each backfill pipeline's counts. When null (the host
+    ///     default) every run counts into its own <see cref="RunScopedEventMetrics"/>. Do not pass the
+    ///     process-wide live metrics: backfill bars would inflate the live event series.
+    /// </param>
     /// <param name="symbolResolver">
     ///     Shared symbol resolution spine (typically the canonical-registry resolver from DI).
     ///     When null, a coordinator-owned OpenFIGI resolver is created from configuration.
@@ -92,7 +96,7 @@ public sealed partial class BackfillCoordinator : IDisposable
         _factory = factory;
         _routingRuntime = routingRuntime;
         _providerCatalog = providerCatalog ?? new RuntimeProviderCatalog();
-        _metrics = metrics ?? new DefaultEventMetrics();
+        _injectedPipelineMetrics = metrics;
         _symbolTimelineResolver = symbolTimelineResolver;
         _cloneCredentials = cloneCredentials;
         _receiptLookupRoot = store.GetDataRoot();
@@ -263,6 +267,7 @@ public sealed partial class BackfillCoordinator : IDisposable
 
         using var queuedTracker = queued ? new BackfillProgressTracker() : null;
         var tracker = queuedTracker ?? _progressTracker;
+        var runStarted = System.Diagnostics.Stopwatch.GetTimestamp();
         try
         {
             var cfg = cloneReceiptId.HasValue ? TryLoadCloneConfig() : LoadOperationConfig();
@@ -308,14 +313,14 @@ public sealed partial class BackfillCoordinator : IDisposable
             // Backfill is a persistence run, not a live feed: when the provider outpaces the sink the
             // producer must wait rather than evict queued bars. DropOldest here silently left
             // permanent gaps on disk while bar counts (and the run's Success flag) still included them.
+            // The run counts into its own metrics, never the process-wide live counters: those
+            // feed mdc_events_published_total and the live rate/drop/latency gauges, and the
+            // Reset() this used to call on them zeroed the live gauges at the start of every run.
             await using var pipeline = new EventPipeline(
                 sink,
                 new EventPipelinePolicy(Capacity: 20_000, FullMode: BoundedChannelFullMode.Wait),
                 enablePeriodicFlush: false,
-                metrics: _metrics);
-
-            // Keep pipeline counters scoped per run
-            _metrics.Reset();
+                metrics: _injectedPipelineMetrics ?? new RunScopedEventMetrics());
 
             var activity = new BackfillQuotaActivity(cfg.Backfill, _quotaLimiters, onThrottled);
             using var observation = activity.Observe(retryRateLimited: queued);
@@ -334,6 +339,17 @@ public sealed partial class BackfillCoordinator : IDisposable
             }
             _receiptLookupRoot = dataRoot;
 
+            PrometheusMetrics.RecordBackfillRun(
+                result.Success ? PrometheusMetrics.BackfillOutcome.Succeeded : PrometheusMetrics.BackfillOutcome.Failed,
+                System.Diagnostics.Stopwatch.GetElapsedTime(runStarted));
+            if (!result.Success)
+            {
+                _log.Warning(
+                    "Backfill finished unsuccessfully: provider {Provider}, {SymbolCount} symbol(s) {From} to {To} ({Granularity}), {BarsWritten} bars written: {Error}",
+                    request.Provider, normalizedSymbols.Length, request.From, request.To, request.Granularity,
+                    result.BarsWritten, result.Error);
+            }
+
             var skipped = result.SkippedSymbols.ToHashSet(StringComparer.OrdinalIgnoreCase);
             foreach (var symbol in normalizedSymbols)
             {
@@ -351,7 +367,18 @@ public sealed partial class BackfillCoordinator : IDisposable
         {
             foreach (var symbol in BackfillSymbolNormalizer.Normalize(request?.Symbols ?? []))
                 tracker.MarkFailed(symbol, ex.Message);
-            _log.Error(ex, "Backfill failed");
+
+            var outcome = ex switch
+            {
+                OperationCanceledException => PrometheusMetrics.BackfillOutcome.Cancelled,
+                BackfillCloneConflictException => PrometheusMetrics.BackfillOutcome.Rejected,
+                _ => PrometheusMetrics.BackfillOutcome.Error
+            };
+            PrometheusMetrics.RecordBackfillRun(outcome, System.Diagnostics.Stopwatch.GetElapsedTime(runStarted));
+            _log.Error(ex,
+                "Backfill {Outcome}: provider {Provider}, {SymbolCount} symbol(s) {From} to {To} ({Granularity}), clone of receipt {CloneReceiptId}",
+                outcome, request?.Provider, request?.Symbols?.Count ?? 0, request?.From, request?.To, request?.Granularity,
+                cloneReceiptId);
             throw;
         }
         finally

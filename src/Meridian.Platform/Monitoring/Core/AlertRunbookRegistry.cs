@@ -160,6 +160,7 @@ public sealed class AlertRunbookRegistry
             IncidentPriority = "P1",
             Summary = "Pipeline consumer task faulted",
             RunbookUrl = "docs/operators/operator-runbook.md#pipeline-consumer-faulted",
+            SloId = "SLO-ING-002",
             ProbableCauses = new[]
             {
                 "Unhandled exception in the consume loop",
@@ -280,6 +281,7 @@ public sealed class AlertRunbookRegistry
             IncidentPriority = "P1",
             Summary = "Storage sink writes failing",
             RunbookUrl = "docs/operators/operator-runbook.md#sink-write-failures",
+            SloId = "SLO-ST-001",
             ProbableCauses = new[]
             {
                 "Disk full",

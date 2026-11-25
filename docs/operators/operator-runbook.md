@@ -188,7 +188,8 @@ channel capacity too small for the sustained inbound rate.
 
 ## Pipeline Consumer Faulted
 
-Alert: `MeridianPipelineConsumerFaulted` — severity critical, priority P1.
+Alert: `MeridianPipelineConsumerFaulted` — severity critical, priority P1, objective
+[SLO-ING-002](./service-level-objectives.md#slo-ing-002).
 
 A pipeline consumer task has terminated with a fault (`mdc_pipeline_consumers_faulted > 0`) and is
 no longer draining the channel. With a single consumer, nothing further is persisted; backlog and
@@ -300,7 +301,8 @@ the corruption is still unreconciled.
 
 ## Sink Write Failures
 
-Alert: `MeridianSinkWriteFailing` — severity critical, priority P1.
+Alert: `MeridianSinkWriteFailing` — severity critical, priority P1, objective
+[SLO-ST-001](./service-level-objectives.md#slo-st-001).
 
 The storage sink has failed three or more write attempts in five minutes, sustained for five
 minutes (`mdc_sink_write_failures_total`, labelled by `sink`). Failed batches are restored and

@@ -488,6 +488,54 @@ public static class PrometheusMetrics
     /// <summary>The <c>pipeline</c> label value for the host's live market-data pipeline.</summary>
     public const string LivePipelineLabel = "live";
 
+    // Backfill runs. A backfill runs its own pipeline with run-scoped counters, so these are the
+    // only process-wide record of whether backfills succeed and how long they take.
+    private static readonly Counter BackfillRunsTotal = Prometheus.Metrics.CreateCounter(
+        "mdc_backfill_runs_total", "Backfill runs by outcome (succeeded, failed, error, cancelled, rejected)",
+        new CounterConfiguration { LabelNames = ["outcome"] });
+
+    private static readonly Histogram BackfillDurationSeconds = Prometheus.Metrics.CreateHistogram(
+        "mdc_backfill_duration_seconds", "Wall-clock duration of backfill runs",
+        new HistogramConfiguration
+        {
+            LabelNames = ["outcome"],
+            Buckets = [1, 5, 15, 60, 300, 900, 1800, 3600, 7200, 14400]
+        });
+
+    /// <summary>
+    /// Records one backfill run's outcome and duration.
+    /// </summary>
+    /// <param name="outcome">One of the <see cref="BackfillOutcome"/> values.</param>
+    /// <param name="duration">Time from admission to completion.</param>
+    public static void RecordBackfillRun(string outcome, TimeSpan duration)
+    {
+        ArgumentException.ThrowIfNullOrWhiteSpace(outcome);
+        BackfillRunsTotal.WithLabels(outcome).Inc();
+        BackfillDurationSeconds.WithLabels(outcome).Observe(Math.Max(0d, duration.TotalSeconds));
+    }
+
+    /// <summary>Current value of <c>mdc_backfill_runs_total</c> for <paramref name="outcome"/>.</summary>
+    public static double BackfillRunsValue(string outcome) => BackfillRunsTotal.WithLabels(outcome).Value;
+
+    /// <summary>The <c>outcome</c> label values of <c>mdc_backfill_runs_total</c>.</summary>
+    public static class BackfillOutcome
+    {
+        /// <summary>The run completed and reported success.</summary>
+        public const string Succeeded = "succeeded";
+
+        /// <summary>The run completed but reported failure (for example every provider failed).</summary>
+        public const string Failed = "failed";
+
+        /// <summary>The run threw an unexpected exception.</summary>
+        public const string Error = "error";
+
+        /// <summary>The run was cancelled.</summary>
+        public const string Cancelled = "cancelled";
+
+        /// <summary>The request was refused before fetching (for example a clone conflict).</summary>
+        public const string Rejected = "rejected";
+    }
+
     /// <summary>
     /// Updates all Prometheus metrics from the current Metrics snapshot.
     /// Should be called periodically (e.g., every 1-5 seconds) to keep metrics current.
@@ -541,14 +589,13 @@ public static class PrometheusMetrics
         var snapshot = combined.Core;
         var resubSnapshot = combined.Resubscription;
 
-        // Mirror the resettable source totals into monotonic counters. BackfillCoordinator.RunAsync
-        // calls Reset() on this same static snapshot, which zeroes every total; IncTo cannot
-        // decrease a counter, so the exported series froze at its pre-reset value until the fresh
-        // total climbed back past it. rate() and increase() read zero across that whole stretch,
-        // which is exactly what MeridianNoEventsPublished treats as a stalled feed — it would have
-        // paged during a healthy pipeline every time an operator started a backfill.
-        // MirrorResettableTotal carries the pre-reset total forward instead, so the counter keeps
-        // increasing across a reset and its rate stays true.
+        // Mirror the resettable source totals into monotonic counters. Metrics.Reset() zeroes every
+        // total (BackfillCoordinator.RunAsync used to call it on every run; backfills now count into
+        // run-scoped metrics, but Reset() remains public). IncTo cannot decrease a counter, so after
+        // a reset the exported series would freeze at its pre-reset value until the fresh total
+        // climbed back past it, and rate() would read zero across that stretch, which is what
+        // MeridianNoEventsPublished treats as a stalled feed. MirrorResettableTotal carries the
+        // pre-reset total forward instead, so the counter keeps increasing across a reset.
         lock (ResettableTotalLock)
         {
             PublishedEvents.IncTo(MirrorResettableTotal(PublishedKey, snapshot.Published));
