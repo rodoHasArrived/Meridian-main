@@ -4180,12 +4180,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader"
     },
     {
@@ -4217,30 +4211,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Catalog.SchemaReference"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation"
     },
     {
       "kind": "contract-set-member",
@@ -17272,12 +17242,6 @@
       "kind": "contract-set-member",
       "label": "",
       "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Services.ITradingCalendarProvider"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Services.MaintenanceWindow"
     },
     {
@@ -22793,24 +22757,6 @@
       "label": "",
       "source": "contract-set:all-contracts",
       "target": "contract:Meridian.Contracts.Workstation.StatementSourceDto"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Workstation.StatementToReportArtifactDto"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto"
-    },
-    {
-      "kind": "contract-set-member",
-      "label": "",
-      "source": "contract-set:all-contracts",
-      "target": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto"
     },
     {
       "kind": "contract-set-member",
@@ -39183,30 +39129,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
-      "target": "contract:Meridian.Contracts.SecurityMaster.SecurityIdentifierKind"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.Catalog.StorageCatalog",
       "target": "contract:Meridian.Contracts.Catalog.CatalogConfiguration"
     },
@@ -39263,12 +39185,6 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Catalog.SymbolRegistry",
       "target": "contract:Meridian.Contracts.Catalog.IdentifierIndex"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Catalog.SymbolRegistry",
-      "target": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt"
     },
     {
       "kind": "contract-reference",
@@ -52143,12 +52059,6 @@
     {
       "kind": "contract-reference",
       "label": "",
-      "source": "contract:Meridian.Contracts.Services.ITradingCalendarProvider",
-      "target": "contract:Meridian.Contracts.Services.IOperationalTradingCalendar"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
       "source": "contract:Meridian.Contracts.Services.MaintenanceWindow",
       "target": "contract:Meridian.Contracts.Services.OperationType"
     },
@@ -59267,24 +59177,6 @@
       "label": "",
       "source": "contract:Meridian.Contracts.Workstation.StatementRunValidationDto",
       "target": "contract:Meridian.Contracts.Workstation.StatementValidationIssueDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
-      "target": "contract:Meridian.Contracts.Workstation.EvidenceVaultIdentityDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
-      "target": "contract:Meridian.Contracts.Workstation.StatementToReportArtifactDto"
-    },
-    {
-      "kind": "contract-reference",
-      "label": "",
-      "source": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
-      "target": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto"
     },
     {
       "kind": "contract-reference",
@@ -72130,7 +72022,7 @@
       "target": "migration-module:security-master"
     }
   ],
-  "fingerprint": "4313d10ea086092b19da82d426c941848c8cdf41a9655d64678f59928903f5cc",
+  "fingerprint": "1949e8c58a292c9d89983d0a98fc8400832f11d114364614f3bfe4d39f4512a4",
   "format": "meridian.schema-dependencies.v1",
   "nodes": [
     {
@@ -76361,12 +76253,6 @@
     },
     {
       "classification": "service_contract",
-      "id": "contract:Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Catalog.ISecurityMasterLegacyIdentifierCleanupWriter"
-    },
-    {
-      "classification": "service_contract",
       "id": "contract:Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Catalog.ISymbolResolutionMismatchReader"
@@ -76400,30 +76286,6 @@
       "id": "contract:Meridian.Contracts.Catalog.SchemaReference",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Catalog.SchemaReference"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupItem"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupManifest"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupReceipt"
-    },
-    {
-      "classification": "record",
-      "id": "contract:Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Catalog.SecurityMasterLegacyIdentifierCleanupValidation"
     },
     {
       "classification": "class",
@@ -89452,12 +89314,6 @@
       "label": "Meridian.Contracts.Services.ISecurityValidationGateService"
     },
     {
-      "classification": "service_contract",
-      "id": "contract:Meridian.Contracts.Services.ITradingCalendarProvider",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Services.ITradingCalendarProvider"
-    },
-    {
       "classification": "record",
       "id": "contract:Meridian.Contracts.Services.MaintenanceWindow",
       "kind": "contract-type",
@@ -94976,24 +94832,6 @@
       "id": "contract:Meridian.Contracts.Workstation.StatementSourceDto",
       "kind": "contract-type",
       "label": "Meridian.Contracts.Workstation.StatementSourceDto"
-    },
-    {
-      "classification": "dto",
-      "id": "contract:Meridian.Contracts.Workstation.StatementToReportArtifactDto",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Workstation.StatementToReportArtifactDto"
-    },
-    {
-      "classification": "dto",
-      "id": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowDto",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Workstation.StatementToReportWorkflowDto"
-    },
-    {
-      "classification": "enum",
-      "id": "contract:Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto",
-      "kind": "contract-type",
-      "label": "Meridian.Contracts.Workstation.StatementToReportWorkflowStatusDto"
     },
     {
       "classification": "dto",
@@ -105983,11 +105821,11 @@
     }
   ],
   "summary": {
-    "contract_references": 4417,
-    "contract_set_memberships": 5822,
-    "edges": 11982,
+    "contract_references": 4408,
+    "contract_set_memberships": 5813,
+    "edges": 11964,
     "foreign_keys": 221,
     "logical_references": 6,
-    "nodes": 5887
+    "nodes": 5878
   }
 }

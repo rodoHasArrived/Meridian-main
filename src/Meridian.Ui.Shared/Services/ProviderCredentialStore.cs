@@ -1,20 +1,17 @@
-using System.Text.Json;
 using Meridian.DataIntegration.Credentials;
 
 namespace Meridian.Ui.Shared.Services;
 
 /// <summary>
 /// Compatibility adapter from provider-module setup to the Data Integration-owned encrypted vault.
-/// On first access it migrates the historical plaintext sidecar atomically into the vault and then
-/// removes the plaintext source. Unknown provider ids fail on writes and never create a sidecar.
+/// A plaintext sidecar retained from earlier releases is never read or imported; it is only kept
+/// owner-only. Unknown provider ids fail on writes and never create a sidecar.
 /// </summary>
 public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderCredentialStore
 {
-    private static readonly JsonSerializerOptions LegacyJsonOptions = new(JsonSerializerDefaults.Web);
     private readonly IProviderCredentialStore _vault;
-    private readonly string _legacyPath;
-    private readonly SemaphoreSlim _migrationGate = new(1, 1);
-    private bool _migrationChecked;
+    private readonly string _retainedSidecarPath;
+    private volatile bool _sidecarRestricted;
 
     public ProviderCredentialStore(string dataRoot)
         : this(new FileProviderCredentialStore(dataRoot), dataRoot)
@@ -25,7 +22,7 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
     {
         _vault = vault ?? throw new ArgumentNullException(nameof(vault));
         ArgumentException.ThrowIfNullOrWhiteSpace(dataRoot);
-        _legacyPath = Path.Combine(Path.GetFullPath(dataRoot), "provider-credentials.json");
+        _retainedSidecarPath = Path.Combine(Path.GetFullPath(dataRoot), "provider-credentials.json");
     }
 
     public async Task SaveCredentialsAsync(
@@ -35,7 +32,7 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
         ArgumentNullException.ThrowIfNull(values);
-        await EnsureLegacyMigratedAsync(ct).ConfigureAwait(false);
+        RestrictRetainedSidecar();
         RequireKnownProvider(moduleId);
         await _vault.SaveAsync(
             new ProviderCredentialSaveRequest(
@@ -61,7 +58,7 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
         CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
-        await EnsureLegacyMigratedAsync(ct).ConfigureAwait(false);
+        RestrictRetainedSidecar();
         if (ProviderCredentialCatalog.Find(moduleId) is null)
         {
             return null;
@@ -85,52 +82,23 @@ public sealed class ProviderCredentialStore : Meridian.Core.Contracts.IProviderC
     public async Task DeleteCredentialsAsync(string moduleId, CancellationToken ct = default)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(moduleId);
-        await EnsureLegacyMigratedAsync(ct).ConfigureAwait(false);
+        RestrictRetainedSidecar();
         if (ProviderCredentialCatalog.Find(moduleId) is not null)
         {
             await _vault.DeleteAsync(moduleId, "provider-module-setup", ct).ConfigureAwait(false);
         }
     }
 
-    private async Task EnsureLegacyMigratedAsync(CancellationToken ct)
+    private void RestrictRetainedSidecar()
     {
-        if (_migrationChecked)
+        if (_sidecarRestricted)
         {
             return;
         }
 
-        await _migrationGate.WaitAsync(ct).ConfigureAwait(false);
-        try
-        {
-            if (_migrationChecked)
-            {
-                return;
-            }
-
-            await LegacyCredentialFileMigration.MigrateAsync(_legacyPath, async (json, migrationToken) =>
-            {
-                var legacy = JsonSerializer.Deserialize<Dictionary<string, Dictionary<string, string>>>(
-                    json, LegacyJsonOptions) ?? [];
-                if (_vault is not ILegacyProviderCredentialImporter importer)
-                    throw new InvalidOperationException("Credential vault does not support atomic legacy migration.");
-
-                var requests = legacy.Select(pair => new ProviderCredentialSaveRequest(
-                    pair.Key,
-                    pair.Value.ToDictionary(field => field.Key, field => (string?)field.Value, StringComparer.OrdinalIgnoreCase),
-                    Actor: "credential-vault-migration",
-                    Metadata: new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-                    {
-                        ["migratedFrom"] = "provider-credentials.json",
-                        ["credentialOwner"] = "Meridian.DataIntegration"
-                    })).ToArray();
-                await importer.ImportLegacyAsync(requests, migrationToken).ConfigureAwait(false);
-            }, ct).ConfigureAwait(false);
-            _migrationChecked = true;
-        }
-        finally
-        {
-            _migrationGate.Release();
-        }
+        // Idempotent, so concurrent first callers are harmless. A failure propagates and is retried.
+        RetainedCredentialFileAccess.RestrictAccess(_retainedSidecarPath);
+        _sidecarRestricted = true;
     }
 
     private static void RequireKnownProvider(string providerId)
