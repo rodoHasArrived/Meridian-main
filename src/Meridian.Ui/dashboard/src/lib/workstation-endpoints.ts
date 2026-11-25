@@ -416,6 +416,34 @@ export function securityMasterWorkbenchPendingRevisionsEndpoint(states?: readonl
   return states && states.length > 0 ? `${route}?state=${encodeURIComponent(states.join(","))}` : route;
 }
 
+/** Held amendments (review A2), optionally narrowed to one security and one status (default Held). */
+export function securityMasterHeldAmendmentsEndpoint(filter: { securityId?: string | null; status?: string | null } = {}): string {
+  const query = new URLSearchParams();
+  if (filter.securityId) query.set("securityId", filter.securityId);
+  if (filter.status) query.set("status", filter.status);
+  const suffix = query.toString();
+  return suffix ? `${UI_API_ROUTES.SecurityMasterHeldAmendments}?${suffix}` : UI_API_ROUTES.SecurityMasterHeldAmendments;
+}
+
+export function securityMasterHeldAmendmentDiscardEndpoint(heldAmendmentId: string): string {
+  return UI_API_ROUTES.SecurityMasterHeldAmendmentDiscard.replace("{heldAmendmentId:guid}", encodeURIComponent(heldAmendmentId));
+}
+
+/** Global exception queue (review D2); the server defaults the status to Open. */
+export function securityMasterExceptionCasesEndpoint(status?: string | null): string {
+  return status
+    ? `${UI_API_ROUTES.SecurityMasterExceptionCases}?status=${encodeURIComponent(status)}`
+    : UI_API_ROUTES.SecurityMasterExceptionCases;
+}
+
+export function securityMasterExceptionCasesSyncEndpoint(): string {
+  return UI_API_ROUTES.SecurityMasterExceptionCasesSync;
+}
+
+export function securityMasterExceptionCaseAssignEndpoint(caseId: string): string {
+  return UI_API_ROUTES.SecurityMasterExceptionCaseAssign.replace("{caseId:guid}", encodeURIComponent(caseId));
+}
+
 export const REFERENCE_DATA_API_ENDPOINTS = {
   edgarFiler: UI_API_ROUTES.ReferenceDataEdgarFiler,
   edgarFacts: UI_API_ROUTES.ReferenceDataEdgarFacts,

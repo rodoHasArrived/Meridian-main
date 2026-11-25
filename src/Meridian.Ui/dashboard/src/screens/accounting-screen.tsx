@@ -1,5 +1,7 @@
 import { BookCheck, Landmark, Network, RefreshCcw, Search, ShieldCheck, WalletCards } from "lucide-react";
 import { SecurityMasterReviewInboxPanel } from "@/components/meridian/security-master-review-inbox";
+import { SecurityMasterHeldAmendmentsPanel } from "@/components/meridian/security-master-held-amendments";
+import { SecurityMasterExceptionQueuePanel } from "@/components/meridian/security-master-exception-queue";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "@/styles/accounting-screen.css";
@@ -1853,6 +1855,12 @@ function AccountingScreenContent({ data, multiAssetCoverage, session = null }: A
                       onSelect={securityMaster.selectReferenceDataEndpoint}
                     />
                     <SecurityMasterReviewInboxPanel
+                      onOpenSecurity={(securityId) => void securityMaster.selectSecurity(securityId)}
+                    />
+                    <SecurityMasterHeldAmendmentsPanel
+                      onOpenSecurity={(securityId) => void securityMaster.selectSecurity(securityId)}
+                    />
+                    <SecurityMasterExceptionQueuePanel
                       onOpenSecurity={(securityId) => void securityMaster.selectSecurity(securityId)}
                     />
                   </div>
