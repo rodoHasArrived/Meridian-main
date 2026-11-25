@@ -9,7 +9,7 @@ risks:
     status: open
     severity: medium
     owner_lane: Docs and Automation
-    mitigation: Renderers write deterministic outputs and CI checks git diff after generation.
+    mitigation: Renderers write deterministic outputs and CI checks git diff after generation. Since 2026-11-14, PR 3589 delivers mechanical generated outputs through CI and PR 3660 added drift and evidence ratchets, which may partly mitigate this risk; that CI behavior was not verified in the 2026-11-25 registry review.
     related_roadmap_items:
       - W5-ACCT-001
       - W7-LIVE-001
@@ -46,3 +46,32 @@ risks:
     mitigation: The former 2026-only completeness calendar omitted Juneteenth on 2026-06-19 and would count every weekday as a trading day from 2027-01-01. PR 2987 retired that seed and converged completeness, heatmap, recommendations and exports on IOperationalTradingCalendar. All seven Juneteenth, observed-holiday, 2026/2027-boundary and injected-policy regression cases passed at main e0ecd952d24b1e8d09a8de282ed90c98cffe1bb3 on 2026-10-14; see docs/testing/evidence/program-state-20261014/main-validation.json. Retain that tested-commit evidence and verify live operator completeness denominators before closing this risk. This is a remaining acceptance risk, not a claim that the removed seed is still running.
     related_roadmap_items:
       - W1-DATA-001
+  - id: RISK-LIVE-AUTHORITY-001
+    title: Live order authority and strategy execution can outrun their accepted support envelope
+    status: open
+    severity: high
+    owner_lane: Execution and Fund Accounts
+    mitigation: Governed live order authority, strategy version governance, scoped Designer paper execution and cancel-all evidence merged between 2026-11-17 and 2026-11-25 (PRs 3644, 3686, 3708, 3731). W13-OMS-001 and W13-STRAT-001 exit criteria require a declared broker/account envelope, a reviewed manual-intent contract, recovery without duplicate dispatch, and separately authorized broker-backed evidence before any live-support claim. Until those close, live admission keeps the retained FundAccountId, exact promoted run, promotion audit and current readiness gates, and unsupported combinations must fail closed.
+    related_roadmap_items:
+      - W13-OMS-001
+      - W13-STRAT-001
+      - W7-LIVE-001
+      - W9-SAFETY-007
+  - id: RISK-EXTERNAL-WRITE-001
+    title: Writes to an external general ledger can diverge from Meridian's posted ledger
+    status: open
+    severity: high
+    owner_lane: Accounting and Ledger
+    mitigation: PR 3703 added Meridian's first write path to a third-party ledger (QuickBooks Online). W12-EXTGL-001 requires posting only from posted Meridian journals through a durable outbox, retained provider receipts, idempotent retry and restart, visible rejection and drift handling, and secret-free configuration. Meridian remains the source of posted accounting truth.
+    related_roadmap_items:
+      - W12-EXTGL-001
+  - id: RISK-DEFECT-DENSITY-001
+    title: Storage, OMS and authentication paths carry latent data-loss and security defects
+    status: open
+    severity: high
+    owner_lane: Platform Security and Governance
+    mitigation: Between 2026-11-14 and 2026-11-17, PRs 3599, 3600, 3633 and 3640 fixed a login open redirect, a login lockout denial of service, SSRF, dropped paper fills, JSONL duplicate writes, WAL and pipeline data-loss gaps, OMS order-state gaps, a paper gateway double-claim and an accrual rebook double-count, and PR 3604 updated the threat model. A cluster this size suggests similar defects remain. Keep focused review on storage, OMS and authentication changes, and track remaining release hardening under PRD-001, PRD-006 and PRD-011.
+    related_roadmap_items:
+      - W9-SAFETY-007
+      - W9-GOV-008
+      - W13-OMS-001

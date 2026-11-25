@@ -14,9 +14,15 @@ internal static class ProviderMetricsLookup
         string providerId)
     {
         var familyId = ProviderCredentialCatalog.NormalizeProviderId(providerId);
-        return metrics?.Providers.FirstOrDefault(provider =>
+        return metrics?.Providers?.FirstOrDefault(provider =>
             string.Equals(ResolveFamily(provider, sources), familyId, StringComparison.Ordinal));
     }
+
+    // Legacy status files have no latency sample count. A default zero cannot establish measurement.
+    public static double? GetMeasuredAverageLatencyMs(ProviderMetrics? metrics) =>
+        metrics is { AverageLatencyMs: > 0 } && double.IsFinite(metrics.AverageLatencyMs)
+            ? metrics.AverageLatencyMs
+            : null;
 
     private static string ResolveFamily(ProviderMetrics metrics, IReadOnlyList<DataSourceConfig> sources)
     {

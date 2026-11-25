@@ -131,7 +131,14 @@ if [[ -n "${MERIDIAN_CI_ISOLATION_KEY:-}" ]]; then
   export MeridianBuildIsolationKey="$MERIDIAN_CI_ISOLATION_KEY"
 fi
 if [[ -z "${MERIDIAN_BROWSER_RESULTS_DIR:-}" ]]; then
-  export MERIDIAN_BROWSER_RESULTS_DIR="$MERIDIAN_CI_ARTIFACT_ROOT/test-results/browser"
+  # The dashboard runner resolves this from src/Meridian.Ui/dashboard (npm --prefix), so a
+  # relative artifact root would place browser evidence under the dashboard instead of the
+  # repository-root artifacts/ tree that the shard upload and verdict read.
+  case "$MERIDIAN_CI_ARTIFACT_ROOT" in
+    /*) browser_results_root="$MERIDIAN_CI_ARTIFACT_ROOT" ;;
+    *) browser_results_root="$PWD/$MERIDIAN_CI_ARTIFACT_ROOT" ;;
+  esac
+  export MERIDIAN_BROWSER_RESULTS_DIR="$browser_results_root/test-results/browser"
 fi
 ci_summary_dir="${MERIDIAN_CI_ARTIFACT_ROOT}/ci-summary/${selected_lane}"
 ci_steps_tsv="${ci_summary_dir}/steps.tsv"
