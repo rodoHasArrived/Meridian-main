@@ -243,22 +243,27 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
 
                 // Carry the unrounded quantity beside the whole-share one: position limits and
                 // ownership attribution are decimal, and truncating here let a 0.9-share
-                // holding read as 0 against a share cap.
-                var netted = new Dictionary<string, (long qty, decimal exactQty, decimal costBasis, decimal unrealised, decimal realised, decimal multiplier)>(
+                // holding read as 0 against a share cap. Cost basis is weighted by each
+                // account's absolute exact quantity, and realised P&L is the symbol's own
+                // (never the account total, which would repeat once per held symbol).
+                var netted = new Dictionary<string, (long qty, decimal exactQty, decimal basisWeight, decimal weightedBasis, decimal firstBasis, decimal unrealised, decimal realised, decimal multiplier)>(
                     StringComparer.OrdinalIgnoreCase);
 
                 foreach (var account in _accounts.Values)
                 {
                     foreach (var pos in account.Positions.Values)
                     {
+                        var weight = Math.Abs(pos.Quantity);
                         if (netted.TryGetValue(pos.Symbol, out var existing))
                         {
                             netted[pos.Symbol] = (
                                 existing.qty + (long)pos.Quantity,
                                 existing.exactQty + pos.Quantity,
-                                existing.costBasis, // keep first account's cost basis for simplicity
+                                existing.basisWeight + weight,
+                                existing.weightedBasis + (pos.ReportedCostBasis * weight),
+                                existing.firstBasis,
                                 existing.unrealised + pos.UnrealisedPnl,
-                                existing.realised + account.RealisedPnl,
+                                existing.realised + pos.RealisedPnl,
                                 existing.multiplier);
                         }
                         else
@@ -266,9 +271,11 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
                             netted[pos.Symbol] = (
                                 (long)pos.Quantity,
                                 pos.Quantity,
+                                weight,
+                                pos.ReportedCostBasis * weight,
                                 pos.ReportedCostBasis,
                                 pos.UnrealisedPnl,
-                                account.RealisedPnl,
+                                pos.RealisedPnl,
                                 pos.EconomicMultiplier);
                         }
                     }
@@ -276,7 +283,12 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
 
                 return netted.ToDictionary(
                     static kv => kv.Key,
-                    static kv => (IPosition)new ExecutionPosition(kv.Key, kv.Value.qty, kv.Value.costBasis, kv.Value.unrealised, kv.Value.realised)
+                    static kv => (IPosition)new ExecutionPosition(
+                        kv.Key,
+                        kv.Value.qty,
+                        kv.Value.basisWeight == 0m ? kv.Value.firstBasis : kv.Value.weightedBasis / kv.Value.basisWeight,
+                        kv.Value.unrealised,
+                        kv.Value.realised)
                     {
                         ExactQuantity = kv.Value.exactQty,
                         // The multiplier this view's UnrealizedPnl was computed with, so readers
@@ -1102,6 +1114,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             pos.Quantity -= signedClose;
             account.Cash += cashFlow;
             account.RealisedPnl += cashFlow;
+            pos.RealisedPnl += cashFlow;
             capture.VariationMarginPnl = cashFlow;
             PostVariationMarginEntry(account, symbol, cashFlow, ts, $"Close {closeQty} {symbol} @ {price:F4} (variation margin)");
 
@@ -1164,6 +1177,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
             var cashFlow = pos.Money(pos.Quantity, settlementPrice - pos.LastSettlementPrice);
             account.Cash += cashFlow;
             account.RealisedPnl += cashFlow;
+            pos.RealisedPnl += cashFlow;
             pos.LastSettlementPrice = settlementPrice;
             pos.MarketPrice = settlementPrice;
             PostVariationMarginEntry(account, symbol, cashFlow, asOf, $"Daily settlement {symbol} @ {settlementPrice:F4} (variation margin)");
@@ -1279,6 +1293,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         account.Cash -= coverCost + commission;
         account.Cash += marginReleased;
         account.RealisedPnl += realised;
+        pos.RealisedPnl += realised;
 
         capture.Closing = new SecurityTradePosting(
             SecurityTradePostingKind.CoverShort, coverQty, coverCost, proceedsRemoved);
@@ -1323,6 +1338,7 @@ public sealed partial class PaperTradingPortfolio : IMultiAccountPortfolioState
         // The trader receives proceeds minus the loan repayment.
         account.Cash += proceeds - loanRepaid - commission;
         account.RealisedPnl += realised;
+        pos.RealisedPnl += realised;
 
         capture.Closing = new SecurityTradePosting(
             SecurityTradePostingKind.CloseLong, closeQty, proceeds, costBasisRemoved, LoanRepaid: loanRepaid);

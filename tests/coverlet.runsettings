@@ -6,8 +6,8 @@
         <Configuration>
           <Format>cobertura</Format>
           <ExcludeByFile>**/Migrations/**/*.cs,**/*.Designer.cs</ExcludeByFile>
-          <Include>[Meridian]*,[Meridian.FSharp]*,[Meridian.Contracts]*</Include>
-          <Exclude>[*Tests]*,[*Benchmarks]*</Exclude>
+          <Include>[Meridian*]*</Include>
+          <Exclude>[*Tests]*,[*Benchmarks]*,[Meridian.TestSupport]*,[Meridian.ProcessTestHelper]*,[IBApi]*,[Meridian.IbApi.SmokeStub]*</Exclude>
           <ExcludeByAttribute>Obsolete,GeneratedCodeAttribute,CompilerGeneratedAttribute</ExcludeByAttribute>
           <SingleHit>false</SingleHit>
           <UseSourceLink>true</UseSourceLink>

@@ -84,6 +84,20 @@ public class LiveDataAccessTests
         trades[2].Price.Should().Be(450.00m);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public void GetRecentTrades_WithNonPositiveLimit_ReturnsEmptyInsteadOfThrowing(int limit)
+    {
+        // GET /api/data/trades/{symbol}?limit=-1 used to surface an OverflowException as a 500.
+        _tradeCollector.OnTrade(CreateTrade("SPY", price: 450.00m, seqNum: 1));
+
+        var trades = _tradeCollector.GetRecentTrades("SPY", limit);
+
+        trades.Should().BeEmpty();
+    }
+
     [Fact]
     public void GetRecentTrades_RespectsLimitParameter()
     {

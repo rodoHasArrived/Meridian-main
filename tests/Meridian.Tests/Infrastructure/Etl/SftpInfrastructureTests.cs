@@ -166,6 +166,7 @@ public sealed class SftpInfrastructureTests : IDisposable
         client.ConnectCalls.Should().Be(1);
         client.RenameCalls.Should().BeEmpty();
         client.DisconnectCalls.Should().Be(1);
+        client.DeletedPaths.Should().BeEmpty("the failed upload never created a remote temp file");
     }
 
     [Fact]
@@ -205,6 +206,21 @@ public sealed class SftpInfrastructureTests : IDisposable
             "/drop/root.csv",
             "/drop/nested/child.csv");
         client.RenameCalls.Should().OnlyContain(call => call.CanOverwrite);
+    }
+
+    [Fact]
+    public async Task PublishAsync_ForDirectory_ShouldHonourOverwriteIfExistsFalse()
+    {
+        var outbound = Path.Combine(_root, "outbound-no-overwrite");
+        Directory.CreateDirectory(outbound);
+        await File.WriteAllTextAsync(Path.Combine(outbound, "root.csv"), "root");
+        var client = new RecordingSftpClient();
+        var publisher = CreatePublisher(new RecordingSftpClientFactory(client));
+
+        await publisher.PublishAsync(CreateDestination(overwriteIfExists: false), outbound);
+
+        client.RenameCalls.Should().ContainSingle();
+        client.RenameCalls.Single().CanOverwrite.Should().BeFalse();
     }
 
     [Fact]
