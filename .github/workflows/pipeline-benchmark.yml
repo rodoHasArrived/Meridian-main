@@ -39,9 +39,12 @@ on:
 permissions:
   contents: read
 
+# A newer push to a pull request supersedes the benchmark of its previous head, which can
+# otherwise hold a runner for the whole job on a commit nobody will merge. Main pushes and
+# manual dispatches still run to completion.
 concurrency:
   group: pipeline-benchmark-${{ github.ref }}
-  cancel-in-progress: false
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   pipeline-budget:

@@ -146,10 +146,8 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             if (IsRateLimitResponse(json))
             {
                 Log.Warning("Alpha Vantage rate limit hit for {Symbol}. Message in response.", symbol);
-                throw new RateLimitException(
-                    $"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.",
-                    provider: Name,
-                    symbol: symbol);
+                throw CreateRateLimitException(
+                    $"Alpha Vantage rate limit exceeded for {symbol}. Please wait before retrying.", symbol);
             }
 
             if (json.Contains("\"Error Message\""))
@@ -214,10 +212,7 @@ public sealed class AlphaVantageHistoricalDataProvider : BaseHistoricalDataProvi
             // Alpha Vantage returns 200 OK with error/rate limit messages in body
             if (IsRateLimitResponse(json))
             {
-                throw new RateLimitException(
-                    $"Alpha Vantage rate limit exceeded for {symbol}",
-                    provider: Name,
-                    symbol: symbol);
+                throw CreateRateLimitException($"Alpha Vantage rate limit exceeded for {symbol}", symbol);
             }
 
             if (json.Contains("\"Error Message\""))

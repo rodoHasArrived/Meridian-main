@@ -51,6 +51,10 @@ SHARD_DURATION_HINTS = {
     "core-storage": 34, "core-remainder": 31,
 }
 
+# Roster entries without an observation still cost a process start, so they spread across
+# hosted shards instead of all landing on whichever shard is momentarily lightest.
+UNOBSERVED_SHARD_SECONDS = 5
+
 # Test projects that cannot execute on the ubuntu PR lane and are exercised by the
 # windows-desktop workflows instead: Meridian.Wpf.Tests compiles an empty stub off-Windows
 # (EnableDefaultCompileItems=false) and Meridian.LifecycleSupervisor.Tests targets
@@ -285,6 +289,39 @@ def portable_isolation_key(value: str) -> str:
     return value
 
 
+def parse_shard(value: str) -> tuple[int, int] | None:
+    """Parse INDEX/TOTAL (1-based). An empty value selects the complete roster."""
+    if not value:
+        return None
+    match = re.fullmatch(r"([1-9][0-9]*)/([1-9][0-9]*)", value)
+    if not match or int(match.group(1)) > int(match.group(2)):
+        raise argparse.ArgumentTypeError("shard must be INDEX/TOTAL with 1 <= INDEX <= TOTAL")
+    return int(match.group(1)), int(match.group(2))
+
+
+def partition_projects(projects: Sequence["TestProject"], total: int) -> list[list["TestProject"]]:
+    """Split the roster into `total` disjoint groups that together contain every entry once.
+
+    Assignment depends only on the roster and its duration hints, so every hosted shard
+    computes the same partition independently. Longest entries are placed first on the
+    lightest group; ties keep roster order and the lowest group. Groups retain roster order.
+    """
+    if total < 1:
+        raise ValueError("total must be a positive integer")
+    order = {project.name: position for position, project in enumerate(projects)}
+    weights = {
+        project.name: SHARD_DURATION_HINTS.get(project.name, UNOBSERVED_SHARD_SECONDS)
+        for project in projects
+    }
+    groups: list[list[TestProject]] = [[] for _ in range(total)]
+    loads = [0] * total
+    for project in sorted(projects, key=lambda p: (-weights[p.name], order[p.name])):
+        target = loads.index(min(loads))
+        groups[target].append(project)
+        loads[target] += weights[project.name]
+    return [sorted(group, key=lambda p: order[p.name]) for group in groups]
+
+
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser(description="Run Meridian .NET CI test projects with aggregate reporting.")
     parser.add_argument("--configuration", default="Release", help="dotnet test configuration.")
@@ -324,6 +361,16 @@ def parse_args() -> argparse.Namespace:
         default=[],
         metavar="NAME=PATH",
         help="Override/default-add a test project entry. Repeatable; when present, replaces defaults.",
+    )
+    parser.add_argument(
+        "--shard",
+        type=parse_shard,
+        default=os.environ.get("MERIDIAN_CI_DOTNET_SHARD", ""),
+        metavar="INDEX/TOTAL",
+        help=(
+            "Run one deterministic slice of the default roster (MERIDIAN_CI_DOTNET_SHARD). "
+            "The TOTAL slices are disjoint and together run every roster entry once."
+        ),
     )
     parser.add_argument("--dry-run", action="store_true", help="Print commands and write summaries without running tests.")
     return parser.parse_args()
@@ -688,6 +735,7 @@ def write_summaries(
     results: Sequence[TestResult], *, summary_output: Path, json_output: Path,
     build_results: Sequence[TestResult] = (),
     test_duration_seconds: float | None = None,
+    shard: tuple[int, int] | None = None,
 ) -> None:
     summary_output.parent.mkdir(parents=True, exist_ok=True)
     json_output.parent.mkdir(parents=True, exist_ok=True)
@@ -710,6 +758,7 @@ def write_summaries(
         "runAttempt": os.environ.get("GITHUB_RUN_ATTEMPT"),
         "cacheHit": os.environ.get("MERIDIAN_DEPENDENCY_CACHE_HIT", "not reported"),
         "queueSeconds": None,
+        "shard": {"index": shard[0], "total": shard[1]} if shard else None,
     })
     if build_results:
         # Keep successful test totals and results compatible with artifact consumers.
@@ -782,6 +831,18 @@ def main() -> int:
             )
             return 2
 
+    shard = getattr(args, "shard", None)
+    if shard is not None:
+        if args.project:
+            print("--shard selects from the default roster and cannot be combined with --project.", file=sys.stderr)
+            return 2
+        # Coverage wiring above was checked against the complete roster; only then narrow it.
+        projects = partition_projects(projects, shard[1])[shard[0] - 1]
+        print(f"Shard {shard[0]}/{shard[1]}: {', '.join(project.name for project in projects) or 'no roster entries'}", flush=True)
+        if not projects:
+            print("Shard count exceeds the roster; this shard would prove nothing.", file=sys.stderr)
+            return 2
+
     results_dir = Path(args.results_dir)
     use_group_build = not args.project and args.configuration == "Release"
     if not use_group_build:
@@ -802,7 +863,8 @@ def main() -> int:
                                             isolation_key=getattr(args, "isolation_key", None)))
     build_failures = [result for result in build_results if result.exit_code != 0]
     if build_failures:
-        write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output))
+        write_summaries(build_results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),
+                        shard=shard)
         print("Failing .NET test project builds:", file=sys.stderr)
         for result in build_failures:
             print(f"- {result.name}: {result.path} exited {result.exit_code}", file=sys.stderr)
@@ -822,6 +884,7 @@ def main() -> int:
         results, summary_output=Path(args.summary_output), json_output=Path(args.json_output),
         build_results=build_results if use_group_build else (),
         test_duration_seconds=time.perf_counter() - test_started,
+        shard=shard,
     )
 
     failed = [result for result in results if result.exit_code != 0]
