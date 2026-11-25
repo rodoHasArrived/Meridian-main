@@ -14149,6 +14149,7 @@ Meridian-main
 │   │   │   │   ├── IBBrokerageGatewayTests.RecoveryScope.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionFences.cs
 │   │   │   │   ├── IBBrokerageGatewayTests.SessionRaces.cs
+│   │   │   │   ├── IBCallbackRouterTickerLifecycleTests.cs
 │   │   │   │   ├── IBDataServicesTests.cs
 │   │   │   │   ├── IBHistoricalProviderContractTests.cs
 │   │   │   │   ├── IBMarketDataClientContractTests.cs

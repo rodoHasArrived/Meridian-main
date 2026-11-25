@@ -509,6 +509,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     {
         var smartDepth = _depthTickerSmartDepthMap.TryRemove(tickerId, out var storedSmartDepth) && storedSmartDepth;
         _clientSocket.cancelMktDepth(tickerId, smartDepth);
+        _router.UnregisterDepthTicker(tickerId);
         _depthTickerMap.TryRemove(tickerId, out _);
         _depthSubscriptions.TryRemove(tickerId, out _);
         StreamingRequestSent?.Invoke(this, EventArgs.Empty);
@@ -536,6 +537,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void UnsubscribeTrades(int tickerId)
     {
         _clientSocket.cancelTickByTickData(tickerId);
+        _router.UnregisterTradeTicker(tickerId);
         _tradeTickerMap.TryRemove(tickerId, out _);
         _tradeSubscriptions.TryRemove(tickerId, out _);
         StreamingRequestSent?.Invoke(this, EventArgs.Empty);
@@ -580,6 +582,7 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
     public void UnsubscribeQuotes(int tickerId)
     {
         _clientSocket.cancelMktData(tickerId);
+        _router.UnregisterQuoteTicker(tickerId);
         _quoteTickerMap.TryRemove(tickerId, out _);
         _quoteSubscriptions.TryRemove(tickerId, out _);
         StreamingRequestSent?.Invoke(this, EventArgs.Empty);
@@ -591,6 +594,9 @@ public sealed partial class EnhancedIBConnectionManager : EWrapper, IDisposable
         {
             ct.ThrowIfCancellationRequested();
             _router.RegisterDepthTicker(tickerId, subscription.Symbol);
+            // TWS replays the full book from position 0; levels kept from before the drop would
+            // otherwise be duplicated alongside the replayed ones.
+            _router.ResetDepthBook(subscription.Symbol);
             SendDepthSubscription(
                 tickerId,
                 subscription.Contract,

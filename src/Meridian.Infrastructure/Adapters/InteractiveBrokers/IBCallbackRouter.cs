@@ -45,6 +45,30 @@ public sealed class IBCallbackRouter
     }
 
     /// <summary>
+    /// Stops routing a cancelled depth request. TWS can still deliver callbacks for a ticker after
+    /// cancelMktDepth; without this they reach the symbol's book, which a resubscription has just
+    /// reset, and corrupt the replayed book.
+    /// </summary>
+    public void UnregisterDepthTicker(int tickerId) => _depthTickerMap.TryRemove(tickerId, out _);
+
+    /// <summary>Stops routing a cancelled tick-by-tick trade request.</summary>
+    public void UnregisterTradeTicker(int tickerId) => _tradeTickerMap.TryRemove(tickerId, out _);
+
+    /// <summary>Stops routing a cancelled Level 1 request and drops its partial quote state.</summary>
+    public void UnregisterQuoteTicker(int tickerId)
+    {
+        _quoteTickerMap.TryRemove(tickerId, out _);
+        _quoteStates.TryRemove(tickerId, out _);
+    }
+
+    /// <summary>
+    /// Clears the symbol's depth book before its request is re-sent (for example on reconnect
+    /// replay). TWS replays the whole book as inserts from position 0, so a book that kept its old
+    /// levels would hold each one twice.
+    /// </summary>
+    public void ResetDepthBook(string symbol) => _depthCollector.ResetSymbolStream(symbol);
+
+    /// <summary>
     /// Registers an option contract ticker so that tickOptionComputation callbacks are routed
     /// to the <see cref="OptionDataCollector"/>.
     /// </summary>

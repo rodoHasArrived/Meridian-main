@@ -121,6 +121,12 @@ Vendor references checked 2026-11-13: [Twelve Data credits](https://support.twel
 
 IB historical requests ask for epoch-second bar times (`formatDate = 2`) and send UTC, culture-invariant end times; a zone-less TWS-local timestamp is refused rather than read as UTC. `IBDurableResultStore` publishes an update to memory only after the fsynced atomic file replace succeeds. `ProviderRegistry` availability probes rethrow caller cancellation.
 
+IB streaming unsubscribes (`UnsubscribeMarketDepth`, `UnsubscribeTrades`, `UnsubscribeQuotes`) unregister
+the ticker from `IBCallbackRouter` once TWS accepts the cancel, so late callbacks for a cancelled
+request are dropped instead of writing into a book a resubscription has just reset. Reconnect replay
+resets each depth book before re-sending its request, because TWS replays the full book from
+position 0 and kept levels would otherwise be duplicated.
+
 Statement importers retain parser revision and upstream executed mapping proof; pre-normalized imports without upstream proof remain non-comparable. Immutable match artifacts retain that mapping fingerprint. Source-generated import and match hashing supports exact completed-checkpoint verification without rewriting legacy bytes.
 
 Broker amendment and cancellation failures retain the broker-observed order status and use
