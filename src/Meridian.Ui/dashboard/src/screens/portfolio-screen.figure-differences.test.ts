@@ -42,8 +42,8 @@ describe("buildPortfolioFigureDifferenceNote", () => {
       summary: "Live holdings and Retained run records read different records, so their figures are not expected to match.",
       unexplained: false,
       rows: [
-        { key: "exposure", label: "Total exposure", first: "$18,900", second: "$25,587" },
-        { key: "unrealized-pnl", label: "Unrealized P&L", first: "+$90", second: "+$1,239" },
+        { key: "exposure", label: "Total exposure", first: "18,900", second: "$25,587" },
+        { key: "unrealized-pnl", label: "Unrealized P&L", first: "+90", second: "+$1,239" },
         { key: "positions", label: "Open positions", first: "1", second: "2" }
       ],
       sources: [
@@ -93,7 +93,7 @@ describe("buildPortfolioFigureDifferenceNote", () => {
       {
         key: "exposure",
         label: "Total exposure",
-        first: "$18,900",
+        first: "18,900",
         second: "$21,400",
         detail: "Live holdings is gross, Retained run records is net: different measures, so these would differ on the same records."
       },
@@ -115,7 +115,7 @@ describe("buildPortfolioFigureDifferenceNote", () => {
       })
     });
 
-    expect(note?.rows).toEqual([{ key: "exposure", label: "Total exposure", first: "$18,900", second: "$21,400" }]);
+    expect(note?.rows).toEqual([{ key: "exposure", label: "Total exposure", first: "18,900", second: "$21,400" }]);
   });
 
   it("stays silent when the figures agree, the explorer is blocked or it has not loaded", () => {
@@ -123,7 +123,7 @@ describe("buildPortfolioFigureDifferenceNote", () => {
       summaryItems: [
         { label: "Positions", value: "1", detail: "", tone: "Success" },
         { label: "Market value", value: "$18,900.00", detail: "", tone: "Default" },
-        { label: "Unrealized P&L", value: "+$90", detail: "", tone: "Success" }
+        { label: "Unrealized P&L", value: "+90", detail: "", tone: "Success" }
       ]
     });
 

@@ -15,7 +15,7 @@ import type {
   CoveredCallTrade
 } from "@/lib/covered-call";
 import { shortCallBreakEven } from "@/lib/covered-call/payoff";
-import { formatPrefixedCurrency } from "@/lib/format";
+import { formatCurrencyAmount } from "@/lib/format";
 import {
   formatCount,
   formatDecimal,
@@ -1157,7 +1157,7 @@ function buildCoveredCallTradeTimelineRow(
   selectedIndex: number
 ): CoveredCallTradeTimelineRowViewModel {
   const strikeLabel = formatPrice(trade.strike);
-  const pnlLabel = formatPrefixedCurrency(trade.totalNetPnl);
+  const pnlLabel = formatCurrencyAmount(trade.totalNetPnl, null);
   const statusLabel = trade.wasAssigned ? "Assigned" : trade.isWin ? "Closed gain" : "Closed loss";
   const exitReasonLabel = formatExitReason(trade.exitReason);
   const statusBadgeVariant: CoveredCallBadgeVariant = trade.wasAssigned
@@ -1203,7 +1203,7 @@ function buildCoveredCallTradeTimelineDetail(
     : trade.isWin
       ? "success"
       : "danger";
-  const totalPnl = formatPrefixedCurrency(trade.totalNetPnl);
+  const totalPnl = formatCurrencyAmount(trade.totalNetPnl, null);
 
   return {
     panelId: COVERED_CALL_TRADE_DETAIL_PANEL_ID,
@@ -1215,9 +1215,9 @@ function buildCoveredCallTradeTimelineDetail(
     statusBadgeVariant,
     fields: [
       { label: "Exit reason", value: exitReasonLabel },
-      { label: "Entry credit", value: formatPrefixedCurrency(trade.entryCredit) },
-      { label: "Exit debit", value: formatPrefixedCurrency(trade.exitDebit) },
-      { label: "Net per contract", value: formatPrefixedCurrency(trade.netPnlPerContract) },
+      { label: "Entry credit", value: formatCurrencyAmount(trade.entryCredit, null) },
+      { label: "Exit debit", value: formatCurrencyAmount(trade.exitDebit, null) },
+      { label: "Net per contract", value: formatCurrencyAmount(trade.netPnlPerContract, null) },
       { label: "Total net P&L", value: totalPnl },
       { label: "Holding days", value: formatCount(trade.holdingDays) },
       { label: "Multiplier", value: formatCount(trade.multiplier) },

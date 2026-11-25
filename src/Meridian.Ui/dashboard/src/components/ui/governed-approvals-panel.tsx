@@ -4,7 +4,8 @@ import { DetailFields, type DetailField } from "@/components/meridian/detail-pan
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { formatPercent, formatPrefixedCurrency, formatQuantity, formatUtcDate } from "@/lib/format";
+import { formatCurrencyAmount, formatPercent, formatQuantity, formatUtcDate } from "@/lib/format";
+import { parseExactDecimal } from "@/lib/exact-decimal";
 import type { GovernedApprovalsViewModel } from "@/screens/trading-screen.governed-approvals";
 import type { RiskEscalation, RiskEscalationOptionContract, RiskEscalationOrderLeg } from "@/types";
 
@@ -39,8 +40,11 @@ const OPTION_RIGHT_LABELS = new Map([
 const LEG_SIDES = ["Buy", "Sell"];
 const LEG_POSITION_INTENTS = ["BuyToOpen", "BuyToClose", "SellToOpen", "SellToClose"];
 
+/** Escalations carry no currency, so a notional renders bare (2 to 8 decimals), never as "$". */
 function formatNotional(value: number): string {
-  return formatPrefixedCurrency(value, NOTIONAL_FORMAT);
+  const scale = parseExactDecimal(value)?.scale ?? NOTIONAL_FORMAT.minimumFractionDigits;
+  const decimals = Math.min(NOTIONAL_FORMAT.maximumFractionDigits, Math.max(NOTIONAL_FORMAT.minimumFractionDigits, scale));
+  return formatCurrencyAmount(value, null, { decimals });
 }
 
 function describeOrder(escalation: RiskEscalation): string {

@@ -92,7 +92,7 @@ import type {
   RuleDryRunResult,
   GeneratedPostingLine,
 } from "@/types";
-import { formatCount as formatCountValue, formatPrefixedCurrency } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrencyAmount, sharedCurrency } from "@/lib/format";
 
 const PRODUCTION_CERTIFICATION_RETAINED_EVIDENCE_REQUIRED = "Retained evidence is required before saving production certification controls.";
 interface AccountingTenantAdministrationProfileDraft {
@@ -2403,12 +2403,13 @@ export function useAccountingConfigurationViewModel(
     const templates = (workspace?.journalTemplates ?? []).map<AccountingConfigurationTemplateViewModel>((template) => {
       const debitTotal = template.lines.filter((line) => line.side === "Debit").reduce((sum, line) => sum + line.amount, 0);
       const creditTotal = template.lines.filter((line) => line.side === "Credit").reduce((sum, line) => sum + line.amount, 0);
+      const templateCurrency = sharedCurrency(template.lines.map((line) => line.currency));
       return {
         id: template.templateId,
         title: template.displayName,
         subtitle: `${template.version} | ${template.description || "No description supplied."}`,
         lineCountLabel: `${template.lines.length} line${template.lines.length === 1 ? "" : "s"}`,
-        balanceLabel: `${formatPrefixedCurrency(debitTotal)} debit / ${formatPrefixedCurrency(creditTotal)} credit`,
+        balanceLabel: `${formatCurrencyAmount(debitTotal, templateCurrency, { showCode: true })} debit / ${formatCurrencyAmount(creditTotal, templateCurrency, { showCode: true })} credit`,
         statusLabel: template.isArchived ? "Archived" : debitTotal === creditTotal ? "Balanced" : "Unbalanced"
       };
     });
@@ -2446,13 +2447,13 @@ export function useAccountingConfigurationViewModel(
     const previewView = preview
       ? {
           title: preview.displayName,
-          balanceLabel: `${formatPrefixedCurrency(preview.totalDebits)} debit / ${formatPrefixedCurrency(preview.totalCredits)} credit`,
+          balanceLabel: `${formatCurrencyAmount(preview.totalDebits, sharedCurrency(preview.lines.map((line) => line.currency)), { showCode: true })} debit / ${formatCurrencyAmount(preview.totalCredits, sharedCurrency(preview.lines.map((line) => line.currency)), { showCode: true })} credit`,
           statusLabel: preview.isBalanced ? "Balanced non-posting preview" : "Unbalanced preview",
           lineRows: preview.lines.map((line, index) => ({
             id: `${line.accountPath}-${line.side}-${index}`,
             account: `${line.accountPath} | ${line.accountName}`,
             side: line.side,
-            amount: `${formatPrefixedCurrency(line.amount)} ${line.currency}`,
+            amount: formatCurrencyAmount(line.amount, line.currency, { showCode: true }),
             description: line.description ?? "Template line"
           }))
         }
@@ -4450,12 +4451,12 @@ function buildAccountingRulesStudioDryRunViewModel(result: RuleDryRunResult): Ac
   return {
     title: `${result.sourceEventType} dry run`,
     balanceLabel: result.isPostingBalanced
-      ? `Balanced ${formatPrefixedCurrency(result.eventAmount)} ${result.currency}`
-      : `Unbalanced ${formatPrefixedCurrency(result.eventAmount)} ${result.currency}`,
+      ? `Balanced ${formatCurrencyAmount(result.eventAmount, result.currency, { showCode: true })}`
+      : `Unbalanced ${formatCurrencyAmount(result.eventAmount, result.currency, { showCode: true })}`,
     selectedRuleLabel: result.selectedRuleId ? `Selected rule ${result.selectedRuleId}` : "No rule selected",
     matchRows: result.ruleMatches.map(formatRuleDryRunMatch),
     generatedLineRows: result.generatedLines.map((line, index) =>
-      `${index + 1}. ${line.side} ${line.accountPath} ${formatPrefixedCurrency(line.amount)} ${line.currency} - ${line.description ?? line.accountName}`
+      `${index + 1}. ${line.side} ${line.accountPath} ${formatCurrencyAmount(line.amount, line.currency, { showCode: true })} - ${line.description ?? line.accountName}`
     ),
     generatedPostingRows: generatedPostingLines.length > 0
       ? generatedPostingLines.map(formatGeneratedPostingLine)
@@ -4474,6 +4475,7 @@ function buildAccountingRulesStudioJournalCandidateViewModel(
   result: PostingRuleJournalCandidateResult
 ): AccountingRulesStudioJournalCandidateViewModel {
   const command = result.postingCommand;
+  const candidateCurrency = sharedCurrency(result.generatedPostingLines.map((line) => line.currency));
   const commandLabel = command
     ? `Draft command ${command.commandId} is ${command.approvalState.toLowerCase()} and remains lifecycle-gated.`
     : "No posting command was produced.";
@@ -4487,8 +4489,8 @@ function buildAccountingRulesStudioJournalCandidateViewModel(
       ? `Selected rule ${result.selectedRuleId}${result.selectedRuleVersion ? ` version ${result.selectedRuleVersion}` : ""}`
       : "No selected posting rule",
     balanceLabel: result.isBalanced
-      ? `Balanced ${formatPrefixedCurrency(result.totalDebits)} / ${formatPrefixedCurrency(result.totalCredits)}`
-      : `Unbalanced by ${formatPrefixedCurrency(result.imbalance)}`,
+      ? `Balanced ${formatCurrencyAmount(result.totalDebits, candidateCurrency, { showCode: true })} / ${formatCurrencyAmount(result.totalCredits, candidateCurrency, { showCode: true })}`
+      : `Unbalanced by ${formatCurrencyAmount(result.imbalance, candidateCurrency, { showCode: true })}`,
     commandLabel,
     approvalLabel,
     evidenceLabel: `${result.evidenceLinks.length} evidence link${result.evidenceLinks.length === 1 ? "" : "s"}`,
@@ -4521,7 +4523,7 @@ function buildAccountingRulesStudioTestCaseViewModel(testCase: AccountingRuleTes
   return {
     id: testCase.testCaseId,
     title: testCase.displayName,
-    subtitle: `${request.sourceEventType} | ${request.effectiveDate} | ${formatPrefixedCurrency(request.eventAmount)} ${request.currency}`,
+    subtitle: `${request.sourceEventType} | ${request.effectiveDate} | ${formatCurrencyAmount(request.eventAmount, request.currency, { showCode: true })}`,
     assertionLabel: `Expect ${expectedRule}${expectedVersion}, ${testCase.expectBalancedPosting ? "balanced" : "unbalanced"}, ${expectedIssues}, ${expectedPostings}.`,
     evidenceLabel: evidenceCount > 0
       ? `${evidenceCount} evidence link${evidenceCount === 1 ? "" : "s"}`
@@ -4630,7 +4632,7 @@ function formatAccountingRuleConditionGroup(group: NonNullable<PostingRule["cond
 }
 
 function formatAccountingRuleFormula(formula: NonNullable<PostingRule["formulas"]>[number]): string {
-  return `${formula.formulaId}: ${formula.kind} ${formatPrefixedCurrency(formula.value)} ${formula.currency}${formula.description ? ` - ${formula.description}` : ""}`;
+  return `${formula.formulaId}: ${formula.kind} ${formatCurrencyAmount(formula.value, formula.currency, { showCode: true })}${formula.description ? ` - ${formula.description}` : ""}`;
 }
 
 function formatAllocationRule(allocation: AllocationRule): string {
@@ -4640,7 +4642,7 @@ function formatAllocationRule(allocation: AllocationRule): string {
 
 function formatGeneratedPostingLine(line: GeneratedPostingLine): string {
   const scope = formatLedgerDimensionSet(line.dimensions).join(", ");
-  return `${line.side} ${line.accountPath} ${formatPrefixedCurrency(line.amount)} ${line.currency} via ${line.amountFormulaId}${scope ? ` | ${scope}` : ""}${line.description ? ` - ${line.description}` : ""}`;
+  return `${line.side} ${line.accountPath} ${formatCurrencyAmount(line.amount, line.currency, { showCode: true })} via ${line.amountFormulaId}${scope ? ` | ${scope}` : ""}${line.description ? ` - ${line.description}` : ""}`;
 }
 
 function formatRuleDryRunMatch(match: AccountingRuleDryRunMatch): string {

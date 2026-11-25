@@ -963,11 +963,11 @@ describe("accounting-screen view model", () => {
       statusLabel: "Variance review",
       statusTone: "danger",
       ariaLabel: "Cash-flow evidence for Reporting packet context at /reporting",
-      statusAriaLabel: "Cash-flow status Variance review. Net variance -$250."
+      statusAriaLabel: "Cash-flow status Variance review. Net variance -250.00."
     });
     expect(state.rows).toEqual(expect.arrayContaining([
-      expect.objectContaining({ id: "portfolio-cash", value: "$120,000", tone: "default" }),
-      expect.objectContaining({ id: "net-variance", value: "-$250", tone: "danger", ariaLabel: "Net variance: -$250" }),
+      expect.objectContaining({ id: "portfolio-cash", value: "120,000.00", tone: "default" }),
+      expect.objectContaining({ id: "net-variance", value: "-250.00", tone: "danger", ariaLabel: "Net variance: -250.00" }),
       expect.objectContaining({ id: "variance-runs", value: "2", tone: "danger", ariaLabel: "Runs with variance: 2" })
     ]));
     expect(state.statusAnnouncement).toBe("Variance review: Cash-flow coverage is available for 4 runs; 2 runs need variance review.");
@@ -1048,7 +1048,7 @@ describe("accounting-screen view model", () => {
     ]);
     expect(state.profileRows[0].ariaLabel).toContain("profile-cash");
     expect(state.profileRows[0]).toMatchObject({
-      maxToleranceBandLabel: "$250",
+      maxToleranceBandLabel: "250.00",
       totalBreakCount: 8,
       inReviewBreakCount: 3,
       signedOffCount: 4,
@@ -1063,7 +1063,7 @@ describe("accounting-screen view model", () => {
       ariaLabel: "Tolerance profile detail for profile-cash"
     });
     expect(state.selectedProfile?.fields).toEqual(expect.arrayContaining([
-      { label: "Tolerance band", value: "$250" },
+      { label: "Tolerance band", value: "250.00" },
       { label: "Pending sign-off", value: "3" },
       { label: "Last updated", value: "2026-05-09" }
     ]));
@@ -1128,7 +1128,7 @@ describe("accounting-screen view model", () => {
       statusTone: "warning"
     });
     expect(selected.selectedProfile?.fields).toEqual(expect.arrayContaining([
-      { label: "Tolerance band", value: "$125" }
+      { label: "Tolerance band", value: "125.00" }
     ]));
 
     const fallback = buildCalibrationSummaryViewState(summary, false, null, "missing-profile");

@@ -851,9 +851,9 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
     expect(result.current.chartAccountEditor.statusText).toBe("Saved chart account Expenses:Management Fees.");
     expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("group-trade-source: Any (required)");
     expect(result.current.selectedRule?.conditionRows.join("\n")).toContain("event.source Equals Broker");
-    expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount $250,000 USD");
+    expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount 250,000.00 USD");
     expect(result.current.selectedRule?.allocationRows.join("\n")).toContain("alloc-strategy: StrategyWeight weight 1 via formula-source");
-    expect(result.current.selectedRule?.generatedPostingRows.join("\n")).toContain("Debit 1200.Investments $250,000 USD via formula-source");
+    expect(result.current.selectedRule?.generatedPostingRows.join("\n")).toContain("Debit 1200.Investments 250,000.00 USD via formula-source");
     expect(result.current.selectedRule?.versionRows.join("\n")).toContain("v3 by controller on 2026-06-15");
     expect(result.current.metricRows).toEqual(expect.arrayContaining([
       expect.objectContaining({
@@ -1498,12 +1498,12 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
     await waitFor(() => expect(result.current.dryRunPreview).not.toBeNull());
     expect(result.current.dryRunPreview).toMatchObject({
       title: "TradeExecuted dry run",
-      balanceLabel: "Balanced $250,000 USD",
+      balanceLabel: "Balanced 250,000.00 USD",
       selectedRuleLabel: "Selected rule rule-trade-buy"
     });
     expect(result.current.dryRunPreview?.matchRows.join("\n")).toContain("Trade buy posting matched at priority 10");
-    expect(result.current.dryRunPreview?.generatedLineRows.join("\n")).toContain("Debit 1200.Investments $250,000 USD");
-    expect(result.current.dryRunPreview?.generatedPostingRows.join("\n")).toContain("Credit 1000.Cash $250,000 USD via formula-source");
+    expect(result.current.dryRunPreview?.generatedLineRows.join("\n")).toContain("Debit 1200.Investments 250,000.00 USD");
+    expect(result.current.dryRunPreview?.generatedPostingRows.join("\n")).toContain("Credit 1000.Cash 250,000.00 USD via formula-source");
 
     await act(async () => {
       await result.current.applyDryRunEventPredicate();
@@ -1695,7 +1695,7 @@ describe("accounting governance view model", () => {  it("loads Accounting Rules
       })
     }));
     expect(result.current.applyFormulaStatusText).toBe("Applied formula amount to rule-trade-buy.");
-    expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount $250,000 USD - Formula amount retained from dry-run 2026-01-01.");
+    expect(result.current.selectedRule?.formulaRows.join("\n")).toContain("formula-source: SourceAmount 250,000.00 USD - Formula amount retained from dry-run 2026-01-01.");
 
     await act(async () => {
       await result.current.applyDryRunAllocationTargets();

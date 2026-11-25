@@ -299,6 +299,22 @@ export function formatCurrencyWithCode(value: number, currency: string | null | 
 }
 
 /**
+ * The one currency a set of amounts shares, for labelling their total: the code when every
+ * supplied code is the same, otherwise null (none supplied, or mixed). A null result renders the
+ * total as a bare amount instead of borrowing one line's currency or assuming USD.
+ */
+export function sharedCurrency(codes: Iterable<string | null | undefined>): string | null {
+  let shared: string | null = null;
+  for (const code of codes) {
+    const normalized = code?.trim().toUpperCase();
+    if (!normalized) return null;
+    if (shared !== null && shared !== normalized) return null;
+    shared = normalized;
+  }
+  return shared;
+}
+
+/**
  * An amount whose currency the source has not supplied: the bare number plus an explicit
  * "(currency unavailable)", e.g. "1,250 (currency unavailable)". It is never printed as dollars.
  */

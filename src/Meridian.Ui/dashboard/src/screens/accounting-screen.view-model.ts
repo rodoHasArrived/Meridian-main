@@ -16,7 +16,7 @@ import {
 } from "@/lib/api";
 import { describeApiError, type ApiErrorDisplay } from "@/lib/api-errors";
 import { ACTIVATION_OUTCOME_KEYS, recordActivationOutcome } from "@/lib/first-run/activation";
-import { formatCount as formatCountValue, formatCurrency, formatPrefixedCurrency, formatSignedCurrency, formatUnknownCurrencyAmount } from "@/lib/format";
+import { formatCount as formatCountValue, formatCurrency, formatCurrencyAmount, formatSignedCurrency, formatUnknownCurrencyAmount } from "@/lib/format";
 import { formatReportPackRecipientList } from "@/lib/reporting-distributions";
 import { WORKSTATION_ROUTE_CATALOG } from "@/lib/workspace";
 import { EXPORT_API_ENDPOINTS } from "@/lib/workstation-endpoints";
@@ -3384,7 +3384,7 @@ export function buildAccountingCashFlowViewState(
     routePath,
     statusLabel,
     statusTone,
-    statusAriaLabel: `Cash-flow status ${statusLabel}. Net variance ${formatPrefixedCurrency(cashFlow.netVariance)}.`,
+    statusAriaLabel: `Cash-flow status ${statusLabel}. Net variance ${formatCurrencyAmount(cashFlow.netVariance, null)}.`,
     ariaLabel: `Cash-flow evidence for ${contextLabel} at ${routePath}`,
     rowGroupLabel: "Cash-flow evidence rows",
     rows,
@@ -4339,7 +4339,7 @@ function buildCashFlowRow(
   value: number,
   tone: CashFlowEvidenceTone
 ): AccountingCashFlowRowViewModel {
-  const formattedValue = formatPrefixedCurrency(value);
+  const formattedValue = formatCurrencyAmount(value, null);
   return {
     id,
     label,

@@ -1,6 +1,6 @@
 import { BACKTEST_EVIDENCE_BLOCKER } from "@/screens/strategy-designer-screen.copy";
 import { useCallback, useMemo, useState } from "react";
-import { formatFixed, formatMoney, formatNumber, formatPercent, formatPnl, formatPrefixedCurrency } from "@/lib/format";
+import { formatFixed, formatMoney, formatNumber, formatPercent, formatPnl, formatCurrencyAmount } from "@/lib/format";
 import { STRATEGY_DESIGNER_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 
 export type StrategyLegKind =
@@ -1715,7 +1715,7 @@ export function buildParticipationViewModel(legs: StrategyLeg[], spotPrice: numb
 
   return {
     totalNotional,
-    totalNotionalLabel: formatPrefixedCurrency(totalNotional, { maximumFractionDigits: 0 }),
+    totalNotionalLabel: formatCurrencyAmount(totalNotional, null, { context: "summary" }),
     longNotional,
     shortNotional,
     netDirection,
@@ -2363,8 +2363,8 @@ function buildSliceDetail(leg: StrategyLeg): string {
 
 function buildNetDirectionLabel(direction: "Long" | "Short" | "Flat", longNotional: number, shortNotional: number): string {
   if (direction === "Flat") return "Balanced long/short notional";
-  if (direction === "Long") return `Long-biased by ${formatPrefixedCurrency(longNotional - shortNotional, { maximumFractionDigits: 0 })} notional`;
-  return `Short-biased by ${formatPrefixedCurrency(shortNotional - longNotional, { maximumFractionDigits: 0 })} notional`;
+  if (direction === "Long") return `Long-biased by ${formatCurrencyAmount(longNotional - shortNotional, null, { context: "summary" })} notional`;
+  return `Short-biased by ${formatCurrencyAmount(shortNotional - longNotional, null, { context: "summary" })} notional`;
 }
 
 function formatPrice(value: number): string {

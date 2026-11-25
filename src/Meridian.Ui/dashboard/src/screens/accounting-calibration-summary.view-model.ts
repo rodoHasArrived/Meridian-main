@@ -1,5 +1,5 @@
 import type { ApiErrorDisplay } from "@/lib/api-errors";
-import {formatPrefixedCurrency as formatCurrency, pluralizeCount} from "@/lib/format";
+import {formatCurrencyAmount, pluralizeCount} from "@/lib/format";
 import type { ReconciliationCalibrationStatus, ReconciliationCalibrationSummary } from "@/types";
 
 export type CalibrationStatusTone = "success" | "warning" | "danger";
@@ -214,7 +214,7 @@ function buildCalibrationProfileRow(
     toleranceProfileId: profile.toleranceProfileId,
     exceptionRoute: profile.exceptionRoute,
     highestSeverity: profile.highestSeverity,
-    maxToleranceBandLabel: profile.maxToleranceBand === null ? "Policy default" : formatCurrency(profile.maxToleranceBand),
+    maxToleranceBandLabel: profile.maxToleranceBand === null ? "Policy default" : formatCurrencyAmount(profile.maxToleranceBand, null),
     totalBreakCount: profile.totalBreakCount,
     openBreakCount: profile.openBreakCount,
     inReviewBreakCount: profile.inReviewBreakCount,

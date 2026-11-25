@@ -14,7 +14,7 @@ import {
   multiAssetStatusLabel,
   multiAssetStatusTone
 } from "./portfolio-screen.multi-asset-coverage";
-import { formatCount, formatPrefixedCurrency, formatSignedCurrency } from "@/lib/format";
+import { formatCount, formatCurrencyAmount, formatSignedCurrency, sharedCurrency } from "@/lib/format";
 import { buildHoldingsModel, holdingRowFigures, holdingsTotalLine, type HoldingFigure, type HoldingsTotalLine } from "@/lib/holdings-model";
 import { PORTFOLIO_API_ENDPOINTS, WORKSTATION_API_ENDPOINTS } from "@/lib/workstation-endpoints";
 import {
@@ -805,7 +805,7 @@ export function buildPortfolioScreenViewModel({
     { ...resolveKpi("portfolio.cash", { portfolio }), id: "portfolio-cash" },
     { ...positionCountKpi, id: "portfolio-open-positions" }
   ];
-  const cashVarianceLabel = cashFlow !== null ? formatPrefixedCurrency(cashFlow.netVariance, { maximumFractionDigits: 0 }) : null;
+  const cashVarianceLabel = cashFlow !== null ? formatCurrencyAmount(cashFlow.netVariance, null, { context: "summary" }) : null;
 
   return {
     metricsFromTrading: false,
@@ -930,7 +930,7 @@ export function buildPortfolioFallbackMetrics({
     {
       id: "portfolio-total-exposure",
       label: "Total exposure",
-      value: hasPositions ? formatPrefixedCurrency(totalExposure, { maximumFractionDigits: 0 }) : "—",
+      value: hasPositions ? formatCurrencyAmount(totalExposure, null, { context: "summary" }) : "—",
       delta: hasPositions ? "From open positions" : "No holdings",
       tone: "default"
     },
@@ -938,7 +938,7 @@ export function buildPortfolioFallbackMetrics({
       id: "portfolio-unrealized-pnl",
       label: "Unrealized P&L",
       value: hasPositions
-        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatPrefixedCurrency(totalUnrealizedPnl, { maximumFractionDigits: 0 })
+        ? (totalUnrealizedPnl >= 0 ? "+" : "") + formatCurrencyAmount(totalUnrealizedPnl, null, { context: "summary" })
         : "—",
       delta: hasPositions ? "Open position mark" : "No holdings",
       tone: hasPositions ? numericPnlTone(totalUnrealizedPnl) : "default"
@@ -1043,7 +1043,7 @@ function buildBrokerageTrustSnapshot({
     title: `${providerLabel} household snapshot`,
     statusLabel,
     statusTone,
-    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 })} equity, ${formatPrefixedCurrency(portfolio.totalCash, { maximumFractionDigits: 0 })} cash, and ${formatPrefixedCurrency(portfolio.totalBuyingPower, { maximumFractionDigits: 0 })} buying power.`,
+    summary: `${providerLabel} snapshot was generated at ${formatDateTime(portfolio.asOf)} with ${formatCurrencyAmount(portfolio.totalEquity, portfolio.currency, { context: "summary" })} equity, ${formatCurrencyAmount(portfolio.totalCash, portfolio.currency, { context: "summary" })} cash, and ${formatCurrencyAmount(portfolio.totalBuyingPower, portfolio.currency, { context: "summary" })} buying power.`,
     chips: [
       { label: "Accounts", value: formatCountLabel(portfolio.accounts.length, "account") },
       { label: "Positions", value: formatCountLabel(portfolio.positions.length, "position") },
@@ -1052,9 +1052,9 @@ function buildBrokerageTrustSnapshot({
     ],
     fields: [
       { label: "As of", value: formatDateTime(portfolio.asOf), tone: "muted" },
-      { label: "Total equity", value: formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Cash", value: formatPrefixedCurrency(portfolio.totalCash, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Buying power", value: formatPrefixedCurrency(portfolio.totalBuyingPower, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Total equity", value: formatCurrencyAmount(portfolio.totalEquity, portfolio.currency, { context: "summary" }), tone: "default" },
+      { label: "Cash", value: formatCurrencyAmount(portfolio.totalCash, portfolio.currency, { context: "summary" }), tone: "default" },
+      { label: "Buying power", value: formatCurrencyAmount(portfolio.totalBuyingPower, portfolio.currency, { context: "summary" }), tone: "default" },
       { label: "Account health", value: accountHealthLabel, tone: unhealthyCount > 0 ? "warning" : "success" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" }
     ]
@@ -1204,7 +1204,7 @@ export function buildPortfolioRunDrillInSummary(
         label: "Drawdown",
         value: drawdown ? formatRatioAsPercent(drawdown.maxDrawdownPercent) : "—",
         detail: drawdown
-          ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatPrefixedCurrency(drawdown.finalEquity, { maximumFractionDigits: 0 })}.`
+          ? `${formatCountLabel(drawdown.points.length, "equity point")}; recovery ${drawdown.maxDrawdownRecoveryDays} days; final equity ${formatCurrencyAmount(drawdown.finalEquity, null, { context: "summary" })}.`
           : "Equity curve and drawdown profile have not been loaded.",
         tone: drawdown ? drawdown.maxDrawdownPercent > 0.1 ? "danger" : drawdown.maxDrawdownPercent > 0.03 ? "warning" : "success" : "warning"
       },
@@ -1213,7 +1213,7 @@ export function buildPortfolioRunDrillInSummary(
         label: "Cash-flow",
         value: cashFlow ? formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }) : "—",
         detail: cashFlow
-          ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatPrefixedCurrency(cashFlow.totalInflows, { maximumFractionDigits: 0 })}; outflows ${formatPrefixedCurrency(cashFlow.totalOutflows, { maximumFractionDigits: 0 })}.`
+          ? `${cashFlow.totalEntries} cash-flow ${cashFlow.totalEntries === 1 ? "entry" : "entries"}; inflows ${formatCurrencyAmount(cashFlow.totalInflows, null, { context: "summary" })}; outflows ${formatCurrencyAmount(cashFlow.totalOutflows, null, { context: "summary" })}.`
           : "Cash-flow projection has not been loaded.",
         tone: cashFlow ? numericPnlTone(cashFlow.netCashFlow) : "warning"
       },
@@ -1222,7 +1222,7 @@ export function buildPortfolioRunDrillInSummary(
         label: "Trades",
         value: trades ? formatCount(trades.totalFills) : "—",
         detail: trades
-          ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatPrefixedCurrency(trades.totalCommissions, { maximumFractionDigits: 0 })} commissions.`
+          ? `${formatCountLabel(trades.fills.length, "fill")} with ${formatCurrencyAmount(trades.totalCommissions, null, { context: "summary" })} commissions.`
           : "Trade-level fill evidence has not been loaded.",
         tone: trades ? trades.totalFills > 0 ? "success" : "warning" : "warning"
       }
@@ -1267,7 +1267,7 @@ function buildPortfolioRunBridgeRows(
     rows.push({
       id: "commission-drag",
       label: "Commission drag",
-      value: formatPrefixedCurrency(attribution.totalCommissions, { maximumFractionDigits: 0 }),
+      value: formatCurrencyAmount(attribution.totalCommissions, null, { context: "summary" }),
       detail: `${formatCountLabel(attribution.bySymbol.length, "symbol")} contributes to attribution after commissions and margin-interest allocation.`,
       tone: attribution.totalCommissions > 0 ? "warning" : "success"
     });
@@ -1278,7 +1278,7 @@ function buildPortfolioRunBridgeRows(
       id: "cash-flow-bridge",
       label: "Cash-flow bridge",
       value: formatSignedCurrency(cashFlow.netCashFlow, { maximumFractionDigits: 0 }),
-      detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatPrefixedCurrency(cashFlow.totalInflows, { maximumFractionDigits: 0 })} to outflows ${formatPrefixedCurrency(cashFlow.totalOutflows, { maximumFractionDigits: 0 })}.`,
+      detail: `${formatCountLabel(cashFlow.totalEntries, "cash-flow entry")} tie inflows ${formatCurrencyAmount(cashFlow.totalInflows, null, { context: "summary" })} to outflows ${formatCurrencyAmount(cashFlow.totalOutflows, null, { context: "summary" })}.`,
       tone: numericPnlTone(cashFlow.netCashFlow)
     });
   }
@@ -1309,11 +1309,11 @@ function buildPortfolioRunTradeEvidenceRows(trades: RunFillSummary | null): Port
       id: fill.fillId,
       symbol: fill.symbol,
       quantity: formatCount(fill.filledQuantity),
-      price: formatPrefixedCurrency(fill.fillPrice, { minimumFractionDigits: 2 }),
-      commission: formatPrefixedCurrency(fill.commission, { minimumFractionDigits: 2 }),
+      price: formatCurrencyAmount(fill.fillPrice, null),
+      commission: formatCurrencyAmount(fill.commission, null),
       filledAt: formatDateTime(fill.filledAt),
       accountId: fill.accountId ?? "No account",
-      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${formatCount(fill.filledQuantity)} at ${formatPrefixedCurrency(fill.fillPrice, { minimumFractionDigits: 2 })} on ${formatDateTime(fill.filledAt)}`
+      ariaLabel: `${fill.symbol} fill ${fill.fillId}: ${formatCount(fill.filledQuantity)} at ${formatCurrencyAmount(fill.fillPrice, null)} on ${formatDateTime(fill.filledAt)}`
     }));
 }
 
@@ -1333,8 +1333,8 @@ function buildPortfolioHeaderChips({
   providerLabel: string;
 }): PortfolioHeaderChip[] {
   const chips: PortfolioHeaderChip[] = [
-    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalEquity, { maximumFractionDigits: 0 }) : "—" },
-    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatPrefixedCurrency(brokeragePortfolio.totalCash, { maximumFractionDigits: 0 }) : "—" },
+    { label: `${providerLabel} equity`, value: brokeragePortfolio ? formatCurrencyAmount(brokeragePortfolio.totalEquity, brokeragePortfolio.currency, { context: "summary" }) : "—" },
+    { label: `${providerLabel} cash`, value: brokeragePortfolio ? formatCurrencyAmount(brokeragePortfolio.totalCash, brokeragePortfolio.currency, { context: "summary" }) : "—" },
     { label: "Open positions", value: positionCountValue },
     { label: "Exposure", value: totalExposure },
     {
@@ -1566,9 +1566,9 @@ function toBrokerageAccountRow(
     kind,
     health: account.health,
     healthBadgeVariant: brokerageAccountHealthBadgeVariant(account.health),
-    equity: formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 }),
-    cash: formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 }),
-    buyingPower: formatPrefixedCurrency(account.buyingPower, { maximumFractionDigits: 0 }),
+    equity: formatCurrencyAmount(account.equity, account.currency, { context: "summary" }),
+    cash: formatCurrencyAmount(account.cash, account.currency, { context: "summary" }),
+    buyingPower: formatCurrencyAmount(account.buyingPower, account.currency, { context: "summary" }),
     syncedAt: formatDateTime(account.syncedAt),
     positionCount: formatCountLabel(account.positionCount, "position"),
     warningCount: formatCountLabel(warningCount, "warning"),
@@ -1579,7 +1579,7 @@ function toBrokerageAccountRow(
     expanded: isSelected,
     detailPanelId: "portfolio-brokerage-account-detail",
     selectAriaLabel: `Filter brokerage positions to ${kind} account`,
-    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 })}, cash ${formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 })}, ${formatCountLabel(warningCount, "warning")}`
+    ariaLabel: `${kind} brokerage account ${account.displayName}: ${account.health}, equity ${formatCurrencyAmount(account.equity, account.currency, { context: "summary" })}, cash ${formatCurrencyAmount(account.cash, account.currency, { context: "summary" })}, ${formatCountLabel(warningCount, "warning")}`
   };
 }
 
@@ -1639,9 +1639,9 @@ function buildSelectedBrokerageAccountDetail(
     fields: [
       { label: "Fund account", value: account.fundAccountId, tone: "muted" },
       { label: "External account", value: account.externalAccountId, tone: "muted" },
-      { label: "Equity", value: formatPrefixedCurrency(account.equity, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Cash", value: formatPrefixedCurrency(account.cash, { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Buying power", value: formatPrefixedCurrency(account.buyingPower, { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Equity", value: formatCurrencyAmount(account.equity, account.currency, { context: "summary" }), tone: "default" },
+      { label: "Cash", value: formatCurrencyAmount(account.cash, account.currency, { context: "summary" }), tone: "default" },
+      { label: "Buying power", value: formatCurrencyAmount(account.buyingPower, account.currency, { context: "summary" }), tone: "default" },
       { label: "Positions", value: formatCountLabel(account.positionCount, "position"), tone: "muted" },
       { label: "Cash activity", value: formatCountLabel(account.cashTransactionCount, "cash transaction"), tone: "muted" },
       { label: "Synced", value: formatDateTime(account.syncedAt), tone: "muted" }
@@ -1678,9 +1678,9 @@ function buildAllBrokerageAccountsDetail(
     statusBadgeVariant: brokerageAccountStatusBadgeVariant(statusTone),
     fields: [
       { label: "Accounts", value: formatCountLabel(accounts.length, "account"), tone: hasAccounts ? "default" : "warning" },
-      { label: "Equity", value: formatPrefixedCurrency(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity"), { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Cash", value: formatPrefixedCurrency(portfolio?.totalCash ?? sumAccountValue(accounts, "cash"), { maximumFractionDigits: 0 }), tone: "default" },
-      { label: "Buying power", value: formatPrefixedCurrency(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower"), { maximumFractionDigits: 0 }), tone: "default" },
+      { label: "Equity", value: formatCurrencyAmount(portfolio?.totalEquity ?? sumAccountValue(accounts, "equity"), portfolio?.currency ?? sharedCurrency(accounts.map((item) => item.currency)), { context: "summary" }), tone: "default" },
+      { label: "Cash", value: formatCurrencyAmount(portfolio?.totalCash ?? sumAccountValue(accounts, "cash"), portfolio?.currency ?? sharedCurrency(accounts.map((item) => item.currency)), { context: "summary" }), tone: "default" },
+      { label: "Buying power", value: formatCurrencyAmount(portfolio?.totalBuyingPower ?? sumAccountValue(accounts, "buyingPower"), portfolio?.currency ?? sharedCurrency(accounts.map((item) => item.currency)), { context: "summary" }), tone: "default" },
       { label: "Warnings", value: formatCountLabel(warningCount, "warning"), tone: warningCount > 0 ? "warning" : "success" },
       { label: "Latest sync", value: latestSync, tone: latestSync === "—" ? "warning" : "muted" }
     ]
@@ -1875,7 +1875,7 @@ function brokerageConnectionDetail(
   providerLabel: string
 ): string {
   if (connection?.isConnected && portfolio) {
-    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatPrefixedCurrency(portfolio.totalEquity, { maximumFractionDigits: 0 })} total equity.`;
+    return `${portfolio.accounts.length} ${providerLabel} account${portfolio.accounts.length === 1 ? "" : "s"} synced with ${formatCurrencyAmount(portfolio.totalEquity, portfolio.currency, { context: "summary" })} total equity.`;
   }
 
   if (connection?.authorizationUrl) {
