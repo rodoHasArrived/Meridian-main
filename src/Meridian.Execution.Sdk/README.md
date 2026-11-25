@@ -162,6 +162,8 @@ scope so synchronization and durable recovery revoke evidence when the active co
 The OMS retains it in `OrderState.BrokerAccountId` for exact account-qualified restart recovery;
 it is distinct from internal `FundAccountId` and cannot be supplied through caller routing metadata.
 Both fields are omitted when null, so old recovery snapshots remain readable without inventing ownership.
+`ExecutionReport.ExecutionId` is the broker's identifier for the single execution a report describes
+(IB `execId`); when present it is the fill's canonical identity. It is omitted when null.
 `ExecutionReport.BookedMoneyMultiplier` records the money scale a paper book applied to a fill (the
 contract multiplier for listed premium contracts); it is omitted when null, and an unstamped durable
 record replays at the 1× it was booked at. `ExecutionReport.BookedVariationMargin` records that a

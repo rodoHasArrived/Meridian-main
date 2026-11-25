@@ -106,6 +106,13 @@ the highest approved revision owns the cap; superseded and draft terms do not co
 dependency-free XLSX path for frozen accounting datasets. It retains all cells as text, preserving
 exact decimal digits and preventing source descriptions from becoming spreadsheet formulas.
 
+`ShortCarryDraftBuilder` and `PartnershipWaterfallDraftBuilder` wrap `ShortCarryProjector.Lines` and
+`PartnershipWaterfallProjector.Project` as governed `AutomatedJournalDraft`s (kinds `ShortCarryCharged` and
+`PartnershipProfitAllocated`) with deterministic input-digest idempotency keys; the Ui.Shared intake runner
+proves their inputs and queues them for review. The waterfall input names the retained-earnings account it
+draws on. `PartnershipInvestorAccountingProjector` is marked superseded: its fees duplicate
+`FundEconomicsJournalFactory` accruals and must not be posted alongside them.
+
 ## Diagrams
 
 See `DIA-ASSURANCE-LOOP` in the [diagram index](../../docs/source/data/diagram-index.yml).

@@ -1354,7 +1354,8 @@ lookup paths, and evidence trails those layers rely on.
 - `FundAccounts/`, `Banking/`, and `FundStructure/` - fund accounts, balances, statements, banking
   records, and fund-structure persistence. Banking transaction persistence keeps bank-side evidence
   amounts, dates, external references, void posture, and retaining operator identity durable for
-  cash-reconciliation audit packages. `FundStructure` owns the local JSON and in-memory
+  cash-reconciliation audit packages. Banking migration `004_payment_book_binding.sql` adds nullable
+  `tenant_id`, `company_id` and `ledger_book_id` to pending payments (all set or all null). `FundStructure` owns the local JSON and in-memory
   fund-structure state stores, while PostgreSQL fund-structure service persistence stays in the
   storage-backed rows and migrations.
 - `Reporting/` - tenant-bound PostgreSQL storage for immutable report bytes and catalogs, governed
