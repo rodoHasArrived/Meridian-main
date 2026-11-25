@@ -93,6 +93,15 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "protected content"):
             self.validate_fixture(policy)
 
+    def test_reviewed_hash_strategy_is_limited_to_the_per_module_fingerprint_tree(self):
+        reviewed = self.policy["conflict_recovery"]["trees"]["docs/source/generated/source-hashes"]
+        for location, path in (("trees", "docs/source/generated"), ("files", "docs/source/generated/source-hashes/SRC-APP.json")):
+            with self.subTest(location=location, path=path):
+                policy = copy.deepcopy(self.policy)
+                policy["conflict_recovery"][location][path] = dict(reviewed)
+                with self.assertRaises(ValueError):
+                    self.validate_fixture(policy)
+
     def test_missing_optional_or_unknown_producers_cannot_authorize_recovery(self):
         for changes in ({"required": False}, {"generator": "build/missing.py"},
                         {"generator": "src/Meridian.Ui/dashboard/package.json#scripts.unknown"}):
@@ -118,7 +127,7 @@ class GeneratedConflictPolicyTests(unittest.TestCase):
             with self.subTest(path=path):
                 self.assertEqual("manual", resolver.conflict_strategy(path, self.policy))
                 self.assertIsNotNone(runner.protected_content(path, b"reviewed", self.policy))
-        path = "docs/source/generated/source-hash-manifest.json"
+        path = "docs/source/generated/source-hashes/SRC-APP.json"
         self.assertEqual("reviewed-hashes", resolver.conflict_strategy(path, self.policy))
         self.assertIsNotNone(runner.protected_content(path, b"reviewed", self.policy))
 

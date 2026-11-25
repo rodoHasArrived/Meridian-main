@@ -389,7 +389,7 @@ public sealed class DesktopWorkflowScriptTests
     {
         var script = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\validate-wpf-dev.ps1"));
         var sharedBuildScript = File.ReadAllText(GetRepositoryFilePath(@"scripts\dev\SharedBuild.ps1"));
-        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\wpf-dev-validation.yml"));
+        var workflow = File.ReadAllText(GetRepositoryFilePath(@".github\workflows\targeted-test.yml"));
         var makefile = File.ReadAllText(GetRepositoryFilePath(@"make\desktop.mk"));
         var guide = File.ReadAllText(GetRepositoryFilePath(@"docs\engineering\README.md"));
 
@@ -428,10 +428,9 @@ public sealed class DesktopWorkflowScriptTests
         sharedBuildScript.Should().Contain("function Invoke-MeridianWpfTempProjectCleanup");
         sharedBuildScript.Should().Contain("-Filter '*_wpftmp.csproj'");
 
-        workflow.Should().Contain("python build/scripts/ci/run-windows-ci-tests.py @sliceArgs");
-        workflow.Should().Contain("@('--slice', 'dev-loop'");
-        workflow.Should().Contain("$sliceArgs += '--build-only'");
-        workflow.Should().Contain("$sliceArgs += @('--filter', $env:TEST_FILTER)");
+        workflow.Should().Contain("& scripts/dev/validate-wpf-dev.ps1 @devArgs");
+        workflow.Should().Contain("$devArgs.BuildOnly = $true");
+        workflow.Should().Contain("$devArgs.Filter = $env:DOTNET_FILTER");
 
         var sharedCiRunner = File.ReadAllText(GetRepositoryFilePath(@"build\scripts\ci\run-windows-ci-tests.py"));
         sharedCiRunner.Should().Contain("\"restore\"");
